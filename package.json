@@ -1,0 +1,81 @@
+{
+    "name": "voyager",
+    "version": "0.9.4",
+    "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
+    "scripts": {
+        "start": "npm run server",
+        "server": "nodemon server/bin/index.js",
+        "watch": "concurrently \"cd source/client && webpack --watch\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+        "build": "concurrently \"npm run build-server\" \"npm run build-client\"",
+        "build-client": "cd source/client && webpack && cd ../..",
+        "build-server": "tsc -b source/server",
+        "build-libs": "tsc -b libs",
+        "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "nodemonConfig": {
+        "delay": "1000",
+        "watch": [
+            "services/server/bin",
+            "node_modules/@ff"
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/framelab/voyager.git"
+    },
+    "contributors": [
+        {
+            "name": "Ralph Wiedemeier",
+            "url": "https://github.com/framelab"
+        }
+    ],
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/framelab/voyager/issues"
+    },
+    "homepage": "https://github.com/framelab/voyager#readme",
+    "dependencies": {
+        "ajv": "^6.5.4",
+        "body-parser": "^1.18.3",
+        "cookie-parser": "^1.4.3",
+        "draft-js": "^0.10.5",
+        "express": "^4.16.3",
+        "express-handlebars": "^3.0.0",
+        "express-session": "^1.15.6",
+        "morgan": "^1.9.1",
+        "nodemon": "^1.18.4",
+        "react": "^16.5.2",
+        "react-dom": "^16.5.2",
+        "react-mde": "^5.8.0",
+        "resolve-pathname": "^2.2.0",
+        "showdown": "^1.8.6",
+        "three": "^0.97.0",
+        "url-parse": "^1.4.3"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.1.6",
+        "@types/mocha": "^5.2.5",
+        "@types/node": "^10.11.4",
+        "@types/react": "^16.4.16",
+        "@types/react-dom": "^16.0.8",
+        "@types/showdown": "^1.7.5",
+        "@types/three": "^0.92.24",
+        "awesome-typescript-loader": "^5.2.1",
+        "chai": "^4.2.0",
+        "concurrently": "^4.0.1",
+        "css-loader": "^1.0.0",
+        "mini-css-extract-plugin": "^0.4.3",
+        "mocha": "^5.2.0",
+        "node-sass": "^4.9.3",
+        "raw-loader": "^0.5.1",
+        "sass-loader": "^7.1.0",
+        "source-map-loader": "^0.2.4",
+        "typedoc": "^0.12.0",
+        "typescript": "^3.1.1",
+        "typescript-json-schema": "^0.32.0",
+        "uglify-js": "^3.4.9",
+        "webpack": "^4.20.2",
+        "webpack-cli": "^3.1.2"
+    }
+}

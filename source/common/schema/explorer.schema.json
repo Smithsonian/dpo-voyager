@@ -1,0 +1,48 @@
+{
+    "$id": "https://schemas.3d.si.edu/public_api/explorer.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Smithsonian 3D Presentation - Explorer",
+    "description": "contains information about viewer configuration (scene environment, UI, etc.)",
+
+    "type": "object",
+    "properties": {
+        "renderer": {
+            "type": "object",
+            "properties": {
+                "units": {
+
+                },
+                "shader": {
+
+                },
+                "exposure": {
+
+                },
+                "gamma": {
+
+                },
+                "environment": {
+
+                }
+            }
+        },
+        "reader": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "document": {
+                    "description": "URI of the document currently displayed in the reader",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "tools": {
+            "$comment": "To be defined"
+        }
+    }
+}

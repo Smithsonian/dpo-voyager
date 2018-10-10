@@ -1,0 +1,374 @@
+/**
+ * 3D Foundation Project
+ * Copyright 2018 Smithsonian Institution
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+// BASE COLORS
+
+$color-background: #3e3e3e;
+$color-primary: #e66e19; // deep orange
+$color-secondary: #303f9f; // indigo
+
+////////////////////////////////////////////////////////////////////////////////
+// COMPONENT STYLES
+
+@import "../../../../libs/ff-react/source/components";
+
+////////////////////////////////////////////////////////////////////////////////
+// FONTS AND ICONS
+
+// Default UI Font
+$font-ui: "Segoe UI", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+
+@mixin font-ui-normal {
+  font-family: $font-ui;
+  font-weight: 400;
+}
+
+@mixin font-ui-bold {
+  font-family: $font-ui;
+  font-weight: 700;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HELPER
+
+.scroll-wrapper {
+  overflow-y: auto;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GLOBAL
+
+html {
+  @include font-ui-normal;
+  background: $color-background-dark;
+  color: $color-text;
+}
+
+#main, #overlay {
+  font-size: 0.9rem;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MENUS
+
+.presentation-menu-view {
+
+}
+
+.popup-button {
+  width: min-content;
+  height: min-content;
+  margin: 4px;
+  padding: 4px;
+  border-radius: 100px;
+  font-size: 1.5rem;
+  color: $color-icon;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
+.popup-menu {
+  margin: 4px;
+  background: rgba(32, 32, 32, 0.5);
+  border: 1px solid $color-background;
+  border-radius: 5px;
+  font-size: 0.9rem;
+
+  // top triangle
+  //&:after {
+  //  content: " ";
+  //  position: absolute;
+  //  bottom: 100%;
+  //  left: 50%;
+  //  height: 0;
+  //  width: 0;
+  //  margin-left: -10px;
+  //  border: 10px solid transparent;
+  //  border-bottom-color: $color-background;
+  //  pointer-events: none;
+  //}
+
+  .control {
+    margin: 3px 4px;
+  }
+
+  .label {
+    background: rgba(64, 64, 64, 0.5);
+    border-radius: 3px;
+    padding: 0 2px 2px 2px;
+  }
+
+  .button {
+    flex-grow: 1;
+    padding: 3px;
+    background: transparent;
+    border-radius: 3px;
+    color: $color-icon;
+
+    &:not(.disabled):hover {
+      background: inherit;
+      color: $color-text;
+    }
+
+    &.selected {
+      background: rgba(128, 128, 128, 0.5) !important;
+      color: $color-text;
+    }
+
+    .text {
+      font-size: 0.85em;
+    }
+
+    .icon {
+      display: block;
+      font-size: 1.8em;
+    }
+
+    &.cube {
+      width: 2em;
+      height: 2em;
+      margin: 0 -1px -1px 0;
+      background: rgba(32, 32, 32, 0.3);
+      border: 1px solid #404040;
+      border-radius: 0;
+
+      .text {
+        font-size: 1.3em;
+      }
+
+      .icon {
+        font-size: 1.2em;
+        line-height: 1em;
+        vertical-align: center;
+      }
+
+    }
+  }
+
+  .group.view {
+    padding: 4px;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// EXPLORER CONTENT VIEW
+
+.canvas {
+  @include full-size;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// COMPONENTS
+
+.property-field {
+  .edit {
+    @include font-ui-normal;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MENU BAR
+
+$bar-size: 48px;
+
+.menubar {
+  height: $bar-size;
+  min-height: $bar-size;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: $color-background-dark;
+
+  .button {
+    height: $bar-size - 20;
+    line-height: $bar-size - 24;
+  }
+
+  .logo {
+    flex-shrink: 0;
+    width: 140px;
+    height: 100%;
+    //margin: 0 20px 0 $bar-size;
+    margin: 0 20px 0 8px;
+    background-image: url("/images/voyager-75grey.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+
+  .search {
+
+  }
+
+  .menu {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 0 12px;
+
+    .button + .button {
+      margin-left: 6px;
+    }
+  }
+}
+
+.scene-info {
+  margin: 0 0 0 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  .badge {
+    margin: 0 4px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SIDEBAR
+
+$sidebar-expanded-size: 250px;
+
+.sidebar {
+  width: 48px;
+  background: green; //$color-background-dark;
+
+  .expandable {
+    width: $sidebar-expanded-size;
+  }
+
+  .tool-header {
+    height: 42px;
+    width: 100%;
+    padding: 0 6px;
+
+    .icon {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      margin-right: 8px;
+      font-size: 28px;
+      line-height: 36px;
+      vertical-align: middle;
+      text-align: center;
+      background: $color-background;
+      transition: background $tx-short;
+      color: $color-icon;
+    }
+
+    &:hover .icon {
+      background: $color-background-hover;
+    }
+    .text {
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// INSPECTOR SIDEBAR
+
+.inspector-sidebar {
+  flex-shrink: 0;
+  width: 300px;
+  overflow-y: auto;
+  background: $color-background-dark;
+  font-size: 0.85rem;
+}
+
+.file-slot {
+  margin: 0 6px 6px 6px;
+  padding: 2px 6px 6px 6px;
+  background: $color-background-darker;
+
+  .title {
+    font-size: 1rem;
+    line-height: 1.4rem;
+  }
+
+  .file-drop-target {
+    box-sizing: border-box;
+    min-height: 40px;
+    flex-grow: 1;
+    margin: 6px 0 8px 0;
+    padding: 2px 4px;
+    border: 1px dashed $color-background-light;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    &.full {
+      background: $color-secondary-dark;
+    }
+
+    .label {
+      pointer-events: none;
+      text-align: center;
+      word-wrap: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.targeted {
+      border: 2px solid $color-background-light;
+    }
+  }
+}
+
+.inspector-editor {
+  margin: 0 6px 6px 6px;
+  padding: 2px 6px 6px 6px;
+  background: $color-background-darker;
+
+  & > label {
+    display: block;
+    padding-bottom: 4px;
+    font-size: 1rem;
+  }
+
+  .slider, .switch {
+    padding-bottom: 3px;
+    line-height: 1.4rem;
+
+    & > .label {
+      flex-shrink: 0;
+      width: 33%;
+      padding-left: 12px;
+    }
+
+    .checkbox {
+      margin: 0;
+    }
+  }
+
+  .selection-group {
+    .checkbox {
+      display: inline;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MARKDOWN-EDITOR
+
+.markdown-editor {
+  @include full-size;
+  color: black;
+  background-color: white;
+}

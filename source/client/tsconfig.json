@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "commonjs",
+        "sourceMap": true,
+        "jsx": "react",
+        "resolveJsonModule": true,
+
+        "baseUrl": ".",
+        "paths": {
+            "common/*": [ "../common/*" ],
+            "@ff/core/*": [ "../../libs/ff-core/source/*" ],
+            "@ff/react/*": [ "../../libs/ff-react/source/*" ],
+            "@ff/browser/*": [ "../../libs/ff-browser/source/*" ]
+        }
+    }
+}

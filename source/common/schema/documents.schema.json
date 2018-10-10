@@ -1,0 +1,51 @@
+{
+    "$id": "https://schemas.3d.si.edu/public_api/documents.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Documents",
+    "description": "References to external documents (articles, media files) containing additional information about a 3D item.",
+
+    "definitions": {
+        "document": {
+            "description": "Reference to an external document, article or media file.",
+            "$id": "#document",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "title",
+                "uri"
+            ]
+        }
+    },
+
+    "type": "object",
+    "properties": {
+        "document": {
+            "description": "Index of the main document. This is the default document displayed with the item.",
+            "type": "integer",
+            "minimum": 0
+        },
+        "documents": {
+            "type": "array",
+            "items": {
+                "$ref": "#document"
+            }
+        }
+    },
+    "required": [
+        "documents"
+    ]
+}

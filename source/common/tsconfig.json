@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES6",
+        "module": "commonjs",
+        "sourceMap": true,
+
+        "outDir": "../../services/server/bin/node_modules/common"
+    }
+}

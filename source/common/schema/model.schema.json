@@ -1,0 +1,135 @@
+{
+    "$id": "https://schemas.3d.si.edu/public_api/model.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Model",
+    "description": "Describes the visual representations (models, derivatives) of a 3D item.",
+
+    "definitions": {
+        "material": {
+            "$id": "#material",
+            "type": "object",
+            "properties": {
+            }
+        },
+        "asset": {
+            "description": "an individual resource for a 3D model.",
+            "$id": "#asset",
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "model",
+                        "geometry",
+                        "image",
+                        "points",
+                        "volume"
+                    ]
+                },
+                "mimeType": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "byteSize": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "numFaces": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "imageSize": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "mapType": {
+                    "type": "string",
+                    "enum": [
+                        "color",
+                        "normal",
+                        "occlusion",
+                        "emissive",
+                        "metallic-roughness",
+                        "zone"
+                    ]
+                }
+            },
+            "required": [
+                "uri",
+                "type"
+            ]
+        }
+    },
+
+    "type": "object",
+    "properties": {
+        "units": {
+            "type": "string",
+            "enum": [
+                "mm",
+                "cm",
+                "m",
+                "in",
+                "ft"
+            ]
+        },
+        "transform": {
+            "description": "Local transformation matrix, defines the 'neutral pose' of this model.",
+            "$ref": "math.schema.json#/definitions/matrix4"
+        },
+        "boundingBox": {
+            "description": "Bounding box for this model, shared by all derivatives.",
+            "$ref": "math.schema.json#/definitions/boundingBox"
+        },
+        "material": {
+            "description": "Surface properties for this model, shared by all derivatives.",
+            "$ref": "#material"
+        },
+        "derivatives": {
+            "description": "List of visual representations derived from the master model.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "usage": {
+                        "description": "usage categories for a derivative.",
+                        "type": "string",
+                        "enum": [
+                            "web",
+                            "print",
+                            "editorial"
+                        ]
+                    },
+                    "quality": {
+                        "type": "string",
+                        "enum": [
+                            "thumb",
+                            "low",
+                            "medium",
+                            "high",
+                            "highest",
+                            "lod",
+                            "stream"
+                        ]
+                    },
+                    "assets": {
+                        "description": "List of individual resources this derivative is composed of.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#asset"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "required": [
+        "units",
+        "derivatives"
+    ]
+}

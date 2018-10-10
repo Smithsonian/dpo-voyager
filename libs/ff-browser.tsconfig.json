@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES6",
+        "module": "commonjs",
+        "declaration": true,
+        "sourceMap": true,
+        "jsx": "react",
+
+        "outDir": "../node_modules/@ff/browser",
+        "rootDir": "ff-browser/source"
+    },
+    "include": [
+        "ff-browser/source"
+    ]
+}

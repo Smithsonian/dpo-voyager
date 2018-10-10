@@ -1,0 +1,9 @@
+[submodule "libs/ff-core"]
+	path = libs/ff-core
+	url = https://github.com/framelab/ff-core
+[submodule "libs/ff-react"]
+	path = libs/ff-react
+	url = https://github.com/framelab/ff-react
+[submodule "libs/ff-browser"]
+	path = libs/ff-browser
+	url = https://github.com/framelab/ff-browser

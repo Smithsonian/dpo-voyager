@@ -1,0 +1,71 @@
+{
+    "asset": {
+        "version": "1.0",
+        "copyright": "Copyright 2018 Smithsonian Institution",
+        "generator": "Voyager Prep"
+    },
+    "scene": {
+        "nodes": [
+            0,
+            1
+        ]
+    },
+    "nodes": [
+        {
+            "translation": [ 0, 0, 50 ],
+            "camera": 0
+        },
+        {
+            "name": "Lights",
+            "children": [ 2, 3, 4, 5 ]
+        },
+        {
+            "translation": [ -2, 1, 2 ],
+            "light": 0
+        },
+        {
+            "translation": [ 2, 1, 2 ],
+            "light": 1
+        },
+        {
+            "translation": [ 0, 2, -0.5 ],
+            "light": 2
+        },
+        {
+            "translation": [ 0, -2, -1.2 ],
+            "light": 3
+        }
+    ],
+    "cameras": [
+        {
+            "type": "perspective",
+            "perspective": {
+                "yfov": 50,
+                "znear": 0.001,
+                "zfar": 10000
+            }
+        }
+    ],
+    "lights": [
+        {
+            "type": "directional",
+            "color": [ 1, 1, 1 ],
+            "intensity": 1
+        },
+        {
+            "type": "directional",
+            "color": [ 1, 1, 1 ],
+            "intensity": 1
+        },
+        {
+            "type": "directional",
+            "color": [ 1, 0.95, 0.85 ],
+            "intensity": 0.5
+        },
+        {
+            "type": "directional",
+            "color": [ 0.8, 0.85, 1 ],
+            "intensity": 1.0
+        }
+    ]
+}

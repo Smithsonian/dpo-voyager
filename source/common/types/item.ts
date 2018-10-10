@@ -1,0 +1,258 @@
+/**
+ * 3D Foundation Project
+ * Copyright 2018 Smithsonian Institution
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+    Index
+} from "@ff/core/types";
+
+////////////////////////////////////////////////////////////////////////////////
+
+export type UnitType = "mm" | "cm" | "m" | "in" | "ft";
+export type NormalSpaceType = "tangent" | "object";
+export type DerivativeUsage = "web" | "print" | "editorial";
+export type DerivativeQuality = "thumb" | "low" | "medium" | "high" | "highest" | "lod" | "stream";
+export type AssetType = "model" | "geometry" | "image" | "points" | "volume";
+export type MapType = "color" | "normal" | "occlusion" | "emissive" | "metallic-roughness" | "zone";
+export type CurveType = "linear" | "ease" | "ease-in" | "ease-out";
+
+export type Matrix4 = number[];
+export type Vector3 = number[];
+export type Vector4 = number[];
+export type ColorRGB = Vector3;
+export type ColorRGBA = Vector4;
+
+/**
+ * Item node properties. Describes a Smithsonian collection item
+ * including meta data, derivatives, annotations, tours, snapshots and process information.
+ */
+export interface IItem
+{
+    meta: IMeta;
+    process?: IProcess;
+    model?: IModel;
+    documents?: IDocuments;
+    annotations?: IAnnotations;
+    story?: IStory;
+}
+
+/**
+ * Meta data section of a collection item.
+ */
+export interface IMeta
+{
+    [id: string]: any;
+}
+
+/**
+ * Model section of a collection item. Contains information about the item's
+ * units, bounding box and derivative representations available for loading.
+ */
+export interface IModel
+{
+    units: UnitType;
+    derivatives: IDerivative[];
+    boundingBox?: IBoundingBox;
+    transform?: Matrix4;
+    material?: IMaterial;
+}
+
+/**
+ * Axis-aligned bounding box.
+ */
+export interface IBoundingBox
+{
+    min: Vector3;
+    max: Vector3;
+}
+
+export interface IMaterial
+{
+    pbrMetallicRoughness?: IPBRMetallicRoughness;
+    normalTexture?: any;
+    normalSpace?: NormalSpaceType;
+    occlusionTexture?: any;
+    occlusionStrength?: number;
+    emissiveTexture?: any;
+    emissiveFactor?: ColorRGB;
+    alphaMode?: any; // TODO
+    alphaCutoff?: number;
+    doubleSided?: boolean;
+}
+
+export interface IPBRMetallicRoughness
+{
+    baseColorFactor?: ColorRGBA;
+    baseColorTexture?: any;
+    metallicFactor?: number;
+    roughnessFactor?: number;
+    metallicRoughnessTexture?: any;
+}
+
+/**
+ * Derivative representation of a collection item.
+ * Points to one or multiple assets (files/resources).
+ */
+export interface IDerivative
+{
+    usage: DerivativeUsage;
+    quality: DerivativeQuality;
+    assets: IAsset[];
+}
+
+/**
+ * Describes an asset, a resource containing a mesh, model, image,
+ * point cloud or volumetric representation.
+ */
+export interface IAsset
+{
+    uri: string;
+    type: AssetType;
+    mimeType?: string;
+    byteSize?: number;
+    numFaces?: number;
+    numVertices?: number;
+    imageSize?: number;
+    mapType?: MapType;
+}
+
+export interface IDocuments
+{
+    document?: Index;
+    documents: IDocument[];
+}
+
+/**
+ * Refers to an external document: an article or a media file (audio, video, image).
+ */
+export interface IDocument
+{
+    title: string;
+    description?: string;
+    mimeType?: string;
+    uri: string;
+}
+
+/**
+ * Describes the annotation elements of an item: anchors, documents and groups.
+ * The top level document index points to the item's main document.
+ */
+export interface IAnnotations
+{
+    spots?: ISpotAnnotation[];
+    zones?: IZoneAnnotation[];
+    groups?: IGroup[];
+}
+
+/**
+ * Connects annotated information to a specific spatial entity.
+ * Annotation targets are specific locations (spots) or areas (zones) on an item.
+ */
+export interface IAnnotation
+{
+    title?: string;
+    description?: string;
+    expanded?: boolean;
+    snapshot?: Index;
+    documents?: Index[];
+    groups?: Index[];
+}
+
+/**
+ * Spot annotations are usually placed at specific locations on the surface of an item.
+ * The direction can be used to orient balloons or steps for tooltips correctly.
+ */
+export interface ISpotAnnotation extends IAnnotation
+{
+    position: Vector3;
+    direction: Vector3;
+}
+
+/**
+ * Zone anchors require a zone texture to be present for the item.
+ */
+export interface IZoneAnnotation extends IAnnotation
+{
+    index: number;
+}
+
+/**
+ * Anchors can be grouped. This describes an anchor group.
+ */
+export interface IGroup
+{
+    title: string;
+    description?: string;
+}
+
+/**
+ * Describes the story elements of an item: snapshots and tours.
+ */
+export interface IStory
+{
+    snapshots: ISnapshot[];
+    tours?: ITour[];
+}
+
+/**
+ * A snapshot captures a set of viewer/scene properties.
+ * Snapshots can be used to bring the viewer/scene back to a specific state.
+ */
+export interface ISnapshot
+{
+    title?: string;
+    description?: string;
+    properties: ISnapshotProperty[];
+}
+
+/**
+ * Unit of snapshot data.
+ */
+export interface ISnapshotProperty
+{
+    target: string;
+    value: any;
+}
+
+/**
+ * A tour consists of a sequence of tour steps, where each step
+ * recalls a snapshot.
+ */
+export interface ITour
+{
+    title: string;
+    description?: string;
+    steps: ITourStep[];
+}
+
+/**
+ * Single step within a tour.
+ */
+export interface ITourStep
+{
+    snapshot: Index;
+    transitionTime?: number;
+    transitionCurve?: CurveType;
+    transitionCutPoint?: number;
+}
+
+/**
+ * Meta-data describing the capture, computation, and editorial process.
+ */
+export interface IProcess
+{
+    [key: string]: any;
+}

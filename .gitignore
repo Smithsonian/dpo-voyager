@@ -1,0 +1,15 @@
+# FOLDERS
+.idea/
+.vscode/
+node_modules/
+
+test/
+doc/
+source/shared/flow/
+services/server/bin
+services/server/static/app
+
+# FILES
+*.log
+.DS_Store
+secrets.env

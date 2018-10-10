@@ -1,0 +1,20 @@
+{
+    "references": [
+        { "path": "../../libs" },
+        { "path": "../common" }
+    ],
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "commonjs",
+        "sourceMap": true,
+
+        "outDir": "../../services/server/bin",
+        "baseUrl": "../../services/server/bin/node_modules"
+    },
+    "files": [
+        "index.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

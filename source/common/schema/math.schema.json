@@ -1,0 +1,82 @@
+{
+    "$id": "https://schemas.3d.si.edu/public_api/math.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Math",
+    "description": "Definitions for mathematical compound objects such as vectors and matrices.",
+
+    "definitions": {
+        "vector2": {
+            "description": "2-component vector.",
+            "$id": "#vector2",
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "default": [ 0, 0 ]
+        },
+        "vector3": {
+            "description": "3-component vector.",
+            "$id": "#vector3",
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3,
+            "default": [ 0, 0, 0 ]
+        },
+        "vector4": {
+            "description": "4-component vector.",
+            "$id": "#vector4",
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "default": [ 0, 0, 0, 0 ]
+        },
+        "matrix3": {
+            "description": "3 by 3, matrix, storage: column-major.",
+            "$id": "#matrix3",
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 9,
+            "maxItems": 9,
+            "default": [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ]
+        },
+        "matrix4": {
+            "description": "4 by 4 matrix, storage: column-major.",
+            "$id": "#matrix4",
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 16,
+            "maxItems": 16,
+            "default": [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
+        },
+        "boundingBox": {
+            "description": "Axis-aligned 3D bounding box.",
+            "$id": "#boundingBox",
+            "type": "object",
+            "properties": {
+                "min": {
+                    "$ref": "#vector3"
+                },
+                "max": {
+                    "$ref": "#vector3"
+                }
+            },
+            "required": [
+                "min",
+                "max"
+            ]
+        }
+    }
+}

@@ -1,0 +1,76 @@
+/**
+ * 3D Foundation Project
+ * Copyright 2018 Smithsonian Institution
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as THREE from "three";
+
+import "three/examples/js/loaders/OBJLoader";
+const OBJLoader = (THREE as any).OBJLoader;
+
+import "three/examples/js/loaders/PLYLoader";
+const PLYLoader = (THREE as any).PLYLoader;
+
+////////////////////////////////////////////////////////////////////////////////
+
+export default class GeometryLoader
+{
+    static readonly extensions = [ "obj", "ply" ];
+
+    protected objLoader: any;
+    protected plyLoader: any;
+
+    constructor(loadingManager: THREE.LoadingManager)
+    {
+        this.objLoader = new OBJLoader(loadingManager);
+        this.plyLoader = new PLYLoader(loadingManager);
+    }
+
+    canLoad(url: string): boolean
+    {
+        const extension = url.split(".").pop().toLowerCase();
+        return GeometryLoader.extensions.indexOf(extension) >= 0;
+    }
+
+    load(url: string): Promise<THREE.Geometry>
+    {
+        const extension = url.split(".").pop().toLowerCase();
+
+        return new Promise((resolve, reject) => {
+            if (extension === "obj") {
+                this.objLoader.load(url, result => {
+                    const geometry = result.children[0].geometry;
+                    if (geometry && geometry.type === "Geometry") {
+                        return resolve(geometry);
+                    }
+
+                    return reject(new Error(`Can't parse geometry from '${url}'`));
+                });
+            }
+            else if (extension === "ply") {
+                this.plyLoader.load(url, geometry => {
+                    if (geometry && geometry.type === "Geometry") {
+                        return resolve(geometry);
+                    }
+
+                    return reject(new Error(`Can't parse geometry from '${url}'`));
+                });
+            }
+            else {
+                throw new Error(`Can't load geometry, unknown extension: '${extension}' in '${url}'`);
+            }
+        });
+    }
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SI Voyager</title>
+
+    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/fontawesome.min.css">
+    <link rel="stylesheet" href="/css/fontawesome-solid.min.css">
+    <link rel="stylesheet" href="/app/css/voyager-{{component}}.css">
+
+    {{#if devMode}}
+        <!--<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.4.2/umd/react.development.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.4.2/umd/react-dom.development.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/95/three.js"></script>
+    {{else}}
+        <!--<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.4.2/umd/react.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.4.2/umd/react-dom.production.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/95/three.min.js"></script>
+    {{/if}}
+
+</head>
+<body>
+    <div id="main"></div>
+    <div id="overlay"></div>
+    <script src="app/js/voyager-{{component}}.js"></script>
+</body>
+</html>
+
+
