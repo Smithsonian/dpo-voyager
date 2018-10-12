@@ -131,7 +131,7 @@ export interface IAsset
 
 export interface IDocuments
 {
-    document?: Index;
+    mainDocument?: Index;
     documents: IDocument[];
 }
 
@@ -144,6 +144,7 @@ export interface IDocument
     description?: string;
     mimeType?: string;
     uri: string;
+    thumbnailUri?: string;
 }
 
 /**
@@ -203,7 +204,8 @@ export interface IGroup
  */
 export interface IStory
 {
-    snapshots: ISnapshot[];
+    templateUri?: string;
+    snapshots?: ISnapshot[];
     tours?: ITour[];
 }
 

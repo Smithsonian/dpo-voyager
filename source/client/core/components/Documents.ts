@@ -37,6 +37,7 @@ export interface IDocument
     description: string;
     mimeType: string;
     uri: string;
+    thumbnailUri: string;
 }
 
 export default class Documents extends Collection<IDocument>
@@ -56,7 +57,8 @@ export default class Documents extends Collection<IDocument>
             title: "New Document",
             description: "",
             mimeType: "text/plain",
-            uri: ""
+            uri: "",
+            thumbnailUri: ""
         };
 
         return this.addDocument(document);
@@ -95,7 +97,8 @@ export default class Documents extends Collection<IDocument>
                 title: docData.title,
                 description: docData.description || "",
                 mimeType: docData.mimeType || "",
-                uri: docData.uri
+                uri: docData.uri,
+                thumbnailUri: docData.thumbnailUri || ""
             })
         );
     }
@@ -119,6 +122,9 @@ export default class Documents extends Collection<IDocument>
             }
             if (document.mimeType) {
                 docData.mimeType = document.mimeType;
+            }
+            if (document.thumbnailUri) {
+                docData.thumbnailUri = document.thumbnailUri;
             }
 
             result.data.push(docData);

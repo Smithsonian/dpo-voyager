@@ -36,6 +36,7 @@ export interface ITourStep
     snapshotId: string;
     transitionTime: number;
     transitionCurve: CurveType;
+    transitionCutPoint: number;
 }
 
 export default class Tours extends Collection<ITour>
@@ -82,7 +83,8 @@ export default class Tours extends Collection<ITour>
                 steps: tourData.steps.map(stepData => ({
                     snapshotId: snapIds[stepData.snapshot],
                     transitionTime: stepData.transitionTime,
-                    transitionCurve: stepData.transitionCurve
+                    transitionCurve: stepData.transitionCurve,
+                    transitionCutPoint: stepData.transitionCutPoint
                 }))
             });
         });
@@ -98,7 +100,8 @@ export default class Tours extends Collection<ITour>
                 steps: tour.steps.map(step => ({
                     snapshot: snapIds[step.snapshotId],
                     transitionTime: step.transitionTime,
-                    transitionCurve: step.transitionCurve
+                    transitionCurve: step.transitionCurve,
+                    transitionCutPoint: step.transitionCutPoint
                 }))
             };
 

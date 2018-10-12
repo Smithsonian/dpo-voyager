@@ -89,7 +89,7 @@ export interface INode extends ITransform
 }
 
 /**
- * Reference node properties. Node references an external file
+ * Reference node properties. Node references an external file (item, model, geometry)
  * which will get attached to this node in the scene hierarchy.
  */
 export interface IReference

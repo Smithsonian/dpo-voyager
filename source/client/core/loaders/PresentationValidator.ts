@@ -26,9 +26,9 @@ import * as itemSchema from "common/schema/item.schema.json";
 import * as metaSchema from "common/schema/meta.schema.json";
 import * as processSchema from "common/schema/process.schema.json";
 import * as modelSchema from "common/schema/model.schema.json";
-import * as documentsSchema from "common/schema/documents.schema.json";
 import * as annotationsSchema from "common/schema/annotations.schema.json";
 import * as storySchema from "common/schema/story.schema.json";
+import * as documentsSchema from "common/schema/documents.schema.json";
 
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
