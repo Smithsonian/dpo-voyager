@@ -86,7 +86,7 @@ export default class Collection<T extends { id?: string }> extends Component
      */
     count()
     {
-        return this.toArray().length;
+        return this.getArray().length;
     }
 
     /**
@@ -111,7 +111,7 @@ export default class Collection<T extends { id?: string }> extends Component
      * Returns a dictionary with all collection items, with their id as key.
      * @returns {Dictionary<T extends {id?: string}>}
      */
-    toDictionary(): Dictionary<T>
+    getDictionary(): Dictionary<T>
     {
         if (!this.items) {
             return {};
@@ -134,7 +134,7 @@ export default class Collection<T extends { id?: string }> extends Component
      * Returns an array with all collection items.
      * @returns {T[]}
      */
-    toArray(): T[]
+    getArray(): T[]
     {
         if (!this.items) {
             return [];

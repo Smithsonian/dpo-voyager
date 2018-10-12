@@ -105,7 +105,7 @@ export default class Documents extends Collection<IDocument>
 
     toData(): { data: IDocumentData[], ids: Dictionary<number> }
     {
-        const documents = this.toArray();
+        const documents = this.getArray();
         const result = { data: [], ids: {} };
 
         documents.forEach((document, index) => {

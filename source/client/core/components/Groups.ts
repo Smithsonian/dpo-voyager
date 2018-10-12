@@ -96,7 +96,7 @@ export default class Groups extends Collection<IGroup>
 
     toData(): { data: IGroupData[], ids: Dictionary<number> }
     {
-        const groups = this.toArray();
+        const groups = this.getArray();
         const result = { data: [], ids: {} };
 
         groups.forEach((group, index) => {

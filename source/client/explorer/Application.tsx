@@ -51,10 +51,7 @@ export default class Application
         this.commander = new Commander();
         this.presentationController = new PresentationController(this.commander, this.system);
 
-        // TODO: Test
-        const actions = this.presentationController.actions;
-        actions.load("assets/nmafa-68_23_53_textured_cm/nmafa-68_23_53_textured_cm.json");
-
+        this.presentationController.startup();
 
         ReactDOM.render(
             <PresentationView

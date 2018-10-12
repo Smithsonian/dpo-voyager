@@ -19,11 +19,11 @@ import * as THREE from "three";
 
 import math from "@ff/core/math";
 import types from "@ff/core/ecs/propertyTypes";
-import OrbitManip from "@ff/react/OrbitManip";
+import OrbitManipController from "@ff/react/OrbitManip";
 
 import { ComponentTracker } from "@ff/core/ecs/Component";
 
-import ManipController, { IManipPointerEvent, IManipTriggerEvent } from "./ManipController";
+import Manip, { IManipPointerEvent, IManipTriggerEvent } from "./Manip";
 import TransformComponent from "./Transform";
 import RenderContext from "../system/RenderContext";
 import { IViewportChangeEvent } from "../three/Viewport";
@@ -34,7 +34,7 @@ const _euler = new THREE.Euler();
 const _vec4 = new THREE.Vector4();
 const _mat4 = new THREE.Matrix4();
 
-export default class OrbitController extends ManipController
+export default class OrbitManip extends Manip
 {
     static readonly type: string = "OrbitManip";
 
@@ -53,7 +53,7 @@ export default class OrbitController extends ManipController
     protected viewportWidth = 100;
     protected viewportHeight = 100;
 
-    protected manip = new OrbitManip();
+    protected manip = new OrbitManipController();
     protected transformTracker: ComponentTracker<TransformComponent>;
 
 

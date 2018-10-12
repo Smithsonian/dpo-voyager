@@ -92,7 +92,7 @@ export default class Tours extends Collection<ITour>
 
     toData(snapIds: Dictionary<number>): ITourData[]
     {
-        const tours = this.toArray();
+        const tours = this.getArray();
 
         return tours.map(tour => {
             const tourData: ITourData = {

@@ -56,7 +56,7 @@ export default abstract class Annotations<T extends IAnnotation> extends Collect
 
     toData(groupIds: Dictionary<number>, docIds: Dictionary<number>, snapIds: Dictionary<number>): IAnnotationData[]
     {
-        const spots = this.toArray();
+        const spots = this.getArray();
 
         return spots.map(spot => {
             const spotData: IAnnotationData = {

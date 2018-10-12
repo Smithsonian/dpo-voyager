@@ -63,6 +63,8 @@ export default class Model extends Object3D
 
     protected assetLoader: AssetLoader = null;
     protected assetPath: string = "";
+    protected currentModel: THREE.Object3D = null;
+
 
     create(context)
     {
@@ -71,6 +73,8 @@ export default class Model extends Object3D
         this.derivatives = this.trackComponent(Derivatives);
         this.assetLoader = context.assetLoader;
         this.assetPath = context.assetPath;
+
+        this.object3D = new THREE.Group();
     }
 
     update()
@@ -85,10 +89,8 @@ export default class Model extends Object3D
         matrix.compose(_vec3a, _quat, _vec3b);
 
         const object = this.object3D;
-        if (object) {
-            object.matrix = matrix;
-            object.matrixWorldNeedsUpdate = true;
-        }
+        object.matrix = matrix;
+        object.matrixWorldNeedsUpdate = true;
     }
 
     load(quality: DerivativeQuality): Promise<void>
@@ -123,9 +125,12 @@ export default class Model extends Object3D
     {
         return derivative.load(this.assetLoader, this.assetPath)
         .then(object => {
-            object.matrix = this.matrix;
-            object.matrixWorldNeedsUpdate = true;
-            this.object3D = object;
+            if (this.currentModel) {
+                this.object3D.remove(this.currentModel);
+            }
+
+            this.currentModel = object;
+            this.object3D.add(object);
         });
     }
 

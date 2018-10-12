@@ -15,27 +15,28 @@
  * limitations under the License.
  */
 
-import Component, { ComponentTracker, Entity } from "@ff/core/ecs/Component";
+import Entity from "@ff/core/ecs/Entity";
+import { ComponentTracker } from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import RenderContext from "../system/RenderContext";
 
-import ManipController, { IManipPointerEvent, IManipTriggerEvent } from "./ManipController";
-import Picker from "./Picker";
+import Manip, { IManipPointerEvent, IManipTriggerEvent } from "./Manip";
+import PickManip from "./PickManip";
 import MainCamera from "./MainCamera";
 import ManipTarget from "./ManipTarget";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class SelectionController extends ManipController
+export default class SelectionManip extends Manip
 {
-    static readonly type: string = "SelectionController";
+    static readonly type: string = "SelectionManip";
     static readonly isSystemSingleton: boolean = true;
 
-    protected picker: ComponentTracker<Picker> = null;
+    protected pickManip: ComponentTracker<PickManip> = null;
     protected mainCam: ComponentTracker<MainCamera> = null;
 
-    protected selectedComponents: Component[] = [];
+    protected selectedEntities: Entity[] = [];
     protected isSelecting: boolean = false;
 
     protected manipWhileSelecting: boolean = true;
@@ -46,18 +47,13 @@ export default class SelectionController extends ManipController
     {
         super.create(context);
 
-        this.picker = this.trackComponent(Picker);
+        this.pickManip = this.trackComponent(PickManip);
         this.mainCam = this.trackComponent(MainCamera);
     }
 
     onPointer(event: IManipPointerEvent)
     {
-        if (!this.picker || !this.mainCam.component) {
-            return super.onPointer(event);
-        }
-
-        const camera = this.mainCam.component.activeCamera;
-        if (!camera) {
+        if (!this.pickManip.component) {
             return super.onPointer(event);
         }
 
@@ -67,35 +63,35 @@ export default class SelectionController extends ManipController
                 const x = event.centerX - rect.left;
                 const y = event.centerY - rect.top;
 
-                const pickResults = this.picker.component.pick(x, y, camera);
+                const pickResults = this.pickManip.component.pick(x, y);
                 if (pickResults && pickResults.length > 0) {
-                    const component = pickResults[0].component;
+                    const entity = pickResults[0].entity;
 
                     // is component already selected?
-                    const index = this.selectedComponents.indexOf(component);
+                    const index = this.selectedEntities.indexOf(entity);
 
                     if (this.allowMultiSelect && event.ctrlKey) {
                         // with control key: toggle selection
                         this.isSelecting = true;
                         if (index < 0) {
-                            this.selectedComponents.push(component);
+                            this.selectedEntities.push(entity);
                         }
                         else {
-                            this.selectedComponents.splice(index, 1);
+                            this.selectedEntities.splice(index, 1);
                         }
                     }
                     else if (index < 0) {
                         // without control key: replace selection
                         this.isSelecting = true;
-                        this.selectedComponents.length = 0;
-                        this.selectedComponents.push(component);
+                        this.selectedEntities.length = 0;
+                        this.selectedEntities.push(entity);
                     }
 
-                    this.selectedComponents.forEach(component => console.log(component.toString()));
+                    this.selectedEntities.forEach(entity => console.log(entity.toString()));
                 }
                 else if (!this.allowMultiSelect || !event.ctrlKey) {
                     // without control key: clear selection
-                    this.selectedComponents.length = 0;
+                    this.selectedEntities.length = 0;
                 }
             }
             else if (event.type === "up") {
@@ -112,19 +108,19 @@ export default class SelectionController extends ManipController
 
     onTrigger(event: IManipTriggerEvent)
     {
-        const selComps = this.selectedComponents;
-        for (let i = 0; i < selComps.length; ++i) {
-            let comp = selComps[i];
-            while(comp) {
-                const targets = comp.getComponents(ManipTarget);
-                for (let j = 0; j < targets.length; ++j) {
-                    if (targets[j].onTrigger(event)) {
+        const selectedEntities = this.selectedEntities;
+        for (let i = 0; i < selectedEntities.length; ++i) {
+            let entity = selectedEntities[i];
+            while(entity) {
+                const components = entity.getComponents(ManipTarget);
+                for (let j = 0; j < components.length; ++j) {
+                    if (components[j].onTrigger(event)) {
                         return true;
                     }
                 }
 
-                const hierarchy = comp.getComponent(Hierarchy);
-                comp = hierarchy ? hierarchy.parent : null;
+                const hierarchy = entity.getComponent(Hierarchy);
+                entity = hierarchy ? hierarchy.parent && hierarchy.parent.entity : null;
             }
         }
 
@@ -133,19 +129,19 @@ export default class SelectionController extends ManipController
 
     protected dispatchPointerEvent(event: IManipPointerEvent): boolean
     {
-        const selComps = this.selectedComponents;
-        for (let i = 0; i < selComps.length; ++i) {
-            let comp = selComps[i];
-            while(comp) {
-                const targets = comp.getComponents(ManipTarget);
-                for (let j = 0; j < targets.length; ++j) {
-                    if (targets[j].onPointer(event)) {
+        const selectedEntities = this.selectedEntities;
+        for (let i = 0; i < selectedEntities.length; ++i) {
+            let entity = selectedEntities[i];
+            while(entity) {
+                const components = entity.getComponents(ManipTarget);
+                for (let j = 0; j < components.length; ++j) {
+                    if (components[j].onPointer(event)) {
                         return true;
                     }
                 }
 
-                const hierarchy = comp.getComponent(Hierarchy);
-                comp = hierarchy ? hierarchy.parent : null;
+                const hierarchy = entity.getComponent(Hierarchy);
+                entity = hierarchy ? hierarchy.parent && hierarchy.parent.entity : null;
             }
         }
 

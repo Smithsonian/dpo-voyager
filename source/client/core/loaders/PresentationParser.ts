@@ -18,9 +18,7 @@
 import { Index } from "@ff/core/types";
 import HierarchyComponent from "@ff/core/ecs/Hierarchy";
 
-import PickerComponent from "../components/Picker";
 import MainCameraComponent from "../components/MainCamera";
-
 import SceneComponent from "../components/Scene";
 import DocumentsComponent from "../components/Documents";
 import GroupsComponent from "../components/Groups";
@@ -53,7 +51,6 @@ export default class PresentationParser
 
         const sceneComponent = entity.getOrCreateComponent(SceneComponent);
 
-        entity.getOrCreateComponent(PickerComponent);
         entity.getOrCreateComponent(MainCameraComponent);
 
         entity.getOrCreateComponent(DocumentsComponent);

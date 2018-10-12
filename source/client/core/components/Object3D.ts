@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import Component, { ComponentTracker } from "@ff/core/ecs/Component";
+import Component from "@ff/core/ecs/Component";
 
 import RenderContext from "../system/RenderContext";
 import Transform from "./Transform";
@@ -28,7 +28,7 @@ export default class Object3D extends Component
 {
     static readonly type: string = "Object3D";
 
-    protected transformTracker: ComponentTracker<Transform> = null;
+    protected transform: Transform = null;
     private _object: THREE.Object3D = null;
 
     get object3D(): THREE.Object3D | null
@@ -38,11 +38,8 @@ export default class Object3D extends Component
 
     set object3D(object: THREE.Object3D)
     {
-        const transformTracker = this.transformTracker;
-        const transformComponent = transformTracker && transformTracker.component;
-
-        if (this._object && transformComponent) {
-            transformComponent.removeObject3D(this._object);
+        if (this._object && this.transform) {
+            this.transform.removeObject3D(this._object);
         }
 
         this._object = object;
@@ -50,19 +47,21 @@ export default class Object3D extends Component
         if (object) {
             object.matrixAutoUpdate = false;
 
-            if (transformComponent) {
-                transformComponent.addObject3D(object);
+            if (this.transform) {
+                this.transform.addObject3D(object);
             }
         }
     }
 
     create(context: RenderContext)
     {
-        this.transformTracker = this.trackComponent(Transform, transform => {
+        this.trackComponent(Transform, transform => {
+            this.transform = transform;
             if (this._object) {
                 transform.addObject3D(this._object);
             }
         }, transform => {
+            this.transform = null;
             if (this._object) {
                 transform.removeObject3D(this._object);
             }
@@ -71,8 +70,8 @@ export default class Object3D extends Component
 
     dispose()
     {
-        if (this._object && this.transformTracker.component) {
-            this.transformTracker.component.removeObject3D(this._object);
+        if (this._object && this.transform) {
+            this.transform.removeObject3D(this._object);
         }
 
         super.dispose();

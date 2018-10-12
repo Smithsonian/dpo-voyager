@@ -69,7 +69,7 @@ export default class Snapshots extends Collection<ISnapshot>
 
     toData(): { data: ISnapshotData[], ids: Dictionary<number> }
     {
-        const snapshots = this.toArray();
+        const snapshots = this.getArray();
         const result = { data: [], ids: {} };
 
         snapshots.forEach((snapshot, index) => {

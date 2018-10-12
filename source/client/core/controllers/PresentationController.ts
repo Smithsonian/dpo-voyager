@@ -16,6 +16,7 @@
  */
 
 import resolvePathname from "resolve-pathname";
+import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
@@ -27,8 +28,8 @@ import PresentationParser from "../loaders/PresentationParser";
 import SceneComponent from "../components/Scene";
 import CameraComponent from "../components/Camera";
 import ModelComponent from "../components/Model";
-import SelectionControllerComponent from "../components/SelectionController";
-import OrbitControllerComponent from "../components/OrbitController";
+import PickManipComponent from "../components/PickManip";
+import OrbitManipComponent from "../components/OrbitManip";
 import ManipHandler from "../system/ManipHandler";
 
 import * as presentationTemplate from "../templates/presentation.json";
@@ -90,6 +91,24 @@ export default class PresentationController extends Controller<PresentationContr
         };
     }
 
+    startup()
+    {
+        const item = parseUrlParameter("item");
+        const presentation = parseUrlParameter("presentation");
+
+        if (item) {
+            this.loadItem(item, presentation);
+        }
+        else if (presentation) {
+            this.loadPresentation(presentation);
+        }
+    }
+
+    loadItem(itemUrl: string, templateUrl?: string)
+    {
+        // TODO: Implement
+    }
+
     loadPresentation(url: string)
     {
         const system = this.system;
@@ -135,19 +154,19 @@ export default class PresentationController extends Controller<PresentationContr
         const scene = system.getComponent(SceneComponent);
         const camera = system.getComponent(CameraComponent);
 
-        const selectionController = scene.createComponent(SelectionControllerComponent);
-        const orbitController = camera.createComponent(OrbitControllerComponent);
-        selectionController.next.component = orbitController;
+        const pickManip = scene.createComponent(PickManipComponent);
+        const orbitManip = camera.createComponent(OrbitManipComponent);
+        pickManip.next.component = orbitManip;
 
-        // attach lights to orbit rotation
+        // attach light group to orbit rotation
         const lights = system.findEntityByName("Lights");
         if (lights) {
             const transform = lights.getComponent(Transform);
             transform.in("Order").setValue(4);
-            transform.in("Rotation").linkFrom(orbitController.out("Inverse.Orbit"));
+            transform.in("Rotation").linkFrom(orbitManip.out("Inverse.Orbit"));
         }
 
-        this.handler.setManip(selectionController);
+        this.handler.setManip(pickManip);
     }
 
     protected onLoadingStart()

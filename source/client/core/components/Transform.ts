@@ -17,13 +17,15 @@
 
 import * as THREE from "three";
 
+import { Readonly } from "@ff/core/types";
 import math from "@ff/core/math";
+
 import types from "@ff/core/ecs/propertyTypes";
-import Entity from "@ff/core/ecs/Entity";
+import Component from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import { INode as ITransformData, Vector3, Vector4 } from "common/types/presentation";
-import { Readonly } from "@ff/core/types";
+import { PickableComponent, IPickable } from "./PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +53,7 @@ export default class Transform extends Hierarchy
     });
 
     private _object: THREE.Object3D;
+    private _pickables: PickableComponent[];
 
     constructor(id?: string)
     {
@@ -58,6 +61,19 @@ export default class Transform extends Hierarchy
 
         this._object = new THREE.Object3D();
         this._object.matrixAutoUpdate = false;
+
+        this._pickables = [];
+    }
+
+    create(context)
+    {
+        this.getComponents().forEach((component: PickableComponent) => {
+            if (component !== (this as Component) && component.onPointer && component.onTrigger) {
+                this._pickables.push(component);
+            }
+        });
+
+        super.create(context);
     }
 
     update()
@@ -169,6 +185,26 @@ export default class Transform extends Hierarchy
     removeObject3D(object: THREE.Object3D)
     {
         this._object.remove(object);
+    }
+
+    getPickableComponents(): Readonly<PickableComponent[]>
+    {
+        return this._pickables;
+    }
+
+    didAddComponent(component: PickableComponent)
+    {
+        if (component.onPointer && component.onTrigger) {
+            this._pickables.push(component);
+        }
+    }
+
+    willRemoveComponent(component: PickableComponent)
+    {
+        if (component.onPointer && component.onTrigger) {
+            const index = this._pickables.indexOf(component);
+            this._pickables.splice(index, 1);
+        }
     }
 
     fromData(data: ITransformData)

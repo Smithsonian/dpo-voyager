@@ -119,7 +119,7 @@ export default class Derivatives extends Collection<Derivative>
 
     toData(): IDerivativeData[]
     {
-        const derivatives = this.toArray();
+        const derivatives = this.getArray();
 
         return derivatives.map(derivative => ({
             usage: derivative.usage,

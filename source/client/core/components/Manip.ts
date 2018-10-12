@@ -27,18 +27,18 @@ import RenderContext from "../system/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IManipPointerEvent, IManipTriggerEvent };
+export { IManipPointerEvent, IManipTriggerEvent, IManipEventHandler };
 
-export default class ManipController extends Component implements IManipEventHandler
+export default class Manip extends Component implements IManipEventHandler
 {
     static readonly type: string = "ManipController";
 
-    next: ComponentLink<ManipController> = null;
+    next: ComponentLink<Manip> = null;
 
 
     create(context: RenderContext)
     {
-        this.next = new ComponentLink(this, ManipController);
+        this.next = new ComponentLink(this, Manip);
     }
 
     onPointer(event: IManipPointerEvent)

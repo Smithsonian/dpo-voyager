@@ -80,15 +80,17 @@ export default class SpotAnnotations extends Annotations<ISpotAnnotation>
         return super.toData(groupIds, docIds, snapIds) as ISpotAnnotationData[];
     }
 
-    protected inflateData(data: ISpotAnnotationData, spot: ISpotAnnotation)
+    protected inflateData(data: ISpotAnnotationData, annotation: ISpotAnnotation)
     {
-        spot.position = data.position;
-        spot.direction = data.direction;
+        annotation.position = data.position;
+        annotation.direction = data.direction;
+
+        this.addAnnotation(annotation);
     }
 
-    protected deflateData(spot: ISpotAnnotation, data: Partial<ISpotAnnotationData>)
+    protected deflateData(annotation: ISpotAnnotation, data: Partial<ISpotAnnotationData>)
     {
-        data.position = spot.position.slice() as Vector3;
-        data.direction = spot.direction.slice() as Vector3;
+        data.position = annotation.position.slice() as Vector3;
+        data.direction = annotation.direction.slice() as Vector3;
     }
 }

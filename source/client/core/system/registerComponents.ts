@@ -15,36 +15,36 @@
  * limitations under the License.
  */
 
-import HierarchyComponent from "@ff/core/ecs/Hierarchy";
+import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import PickerComponent from "../components/Picker";
-import MainCameraComponent from "../components/MainCamera";
-import ManipControllerComponent from "../components/ManipController";
-import SelectionControllerComponent from "../components/SelectionController";
-import OrbitControllerComponent from "../components/OrbitController";
+import PickManip from "../components/PickManip";
+import MainCamera from "../components/MainCamera";
+import Manip from "../components/Manip";
+import SelectionManip from "../components/SelectionManip";
+import OrbitManip from "../components/OrbitManip";
 
-import SceneComponent from "../components/Scene";
-import TransformComponent from "../components/Transform";
-import CameraComponent from "../components/Camera";
-import LightComponent from "../components/Light";
-import DirectionalLightComponent from "../components/DirectionalLight";
-import PointLightComponent from "../components/PointLight";
-import SpotLightComponent from "../components/SpotLight";
-import ReferenceComponent from "../components/Reference";
+import Scene from "../components/Scene";
+import Transform from "../components/Transform";
+import Camera from "../components/Camera";
+import Light from "../components/Light";
+import DirectionalLight from "../components/DirectionalLight";
+import PointLight from "../components/PointLight";
+import SpotLight from "../components/SpotLight";
+import Reference from "../components/Reference";
 
-import MetaComponent from "../components/Meta";
-import ProcessComponent from "../components/Process";
-import ModelComponent from "../components/Model";
-import DerivativesComponent from "../components/Derivatives";
-import DocumentsComponent from "../components/Documents";
-import GroupsComponent from "../components/Groups";
-import SpotAnnotationsComponent from "../components/SpotAnnotations";
-import ZoneAnnotationsComponent from "../components/ZoneAnnotations";
-import ToursComponent from "../components/Tours";
-import SnapshotsComponent from "../components/Snapshots";
+import Meta from "../components/Meta";
+import Process from "../components/Process";
+import Model from "../components/Model";
+import Derivatives from "../components/Derivatives";
+import Documents from "../components/Documents";
+import Groups from "../components/Groups";
+import SpotAnnotations from "../components/SpotAnnotations";
+import ZoneAnnotations from "../components/ZoneAnnotations";
+import Tours from "../components/Tours";
+import Snapshots from "../components/Snapshots";
 
-import RendererComponent from "../components/Renderer";
-import ReaderComponent from "../components/Reader";
+import Renderer from "../components/Renderer";
+import Reader from "../components/Reader";
 
 import Registry from "@ff/core/ecs/Registry";
 
@@ -53,31 +53,31 @@ import Registry from "@ff/core/ecs/Registry";
 export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
-        HierarchyComponent,
-        PickerComponent,
-        MainCameraComponent,
-        ManipControllerComponent,
-        SelectionControllerComponent,
-        OrbitControllerComponent,
-        SceneComponent,
-        TransformComponent,
-        CameraComponent,
-        LightComponent,
-        DirectionalLightComponent,
-        PointLightComponent,
-        SpotLightComponent,
-        ReferenceComponent,
-        MetaComponent,
-        ProcessComponent,
-        ModelComponent,
-        DerivativesComponent,
-        DocumentsComponent,
-        GroupsComponent,
-        SpotAnnotationsComponent,
-        ZoneAnnotationsComponent,
-        ToursComponent,
-        SnapshotsComponent,
-        RendererComponent,
-        ReaderComponent
+        Hierarchy,
+        PickManip,
+        MainCamera,
+        Manip,
+        SelectionManip,
+        OrbitManip,
+        Scene,
+        Transform,
+        Camera,
+        Light,
+        DirectionalLight,
+        PointLight,
+        SpotLight,
+        Reference,
+        Meta,
+        Process,
+        Model,
+        Derivatives,
+        Documents,
+        Groups,
+        SpotAnnotations,
+        ZoneAnnotations,
+        Tours,
+        Snapshots,
+        Renderer,
+        Reader
     ]);
 }

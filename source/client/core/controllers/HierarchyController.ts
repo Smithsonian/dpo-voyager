@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
+import { Dictionary } from "@ff/core/types";
 import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
+import System, { ISystemEntityEvent, ISystemComponentEvent } from "@ff/core/ecs/System";
 
 import RenderSystem from "../system/RenderSystem";
-import { Dictionary } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,8 +38,8 @@ export default class HierarchyController extends Controller<HierarchyController>
         this.addEvent("change");
 
         this.system = system;
-        this.system.on("component", this.onSystemChange, this);
-        this.system.on("entity", this.onSystemChange, this);
+        this.system.on("component", this.onComponent, this);
+        this.system.on("entity", this.onEntity, this);
 
         this.selected = {};
         this.expanded = {};
@@ -82,8 +83,21 @@ export default class HierarchyController extends Controller<HierarchyController>
         this.emit("change");
     }
 
-    protected onSystemChange()
+    protected onEntity(event: ISystemEntityEvent)
     {
+        if (event.add) {
+            this.expanded[event.entity.id] = true;
+        }
+
+        this.emit("change");
+    }
+
+    protected onComponent(event: ISystemComponentEvent)
+    {
+        if (event.add) {
+            this.expanded[event.component.id] = true;
+        }
+
         this.emit("change");
     }
 }

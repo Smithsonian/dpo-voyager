@@ -24,6 +24,7 @@ import DerivativesComponent from "../components/Derivatives";
 import DocumentsComponent from "../components/Documents";
 import GroupsComponent from "../components/Groups";
 import SpotAnnotationsComponent from "../components/SpotAnnotations";
+import SpotRendererComponent from "../components/SpotRenderer";
 import ZoneAnnotationsComponent from "../components/ZoneAnnotations";
 import ToursComponent from "../components/Tours";
 import SnapshotsComponent from "../components/Snapshots";
@@ -83,6 +84,7 @@ export default class ItemParser
             if (annotationsData.spots) {
                 entity.createComponent(SpotAnnotationsComponent)
                     .fromData(annotationsData.spots, groupIds, docIds, snapIds);
+                entity.createComponent(SpotRendererComponent);
             }
             if (annotationsData.zones) {
                 entity.createComponent(ZoneAnnotationsComponent)
