@@ -16,6 +16,19 @@
                 "description": {
                     "type": "string"
                 },
+                "position": {
+                    "description": "Position where the annotation is anchored, in local item coordinates.",
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "direction": {
+                    "description": "Direction of the stem of this annotation, usually corresponds to the surface normal.",
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "index": {
+                    "description": "Index of the zone on the zone texture.",
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "expanded": {
                     "description": "Flag indicating whether this annotation is displayed in expanded state.",
                     "type": "boolean",
@@ -42,56 +55,47 @@
                         "minimum": 0
                     }
                 }
-            }
+            },
+            "required": [
+                "title",
+                "position",
+                "direction"
+            ]
+        },
+        "group": {
+            "$id": "#group",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "title"
+            ]
         }
     },
 
     "type": "object",
     "properties": {
-        "spots": {
+        "annotations": {
             "type": "array",
             "items": {
-                "allOf": [
-                    {
-                        "$ref": "#annotation"
-                    }
-                ],
-                "properties": {
-                    "position": {
-                        "description": "Position where the annotation is anchored, in local item coordinates.",
-                        "$ref": "math.schema.json#/definitions/vector3"
-                    },
-                    "direction": {
-                        "description": "Direction of the stem of this annotation, usually corresponds to the surface normal.",
-                        "$ref": "math.schema.json#/definitions/vector3"
-                    }
-                }
+                "$ref": "#annotation"
             }
-        },
-        "zones": {
-            "type": "array",
-            "items": {
-                "allOf": [
-                    {
-                        "$ref": "#annotation"
-                    }
-                ],
-                "properties": {
-                    "index": {
-                        "description": "Index of the zone on the zone texture.",
-                        "type": "integer",
-                        "minimum": 0
-                    }
-                }
-            }
-
         },
         "groups": {
             "type": "array",
             "items": {
-
+                "$ref": "#group"
             }
-
         }
-    }
+    },
+    "required": [
+        "annotations"
+    ],
+    "additionalProperties": false
 }

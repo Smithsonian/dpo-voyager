@@ -21,8 +21,8 @@ import * as ReactDOM from "react-dom";
 import Commander from "@ff/core/Commander";
 
 import { registerComponents } from "../core/system/registerComponents";
+import PresentationSystem from "../core/system/PresentationSystem";
 import PresentationController from "../core/controllers/PresentationController";
-import RenderSystem from "../core/system/RenderSystem";
 import PresentationView from "../core/views/PresentationView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,21 +40,23 @@ export default class Application
 {
     readonly presentationController: PresentationController;
 
-    readonly system: RenderSystem;
+    readonly system: PresentationSystem;
     protected commander: Commander;
 
     constructor(props: IApplicationProps)
     {
-        this.system = new RenderSystem();
+        this.system = new PresentationSystem();
         registerComponents(this.system.registry);
 
         this.commander = new Commander();
         this.presentationController = new PresentationController(this.commander, this.system);
 
+        this.presentationController.startRendering();
         this.presentationController.startup();
 
         ReactDOM.render(
             <PresentationView
+                system={this.system}
                 controller={this.presentationController} />,
         props.element
     );

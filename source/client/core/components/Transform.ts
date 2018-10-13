@@ -25,7 +25,7 @@ import Component from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import { INode as ITransformData, Vector3, Vector4 } from "common/types/presentation";
-import { PickableComponent, IPickable } from "./PickManip";
+import { PickableComponent } from "./PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,15 +65,15 @@ export default class Transform extends Hierarchy
         this._pickables = [];
     }
 
-    create(context)
+    create()
     {
+        super.create();
+
         this.getComponents().forEach((component: PickableComponent) => {
             if (component !== (this as Component) && component.onPointer && component.onTrigger) {
                 this._pickables.push(component);
             }
         });
-
-        super.create(context);
     }
 
     update()
@@ -139,7 +139,7 @@ export default class Transform extends Hierarchy
     }
 
     /**
-     * Returns a reference to the local transform matrix.
+     * Returns a reference to the local transformation matrix.
      * @returns {Matrix4}
      */
     get matrix(): Readonly<THREE.Matrix4>
@@ -233,6 +233,7 @@ export default class Transform extends Hierarchy
             }
 
             ins.mat.changed = false;
+            this.update();
         }
     }
 

@@ -113,6 +113,7 @@ export default class MainView extends React.Component<IMainViewProps, {}>
             {
                 id: "explorer-view", factory: () =>
                     <PresentationView
+                        system={application.system}
                         controller={application.presentationController} />
             },
             {

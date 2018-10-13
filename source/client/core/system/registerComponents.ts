@@ -17,10 +17,10 @@
 
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import PickManip from "../components/PickManip";
+import ViewportLayout from "../components/ViewportLayout";
 import MainCamera from "../components/MainCamera";
 import Manip from "../components/Manip";
-import SelectionManip from "../components/SelectionManip";
+import PickManip from "../components/PickManip";
 import OrbitManip from "../components/OrbitManip";
 
 import Scene from "../components/Scene";
@@ -38,8 +38,8 @@ import Model from "../components/Model";
 import Derivatives from "../components/Derivatives";
 import Documents from "../components/Documents";
 import Groups from "../components/Groups";
-import SpotAnnotations from "../components/SpotAnnotations";
-import ZoneAnnotations from "../components/ZoneAnnotations";
+import Annotations from "../components/Annotations";
+import AnnotationsView from "../components/AnnotationsView";
 import Tours from "../components/Tours";
 import Snapshots from "../components/Snapshots";
 
@@ -54,10 +54,10 @@ export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
         Hierarchy,
-        PickManip,
+        ViewportLayout,
         MainCamera,
         Manip,
-        SelectionManip,
+        PickManip,
         OrbitManip,
         Scene,
         Transform,
@@ -73,8 +73,8 @@ export function registerComponents(registry: Registry)
         Derivatives,
         Documents,
         Groups,
-        SpotAnnotations,
-        ZoneAnnotations,
+        Annotations,
+        AnnotationsView,
         Tours,
         Snapshots,
         Renderer,

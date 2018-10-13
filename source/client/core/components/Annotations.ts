@@ -16,12 +16,21 @@
  */
 
 import { Dictionary } from "@ff/core/types";
+import { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
-import { IAnnotation as IAnnotationData } from "common/types/item";
+import { IAnnotation as IAnnotationData, Vector3 } from "common/types/item";
 
 import Collection from "./Collection";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export { Vector3 };
+
+export interface IAnnotationsChangeEvent extends IComponentChangeEvent<Annotations>
+{
+    what: "add" | "remove",
+    annotation: IAnnotation;
+}
 
 export interface IAnnotation
 {
@@ -32,11 +41,46 @@ export interface IAnnotation
     snapshot: string;
     documents: string[];
     groups: string[];
+    position: Vector3;
+    direction: Vector3;
+    index: number;
 }
 
-export default abstract class Annotations<T extends IAnnotation> extends Collection<T>
+export default class Annotations extends Collection<IAnnotation>
 {
     static readonly type: string = "Annotations";
+
+
+    createAnnotation(position: Vector3, direction: Vector3, index: number = -1): string
+    {
+        const annotation = {
+            title: "New Annotation",
+            description: "",
+            expanded: true,
+            snapshot: "",
+            documents: [],
+            groups: [],
+            position,
+            direction,
+            index
+        };
+
+        return this.addAnnotation(annotation);
+    }
+
+    addAnnotation(annotation: IAnnotation): string
+    {
+        const id = this.insert(annotation);
+        this.emit<IAnnotationsChangeEvent>("change", { what: "add", annotation });
+        return id;
+    }
+
+    removeAnnotation(id: string): IAnnotation
+    {
+        const annotation = this.remove(id);
+        this.emit<IAnnotationsChangeEvent>("change", { what: "remove", annotation });
+        return annotation;
+    }
 
     fromData(data: IAnnotationData[], groupIds: string[], docIds: string[], snapIds: string[])
     {
@@ -48,43 +92,46 @@ export default abstract class Annotations<T extends IAnnotation> extends Collect
                 snapshot: data.snapshot !== undefined ? snapIds[data.snapshot] : "",
                 documents: data.documents ? data.documents.map(index => docIds[index]) : [],
                 groups: data.groups ? data.groups.map(index => groupIds[index]) : [],
+                position: data.position,
+                direction: data.direction,
+                index: data.zoneIndex !== undefined ? data.zoneIndex : -1
             };
 
-            this.inflateData(data, annotation);
+            this.addAnnotation(annotation);
         });
     }
 
     toData(groupIds: Dictionary<number>, docIds: Dictionary<number>, snapIds: Dictionary<number>): IAnnotationData[]
     {
-        const spots = this.getArray();
+        const annotations = this.getArray();
 
-        return spots.map(spot => {
-            const spotData: IAnnotationData = {
-                title: spot.title
+        return annotations.map(annotation => {
+            const data: IAnnotationData = {
+                title: annotation.title,
+                position: annotation.position.slice(),
+                direction: annotation.direction.slice()
             };
 
-            this.deflateData(spot, spotData);
+            if (annotation.description) {
+                data.description = annotation.description;
+            }
+            if (annotation.expanded) {
+                data.expanded = annotation.expanded;
+            }
+            if (annotation.snapshot) {
+                data.snapshot = snapIds[annotation.snapshot];
+            }
+            if (annotation.documents.length > 0) {
+                data.documents = annotation.documents.map(id => docIds[id]);
+            }
+            if (annotation.groups.length > 0) {
+                data.groups = annotation.groups.map(id => groupIds[id]);
+            }
+            if (annotation.index > -1) {
+                data.zoneIndex = annotation.index;
+            }
 
-            if (spot.description) {
-                spotData.description = spot.description;
-            }
-            if (spot.expanded) {
-                spotData.expanded = spot.expanded;
-            }
-            if (spot.snapshot) {
-                spotData.snapshot = snapIds[spot.snapshot];
-            }
-            if (spot.documents.length > 0) {
-                spotData.documents = spot.documents.map(id => docIds[id]);
-            }
-            if (spot.groups.length > 0) {
-                spotData.groups = spot.groups.map(id => groupIds[id]);
-            }
-
-            return spotData;
+            return data;
         });
     }
-
-    protected abstract inflateData(data: IAnnotationData, annotation: IAnnotation);
-    protected abstract deflateData(annotation: IAnnotation, data: IAnnotationData);
 }

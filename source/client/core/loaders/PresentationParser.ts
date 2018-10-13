@@ -16,8 +16,11 @@
  */
 
 import { Index } from "@ff/core/types";
+import Entity from "@ff/core/ecs/Entity";
 import HierarchyComponent from "@ff/core/ecs/Hierarchy";
 
+import ViewportLayoutComponent from "../components/ViewportLayout";
+import PickManipComponent from "../components/PickManip";
 import MainCameraComponent from "../components/MainCamera";
 import SceneComponent from "../components/Scene";
 import DocumentsComponent from "../components/Documents";
@@ -35,37 +38,42 @@ import ReferenceComponent from "../components/Reference";
 import RendererComponent from "../components/Renderer";
 import ReaderComponent from "../components/Reader";
 
-import RenderSystem from "../system/RenderSystem";
+//import RenderSystem from "../system/RenderSystem";
 
 import { IPresentation, INode, IExplorer } from "common/types/presentation";
 
 import ItemParser from "./ItemParser";
+import OrbitManipComponent from "../components/OrbitManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class PresentationParser
 {
-    static inflate(system: RenderSystem, pres: IPresentation, merge: boolean = false)
+    static inflate(entity: Entity, pres: IPresentation, merge: boolean = false)
     {
-        const entity = system.findOrCreateEntity("Main");
-
-        const sceneComponent = entity.getOrCreateComponent(SceneComponent);
-
+        const scene = entity.getOrCreateComponent(SceneComponent);
+        entity.getOrCreateComponent(PickManipComponent);
         entity.getOrCreateComponent(MainCameraComponent);
 
         entity.getOrCreateComponent(DocumentsComponent);
         entity.getOrCreateComponent(GroupsComponent);
         entity.getOrCreateComponent(ToursComponent);
 
-        const skipCameras = merge && system.hasComponents(CameraComponent);
-        const skipLights = merge && system.hasComponents(LightComponent);
+        const skipCameras = merge && scene.hasComponentsInSubtree(CameraComponent);
+        const skipLights = merge && scene.hasComponentsInSubtree(LightComponent);
 
         // scene, nodes
         const nodes = pres.scene.nodes;
         nodes.forEach(nodeIndex => {
             const node = pres.nodes[nodeIndex];
-            PresentationParser.inflateNode(sceneComponent, node, pres, skipCameras, skipLights);
+            PresentationParser.inflateNode(scene, node, pres, skipCameras, skipLights);
         });
+
+        // attach an orbit manip to first camera
+        if (!skipCameras) {
+            const camera = scene.getComponentInSubtree(CameraComponent);
+            camera.createComponent(OrbitManipComponent);
+        }
 
         // explorer settings
         const explorer: IExplorer = pres.explorer || {};
@@ -138,7 +146,7 @@ export default class PresentationParser
         }
     }
 
-    static deflate(system: RenderSystem): IPresentation
+    static deflate(entity: Entity): IPresentation
     {
         const pres: Partial<IPresentation> = {};
 
@@ -153,8 +161,7 @@ export default class PresentationParser
         };
 
         // scene, nodes
-        const scene = system.getComponent(SceneComponent);
-        const mainEntity = scene.entity;
+        const scene = entity.getComponent(SceneComponent);
         const transforms = scene.children;
 
 
@@ -168,8 +175,8 @@ export default class PresentationParser
 
         // explorer settings
         pres.explorer = {
-            renderer: mainEntity.getComponent(RendererComponent).toData(),
-            reader: mainEntity.getComponent(ReaderComponent).toData()
+            renderer: entity.getComponent(RendererComponent).toData(),
+            reader: entity.getComponent(ReaderComponent).toData()
         };
 
         return pres as IPresentation;

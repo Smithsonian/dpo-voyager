@@ -18,11 +18,10 @@
 import * as THREE from "three";
 
 import types from "@ff/core/ecs/propertyTypes";
-import Object3D from "./Object3D";
 
 import { ICamera as ICameraData } from "common/types/presentation";
-import RenderContext from "../system/RenderContext";
-import { IViewportChangeEvent } from "../three/Viewport";
+
+import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,45 +39,30 @@ export default class Camera extends Object3D
         zf: types.Number("Frustum.Far", 10000)
     });
 
-    private _aspect: number = 1;
-
     get camera(): THREE.Camera
     {
         return this.object3D as THREE.Camera;
     }
 
-    create(context: RenderContext)
-    {
-        super.create(context);
-
-        const viewport = context.viewport;
-        viewport.on("change", this.onViewportChange, this);
-
-        this._aspect = viewport.width / viewport.height;
-    }
-
-    destroy(context: RenderContext)
-    {
-        context.viewport.off("change", this.onViewportChange, this);
-    }
-
     update()
     {
-        const aspect = this._aspect;
         const { pro, fov, siz, zn, zf } = this.ins;
 
+        const camera = this.camera;
+        const aspect = camera ? camera.userData["aspect"] : 1;
+        const hh = siz.value * 0.5;
+        const hw = hh * aspect;
+
         if (pro.changed) {
-            const hh = siz.value * 0.5;
-            const hw = hh * aspect;
             this.object3D = pro.value < 1
-                ? new THREE.PerspectiveCamera(fov.value, this._aspect, zn.value, zf.value)
+                ? new THREE.PerspectiveCamera(fov.value, aspect, zn.value, zf.value)
                 : new THREE.OrthographicCamera(-hw, hw, hh, -hh, zn.value, zf.value);
+
+            this.object3D.userData["aspect"] = aspect;
         }
         else {
-            const camera = this.camera;
             if (camera.type === "PerspectiveCamera") {
                 const perspCam = camera as THREE.PerspectiveCamera;
-                perspCam.aspect = aspect;
                 perspCam.fov = fov.value;
                 perspCam.near = zn.value;
                 perspCam.far = zf.value;
@@ -86,8 +70,6 @@ export default class Camera extends Object3D
             }
             else if (camera.type === "OrthographicCamera") {
                 const orthoCam = camera as THREE.OrthographicCamera;
-                const hh = siz.value * 0.5;
-                const hw = hh * aspect;
                 orthoCam.left = -hw;
                 orthoCam.right = hw;
                 orthoCam.top = hh;
@@ -142,11 +124,5 @@ export default class Camera extends Object3D
         }
 
         return data as ICameraData;
-    }
-
-    protected onViewportChange(event: IViewportChangeEvent)
-    {
-        this._aspect = event.sender.width / event.sender.height;
-        this.changed = true;
     }
 }

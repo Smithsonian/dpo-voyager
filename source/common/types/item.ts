@@ -153,13 +153,12 @@ export interface IDocument
  */
 export interface IAnnotations
 {
-    spots?: ISpotAnnotation[];
-    zones?: IZoneAnnotation[];
+    annotations: IAnnotation[];
     groups?: IGroup[];
 }
 
 /**
- * Connects annotated information to a specific spatial entity.
+ * Connects annotated information to a spatial location.
  * Annotation targets are specific locations (spots) or areas (zones) on an item.
  */
 export interface IAnnotation
@@ -170,24 +169,9 @@ export interface IAnnotation
     snapshot?: Index;
     documents?: Index[];
     groups?: Index[];
-}
-
-/**
- * Spot annotations are usually placed at specific locations on the surface of an item.
- * The direction can be used to orient balloons or steps for tooltips correctly.
- */
-export interface ISpotAnnotation extends IAnnotation
-{
     position: Vector3;
     direction: Vector3;
-}
-
-/**
- * Zone anchors require a zone texture to be present for the item.
- */
-export interface IZoneAnnotation extends IAnnotation
-{
-    index: number;
+    zoneIndex?: number;
 }
 
 /**

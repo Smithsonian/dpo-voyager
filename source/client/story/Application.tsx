@@ -22,8 +22,8 @@ import Commander from "@ff/core/Commander";
 import DockController from "@ff/react/DockController";
 
 import { registerComponents } from "../core/system/registerComponents";
+import PresentationSystem from "../core/system/PresentationSystem";
 import PresentationController from "../core/controllers/PresentationController";
-import RenderSystem from "../core/system/RenderSystem";
 
 //import MainView from "./MainView";
 
@@ -42,12 +42,12 @@ export default class Application
 {
     readonly dockableController: DockController;
     readonly presentationController: PresentationController;
-    readonly system: RenderSystem;
+    readonly system: PresentationSystem;
     protected commander: Commander;
 
     constructor(props: IApplicationProps)
     {
-        this.system = new RenderSystem();
+        this.system = new PresentationSystem();
         registerComponents(this.system.registry);
 
         this.commander = new Commander();

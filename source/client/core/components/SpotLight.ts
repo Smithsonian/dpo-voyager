@@ -42,9 +42,9 @@ export default class SpotLight extends Light
         return this.object3D as THREE.SpotLight;
     }
 
-    create(context)
+    create()
     {
-        super.create(context);
+        super.create();
 
         this.object3D = new THREE.SpotLight();
     }

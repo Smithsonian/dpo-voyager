@@ -16,12 +16,16 @@
  */
 
 import * as React from "react";
+import * as THREE from "three";
 
-import Canvas from "@ff/react/Canvas";
+import Container from "@ff/react/Container";
+import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget from "@ff/react/ManipTarget";
 
-import PresentationOverlay from "./PresentationOverlay";
+import PresentationSystem from "../system/PresentationSystem";
 import PresentationController from "../controllers/PresentationController";
+import PresentationOverlay from "./PresentationOverlay";
+import ViewportLayoutSplitter from "./ViewportLayoutSplitter";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +33,7 @@ import PresentationController from "../controllers/PresentationController";
 export interface IPresentationViewProps
 {
     className?: string;
+    system: PresentationSystem;
     controller: PresentationController;
 }
 
@@ -38,32 +43,92 @@ export default class PresentationView extends React.Component<IPresentationViewP
         className: "presentation-view"
     };
 
+    private _renderer: THREE.WebGLRenderer;
+    private _containerRef: React.RefObject<Container>;
+
+    constructor(props: IPresentationViewProps)
+    {
+        super(props);
+
+        this.onCanvas = this.onCanvas.bind(this);
+        this.onCanvasResize = this.onCanvasResize.bind(this);
+
+        this._renderer = null;
+        this._containerRef = React.createRef();
+    }
+
+    get container(): Container | null
+    {
+        return this._containerRef.current;
+    }
+
+    get renderer(): THREE.WebGLRenderer | null
+    {
+        return this._renderer;
+    }
+
+    componentDidMount()
+    {
+        this.props.controller.addView(this);
+    }
+
+    componentWillUnmount()
+    {
+        this.props.controller.removeView(this);
+    }
+
     render()
     {
         const {
             className,
+            system,
             controller
         } = this.props;
-
-        const {
-            actions,
-            system,
-            handler
-        } = controller;
 
         return (
             <ManipTarget
                 className={className}
-                handler={handler}>
+                handler={system}>
 
                 <Canvas
-                    onCanvas={e => system.setCanvas(e.canvas)}
-                    onResize={e => system.setViewportSize(e.width, e.height)} />
+                    onCanvas={this.onCanvas}
+                    onResize={this.onCanvasResize} />
+
+                <Container
+                    ref={this._containerRef} />
 
                 <PresentationOverlay
-                    actions={actions} />
+                    actions={controller.actions} />
+
+                <ViewportLayoutSplitter />
 
             </ManipTarget>
         );
+    }
+
+    protected onCanvas(event: ICanvasEvent)
+    {
+        if (this._renderer) {
+            this._renderer.dispose();
+            this._renderer = null;
+        }
+
+        if (event.canvas) {
+            this._renderer = new THREE.WebGLRenderer({
+                canvas: event.canvas,
+                antialias: true
+            });
+
+            this._renderer.autoClear = false;
+        }
+    }
+
+    protected onCanvasResize(event: ICanvasResizeEvent)
+    {
+        if (this._renderer) {
+            this._renderer.setSize(event.width, event.height, false);
+        }
+
+        this.props.controller.setCanvasSize(event.width, event.height);
     }
 }

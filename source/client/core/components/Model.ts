@@ -34,6 +34,7 @@ import Derivatives, { DerivativeQuality } from "./Derivatives";
 import Object3D from "./Object3D";
 import { orderOptions } from "./Transform";
 import Derivative from "../three/Derivative";
+import { IPickable, IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "./PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +44,7 @@ const _euler = new THREE.Euler();
 const _quat = new THREE.Quaternion();
 
 
-export default class Model extends Object3D
+export default class Model extends Object3D implements IPickable
 {
     static readonly type: string = "Model";
 
@@ -66,14 +67,11 @@ export default class Model extends Object3D
     protected currentModel: THREE.Object3D = null;
 
 
-    create(context)
+    create()
     {
-        super.create(context);
+        super.create();
 
         this.derivatives = this.trackComponent(Derivatives);
-        this.assetLoader = context.assetLoader;
-        this.assetPath = context.assetPath;
-
         this.object3D = new THREE.Group();
     }
 
@@ -119,6 +117,30 @@ export default class Model extends Object3D
         return sequence.reduce((promise, derivative) => {
             return promise.then(() => this.loadDerivative(derivative));
         }, Promise.resolve());
+    }
+
+    setAssetLoader(assetLoader: AssetLoader, assetPath: string)
+    {
+        this.assetLoader = assetLoader;
+        this.assetPath = assetPath;
+    }
+
+    onPointer(event: IViewportPointerEvent, pickInfo: IPickResult)
+    {
+        let object = pickInfo.object;
+        while(object && object.id !== this.currentModel.id) {
+            object = object.parent;
+        }
+
+        if (object) {
+        }
+
+        return false;
+    }
+
+    onTrigger(event: IViewportTriggerEvent, pickInfo: IPickResult)
+    {
+        return false;
     }
 
     protected loadDerivative(derivative: Derivative): Promise<void>

@@ -21,12 +21,11 @@ import math from "@ff/core/math";
 import types from "@ff/core/ecs/propertyTypes";
 import OrbitManipController from "@ff/react/OrbitManip";
 
-import { ComponentTracker } from "@ff/core/ecs/Component";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
 
-import Manip, { IManipPointerEvent, IManipTriggerEvent } from "./Manip";
-import TransformComponent from "./Transform";
-import RenderContext from "../system/RenderContext";
-import { IViewportChangeEvent } from "../three/Viewport";
+import Manip from "./Manip";
+import Transform from "./Transform";
+import Camera from "./Camera";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,28 +49,31 @@ export default class OrbitManip extends Manip
         ior: types.Vector3("Inverse.Orbit")
     });
 
-    protected viewportWidth = 100;
-    protected viewportHeight = 100;
-
+    protected transformComponent: Transform = null;
+    protected cameraComponent: Camera = null;
     protected manip = new OrbitManipController();
-    protected transformTracker: ComponentTracker<TransformComponent>;
 
+    protected canvasWidth: number = 100;
+    protected canvasHeight: number = 100;
 
-    create(context: RenderContext)
+    create()
     {
-        super.create(context);
+        super.create();
 
-        this.transformTracker = this.trackComponent(TransformComponent, transform => {
-            this.outs.linkTo("Matrix", transform.ins, "Matrix");
-            this.setFromMatrix(transform.matrix);
-        }, transform => {
-            this.outs.unlinkTo("Matrix", transform.ins, "Matrix");
+        this.trackComponent(Transform, component => {
+            this.transformComponent = component;
+            this.setFromMatrix(component.matrix);
+            this.outs.linkTo("Matrix", component.ins, "Matrix");
+        }, component => {
+            this.transformComponent = null;
+            this.outs.unlinkTo("Matrix", component.ins, "Matrix");
         });
 
-        const viewport = context.viewport;
-        this.viewportWidth = viewport.width;
-        this.viewportHeight = viewport.height;
-        viewport.on("change", this.onViewportChange, this);
+        this.trackComponent(Camera, component => {
+            this.cameraComponent = component;
+        }, component => {
+            this.cameraComponent = null;
+        });
     }
 
     update()
@@ -92,7 +94,7 @@ export default class OrbitManip extends Manip
 
     tick()
     {
-        if (!this.transformTracker.component) {
+        if (!this.transformComponent) {
             return;
         }
 
@@ -103,11 +105,11 @@ export default class OrbitManip extends Manip
             return;
         }
 
-        orb.value[0] += delta.dPitch * 500 / this.viewportWidth;
-        orb.value[1] += delta.dHead * 500 / this.viewportWidth;
+        orb.value[0] += delta.dPitch * 500 / this.canvasWidth;
+        orb.value[1] += delta.dHead * 500 / this.canvasWidth;
         const dist = ofs.value[2] = Math.max(ofs.value[2], 0.1) * delta.dScale;
-        ofs.value[0] -= delta.dX * dist / this.viewportWidth;
-        ofs.value[1] += delta.dY * dist / this.viewportWidth;
+        ofs.value[0] -= delta.dX * dist / this.canvasWidth;
+        ofs.value[1] += delta.dY * dist / this.canvasWidth;
 
         this.updateMatrix(orb.value, ofs.value, mat.value);
 
@@ -118,37 +120,41 @@ export default class OrbitManip extends Manip
         this.outs.pushAll();
     }
 
-    destroy(context: RenderContext)
+    onPointer(event: IViewportPointerEvent)
     {
-        context.viewport.off("change", this.onViewportChange, this);
-    }
+        const viewport = event.viewport;
+        const camera = this.cameraComponent && this.cameraComponent.camera;
 
-    onPointer(event: IManipPointerEvent)
-    {
-        const tracker = this.transformTracker;
+        if (viewport && camera && viewport.camera !== camera) {
+            return super.onPointer(event);
+        }
 
-        if (tracker && tracker.component && this.manip.onPointer(event)) {
+        if (viewport) {
+            this.canvasWidth = viewport.canvasWidth;
+            this.canvasHeight = viewport.canvasHeight;
+        }
+
+        if (this.transformComponent && this.manip.onPointer(event)) {
             return true;
         }
 
         return super.onPointer(event);
     }
 
-    onTrigger(event: IManipTriggerEvent)
+    onTrigger(event: IViewportTriggerEvent)
     {
-        const tracker = this.transformTracker;
+        const viewport = event.viewport;
+        const camera = this.cameraComponent && this.cameraComponent.camera;
 
-        if (tracker && tracker.component && this.manip.onTrigger(event)) {
+        if (viewport && camera && viewport.camera !== camera) {
+            return super.onTrigger(event);
+        }
+
+        if (this.transformComponent && this.manip.onTrigger(event)) {
             return true;
         }
 
         return super.onTrigger(event);
-    }
-
-    protected onViewportChange(event: IViewportChangeEvent)
-    {
-        this.viewportWidth = event.sender.width;
-        this.viewportHeight = event.sender.height;
     }
 
     protected setFromMatrix(matrix: THREE.Matrix4)

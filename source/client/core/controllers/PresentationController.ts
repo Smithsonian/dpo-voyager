@@ -20,56 +20,50 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
+import { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
-import RenderSystem from "../system/RenderSystem";
+import PresentationSystem from "../system/PresentationSystem";
 import PresentationLoader from "../loaders/PresentationLoader";
-import PresentationParser from "../loaders/PresentationParser";
-
-import SceneComponent from "../components/Scene";
-import CameraComponent from "../components/Camera";
-import ModelComponent from "../components/Model";
-import PickManipComponent from "../components/PickManip";
-import OrbitManipComponent from "../components/OrbitManip";
-import ManipHandler from "../system/ManipHandler";
-
-import * as presentationTemplate from "../templates/presentation.json";
-import { IPresentation } from "common/types/presentation";
-import Transform from "../components/Transform";
+import PresentationView from "../views/PresentationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export type RenderMode = "standard" | "clay" | "normals" | "wireframe" | "x-ray";
 export type ProjectionMode = "perspective" | "orthographic";
-export type ViewPreset = "none" | "top" | "left" | "front" | "right" | "back" | "bottom";
 
 export type PresentationActions = Actions<PresentationController>;
 
-export default class PresentationController extends Controller<PresentationController>
+export default class PresentationController extends Controller<PresentationController> implements IManipEventHandler
 {
     public readonly actions: PresentationActions;
-    public readonly system: RenderSystem;
-    public readonly handler: ManipHandler;
 
+    protected system: PresentationSystem;
+    protected views: PresentationView[];
     protected presentationLoader: PresentationLoader;
+    protected animHandler: number;
 
 
-    constructor(commander: Commander, system: RenderSystem)
+    constructor(commander: Commander, system: PresentationSystem)
     {
         super(commander);
 
         this.system = system;
-        this.handler = new ManipHandler(system);
-        this.presentationLoader = new PresentationLoader(system.loadingManager);
+        this.views = [];
 
+        const loadingManager = system.loadingManager;
+        this.presentationLoader = new PresentationLoader(loadingManager);
+        this.animHandler = 0;
+
+        this.onAnimationFrame = this.onAnimationFrame.bind(this);
         this.onLoadingStart = this.onLoadingStart.bind(this);
         this.onLoadingProgress = this.onLoadingProgress.bind(this);
         this.onLoadingCompleted = this.onLoadingCompleted.bind(this);
         this.onLoadingError = this.onLoadingError.bind(this);
 
-        system.loadingManager.onStart = this.onLoadingStart;
-        system.loadingManager.onProgress = this.onLoadingProgress;
-        system.loadingManager.onLoad = this.onLoadingCompleted;
-        system.loadingManager.onError = this.onLoadingError;
+        loadingManager.onStart = this.onLoadingStart;
+        loadingManager.onProgress = this.onLoadingProgress;
+        loadingManager.onLoad = this.onLoadingCompleted;
+        loadingManager.onError = this.onLoadingError;
     }
 
     createActions(commander: Commander)
@@ -89,6 +83,33 @@ export default class PresentationController extends Controller<PresentationContr
                 name: "Set View", do: this.setViewPreset, undo: this.setState, target: this
             })
         };
+    }
+
+    startRendering()
+    {
+        if (this.animHandler === 0) {
+            this.animHandler = window.requestAnimationFrame(this.onAnimationFrame);
+        }
+    }
+
+    stopRendering()
+    {
+        if (this.animHandler !== 0) {
+            window.cancelAnimationFrame(this.animHandler);
+            this.animHandler = 0;
+        }
+    }
+
+    renderFrame()
+    {
+        this.views.forEach(view => {
+            this.system.renderLayout(view.renderer, view.container);
+        });
+    }
+
+    setCanvasSize(width: number, height: number)
+    {
+        this.system.setCanvasSize(width, height);
     }
 
     startup()
@@ -112,18 +133,10 @@ export default class PresentationController extends Controller<PresentationContr
     loadPresentation(url: string)
     {
         const system = this.system;
-        this.system.context.assetPath = resolvePathname(".", url);
 
         this.presentationLoader.load(url)
             .then(presentationData => {
-                PresentationParser.inflate(system, presentationData);
-                PresentationParser.inflate(system, presentationTemplate as IPresentation, true);
-                return this.system.waitForUpdate();
-            })
-            .then(() => {
-                this.onPresentationReady();
-                const models = system.getComponents(ModelComponent);
-                models.forEach(model => model.load("medium"));
+                system.openPresentation(presentationData, resolvePathname(".", url));
             })
             .catch(error => {
                 console.warn("Failed to load presentation", error);
@@ -138,7 +151,7 @@ export default class PresentationController extends Controller<PresentationContr
     {
     }
 
-    setViewPreset(index: number, preset: ViewPreset)
+    setViewPreset(index: number, preset: string)
     {
     }
 
@@ -147,26 +160,33 @@ export default class PresentationController extends Controller<PresentationContr
 
     }
 
-    protected onPresentationReady()
+    addView(view: PresentationView)
     {
-        const system = this.system;
+        this.views.push(view);
+    }
 
-        const scene = system.getComponent(SceneComponent);
-        const camera = system.getComponent(CameraComponent);
-
-        const pickManip = scene.createComponent(PickManipComponent);
-        const orbitManip = camera.createComponent(OrbitManipComponent);
-        pickManip.next.component = orbitManip;
-
-        // attach light group to orbit rotation
-        const lights = system.findEntityByName("Lights");
-        if (lights) {
-            const transform = lights.getComponent(Transform);
-            transform.in("Order").setValue(4);
-            transform.in("Rotation").linkFrom(orbitManip.out("Inverse.Orbit"));
+    removeView(view: PresentationView)
+    {
+        const index = this.views.indexOf(view);
+        if (index >= 0) {
+            this.views.splice(index, 1);
         }
+    }
 
-        this.handler.setManip(pickManip);
+    onPointer(event: IManipPointerEvent)
+    {
+        return this.system.onPointer(event);
+    }
+
+    onTrigger(event: IManipTriggerEvent)
+    {
+        return this.system.onTrigger(event);
+    }
+
+    protected onAnimationFrame()
+    {
+        this.renderFrame();
+        this.animHandler = window.requestAnimationFrame(this.onAnimationFrame);
     }
 
     protected onLoadingStart()

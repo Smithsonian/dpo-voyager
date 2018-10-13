@@ -19,7 +19,6 @@ import * as THREE from "three";
 
 import Component from "@ff/core/ecs/Component";
 
-import RenderContext from "../system/RenderContext";
 import Transform from "./Transform";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +52,7 @@ export default class Object3D extends Component
         }
     }
 
-    create(context: RenderContext)
+    create()
     {
         this.trackComponent(Transform, transform => {
             this.transform = transform;

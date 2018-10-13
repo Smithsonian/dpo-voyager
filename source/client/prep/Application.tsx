@@ -22,7 +22,7 @@ import Commander from "@ff/core/Commander";
 import DockController from "@ff/react/DockController";
 
 import { registerComponents } from "../core/system/registerComponents";
-import RenderSystem from "../core/system/RenderSystem";
+import PresentationSystem from "../core/system/PresentationSystem";
 
 import PresentationController from "../core/controllers/PresentationController";
 import HierarchyController from "../core/controllers/HierarchyController";
@@ -46,12 +46,12 @@ export default class Application
     readonly presentationController: PresentationController;
     readonly hierarchyController: HierarchyController;
 
-    readonly system: RenderSystem;
+    readonly system: PresentationSystem;
     protected commander: Commander;
 
     constructor(props: IApplicationProps)
     {
-        this.system = new RenderSystem();
+        this.system = new PresentationSystem();
         registerComponents(this.system.registry);
 
         this.commander = new Commander();
@@ -60,6 +60,8 @@ export default class Application
         this.hierarchyController = new HierarchyController(this.commander, this.system);
 
         // assets/nmafa-68_23_53_textured_cm/nmafa-68_23_53_textured_cm.json
+
+        this.presentationController.startRendering();
         this.presentationController.startup();
 
         ReactDOM.render(

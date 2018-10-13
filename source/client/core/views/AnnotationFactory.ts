@@ -15,27 +15,15 @@
  * limitations under the License.
  */
 
-import Component from "@ff/core/ecs/Component";
-
-import {
-    IManipEventHandler,
-    IManipPointerEvent,
-    IManipTriggerEvent
-} from "@ff/react/ManipTarget";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ManipTarget extends Component implements IManipEventHandler
+
+
+export default class AnnotationFactory
 {
-    static readonly type: string = "ManipTarget";
-
-    onPointer(event: IManipPointerEvent)
+    constructor()
     {
-        return false;
-    }
 
-    onTrigger(event: IManipTriggerEvent)
-    {
-        return false;
     }
 }

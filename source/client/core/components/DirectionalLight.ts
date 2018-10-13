@@ -40,9 +40,9 @@ export default class DirectionalLight extends Light
         return this.object3D as THREE.DirectionalLight;
     }
 
-    create(context)
+    create()
     {
-        super.create(context);
+        super.create();
 
         this.object3D = new THREE.DirectionalLight();
     }

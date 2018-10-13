@@ -20,27 +20,24 @@ import * as THREE from "three";
 import { Dictionary, Partial } from "@ff/core/types";
 import Component, { ComponentTracker } from "@ff/core/ecs/Component";
 
-import { IViewportChangeEvent } from "../three/Viewport";
-import RenderContext from "../system/RenderContext";
-
-import Manip, { IManipPointerEvent, IManipTriggerEvent } from "./Manip";
+import Manip from "./Manip";
 import Transform from "./Transform";
 import Scene from "./Scene";
-import MainCamera from "./MainCamera";
 import { ISystemComponentEvent } from "@ff/core/ecs/System";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IManipPointerEvent, IManipTriggerEvent };
+export { IViewportPointerEvent, IViewportTriggerEvent };
 
-const _pickPos = new THREE.Vector2();
+const _vec2 = new THREE.Vector2();
 
 export type PickableComponent = Component & Partial<IPickable>;
 
 export interface IPickable
 {
-    onPointer: (event: IManipPointerEvent, pickInfo: IPickResult) => boolean;
-    onTrigger: (event: IManipTriggerEvent, pickInfo: IPickResult) => boolean;
+    onPointer: (event: IViewportPointerEvent, pickInfo: IPickResult) => boolean;
+    onTrigger: (event: IViewportTriggerEvent, pickInfo: IPickResult) => boolean;
 }
 
 export interface IPickResult
@@ -59,52 +56,40 @@ export default class PickManip extends Manip
     // transforms by their three.js object UUID
     protected transforms: Dictionary<Transform> = {};
     protected raycaster: THREE.Raycaster = new THREE.Raycaster();
-
     protected scene: ComponentTracker<Scene>;
-    protected mainCamera: ComponentTracker<MainCamera>;
-    protected viewportWidth: number = 0;
-    protected viewportHeight: number = 0;
 
     protected activePick: IPickResult = null;
     protected activeTarget: PickableComponent = null;
 
-    create(context: RenderContext)
+    create()
     {
-        super.create(context);
+        super.create();
 
         const transforms = this.getComponents(Transform, true);
         transforms.forEach(transform => this.transforms[transform.object3D.id] = transform);
-
         this.system.addComponentEventListener(Transform, this.onTransform, this);
 
         this.scene = this.trackComponent(Scene);
-        this.mainCamera = this.trackComponent(MainCamera);
-
-        const viewport = context.viewport;
-        this.viewportWidth = viewport.width;
-        this.viewportHeight = viewport.height;
-
-        viewport.on("change", this.onViewportChange, this);
     }
 
-    destroy(context: RenderContext)
+    destroy()
     {
         this.system.removeComponentEventListener(Transform, this.onTransform, this);
-        context.viewport.off("change", this.onViewportChange, this);
     }
 
-    onPointer(event: IManipPointerEvent)
+    onPointer(event: IViewportPointerEvent)
     {
         const activeTarget = this.activeTarget;
         const activePick = this.activePick;
 
-        if (event.isPrimary) {
-            if (event.type === "down") {
-                const rect = (event.originalEvent.currentTarget as HTMLElement).getBoundingClientRect();
-                const x = event.centerX - rect.left;
-                const y = event.centerY - rect.top;
+        const viewport = event.viewport;
+        const camera = viewport ? viewport.camera : null;
 
-                const pickResults = this.pick(x, y);
+        if (event.isPrimary) {
+            if (event.type === "down" && camera) {
+
+                const pickResults = this.pick(event.deviceX, event.deviceY, camera);
+
                 if (pickResults.length > 0) {
                     const activePick = this.activePick = pickResults[0];
                     const pickables = activePick.transform.getPickableComponents();
@@ -139,7 +124,7 @@ export default class PickManip extends Manip
         return super.onPointer(event);
     }
 
-    onTrigger(event: IManipTriggerEvent)
+    onTrigger(event: IViewportTriggerEvent)
     {
         const activeTarget = this.activeTarget;
         const activePick = this.activePick;
@@ -158,26 +143,23 @@ export default class PickManip extends Manip
         return super.onTrigger(event);
     }
 
-    protected pick(x: number, y: number): IPickResult[]
+    protected pick(deviceX: number, deviceY: number, camera: THREE.Camera): IPickResult[]
     {
         const scene = this.scene.component && this.scene.component.scene;
-        const camera = this.mainCamera.component && this.mainCamera.component.activeCamera;
 
-        const pickResults: IPickResult[] = [];
-
-        if (!scene || !camera) {
-            return pickResults;
+        if (!scene) {
+            return [];
         }
 
-        _pickPos.x = (x / this.viewportWidth) * 2 - 1;
-        _pickPos.y = 1 - (y / this.viewportHeight) * 2;
-
-        this.raycaster.setFromCamera(_pickPos, camera);
+        _vec2.set(deviceX, deviceY);
+        this.raycaster.setFromCamera(_vec2, camera);
         const intersects = this.raycaster.intersectObject(scene, true);
 
         if (intersects.length === 0) {
-            return pickResults;
+            return [];
         }
+
+        const pickResults: IPickResult[] = [];
 
         intersects.forEach(intersect => {
             //console.log("Picker.pick - pos", intersect.point.toArray(), "dir", intersect.face.normal.toArray());
@@ -222,11 +204,5 @@ export default class PickManip extends Manip
         else if (event.remove) {
             delete this.transforms[transform.object3D.id];
         }
-    }
-
-    protected onViewportChange(event: IViewportChangeEvent)
-    {
-        this.viewportWidth = event.sender.width;
-        this.viewportHeight = event.sender.height;
     }
 }

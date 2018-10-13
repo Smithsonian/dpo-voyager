@@ -18,9 +18,9 @@
 import { Dictionary } from "@ff/core/types";
 import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
-import System, { ISystemEntityEvent, ISystemComponentEvent } from "@ff/core/ecs/System";
+import { ISystemEntityEvent, ISystemComponentEvent } from "@ff/core/ecs/System";
 
-import RenderSystem from "../system/RenderSystem";
+import PresentationSystem from "../system/PresentationSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,11 +28,11 @@ export type HierarchyActions = Actions<HierarchyController>;
 
 export default class HierarchyController extends Controller<HierarchyController>
 {
-    public readonly system: RenderSystem;
+    public readonly system: PresentationSystem;
     public selected: Dictionary<boolean>;
     public expanded: Dictionary<boolean>;
 
-    constructor(commander: Commander, system: RenderSystem)
+    constructor(commander: Commander, system: PresentationSystem)
     {
         super(commander);
         this.addEvent("change");

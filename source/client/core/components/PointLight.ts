@@ -40,9 +40,9 @@ export default class PointLight extends Light
         return this.object3D as THREE.PointLight;
     }
 
-    create(context)
+    create()
     {
-        super.create(context);
+        super.create();
 
         this.object3D = new THREE.PointLight();
     }

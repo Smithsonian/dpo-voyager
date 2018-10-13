@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-import Component, { ComponentLink, Entity } from "@ff/core/ecs/Component";
+import Component, { ComponentLink } from "@ff/core/ecs/Component";
 
 import {
     IManipEventHandler,
     IManipPointerEvent,
     IManipTriggerEvent
 } from "@ff/react/ManipTarget";
-
-import RenderContext from "../system/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +34,7 @@ export default class Manip extends Component implements IManipEventHandler
     next: ComponentLink<Manip> = null;
 
 
-    create(context: RenderContext)
+    create()
     {
         this.next = new ComponentLink(this, Manip);
     }

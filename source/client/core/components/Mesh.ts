@@ -33,15 +33,15 @@ export default class MeshComponent extends Object3D
         mat: types.Object("Material", MaterialObject)
     });
 
-    create(context)
+    create()
     {
-        super.create(context);
+        super.create();
 
         this.object3D = new THREE.Mesh();
         this.object3D.matrixAutoUpdate = false;
     }
 
-    update(context)
+    update()
     {
         const { geo, mat } = this.ins;
 

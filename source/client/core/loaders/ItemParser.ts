@@ -23,9 +23,8 @@ import ModelComponent from "../components/Model";
 import DerivativesComponent from "../components/Derivatives";
 import DocumentsComponent from "../components/Documents";
 import GroupsComponent from "../components/Groups";
-import SpotAnnotationsComponent from "../components/SpotAnnotations";
-import SpotRendererComponent from "../components/SpotRenderer";
-import ZoneAnnotationsComponent from "../components/ZoneAnnotations";
+import AnnotationsComponent from "../components/Annotations";
+import AnnotationsViewComponent from "../components/AnnotationsView";
 import ToursComponent from "../components/Tours";
 import SnapshotsComponent from "../components/Snapshots";
 
@@ -81,15 +80,10 @@ export default class ItemParser
                 groupIds = entity.createComponent(GroupsComponent)
                     .fromData(annotationsData.groups);
             }
-            if (annotationsData.spots) {
-                entity.createComponent(SpotAnnotationsComponent)
-                    .fromData(annotationsData.spots, groupIds, docIds, snapIds);
-                entity.createComponent(SpotRendererComponent);
-            }
-            if (annotationsData.zones) {
-                entity.createComponent(ZoneAnnotationsComponent)
-                    .fromData(annotationsData.zones, groupIds, docIds, snapIds);
-            }
+
+            entity.createComponent(AnnotationsComponent)
+                .fromData(annotationsData.annotations, groupIds, docIds, snapIds);
+            entity.createComponent(AnnotationsViewComponent);
         }
     }
 
@@ -142,30 +136,24 @@ export default class ItemParser
         }
 
         const groupsComponent = entity.getComponent(GroupsComponent);
-        const spotComponent = entity.getComponent(SpotAnnotationsComponent);
-        const zoneComponent = entity.getComponent(ZoneAnnotationsComponent);
+        const annotationsComponent = entity.getComponent(AnnotationsComponent);
 
-        if (groupsComponent || spotComponent || zoneComponent) {
-            itemData.annotations = {};
+        if (groupsComponent || annotationsComponent) {
+            let groups = null;
 
             if (groupsComponent) {
                 const { data, ids } = groupsComponent.toData();
                 if (data.length > 0) {
-                    itemData.annotations.groups = data;
+                    groups = data;
                     groupIds = ids;
                 }
             }
-            if (spotComponent) {
-                const spots = spotComponent.toData(groupIds, docIds, snapIds);
-                if (spots.length > 0) {
-                    itemData.annotations.spots = spots;
-                }
-            }
-            if (zoneComponent) {
-                const zones = zoneComponent.toData(groupIds, docIds, snapIds);
-                if (zones.length > 0) {
-                    itemData.annotations.zones = zones;
-                }
+            const annotations = annotationsComponent.toData(groupIds, docIds, snapIds);
+            if (annotations.length > 0) {
+                itemData.annotations = {
+                    annotations,
+                    groups
+                };
             }
         }
 

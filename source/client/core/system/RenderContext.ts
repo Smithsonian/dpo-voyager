@@ -15,69 +15,19 @@
  * limitations under the License.
  */
 
-import { ISystemContext } from "@ff/core/ecs/System";
+import * as THREE from "three";
 
 import Viewport from "../three/Viewport";
-import AssetLoader from "../loaders/AssetLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class RenderContext implements ISystemContext
+export interface IRenderable
+{
+    render?: (context: RenderContext) => void;
+}
+
+export default class RenderContext
 {
     viewport: Viewport;
 
-    assetLoader: AssetLoader;
-    assetPath: string;
-
-    time: Date;
-    secondsElapsed: number;
-    secondsDelta: number;
-    frameNumber: number;
-
-    protected _secondsStarted: number;
-    protected _secondsStopped: number;
-
-    constructor()
-    {
-        this.viewport = null;
-        this.assetLoader = null;
-        this.assetPath = "";
-
-        this.reset();
-    }
-
-    start()
-    {
-        if (this._secondsStopped > 0) {
-            this._secondsStarted += (Date.now() * 0.001 - this._secondsStopped);
-            this._secondsStopped = 0;
-        }
-    }
-
-    stop()
-    {
-        if (this._secondsStopped === 0) {
-            this._secondsStopped = Date.now() * 0.001;
-        }
-    }
-
-    advance()
-    {
-        this.time = new Date();
-        const elapsed = this.time.valueOf() * 0.001 - this._secondsStarted;
-        this.secondsDelta = elapsed - this.secondsElapsed;
-        this.secondsElapsed = elapsed;
-        this.frameNumber++;
-    }
-
-    reset()
-    {
-        this.time = new Date();
-        this.secondsElapsed = 0;
-        this.secondsDelta = 0;
-        this.frameNumber = 0;
-
-        this._secondsStarted = Date.now() * 0.001;
-        this._secondsStopped = this._secondsStarted;
-    }
 }
