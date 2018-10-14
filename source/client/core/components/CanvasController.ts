@@ -17,25 +17,36 @@
 
 import * as THREE from "three";
 
+import { Partial } from "@ff/core/types";
+import { ComponentLink } from "@ff/core/ecs/Component";
 import types from "@ff/core/ecs/propertyTypes";
 
+import {
+    IManipEventHandler,
+    IManipPointerEvent,
+    IManipTriggerEvent
+} from "@ff/react/ManipTarget";
+
 import Viewport, { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
-import Manip  from "./Manip";
+import Manip from "./Manip";
+import Controller from "./Controller";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec2 = new THREE.Vector2();
 
-export default class ViewportLayout extends Manip
+export { IViewportPointerEvent, IViewportTriggerEvent };
+
+export default class CanvasController extends Controller implements IManipEventHandler
 {
-    static readonly type: string = "ViewportLayout";
+    static readonly type: string = "ViewportController";
 
     private static layout = [ "Single", "H-Split", "V-Split", "Quad" ];
     private static preset = [ "Left", "Right", "Top", "Bottom", "Front", "Back" ];
     private static camera = [ "Scene", "Preset" ];
 
     ins = this.makeProps({
-        lay: types.Enum("Layout", ViewportLayout.layout),
+        lay: types.Enum("Layout", CanvasController.layout, 3),
         hsp: types.Number("Split.Horizontal", { min: 0, max: 1, preset: 0.5 }),
         vsp: types.Number("Split.Vertical", { min: 0, max: 1, preset: 0.5 }),
     });
@@ -44,15 +55,14 @@ export default class ViewportLayout extends Manip
         cas: types.Vector2("Canvas.Size")
     });
 
-    private _viewports: Viewport[];
-    private _activeViewport: Viewport;
+    next: ComponentLink<Manip> = null;
 
-    constructor(id?: string)
+    private _viewports: Viewport[] = [];
+    private _activeViewport: Viewport = null;
+
+    create()
     {
-        super(id);
-
-        this._viewports = [];
-        this._activeViewport = null;
+        this.next = new ComponentLink(this, Manip);
     }
 
     update()
@@ -81,50 +91,73 @@ export default class ViewportLayout extends Manip
         this._viewports.forEach(viewport => viewport.setCanvasSize(width, height));
     }
 
-    onPointer(event: IViewportPointerEvent)
+    onPointer(event: IManipPointerEvent)
     {
-        const rect = (event.originalEvent.currentTarget as HTMLElement).getBoundingClientRect();
-        const x = event.centerX - rect.left;
-        const y = event.centerY - rect.top;
+        const vpEvent: Partial<IViewportPointerEvent> = event;
 
-        if (event.isPrimary && event.type === "down") {
+        const rect = (vpEvent.originalEvent.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = vpEvent.centerX - rect.left;
+        const y = vpEvent.centerY - rect.top;
+
+        if (vpEvent.isPrimary && vpEvent.type === "down") {
             this._activeViewport = this._viewports.find(viewport => viewport.isPointInside(x, y));
         }
 
-        const viewport = event.viewport = this._activeViewport;
+        const viewport = this._activeViewport;
+
         if (viewport) {
-            event.viewport.getDeviceCoords(x, y, _vec2);
-            event.deviceX = _vec2.x;
-            event.deviceY = _vec2.y;
+            viewport.getDeviceCoords(x, y, _vec2);
+            vpEvent.viewport = viewport;
+            vpEvent.deviceX = _vec2.x;
+            vpEvent.deviceY = _vec2.y;
+        }
+        else {
+            vpEvent.viewport = null;
+            vpEvent.deviceX = 0;
+            vpEvent.deviceY = 0;
         }
 
-        if (event.isPrimary && event.type === "up") {
+        if (vpEvent.isPrimary && vpEvent.type === "up") {
             this._activeViewport = null;
         }
 
-        return super.onPointer(event);
+        if (this.next.component) {
+            return this.next.component.onPointer(vpEvent as IViewportPointerEvent);
+        }
+
+        return false;
     }
 
-    onTrigger(event: IViewportTriggerEvent)
+    onTrigger(event: IManipTriggerEvent)
     {
-        const rect = (event.originalEvent.currentTarget as HTMLElement).getBoundingClientRect();
-        const x = event.centerX - rect.left;
-        const y = event.centerY - rect.top;
+        const vpEvent: Partial<IViewportTriggerEvent> = event;
+
+        const rect = (vpEvent.originalEvent.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = vpEvent.centerX - rect.left;
+        const y = vpEvent.centerY - rect.top;
 
         if (this._activeViewport) {
-            event.viewport = this._activeViewport;
+            vpEvent.viewport = this._activeViewport;
         }
         else {
-            event.viewport = this._viewports.find(viewport => viewport.isPointInside(x, y));
+            vpEvent.viewport = this._viewports.find(viewport => viewport.isPointInside(x, y)) || null;
         }
 
-        if (event.viewport) {
-            event.viewport.getDeviceCoords(x, y, _vec2);
-            event.deviceX = _vec2.x;
-            event.deviceY = _vec2.y;
+        if (vpEvent.viewport) {
+            vpEvent.viewport.getDeviceCoords(x, y, _vec2);
+            vpEvent.deviceX = _vec2.x;
+            vpEvent.deviceY = _vec2.y;
+        }
+        else {
+            vpEvent.deviceX = 0;
+            vpEvent.deviceY = 0;
         }
 
-        return super.onTrigger(event);
+        if (this.next.component) {
+            return this.next.component.onTrigger(vpEvent as IViewportTriggerEvent);
+        }
+
+        return false;
     }
 
     protected setSize(layout: number, h: number, v: number)

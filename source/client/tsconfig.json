@@ -11,7 +11,8 @@
             "common/*": [ "../common/*" ],
             "@ff/core/*": [ "../../libs/ff-core/source/*" ],
             "@ff/react/*": [ "../../libs/ff-react/source/*" ],
-            "@ff/browser/*": [ "../../libs/ff-browser/source/*" ]
+            "@ff/browser/*": [ "../../libs/ff-browser/source/*" ],
+            "@ff/three/*": [ "../../libs/ff-three/source/*" ]
         }
     }
 }

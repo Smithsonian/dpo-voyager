@@ -31,7 +31,7 @@ import MenuBar from "./MenuBar";
 import SideBar from "./SideBar";
 
 import Application from "./Application";
-import PresentationView from "../core/views/PresentationView";
+import VoyagerView from "../core/views/VoyagerView";
 import TestEditor from "./TestEditor";
 import HierarchyView from "../core/views/HierarchyView";
 
@@ -112,9 +112,9 @@ export default class MainView extends React.Component<IMainViewProps, {}>
             },
             {
                 id: "explorer-view", factory: () =>
-                    <PresentationView
-                        system={application.system}
-                        controller={application.presentationController} />
+                    <VoyagerView
+                        viewManager={application.viewManager}
+                        actions={application.presentationActions} />
             },
             {
                 id: "hierarchy-view", factory: () =>

@@ -7,3 +7,6 @@
 [submodule "libs/ff-browser"]
 	path = libs/ff-browser
 	url = https://github.com/framelab/ff-browser
+[submodule "libs/ff-three"]
+	path = libs/ff-three
+	url = https://github.com/framelab/ff-three

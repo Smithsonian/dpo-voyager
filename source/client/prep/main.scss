@@ -113,18 +113,3 @@ $menu-bar-size: 48px;
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// EXPLORER PANE
-
-.viewport-layout-splitter {
-  @include full-size;
-
-  .splitter-section.vertical {
-    background: rgba(0, 0, 255, 0.15);
-    border-bottom: 1px solid $color-background;
-  }
-  .splitter-section.horizontal {
-    background: rgba(0, 255, 0, 0.15);
-    border-right: 1px solid $color-background;
-  }
-}

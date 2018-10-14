@@ -16,16 +16,13 @@
  */
 
 import Component, { ComponentLink } from "@ff/core/ecs/Component";
+import { IManipEventHandler } from "@ff/react/ManipTarget";
 
-import {
-    IManipEventHandler,
-    IManipPointerEvent,
-    IManipTriggerEvent
-} from "@ff/react/ManipTarget";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IManipPointerEvent, IManipTriggerEvent, IManipEventHandler };
+export { IViewportPointerEvent, IViewportTriggerEvent };
 
 export default class Manip extends Component implements IManipEventHandler
 {
@@ -33,13 +30,12 @@ export default class Manip extends Component implements IManipEventHandler
 
     next: ComponentLink<Manip> = null;
 
-
     create()
     {
         this.next = new ComponentLink(this, Manip);
     }
 
-    onPointer(event: IManipPointerEvent)
+    onPointer(event: IViewportPointerEvent)
     {
         if (this.next.component) {
             return this.next.component.onPointer(event);
@@ -48,7 +44,7 @@ export default class Manip extends Component implements IManipEventHandler
         return false;
     }
 
-    onTrigger(event: IManipTriggerEvent)
+    onTrigger(event: IViewportTriggerEvent)
     {
         if (this.next.component) {
             return this.next.component.onTrigger(event);

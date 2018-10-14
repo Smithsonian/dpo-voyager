@@ -16,11 +16,11 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
 import { ISystemEntityEvent, ISystemComponentEvent } from "@ff/core/ecs/System";
 
-import PresentationSystem from "../system/PresentationSystem";
+import Controller, { Actions } from "./Controller";
+import { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,21 +28,31 @@ export type HierarchyActions = Actions<HierarchyController>;
 
 export default class HierarchyController extends Controller<HierarchyController>
 {
-    public readonly system: PresentationSystem;
-    public selected: Dictionary<boolean>;
-    public expanded: Dictionary<boolean>;
+    static readonly type: string = "HierarchyController";
 
-    constructor(commander: Commander, system: PresentationSystem)
+    public selected: Dictionary<boolean> = {};
+    public expanded: Dictionary<boolean> = {};
+
+
+    create()
     {
-        super(commander);
-        this.addEvent("change");
+        super.create();
 
-        this.system = system;
         this.system.on("component", this.onComponent, this);
         this.system.on("entity", this.onEntity, this);
+    }
 
-        this.selected = {};
-        this.expanded = {};
+    update()
+    {
+        this.emit<IComponentChangeEvent>("change", { what: "hierarchy" });
+    }
+
+    dispose()
+    {
+        this.system.off("component", this.onComponent, this);
+        this.system.off("entity", this.onEntity, this);
+
+        super.dispose();
     }
 
     createActions(commander: Commander)
@@ -57,16 +67,10 @@ export default class HierarchyController extends Controller<HierarchyController>
         }
     }
 
-    setExpanded(id: string, expanded: boolean)
-    {
-        this.expanded[id] = expanded;
-        this.emit("change");
-    }
-
     toggleExpanded(id: string)
     {
         this.expanded[id] = !this.expanded[id];
-        this.emit("change");
+        this.emit<IComponentChangeEvent>("change", { what: "view" });
     }
 
     setSelected(id: string, selected: boolean)
@@ -74,13 +78,7 @@ export default class HierarchyController extends Controller<HierarchyController>
         this.selected = {};
         this.selected[id] = selected;
 
-        this.emit("change");
-    }
-
-    toggleSelected(id: string)
-    {
-        this.selected[id] = !this.selected[id];
-        this.emit("change");
+        this.emit<IComponentChangeEvent>("change", { what: "selection" });
     }
 
     protected onEntity(event: ISystemEntityEvent)
@@ -89,7 +87,7 @@ export default class HierarchyController extends Controller<HierarchyController>
             this.expanded[event.entity.id] = true;
         }
 
-        this.emit("change");
+        this.changed = true;
     }
 
     protected onComponent(event: ISystemComponentEvent)
@@ -98,6 +96,6 @@ export default class HierarchyController extends Controller<HierarchyController>
             this.expanded[event.component.id] = true;
         }
 
-        this.emit("change");
+        this.changed = true;
     }
 }

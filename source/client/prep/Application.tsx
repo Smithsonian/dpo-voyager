@@ -18,51 +18,37 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Commander from "@ff/core/Commander";
 import DockController from "@ff/react/DockController";
 
-import { registerComponents } from "../core/system/registerComponents";
-import PresentationSystem from "../core/system/PresentationSystem";
 
-import PresentationController from "../core/controllers/PresentationController";
-import HierarchyController from "../core/controllers/HierarchyController";
+import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
+import HierarchyController from "../core/components/HierarchyController";
 
+import { registerComponents } from "./registerComponents";
 import MainView from "./MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/** Properties for [[Application]]. */
-export interface IApplicationProps
-{
-    element: HTMLElement;
-}
-
 /**
  * Voyager prep main application.
  */
-export default class Application
+export default class Application extends VoyagerApplication
 {
     readonly dockableController: DockController;
-    readonly presentationController: PresentationController;
     readonly hierarchyController: HierarchyController;
 
-    readonly system: PresentationSystem;
-    protected commander: Commander;
-
-    constructor(props: IApplicationProps)
+    constructor(props: IVoyagerApplicationProps)
     {
-        this.system = new PresentationSystem();
-        registerComponents(this.system.registry);
+        super(props);
+        registerComponents(this.registry);
 
-        this.commander = new Commander();
         this.dockableController = new DockController(this.commander);
-        this.presentationController = new PresentationController(this.commander, this.system);
-        this.hierarchyController = new HierarchyController(this.commander, this.system);
+        this.hierarchyController = this.main.createComponent(HierarchyController);
 
         // assets/nmafa-68_23_53_textured_cm/nmafa-68_23_53_textured_cm.json
 
-        this.presentationController.startRendering();
-        this.presentationController.startup();
+        this.start();
+        this.presentationController.loadFromLocationUrl();
 
         ReactDOM.render(
             <MainView

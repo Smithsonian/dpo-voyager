@@ -46,16 +46,16 @@ export type ViewportCameraSource = "scene" | "viewport";
 
 export interface IViewportPointerEvent extends IManipPointerEvent
 {
-    viewport?: Viewport;
-    deviceX?: number;
-    deviceY?: number;
+    viewport: Viewport | null;
+    deviceX: number;
+    deviceY: number;
 }
 
 export interface IViewportTriggerEvent extends IManipTriggerEvent
 {
-    viewport?: Viewport;
-    deviceX?: number;
-    deviceY?: number;
+    viewport: Viewport | null;
+    deviceX: number;
+    deviceY: number;
 }
 
 export default class Viewport

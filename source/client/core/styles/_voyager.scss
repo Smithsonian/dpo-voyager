@@ -186,6 +186,29 @@ html {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// EXPLORER PANE
+
+.quad-split-overlay {
+  @include full-size;
+  pointer-events: none;
+
+  .splitter-handle {
+    pointer-events: auto;
+  }
+
+  .splitter-section {
+    box-sizing: border-box;
+
+    &.vertical {
+      border-bottom: 1px solid $color-background;
+    }
+    &.horizontal {
+      border-right: 1px solid $color-background;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MENU BAR
 
 $bar-size: 48px;

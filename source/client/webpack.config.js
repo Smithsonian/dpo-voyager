@@ -57,7 +57,8 @@ module.exports = {
             "common": path.resolve(sourceDir, "common"),
             "@ff/core": path.resolve(libDir, "ff-core/source"),
             "@ff/react": path.resolve(libDir, "ff-react/source"),
-            "@ff/browser": path.resolve(libDir, "ff-browser/source")
+            "@ff/browser": path.resolve(libDir, "ff-browser/source"),
+            "@ff/three": path.resolve(libDir, "ff-three/source")
         },
         // Resolvable extensions
         extensions: [".ts", ".tsx", ".js", ".json"]

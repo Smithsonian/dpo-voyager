@@ -18,13 +18,28 @@
 import resolvePathname from "resolve-pathname";
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
-import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
-import { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
+import Entity from "@ff/core/ecs/Entity";
 
-import PresentationSystem from "../system/PresentationSystem";
+import { IPresentation } from "common/types/presentation";
+
+import CanvasController from "../components/CanvasController";
+import Transform from "../components/Transform";
+import Scene from "../components/Scene";
+import Camera from "../components/Camera";
+import Model from "../components/Model";
+import Manip from "../components/Manip";
+import PickManip from "../components/PickManip";
+import OrbitManip from "../components/OrbitManip";
+
+import AssetLoader from "../loaders/AssetLoader";
 import PresentationLoader from "../loaders/PresentationLoader";
-import PresentationView from "../views/PresentationView";
+import PresentationParser from "../loaders/PresentationParser";
+
+import * as presentationTemplate from "../templates/presentation.json";
+
+import Controller, { Actions } from "../components/Controller";
+import { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,37 +48,34 @@ export type ProjectionMode = "perspective" | "orthographic";
 
 export type PresentationActions = Actions<PresentationController>;
 
-export default class PresentationController extends Controller<PresentationController> implements IManipEventHandler
+export interface IPresentationChangeEvent extends IComponentChangeEvent<PresentationController>
 {
-    public readonly actions: PresentationActions;
+    what: "presentation";
+    presentation: IPresentationEntry;
+}
 
-    protected system: PresentationSystem;
-    protected views: PresentationView[];
-    protected presentationLoader: PresentationLoader;
-    protected animHandler: number;
+export interface IPresentationEntry
+{
+    entity: Entity;
+    sceneComponent: Scene;
+    cameraComponent: Camera;
+    manipComponent: Manip;
+}
 
+export default class PresentationController extends Controller<PresentationController>
+{
+    static readonly type: string = "PresentationController";
 
-    constructor(commander: Commander, system: PresentationSystem)
+    private presentations: IPresentationEntry[] = [];
+    private activePresentation: IPresentationEntry = null;
+
+    private presentationLoader: PresentationLoader = null;
+    private assetLoader: AssetLoader = null;
+
+    setLoadingManager(loadingManager: THREE.LoadingManager)
     {
-        super(commander);
-
-        this.system = system;
-        this.views = [];
-
-        const loadingManager = system.loadingManager;
         this.presentationLoader = new PresentationLoader(loadingManager);
-        this.animHandler = 0;
-
-        this.onAnimationFrame = this.onAnimationFrame.bind(this);
-        this.onLoadingStart = this.onLoadingStart.bind(this);
-        this.onLoadingProgress = this.onLoadingProgress.bind(this);
-        this.onLoadingCompleted = this.onLoadingCompleted.bind(this);
-        this.onLoadingError = this.onLoadingError.bind(this);
-
-        loadingManager.onStart = this.onLoadingStart;
-        loadingManager.onProgress = this.onLoadingProgress;
-        loadingManager.onLoad = this.onLoadingCompleted;
-        loadingManager.onError = this.onLoadingError;
+        this.assetLoader = new AssetLoader(loadingManager);
     }
 
     createActions(commander: Commander)
@@ -85,34 +97,18 @@ export default class PresentationController extends Controller<PresentationContr
         };
     }
 
-    startRendering()
+    getActivePresentation()
     {
-        if (this.animHandler === 0) {
-            this.animHandler = window.requestAnimationFrame(this.onAnimationFrame);
-        }
+        return this.activePresentation;
     }
 
-    stopRendering()
+    setActivePresentation(index: number)
     {
-        if (this.animHandler !== 0) {
-            window.cancelAnimationFrame(this.animHandler);
-            this.animHandler = 0;
-        }
+        const presentation = this.activePresentation = this.presentations[index];
+        this.emit<IPresentationChangeEvent>("change", { what: "presentation", presentation });
     }
 
-    renderFrame()
-    {
-        this.views.forEach(view => {
-            this.system.renderLayout(view.renderer, view.container);
-        });
-    }
-
-    setCanvasSize(width: number, height: number)
-    {
-        this.system.setCanvasSize(width, height);
-    }
-
-    startup()
+    loadFromLocationUrl()
     {
         const item = parseUrlParameter("item");
         const presentation = parseUrlParameter("presentation");
@@ -132,15 +128,57 @@ export default class PresentationController extends Controller<PresentationContr
 
     loadPresentation(url: string)
     {
-        const system = this.system;
-
         this.presentationLoader.load(url)
             .then(presentationData => {
-                system.openPresentation(presentationData, resolvePathname(".", url));
+                this.openPresentation(presentationData, resolvePathname(".", url));
             })
             .catch(error => {
                 console.warn("Failed to load presentation", error);
             });
+    }
+
+    openPresentation(data: IPresentation, assetPath: string)
+    {
+        const presentation = this.createEntity("Presentation");
+
+        return Promise.resolve().then(() => {
+            PresentationParser.inflate(presentation, data);
+            PresentationParser.inflate(presentation, presentationTemplate as IPresentation, true);
+            return this.system.waitForUpdate();
+
+        }).then(() => {
+            const sceneComponent = presentation.getComponent(Scene);
+            const cameraComponent = sceneComponent.getComponentInSubtree(Camera);
+            const manipComponent = presentation.getComponent(PickManip);
+
+            const orbitManip = sceneComponent.getComponentInSubtree(OrbitManip);
+            manipComponent.next.component = orbitManip;
+
+            // attach light group to orbit rotation
+            const lights = this.system.findEntityByName("Lights");
+            if (lights) {
+                const transform = lights.getComponent(Transform);
+                transform.in("Order").setValue(4);
+                transform.in("Rotation").linkFrom(orbitManip.out("Inverse.Orbit"));
+            }
+
+            // create entry for presentation
+            this.presentations.push({
+                entity: presentation,
+                sceneComponent,
+                cameraComponent,
+                manipComponent
+            });
+
+            this.setActivePresentation(this.presentations.length - 1);
+
+            // load models
+            const models = sceneComponent.getComponentsInSubtree(Model);
+            models.forEach(model => {
+                model.setAssetLoader(this.assetLoader, assetPath);
+                model.load("medium");
+            });
+        });
     }
 
     setRenderMode(renderMode: RenderMode)
@@ -158,54 +196,5 @@ export default class PresentationController extends Controller<PresentationContr
     setState(state)
     {
 
-    }
-
-    addView(view: PresentationView)
-    {
-        this.views.push(view);
-    }
-
-    removeView(view: PresentationView)
-    {
-        const index = this.views.indexOf(view);
-        if (index >= 0) {
-            this.views.splice(index, 1);
-        }
-    }
-
-    onPointer(event: IManipPointerEvent)
-    {
-        return this.system.onPointer(event);
-    }
-
-    onTrigger(event: IManipTriggerEvent)
-    {
-        return this.system.onTrigger(event);
-    }
-
-    protected onAnimationFrame()
-    {
-        this.renderFrame();
-        this.animHandler = window.requestAnimationFrame(this.onAnimationFrame);
-    }
-
-    protected onLoadingStart()
-    {
-        console.log("Loading files...");
-    }
-
-    protected onLoadingProgress(url, itemsLoaded, itemsTotal)
-    {
-        console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
-    }
-
-    protected onLoadingCompleted()
-    {
-        console.log("Loading completed");
-    }
-
-    protected onLoadingError()
-    {
-        console.error(`Loading error`);
     }
 }

@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
+import Registry from "@ff/core/ecs/Registry";
+
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import ViewportLayout from "../components/ViewportLayout";
+import CanvasController from "../components/CanvasController";
 import MainCamera from "../components/MainCamera";
 import Manip from "../components/Manip";
 import PickManip from "../components/PickManip";
@@ -46,15 +48,13 @@ import Snapshots from "../components/Snapshots";
 import Renderer from "../components/Renderer";
 import Reader from "../components/Reader";
 
-import Registry from "@ff/core/ecs/Registry";
-
 ////////////////////////////////////////////////////////////////////////////////
 
 export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
         Hierarchy,
-        ViewportLayout,
+        CanvasController,
         MainCamera,
         Manip,
         PickManip,
