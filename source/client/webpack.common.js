@@ -17,21 +17,20 @@
 
 "use strict";
 
-var path = require("path");
-var MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 //////////////////////////////////////////////////////////////////////////////// 
 
-var projectDir = path.resolve(__dirname, "../..");
-var sourceDir = path.resolve(projectDir, "source");
-var targetDir = path.resolve(projectDir, "services/server/static/app");
-var moduleDir = path.resolve(projectDir, "node_modules");
-var libDir = path.resolve(projectDir, "libs");
+const projectDir = path.resolve(__dirname, "../..");
+const sourceDir = path.resolve(projectDir, "source");
+const targetDir = path.resolve(projectDir, "services/server/static/app");
+const moduleDir = path.resolve(projectDir, "node_modules");
+const libDir = path.resolve(projectDir, "libs");
 
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = {
-    mode: "development",
 
     entry: {
         "voyager-explorer": path.resolve(sourceDir, "client/explorer/main.tsx"),
@@ -44,9 +43,6 @@ module.exports = {
         path: targetDir,
         filename: "js/[name].js"
     },
-
-    // Enable source maps for debugging webpack's output.
-    devtool: "source-map",
 
     resolve: {
         modules: [

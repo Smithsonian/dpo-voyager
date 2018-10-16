@@ -22,11 +22,7 @@ import { Router } from "express";
 
 import * as morgan from "morgan";
 import * as bodyParser from "body-parser";
-import * as cookieParser from "cookie-parser";
 import * as handlebars from "express-handlebars";
-import * as session from "express-session";
-
-import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,10 +36,6 @@ export interface IExpressServerConfiguration
     staticDir?: string;
     viewsDir?: string;
     defaultLayout?: string;
-    secret?: string;
-    sessionMaxAge?: number;
-    sessionSaveUninitialized?: boolean;
-    useCompression?: boolean;
 }
 
 export default class ExpressServer
@@ -53,8 +45,6 @@ export default class ExpressServer
         enableDevMode: false,
         enableLogging: false,
         staticRoute: "/static",
-        sessionMaxAge: 15 * 24 * 3600000, // 2 weeks
-        sessionSaveUninitialized: true
     };
 
     readonly config: IExpressServerConfiguration;
@@ -70,10 +60,27 @@ export default class ExpressServer
 
         this.server = new http.Server(this.app);
 
-        this.addLogging();
-        this.addStaticServer();
-        this.addParsing();
-        this.addTemplates();
+        if (this.config.enableLogging) {
+            this.app.use(morgan("tiny"));
+        }
+
+        // static file server
+        if (this.config.staticDir) {
+            this.app.use(this.config.staticRoute, express.static(this.config.staticDir));
+        }
+
+        // body parsing
+        this.app.use(bodyParser.json());
+        this.app.use(bodyParser.urlencoded({ extended: true }));
+
+        // setup handlebars templates
+        if (this.config.viewsDir) {
+            this.app.engine(".hbs", handlebars({
+                extname: ".hbs"
+            }));
+            this.app.set("view engine", ".hbs");
+            this.app.set("views", this.config.viewsDir);
+        }
     }
 
     use(baseRoute: string, router: { router: Router })
@@ -98,75 +105,6 @@ export default class ExpressServer
                 return resolve();
             });
         });
-    }
-
-    protected addLogging()
-    {
-        // logging middleware
-        if (this.config.enableDevMode) {
-            this.app.use(morgan("tiny"));
-        }
-    }
-
-    protected addStaticServer()
-    {
-        // serve static files
-        if (this.config.staticDir) {
-            this.app.use(this.config.staticRoute, express.static(this.config.staticDir));
-        }
-    }
-
-    protected addParsing()
-    {
-        const app = this.app;
-
-        // parse cookies
-        app.use(cookieParser(this.config.secret));
-
-        // parse json and urlencoded request bodies into req.body
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: true }));
-    }
-
-    protected addSessions()
-    {
-        const config = this.config;
-
-        if (!config.sessionMaxAge || !config.secret) {
-            console.warn("ExpressServer.setupSessions - sessions not enabled");
-            return;
-        }
-
-        const sessionOptions = {
-            name: "sessionId",
-            secret: config.secret,
-            genid: () => uniqueId(),
-            resave: false,
-            saveUninitialized: config.sessionSaveUninitialized,
-            cookie: {
-                maxAge: config.sessionMaxAge,
-                httpOnly: true
-            }
-        };
-
-        this.app.use(session(sessionOptions));
-    }
-
-    protected addTemplates()
-    {
-        // setup handlebars templates
-        const viewsDir = this.config.viewsDir;
-
-        if (viewsDir) {
-            const app = this.app;
-            app.engine(".hbs", handlebars({
-                extname: ".hbs",
-                layoutsDir: viewsDir + "/layouts",
-                defaultLayout: this.config.defaultLayout
-            }));
-            app.set("view engine", ".hbs");
-            app.set("views", viewsDir);
-        }
     }
 
     protected addErrorHandling()

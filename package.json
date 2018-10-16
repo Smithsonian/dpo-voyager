@@ -5,9 +5,9 @@
     "scripts": {
         "start": "npm run server",
         "server": "nodemon server/bin/index.js",
-        "watch": "concurrently \"cd source/client && webpack --watch\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+        "watch": "concurrently \"cd source/client && webpack --watch --config webpack.dev.js\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
         "build": "concurrently \"npm run build-server\" \"npm run build-client\"",
-        "build-client": "cd source/client && webpack && cd ../..",
+        "build-client": "cd source/client && webpack --config webpack.prod.js && cd ../..",
         "build-server": "tsc -b source/server",
         "build-libs": "tsc -b libs",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
@@ -76,6 +76,7 @@
         "typescript-json-schema": "^0.32.0",
         "uglify-js": "^3.4.9",
         "webpack": "^4.20.2",
-        "webpack-cli": "^3.1.2"
+        "webpack-cli": "^3.1.2",
+        "webpack-merge": "^4.1.4"
     }
 }

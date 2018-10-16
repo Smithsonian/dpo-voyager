@@ -9,7 +9,6 @@ services:
       dockerfile: Dockerfile
     env_file:
       - services/config.env
-#      - services/secrets.env
     ports: #host:container
       - "9050:8000"
     volumes:

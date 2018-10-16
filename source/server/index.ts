@@ -19,26 +19,15 @@ import * as sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
 
 import * as path from "path";
-process.env.NODE_PATH = path.resolve(__dirname, "../shared");
-require("module").Module._initPaths();
 
 import ExpressServer, { IExpressServerConfiguration } from "./ExpressServer";
 
-import { IPresentation } from "common/types/presentation";
-export interface ITest extends IPresentation {}
-
-import Color from "@ff/core/Color";
-const x = new Color();
-
 ////////////////////////////////////////////////////////////////////////////////
-// GLOBAL SETTINGS
+// CONFIGURATION
 
-const serverPort = parseInt(process.env["NODE_SERVER_PORT"]) || 8000;
+const port = parseInt(process.env["NODE_SERVER_PORT"]) || 8000;
 const devMode = process.env.NODE_ENV !== "production";
-
 const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
-const staticDir = path.resolve(rootDir, "static/");
-const viewsDir = path.resolve(rootDir, "views/");
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURE, START SERVER
@@ -51,22 +40,24 @@ console.log([
 ].join("\n"));
 
 const expressServerConfig: IExpressServerConfiguration = {
-    port: serverPort,
+    port,
     enableDevMode: devMode,
-    staticDir: staticDir,
+    enableLogging: devMode,
     staticRoute: "/",
-    viewsDir: viewsDir,
-    sessionMaxAge: 10 * 365 * 24 * 60 * 60 * 1000, // ten years
-    sessionSaveUninitialized: true,
-    secret: "7182eb7f4da44a619fc118b57df834ce"
+    staticDir: path.resolve(rootDir, "static/"),
+    viewsDir: path.resolve(rootDir, "views/"),
 };
 
 const expressServer = new ExpressServer(expressServerConfig);
 
+expressServer.app.get("/dev/:component", (req, res) => {
+    res.render("app", { component: req.params.component, devMode: true });
+});
+
 expressServer.app.get("/:component", (req, res) => {
-    res.render("pages/app", { component: req.params.component, devMode });
+    res.render("app", { component: req.params.component, devMode: false });
 });
 
 expressServer.start().then(() => {
-    console.info(`\nServer ready and listening on port ${serverPort}`);
+    console.info(`\nServer ready and listening on port ${port}`);
 });
