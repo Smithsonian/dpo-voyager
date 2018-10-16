@@ -18,11 +18,10 @@
 import * as THREE from "three";
 
 import { Dictionary, Partial } from "@ff/core/types";
-import Component, { ComponentTracker } from "@ff/core/ecs/Component";
+import Component, { ComponentTracker, IComponentEvent } from "@ff/core/ecs/Component";
 
 import Manip from "./Manip";
-import Transform from "./Transform";
-import Scene from "./Scene";
+import Object3D, { IObject3DObjectEvent } from "./Object3D";
 import { ISystemComponentEvent } from "@ff/core/ecs/System";
 import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
 
@@ -42,10 +41,15 @@ export interface IPickable
 
 export interface IPickResult
 {
-    transform: Transform;
+    component: Object3D;
     object: THREE.Object3D;
     point: THREE.Vector3;
     normal: THREE.Vector3;
+}
+
+export interface IPickManipPickEvent extends IComponentEvent<PickManip>, IPickResult
+{
+    pointerEvent: IViewportPointerEvent;
 }
 
 export default class PickManip extends Manip
@@ -54,106 +58,94 @@ export default class PickManip extends Manip
     static readonly isSystemSingleton: boolean = true;
 
     // transforms by their three.js object UUID
-    protected transforms: Dictionary<Transform> = {};
+    protected objectComponents: Dictionary<Object3D> = {};
     protected raycaster: THREE.Raycaster = new THREE.Raycaster();
-    protected scene: ComponentTracker<Scene>;
-
+    protected root: THREE.Object3D;
     protected activePick: IPickResult = null;
-    protected activeTarget: PickableComponent = null;
+
+    constructor(id?: string)
+    {
+        super(id);
+        this.addEvent("pick");
+    }
 
     create()
     {
         super.create();
 
-        const transforms = this.getComponents(Transform, true);
-        transforms.forEach(transform => this.transforms[transform.object3D.id] = transform);
-        this.system.addComponentEventListener(Transform, this.onTransform, this);
+        const components = this.getComponents(Object3D, true);
 
-        this.scene = this.trackComponent(Scene);
+        components.forEach(component => {
+            component.on("object", this.onObject3DObject, this);
+            if (component.object3D) {
+                this.objectComponents[component.object3D.id] = component;
+            }
+        });
+
+        this.system.addComponentEventListener(Object3D, this.onObject3D, this);
     }
 
-    destroy()
+    dispose()
     {
-        this.system.removeComponentEventListener(Transform, this.onTransform, this);
+        const components = this.getComponents(Object3D, true);
+        components.forEach(component => {
+            component.off("object", this.onObject3DObject, this);
+        });
+
+        this.system.removeComponentEventListener(Object3D, this.onObject3D, this);
+
+        super.dispose();
+    }
+
+    setRoot(root: THREE.Object3D)
+    {
+        this.root = root;
     }
 
     onPointer(event: IViewportPointerEvent)
     {
-        const activeTarget = this.activeTarget;
-        const activePick = this.activePick;
-
         const viewport = event.viewport;
         const camera = viewport ? viewport.camera : null;
 
-        if (event.isPrimary) {
-            if (event.type === "down" && camera) {
+        if (camera && event.isPrimary) {
 
+            if (event.type === "down") {
                 const pickResults = this.pick(event.deviceX, event.deviceY, camera);
+                const pick = this.activePick = pickResults[0];
 
-                if (pickResults.length > 0) {
-                    const activePick = this.activePick = pickResults[0];
-                    const pickables = activePick.transform.getPickableComponents();
-                    for (let i = 0, n = pickables.length; i < n; ++i) {
-                        const pickable = pickables[i];
-                        if (pickable.onPointer(event, activePick)) {
-                            this.activeTarget = pickable;
-                            return true;
-                        }
-                    }
-                }
-
-                return super.onPointer(event);
+                this.emit<IPickManipPickEvent>("pick", {
+                    pointerEvent: event,
+                    component: pick ? pick.component : null,
+                    object: pick ? pick.object : null,
+                    point: pick ? pick.point : null,
+                    normal: pick ? pick.normal : null
+                });
             }
             else if (event.type === "up") {
-                this.activeTarget = null;
-                this.activePick = null;
-            }
-        }
 
-        if (activeTarget) {
-            return activeTarget.onPointer(event, activePick);
-        }
-
-        if (activePick) {
-            const pickables = activePick.transform.getPickableComponents();
-            for (let i = 0, n = pickables.length; i < n; ++i) {
-                pickables[i].onPointer(event, activePick);
+                const pick = this.activePick;
+                this.emit<IPickManipPickEvent>("pick", {
+                    pointerEvent: event,
+                    component: pick ? pick.component : null,
+                    object: pick ? pick.object : null,
+                    point: pick ? pick.point : null,
+                    normal: pick ? pick.normal : null
+                });
             }
         }
 
         return super.onPointer(event);
     }
 
-    onTrigger(event: IViewportTriggerEvent)
+     protected pick(deviceX: number, deviceY: number, camera: THREE.Camera): IPickResult[]
     {
-        const activeTarget = this.activeTarget;
-        const activePick = this.activePick;
-
-        if (activeTarget) {
-            return activeTarget.onTrigger(event, activePick);
-        }
-
-        if (activePick) {
-            const pickables = activePick.transform.getPickableComponents();
-            for (let i = 0, n = pickables.length; i < n; ++i) {
-                pickables[i].onTrigger(event, activePick);
-            }
-        }
-
-        return super.onTrigger(event);
-    }
-
-    protected pick(deviceX: number, deviceY: number, camera: THREE.Camera): IPickResult[]
-    {
-        const scene = this.scene.component && this.scene.component.scene;
-
-        if (!scene) {
+        if (!this.root) {
             return [];
         }
 
         _vec2.set(deviceX, deviceY);
         this.raycaster.setFromCamera(_vec2, camera);
-        const intersects = this.raycaster.intersectObject(scene, true);
+        const intersects = this.raycaster.intersectObject(this.root, true);
 
         if (intersects.length === 0) {
             return [];
@@ -164,16 +156,16 @@ export default class PickManip extends Manip
         intersects.forEach(intersect => {
             //console.log("Picker.pick - pos", intersect.point.toArray(), "dir", intersect.face.normal.toArray());
 
-            let transform = undefined;
+            let component = undefined;
             let object = intersect.object;
 
-            while(object && (transform = this.transforms[object.id]) === undefined) {
-                object = object === scene ? null : object.parent;
+            while(object && (component = this.objectComponents[object.id]) === undefined) {
+                object = object === this.root ? null : object.parent;
             }
 
-            if (transform) {
+            if (component) {
                 pickResults.push({
-                    transform,
+                    component,
                     object: intersect.object,
                     point: intersect.point,
                     normal: intersect.face.normal
@@ -190,19 +182,33 @@ export default class PickManip extends Manip
      */
     toString()
     {
-        const count = Object.keys(this.transforms).length;
+        const count = Object.keys(this.objectComponents).length;
         return super.toString() + ` - pickable components: ${count}`;
     }
 
-    protected onTransform(event: ISystemComponentEvent<Transform>)
+    protected onObject3D(event: ISystemComponentEvent<Object3D>)
     {
-        const transform = event.component;
+        const component = event.component;
 
         if (event.add) {
-            this.transforms[transform.object3D.id] = transform;
+            component.on("object", this.onObject3DObject, this);
+            if (component.object3D) {
+                this.objectComponents[component.object3D.id] = component;
+            }
         }
         else if (event.remove) {
-            delete this.transforms[transform.object3D.id];
+            component.off("object", this.onObject3DObject, this);
+            delete this.objectComponents[component.object3D.id];
+        }
+    }
+
+    protected onObject3DObject(event: IObject3DObjectEvent)
+    {
+        if (event.current) {
+            delete this.objectComponents[event.current.id];
+        }
+        if (event.next) {
+            this.objectComponents[event.next.id] = event.sender;
         }
     }
 }

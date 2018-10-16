@@ -18,7 +18,7 @@
 import * as THREE from "three";
 
 import { IManipEvent, IManipListener } from "@ff/react/Manip.old";
-import math from "@ff/core/math";
+import _math from "@ff/core/math";
 
 type Mode = "off" | "pan" | "orbit" | "dolly" | "zoom" | "pan-dolly" | "roll";
 type Phase = "off" | "active" | "runout";
@@ -68,8 +68,8 @@ export default class OrbitController implements IManipListener
 
         this.mode = "off";
         this.phase = "off";
-        this.viewportWidth = 1;
-        this.viewportHeight = 1;
+        this.canvasWidth = 1;
+        this.canvasHeight = 1;
 
         this.deltaX = 0;
         this.deltaY = 0;
@@ -203,14 +203,14 @@ export default class OrbitController implements IManipListener
         _offset.applyQuaternion(this.rotToYUp);
         _spherical.setFromVector3(_offset);
 
-        _spherical.theta -= dHead * math.DOUBLE_PI / viewportWidth;
-        _spherical.phi -= dPitch * math.DOUBLE_PI / viewportWidth;
-        _spherical.phi = math.limit(_spherical.phi, 0, math.PI);
+        _spherical.theta -= dHead * _math.DOUBLE_PI / viewportWidth;
+        _spherical.phi -= dPitch * _math.DOUBLE_PI / viewportWidth;
+        _spherical.phi = _math.limit(_spherical.phi, 0, _math.PI);
         _spherical.makeSafe();
 
-        _spherical.radius = math.limit(_spherical.radius * dScale, this.distanceLimits.x, this.distanceLimits.y);
+        _spherical.radius = _math.limit(_spherical.radius * dScale, this.distanceLimits.x, this.distanceLimits.y);
 
-        const distance = _offset.length() * Math.tan((camera.fov / 2) * math.DEG2RAD);
+        const distance = _offset.length() * Math.tan((camera.fov / 2) * _math.DEG2RAD);
 
         _vec.setFromMatrixColumn(camera.matrix, 0);
         _vec.multiplyScalar(-2 * dX * distance / viewportHeight);
@@ -230,8 +230,8 @@ export default class OrbitController implements IManipListener
     onManipBegin(event: IManipEvent)
     {
         const element = event.target as HTMLElement;
-        this.viewportWidth = element.clientWidth;
-        this.viewportHeight = element.clientHeight;
+        this.canvasWidth = element.clientWidth;
+        this.canvasHeight = element.clientHeight;
 
         this.mode = this.getModeFromEvent(event);
         this.phase = "active";
@@ -269,7 +269,7 @@ export default class OrbitController implements IManipListener
     onManipEvent(event: IManipEvent)
     {
         if (event.type === "wheel") {
-            this.deltaWheel += math.limit(event.wheel, -1, 1);
+            this.deltaWheel += _math.limit(event.wheel, -1, 1);
         }
 
         return true;

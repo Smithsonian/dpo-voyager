@@ -19,7 +19,7 @@ import Registry from "@ff/core/ecs/Registry";
 
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import CanvasController from "../components/CanvasController";
+import ViewportController from "../components/ViewportController";
 import MainCamera from "../components/MainCamera";
 import Manip from "../components/Manip";
 import PickManip from "../components/PickManip";
@@ -54,7 +54,7 @@ export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
         Hierarchy,
-        CanvasController,
+        ViewportController,
         MainCamera,
         Manip,
         PickManip,

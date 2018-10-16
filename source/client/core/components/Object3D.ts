@@ -17,11 +17,17 @@
 
 import * as THREE from "three";
 
-import Component from "@ff/core/ecs/Component";
+import Component, { IComponentEvent } from "@ff/core/ecs/Component";
 
 import Transform from "./Transform";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export interface IObject3DObjectEvent extends IComponentEvent<Object3D>
+{
+    current: THREE.Object3D;
+    next: THREE.Object3D;
+}
 
 export default class Object3D extends Component
 {
@@ -29,6 +35,12 @@ export default class Object3D extends Component
 
     protected transform: Transform = null;
     private _object: THREE.Object3D = null;
+
+    constructor(id?: string)
+    {
+        super(id);
+        this.addEvent("object");
+    }
 
     get object3D(): THREE.Object3D | null
     {
@@ -41,6 +53,7 @@ export default class Object3D extends Component
             this.transform.removeObject3D(this._object);
         }
 
+        this.emit<IObject3DObjectEvent>("object", { current: this._object, next: object });
         this._object = object;
 
         if (object) {

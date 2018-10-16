@@ -20,7 +20,7 @@ import * as React from "react";
 import FlexContainer from "@ff/react/FlexContainer";
 import FlexItem from "@ff/react/FlexItem";
 
-import HierarchyController from "../controllers/HierarchyController";
+import SelectionController from "../components/SelectionController";
 import HierarchyTreeView from "./HierarchyTreeView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ import HierarchyTreeView from "./HierarchyTreeView";
 export interface IHierarchyViewProps
 {
     className?: string;
-    controller: HierarchyController;
+    controller: SelectionController;
 }
 
 export default class HierarchyView extends React.Component<IHierarchyViewProps, {}>

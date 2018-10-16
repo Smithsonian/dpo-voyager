@@ -33,6 +33,8 @@ export default class MainCamera extends Component
 
     create()
     {
+        super.create();
+
         this.system.getComponents(CameraComponent).forEach(
             cameraComponent => this.cameras[cameraComponent.id] = cameraComponent
         );
@@ -43,9 +45,11 @@ export default class MainCamera extends Component
         this.system.addComponentEventListener(CameraComponent, this.onCamera, this);
     }
 
-    destroy()
+    dispose()
     {
         this.system.removeComponentEventListener(CameraComponent, this.onCamera, this);
+
+        super.dispose();
     }
 
     get activeCameraComponent(): CameraComponent | null

@@ -18,41 +18,23 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Commander from "@ff/core/Commander";
-import DockController from "@ff/react/DockController";
-
-import { registerComponents } from "../core/system/registerComponents";
-import VoyagerSystem from "../core/system/PresentationSystem";
-import PresentationController from "../core/controllers/PresentationController";
-
 //import MainView from "./MainView";
 
-////////////////////////////////////////////////////////////////////////////////
+import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
 
-/** Properties for [[Application]]. */
-export interface IApplicationProps
-{
-    element: HTMLElement;
-}
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Voyager story main application
  */
-export default class Application
+export default class Application extends VoyagerApplication
 {
-    readonly dockableController: DockController;
-    readonly presentationController: PresentationController;
-    readonly system: VoyagerSystem;
-    protected commander: Commander;
-
-    constructor(props: IApplicationProps)
+    constructor(props: IVoyagerApplicationProps)
     {
-        this.system = new VoyagerSystem();
-        registerComponents(this.system.registry);
+        super(props);
 
-        this.commander = new Commander();
-        this.dockableController = new DockController(this.commander);
-        this.presentationController = new PresentationController(this.commander, this.system);
+        this.start();
+        this.presentationController.loadFromLocationUrl();
 
         ReactDOM.render(
             <div>

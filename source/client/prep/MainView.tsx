@@ -114,12 +114,12 @@ export default class MainView extends React.Component<IMainViewProps, {}>
                 id: "explorer-view", factory: () =>
                     <VoyagerView
                         viewManager={application.viewManager}
-                        actions={application.presentationActions} />
+                        actions={application.presentationController.actions} />
             },
             {
                 id: "hierarchy-view", factory: () =>
                     <HierarchyView
-                        controller={application.hierarchyController}/>
+                        controller={application.selectionController}/>
             }
         ]);
     }

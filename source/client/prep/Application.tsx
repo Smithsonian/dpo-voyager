@@ -21,11 +21,15 @@ import * as ReactDOM from "react-dom";
 import DockController from "@ff/react/DockController";
 
 
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
-import HierarchyController from "../core/components/HierarchyController";
+import { IPresentationChangeEvent } from "../core/components/PresentationController";
+import SelectionController from "../core/components/SelectionController";
+import ViewportManip from "../core/components/ViewportManip";
+import TransformManip from "../core/components/TransformManip";
 
 import { registerComponents } from "./registerComponents";
 import MainView from "./MainView";
+
+import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +39,10 @@ import MainView from "./MainView";
 export default class Application extends VoyagerApplication
 {
     readonly dockableController: DockController;
-    readonly hierarchyController: HierarchyController;
+    readonly selectionController: SelectionController;
+
+    protected transformManip: |TransformManip;
+    protected viewportManip: ViewportManip;
 
     constructor(props: IVoyagerApplicationProps)
     {
@@ -43,7 +50,16 @@ export default class Application extends VoyagerApplication
         registerComponents(this.registry);
 
         this.dockableController = new DockController(this.commander);
-        this.hierarchyController = this.main.createComponent(HierarchyController);
+
+        this.selectionController = this.main.createComponent(SelectionController);
+        this.selectionController.createActions(this.commander);
+
+        this.viewportManip = this.main.createComponent(ViewportManip);
+        this.orbitManip.next.component = this.viewportManip;
+
+        this.transformManip = this.main.createComponent(TransformManip);
+        this.pickManip.next.component = this.transformManip;
+        this.transformManip.next.component = this.orbitManip;
 
         // assets/nmafa-68_23_53_textured_cm/nmafa-68_23_53_textured_cm.json
 
@@ -57,4 +73,19 @@ export default class Application extends VoyagerApplication
         );
     }
 
+    protected onPresentationChange(event: IPresentationChangeEvent)
+    {
+        super.onPresentationChange(event);
+
+        const current = this.presentation;
+        const next = event.presentation;
+
+        if (current) {
+            this.transformManip.setScene(null);
+        }
+
+        if (next) {
+            this.transformManip.setScene(next.sceneComponent.scene);
+        }
+    }
 }

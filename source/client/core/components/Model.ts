@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import math from "@ff/core/math";
+import _math from "@ff/core/math";
 import { ComponentTracker } from "@ff/core/ecs/Component";
 import types from "@ff/core/ecs/propertyTypes";
 
@@ -82,7 +82,7 @@ export default class Model extends Object3D implements IPickable
 
         _vec3a.fromArray(pos.value);
         _vec3b.fromArray(sca.value);
-        _euler.set(rot.value[0], rot.value[1], rot.value[2], math.select(orderOptions, ord.value));
+        _euler.set(rot.value[0], rot.value[1], rot.value[2], _math.select(orderOptions, ord.value));
         _quat.setFromEuler(_euler);
         matrix.compose(_vec3a, _quat, _vec3b);
 

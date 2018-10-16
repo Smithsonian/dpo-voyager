@@ -18,46 +18,29 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import Commander from "@ff/core/Commander";
 
-import { registerComponents } from "../core/system/registerComponents";
-import VoyagerSystem from "../core/system/PresentationSystem";
-import PresentationController from "../core/controllers/PresentationController";
-import VoyagerView from "../core/views/PresentationView";
+import VoyagerView from "../core/views/VoyagerView";
+
+import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/** Properties for [[Application]]. */
-export interface IApplicationProps
-{
-    element: HTMLElement;
-}
 
 /**
  * Voyager prep main application.
  */
-export default class Application
+export default class Application extends VoyagerApplication
 {
-    readonly presentationController: PresentationController;
-
-    readonly system: VoyagerSystem;
-    protected commander: Commander;
-
-    constructor(props: IApplicationProps)
+    constructor(props: IVoyagerApplicationProps)
     {
-        this.system = new VoyagerSystem();
-        registerComponents(this.system.registry);
+        super(props);
 
-        this.commander = new Commander();
-        this.presentationController = new PresentationController(this.commander, this.system);
-
-        this.presentationController.startRendering();
-        this.presentationController.startup();
+        this.start();
+        this.presentationController.loadFromLocationUrl();
 
         ReactDOM.render(
             <VoyagerView
-                system={this.system}
-                controller={this.presentationController} />,
+                viewManager={this.viewManager}
+                actions={this.presentationController.actions} />,
         props.element
     );
     }

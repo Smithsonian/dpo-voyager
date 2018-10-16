@@ -50,9 +50,9 @@ export default class AnnotationsView extends Object3D implements IPickable
         this.object3D.updateMatrix();
 
         this.modelTracker = this.trackComponent(Model, model => {
-            Object.keys(this.views).forEach(key => this.attachView(this.views[key]));
+            model.object3D.add(this.object3D);
         }, model => {
-            Object.keys(this.views).forEach(key => this.detachView(this.views[key]));
+            model.object3D.remove(this.object3D);
         });
 
         this.annotationsTracker = this.trackComponent(Annotations, component => {
@@ -106,33 +106,18 @@ export default class AnnotationsView extends Object3D implements IPickable
         }
     }
 
-
     protected addView(annotation: IAnnotation)
     {
         const view = new AnnotationView(annotation);
         this.views[view.id] = view;
-        this.attachView(view);
+        this.object3D.add(view);
     }
 
     protected removeView(annotation: IAnnotation)
     {
         const view = this.findViewByAnnotation(annotation);
-        this.detachView(view);
+        this.object3D.remove(view);
         delete this.views[view.id];
-    }
-
-    protected attachView(view: AnnotationView)
-    {
-        if (this.modelTracker.component) {
-            this.modelTracker.component.object3D.add(view);
-        }
-    }
-
-    protected detachView(view: AnnotationView)
-    {
-        if (this.modelTracker.component) {
-            this.modelTracker.component.object3D.remove(view);
-        }
     }
 
     protected findViewByAnnotation(annotation: IAnnotation): AnnotationView | null

@@ -18,14 +18,12 @@
 import * as THREE from "three";
 
 import { Readonly } from "@ff/core/types";
-import math from "@ff/core/math";
+import _math from "@ff/core/math";
 
 import types from "@ff/core/ecs/propertyTypes";
-import Component from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import { INode as ITransformData, Vector3, Vector4 } from "common/types/presentation";
-import { PickableComponent } from "./PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +51,6 @@ export default class Transform extends Hierarchy
     });
 
     private _object: THREE.Object3D;
-    private _pickables: PickableComponent[];
 
     constructor(id?: string)
     {
@@ -61,19 +58,6 @@ export default class Transform extends Hierarchy
 
         this._object = new THREE.Object3D();
         this._object.matrixAutoUpdate = false;
-
-        this._pickables = [];
-    }
-
-    create()
-    {
-        super.create();
-
-        this.getComponents().forEach((component: PickableComponent) => {
-            if (component !== (this as Component) && component.onPointer && component.onTrigger) {
-                this._pickables.push(component);
-            }
-        });
     }
 
     update()
@@ -91,13 +75,13 @@ export default class Transform extends Hierarchy
             }
             if (rot.changed) {
                 object.rotation.set(
-                    rot.value[0] * math.DEG2RAD,
-                    rot.value[1] * math.DEG2RAD,
-                    rot.value[2] * math.DEG2RAD
+                    rot.value[0] * _math.DEG2RAD,
+                    rot.value[1] * _math.DEG2RAD,
+                    rot.value[2] * _math.DEG2RAD
                 );
             }
             if (ord.changed) {
-                object.rotation.order = math.select(orderOptions, ord.value);
+                object.rotation.order = _math.select(orderOptions, ord.value);
             }
             if (sca.changed) {
                 object.scale.fromArray(sca.value);
@@ -109,7 +93,7 @@ export default class Transform extends Hierarchy
         (object.matrix as any).toArray(this.outs.mat.value);
     }
 
-    destroy()
+    dispose()
     {
         if (!this._object) {
             return;
@@ -118,6 +102,8 @@ export default class Transform extends Hierarchy
         // detach the three.js object from its parent and children
         this._object.parent.remove(this._object);
         this._object.children.slice().forEach(child => this._object.remove(child));
+
+        super.dispose();
     }
 
     /**
@@ -185,26 +171,6 @@ export default class Transform extends Hierarchy
     removeObject3D(object: THREE.Object3D)
     {
         this._object.remove(object);
-    }
-
-    getPickableComponents(): Readonly<PickableComponent[]>
-    {
-        return this._pickables;
-    }
-
-    didAddComponent(component: PickableComponent)
-    {
-        if (component.onPointer && component.onTrigger) {
-            this._pickables.push(component);
-        }
-    }
-
-    willRemoveComponent(component: PickableComponent)
-    {
-        if (component.onPointer && component.onTrigger) {
-            const index = this._pickables.indexOf(component);
-            this._pickables.splice(index, 1);
-        }
     }
 
     fromData(data: ITransformData)

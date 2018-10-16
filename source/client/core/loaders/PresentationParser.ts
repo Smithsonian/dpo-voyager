@@ -19,8 +19,6 @@ import { Index } from "@ff/core/types";
 import Entity from "@ff/core/ecs/Entity";
 import HierarchyComponent from "@ff/core/ecs/Hierarchy";
 
-import ViewportLayoutComponent from "../components/ViewportLayout";
-import PickManipComponent from "../components/PickManip";
 import MainCameraComponent from "../components/MainCamera";
 import SceneComponent from "../components/Scene";
 import DocumentsComponent from "../components/Documents";
@@ -52,7 +50,6 @@ export default class PresentationParser
     static inflate(entity: Entity, pres: IPresentation, merge: boolean = false)
     {
         const scene = entity.getOrCreateComponent(SceneComponent);
-        entity.getOrCreateComponent(PickManipComponent);
         entity.getOrCreateComponent(MainCameraComponent);
 
         entity.getOrCreateComponent(DocumentsComponent);

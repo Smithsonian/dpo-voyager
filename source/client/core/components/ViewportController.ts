@@ -37,7 +37,7 @@ const _vec2 = new THREE.Vector2();
 
 export { IViewportPointerEvent, IViewportTriggerEvent };
 
-export default class CanvasController extends Controller implements IManipEventHandler
+export default class ViewportController extends Controller implements IManipEventHandler
 {
     static readonly type: string = "ViewportController";
 
@@ -46,7 +46,7 @@ export default class CanvasController extends Controller implements IManipEventH
     private static camera = [ "Scene", "Preset" ];
 
     ins = this.makeProps({
-        lay: types.Enum("Layout", CanvasController.layout, 3),
+        lay: types.Enum("Layout", ViewportController.layout, 3),
         hsp: types.Number("Split.Horizontal", { min: 0, max: 1, preset: 0.5 }),
         vsp: types.Number("Split.Vertical", { min: 0, max: 1, preset: 0.5 }),
     });
@@ -57,8 +57,8 @@ export default class CanvasController extends Controller implements IManipEventH
 
     next: ComponentLink<Manip> = null;
 
-    private _viewports: Viewport[] = [];
-    private _activeViewport: Viewport = null;
+    private viewports: Viewport[] = [];
+    private activeViewport: Viewport = null;
 
     create()
     {
@@ -78,7 +78,7 @@ export default class CanvasController extends Controller implements IManipEventH
 
     forEachViewport(callback: (viewport: Viewport) => void)
     {
-        this._viewports.forEach(viewport => callback(viewport));
+        this.viewports.forEach(viewport => callback(viewport));
     }
 
     setCanvasSize(width: number, height: number)
@@ -88,7 +88,7 @@ export default class CanvasController extends Controller implements IManipEventH
         cas.value[1] = height;
         cas.push();
 
-        this._viewports.forEach(viewport => viewport.setCanvasSize(width, height));
+        this.viewports.forEach(viewport => viewport.setCanvasSize(width, height));
     }
 
     onPointer(event: IManipPointerEvent)
@@ -99,26 +99,16 @@ export default class CanvasController extends Controller implements IManipEventH
         const x = vpEvent.centerX - rect.left;
         const y = vpEvent.centerY - rect.top;
 
-        if (vpEvent.isPrimary && vpEvent.type === "down") {
-            this._activeViewport = this._viewports.find(viewport => viewport.isPointInside(x, y));
-        }
+        vpEvent.viewport = this.viewports.find(viewport => viewport.isPointInside(x, y));
 
-        const viewport = this._activeViewport;
-
-        if (viewport) {
-            viewport.getDeviceCoords(x, y, _vec2);
-            vpEvent.viewport = viewport;
+        if (vpEvent.viewport) {
+            vpEvent.viewport.getDeviceCoords(x, y, _vec2);
             vpEvent.deviceX = _vec2.x;
             vpEvent.deviceY = _vec2.y;
         }
         else {
-            vpEvent.viewport = null;
             vpEvent.deviceX = 0;
             vpEvent.deviceY = 0;
-        }
-
-        if (vpEvent.isPrimary && vpEvent.type === "up") {
-            this._activeViewport = null;
         }
 
         if (this.next.component) {
@@ -136,12 +126,7 @@ export default class CanvasController extends Controller implements IManipEventH
         const x = vpEvent.centerX - rect.left;
         const y = vpEvent.centerY - rect.top;
 
-        if (this._activeViewport) {
-            vpEvent.viewport = this._activeViewport;
-        }
-        else {
-            vpEvent.viewport = this._viewports.find(viewport => viewport.isPointInside(x, y)) || null;
-        }
+        vpEvent.viewport = this.viewports.find(viewport => viewport.isPointInside(x, y)) || null;
 
         if (vpEvent.viewport) {
             vpEvent.viewport.getDeviceCoords(x, y, _vec2);
@@ -162,7 +147,7 @@ export default class CanvasController extends Controller implements IManipEventH
 
     protected setSize(layout: number, h: number, v: number)
     {
-        const viewports = this._viewports;
+        const viewports = this.viewports;
 
         switch(layout) {
             case 1: // h-split
@@ -183,12 +168,12 @@ export default class CanvasController extends Controller implements IManipEventH
 
     protected setLayout(layout: number, h: number, v: number)
     {
-        const viewports = this._viewports;
+        const viewports = this.viewports;
 
         switch(layout) {
             case 0:
                 viewports.length = 1;
-                viewports[0] = new Viewport(0, 0, 1, 1).setCamera("scene");
+                viewports[0] = new Viewport(0, 0, 1, 1);
                 break;
 
             case 1:
@@ -205,10 +190,10 @@ export default class CanvasController extends Controller implements IManipEventH
 
             case 3:
                 viewports.length = 4;
-                viewports[0] = new Viewport(0, 0, h, v).setCamera("scene");
-                viewports[1] = new Viewport(h, 0, 1-h, v).setCamera("viewport", "orthographic", "top");
-                viewports[2] = new Viewport(0, v, h, 1-v).setCamera("viewport", "orthographic", "left");
-                viewports[3] = new Viewport(h, v, 1-h, 1-v).setCamera("viewport", "orthographic", "front");
+                viewports[0] = new Viewport(0, 0, h, v);
+                viewports[1] = new Viewport(h, 0, 1-h, v).setCamera("orthographic", "top");
+                viewports[2] = new Viewport(0, v, h, 1-v).setCamera("orthographic", "left");
+                viewports[3] = new Viewport(h, v, 1-h, 1-v).setCamera("orthographic", "front");
                 break;
         }
 

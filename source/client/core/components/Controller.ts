@@ -28,6 +28,8 @@ export default class Controller<T extends Controller<any> = Controller<any>> ext
 {
     static readonly type: string = "Controller";
 
+    actions: Actions<T> = null;
+
     createActions(commander: Commander)
     {
     }

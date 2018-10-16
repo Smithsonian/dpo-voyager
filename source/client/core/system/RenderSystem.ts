@@ -15,15 +15,36 @@
  * limitations under the License.
  */
 
-import Registry from "@ff/core/ecs/Registry";
 import System from "@ff/core/ecs/System";
+
+import RenderContext, { IRenderable } from "./RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class RenderSystem extends System
 {
-    constructor(registry?: Registry)
+    protected renderables: IRenderable[] = [];
+
+    render(context: RenderContext)
     {
-        super(registry);
+        const renderables = this.renderables;
+        for (let i = 0, n = renderables.length; i < n; ++i) {
+            renderables[i].render(context);
+        }
+    }
+
+    protected didAddComponent(component: IRenderable)
+    {
+        if (component.render) {
+            this.renderables.push(component);
+        }
+    }
+
+    protected willRemoveComponent(component: IRenderable)
+    {
+        const index = this.renderables.indexOf(component);
+        if (index >= 0) {
+            this.renderables.splice(index, 1);
+        }
     }
 }

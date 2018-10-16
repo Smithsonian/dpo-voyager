@@ -19,16 +19,22 @@ import * as THREE from "three";
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/core/ecs/Registry";
-import System, { Entity } from "@ff/core/ecs/System";
+import Entity from "@ff/core/ecs/Entity";
 
 import PresentationController, {
-    IPresentationChangeEvent,
-    PresentationActions
-} from "../controllers/PresentationController";
+    IPresentationEntry,
+    IPresentationChangeEvent
+} from "../components/PresentationController";
+
 import UpdateContext from "./UpdateContext";
 
 import { registerComponents } from "./registerComponents";
+import RenderSystem from "./RenderSystem";
 import ViewManager from "./ViewManager";
+
+import Transform from "../components/Transform";
+import PickManip from "../components/PickManip";
+import OrbitManip from "../components/OrbitManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,16 +47,18 @@ export interface IVoyagerApplicationProps
 export default class VoyagerApplication
 {
     readonly presentationController: PresentationController;
-    readonly presentationActions: PresentationActions;
     readonly viewManager: ViewManager;
 
     protected commander: Commander;
     protected registry: Registry;
-    protected system: System;
+    protected system: RenderSystem;
     protected context: UpdateContext;
     protected main: Entity;
+    protected pickManip: PickManip;
+    protected orbitManip: OrbitManip;
     protected loadingManager: THREE.LoadingManager;
     protected animHandler: number = 0;
+    protected presentation: IPresentationEntry = null;
 
     constructor(props: IVoyagerApplicationProps)
     {
@@ -65,7 +73,7 @@ export default class VoyagerApplication
         this.registry = new Registry();
         registerComponents(this.registry);
 
-        this.system = new System(this.registry);
+        this.system = new RenderSystem(this.registry);
         this.context = new UpdateContext();
 
         this.loadingManager = new THREE.LoadingManager();
@@ -78,12 +86,18 @@ export default class VoyagerApplication
 
         // main entity
         this.main = this.system.createEntity("Main");
+
         this.presentationController = this.main.createComponent(PresentationController);
+        this.presentationController.createActions(this.commander);
         this.presentationController.setLoadingManager(this.loadingManager);
         this.presentationController.on("change", this.onPresentationChange, this);
-        this.presentationActions = this.presentationController.createActions(this.commander);
-    }
 
+        this.pickManip = this.main.createComponent(PickManip);
+        this.viewManager.setNextManip(this.pickManip);
+
+        this.orbitManip = this.main.createComponent(OrbitManip);
+        this.pickManip.next.component = this.orbitManip;
+    }
 
     protected start()
     {
@@ -126,8 +140,37 @@ export default class VoyagerApplication
 
     protected onPresentationChange(event: IPresentationChangeEvent)
     {
-        if (event.presentation) {
-            this.viewManager.setPresentationManip(event.presentation.manipComponent);
+        const current = this.presentation;
+        const next = event.presentation;
+
+        if (current) {
+            this.pickManip.setRoot(null);
+
+            // detach camera from orbit manip
+            const cameraTransform = current.cameraComponent.getComponent(Transform);
+            cameraTransform.in("Matrix").unlinkFrom(this.orbitManip.out("Matrix"));
+
+            // detach light group from orbit manip
+            if (current.lightsEntity) {
+                const lightsTransform = current.lightsEntity.getComponent(Transform);
+                lightsTransform.in("Rotation").unlinkFrom(this.orbitManip.out("Inverse.Orbit"));
+            }
+        }
+
+        if (next) {
+            this.pickManip.setRoot(next.sceneComponent.scene);
+
+            // attach camera to orbit manip
+            const cameraTransform = next.cameraComponent.getComponent(Transform);
+            this.orbitManip.setFromMatrix(cameraTransform.matrix);
+            cameraTransform.in("Matrix").linkFrom(this.orbitManip.out("Matrix"));
+
+            // attach light group to orbit manip
+            if (next.lightsEntity) {
+                const lightsTransform = next.lightsEntity.getComponent(Transform);
+                lightsTransform.in("Order").setValue(4);
+                lightsTransform.in("Rotation").linkFrom(this.orbitManip.out("Inverse.Orbit"));
+            }
         }
     }
 

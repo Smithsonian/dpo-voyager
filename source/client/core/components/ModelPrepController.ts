@@ -17,27 +17,30 @@
 
 import * as THREE from "three";
 
-import Component from "@ff/core/ecs/Component";
+import { ISystemComponentEvent } from "@ff/core/ecs/System";
 
-import Viewport from "../three/Viewport";
+import Model from "./Model";
+import Controller from "./Controller";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IRenderable extends Component
+export default class ModelPrepController extends Controller
 {
-    render: (context: RenderContext) => void;
-}
+    static readonly type: string = "ModelPrepController";
 
-export default class RenderContext
-{
-    viewport: Viewport = null;
-    camera: THREE.Camera = null;
-    scene: THREE.Scene = null;
-
-    set(viewport: Viewport, camera: THREE.Camera, scene: THREE.Scene)
+    create()
     {
-        this.viewport = viewport;
-        this.camera = camera;
-        this.scene = scene;
+        super.create();
+        this.system.addComponentEventListener(Model, this.onModelComponent, this);
+    }
+
+    dispose()
+    {
+        this.system.removeComponentEventListener(Model, this.onModelComponent, this);
+        super.dispose();
+    }
+
+    protected onModelComponent(event: ISystemComponentEvent<Model>)
+    {
     }
 }

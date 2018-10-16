@@ -25,7 +25,7 @@ import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent
 import PresentationOverlay from "./PresentationOverlay";
 import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent, QuadSplitOverlayMode } from "./QuadSplitOverlay";
 import ViewManager from "../system/ViewManager";
-import CanvasController from "../components/CanvasController";
+import ViewportController from "../components/CanvasController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ export interface IVoyagerViewProps
 
 export interface IVoyagerViewState
 {
-    canvasController: CanvasController;
+    canvasController: ViewportController;
 }
 
 export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoyagerViewState> implements IManipEventHandler

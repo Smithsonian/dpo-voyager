@@ -18,15 +18,20 @@
 import * as React from "react";
 import { MouseEvent } from "react";
 
-import Tree from "@ff/react/Tree";
+import { Dictionary } from "@ff/core/types";
+
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 import Component from "@ff/core/ecs/Component";
 import Entity from "@ff/core/ecs/Entity";
 import System from "@ff/core/ecs/System";
 
-import HierarchyController, { HierarchyActions } from "../controllers/HierarchyController";
+import Tree from "@ff/react/Tree";
+
+import SelectionController, { SelectionActions } from "../components/SelectionController";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+type ECS = Component | Entity | System;
 
 const _getId = (node: ECS) => {
     if (node instanceof System) {
@@ -58,12 +63,10 @@ const _getChildren = (node: ECS) => {
     return [];
 };
 
-type ECS = Component | Entity | System;
-
 /** Properties for [[HierarchyTreeView]] component. */
 export interface IHierarchyTreeViewProps
 {
-    controller: HierarchyController
+    controller: SelectionController
 }
 
 export default class HierarchyTreeView extends React.Component<IHierarchyTreeViewProps, {}>
@@ -72,13 +75,22 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
         className: "tree"
     };
 
-    protected actions: HierarchyActions;
+    protected actions: SelectionActions;
+    protected expanded: Dictionary<boolean> = {};
 
     constructor(props: IHierarchyTreeViewProps)
     {
         super(props);
 
         this.actions = props.controller.actions;
+        this.expandAll();
+    }
+
+    expandAll()
+    {
+        const system = this.props.controller.system;
+        system.getEntities().forEach(entity => this.expanded[entity.id] = true);
+        system.getComponents().forEach(component => this.expanded[component.id] = true);
     }
 
     componentDidMount()
@@ -119,7 +131,7 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
                 tree={controller.system}
                 includeRoot={false}
                 selected={controller.selected}
-                expanded={controller.expanded}
+                expanded={this.expanded}
                 getId={_getId}
                 getClass={_getClass}
                 getChildren={_getChildren}
@@ -129,19 +141,22 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
 
     protected onChange()
     {
+        this.expandAll();
         this.forceUpdate();
     }
 
     protected onClickHeader(e: MouseEvent, node: ECS)
     {
+        const id = _getId(node);
         const rect = (e.target as HTMLDivElement).getBoundingClientRect();
         const x = e.clientX - rect.left;
 
         if (x < 20) {
-            this.actions.toggleExpanded(_getId(node));
+            this.expanded[id] = !this.expanded[id];
+            this.forceUpdate();
         }
         else {
-            this.actions.setSelected(_getId(node), true);
+            this.actions.setSelected(node, true);
         }
     }
 }

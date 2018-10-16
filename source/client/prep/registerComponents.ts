@@ -17,13 +17,15 @@
 
 import Registry from "@ff/core/ecs/Registry";
 
-import HierarchyController from "../core/components/HierarchyController";
+import SelectionController from "../core/components/SelectionController";
+import TransformManip from "../core/components/TransformManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
-        HierarchyController
+        SelectionController,
+        TransformManip
     ]);
 }

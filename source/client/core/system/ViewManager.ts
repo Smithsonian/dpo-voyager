@@ -18,34 +18,39 @@
 import * as THREE from "three";
 
 import { Dictionary } from "@ff/core/types";
-import System from "@ff/core/ecs/System";
 
 import Manip from "../components/Manip";
-import CanvasController from "../components/CanvasController";
+import ViewportController from "../components/ViewportController";
 
 import VoyagerView from "../views/VoyagerView";
+import RenderSystem from "./RenderSystem";
+import RenderContext from "./RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 interface IViewEntry
 {
     view: VoyagerView;
-    controller: CanvasController;
+    controller: ViewportController;
 }
 
 export default class ViewManager
 {
-    protected system: System;
+    protected system: RenderSystem;
+    protected context: RenderContext = new RenderContext();
     protected views: Dictionary<IViewEntry> = {};
     protected viewList: IViewEntry[] = [];
+    protected nextManip: Manip = null;
 
-    constructor(system: System)
+    constructor(system: RenderSystem)
     {
         this.system = system;
     }
 
-    renderViews(scene: THREE.Scene, camera: THREE.Camera)
+    renderViews(scene: THREE.Scene, sceneCamera: THREE.Camera)
     {
+        const context = this.context;
+
         this.viewList.forEach(entry => {
             const { view, controller } = entry;
             if (!view) {
@@ -55,14 +60,19 @@ export default class ViewManager
             view.renderer.clear();
 
             controller.forEachViewport(viewport => {
-                viewport.sceneCamera = camera;
+                viewport.sceneCamera = sceneCamera;
+                const camera = viewport.camera;
+                context.set(viewport, camera, scene);
+                this.system.render(context);
                 viewport.render(view.renderer, scene);
             });
         });
     }
 
-    setPresentationManip(manip: Manip)
+    setNextManip(manip: Manip)
     {
+        this.nextManip = manip;
+
         this.viewList.forEach(entry => {
             entry.controller.next.component = manip;
         });
@@ -73,7 +83,7 @@ export default class ViewManager
      * @param {VoyagerView} view
      * @returns {string}
      */
-    registerView(view: VoyagerView): CanvasController
+    registerView(view: VoyagerView): ViewportController
     {
         const orphanEntry = this.viewList.find(entry => entry.view === null);
 
@@ -83,9 +93,10 @@ export default class ViewManager
         }
 
         const entity = this.system.createEntity("View");
-        const controller = entity.createComponent(CanvasController);
+        const controller = entity.createComponent(ViewportController);
 
         controller.setCanvasSize(view.canvasWidth, view.canvasHeight);
+        controller.next.component = this.nextManip;
 
         const entry = {
             controller,

@@ -15,29 +15,37 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
 
-import Component from "@ff/core/ecs/Component";
-
-import Viewport from "../three/Viewport";
+import Manip from "./Manip";
+import RenderContext from "../system/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IRenderable extends Component
+export default class ViewportManip extends Manip
 {
-    render: (context: RenderContext) => void;
-}
+    static readonly type: string = "ViewportManip";
 
-export default class RenderContext
-{
-    viewport: Viewport = null;
-    camera: THREE.Camera = null;
-    scene: THREE.Scene = null;
-
-    set(viewport: Viewport, camera: THREE.Camera, scene: THREE.Scene)
+    render(context: RenderContext)
     {
-        this.viewport = viewport;
-        this.camera = camera;
-        this.scene = scene;
+        context.viewport.updateCamera();
+    }
+
+    onPointer(event: IViewportPointerEvent)
+    {
+        if (event.viewport) {
+            return event.viewport.onPointer(event);
+        }
+
+        return false;
+    }
+
+    onTrigger(event: IViewportTriggerEvent)
+    {
+        if (event.viewport) {
+            return event.viewport.onTrigger(event);
+        }
+
+        return false;
     }
 }

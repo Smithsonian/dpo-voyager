@@ -23,14 +23,9 @@ import Entity from "@ff/core/ecs/Entity";
 
 import { IPresentation } from "common/types/presentation";
 
-import CanvasController from "../components/CanvasController";
-import Transform from "../components/Transform";
 import Scene from "../components/Scene";
 import Camera from "../components/Camera";
 import Model from "../components/Model";
-import Manip from "../components/Manip";
-import PickManip from "../components/PickManip";
-import OrbitManip from "../components/OrbitManip";
 
 import AssetLoader from "../loaders/AssetLoader";
 import PresentationLoader from "../loaders/PresentationLoader";
@@ -59,7 +54,7 @@ export interface IPresentationEntry
     entity: Entity;
     sceneComponent: Scene;
     cameraComponent: Camera;
-    manipComponent: Manip;
+    lightsEntity: Entity;
 }
 
 export default class PresentationController extends Controller<PresentationController>
@@ -80,7 +75,7 @@ export default class PresentationController extends Controller<PresentationContr
 
     createActions(commander: Commander)
     {
-        return {
+        return this.actions = {
             load: commander.register({
                 name: "Load Presentation", do: this.loadPresentation, target: this
             }),
@@ -149,25 +144,14 @@ export default class PresentationController extends Controller<PresentationContr
         }).then(() => {
             const sceneComponent = presentation.getComponent(Scene);
             const cameraComponent = sceneComponent.getComponentInSubtree(Camera);
-            const manipComponent = presentation.getComponent(PickManip);
-
-            const orbitManip = sceneComponent.getComponentInSubtree(OrbitManip);
-            manipComponent.next.component = orbitManip;
-
-            // attach light group to orbit rotation
-            const lights = this.system.findEntityByName("Lights");
-            if (lights) {
-                const transform = lights.getComponent(Transform);
-                transform.in("Order").setValue(4);
-                transform.in("Rotation").linkFrom(orbitManip.out("Inverse.Orbit"));
-            }
+            const lightsEntity = sceneComponent.findEntityInSubtree("Lights");
 
             // create entry for presentation
             this.presentations.push({
                 entity: presentation,
                 sceneComponent,
                 cameraComponent,
-                manipComponent
+                lightsEntity
             });
 
             this.setActivePresentation(this.presentations.length - 1);
