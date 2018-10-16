@@ -23,7 +23,7 @@ import GridContainer from "@ff/react/GridContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import { ProjectionMode, ViewPreset } from "../controllers/PresentationController";
+import { ProjectionMode, ViewPreset } from "../components/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 

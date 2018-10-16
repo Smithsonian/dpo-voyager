@@ -48,6 +48,7 @@ export default class SelectionController extends Controller<SelectionController>
 {
     static readonly type: string = "SelectionController";
 
+    public actions: SelectionActions;
     public selected: Dictionary<ECS> = {};
 
     private startX: number = 0;
@@ -86,14 +87,17 @@ export default class SelectionController extends Controller<SelectionController>
 
     createActions(commander: Commander)
     {
-        return this.actions = {
+        const actions = {
             setSelected: commander.register({
                 name: "Set Selected", do: this.setSelected, target: this
             }),
             clearSelection: commander.register({
                 name: "Clear Selection", do: this.clearSelection, target: this
             })
-        }
+        };
+
+        this.actions = actions;
+        return actions;
     }
 
     setSelected(item: ECS, selected: boolean)

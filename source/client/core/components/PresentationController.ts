@@ -39,6 +39,7 @@ import { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
 export type RenderMode = "standard" | "clay" | "normals" | "wireframe" | "x-ray";
 export type ProjectionMode = "perspective" | "orthographic";
+export type ViewPreset = "left" | "right" | "top" | "bottom" | "front" | "back";
 
 export type PresentationActions = Actions<PresentationController>;
 
@@ -60,6 +61,8 @@ export default class PresentationController extends Controller<PresentationContr
 {
     static readonly type: string = "PresentationController";
 
+    public actions: PresentationActions;
+
     private presentations: IPresentationEntry[] = [];
     private activePresentation: IPresentationEntry = null;
 
@@ -75,7 +78,7 @@ export default class PresentationController extends Controller<PresentationContr
 
     createActions(commander: Commander)
     {
-        return this.actions = {
+        const actions = {
             load: commander.register({
                 name: "Load Presentation", do: this.loadPresentation, target: this
             }),
@@ -90,6 +93,9 @@ export default class PresentationController extends Controller<PresentationContr
                 name: "Set View", do: this.setViewPreset, undo: this.setState, target: this
             })
         };
+
+        this.actions = actions;
+        return actions;
     }
 
     getActivePresentation()

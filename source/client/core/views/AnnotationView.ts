@@ -18,7 +18,7 @@
 import * as THREE from "three";
 
 import { IAnnotation } from "../components/Annotations";
-import { IPickResult, IManipPointerEvent, IManipTriggerEvent } from "../components/PickManip";
+import { IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "../components/PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +48,7 @@ export default class AnnotationView extends THREE.Group
         this.add(mesh);
     }
 
-    onPointer(event: IManipPointerEvent, pickInfo: IPickResult)
+    onPointer(event: IViewportPointerEvent, pickInfo: IPickResult)
     {
         if (event.isPrimary && event.type === "up") {
             console.log(this.annotation.title);
@@ -57,7 +57,7 @@ export default class AnnotationView extends THREE.Group
         return false;
     }
 
-    onTrigger(event: IManipTriggerEvent, pickInfo: IPickResult)
+    onTrigger(event: IViewportTriggerEvent, pickInfo: IPickResult)
     {
         return false;
     }

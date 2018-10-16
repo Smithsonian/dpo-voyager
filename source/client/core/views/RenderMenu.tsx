@@ -22,7 +22,7 @@ import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import { RenderMode } from "../controllers/PresentationController";
+import { RenderMode } from "../components/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 

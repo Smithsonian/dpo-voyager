@@ -68,8 +68,8 @@ export default class OrbitController implements IManipListener
 
         this.mode = "off";
         this.phase = "off";
-        this.canvasWidth = 1;
-        this.canvasHeight = 1;
+        this.viewportWidth = 1;
+        this.viewportHeight = 1;
 
         this.deltaX = 0;
         this.deltaY = 0;
@@ -230,8 +230,8 @@ export default class OrbitController implements IManipListener
     onManipBegin(event: IManipEvent)
     {
         const element = event.target as HTMLElement;
-        this.canvasWidth = element.clientWidth;
-        this.canvasHeight = element.clientHeight;
+        this.viewportWidth = element.clientWidth;
+        this.viewportHeight = element.clientHeight;
 
         this.mode = this.getModeFromEvent(event);
         this.phase = "active";

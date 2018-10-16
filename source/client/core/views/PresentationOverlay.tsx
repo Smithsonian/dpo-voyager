@@ -21,7 +21,7 @@ import FlexContainer from "@ff/react/FlexContainer";
 import FlexSpacer from "@ff/react/FlexSpacer";
 
 import PresentationMenuView from "./PresentationMenuView";
-import { PresentationActions } from "../controllers/PresentationController";
+import { PresentationActions } from "../components/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -29,7 +29,7 @@ import {
     ProjectionMode,
     ViewPreset,
     RenderMode
-} from "../controllers/PresentationController";
+} from "../components/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
