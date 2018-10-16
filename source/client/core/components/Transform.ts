@@ -27,6 +27,10 @@ import { INode as ITransformData, Vector3, Vector4 } from "common/types/presenta
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _pos = new THREE.Vector3();
+const _quat = new THREE.Quaternion();
+const _scale = new THREE.Vector3();
+
 export const orderOptions = [ "XYZ", "YZX", "ZXY", "XZY", "YXZ", "ZYX" ];
 
 /**
@@ -205,13 +209,23 @@ export default class Transform extends Hierarchy
 
     toData(): Partial<ITransformData>
     {
-        const ins = this.ins;
-        const quaternion = this._object.quaternion;
+        //const ins = this.ins;
+        //const quaternion = this._object.quaternion;
 
-        return {
-            translation: ins.pos.value,
-            rotation: quaternion.toArray() as Vector4,
-            scale: ins.sca.value,
-        };
+        this._object.matrix.decompose(_pos, _quat, _scale);
+
+        const data: Partial<ITransformData> = {};
+
+        if (_pos.x !== 0 || _pos.y !== 0 || _pos.z !== 0) {
+            data.translation = _pos.toArray();
+        }
+        if (_quat.x !== 0 || _quat.y !== 0 || _quat.z !== 0 || _quat.w !== 1) {
+            data.rotation = _quat.toArray();
+        }
+        if (_scale.x !== 1 || _scale.y !== 1 || _scale.z !== 1) {
+            data.scale = _scale.toArray();
+        }
+
+        return data;
     }
 }

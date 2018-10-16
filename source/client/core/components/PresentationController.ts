@@ -21,17 +21,16 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import Commander from "@ff/core/Commander";
 import Entity from "@ff/core/ecs/Entity";
 
-import { IPresentation } from "common/types/presentation";
+import { IPresentation, IItem } from "common/types/presentation";
+import AssetLoader from "../loaders/AssetLoader";
+import JSONLoader from "../loaders/JSONLoader";
+import PresentationValidator from "../loaders/PresentationValidator";
+import PresentationParser from "../loaders/PresentationParser";
+import * as template from "../templates/presentation.json";
 
 import Scene from "../components/Scene";
 import Camera from "../components/Camera";
 import Model from "../components/Model";
-
-import AssetLoader from "../loaders/AssetLoader";
-import PresentationLoader from "../loaders/PresentationLoader";
-import PresentationParser from "../loaders/PresentationParser";
-
-import * as presentationTemplate from "../templates/presentation.json";
 
 import Controller, { Actions } from "../components/Controller";
 import { IComponentChangeEvent } from "@ff/core/ecs/Component";
@@ -64,12 +63,13 @@ export default class PresentationController extends Controller<PresentationContr
     private presentations: IPresentationEntry[] = [];
     private activePresentation: IPresentationEntry = null;
 
-    private presentationLoader: PresentationLoader = null;
+    private jsonLoader: JSONLoader = null;
     private assetLoader: AssetLoader = null;
+    private validator = new PresentationValidator();
 
     setLoadingManager(loadingManager: THREE.LoadingManager)
     {
-        this.presentationLoader = new PresentationLoader(loadingManager);
+        this.jsonLoader = new JSONLoader(loadingManager);
         this.assetLoader = new AssetLoader(loadingManager);
     }
 
@@ -118,27 +118,64 @@ export default class PresentationController extends Controller<PresentationContr
 
     loadItem(itemUrl: string, templateUrl?: string)
     {
-        // TODO: Implement
+        const assetPath = resolvePathname(".", itemUrl);
+
+        this.jsonLoader.load(itemUrl)
+            .then(json => {
+                if (!this.validator.validateItem(json)) {
+                    throw new Error(`failed to validate item '${itemUrl}'`);
+                }
+
+                const itemData: IItem = json;
+                const uri = itemData.story && itemData.story.templateUri;
+                templateUrl = templateUrl || (uri && resolvePathname(assetPath, uri));
+
+                if (templateUrl) {
+                    console.log(`Loading presentation template: ${templateUrl}`);
+                    this.loadPresentation(templateUrl, itemData);
+                }
+                else {
+                    console.log("No presentation template reference found, reading default template");
+                    const presData = template as IPresentation;
+                    if (!this.validator.validatePresentation(presData)) {
+                        throw new Error("failed to validate presentation template");
+                    }
+                    this.readPresentation(presData, itemData, assetPath);
+                }
+            })
+            .catch(error => {
+                console.warn("Failed to load item", error);
+            })
     }
 
-    loadPresentation(url: string)
+    loadPresentation(url: string, itemData?: IItem, assetPath?: string)
     {
-        this.presentationLoader.load(url)
-            .then(presentationData => {
-                this.openPresentation(presentationData, resolvePathname(".", url));
+        assetPath = assetPath || resolvePathname(".", url);
+
+        this.jsonLoader.load(url)
+            .then(json => {
+                if (!this.validator.validatePresentation(json)) {
+                    throw new Error(`failed to validate presentation '${url}'`);
+                }
+                this.readPresentation(json, itemData, assetPath);
             })
             .catch(error => {
                 console.warn("Failed to load presentation", error);
             });
     }
 
-    openPresentation(data: IPresentation, assetPath: string)
+    protected readItem(node: Entity, itemData: IItem)
+    {
+        // TODO: Implement
+    }
+
+    protected readPresentation(presData: IPresentation, itemData: IItem, assetPath: string)
     {
         const presentation = this.createEntity("Presentation");
 
         return Promise.resolve().then(() => {
-            PresentationParser.inflate(presentation, data);
-            PresentationParser.inflate(presentation, presentationTemplate as IPresentation, true);
+            PresentationParser.inflate(presentation, presData, itemData);
+            //PresentationParser.inflate(presentation, presentationTemplate as IPresentation, true);
             return this.system.waitForUpdate();
 
         }).then(() => {
@@ -163,6 +200,12 @@ export default class PresentationController extends Controller<PresentationContr
                 model.load("medium");
             });
         });
+    }
+
+    writePresentation(): IPresentation
+    {
+        const presentation = this.activePresentation.entity;
+        return PresentationParser.deflate(presentation);
     }
 
     setRenderMode(renderMode: RenderMode)

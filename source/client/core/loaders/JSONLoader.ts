@@ -17,25 +17,20 @@
 
 import * as THREE from "three";
 
-import { IPresentation } from "common/types/presentation";
-import PresentationValidator from "./PresentationValidator";
-
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PresentationLoader
+export default class JSONLoader
 {
-    private _loadingManager: THREE.LoadingManager;
-    private _validator: PresentationValidator;
+    private loadingManager: THREE.LoadingManager;
 
     constructor(loadingManager: THREE.LoadingManager)
     {
-        this._loadingManager = loadingManager;
-        this._validator = new PresentationValidator();
+        this.loadingManager = loadingManager;
     }
 
-    load(url: string): Promise<IPresentation>
+    load(url: string): Promise<any>
     {
-        this._loadingManager.itemStart(url);
+        this.loadingManager.itemStart(url);
 
         return fetch(url, {
             headers: {
@@ -43,19 +38,12 @@ export default class PresentationLoader
             }
         }).then(result => {
             if (!result.ok) {
-                this._loadingManager.itemError(url);
-                throw new Error(`failed to fetch presentation '${url}', status: ${result.status} ${result.statusText}`)
+                this.loadingManager.itemError(url);
+                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`)
             }
 
+            this.loadingManager.itemEnd(url);
             return result.json();
-        }).then(json => {
-            if (!this._validator.validatePresentation(json)) {
-                this._loadingManager.itemError(url);
-                throw new Error(`failed to validate presentation '${url}'`);
-            }
-
-            this._loadingManager.itemEnd(url);
-            return json;
         });
     }
 }

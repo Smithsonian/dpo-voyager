@@ -99,7 +99,12 @@ export default class ViewportController extends Controller implements IManipEven
         const x = vpEvent.centerX - rect.left;
         const y = vpEvent.centerY - rect.top;
 
-        vpEvent.viewport = this.viewports.find(viewport => viewport.isPointInside(x, y));
+        if (event.downPointerCount === 0 || (event.isPrimary && event.type === "down")) {
+            this.activeViewport = vpEvent.viewport = this.viewports.find(viewport => viewport.isPointInside(x, y));
+        }
+        else {
+            vpEvent.viewport = this.activeViewport;
+        }
 
         if (vpEvent.viewport) {
             vpEvent.viewport.getDeviceCoords(x, y, _vec2);

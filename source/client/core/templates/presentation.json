@@ -1,71 +1,75 @@
 {
     "asset": {
-        "version": "1.0",
-        "copyright": "Copyright 2018 Smithsonian Institution",
-        "generator": "Voyager Prep"
+        "copyright": "Copyright Smithsonian Institution",
+        "generator": "Voyager Presentation Parser",
+        "version": "1.0"
     },
     "scene": {
-        "nodes": [
-            0,
-            1
-        ]
+        "nodes": [0, 1, 2]
     },
-    "nodes": [
-        {
-            "translation": [ 0, 0, 50 ],
-            "camera": 0
-        },
-        {
-            "name": "Lights",
-            "children": [ 2, 3, 4, 5 ]
-        },
-        {
-            "translation": [ -2, 1, 2 ],
-            "light": 0
-        },
-        {
-            "translation": [ 2, 1, 2 ],
-            "light": 1
-        },
-        {
-            "translation": [ 0, 2, -0.5 ],
-            "light": 2
-        },
-        {
-            "translation": [ 0, -2, -1.2 ],
-            "light": 3
+    "nodes": [{
+        "reference": 0
+    }, {
+        "translation": [0, 0, 50],
+        "camera": 0
+    }, {
+        "name": "Lights",
+        "children": [3, 4, 5, 6]
+    }, {
+        "translation": [-2, 1, 2],
+        "name": "Light",
+        "light": 0
+    }, {
+        "translation": [2, 1, 2],
+        "name": "Light",
+        "light": 1
+    }, {
+        "translation": [0, 2, -0.5],
+        "name": "Light",
+        "light": 2
+    }, {
+        "translation": [0, -2, -1.2],
+        "name": "Light",
+        "light": 3
+    }],
+    "references": [{
+        "mimeType": "application/si-dpo-3d.item+json",
+        "uri": "0"
+    }],
+    "cameras": [{
+        "type": "perspective",
+        "perspective": {
+            "yfov": 50,
+            "znear": 0.001,
+            "zfar": 10000
         }
-    ],
-    "cameras": [
-        {
-            "type": "perspective",
-            "perspective": {
-                "yfov": 50,
-                "znear": 0.001,
-                "zfar": 10000
-            }
+    }],
+    "lights": [{
+        "type": "directional",
+        "color": [1, 1, 1],
+        "intensity": 1
+    }, {
+        "type": "directional",
+        "color": [1, 1, 1],
+        "intensity": 1
+    }, {
+        "type": "directional",
+        "color": [1, 0.95, 0.85],
+        "intensity": 0.5
+    }, {
+        "type": "directional",
+        "color": [0.8, 0.85, 1],
+        "intensity": 1
+    }],
+    "explorer": {
+        "renderer": {
+            "units": "cm",
+            "shader": "inherit",
+            "exposure": 1,
+            "gamma": 1
+        },
+        "reader": {
+            "enabled": false
         }
-    ],
-    "lights": [
-        {
-            "type": "directional",
-            "color": [ 1, 1, 1 ],
-            "intensity": 1
-        },
-        {
-            "type": "directional",
-            "color": [ 1, 1, 1 ],
-            "intensity": 1
-        },
-        {
-            "type": "directional",
-            "color": [ 1, 0.95, 0.85 ],
-            "intensity": 0.5
-        },
-        {
-            "type": "directional",
-            "color": [ 0.8, 0.85, 1 ],
-            "intensity": 1.0
-        }
-    ]
+    }
 }

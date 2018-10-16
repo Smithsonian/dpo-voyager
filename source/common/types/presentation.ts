@@ -27,7 +27,7 @@ import {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { UnitType };
+export { IItem, UnitType };
 
 export type Matrix4 = number[];
 export type Vector3 = number[];
@@ -202,7 +202,7 @@ export interface IRenderer
 export interface IReader
 {
     enabled: boolean;
-    document: Identifier;
+    document?: Identifier;
 }
 
 export interface ITools

@@ -86,6 +86,10 @@ export default class Application extends VoyagerApplication
 
         if (next) {
             this.transformManip.setScene(next.sceneComponent.scene);
+
+            // TODO: Serialization test
+            const data = this.presentationController.writePresentation();
+            console.log(JSON.stringify(data));
         }
     }
 }

@@ -31,14 +31,19 @@ export default class Reader extends Component
     fromData(data: IReaderData)
     {
         this.enabled = data.enabled;
-        this.document = data.document;
+        this.document = data.document || "";
     }
 
     toData(): IReaderData
     {
-        return {
-            enabled: this.enabled,
-            document: this.document
+        const data: IReaderData = {
+            enabled: this.enabled
         };
+
+        if (this.document) {
+            data.document = this.document;
+        }
+
+        return data;
     }
 }
