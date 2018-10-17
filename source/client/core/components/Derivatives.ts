@@ -104,7 +104,6 @@ export default class Derivatives extends Collection<Derivative>
         const keys = Object.keys(this.items);
         for (let i = 0, n = keys.length; i < n; ++i) {
             const derivative = this.items[keys[i]];
-            console.log(usage, derivative.usage, quality, derivative.quality);
             if (derivative && derivative.usage === usage && derivative.quality === quality) {
                 return derivative;
             }

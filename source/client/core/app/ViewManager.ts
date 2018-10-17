@@ -17,12 +17,9 @@
 
 import * as THREE from "three";
 
-import { Dictionary } from "@ff/core/types";
-
-import Manip from "../components/Manip";
-import ViewportController from "../components/ViewportController";
-
+import ViewportLayout, { EViewportLayoutMode, IViewportManip } from "../app/ViewportLayout";
 import VoyagerView from "../views/VoyagerView";
+
 import RenderSystem from "./RenderSystem";
 import RenderContext from "./RenderContext";
 
@@ -31,16 +28,17 @@ import RenderContext from "./RenderContext";
 interface IViewEntry
 {
     view: VoyagerView;
-    controller: ViewportController;
+    viewportLayout: ViewportLayout;
 }
 
 export default class ViewManager
 {
     protected system: RenderSystem;
     protected context: RenderContext = new RenderContext();
-    protected views: Dictionary<IViewEntry> = {};
-    protected viewList: IViewEntry[] = [];
-    protected nextManip: Manip = null;
+    protected views: IViewEntry[] = [];
+
+    protected layoutMode: EViewportLayoutMode = EViewportLayoutMode.Single;
+    protected nextManip: IViewportManip = null;
 
     constructor(system: RenderSystem)
     {
@@ -51,16 +49,17 @@ export default class ViewManager
     {
         const context = this.context;
 
-        this.viewList.forEach(entry => {
-            const { view, controller } = entry;
+        this.views.forEach(entry => {
+            const { view, viewportLayout } = entry;
             if (!view) {
                 return;
             }
 
             view.renderer.clear();
 
-            controller.forEachViewport(viewport => {
+            viewportLayout.forEachViewport(viewport => {
                 viewport.sceneCamera = sceneCamera;
+                viewport.updateCamera();
                 const camera = viewport.camera;
                 context.set(viewport, camera, scene);
                 this.system.render(context);
@@ -69,12 +68,21 @@ export default class ViewManager
         });
     }
 
-    setNextManip(manip: Manip)
+    setViewportLayout(layout: EViewportLayoutMode)
+    {
+        this.layoutMode = layout;
+
+        this.views.forEach(entry => {
+            entry.viewportLayout.layoutMode = layout;
+        });
+    }
+
+    setNextManip(manip: IViewportManip)
     {
         this.nextManip = manip;
 
-        this.viewList.forEach(entry => {
-            entry.controller.next.component = manip;
+        this.views.forEach(entry => {
+            entry.viewportLayout.next = manip;
         });
     }
 
@@ -83,41 +91,41 @@ export default class ViewManager
      * @param {VoyagerView} view
      * @returns {string}
      */
-    registerView(view: VoyagerView): ViewportController
+    registerView(view: VoyagerView): ViewportLayout
     {
-        const orphanEntry = this.viewList.find(entry => entry.view === null);
+        const orphanEntry = this.views.find(entry => entry.view === null);
 
         if (orphanEntry) {
             orphanEntry.view = view;
-            return orphanEntry.controller;
+            return orphanEntry.viewportLayout;
         }
 
-        const entity = this.system.createEntity("View");
-        const controller = entity.createComponent(ViewportController);
+        const viewportLayout = new ViewportLayout();
 
-        controller.setCanvasSize(view.canvasWidth, view.canvasHeight);
-        controller.next.component = this.nextManip;
+        viewportLayout.setCanvasSize(view.canvasWidth, view.canvasHeight);
+        viewportLayout.next = this.nextManip;
+        viewportLayout.layoutMode = this.layoutMode;
 
         const entry = {
-            controller,
+            viewportLayout,
             view
         };
 
-        this.views[controller.id] = entry;
-        this.viewList.push(entry);
+        this.views.push(entry);
 
-        return controller;
+        return viewportLayout;
     }
 
     /**
      * Called by a view before it is unmounted.
-     * @param {string} id
+     * @param {VoyagerView} view
      */
-    unregisterView(id: string)
+    unregisterView(view: VoyagerView)
     {
-        const entry = this.views[id];
+        const entry = this.views.find(entry => entry.view === view);
+
         if (!entry) {
-            throw new Error(`unregistered view, can't remove: '${id}'`);
+            throw new Error("view not found");
         }
 
         entry.view = null;

@@ -23,7 +23,7 @@ import { ComponentTracker } from "@ff/core/ecs/Component";
 import AnnotationView from "../views/AnnotationView";
 import AnnotationFactory from "../views/AnnotationFactory";
 
-import { IPickable, IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "./PickManip";
+import { IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "../components/PickManip";
 import Annotations, { IAnnotation, IAnnotationsChangeEvent } from "./Annotations";
 import Model from "./Model";
 import Object3D from "./Object3D";
@@ -31,7 +31,7 @@ import Object3D from "./Object3D";
 ////////////////////////////////////////////////////////////////////////////////
 
 
-export default class AnnotationsView extends Object3D implements IPickable
+export default class AnnotationsView extends Object3D
 {
     static readonly type: string = "AnnotationsView";
 

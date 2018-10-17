@@ -16,96 +16,94 @@
  */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 
 import TabContainer, { ITabSelectEvent, TabItem } from "@ff/react/TabContainer";
+
+import SettingsModeView from "./SettingsModeView";
+import PrepController, { EPrepMode, IPrepModeChangeEvent } from "./PrepController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /** Properties for [[SideBar]] component. */
-export interface ISideBarProps
+export interface ISideBarViewProps
 {
     className?: string;
-    style?: CSSProperties;
+    controller: PrepController;
 }
 
-export interface ISideBarState
+export default class SideBarView extends React.Component<ISideBarViewProps, {}>
 {
-    activeTabId: string;
-}
-
-export default class SideBar extends React.Component<ISideBarProps, ISideBarState>
-{
-    static readonly defaultProps: ISideBarProps = {
+    static readonly defaultProps = {
         className: "side-bar tab-container"
     };
 
-    constructor(props: ISideBarProps)
+    constructor(props: ISideBarViewProps)
     {
         super(props);
 
         this.onTabSelect = this.onTabSelect.bind(this);
+    }
 
-        this.state = {
-            activeTabId: ""
-        };
+    componentDidMount()
+    {
+        this.props.controller.on("mode", this.onMode, this);
+    }
+
+    componentWillUnmount()
+    {
+        this.props.controller.off("mode", this.onMode, this);
     }
 
     render()
     {
         const {
-            className
+            className,
+            controller
         } = this.props;
+
+        const mode = controller.mode;
 
         return (
             <TabContainer
                 className={className}
-                activeTabId={this.state.activeTabId}
+                activeTabIndex={mode}
                 onTabSelect={this.onTabSelect}>
 
                 <TabItem
-                    id="0"
+                    index={EPrepMode.Explore}
                     title="Information"
-                    faIcon="edit"
+                    faIcon="globe"
                     closable={false}
                     movable={false}>
-                    <div>Information</div>
+                    <div>Explore</div>
                 </TabItem>
 
                 <TabItem
-                    id="1"
-                    title="Transform"
-                    faIcon="cog"
-                    closable={false}
-                    movable={false}>
-                    <div>Transform</div>
-                </TabItem>
-
-                <TabItem
-                    id="2"
-                    title="Material"
+                    index={EPrepMode.Settings}
+                    title="Settings"
                     faIcon="palette"
                     closable={false}
                     movable={false}>
-                    <div>Material</div>
+
+                    <SettingsModeView/>
                 </TabItem>
 
                 <TabItem
-                    id="3"
+                    index={EPrepMode.Annotate}
                     title="Annotations"
                     faIcon="comment"
                     closable={false}
                     movable={false}>
-                    <div>Annotations</div>
+                    <div>Annotate</div>
                 </TabItem>
 
                 <TabItem
-                    id="4"
-                    title="Documents"
-                    faIcon="book-reader"
+                    index={EPrepMode.Pose}
+                    title="Pose"
+                    faIcon="wrench"
                     closable={false}
                     movable={false}>
-                    <div>Documents</div>
+                    <div>Pose</div>
                 </TabItem>
 
             </TabContainer>
@@ -114,6 +112,11 @@ export default class SideBar extends React.Component<ISideBarProps, ISideBarStat
 
     protected onTabSelect(event: ITabSelectEvent)
     {
-        this.setState({ activeTabId: event.tabId });
+        this.props.controller.mode = event.tabIndex;
+    }
+
+    protected onMode(event: IPrepModeChangeEvent)
+    {
+        this.forceUpdate();
     }
 }

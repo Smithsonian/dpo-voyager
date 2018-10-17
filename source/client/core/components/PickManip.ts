@@ -17,27 +17,20 @@
 
 import * as THREE from "three";
 
-import { Dictionary, Partial } from "@ff/core/types";
-import Component, { ComponentTracker, IComponentEvent } from "@ff/core/ecs/Component";
+import { Dictionary } from "@ff/core/types";
+import Publisher, { IPublisherEvent } from "@ff/core/Publisher";
+import System, { ISystemComponentEvent } from "@ff/core/ecs/System";
 
-import Manip from "./Manip";
-import Object3D, { IObject3DObjectEvent } from "./Object3D";
-import { ISystemComponentEvent } from "@ff/core/ecs/System";
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
+import Object3D, { IObject3DObjectEvent } from "../components/Object3D";
+
+import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
+import { IViewportManip } from "../app/ViewportLayout";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IViewportPointerEvent, IViewportTriggerEvent };
 
 const _vec2 = new THREE.Vector2();
-
-export type PickableComponent = Component & Partial<IPickable>;
-
-export interface IPickable
-{
-    onPointer: (event: IViewportPointerEvent, pickInfo: IPickResult) => boolean;
-    onTrigger: (event: IViewportTriggerEvent, pickInfo: IPickResult) => boolean;
-}
 
 export interface IPickResult
 {
@@ -47,12 +40,12 @@ export interface IPickResult
     normal: THREE.Vector3;
 }
 
-export interface IPickManipPickEvent extends IComponentEvent<PickManip>, IPickResult
+export interface IPickManipPickEvent extends IPublisherEvent<PickManip>, IPickResult
 {
     pointerEvent: IViewportPointerEvent;
 }
 
-export default class PickManip extends Manip
+export default class PickManip extends Manip implements IViewportManip
 {
     static readonly type: string = "PickManip";
     static readonly isSystemSingleton: boolean = true;
@@ -63,37 +56,24 @@ export default class PickManip extends Manip
     protected root: THREE.Object3D;
     protected activePick: IPickResult = null;
 
+    protected startX: number = 0;
+    protected startY: number = 0;
+
     constructor(id?: string)
     {
         super(id);
-        this.addEvent("pick");
+        this.addEvents("down", "up");
     }
 
     create()
     {
         super.create();
-
-        const components = this.getComponents(Object3D, true);
-
-        components.forEach(component => {
-            component.on("object", this.onObject3DObject, this);
-            if (component.object3D) {
-                this.objectComponents[component.object3D.id] = component;
-            }
-        });
-
         this.system.addComponentEventListener(Object3D, this.onObject3D, this);
     }
 
     dispose()
     {
-        const components = this.getComponents(Object3D, true);
-        components.forEach(component => {
-            component.off("object", this.onObject3DObject, this);
-        });
-
         this.system.removeComponentEventListener(Object3D, this.onObject3D, this);
-
         super.dispose();
     }
 
@@ -110,10 +90,13 @@ export default class PickManip extends Manip
         if (camera && event.isPrimary) {
 
             if (event.type === "down") {
+                this.startX = event.centerX;
+                this.startY = event.centerY;
+
                 const pickResults = this.pick(event.deviceX, event.deviceY, camera);
                 const pick = this.activePick = pickResults[0];
 
-                this.emit<IPickManipPickEvent>("pick", {
+                this.emit<IPickManipPickEvent>("down", {
                     pointerEvent: event,
                     component: pick ? pick.component : null,
                     object: pick ? pick.object : null,
@@ -122,22 +105,26 @@ export default class PickManip extends Manip
                 });
             }
             else if (event.type === "up") {
+                const dx = event.centerX - this.startX;
+                const dy = event.centerY - this.startY;
 
-                const pick = this.activePick;
-                this.emit<IPickManipPickEvent>("pick", {
-                    pointerEvent: event,
-                    component: pick ? pick.component : null,
-                    object: pick ? pick.object : null,
-                    point: pick ? pick.point : null,
-                    normal: pick ? pick.normal : null
-                });
+                if (Math.abs(dx) + Math.abs(dy) < 3) {
+                    const pick = this.activePick;
+                    this.emit<IPickManipPickEvent>("up", {
+                        pointerEvent: event,
+                        component: pick ? pick.component : null,
+                        object: pick ? pick.object : null,
+                        point: pick ? pick.point : null,
+                        normal: pick ? pick.normal : null
+                    });
+                }
             }
         }
 
         return super.onPointer(event);
     }
 
-     protected pick(deviceX: number, deviceY: number, camera: THREE.Camera): IPickResult[]
+    protected pick(deviceX: number, deviceY: number, camera: THREE.Camera): IPickResult[]
     {
         if (!this.root) {
             return [];
@@ -174,16 +161,6 @@ export default class PickManip extends Manip
         });
 
         return pickResults;
-    }
-
-    /**
-     * Returns a text representation of this object.
-     * @returns {string}
-     */
-    toString()
-    {
-        const count = Object.keys(this.objectComponents).length;
-        return super.toString() + ` - pickable components: ${count}`;
     }
 
     protected onObject3D(event: ISystemComponentEvent<Object3D>)

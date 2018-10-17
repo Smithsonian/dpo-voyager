@@ -15,20 +15,38 @@
  * limitations under the License.
  */
 
-import { ReturnType } from "@ff/core/types";
+import Controller, { Actions, Commander } from "@ff/core/Controller";
+import System, { ISystemComponentEvent } from "@ff/core/ecs/System";
 
-import Commander from "@ff/core/Commander";
-import Component from "@ff/core/ecs/Component";
+import Model from "../core/components/Model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type Actions<T extends Controller<any>> = ReturnType<T["createActions"]>;
-
-export default class Controller<T extends Controller<any> = Controller<any>> extends Component
+export default class ModelPrepController extends Controller<ModelPrepController>
 {
-    static readonly type: string = "Controller";
+    readonly system: System;
+
+    constructor(system: System, commander: Commander)
+    {
+        super(commander);
+
+        this.system = system;
+        this.system.addComponentEventListener(Model, this.onModelComponent, this);
+    }
+
+    dispose()
+    {
+        this.system.removeComponentEventListener(Model, this.onModelComponent, this);
+    }
 
     createActions(commander: Commander)
+    {
+        return {
+
+        };
+    }
+
+    protected onModelComponent(event: ISystemComponentEvent<Model>)
     {
     }
 }

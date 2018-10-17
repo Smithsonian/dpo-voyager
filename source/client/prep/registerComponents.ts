@@ -17,7 +17,6 @@
 
 import Registry from "@ff/core/ecs/Registry";
 
-import SelectionController from "../core/components/SelectionController";
 import TransformManip from "../core/components/TransformManip";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +24,6 @@ import TransformManip from "../core/components/TransformManip";
 export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
-        SelectionController,
         TransformManip
     ]);
 }

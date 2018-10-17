@@ -110,13 +110,15 @@ export default class PresentationController extends Controller<PresentationContr
             this.loadPresentation(presentationUrl);
         }
         else if (modelUrl) {
-            const q = EDerivativeQuality[quality];
+            let q = EDerivativeQuality[quality];
+            q = q !== undefined ? q : EDerivativeQuality.Medium;
             this.loadModel(modelUrl, q);
         }
     }
 
     loadModel(modelUrl: string, quality?: EDerivativeQuality, templateUrl?: string)
     {
+        console.log(`Creating new item with web derivative, quality: ${EDerivativeQuality[quality]}, model url: ${modelUrl}`)
         const item = new Item(this.system, this.loaders);
         item.addWebModelDerivative(modelUrl, quality);
 

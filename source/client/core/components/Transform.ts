@@ -23,7 +23,7 @@ import _math from "@ff/core/math";
 import types from "@ff/core/ecs/propertyTypes";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import { INode as ITransformData, TVector3, TVector4 } from "common/types/presentation";
+import { INode as ITransformData, TVector3 } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 

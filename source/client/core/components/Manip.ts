@@ -16,23 +16,24 @@
  */
 
 import Component, { ComponentLink } from "@ff/core/ecs/Component";
-import { IManipEventHandler } from "@ff/react/ManipTarget";
 
 import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
+import { IViewportManip } from "../app/ViewportLayout";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IViewportPointerEvent, IViewportTriggerEvent };
 
-export default class Manip extends Component implements IManipEventHandler
+export default class Manip extends Component implements IViewportManip
 {
-    static readonly type: string = "ManipController";
+    static readonly type: string = "Manip";
 
-    next: ComponentLink<Manip> = null;
+    next: ComponentLink<Manip>;
 
     create()
     {
-        this.next = new ComponentLink(this, Manip);
+        super.create();
+        this.next = new ComponentLink<Manip>(this);
     }
 
     onPointer(event: IViewportPointerEvent)

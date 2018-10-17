@@ -15,37 +15,45 @@
  * limitations under the License.
  */
 
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
-import RenderContext from "../app/RenderContext";
-
-import Manip from "./Manip";
+import * as React from "react";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ViewportManip extends Manip
+/** Properties for [[SettingsModeView]] component. */
+export interface ISettingsModeViewProps
 {
-    static readonly type: string = "ViewportManip";
+    className?: string;
+}
 
-    render(context: RenderContext)
+interface ISettingsModeViewState
+{
+}
+
+export default class SettingsModeView extends React.Component<ISettingsModeViewProps, ISettingsModeViewState>
+{
+    static readonly defaultProps: ISettingsModeViewProps = {
+        className: "settings-mode-view"
+    };
+
+    constructor(props: ISettingsModeViewProps)
     {
-        context.viewport.updateCamera();
+        super(props);
+
+        this.state = {
+        };
     }
 
-    onPointer(event: IViewportPointerEvent)
+    render()
     {
-        if (event.viewport) {
-            return event.viewport.onPointer(event);
-        }
+        const {
+            className
+        } = this.props;
 
-        return false;
-    }
-
-    onTrigger(event: IViewportTriggerEvent)
-    {
-        if (event.viewport) {
-            return event.viewport.onTrigger(event);
-        }
-
-        return false;
+        return (
+            <div
+                className={className} >
+                Settings Mode
+            </div>
+        );
     }
 }

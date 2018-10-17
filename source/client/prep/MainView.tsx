@@ -28,7 +28,7 @@ import { IDockLayout } from "@ff/react/DockController";
 import ComponentFactory from "@ff/react/ComponentFactory";
 
 import MenuBar from "./MenuBar";
-import SideBar from "./SideBar";
+import SideBarView from "./SideBarView";
 
 import Application from "./Application";
 import VoyagerView from "../core/views/VoyagerView";
@@ -143,8 +143,8 @@ export default class MainView extends React.Component<IMainViewProps, {}>
 
                         <SplitterSection
                             size={0.22}>
-                            <SideBar>
-                            </SideBar>
+                            <SideBarView
+                                controller={application.prepController} />
                         </SplitterSection>
 
                         <SplitterSection

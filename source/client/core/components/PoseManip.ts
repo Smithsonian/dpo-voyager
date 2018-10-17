@@ -20,7 +20,6 @@ import * as THREE from "three";
 import types from "@ff/core/ecs/propertyTypes";
 
 import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
-import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +47,7 @@ export default class PoseManip extends Manip
 
     onPointer(event: IViewportPointerEvent)
     {
-
+        return super.onPointer(event);
     }
 
     onTrigger(event: IViewportTriggerEvent)

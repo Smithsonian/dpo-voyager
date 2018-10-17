@@ -17,15 +17,13 @@
 
 import * as THREE from "three";
 
+import Object3D from "../components/Object3D";
+
 import { TransformControls } from "../three/TransformControls";
 import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
 
-import RenderContext, { IRenderable } from "../app/RenderContext";
-
-import SelectionController, { ISelectComponentEvent } from "./SelectionController";
-
-import Model from "./Model";
 import Manip from "./Manip";
+import RenderContext, { IRenderable } from "../app/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,24 +32,9 @@ export default class TransformManip extends Manip implements IRenderable
     static readonly type: string = "TransformManip";
 
     protected enabled: boolean = false;
-    protected model: Model = null;
     protected manip = new TransformControls();
+    protected object: Object3D = null;
     protected scene: THREE.Scene = null;
-    protected selectionController: SelectionController;
-
-    create()
-    {
-        super.create();
-
-        this.selectionController = this.getComponent(SelectionController, true);
-        this.selectionController.on("select-component", this.onSelectComponent, this);
-    }
-
-    dispose()
-    {
-        this.selectionController.off("select-component", this.onSelectComponent, this);
-        super.dispose();
-    }
 
     render(context: RenderContext)
     {
@@ -94,21 +77,17 @@ export default class TransformManip extends Manip implements IRenderable
         return super.onTrigger(event);
     }
 
-    onSelectComponent(event: ISelectComponentEvent)
+    setTarget(objectComponent: Object3D)
     {
-        if (!event.component.is(Model)) {
-            return;
-        }
-
-        const model = event.component as Model;
-        if (!event.selected && model === this.model) {
+        if (this.object) {
             this.manip.detach();
-            this.model = null;
             this.enabled = false;
         }
-        else if (event.selected && !this.model) {
-            this.manip.attach(model.object3D);
-            this.model = model;
+
+        this.object = objectComponent;
+
+        if (objectComponent) {
+            this.manip.attach(objectComponent.object3D);
             this.enabled = true;
         }
     }

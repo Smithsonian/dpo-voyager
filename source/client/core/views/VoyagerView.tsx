@@ -23,9 +23,9 @@ import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
 import PresentationOverlay from "./PresentationOverlay";
-import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent, QuadSplitOverlayMode } from "./QuadSplitOverlay";
+import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
+import ViewportLayout, { EViewportLayoutMode, IViewportLayoutChangeEvent } from "../app/ViewportLayout";
 import ViewManager from "../app/ViewManager";
-import ViewportController from "../components/ViewportController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,18 +37,15 @@ export interface IVoyagerViewProps
     actions;
 }
 
-export interface IVoyagerViewState
-{
-    canvasController: ViewportController;
-}
-
-export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoyagerViewState> implements IManipEventHandler
+export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> implements IManipEventHandler
 {
     static readonly defaultProps = {
         className: "voyager-view"
     };
 
     renderer: THREE.WebGLRenderer = null;
+    viewportLayout: ViewportLayout = null;
+
     canvasWidth: number = 0;
     canvasHeight: number = 0;
 
@@ -63,10 +60,6 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
         this.onQuadSplitChange = this.onQuadSplitChange.bind(this);
 
         this.containerRef = React.createRef();
-
-        this.state = {
-            canvasController: null
-        };
     }
 
     get container(): Container | null
@@ -76,14 +69,16 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
 
     componentDidMount()
     {
-        const canvasController = this.props.viewManager.registerView(this);
-        this.setState({ canvasController });
+        this.viewportLayout = this.props.viewManager.registerView(this);
+        this.viewportLayout.on("layout", this.onLayout, this);
+        this.forceUpdate();
     }
 
     componentWillUnmount()
     {
-        this.props.viewManager.unregisterView(this.state.canvasController.id);
-        this.setState({ canvasController: null });
+        this.props.viewManager.unregisterView(this);
+        this.viewportLayout.off("layout", this.onLayout, this);
+        this.viewportLayout = null;
     }
 
     render()
@@ -93,13 +88,11 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
             actions
         } = this.props;
 
-        const controller = this.state.canvasController;
+        const viewportLayout = this.viewportLayout;
 
-        const splitCode = controller ? controller.getValue("Layout") : 0;
-        const horizontalSplit = controller ? controller.getValue("Split.Horizontal") : 0.5;
-        const verticalSplit = controller ? controller.getValue("Split.Vertical") : 0.5;
-
-        const splitMode = [ "off", "horizontal", "vertical", "quad" ][splitCode] as QuadSplitOverlayMode;
+        const layoutMode = viewportLayout ? viewportLayout.layoutMode : EViewportLayoutMode.Single;
+        const horizontalSplit = viewportLayout ? viewportLayout.horizontalSplit : 0.5;
+        const verticalSplit = viewportLayout ? viewportLayout.verticalSplit : 0.5;
 
         return (
             <ManipTarget
@@ -117,7 +110,7 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
                     actions={actions} />
 
                 <QuadSplitOverlay
-                    mode={splitMode}
+                    mode={layoutMode}
                     horizontalSplit={horizontalSplit}
                     verticalSplit={verticalSplit}
                     onChange={this.onQuadSplitChange}
@@ -128,9 +121,8 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
 
     onPointer(event: IManipPointerEvent)
     {
-        const canvasController = this.state.canvasController;
-        if (canvasController) {
-            return canvasController.onPointer(event);
+        if (this.viewportLayout) {
+            return this.viewportLayout.onPointer(event);
         }
 
         return false;
@@ -138,9 +130,8 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
 
     onTrigger(event: IManipTriggerEvent)
     {
-        const canvasController = this.state.canvasController;
-        if (canvasController) {
-            return canvasController.onTrigger(event);
+        if (this.viewportLayout) {
+            return this.viewportLayout.onTrigger(event);
         }
 
         return false;
@@ -172,18 +163,20 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, IVoy
             this.renderer.setSize(event.width, event.height, false);
         }
 
-        const canvasController = this.state.canvasController;
-        if (canvasController) {
-            canvasController.setCanvasSize(event.width, event.height);
+        if (this.viewportLayout) {
+            this.viewportLayout.setCanvasSize(event.width, event.height);
         }
+    }
+
+    protected onLayout(event: IViewportLayoutChangeEvent)
+    {
+        this.forceUpdate();
     }
 
     protected onQuadSplitChange(event: IQuadSplitOverlayChangeEvent)
     {
-        const canvasController = this.state.canvasController;
-        if (canvasController) {
-            canvasController.setValue("Split.Horizontal", event.horizontalSplit);
-            canvasController.setValue("Split.Vertical", event.verticalSplit);
+        if (this.viewportLayout) {
+            this.viewportLayout.setSplit(event.horizontalSplit, event.verticalSplit);
         }
     }
 }

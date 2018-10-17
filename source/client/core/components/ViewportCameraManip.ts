@@ -15,32 +15,29 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import { ISystemComponentEvent } from "@ff/core/ecs/System";
-
-import Model from "./Model";
-import Controller from "./Controller";
+import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ModelPrepController extends Controller
+export default class ViewportCameraManip extends Manip
 {
-    static readonly type: string = "ModelPrepController";
+    static readonly type: string = "ViewportCameraManip";
 
-    create()
+    onPointer(event: IViewportPointerEvent)
     {
-        super.create();
-        this.system.addComponentEventListener(Model, this.onModelComponent, this);
+        if (event.viewport && event.viewport.onPointer(event)) {
+            return true;
+        }
+
+        return super.onPointer(event);
     }
 
-    dispose()
+    onTrigger(event: IViewportTriggerEvent)
     {
-        this.system.removeComponentEventListener(Model, this.onModelComponent, this);
-        super.dispose();
-    }
+        if (event.viewport && event.viewport.onTrigger(event)) {
+            return true;
+        }
 
-    protected onModelComponent(event: ISystemComponentEvent<Model>)
-    {
+        return super.onTrigger(event);
     }
 }

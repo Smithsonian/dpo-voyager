@@ -63,6 +63,11 @@ export default class Item
         return this.entity.name;
     }
 
+    get url()
+    {
+        return this.itemUrl;
+    }
+
     get path()
     {
         return resolvePathname(".", this.itemUrl);
@@ -75,9 +80,14 @@ export default class Item
 
     addWebModelDerivative(modelUri: string, quality: EDerivativeQuality)
     {
-        this.entity.getOrCreateComponent(ModelComponent);
+        this.itemUrl = modelUri;
+        const modelFile = modelUri.substr(resolvePathname(".", modelUri).length);
+
+        const model = this.entity.getOrCreateComponent(ModelComponent);
+        model.setAssetLoader(this.loaders.assetLoader, this.path);
+
         const derivatives = this.entity.getOrCreateComponent(DerivativesComponent);
-        derivatives.addWebModelDerivative(modelUri, quality);
+        derivatives.addWebModelDerivative(modelFile, quality);
     }
 
     inflate(item: IItem, url?: string): this

@@ -45,10 +45,10 @@ export default class VoyagerApplication
 {
     readonly presentationController: PresentationController;
     readonly viewManager: ViewManager;
+    readonly commander: Commander;
+    readonly system: RenderSystem;
 
-    protected commander: Commander;
     protected registry: Registry;
-    protected system: RenderSystem;
     protected context: UpdateContext;
     protected loaders: Loaders;
     protected main: Entity;

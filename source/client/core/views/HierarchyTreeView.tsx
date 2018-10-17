@@ -27,7 +27,7 @@ import System from "@ff/core/ecs/System";
 
 import Tree from "@ff/react/Tree";
 
-import SelectionController, { SelectionActions } from "../components/SelectionController";
+import SelectionController, { SelectionActions } from "../controllers/SelectionController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -75,24 +75,6 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
         className: "tree"
     };
 
-    protected actions: SelectionActions;
-    protected expanded: Dictionary<boolean> = {};
-
-    constructor(props: IHierarchyTreeViewProps)
-    {
-        super(props);
-
-        this.actions = props.controller.actions;
-        this.expandAll();
-    }
-
-    expandAll()
-    {
-        const system = this.props.controller.system;
-        system.getEntities().forEach(entity => this.expanded[entity.id] = true);
-        system.getComponents().forEach(component => this.expanded[component.id] = true);
-    }
-
     componentDidMount()
     {
         this.props.controller.on("change", this.onChange, this);
@@ -131,7 +113,7 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
                 tree={controller.system}
                 includeRoot={false}
                 selected={controller.selected}
-                expanded={this.expanded}
+                expanded={controller.expanded}
                 getId={_getId}
                 getClass={_getClass}
                 getChildren={_getChildren}
@@ -141,22 +123,20 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
 
     protected onChange()
     {
-        this.expandAll();
         this.forceUpdate();
     }
 
     protected onClickHeader(e: MouseEvent, node: ECS)
     {
-        const id = _getId(node);
+        const controller = this.props.controller;
         const rect = (e.target as HTMLDivElement).getBoundingClientRect();
         const x = e.clientX - rect.left;
 
         if (x < 20) {
-            this.expanded[id] = !this.expanded[id];
-            this.forceUpdate();
+            controller.toggleExpanded(node);
         }
         else {
-            this.actions.setSelected(node, true);
+            controller.actions.select(node, e.ctrlKey);
         }
     }
 }

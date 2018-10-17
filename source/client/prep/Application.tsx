@@ -20,14 +20,17 @@ import * as ReactDOM from "react-dom";
 
 import DockController from "@ff/react/DockController";
 
-
 import { IPresentationChangeEvent } from "../core/controllers/PresentationController";
-import SelectionController from "../core/components/SelectionController";
-import ViewportManip from "../core/components/ViewportManip";
+import SelectionController, { ISelectComponentEvent } from "../core/controllers/SelectionController";
+import { IPickManipPickEvent } from "../core/components/PickManip";
+import ViewportCameraManip from "../core/components/ViewportCameraManip";
 import TransformManip from "../core/components/TransformManip";
+import Model from "../core/components/Model";
 
 import { registerComponents } from "./registerComponents";
 import MainView from "./MainView";
+
+import PrepController from "./PrepController";
 
 import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
 
@@ -40,9 +43,10 @@ export default class Application extends VoyagerApplication
 {
     readonly dockableController: DockController;
     readonly selectionController: SelectionController;
+    readonly prepController: PrepController;
 
     protected transformManip: |TransformManip;
-    protected viewportManip: ViewportManip;
+    protected viewportCameraManip: ViewportCameraManip;
 
     constructor(props: IVoyagerApplicationProps)
     {
@@ -51,17 +55,25 @@ export default class Application extends VoyagerApplication
 
         this.dockableController = new DockController(this.commander);
 
-        this.selectionController = this.main.createComponent(SelectionController);
-        this.selectionController.createActions(this.commander);
-
-        this.viewportManip = this.main.createComponent(ViewportManip);
-        this.orbitManip.next.component = this.viewportManip;
+        this.selectionController = new SelectionController(this.commander, this.system);
+        this.prepController = new PrepController(this.commander, this.viewManager);
 
         this.transformManip = this.main.createComponent(TransformManip);
+        this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
+
         this.pickManip.next.component = this.transformManip;
         this.transformManip.next.component = this.orbitManip;
+        this.orbitManip.next.component = this.viewportCameraManip;
 
-        // assets/nmafa-68_23_53_textured_cm/nmafa-68_23_53_textured_cm.json
+        this.pickManip.on("up", (event: IPickManipPickEvent) => {
+            this.selectionController.actions.select(event.component, event.pointerEvent.ctrlKey);
+        });
+
+        this.selectionController.on("component", (event: ISelectComponentEvent) => {
+            if (event.component.is(Model)) {
+                this.transformManip.setTarget(event.component as Model);
+            }
+        });
 
         this.start();
         this.presentationController.loadFromDocumentUrl();
