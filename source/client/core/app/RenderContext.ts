@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import Component from "@ff/core/ecs/Component";
 
-import Viewport from "../three/Viewport";
+import Viewport from "./Viewport";
 
 ////////////////////////////////////////////////////////////////////////////////
 

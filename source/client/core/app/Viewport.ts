@@ -25,17 +25,18 @@ import OrbitController from "@ff/three/OrbitController";
 
 const _pi2 = Math.PI * 0.5;
 
-const _cameraOrientation = {
-    left: new THREE.Vector3(0, -_pi2, 0),
-    right: new THREE.Vector3(0, _pi2, 0),
-    top: new THREE.Vector3(_pi2, 0, 0),
-    bottom: new THREE.Vector3(-_pi2, 0, 0),
-    front: new THREE.Vector3(0, 0, 0),
-    back: new THREE.Vector3(0, 0, Math.PI),
-};
+const _cameraOrientation = [
+    new THREE.Vector3(0, -_pi2, 0),
+    new THREE.Vector3(0, _pi2, 0),
+    new THREE.Vector3(_pi2, 0, 0),
+    new THREE.Vector3(-_pi2, 0, 0),
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, Math.PI),
+];
 
-export type ViewportCameraView = "left" | "right" | "top" | "bottom" | "front" | "back";
-export type ViewportCameraType = "perspective" | "orthographic";
+export enum EViewportCameraView { Left, Right, Top, Bottom, Front, Back }
+export enum EViewportCameraType { Perspective, Orthographic }
+
 
 export interface IViewportPointerEvent extends IManipPointerEvent
 {
@@ -134,7 +135,7 @@ export default class Viewport
         }
     }
 
-    setCamera(type: ViewportCameraType, view: ViewportCameraView): this
+    setCamera(type: EViewportCameraType, view: EViewportCameraView): this
     {
         this.useSceneCamera = false;
 
@@ -143,7 +144,7 @@ export default class Viewport
         return this;
     }
 
-    setCameraType(type: ViewportCameraType)
+    setCameraType(type: EViewportCameraType)
     {
         const camera = this.vpCamera;
 
@@ -151,11 +152,11 @@ export default class Viewport
             this.vpController.fromMatrix(camera.matrix);
         }
 
-        if (type === "perspective") {
+        if (type === EViewportCameraType.Perspective) {
             this.vpCamera = new THREE.PerspectiveCamera(45, 1, 0.001, 10000);
             this.vpController.orthographicMode = false;
         }
-        else if (type === "orthographic") {
+        else if (type === EViewportCameraType.Orthographic) {
             this.vpCamera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.001, 10000);
             this.vpController.orthographicMode = true;
             this.vpController.orientationEnabled = false;
@@ -165,7 +166,7 @@ export default class Viewport
         this.updateCamera(true);
     }
 
-    setCameraView(view: ViewportCameraView)
+    setCameraView(view: EViewportCameraView)
     {
         this.vpController.orientation.copy(_cameraOrientation[view]);
         this.vpController.offset.set(0, 0, 1000);

@@ -50,13 +50,13 @@ const expressServerConfig: IExpressServerConfiguration = {
 
 const expressServer = new ExpressServer(expressServerConfig);
 
-expressServer.app.get("/dev/:component", (req, res) => {
+expressServer.app.get("/:component", (req, res) => {
     res.render("app", { component: req.params.component, devMode: true });
 });
 
-expressServer.app.get("/:component", (req, res) => {
-    res.render("app", { component: req.params.component, devMode: false });
-});
+// expressServer.app.get("/:component", (req, res) => {
+//     res.render("app", { component: req.params.component, devMode: false });
+// });
 
 expressServer.start().then(() => {
     console.info(`\nServer ready and listening on port ${port}`);

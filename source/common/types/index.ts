@@ -15,37 +15,22 @@
  * limitations under the License.
  */
 
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
-import RenderContext from "../app/RenderContext";
-
-import Manip from "./Manip";
+import { IItem, TDerivativeUsage, TDerivativeQuality } from "./item";
+import { IPresentation, IRenderer, INode, IExplorer, TShaderType, TUnitType } from "./presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ViewportManip extends Manip
-{
-    static readonly type: string = "ViewportManip";
+export { IItem, IPresentation }
+export { INode, IExplorer, IRenderer, TUnitType };
 
-    render(context: RenderContext)
-    {
-        context.viewport.updateCamera();
-    }
+export { TDerivativeUsage }
+export enum EDerivativeUsage { Web, Print, Editorial }
 
-    onPointer(event: IViewportPointerEvent)
-    {
-        if (event.viewport) {
-            return event.viewport.onPointer(event);
-        }
+export { TDerivativeQuality }
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
 
-        return false;
-    }
+export enum EProjectionType { Perspective, Orthographic }
+export enum EViewPreset { Left, Right, Top, Bottom, Front, Back }
 
-    onTrigger(event: IViewportTriggerEvent)
-    {
-        if (event.viewport) {
-            return event.viewport.onTrigger(event);
-        }
-
-        return false;
-    }
-}
+export { TShaderType }
+export enum EShaderType { Inherit, Default, PBR, Phong, Clay, Normals, Wireframe, XRay }

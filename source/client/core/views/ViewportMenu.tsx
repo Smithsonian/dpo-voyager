@@ -23,18 +23,18 @@ import GridContainer from "@ff/react/GridContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import { ProjectionMode, ViewPreset } from "../components/PresentationController";
+import { EProjectionType, EViewPreset } from "common/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IViewportMenuSelectEvent extends IButtonTapEvent { index: number }
+export interface IViewportMenuSelectEvent extends IButtonTapEvent { viewportIndex: number }
 
 /** Properties for [[ViewportMenu]] component. */
 export interface IViewportMenuProps extends IComponentProps
 {
-    index: number;
-    projection: ProjectionMode;
-    viewPreset: ViewPreset
+    viewportIndex: number;
+    projection: EProjectionType;
+    viewPreset: EViewPreset
     onSelectProjection?: (event: IViewportMenuSelectEvent) => void;
     onSelectViewPreset?: (event: IViewportMenuSelectEvent) => void;
 }
@@ -43,15 +43,15 @@ const ViewportMenu: React.SFC<IViewportMenuProps> = function(props)
 {
     const {
         className,
-        index,
+        viewportIndex,
         projection,
         viewPreset,
         onSelectProjection,
         onSelectViewPreset
     } = props;
 
-    const onTapProjection = (event: IButtonTapEvent) => onSelectProjection({ ...event, index });
-    const onTapViewPreset = (event: IButtonTapEvent) => onSelectViewPreset({ ...event, index });
+    const onTapProjection = (event: IButtonTapEvent) => onSelectProjection({ ...event, viewportIndex });
+    const onTapViewPreset = (event: IButtonTapEvent) => onSelectViewPreset({ ...event, viewportIndex });
 
     return (
         <FlexContainer
@@ -64,21 +64,21 @@ const ViewportMenu: React.SFC<IViewportMenuProps> = function(props)
                 direction="horizontal">
 
                 <Button
-                    id="perspective"
+                    index={EProjectionType.Perspective}
                     text="Perspective"
                     icon="fas fa-columns"
                     title="Perspective Projection"
-                    selected={projection === "perspective"}
-                    focused={projection === "perspective"}
+                    selected={projection === EProjectionType.Perspective}
+                    focused={projection === EProjectionType.Perspective}
                     onTap={onTapProjection} />
 
                 <Button
-                    id="orthographic"
+                    index={EProjectionType.Orthographic}
                     text="Orthographic"
                     icon="fas fa-columns"
                     title="Orthographic Projection"
-                    selected={projection === "orthographic"}
-                    focused={projection === "orthographic"}
+                    selected={projection === EProjectionType.Orthographic}
+                    focused={projection === EProjectionType.Orthographic}
                     onTap={onTapProjection} />
 
             </FlexContainer>
@@ -89,55 +89,55 @@ const ViewportMenu: React.SFC<IViewportMenuProps> = function(props)
                 justifyContent="center" >
 
                 <Button
-                    id="top"
+                    index={EViewPreset.Top}
                     className="control button cube"
                     text="T"
                     title="Top View"
-                    selected={viewPreset === "top"}
+                    selected={viewPreset === EViewPreset.Top}
                     style={{gridColumnStart: 2, gridRowStart: 1}}
                     onTap={onTapViewPreset}/>
 
                 <Button
-                    id="left"
+                    index={EViewPreset.Left}
                     className="control button cube"
                     text="L"
                     title="Left View"
-                    selected={viewPreset === "left"}
+                    selected={viewPreset === EViewPreset.Left}
                     style={{gridColumnStart: 1, gridRowStart: 2}}
                     onTap={onTapViewPreset} />
 
                 <Button
-                    id="front"
+                    index={EViewPreset.Front}
                     className="control button cube"
                     text="F"
                     title="Front View"
-                    selected={viewPreset === "front"}
+                    selected={viewPreset === EViewPreset.Front}
                     style={{gridColumnStart: 2, gridRowStart: 2}}
                     onTap={onTapViewPreset} />
 
                 <Button
-                    id="right"
+                    index={EViewPreset.Right}
                     className="control button cube"
                     text="R"
                     title="Right View"
-                    selected={viewPreset === "right"}
+                    selected={viewPreset === EViewPreset.Right}
                     style={{gridColumnStart: 3, gridRowStart: 2}}
                     onTap={onTapViewPreset} />
 
                 <Button
-                    id="back"
+                    index={EViewPreset.Back}
                     className="control button cube"
                     text="B"
                     title="Back View"
-                    selected={viewPreset === "back"}
+                    selected={viewPreset === EViewPreset.Back}
                     style={{gridColumnStart: 4, gridRowStart: 2}}
                     onTap={onTapViewPreset} />
 
                 <Button
-                    id="bottom"
+                    index={EViewPreset.Bottom}
                     className="control button cube"
                     text="B" title="Bottom View"
-                    selected={viewPreset === "bottom"}
+                    selected={viewPreset === EViewPreset.Bottom}
                     style={{gridColumnStart: 2, gridRowStart: 3}}
                     onTap={onTapViewPreset} />
 

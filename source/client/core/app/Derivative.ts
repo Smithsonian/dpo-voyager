@@ -19,24 +19,29 @@ import * as THREE from "three";
 
 import {
     IAsset,
-    AssetType,
-    DerivativeUsage,
-    DerivativeQuality
+    TAssetType
 } from "common/types/item";
 
 import AssetLoader from "../loaders/AssetLoader";
 import UberMaterial from "../shaders/UberMaterial";
 
+import Asset, { EAssetType } from "./Asset";
+
 ////////////////////////////////////////////////////////////////////////////////
+
+export { Asset, EAssetType };
+
+export enum EDerivativeUsage { Web, Print, Editorial }
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
 
 export default class Derivative
 {
     id: string;
-    usage: DerivativeUsage;
-    quality: DerivativeQuality;
+    usage: EDerivativeUsage;
+    quality: EDerivativeQuality;
     assets: IAsset[];
 
-    constructor(usage: DerivativeUsage, quality: DerivativeQuality, assets?: IAsset[])
+    constructor(usage: EDerivativeUsage, quality: EDerivativeQuality, assets?: IAsset[])
     {
         this.id = "";
         this.usage = usage;
@@ -46,18 +51,18 @@ export default class Derivative
 
     load(loader: AssetLoader, assetPath?: string): Promise<THREE.Object3D>
     {
-        const modelAsset = this.findAsset("model");
+        const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
             return loader.loadModel(modelAsset, assetPath);
         }
 
-        const geoAsset = this.findAsset("geometry");
+        const geoAsset = this.findAsset(EAssetType.Geometry);
 
         if (geoAsset) {
             return loader.loadGeometry(geoAsset, assetPath)
                 .then(geometry => {
-                    const imageAssets = this.findAssets("image");
+                    const imageAssets = this.findAssets(EAssetType.Image);
                     return Promise.all(imageAssets.map(asset => loader.loadTexture(asset)))
                     .then(textures => {
                         const material = new UberMaterial();
@@ -68,14 +73,22 @@ export default class Derivative
         }
     }
 
-    protected findAsset(type: AssetType): IAsset | undefined
+    addAsset(uri: string, type: EAssetType)
     {
-        return this.assets.find(asset => asset.type === type);
+        const t = EAssetType[type] as TAssetType;
+        this.assets.push({ uri, type: t });
     }
 
-    protected findAssets(type: AssetType): IAsset[]
+    protected findAsset(type: EAssetType): IAsset | undefined
     {
-        return this.assets.filter(asset => asset.type === type);
+        const t = EAssetType[type] as TAssetType;
+        return this.assets.find(asset => asset.type === t);
+    }
+
+    protected findAssets(type: EAssetType): IAsset[]
+    {
+        const t = EAssetType[type] as TAssetType;
+        return this.assets.filter(asset => asset.type === t);
     }
 
     protected assignTextures(assets: IAsset[], textures: THREE.Texture[], material: UberMaterial)
@@ -85,20 +98,20 @@ export default class Derivative
             const texture = textures[i];
 
             switch(asset.mapType) {
-                case "color":
+                case "Color":
                     material.map = texture;
                     break;
-                case "occlusion":
+                case "Occlusion":
                     material.aoMap = texture;
                     break;
-                case "emissive":
+                case "Emissive":
                     material.emissiveMap = texture;
                     break;
-                case "metallic-roughness":
+                case "MetallicRoughness":
                     material.metalnessMap = texture;
                     material.roughnessMap = texture;
                     break;
-                case "normal":
+                case "Normal":
                     material.normalMap = texture;
                     break;
             }

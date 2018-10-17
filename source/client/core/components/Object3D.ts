@@ -33,13 +33,18 @@ export default class Object3D extends Component
 {
     static readonly type: string = "Object3D";
 
-    protected transform: Transform = null;
+    protected _transform: Transform = null;
     private _object: THREE.Object3D = null;
 
     constructor(id?: string)
     {
         super(id);
         this.addEvent("object");
+    }
+
+    get transform(): Transform
+    {
+        return this._transform;
     }
 
     get object3D(): THREE.Object3D | null
@@ -49,8 +54,8 @@ export default class Object3D extends Component
 
     set object3D(object: THREE.Object3D)
     {
-        if (this._object && this.transform) {
-            this.transform.removeObject3D(this._object);
+        if (this._object && this._transform) {
+            this._transform.removeObject3D(this._object);
         }
 
         this.emit<IObject3DObjectEvent>("object", { current: this._object, next: object });
@@ -59,8 +64,8 @@ export default class Object3D extends Component
         if (object) {
             object.matrixAutoUpdate = false;
 
-            if (this.transform) {
-                this.transform.addObject3D(object);
+            if (this._transform) {
+                this._transform.addObject3D(object);
             }
         }
     }
@@ -68,12 +73,12 @@ export default class Object3D extends Component
     create()
     {
         this.trackComponent(Transform, transform => {
-            this.transform = transform;
+            this._transform = transform;
             if (this._object) {
                 transform.addObject3D(this._object);
             }
         }, transform => {
-            this.transform = null;
+            this._transform = null;
             if (this._object) {
                 transform.removeObject3D(this._object);
             }
@@ -82,8 +87,8 @@ export default class Object3D extends Component
 
     dispose()
     {
-        if (this._object && this.transform) {
-            this.transform.removeObject3D(this._object);
+        if (this._object && this._transform) {
+            this._transform.removeObject3D(this._object);
         }
 
         super.dispose();

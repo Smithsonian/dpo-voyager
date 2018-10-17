@@ -1,5 +1,5 @@
 import { Camera, Object3D } from "three";
-import { IViewportPointerEvent, IViewportTriggerEvent } from "./Viewport";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
 
 export class TransformControls extends Object3D
 {

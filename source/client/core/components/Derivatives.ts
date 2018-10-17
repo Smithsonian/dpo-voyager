@@ -19,18 +19,18 @@ import clone from "@ff/core/clone";
 import { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
 import {
-    IDerivative as IDerivativeData,
-    DerivativeUsage,
-    DerivativeQuality
+    IDerivative,
+    TDerivativeUsage,
+    TDerivativeQuality
 } from "common/types/item";
 
-import Derivative from "../three/Derivative";
+import Derivative, { EDerivativeUsage, EDerivativeQuality, EAssetType } from "../app/Derivative";
 
 import Collection from "./Collection";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { DerivativeQuality, DerivativeUsage };
+export { EDerivativeQuality, EDerivativeUsage };
 
 export interface IDerivativesChangeEvent extends IComponentChangeEvent<Derivatives>
 {
@@ -42,17 +42,18 @@ export default class Derivatives extends Collection<Derivative>
 {
     static readonly type: string = "Derivatives";
 
-    protected static readonly qualityLevels: DerivativeQuality[] = [
-        "thumb",
-        "low",
-        "medium",
-        "high",
-        "highest"
+    protected static readonly qualityLevels = [
+        EDerivativeQuality.Thumb,
+        EDerivativeQuality.Low,
+        EDerivativeQuality.Medium,
+        EDerivativeQuality.High,
+        EDerivativeQuality.Highest
     ];
 
-    createDerivative(): string
+    addWebModelDerivative(uri: string, quality: EDerivativeQuality): string
     {
-        const derivative = new Derivative("web", "medium");
+        const derivative = new Derivative(EDerivativeUsage.Web, quality);
+        derivative.addAsset(uri, EAssetType.Model);
         return this.addDerivative(derivative);
     }
 
@@ -70,12 +71,13 @@ export default class Derivatives extends Collection<Derivative>
         return derivative;
     }
 
-    selectDerivative(quality: DerivativeQuality, usage?: DerivativeUsage)
+    selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage)
     {
-        usage = usage || "web";
+        usage = usage !== undefined ? usage : EDerivativeUsage.Web;
 
         const qualityLevels = Derivatives.qualityLevels;
         const qualityIndex = qualityLevels.indexOf(quality);
+
         if (qualityIndex < 0) {
             throw new Error(`derivative quality not supported: '${quality}'`);
         }
@@ -95,13 +97,14 @@ export default class Derivatives extends Collection<Derivative>
         }
     }
 
-    findDerivative(quality: DerivativeQuality, usage?: DerivativeUsage): Derivative
+    findDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative
     {
-        usage = usage || "web";
+        usage = usage !== undefined ? usage : EDerivativeUsage.Web;
 
         const keys = Object.keys(this.items);
         for (let i = 0, n = keys.length; i < n; ++i) {
             const derivative = this.items[keys[i]];
+            console.log(usage, derivative.usage, quality, derivative.quality);
             if (derivative && derivative.usage === usage && derivative.quality === quality) {
                 return derivative;
             }
@@ -110,20 +113,22 @@ export default class Derivatives extends Collection<Derivative>
         return null;
     }
 
-    fromData(data: IDerivativeData[])
+    fromData(data: IDerivative[])
     {
-        data.forEach(deriv =>
-            this.addDerivative(new Derivative(deriv.usage, deriv.quality, deriv.assets))
-        );
+        data.forEach(itemData => {
+            const usage = EDerivativeUsage[itemData.usage];
+            const quality = EDerivativeQuality[itemData.quality];
+            this.addDerivative(new Derivative(usage, quality, itemData.assets));
+        });
     }
 
-    toData(): IDerivativeData[]
+    toData(): IDerivative[]
     {
         const derivatives = this.getArray();
 
         return derivatives.map(derivative => ({
-            usage: derivative.usage,
-            quality: derivative.quality,
+            usage: EDerivativeUsage[derivative.usage] as TDerivativeUsage,
+            quality: EDerivativeQuality[derivative.quality] as TDerivativeQuality,
             assets: clone(derivative.assets)
         }));
     }

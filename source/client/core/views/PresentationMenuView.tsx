@@ -21,15 +21,12 @@ import FlexContainer from "@ff/react/FlexContainer";
 import FlexSpacer from "@ff/react/FlexSpacer";
 import PopupButton from "@ff/react/PopupButton";
 
+import { EProjectionType, EViewPreset, EShaderType } from "common/types";
+
 import ViewportMenu, { IViewportMenuSelectEvent } from "./ViewportMenu";
 import RenderMenu, { IRenderMenuSelectEvent } from "./RenderMenu";
 
-import {
-    PresentationActions,
-    ProjectionMode,
-    ViewPreset,
-    RenderMode
-} from "../components/PresentationController";
+import { PresentationActions } from "../controllers/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +75,7 @@ export default class PresentationMenuView extends React.Component<IPresentationM
                     title="Render Mode">
                     <RenderMenu
                         className="popup-menu"
-                        renderMode="wireframe"
+                        renderMode={EShaderType.Wireframe}
                         onSelectRenderMode={this.onSelectRenderMode} />
                 </PopupButton>
 
@@ -90,9 +87,9 @@ export default class PresentationMenuView extends React.Component<IPresentationM
                     title="View/Projection Settings">
                     <ViewportMenu
                         className="popup-menu"
-                        index={0}
-                        projection="perspective"
-                        viewPreset="top"
+                        viewportIndex={0}
+                        projection={EProjectionType.Perspective}
+                        viewPreset={EViewPreset.Top}
                         onSelectProjection={this.onSelectProjection}
                         onSelectViewPreset={this.onSelectViewPreset} />
                 </PopupButton>
@@ -103,16 +100,16 @@ export default class PresentationMenuView extends React.Component<IPresentationM
 
     onSelectProjection(event: IViewportMenuSelectEvent)
     {
-        this.props.actions.setProjection(event.index, event.id as ProjectionMode);
+        this.props.actions.setProjection(event.viewportIndex, event.index);
     }
 
     onSelectViewPreset(event: IViewportMenuSelectEvent)
     {
-        this.props.actions.setViewPreset(event.index, event.id as ViewPreset);
+        this.props.actions.setViewPreset(event.viewportIndex, event.index);
     }
 
     onSelectRenderMode(event: IRenderMenuSelectEvent)
     {
-        this.props.actions.setRenderMode(event.id as RenderMode);
+        this.props.actions.setShader(event.index);
     }
 }

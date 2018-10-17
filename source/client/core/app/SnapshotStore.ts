@@ -15,32 +15,28 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-
-//import MainView from "./MainView";
-
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
+import Entity from "@ff/core/ecs/Entity";
+import Component from "@ff/core/ecs/Component";
+import Property from "@ff/core/ecs/Property";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Voyager story main application
- */
-export default class Application extends VoyagerApplication
+export default class SnapshotStore
 {
-    constructor(props: IVoyagerApplicationProps)
+    protected presentation: Entity;
+
+    constructor(presentation: Entity)
     {
-        super(props);
 
-        this.start();
-        this.presentationController.loadFromDocumentUrl();
+    }
 
-        ReactDOM.render(
-            <div>
-                Voyager Story Application
-            </div>,
-            props.element
-        );
+    protected create()
+    {
+
+    }
+
+    restore(index: number)
+    {
+
     }
 }

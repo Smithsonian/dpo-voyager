@@ -15,32 +15,12 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-
-//import MainView from "./MainView";
-
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
-
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Voyager story main application
- */
-export default class Application extends VoyagerApplication
+export enum EAssetType { Model, Geometry, Image, Points, Volume }
+export enum EMapType { Color, Normal, Occlusion, Emissive, MetallicRoughness, Zone }
+
+export default class Asset
 {
-    constructor(props: IVoyagerApplicationProps)
-    {
-        super(props);
 
-        this.start();
-        this.presentationController.loadFromDocumentUrl();
-
-        ReactDOM.render(
-            <div>
-                Voyager Story Application
-            </div>,
-            props.element
-        );
-    }
 }

@@ -18,9 +18,9 @@
 import * as THREE from "three";
 
 import { TransformControls } from "../three/TransformControls";
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
 
-import RenderContext, { IRenderable } from "../system/RenderContext";
+import RenderContext, { IRenderable } from "../app/RenderContext";
 
 import SelectionController, { ISelectComponentEvent } from "./SelectionController";
 

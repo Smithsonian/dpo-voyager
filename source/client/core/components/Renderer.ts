@@ -17,7 +17,7 @@
 
 import Component from "@ff/core/ecs/Component";
 
-import { IRenderer as IRendererData, UnitType, ShaderType } from "common/types/presentation";
+import { IRenderer, TUnitType, TShaderType, EShaderType } from "common/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,24 +25,24 @@ export default class Renderer extends Component
 {
     static readonly type: string = "Renderer";
 
-    units: UnitType = "cm";
-    shader: ShaderType = "inherit";
+    units: TUnitType = "cm";
+    shader: EShaderType = EShaderType.Default;
     exposure: number = 1;
     gamma: number = 1;
 
-    fromData(data: IRendererData)
+    fromData(data: IRenderer)
     {
         this.units = data.units;
-        this.shader = data.shader;
+        this.shader = EShaderType[data.shader];
         this.exposure = data.exposure;
         this.gamma = data.gamma;
     }
 
-    toData(): IRendererData
+    toData(): IRenderer
     {
         return {
             units: this.units,
-            shader: this.shader,
+            shader: EShaderType[this.shader] as TShaderType,
             exposure: this.exposure,
             gamma: this.gamma
         };

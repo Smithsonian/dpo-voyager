@@ -22,7 +22,8 @@ import ModelLoader from "../three/ModelLoader";
 import GeometryLoader from "../three/GeometryLoader";
 import TextureLoader from "../three/TextureLoader";
 
-import { AssetType, IAsset } from "common/types/item";
+import { IAsset } from "common/types/item";
+import { EAssetType } from "../app/Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,31 +58,31 @@ export default class AssetLoader
         return this.textureLoader.load(url);
     }
 
-    getAssetType(asset: IAsset): AssetType
+    getAssetType(asset: IAsset): EAssetType
     {
         if (asset.type) {
-            return asset.type;
+            return EAssetType[asset.type];
         }
 
         if (asset.mimeType) {
             if (asset.mimeType === "model/gltf+json" || asset.mimeType === "model/gltf-binary") {
-                return "model";
+                return EAssetType.Model;
             }
             if (asset.mimeType === "image/jpeg" || asset.mimeType === "image/png") {
-                return "image";
+                return EAssetType.Image;
             }
         }
 
         const extension = asset.uri.split(".").pop().toLowerCase();
 
         if (extension === "gltf" || extension === "glb") {
-            return "model"
+            return EAssetType.Model
         }
         if (extension === "obj" || extension === "ply") {
-            return "geometry"
+            return EAssetType.Geometry
         }
         if (extension === "jpg" || extension === "png") {
-            return "image";
+            return EAssetType.Image;
         }
 
         throw new Error(`failed to determine asset type from asset: ${asset.uri}`);

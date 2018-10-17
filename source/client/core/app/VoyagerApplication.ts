@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/core/ecs/Registry";
 import Entity from "@ff/core/ecs/Entity";
 
 import PresentationController, {
-    IPresentationEntry,
     IPresentationChangeEvent
-} from "../components/PresentationController";
+} from "../controllers/PresentationController";
 
 import UpdateContext from "./UpdateContext";
 
@@ -32,9 +29,9 @@ import { registerComponents } from "./registerComponents";
 import RenderSystem from "./RenderSystem";
 import ViewManager from "./ViewManager";
 
-import Transform from "../components/Transform";
 import PickManip from "../components/PickManip";
 import OrbitManip from "../components/OrbitManip";
+import Loaders from "../loaders/Loaders";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,12 +50,11 @@ export default class VoyagerApplication
     protected registry: Registry;
     protected system: RenderSystem;
     protected context: UpdateContext;
+    protected loaders: Loaders;
     protected main: Entity;
     protected pickManip: PickManip;
     protected orbitManip: OrbitManip;
-    protected loadingManager: THREE.LoadingManager;
     protected animHandler: number = 0;
-    protected presentation: IPresentationEntry = null;
 
     constructor(props: IVoyagerApplicationProps)
     {
@@ -76,20 +72,20 @@ export default class VoyagerApplication
         this.system = new RenderSystem(this.registry);
         this.context = new UpdateContext();
 
-        this.loadingManager = new THREE.LoadingManager();
-        this.loadingManager.onStart = this.onLoadingStart;
-        this.loadingManager.onProgress = this.onLoadingProgress;
-        this.loadingManager.onLoad = this.onLoadingCompleted;
-        this.loadingManager.onError = this.onLoadingError;
+        this.loaders = new Loaders();
+        const manager = this.loaders.manager;
+
+        manager.onStart = this.onLoadingStart;
+        manager.onProgress = this.onLoadingProgress;
+        manager.onLoad = this.onLoadingCompleted;
+        manager.onError = this.onLoadingError;
 
         this.viewManager = new ViewManager(this.system);
 
         // main entity
         this.main = this.system.createEntity("Main");
 
-        this.presentationController = this.main.createComponent(PresentationController);
-        this.presentationController.createActions(this.commander);
-        this.presentationController.setLoadingManager(this.loadingManager);
+        this.presentationController = new PresentationController(this.commander, this.system, this.loaders);
         this.presentationController.on("change", this.onPresentationChange, this);
 
         this.pickManip = this.main.createComponent(PickManip);
@@ -128,8 +124,8 @@ export default class VoyagerApplication
             return;
         }
 
-        const scene = pres.sceneComponent.scene;
-        const camera = pres.cameraComponent.camera;
+        const scene = pres.scene;
+        const camera = pres.camera;
 
         if (!scene || !camera) {
             return;
@@ -140,34 +136,38 @@ export default class VoyagerApplication
 
     protected onPresentationChange(event: IPresentationChangeEvent)
     {
-        const current = this.presentation;
-        const next = event.presentation;
+        const current = event.current;
+        const next = event.next;
 
         if (current) {
             this.pickManip.setRoot(null);
 
             // detach camera from orbit manip
-            const cameraTransform = current.cameraComponent.getComponent(Transform);
-            cameraTransform.in("Matrix").unlinkFrom(this.orbitManip.out("Matrix"));
+            const cameraTransform = current.cameraTransform;
+            if (cameraTransform) {
+                cameraTransform.in("Matrix").unlinkFrom(this.orbitManip.out("Matrix"));
+            }
 
             // detach light group from orbit manip
-            if (current.lightsEntity) {
-                const lightsTransform = current.lightsEntity.getComponent(Transform);
+            const lightsTransform = current.lightsTransform;
+            if (lightsTransform) {
                 lightsTransform.in("Rotation").unlinkFrom(this.orbitManip.out("Inverse.Orbit"));
             }
         }
 
         if (next) {
-            this.pickManip.setRoot(next.sceneComponent.scene);
+            this.pickManip.setRoot(next.scene);
 
             // attach camera to orbit manip
-            const cameraTransform = next.cameraComponent.getComponent(Transform);
-            this.orbitManip.setFromMatrix(cameraTransform.matrix);
-            cameraTransform.in("Matrix").linkFrom(this.orbitManip.out("Matrix"));
+            const cameraTransform = next.cameraTransform;
+            if (cameraTransform) {
+                this.orbitManip.setFromMatrix(cameraTransform.matrix);
+                cameraTransform.in("Matrix").linkFrom(this.orbitManip.out("Matrix"));
+            }
 
-            // attach light group to orbit manip
-            if (next.lightsEntity) {
-                const lightsTransform = next.lightsEntity.getComponent(Transform);
+            // attach lights group to orbit manip
+            const lightsTransform = next.lightsTransform;
+            if (lightsTransform) {
                 lightsTransform.in("Order").setValue(4);
                 lightsTransform.in("Rotation").linkFrom(this.orbitManip.out("Inverse.Orbit"));
             }

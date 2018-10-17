@@ -17,7 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 
-import { ITour as ITourData, CurveType } from "common/types/item";
+import { ITour as ITourData, TCurveType } from "common/types/item";
 
 import Collection from "./Collection";
 
@@ -35,7 +35,7 @@ export interface ITourStep
 {
     snapshotId: string;
     transitionTime: number;
-    transitionCurve: CurveType;
+    transitionCurve: TCurveType;
     transitionCutPoint: number;
 }
 

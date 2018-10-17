@@ -22,7 +22,7 @@ import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import { RenderMode } from "../components/PresentationController";
+import { EShaderType } from "common/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +30,7 @@ export interface IRenderMenuSelectEvent extends IButtonTapEvent {}
 
 export interface IRenderMenuProps extends IComponentProps
 {
-    renderMode: RenderMode;
+    renderMode: EShaderType;
     onSelectRenderMode?: (event: IRenderMenuSelectEvent) => void;
 }
 
@@ -49,35 +49,35 @@ const RenderMenu: React.SFC<IRenderMenuProps> = function(props)
             <Label text="Render mode"/>
 
             <Button
-                id="standard"
+                index={EShaderType.Default}
                 text="Standard"
                 title="Display model in standard mode"
                 focused={true}
                 onTap={onSelectRenderMode} />
 
             <Button
-                id="clay"
+                index={EShaderType.Clay}
                 text="Clay"
                 title="Display model without colors"
                 focused={true}
                 onTap={onSelectRenderMode} />
 
             <Button
-                id="normals"
+                index={EShaderType.Normals}
                 text="Normals"
                 title="Display normals"
                 focused={true}
                 onTap={onSelectRenderMode} />
 
             <Button
-                id="xray"
+                index={EShaderType.XRay}
                 text="X-Ray"
                 title="Display model in X-Ray mode"
                 focused={true}
                 onTap={onSelectRenderMode} />
 
             <Button
-                id="wireframe"
+                index={EShaderType.Wireframe}
                 text="Wireframe"
                 title="Display model as wireframe"
                 focused={true}

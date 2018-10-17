@@ -124,10 +124,11 @@ export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayP
 
     protected emitChange(isDragging: boolean)
     {
-        const { id, mode, onChange } = this.props;
+        const { id, index, mode, onChange } = this.props;
         if (onChange) {
             onChange({
                 id,
+                index,
                 mode,
                 horizontalSplit: this.horizontalSplit,
                 verticalSplit: this.verticalSplit,

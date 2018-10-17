@@ -18,7 +18,7 @@
 import Component, { ComponentLink } from "@ff/core/ecs/Component";
 import { IManipEventHandler } from "@ff/react/ManipTarget";
 
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
 
 ////////////////////////////////////////////////////////////////////////////////
 

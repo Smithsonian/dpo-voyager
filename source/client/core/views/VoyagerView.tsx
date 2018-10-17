@@ -24,7 +24,7 @@ import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent
 
 import PresentationOverlay from "./PresentationOverlay";
 import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent, QuadSplitOverlayMode } from "./QuadSplitOverlay";
-import ViewManager from "../system/ViewManager";
+import ViewManager from "../app/ViewManager";
 import ViewportController from "../components/ViewportController";
 
 ////////////////////////////////////////////////////////////////////////////////

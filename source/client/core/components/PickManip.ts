@@ -23,7 +23,7 @@ import Component, { ComponentTracker, IComponentEvent } from "@ff/core/ecs/Compo
 import Manip from "./Manip";
 import Object3D, { IObject3DObjectEvent } from "./Object3D";
 import { ISystemComponentEvent } from "@ff/core/ecs/System";
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
 
 ////////////////////////////////////////////////////////////////////////////////
 

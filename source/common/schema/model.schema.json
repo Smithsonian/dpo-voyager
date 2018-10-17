@@ -24,11 +24,11 @@
                 "type": {
                     "type": "string",
                     "enum": [
-                        "model",
-                        "geometry",
-                        "image",
-                        "points",
-                        "volume"
+                        "Model",
+                        "Geometry",
+                        "Image",
+                        "Points",
+                        "Volume"
                     ]
                 },
                 "mimeType": {
@@ -50,12 +50,12 @@
                 "mapType": {
                     "type": "string",
                     "enum": [
-                        "color",
-                        "normal",
-                        "occlusion",
-                        "emissive",
-                        "metallic-roughness",
-                        "zone"
+                        "Color",
+                        "Normal",
+                        "Occlusion",
+                        "Emissive",
+                        "MetallicRoughness",
+                        "Zone"
                     ]
                 }
             },
@@ -100,21 +100,21 @@
                         "description": "usage categories for a derivative.",
                         "type": "string",
                         "enum": [
-                            "web",
-                            "print",
-                            "editorial"
+                            "Web",
+                            "Print",
+                            "Editorial"
                         ]
                     },
                     "quality": {
                         "type": "string",
                         "enum": [
-                            "thumb",
-                            "low",
-                            "medium",
-                            "high",
-                            "highest",
-                            "lod",
-                            "stream"
+                            "Thumb",
+                            "Low",
+                            "Medium",
+                            "High",
+                            "Highest",
+                            "LOD",
+                            "Stream"
                         ]
                     },
                     "assets": {

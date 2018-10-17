@@ -21,7 +21,7 @@ import * as ReactDOM from "react-dom";
 import DockController from "@ff/react/DockController";
 
 
-import { IPresentationChangeEvent } from "../core/components/PresentationController";
+import { IPresentationChangeEvent } from "../core/controllers/PresentationController";
 import SelectionController from "../core/components/SelectionController";
 import ViewportManip from "../core/components/ViewportManip";
 import TransformManip from "../core/components/TransformManip";
@@ -29,7 +29,7 @@ import TransformManip from "../core/components/TransformManip";
 import { registerComponents } from "./registerComponents";
 import MainView from "./MainView";
 
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
+import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +64,7 @@ export default class Application extends VoyagerApplication
         // assets/nmafa-68_23_53_textured_cm/nmafa-68_23_53_textured_cm.json
 
         this.start();
-        this.presentationController.loadFromLocationUrl();
+        this.presentationController.loadFromDocumentUrl();
 
         ReactDOM.render(
             <MainView
@@ -77,15 +77,12 @@ export default class Application extends VoyagerApplication
     {
         super.onPresentationChange(event);
 
-        const current = this.presentation;
-        const next = event.presentation;
-
-        if (current) {
+        if (event.current) {
             this.transformManip.setScene(null);
         }
 
-        if (next) {
-            this.transformManip.setScene(next.sceneComponent.scene);
+        if (event.next) {
+            this.transformManip.setScene(event.next.scene);
 
             // TODO: Serialization test
             const data = this.presentationController.writePresentation();

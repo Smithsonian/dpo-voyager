@@ -23,7 +23,7 @@ import _math from "@ff/core/math";
 import types from "@ff/core/ecs/propertyTypes";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import { INode as ITransformData, Vector3, Vector4 } from "common/types/presentation";
+import { INode as ITransformData, TVector3, TVector4 } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -130,7 +130,7 @@ export default class Transform extends Hierarchy
 
     /**
      * Returns a reference to the local transformation matrix.
-     * @returns {Matrix4}
+     * @returns {TMatrix4}
      */
     get matrix(): Readonly<THREE.Matrix4>
     {
@@ -196,7 +196,7 @@ export default class Transform extends Hierarchy
             if (data.rotation) {
                 const q = new THREE.Quaternion().fromArray(data.rotation);
                 const e = new THREE.Euler().setFromQuaternion(q);
-                ins.rot.setValue(e.toVector3().toArray() as Vector3);
+                ins.rot.setValue(e.toVector3().toArray() as TVector3);
             }
             if (data.scale) {
                 ins.sca.setValue(data.scale);

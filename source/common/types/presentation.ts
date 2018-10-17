@@ -22,22 +22,23 @@ import {
 
 import {
     IItem,
-    UnitType
+    TUnitType
 } from "./item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IItem, UnitType };
+export { IItem, TUnitType };
 
-export type Matrix4 = number[];
-export type Vector3 = number[];
-export type Vector4 = number[];
-export type Quaternion = Vector4;
-export type ColorRGB = Vector3;
+export type TMatrix4 = number[];
+export type TVector3 = number[];
+export type TVector4 = number[];
+export type TQuaternion = TVector4;
+export type TColorRGB = TVector3;
 
-export type CameraType = "perspective" | "orthographic";
-export type LightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
-export type ShaderType = "inherit" | "pbr" | "phong" | "clay" | "normals" | "wireframe" | "x-ray";
+export type TCameraType = "perspective" | "orthographic";
+export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
+
+export type TShaderType = "Inherit" | "Default" | "PBR" | "Phong" | "Clay" | "Normals" | "Wireframe" | "XRay";
 
 /**
  * A presentation describes an entire explorer setup.
@@ -68,10 +69,10 @@ export interface IScene
 
 export interface ITransform
 {
-    matrix?: Matrix4;
-    translation?: Vector3;
-    rotation?: Quaternion;
-    scale?: Vector3;
+    matrix?: TMatrix4;
+    translation?: TVector3;
+    rotation?: TQuaternion;
+    scale?: TVector3;
 }
 
 /**
@@ -103,7 +104,7 @@ export interface IReference
  */
 export interface ICamera
 {
-    type: CameraType;
+    type: TCameraType;
     perspective?: IPerspectiveCameraProps;
     orthographic?: IOrthographicCameraProps;
 }
@@ -133,8 +134,8 @@ export interface IOrthographicCameraProps
  */
 export interface ILight
 {
-    type: LightType;
-    color?: ColorRGB;
+    type: TLightType;
+    color?: TColorRGB;
     intensity?: number;
     castShadow?: boolean;
     hemisphere?: IHemisphereLightProps;
@@ -147,7 +148,7 @@ export interface ILight
  */
 export interface IHemisphereLightProps
 {
-    groundColor: ColorRGB;
+    groundColor: TColorRGB;
 }
 
 /**
@@ -180,7 +181,7 @@ export interface IExplorer
 
 export interface IViewport
 {
-    transform: Matrix4;
+    transform: TMatrix4;
     camera: ICamera;
 }
 
@@ -189,8 +190,8 @@ export interface IViewport
  */
 export interface IRenderer
 {
-    units: UnitType;
-    shader: ShaderType;
+    units: TUnitType;
+    shader: TShaderType;
     exposure: number;
     gamma: number;
     //environment: any; // TODO
@@ -217,9 +218,9 @@ export interface ITools
 export interface ICrossSectionProps
 {
     enabled: boolean;
-    position: Vector3;
-    direction: Vector3;
-    color: ColorRGB;
+    position: TVector3;
+    direction: TVector3;
+    color: TColorRGB;
 }
 
 /**
@@ -228,8 +229,8 @@ export interface ICrossSectionProps
 export interface ITapeProps
 {
     enabled: boolean;
-    fromPosition: Vector3;
-    fromDirection: Vector3;
-    toPosition: Vector3;
-    toDirection: Vector3;
+    fromPosition: TVector3;
+    fromDirection: TVector3;
+    toPosition: TVector3;
+    toDirection: TVector3;
 }

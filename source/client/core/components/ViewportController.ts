@@ -27,7 +27,13 @@ import {
     IManipTriggerEvent
 } from "@ff/react/ManipTarget";
 
-import Viewport, { IViewportPointerEvent, IViewportTriggerEvent } from "../three/Viewport";
+import Viewport, {
+    EViewportCameraType,
+    EViewportCameraView,
+    IViewportPointerEvent,
+    IViewportTriggerEvent
+} from "../app/Viewport";
+
 import Manip from "./Manip";
 import Controller from "./Controller";
 
@@ -196,9 +202,9 @@ export default class ViewportController extends Controller implements IManipEven
             case 3:
                 viewports.length = 4;
                 viewports[0] = new Viewport(0, 0, h, v);
-                viewports[1] = new Viewport(h, 0, 1-h, v).setCamera("orthographic", "top");
-                viewports[2] = new Viewport(0, v, h, 1-v).setCamera("orthographic", "left");
-                viewports[3] = new Viewport(h, v, 1-h, 1-v).setCamera("orthographic", "front");
+                viewports[1] = new Viewport(h, 0, 1-h, v).setCamera(EViewportCameraType.Orthographic, EViewportCameraView.Top);
+                viewports[2] = new Viewport(0, v, h, 1-v).setCamera(EViewportCameraType.Orthographic, EViewportCameraView.Left);
+                viewports[3] = new Viewport(h, v, 1-h, 1-v).setCamera(EViewportCameraType.Orthographic, EViewportCameraView.Front);
                 break;
         }
 

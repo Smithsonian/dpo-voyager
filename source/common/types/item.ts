@@ -21,13 +21,13 @@ import {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type UnitType = "mm" | "cm" | "m" | "in" | "ft";
-export type NormalSpaceType = "tangent" | "object";
-export type DerivativeUsage = "web" | "print" | "editorial";
-export type DerivativeQuality = "thumb" | "low" | "medium" | "high" | "highest" | "lod" | "stream";
-export type AssetType = "model" | "geometry" | "image" | "points" | "volume";
-export type MapType = "color" | "normal" | "occlusion" | "emissive" | "metallic-roughness" | "zone";
-export type CurveType = "linear" | "ease" | "ease-in" | "ease-out";
+export type TUnitType = "mm" | "cm" | "m" | "in" | "ft";
+export type TNormalSpaceType = "Tangent" | "Object";
+export type TDerivativeUsage = "Web" | "Print" | "Editorial";
+export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
+export type TAssetType = "Model" | "Geometry" | "Image" | "Points" | "Volume";
+export type TMapType = "Color" | "Normal" | "Occlusion" | "Emissive" | "MetallicRoughness" | "Zone";
+export type TCurveType = "Linear" | "Ease" | "EaseIn" | "EaseOut";
 
 export type Matrix4 = number[];
 export type Vector3 = number[];
@@ -63,7 +63,7 @@ export interface IMeta
  */
 export interface IModel
 {
-    units: UnitType;
+    units: TUnitType;
     derivatives: IDerivative[];
     boundingBox?: IBoundingBox;
     transform?: Matrix4;
@@ -83,7 +83,7 @@ export interface IMaterial
 {
     pbrMetallicRoughness?: IPBRMetallicRoughness;
     normalTexture?: any;
-    normalSpace?: NormalSpaceType;
+    normalSpace?: TNormalSpaceType;
     occlusionTexture?: any;
     occlusionStrength?: number;
     emissiveTexture?: any;
@@ -108,8 +108,8 @@ export interface IPBRMetallicRoughness
  */
 export interface IDerivative
 {
-    usage: DerivativeUsage;
-    quality: DerivativeQuality;
+    usage: TDerivativeUsage;
+    quality: TDerivativeQuality;
     assets: IAsset[];
 }
 
@@ -120,13 +120,13 @@ export interface IDerivative
 export interface IAsset
 {
     uri: string;
-    type: AssetType;
+    type: TAssetType;
     mimeType?: string;
     byteSize?: number;
     numFaces?: number;
     numVertices?: number;
     imageSize?: number;
-    mapType?: MapType;
+    mapType?: TMapType;
 }
 
 export interface IDocuments
@@ -231,7 +231,7 @@ export interface ITourStep
 {
     snapshot: Index;
     transitionTime?: number;
-    transitionCurve?: CurveType;
+    transitionCurve?: TCurveType;
     transitionCutPoint?: number;
 }
 

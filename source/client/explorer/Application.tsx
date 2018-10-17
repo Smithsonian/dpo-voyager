@@ -21,7 +21,7 @@ import * as ReactDOM from "react-dom";
 
 import VoyagerView from "../core/views/VoyagerView";
 
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/system/VoyagerApplication";
+import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ export default class Application extends VoyagerApplication
         super(props);
 
         this.start();
-        this.presentationController.loadFromLocationUrl();
+        this.presentationController.loadFromDocumentUrl();
 
         ReactDOM.render(
             <VoyagerView

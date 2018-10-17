@@ -18,23 +18,21 @@
 import * as THREE from "three";
 
 import _math from "@ff/core/math";
-import { ComponentTracker } from "@ff/core/ecs/Component";
 import types from "@ff/core/ecs/propertyTypes";
 
 import {
     IModel as IModelData,
     Vector3,
-    UnitType
+    TUnitType
 } from "common/types/item";
 
 import UberMaterial from "../shaders/UberMaterial";
 import AssetLoader from "../loaders/AssetLoader";
 
-import Derivatives, { DerivativeQuality } from "./Derivatives";
+import Derivatives, { EDerivativeQuality } from "./Derivatives";
 import Object3D from "./Object3D";
 import { orderOptions } from "./Transform";
-import Derivative from "../three/Derivative";
-import { IPickable, IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "./PickManip";
+import Derivative from "../app/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +42,7 @@ const _euler = new THREE.Euler();
 const _quat = new THREE.Quaternion();
 
 
-export default class Model extends Object3D implements IPickable
+export default class Model extends Object3D
 {
     static readonly type: string = "Model";
 
@@ -55,12 +53,12 @@ export default class Model extends Object3D implements IPickable
         sca: types.Vector3("Scale", [ 1, 1, 1 ])
     });
 
-    protected units: UnitType = "cm";
+    protected units: TUnitType = "cm";
     protected boundingBox: THREE.Box3 = null;
     protected material = new UberMaterial();
     protected matrix = new THREE.Matrix4();
 
-    protected derivatives: ComponentTracker<Derivatives> = null;
+    protected derivatives: Derivatives = null;
 
     protected assetLoader: AssetLoader = null;
     protected assetPath: string = "";
@@ -71,8 +69,13 @@ export default class Model extends Object3D implements IPickable
     {
         super.create();
 
-        this.derivatives = this.trackComponent(Derivatives);
         this.object3D = new THREE.Group();
+
+        this.trackComponent(Derivatives, component => {
+            this.derivatives = component;
+        }, component => {
+            this.derivatives = null;
+        });
     }
 
     update()
@@ -91,21 +94,21 @@ export default class Model extends Object3D implements IPickable
         object.matrixWorldNeedsUpdate = true;
     }
 
-    load(quality: DerivativeQuality): Promise<void>
+    load(quality: EDerivativeQuality): Promise<void>
     {
-        const derivativesComponent = this.derivatives.component;
-        if (!derivativesComponent) {
+        const derivatives = this.derivatives;
+        if (!derivatives) {
             return Promise.reject(new Error("missing derivatives component"));
         }
 
         const sequence = [];
 
-        const thumb = derivativesComponent.findDerivative("thumb");
+        const thumb = derivatives.findDerivative(EDerivativeQuality.Thumb);
         if (thumb) {
             sequence.push(thumb);
         }
 
-        const second = derivativesComponent.findDerivative(quality);
+        const second = derivatives.findDerivative(quality);
         if (second) {
             sequence.push(second);
         }
@@ -125,24 +128,6 @@ export default class Model extends Object3D implements IPickable
         this.assetPath = assetPath;
     }
 
-    onPointer(event: IViewportPointerEvent, pickInfo: IPickResult)
-    {
-        let object = pickInfo.object;
-        while(object && object.id !== this.currentModel.id) {
-            object = object.parent;
-        }
-
-        if (object) {
-        }
-
-        return false;
-    }
-
-    onTrigger(event: IViewportTriggerEvent, pickInfo: IPickResult)
-    {
-        return false;
-    }
-
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
         return derivative.load(this.assetLoader, this.assetPath)
@@ -156,7 +141,7 @@ export default class Model extends Object3D implements IPickable
         });
     }
 
-    fromData(data: IModelData)
+    fromData(data: IModelData): this
     {
         this.units = data.units;
 
@@ -185,6 +170,8 @@ export default class Model extends Object3D implements IPickable
         if (data.material) {
             // TODO: Implement
         }
+
+        return this;
     }
 
     toData(): IModelData

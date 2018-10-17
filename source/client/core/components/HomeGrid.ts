@@ -19,42 +19,46 @@ import * as THREE from "three";
 
 import types from "@ff/core/ecs/propertyTypes";
 
-import { GeometryObject, MaterialObject } from "../app/propertyObjectTypes";
+import Grid from "../three/Grid";
+
 import Object3D from "./Object3D";
+import RenderContext from "../app/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Mesh extends Object3D
+export default class HomeGrid extends Object3D
 {
-    static readonly type: string = "Mesh";
+    static readonly type: string = "Grid";
 
     ins = this.makeProps({
-        geo: types.Object("Geometry", GeometryObject),
-        mat: types.Object("Material", MaterialObject)
+        sca: types.Number("Scale", 1)
     });
 
     create()
     {
         super.create();
 
-        this.object3D = new THREE.Mesh();
-        this.object3D.matrixAutoUpdate = false;
+        this.object3D = new Grid({
+            size: 20,
+            mainDivisions: 2,
+            subDivisions: 10,
+            mainColor: "#c0c0c0",
+            subColor: "#606060"
+        });
     }
 
     update()
     {
-        const { geo, mat } = this.ins;
 
-        if (geo.changed) {
-            this.mesh.geometry = geo.value.object;
-        }
-        if (mat.changed) {
-            this.mesh.material = mat.value.object as THREE.MeshBasicMaterial;
-        }
     }
 
-    get mesh(): THREE.Mesh
+    render(context: RenderContext)
     {
-        return this.object3D as THREE.Mesh;
+
+    }
+
+    get grid()
+    {
+        return this.object3D as Grid;
     }
 }

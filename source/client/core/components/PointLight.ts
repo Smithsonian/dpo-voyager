@@ -20,7 +20,7 @@ import * as THREE from "three";
 import types from "@ff/core/ecs/propertyTypes";
 import Light from "./Light";
 
-import { ILight as ILightData, Vector3 } from "common/types/presentation";
+import { ILight as ILightData, TVector3 } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +74,7 @@ export default class PointLight extends Light
         const ins = this.ins;
 
         data.type = "point";
-        data.color = ins.col.value.slice() as Vector3;
+        data.color = ins.col.value.slice() as TVector3;
         data.intensity = ins.int.value;
         data.point = {
             distance: ins.dst.value,
