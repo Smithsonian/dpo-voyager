@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
+import "./application.scss";
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 //import MainView from "./MainView";
-
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
+import BaseApplication, { IApplicationProps } from "../core/app/BaseApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Voyager story main application
- */
-export default class Application extends VoyagerApplication
+export default class StoryApplication extends BaseApplication
 {
-    constructor(props: IVoyagerApplicationProps)
+    constructor(props: IApplicationProps)
     {
-        super(props);
+        console.log("Voyager Story");
+
+        super();
 
         this.start();
-        this.presentationController.loadFromDocumentUrl();
+        this.parseArguments(props);
 
         ReactDOM.render(
             <div>
@@ -44,3 +44,5 @@ export default class Application extends VoyagerApplication
         );
     }
 }
+
+window["Voyager"] = StoryApplication;

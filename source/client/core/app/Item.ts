@@ -22,16 +22,16 @@ import Entity from "@ff/core/ecs/Entity";
 
 import { IItem } from "common/types/item";
 
-import MetaComponent from "../components/Meta";
-import ProcessComponent from "../components/Process";
-import ModelComponent from "../components/Model";
-import DerivativesComponent from "../components/Derivatives";
-import DocumentsComponent from "../components/Documents";
-import GroupsComponent from "../components/Groups";
-import AnnotationsComponent from "../components/Annotations";
-import AnnotationsViewComponent from "../components/AnnotationsView";
-import ToursComponent from "../components/Tours";
-import SnapshotsComponent from "../components/Snapshots";
+import Meta from "../components/Meta";
+import Process from "../components/Process";
+import Model from "../components/Model";
+import Derivatives from "../components/Derivatives";
+import Documents from "../components/Documents";
+import Groups from "../components/Groups";
+import Annotations from "../components/Annotations";
+import AnnotationsView from "../components/AnnotationsView";
+import Tours from "../components/Tours";
+import Snapshots from "../components/Snapshots";
 
 import Loaders from "../loaders/Loaders";
 import Transform from "../components/Transform";
@@ -51,7 +51,7 @@ export default class Item
     {
         this.entity = system.createEntity("Item");
         this.entity.createComponent(Transform);
-        this.entity.createComponent(MetaComponent);
+        this.entity.createComponent(Meta);
 
         this.itemUrl = "";
         this.templateUri = "";
@@ -83,11 +83,24 @@ export default class Item
         this.itemUrl = modelUri;
         const modelFile = modelUri.substr(resolvePathname(".", modelUri).length);
 
-        const model = this.entity.getOrCreateComponent(ModelComponent);
+        const model = this.entity.getOrCreateComponent(Model);
         model.setAssetLoader(this.loaders.assetLoader, this.path);
 
-        const derivatives = this.entity.getOrCreateComponent(DerivativesComponent);
+        const derivatives = this.entity.getOrCreateComponent(Derivatives);
         derivatives.addWebModelDerivative(modelFile, quality);
+    }
+
+    addGeometryAndTextureDerivative(geometryUri: string, textureUri: string, quality: EDerivativeQuality)
+    {
+        this.itemUrl = geometryUri;
+        const geometryFile = geometryUri.substr(resolvePathname(".", geometryUri).length);
+        const textureFile = textureUri ? textureUri.substr(resolvePathname(".", textureUri).length) : undefined;
+
+        const model = this.entity.getOrCreateComponent(Model);
+        model.setAssetLoader(this.loaders.assetLoader, this.path);
+
+        const derivatives = this.entity.getOrCreateComponent(Derivatives);
+        derivatives.addGeometryAndTextureDerivative(geometryFile, textureFile, quality);
     }
 
     inflate(item: IItem, url?: string): this
@@ -102,24 +115,24 @@ export default class Item
         let groupIds = [];
         let snapIds = [];
 
-        entity.getComponent(MetaComponent).fromData(item.meta);
+        entity.getComponent(Meta).fromData(item.meta);
 
         if (item.process) {
-            entity.createComponent(ProcessComponent)
+            entity.createComponent(Process)
             .fromData(item.process);
         }
 
         if (item.model) {
-            entity.createComponent(ModelComponent).fromData(item.model)
+            entity.createComponent(Model).fromData(item.model)
                 .setAssetLoader(this.loaders.assetLoader, this.path);
 
-            entity.createComponent(DerivativesComponent)
+            entity.createComponent(Derivatives)
             .fromData(item.model.derivatives);
         }
 
         if (item.documents) {
             const documentsData = item.documents;
-            docIds = entity.createComponent(DocumentsComponent)
+            docIds = entity.createComponent(Documents)
             .fromData(documentsData.documents);
         }
 
@@ -127,11 +140,11 @@ export default class Item
             const storyData = item.story;
             this.templateUri = storyData.templateUri;
 
-            snapIds = entity.createComponent(SnapshotsComponent)
+            snapIds = entity.createComponent(Snapshots)
             .fromData(storyData.snapshots);
 
             if (storyData.tours) {
-                entity.createComponent(ToursComponent)
+                entity.createComponent(Tours)
                 .fromData(storyData.tours, snapIds);
             }
         }
@@ -139,13 +152,13 @@ export default class Item
         if (item.annotations) {
             const annotationsData = item.annotations;
             if (annotationsData.groups) {
-                groupIds = entity.createComponent(GroupsComponent)
+                groupIds = entity.createComponent(Groups)
                 .fromData(annotationsData.groups);
             }
 
-            entity.createComponent(AnnotationsComponent)
+            entity.createComponent(Annotations)
             .fromData(annotationsData.annotations, groupIds, docIds, snapIds);
-            entity.createComponent(AnnotationsViewComponent);
+            entity.createComponent(AnnotationsView);
         }
 
         return this;
@@ -159,25 +172,25 @@ export default class Item
         let groupIds = {};
         let snapIds = {};
 
-        const metaComponent = entity.getComponent(MetaComponent);
+        const metaComponent = entity.getComponent(Meta);
         if (metaComponent) {
             itemData.meta = metaComponent.toData();
         }
 
-        const processComponent = entity.getComponent(ProcessComponent);
+        const processComponent = entity.getComponent(Process);
         if (processComponent) {
             itemData.process = processComponent.toData();
         }
 
-        const modelComponent = entity.getComponent(ModelComponent);
+        const modelComponent = entity.getComponent(Model);
         if (modelComponent) {
             itemData.model = modelComponent.toData();
 
-            const derivativesComponent = entity.getComponent(DerivativesComponent);
+            const derivativesComponent = entity.getComponent(Derivatives);
             itemData.model.derivatives = derivativesComponent.toData();
         }
 
-        const documentsComponent = entity.getComponent(DocumentsComponent);
+        const documentsComponent = entity.getComponent(Documents);
         if (documentsComponent) {
             const { data, ids } = documentsComponent.toData();
             if (data.length > 0) {
@@ -186,7 +199,7 @@ export default class Item
             }
         }
 
-        const snapshotComponent = entity.getComponent(SnapshotsComponent);
+        const snapshotComponent = entity.getComponent(Snapshots);
         if (snapshotComponent) {
             const { data, ids } = snapshotComponent.toData();
             if (data.length > 0) {
@@ -194,14 +207,14 @@ export default class Item
                 snapIds = ids;
             }
 
-            const toursComponent = entity.getComponent(ToursComponent);
+            const toursComponent = entity.getComponent(Tours);
             if (toursComponent) {
                 itemData.story.tours = toursComponent.toData(snapIds);
             }
         }
 
-        const groupsComponent = entity.getComponent(GroupsComponent);
-        const annotationsComponent = entity.getComponent(AnnotationsComponent);
+        const groupsComponent = entity.getComponent(Groups);
+        const annotationsComponent = entity.getComponent(Annotations);
 
         if (groupsComponent || annotationsComponent) {
             let groups = null;

@@ -18,9 +18,9 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
-import ModelLoader from "../three/ModelLoader";
-import GeometryLoader from "../three/GeometryLoader";
-import TextureLoader from "../three/TextureLoader";
+import ModelLoader from "./ModelLoader";
+import GeometryLoader from "./GeometryLoader";
+import TextureLoader from "./TextureLoader";
 
 import { IAsset } from "common/types/item";
 import { EAssetType } from "../app/Asset";

@@ -25,16 +25,17 @@ import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export enum EProjectionType { Perspective, Orthographic }
+
+
 export default class Camera extends Object3D
 {
     static readonly type: string = "Camera";
 
-    private static _proj = [ "perspective", "orthographic" ];
-
     ins = this.makeProps({
-        pro: types.Enum("Type", Camera._proj),
+        pro: types.Enum("Projection", EProjectionType),
         fov: types.Number("FovY", 50),
-        siz: types.Number("Size", 20),
+        siz: types.Number("Size", 50),
         zn: types.Number("Frustum.Near", 0.001),
         zf: types.Number("Frustum.Far", 10000)
     });
@@ -54,7 +55,7 @@ export default class Camera extends Object3D
         const hw = hh * aspect;
 
         if (pro.changed) {
-            this.object3D = pro.value < 1
+            this.object3D = types.isEnumEntry(EProjectionType.Perspective, pro.value)
                 ? new THREE.PerspectiveCamera(fov.value, aspect, zn.value, zf.value)
                 : new THREE.OrthographicCamera(-hw, hw, hh, -hh, zn.value, zf.value);
 
@@ -85,7 +86,7 @@ export default class Camera extends Object3D
     {
         if (data.type === "perspective") {
             this.ins.setValues({
-                pro: 0,
+                pro: EProjectionType.Perspective,
                 fov: data.perspective.yfov,
                 zn: data.perspective.znear,
                 zf: data.perspective.zfar
@@ -93,7 +94,7 @@ export default class Camera extends Object3D
         }
         else {
             this.ins.setValues({
-                pro: 1,
+                pro: EProjectionType.Orthographic,
                 siz: data.orthographic.ymag,
                 zn: data.orthographic.znear,
                 zf: data.orthographic.zfar
@@ -106,7 +107,7 @@ export default class Camera extends Object3D
         const data: Partial<ICameraData> = {};
         const ins = this.ins;
 
-        if (ins.pro.value < 1) {
+        if (types.isEnumEntry(EProjectionType.Perspective, ins.pro.value)) {
             data.type = "perspective";
             data.perspective = {
                 yfov: ins.fov.value,

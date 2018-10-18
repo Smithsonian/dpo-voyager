@@ -15,34 +15,34 @@
  * limitations under the License.
  */
 
+import "./application.scss";
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-
 import VoyagerView from "../core/views/VoyagerView";
-
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
+import BaseApplication, { IApplicationProps } from "../core/app/BaseApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Voyager prep main application.
- */
-export default class Application extends VoyagerApplication
+export default class ExplorerApplication extends BaseApplication
 {
-    constructor(props: IVoyagerApplicationProps)
+    constructor(props: IApplicationProps)
     {
-        super(props);
+        console.log("Voyager Explorer");
+
+        super();
 
         this.start();
-        this.presentationController.loadFromDocumentUrl();
+        this.parseArguments(props);
 
         ReactDOM.render(
             <VoyagerView
                 viewManager={this.viewManager}
-                actions={this.presentationController.actions} />,
+                system={this.system} />,
         props.element
     );
     }
-
 }
+
+window["Voyager"] = ExplorerApplication;

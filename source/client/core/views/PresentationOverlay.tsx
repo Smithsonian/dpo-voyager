@@ -17,11 +17,12 @@
 
 import * as React from "react";
 
+import System from "@ff/core/ecs/System";
+
 import FlexContainer from "@ff/react/FlexContainer";
 import FlexSpacer from "@ff/react/FlexSpacer";
 
 import PresentationMenuView from "./PresentationMenuView";
-import { PresentationActions } from "../controllers/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +30,7 @@ import { PresentationActions } from "../controllers/PresentationController";
 export interface IPresentationOverlayProps
 {
     className?: string;
-    actions: PresentationActions;
+    system: System;
 }
 
 export default class PresentationOverlay extends React.Component<IPresentationOverlayProps, {}>
@@ -47,7 +48,7 @@ export default class PresentationOverlay extends React.Component<IPresentationOv
     {
         const {
             className,
-            actions
+            system
         } = this.props;
 
 
@@ -58,7 +59,7 @@ export default class PresentationOverlay extends React.Component<IPresentationOv
                 direction="vertical">
 
                 <PresentationMenuView
-                    actions={actions}
+                    system={system}
                     portal={this}/>
 
                 <FlexSpacer/>

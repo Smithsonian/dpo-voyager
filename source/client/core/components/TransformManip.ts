@@ -21,9 +21,12 @@ import Object3D from "../components/Object3D";
 
 import { TransformControls } from "../three/TransformControls";
 import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
+import RenderContext, { IRenderable } from "../app/RenderContext";
+
+import SelectionController, { ISelectComponentEvent } from "./SelectionController";
+import Model from "./Model";
 
 import Manip from "./Manip";
-import RenderContext, { IRenderable } from "../app/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,10 +38,40 @@ export default class TransformManip extends Manip implements IRenderable
     protected manip = new TransformControls();
     protected object: Object3D = null;
     protected scene: THREE.Scene = null;
+    protected events: IViewportPointerEvent[][] = [];
+
+    create()
+    {
+        super.create();
+
+        const selectionController = this.system.getComponent(SelectionController);
+        if (selectionController) {
+            selectionController.on("component", this.onSelectComponent, this);
+        }
+
+        this.manip.camera = new THREE.PerspectiveCamera(50, 1, 0.001, 10000);
+        this.manip.camera.position.set(0, 0, 50);
+    }
 
     render(context: RenderContext)
     {
-        this.manip.camera = context.camera;
+        const viewport = context.viewport;
+        //this.manip.camera = viewport.camera;
+        const queue = this.events[viewport.index];
+        if (queue) {
+            queue.forEach(event => this.manip.onPointer(event));
+            queue.length = 0;
+        }
+    }
+
+    dispose()
+    {
+        const selectionController = this.system.getComponent(SelectionController);
+        if (selectionController) {
+            selectionController.on("component", this.onSelectComponent, this);
+        }
+
+        super.dispose();
     }
 
     setEnabled(enabled: boolean)
@@ -62,7 +95,10 @@ export default class TransformManip extends Manip implements IRenderable
     onPointer(event: IViewportPointerEvent)
     {
         if (this.enabled) {
-            return this.manip.onPointer(event);
+            const index = event.viewport.index;
+            const queue = this.events[index] || (this.events[index] = []);
+            queue.push(event);
+            return true;
         }
 
         return super.onPointer(event);
@@ -80,6 +116,7 @@ export default class TransformManip extends Manip implements IRenderable
     setTarget(objectComponent: Object3D)
     {
         if (this.object) {
+            this.object.object3D.matrixAutoUpdate = false;
             this.manip.detach();
             this.enabled = false;
         }
@@ -87,8 +124,16 @@ export default class TransformManip extends Manip implements IRenderable
         this.object = objectComponent;
 
         if (objectComponent) {
+            objectComponent.object3D.matrixAutoUpdate = true;
             this.manip.attach(objectComponent.object3D);
             this.enabled = true;
+        }
+    }
+
+    protected onSelectComponent(event: ISelectComponentEvent)
+    {
+        if (event.component.is(Model)) {
+            this.setTarget(event.selected ? event.component as Object3D : null);
         }
     }
 }

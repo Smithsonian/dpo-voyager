@@ -28,12 +28,14 @@
 </head>
 <body>
     <div id="main"></div>
-    <div id="overlay"></div>
     {{#if devMode}}
         <script src="app/js/voyager-{{component}}.js"></script>
     {{else}}
         <script src="app/js/voyager-{{component}}.min.js"></script>
     {{/if}}
+    <script>
+        new Voyager({ element: document.getElementById("main") });
+    </script>
 </body>
 </html>
 

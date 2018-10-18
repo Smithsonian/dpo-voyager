@@ -59,6 +59,7 @@ export default class Viewport
     width = 100;
     height = 100;
 
+    index = 0;
     changed = true;
 
     canvasWidth = 100;

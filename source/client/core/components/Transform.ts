@@ -18,7 +18,7 @@
 import * as THREE from "three";
 
 import { Readonly } from "@ff/core/types";
-import _math from "@ff/core/math";
+import math from "@ff/core/math";
 
 import types from "@ff/core/ecs/propertyTypes";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
@@ -31,7 +31,7 @@ const _pos = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _scale = new THREE.Vector3();
 
-export const orderOptions = [ "XYZ", "YZX", "ZXY", "XZY", "YXZ", "ZYX" ];
+export enum ERotationOrder { XYZ, YZX, ZXY, XZY, YXZ, ZYX }
 
 /**
  * Allows arranging components in a hierarchical structure. Each [[TransformComponent]]
@@ -45,7 +45,7 @@ export default class Transform extends Hierarchy
     ins = this.makeProps({
         pos: types.Vector3("Position"),
         rot: types.Vector3("Rotation"),
-        ord: types.Enum("Order", orderOptions),
+        ord: types.Enum("Order", ERotationOrder),
         sca: types.Vector3("Scale", [ 1, 1, 1 ]),
         mat: types.Matrix4("Matrix")
     });
@@ -79,13 +79,13 @@ export default class Transform extends Hierarchy
             }
             if (rot.changed) {
                 object.rotation.set(
-                    rot.value[0] * _math.DEG2RAD,
-                    rot.value[1] * _math.DEG2RAD,
-                    rot.value[2] * _math.DEG2RAD
+                    rot.value[0] * math.DEG2RAD,
+                    rot.value[1] * math.DEG2RAD,
+                    rot.value[2] * math.DEG2RAD
                 );
             }
             if (ord.changed) {
-                object.rotation.order = _math.select(orderOptions, ord.value);
+                object.rotation.order = types.getEnumName(ERotationOrder, ord.value);
             }
             if (sca.changed) {
                 object.scale.fromArray(sca.value);

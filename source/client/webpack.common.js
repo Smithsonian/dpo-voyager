@@ -33,10 +33,10 @@ const libDir = path.resolve(projectDir, "libs");
 module.exports = {
 
     entry: {
-        "voyager-explorer": path.resolve(sourceDir, "client/explorer/main.tsx"),
-        "voyager-prep": path.resolve(sourceDir, "client/prep/main.tsx"),
-        "voyager-story": path.resolve(sourceDir, "client/story/main.tsx"),
-        "voyager-inspector": path.resolve(sourceDir, "client/inspector/main.tsx")
+        "voyager-explorer": path.resolve(sourceDir, "client/explorer/Application.tsx"),
+        "voyager-prep": path.resolve(sourceDir, "client/prep/Application.tsx"),
+        "voyager-story": path.resolve(sourceDir, "client/story/Application.tsx"),
+        "voyager-inspector": path.resolve(sourceDir, "client/inspector/Application.tsx")
     },
 
     output: {

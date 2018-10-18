@@ -69,9 +69,9 @@ export default class ViewportLayout extends Publisher<ViewportLayout>
         this.layoutMode = EViewportLayoutMode.Single;
     }
 
-    forEachViewport(callback: (viewport: Viewport) => void)
+    forEachViewport(callback: (viewport: Viewport, index: number) => void)
     {
-        this.viewports.forEach(viewport => callback(viewport));
+        this.viewports.forEach(callback);
     }
 
     get layoutMode()
@@ -118,7 +118,11 @@ export default class ViewportLayout extends Publisher<ViewportLayout>
                 break;
         }
 
-        viewports.forEach(viewport => viewport.setCanvasSize(this.canvasWidth, this.canvasHeight));
+        viewports.forEach((viewport, index) => {
+            viewport.index = index;
+            viewport.setCanvasSize(this.canvasWidth, this.canvasHeight);
+        });
+
         this.emit<IViewportLayoutChangeEvent>("layout", { viewports, layoutMode });
     }
 

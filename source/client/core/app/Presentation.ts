@@ -30,7 +30,6 @@ import Transform from "../components/Transform";
 import Scene from "../components/Scene";
 import Reference from "../components/Reference";
 import Camera from "../components/Camera";
-import MainCamera from "../components/MainCamera";
 import Light from "../components/Light";
 import DirectionalLight from "../components/DirectionalLight";
 import PointLight from "../components/PointLight";
@@ -58,8 +57,8 @@ export default class Presentation
     protected presentationUrl: string;
     protected loaders: Loaders;
 
-    protected sceneComponent: Scene;
-    protected cameraComponent: Camera;
+    protected _sceneComponent: Scene;
+    protected _cameraComponent: Camera;
     protected lightsEntity: Entity;
     protected items: Item[];
 
@@ -68,13 +67,12 @@ export default class Presentation
     {
         const entity = this.entity = system.createEntity("Presentation");
 
-        this.sceneComponent = entity.createComponent(Scene);
-        entity.createComponent(MainCamera);
+        this._sceneComponent = entity.createComponent(Scene);
         entity.createComponent(Documents);
         entity.createComponent(Groups);
         entity.createComponent(Tours);
 
-        this.cameraComponent = null;
+        this._cameraComponent = null;
         this.lightsEntity = null;
         this.items = [];
 
@@ -92,9 +90,14 @@ export default class Presentation
         return resolvePathname(".", this.presentationUrl);
     }
 
+    get cameraComponent(): Camera
+    {
+        return this._cameraComponent;
+    }
+
     get cameraTransform(): Transform
     {
-        return this.cameraComponent ? this.cameraComponent.transform : null;
+        return this._cameraComponent ? this._cameraComponent.transform : null;
     }
 
     get lightsTransform(): Transform
@@ -102,19 +105,24 @@ export default class Presentation
         return this.lightsEntity ? this.lightsEntity.getComponent(Transform) : null;
     }
 
+    get sceneComponent(): Scene
+    {
+        return this._sceneComponent;
+    }
+
     get scene(): THREE.Scene | null
     {
-        return this.sceneComponent ? this.sceneComponent.scene : null;
+        return this._sceneComponent ? this._sceneComponent.scene : null;
     }
 
     get camera(): THREE.Camera | null
     {
-        return this.cameraComponent ? this.cameraComponent.camera : null;
+        return this._cameraComponent ? this._cameraComponent.camera : null;
     }
 
     loadModels()
     {
-        const models = this.sceneComponent.getComponentsInSubtree(Model);
+        const models = this._sceneComponent.getComponentsInSubtree(Model);
         models.forEach(model => {
             model.load(EDerivativeQuality.Medium);
         });
@@ -123,7 +131,7 @@ export default class Presentation
     inflate(pres: IPresentation, url?: string, item?: Item): this
     {
         const entity = this.entity;
-        const scene = this.sceneComponent;
+        const scene = this._sceneComponent;
 
         if (url) {
             this.presentationUrl = url;
@@ -149,7 +157,7 @@ export default class Presentation
             readerComponent.fromData(explorer.reader);
         }
 
-        this.cameraComponent = scene.getComponentInSubtree(Camera);
+        this._cameraComponent = scene.getComponentInSubtree(Camera);
         this.lightsEntity = scene.findEntityInSubtree("Lights");
 
         return this;
@@ -170,7 +178,7 @@ export default class Presentation
         };
 
         // scene, nodes
-        const transforms = this.sceneComponent.children;
+        const transforms = this._sceneComponent.children;
 
 
         if (transforms.length > 0) {

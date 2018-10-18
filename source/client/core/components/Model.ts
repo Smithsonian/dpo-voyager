@@ -17,7 +17,8 @@
 
 import * as THREE from "three";
 
-import _math from "@ff/core/math";
+import math from "@ff/core/math";
+import threeMath from "@ff/three/math";
 import types from "@ff/core/ecs/propertyTypes";
 
 import {
@@ -30,9 +31,10 @@ import UberMaterial from "../shaders/UberMaterial";
 import AssetLoader from "../loaders/AssetLoader";
 
 import Derivatives, { EDerivativeQuality } from "./Derivatives";
-import Object3D from "./Object3D";
-import { orderOptions } from "./Transform";
 import Derivative from "../app/Derivative";
+
+import { ERotationOrder } from "./Transform";
+import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,14 +51,13 @@ export default class Model extends Object3D
     ins = this.makeProps({
         pos: types.Vector3("Position"),
         rot: types.Vector3("Rotation"),
-        ord: types.Enum("Order", orderOptions),
+        ord: types.Enum("Order", ERotationOrder),
         sca: types.Vector3("Scale", [ 1, 1, 1 ])
     });
 
     protected units: TUnitType = "cm";
     protected boundingBox: THREE.Box3 = null;
     protected material = new UberMaterial();
-    protected matrix = new THREE.Matrix4();
 
     protected derivatives: Derivatives = null;
 
@@ -80,18 +81,27 @@ export default class Model extends Object3D
 
     update()
     {
-        const matrix = this.matrix;
+        const object = this.object3D;
         const { pos, rot, ord, sca } = this.ins;
 
-        _vec3a.fromArray(pos.value);
-        _vec3b.fromArray(sca.value);
-        _euler.set(rot.value[0], rot.value[1], rot.value[2], _math.select(orderOptions, ord.value));
-        _quat.setFromEuler(_euler);
-        matrix.compose(_vec3a, _quat, _vec3b);
+        if (pos.changed) {
+            object.position.fromArray(pos.value);
+        }
+        if (rot.changed) {
+            object.rotation.set(
+                rot.value[0] * math.DEG2RAD,
+                rot.value[1] * math.DEG2RAD,
+                rot.value[2] * math.DEG2RAD
+            );
+        }
+        if (ord.changed) {
+            object.rotation.order = types.getEnumName(ERotationOrder, ord.value);
+        }
+        if (sca.changed) {
+            object.scale.fromArray(sca.value);
+        }
 
-        const object = this.object3D;
-        object.matrix = matrix;
-        object.matrixWorldNeedsUpdate = true;
+        object.updateMatrix();
     }
 
     load(quality: EDerivativeQuality): Promise<void>
@@ -152,8 +162,9 @@ export default class Model extends Object3D
         }
 
         if (data.transform) {
-            this.matrix.fromArray(data.transform);
-            this.matrix.decompose(_vec3a, _quat, _vec3b);
+            const matrix = this.object3D.matrix;
+            matrix.fromArray(data.transform);
+            matrix.decompose(_vec3a, _quat, _vec3b);
             _euler.setFromQuaternion(_quat, "XYZ");
 
             const { pos, rot, ord, sca } = this.ins;
@@ -161,7 +172,7 @@ export default class Model extends Object3D
             _vec3b.toArray(sca.value);
             _euler.toVector3(_vec3a);
             _vec3a.toArray(rot.value);
-            ord.value = 0;
+            ord.value = ERotationOrder.XYZ;
 
             this.ins.pushAll();
             this.changed = true;
@@ -188,8 +199,9 @@ export default class Model extends Object3D
             }
         }
 
-        if (this.matrix) {
-            data.transform = this.matrix.toArray();
+        const matrix = this.object3D.matrix;
+        if (!threeMath.isMatrix4Identity(matrix)) {
+            data.transform = matrix.toArray();
         }
 
         if (this.material) {

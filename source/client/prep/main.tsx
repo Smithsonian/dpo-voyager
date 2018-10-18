@@ -18,14 +18,4 @@
 import "./main.scss";
 import Application from "../prep/Application";
 
-////////////////////////////////////////////////////////////////////////////////
-
-console.log("Voyager Prep");
-console.log("3D Foundation Project");
-console.log("(c) 2018 Smithsonian Institution");
-console.log("https://3d.si.edu");
-
-new Application({
-    element: document.getElementById("main")
-});
-
+window["Voyager"] = Application;

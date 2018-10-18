@@ -23,7 +23,8 @@ import GridContainer from "@ff/react/GridContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import { EProjectionType, EViewPreset } from "common/types";
+import { EViewPreset } from "common/types";
+import { EProjectionType } from "../components/Camera";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +34,7 @@ export interface IViewportMenuSelectEvent extends IButtonTapEvent { viewportInde
 export interface IViewportMenuProps extends IComponentProps
 {
     viewportIndex: number;
-    projection: EProjectionType;
+    projectionType: EProjectionType;
     viewPreset: EViewPreset
     onSelectProjection?: (event: IViewportMenuSelectEvent) => void;
     onSelectViewPreset?: (event: IViewportMenuSelectEvent) => void;
@@ -44,7 +45,7 @@ const ViewportMenu: React.SFC<IViewportMenuProps> = function(props)
     const {
         className,
         viewportIndex,
-        projection,
+        projectionType,
         viewPreset,
         onSelectProjection,
         onSelectViewPreset
@@ -68,8 +69,8 @@ const ViewportMenu: React.SFC<IViewportMenuProps> = function(props)
                     text="Perspective"
                     icon="fas fa-columns"
                     title="Perspective Projection"
-                    selected={projection === EProjectionType.Perspective}
-                    focused={projection === EProjectionType.Perspective}
+                    selected={projectionType === EProjectionType.Perspective}
+                    focused={projectionType === EProjectionType.Perspective}
                     onTap={onTapProjection} />
 
                 <Button
@@ -77,8 +78,8 @@ const ViewportMenu: React.SFC<IViewportMenuProps> = function(props)
                     text="Orthographic"
                     icon="fas fa-columns"
                     title="Orthographic Projection"
-                    selected={projection === EProjectionType.Orthographic}
-                    focused={projection === EProjectionType.Orthographic}
+                    selected={projectionType === EProjectionType.Orthographic}
+                    focused={projectionType === EProjectionType.Orthographic}
                     onTap={onTapProjection} />
 
             </FlexContainer>

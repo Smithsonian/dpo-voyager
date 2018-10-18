@@ -20,7 +20,7 @@ import * as React from "react";
 import TabContainer, { ITabSelectEvent, TabItem } from "@ff/react/TabContainer";
 
 import SettingsModeView from "./SettingsModeView";
-import PrepController, { EPrepMode, IPrepModeChangeEvent } from "./PrepController";
+import PrepController, { EPrepMode, IPrepModeChangeEvent } from "../core/components/PrepController";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -40,27 +40,30 @@ export default class Loaders
         this.validator = new PresentationValidator();
     }
 
-    loadPresentation(url: string): Promise<IPresentation>
+    loadJSON(url: string): Promise<any>
     {
-        return this.jsonLoader.load(url)
-        .then(json => {
+        return this.jsonLoader.load(url);
+    }
+
+    validatePresentation(json: any): Promise<IPresentation>
+    {
+        return new Promise((resolve, reject) => {
             if (!this.validator.validatePresentation(json)) {
-                throw new Error(`failed to validate presentation '${url}'`);
+                return reject(new Error("invalid presentation data, validation failed"));
             }
 
-            return json;
+            return resolve(json as IPresentation);
         });
     }
 
-    loadItem(url: string): Promise<IItem>
+    validateItem(json: any): Promise<IItem>
     {
-        return this.jsonLoader.load(url)
-        .then(json => {
+        return new Promise((resolve, reject) => {
             if (!this.validator.validateItem(json)) {
-                throw new Error(`failed to validate item '${url}'`);
+                return reject(new Error("invalid item data, validation failed"));
             }
 
-            return json;
+            return resolve(json as IItem);
         });
     }
 }

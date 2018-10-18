@@ -18,12 +18,18 @@
 import Registry from "@ff/core/ecs/Registry";
 
 import TransformManip from "../core/components/TransformManip";
+import PrepController from "../core/components/PrepController";
+import SelectionController from "../core/components/SelectionController";
+import ViewportCameraManip from "../core/components/ViewportCameraManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
-        TransformManip
+        TransformManip,
+        PrepController,
+        SelectionController,
+        ViewportCameraManip
     ]);
 }

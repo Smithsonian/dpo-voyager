@@ -15,19 +15,24 @@
  * limitations under the License.
  */
 
-import "./main.scss"
+import { ReturnType } from "@ff/core/types";
 
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import Commander from "@ff/core/Commander";
+import Component from "@ff/core/ecs/Component";
 
-import InspectorView from "../inspector/InspectorView";
+////////////////////////////////////////////////////////////////////////////////
 
-console.log("Voyager Inspector");
-console.log("3D Foundation Project");
-console.log("(c) 2018 Smithsonian Institution");
-console.log("https://3d.si.edu");
+export { Commander };
 
-ReactDOM.render(
-    <InspectorView />,
-    document.getElementById("main")
-);
+export type Actions<T extends Controller<any>> = ReturnType<T["createActions"]>;
+
+export default class Controller<T extends Controller<any> = Controller<any>> extends Component
+{
+    static readonly type: string = "Controller";
+
+    actions: Actions<T>;
+
+    createActions(commander: Commander)
+    {
+    }
+}

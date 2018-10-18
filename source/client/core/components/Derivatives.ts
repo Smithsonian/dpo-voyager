@@ -57,6 +57,14 @@ export default class Derivatives extends Collection<Derivative>
         return this.addDerivative(derivative);
     }
 
+    addGeometryAndTextureDerivative(geoUri: string, textureUri: string, quality: EDerivativeQuality): string
+    {
+        const derivative = new Derivative(EDerivativeUsage.Web, quality);
+        derivative.addAsset(geoUri, EAssetType.Geometry);
+        derivative.addAsset(textureUri, EAssetType.Image);
+        return this.addDerivative(derivative);
+    }
+
     addDerivative(derivative: Derivative): string
     {
         const id = this.insert(derivative);

@@ -18,6 +18,8 @@
 import * as React from "react";
 import * as THREE from "three";
 
+import System from "@ff/core/ecs/System";
+
 import Container from "@ff/react/Container";
 import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
@@ -34,7 +36,7 @@ export interface IVoyagerViewProps
 {
     className?: string;
     viewManager: ViewManager;
-    actions;
+    system: System;
 }
 
 export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> implements IManipEventHandler
@@ -85,7 +87,7 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> 
     {
         const {
             className,
-            actions
+            system
         } = this.props;
 
         const viewportLayout = this.viewportLayout;
@@ -107,7 +109,7 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> 
                     ref={this.containerRef} />
 
                 <PresentationOverlay
-                    actions={actions} />
+                    system={system} />
 
                 <QuadSplitOverlay
                     mode={layoutMode}

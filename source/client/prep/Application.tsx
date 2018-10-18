@@ -15,31 +15,30 @@
  * limitations under the License.
  */
 
+import "./application.scss";
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import DockController from "@ff/react/DockController";
 
-import { IPresentationChangeEvent } from "../core/controllers/PresentationController";
-import SelectionController, { ISelectComponentEvent } from "../core/controllers/SelectionController";
-import { IPickManipPickEvent } from "../core/components/PickManip";
+import PrepController from "../core/components/PrepController";
+import SelectionController from "../core/components/SelectionController";
+
 import ViewportCameraManip from "../core/components/ViewportCameraManip";
 import TransformManip from "../core/components/TransformManip";
-import Model from "../core/components/Model";
 
 import { registerComponents } from "./registerComponents";
 import MainView from "./MainView";
 
-import PrepController from "./PrepController";
-
-import VoyagerApplication, { IVoyagerApplicationProps } from "../core/app/VoyagerApplication";
+import BaseApplication, { IApplicationProps } from "../core/app/BaseApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Voyager prep main application.
  */
-export default class Application extends VoyagerApplication
+export default class PrepApplication extends BaseApplication
 {
     readonly dockableController: DockController;
     readonly selectionController: SelectionController;
@@ -48,15 +47,20 @@ export default class Application extends VoyagerApplication
     protected transformManip: |TransformManip;
     protected viewportCameraManip: ViewportCameraManip;
 
-    constructor(props: IVoyagerApplicationProps)
+    constructor(props: IApplicationProps)
     {
-        super(props);
+        console.log("Voyager Prep");
+
+        super();
         registerComponents(this.registry);
 
-        this.dockableController = new DockController(this.commander);
+        this.prepController = this.main.createComponent(PrepController);
+        this.prepController.createActions(this.commander);
 
-        this.selectionController = new SelectionController(this.commander, this.system);
-        this.prepController = new PrepController(this.commander, this.viewManager);
+        this.selectionController = this.main.createComponent(SelectionController);
+        this.selectionController.createActions(this.commander);
+
+        this.dockableController = new DockController(this.commander);
 
         this.transformManip = this.main.createComponent(TransformManip);
         this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
@@ -65,18 +69,8 @@ export default class Application extends VoyagerApplication
         this.transformManip.next.component = this.orbitManip;
         this.orbitManip.next.component = this.viewportCameraManip;
 
-        this.pickManip.on("up", (event: IPickManipPickEvent) => {
-            this.selectionController.actions.select(event.component, event.pointerEvent.ctrlKey);
-        });
-
-        this.selectionController.on("component", (event: ISelectComponentEvent) => {
-            if (event.component.is(Model)) {
-                this.transformManip.setTarget(event.component as Model);
-            }
-        });
-
         this.start();
-        this.presentationController.loadFromDocumentUrl();
+        this.parseArguments(props);
 
         ReactDOM.render(
             <MainView
@@ -84,21 +78,6 @@ export default class Application extends VoyagerApplication
             props.element
         );
     }
-
-    protected onPresentationChange(event: IPresentationChangeEvent)
-    {
-        super.onPresentationChange(event);
-
-        if (event.current) {
-            this.transformManip.setScene(null);
-        }
-
-        if (event.next) {
-            this.transformManip.setScene(event.next.scene);
-
-            // TODO: Serialization test
-            const data = this.presentationController.writePresentation();
-            console.log(JSON.stringify(data));
-        }
-    }
 }
+
+window["Voyager"] = PrepApplication;

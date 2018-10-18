@@ -22,8 +22,21 @@ import types from "@ff/core/ecs/propertyTypes";
 import OrbitManipController from "@ff/react/OrbitManip";
 
 import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
+import { EProjectionType } from "./Camera";
+import { EViewPreset } from "common/types";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export { EProjectionType, EViewPreset };
+
+const _orientationPresets = [
+    [ 0, 90, 0 ], // left
+    [ 0, -90, 0 ], // right
+    [ 90, 0, 0 ], // top
+    [ -90, 0, 0 ], // bottom
+    [ 0, 0, 0 ], // front
+    [ 0, 180, 0 ] // back
+];
 
 const _orientation = new THREE.Vector3();
 const _offset = new THREE.Vector3();
@@ -34,11 +47,14 @@ export default class OrbitManip extends Manip
     static readonly type: string = "OrbitManip";
 
     ins = this.makeProps({
+        pro: types.Enum("Projection", EProjectionType),
+        pre: types.Enum("Preset", EViewPreset),
         ori: types.Vector3("Orientation"),
-        ofs: types.Vector3("Offset", [ 0, 0, 50 ])
+        ofs: types.Vector3("Offset", [ 0, 0, 50 ]),
     });
 
     outs = this.makeProps({
+        pro: types.Enum("Projection", EProjectionType),
         ori: types.Vector3("Orientation"),
         ofs: types.Vector3("Offset"),
         mat: types.Matrix4("Matrix"),
@@ -52,22 +68,32 @@ export default class OrbitManip extends Manip
 
     update()
     {
-        const { ori, ofs, mat, ior } = this.outs;
+        const ins = this.ins;
+        const outs = this.outs;
 
-        ori.value = this.ins.ori.value.slice();
-        ofs.value = this.ins.ofs.value.slice();
+        if (ins.pre.changed) {
+            outs.ori.value = types.getOptionValue(_orientationPresets, ins.pre.value);
+            outs.ofs.value[0] = 0;
+            outs.ofs.value[1] = 0;
+        }
+        else {
+            outs.ori.value = ins.ori.value.slice();
+            outs.ofs.value = ins.ofs.value.slice();
+        }
 
-        _orientation.fromArray(ori.value);
+        _orientation.fromArray(outs.ori.value);
         _orientation.multiplyScalar(math.DEG2RAD);
 
-        _offset.fromArray(ofs.value);
+        _offset.fromArray(outs.ofs.value);
 
         math.composeOrbitMatrix(_orientation, _offset, _matrix);
-        (_matrix as any).toArray(mat.value);
+        (_matrix as any).toArray(outs.mat.value);
 
-        ior.value[0] = -ori.value[0];
-        ior.value[1] = -ori.value[1];
-        ior.value[2] = -ori.value[2];
+        outs.ior.value[0] = -outs.ori.value[0];
+        outs.ior.value[1] = -outs.ori.value[1];
+        outs.ior.value[2] = -outs.ori.value[2];
+
+        outs.pro.value = ins.pro.value;
 
         this.outs.pushAll();
     }

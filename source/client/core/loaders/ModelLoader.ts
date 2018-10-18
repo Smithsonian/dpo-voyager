@@ -100,6 +100,10 @@ export default class ModelLoader
                 uberMat.roughness = 0.6;
                 uberMat.metalness = 0;
 
+                if (!uberMat.map) {
+                    uberMat.color.multiplyScalar(0.6);
+                }
+
                 mesh.material = uberMat;
             }
         });

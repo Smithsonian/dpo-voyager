@@ -17,12 +17,13 @@
 
 import { Dictionary, Readonly } from "@ff/core/types";
 import { IPublisherEvent } from "@ff/core/Publisher";
-import Controller, { Actions } from "@ff/core/Controller";
-import Commander from "@ff/core/Commander";
 
 import System, { ISystemComponentEvent, ISystemEntityEvent } from "@ff/core/ecs/System";
-import Component from "@ff/core/ecs/Component";
+import Component, { IComponentChangeEvent } from "@ff/core/ecs/Component";
 import Entity from "@ff/core/ecs/Entity";
+
+import Controller, { Actions, Commander } from "./Controller";
+import PickManip, { IPickManipPickEvent } from "./PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +47,9 @@ type ECS = Component | Entity | System;
 
 export default class SelectionController extends Controller<SelectionController>
 {
-    readonly system: System;
+    static readonly type: string = "SelectionController";
+
+    actions: SelectionActions;
 
     protected selectedComponents: Component[] = [];
     protected selectedEntities: Entity[] = [];
@@ -54,23 +57,48 @@ export default class SelectionController extends Controller<SelectionController>
     protected selectedIds: Dictionary<boolean> = {};
     protected expandedIds: Dictionary<boolean> = {};
 
-    protected changed = false;
-
-
-    constructor(commander: Commander, system: System)
+    create()
     {
-        super(commander);
-        this.addEvents("change", "component", "entity");
+        super.create();
+        this.addEvents("component", "entity");
 
-        this.system = system;
-        system.on("component", this.onComponent, this);
-        system.on("entity", this.onEntity, this);
+        this.system.on("component", this.onComponent, this);
+        this.system.on("entity", this.onEntity, this);
+
+        const pickManip = this.system.getComponent(PickManip);
+        if (pickManip) {
+            pickManip.on("up", this.onPick, this);
+        }
+    }
+
+    update()
+    {
+        this.emit<IComponentChangeEvent>("change", { what: "state" });
     }
 
     dispose()
     {
+        const pickManip = this.system.getComponent(PickManip);
+        if (pickManip) {
+            pickManip.off("up", this.onPick, this);
+        }
+
         this.system.off("component", this.onComponent, this);
         this.system.off("entity", this.onEntity, this);
+
+        super.dispose();
+    }
+
+    createActions(commander: Commander)
+    {
+        const actions = {
+            select: commander.register({
+                name: "Select", do: this.select, target: this
+            })
+        };
+
+        this.actions = actions;
+        return actions;
     }
 
     get selected(): Readonly<Dictionary<boolean>>
@@ -99,15 +127,6 @@ export default class SelectionController extends Controller<SelectionController>
 
         this.expandedIds[item.id] = !this.expandedIds[item.id];
         this.emit("change");
-    }
-
-    createActions(commander: Commander)
-    {
-        return {
-            select: commander.register({
-                name: "Select", do: this.select, target: this
-            })
-        };
     }
 
     protected select(item: ECS, multi: boolean)
@@ -169,26 +188,20 @@ export default class SelectionController extends Controller<SelectionController>
         }
     }
 
-    protected emitChange()
-    {
-        if (!this.changed) {
-            this.changed = true;
-            setTimeout(() => {
-                this.changed = false;
-                this.emit("change");
-            });
-        }
-    }
-
     protected onComponent(event: ISystemComponentEvent)
     {
         this.expandedIds[event.component.id] = true;
-        this.emitChange();
+        this.changed = true;
     }
 
     protected onEntity(event: ISystemEntityEvent)
     {
         this.expandedIds[event.entity.id] = true;
-        this.emitChange();
+        this.changed = true;
+    }
+
+    protected onPick(event: IPickManipPickEvent)
+    {
+        this.actions.select(event.component, event.pointerEvent.ctrlKey);
     }
 }

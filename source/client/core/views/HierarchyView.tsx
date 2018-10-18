@@ -20,7 +20,7 @@ import * as React from "react";
 import FlexContainer from "@ff/react/FlexContainer";
 import FlexItem from "@ff/react/FlexItem";
 
-import SelectionController from "../controllers/SelectionController";
+import SelectionController from "../components/SelectionController";
 import HierarchyTreeView from "./HierarchyTreeView";
 
 ////////////////////////////////////////////////////////////////////////////////

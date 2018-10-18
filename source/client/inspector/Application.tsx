@@ -15,16 +15,29 @@
  * limitations under the License.
  */
 
-import "./main.scss";
-import Application from "../story/Application";
+import "./application.scss"
+
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+
+import InspectorView from "../inspector/InspectorView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-console.log("Voyager Story");
-console.log("3D Foundation Project");
-console.log("(c) 2018 Smithsonian Institution");
-console.log("https://3d.si.edu");
+export default class InspectorApplication
+{
+    constructor(props: any)
+    {
+        console.log("Voyager Inspector");
+        console.log("3D Foundation Project");
+        console.log("(c) 2018 Smithsonian Institution");
+        console.log("https://3d.si.edu");
 
-new Application({
-    element: document.getElementById("main")
-});
+        ReactDOM.render(
+            <InspectorView />,
+            document.getElementById("main")
+        );
+    }
+}
+
+window["Voyager"] = InspectorApplication;

@@ -27,7 +27,7 @@ import System from "@ff/core/ecs/System";
 
 import Tree from "@ff/react/Tree";
 
-import SelectionController, { SelectionActions } from "../controllers/SelectionController";
+import SelectionController, { SelectionActions } from "../components/SelectionController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
