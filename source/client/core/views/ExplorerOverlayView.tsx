@@ -26,20 +26,20 @@ import PresentationMenuView from "./PresentationMenuView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/** Properties for [[ExplorerOverlay]] component. */
-export interface IPresentationOverlayProps
+/** Properties for [[ExplorerMenuOverlay]] component. */
+export interface IExplorerMenuOverlayProps
 {
     className?: string;
     system: System;
 }
 
-export default class PresentationOverlay extends React.Component<IPresentationOverlayProps, {}>
+export default class ExplorerMenuOverlay extends React.Component<IExplorerMenuOverlayProps, {}>
 {
     static readonly defaultProps = {
-        className: "presentation-overlay"
+        className: "explorer-menu-overlay"
     };
 
-    constructor(props: IPresentationOverlayProps)
+    constructor(props: IExplorerMenuOverlayProps)
     {
         super(props);
     }

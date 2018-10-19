@@ -27,7 +27,7 @@ import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent
 import PresentationOverlay from "./PresentationOverlay";
 import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
 import ViewportLayout, { EViewportLayoutMode, IViewportLayoutChangeEvent } from "../app/ViewportLayout";
-import ViewManager from "../app/ViewManager";
+import RenderController from "../components/RenderController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,6 @@ import ViewManager from "../app/ViewManager";
 export interface IVoyagerViewProps
 {
     className?: string;
-    viewManager: ViewManager;
     system: System;
 }
 
@@ -71,16 +70,24 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> 
 
     componentDidMount()
     {
-        this.viewportLayout = this.props.viewManager.registerView(this);
-        this.viewportLayout.on("layout", this.onLayout, this);
-        this.forceUpdate();
+        const renderController = this.props.system.getComponent(RenderController);
+
+        if (renderController) {
+            this.viewportLayout = renderController.registerView(this);
+            this.viewportLayout.on("layout", this.onLayout, this);
+            this.forceUpdate();
+        }
     }
 
     componentWillUnmount()
     {
-        this.props.viewManager.unregisterView(this);
-        this.viewportLayout.off("layout", this.onLayout, this);
-        this.viewportLayout = null;
+        const renderController = this.props.system.getComponent(RenderController);
+
+        if (renderController) {
+            renderController.unregisterView(this);
+            this.viewportLayout.off("layout", this.onLayout, this);
+            this.viewportLayout = null;
+        }
     }
 
     render()

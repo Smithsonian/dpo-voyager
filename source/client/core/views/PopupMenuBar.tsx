@@ -26,34 +26,32 @@ import { EViewPreset, EShaderType } from "common/types";
 import ViewportMenu, { IViewportMenuSelectEvent } from "./ViewportMenu";
 import RenderMenu, { IRenderMenuSelectEvent } from "./RenderMenu";
 
-import OrbitManip from "../components/OrbitManip";
+import OrbitManip, { EProjectionType } from "../components/OrbitManip";
 import System from "@ff/core/ecs/System";
-
-import { EProjectionType } from "../components/Camera";
-import PresentationController from "../components/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /** Properties for [[PresentationMenuView]] component. */
-export interface IPresentationMenuViewProps
+export interface IExplorerMenuViewProps
 {
     className?: string;
     system: System;
     portal?: React.Component<any, any>;
 }
 
-export interface IPresentationMenuViewState
+export interface IExplorerMenuViewState
 {
-    viewPreset: EViewPreset
+    projectionType: EProjectionType;
+    viewPreset: EViewPreset;
 }
 
-export default class PresentationMenuView extends React.Component<IPresentationMenuViewProps, IPresentationMenuViewState>
+export default class ExplorerMenuView extends React.Component<IExplorerMenuViewProps, IExplorerMenuViewState>
 {
     static readonly defaultProps = {
-        className: "presentation-menu-view"
+        className: "explorer-menu-view"
     };
 
-    constructor(props: IPresentationMenuViewProps)
+    constructor(props: IExplorerMenuViewProps)
     {
         super(props);
 
@@ -62,6 +60,7 @@ export default class PresentationMenuView extends React.Component<IPresentationM
         this.onSelectRenderMode = this.onSelectRenderMode.bind(this);
 
         this.state = {
+            projectionType: EProjectionType.Perspective,
             viewPreset: EViewPreset.None
         };
     }
@@ -71,13 +70,15 @@ export default class PresentationMenuView extends React.Component<IPresentationM
         const system = this.props.system;
 
         const orbitManip = system.getComponent(OrbitManip);
-        orbitManip.out("Orientation").on("value", this.onCameraOrientation, this);
+        orbitManip.out("Orbit.Manip").on("value", this.onManipChanged, this);
+        orbitManip.out("View.Projection").on("value", this.onProjectionChanged, this);
     }
 
     componentWillUnmount()
     {
         const orbitManip = this.props.system.getComponent(OrbitManip);
-        orbitManip.out("Orientation").off("value", this.onCameraOrientation, this);
+        orbitManip.out("Orbit.Manip").off("value", this.onManipChanged, this);
+        orbitManip.out("View.Projection").off("value", this.onProjectionChanged, this);
     }
 
     render()
@@ -89,26 +90,12 @@ export default class PresentationMenuView extends React.Component<IPresentationM
         } = this.props;
 
         const orbitManip = system.getComponent(OrbitManip);
-        const projectionType = orbitManip.in("Projection").value;
+        const projectionType = orbitManip.in("View.Projection").value;
 
         return (
             <FlexContainer
                 className={className}
                 direction="horizontal" >
-
-                <FlexSpacer/>
-
-                <PopupButton
-                    portal={portal}
-                    anchor="bottom"
-                    modal={true}
-                    icon="fas fa-palette"
-                    title="Render Mode">
-                    <RenderMenu
-                        className="popup-menu"
-                        renderMode={EShaderType.Wireframe}
-                        onSelectRenderMode={this.onSelectRenderMode} />
-                </PopupButton>
 
                 <PopupButton
                     portal={portal}
@@ -117,12 +104,24 @@ export default class PresentationMenuView extends React.Component<IPresentationM
                     icon="fas fa-eye"
                     title="View/Projection Settings">
                     <ViewportMenu
-                        className="popup-menu"
+                        className="explorer-popup-menu viewport-menu"
                         viewportIndex={0}
                         projectionType={projectionType}
                         viewPreset={this.state.viewPreset}
                         onSelectProjection={this.onSelectProjection}
                         onSelectViewPreset={this.onSelectViewPreset} />
+                </PopupButton>
+
+                <PopupButton
+                    portal={portal}
+                    anchor="bottom"
+                    modal={true}
+                    icon="fas fa-palette"
+                    title="Render Mode">
+                    <RenderMenu
+                        className="explorer-popup-menu render-menu"
+                        renderMode={EShaderType.Wireframe}
+                        onSelectRenderMode={this.onSelectRenderMode} />
                 </PopupButton>
 
             </FlexContainer>
@@ -132,13 +131,13 @@ export default class PresentationMenuView extends React.Component<IPresentationM
     protected onSelectProjection(event: IViewportMenuSelectEvent)
     {
         const orbitManip = this.props.system.getComponent(OrbitManip);
-        orbitManip.in("Projection").setValue(event.index);
+        orbitManip.in("View.Projection").setValue(event.index);
     }
 
     protected onSelectViewPreset(event: IViewportMenuSelectEvent)
     {
         const orbitManip = this.props.system.getComponent(OrbitManip);
-        orbitManip.in("Preset").setValue(event.index);
+        orbitManip.in("View.Preset").setValue(event.index);
 
         this.setState({ viewPreset: event.index });
     }
@@ -148,8 +147,13 @@ export default class PresentationMenuView extends React.Component<IPresentationM
         //this.props.actions.setShader(event.index);
     }
 
-    protected onCameraOrientation()
+    protected onManipChanged()
     {
         this.setState({ viewPreset: EViewPreset.None });
+    }
+
+    protected onProjectionChanged(projectionType: EProjectionType)
+    {
+        this.setState({ projectionType });
     }
 }

@@ -55,9 +55,10 @@ export default class ViewManager
                 return;
             }
 
+            view.renderer.setClearColor("#0080a0");
             view.renderer.clear();
 
-            viewportLayout.forEachViewport(viewport => {
+            viewportLayout.forEachViewport((viewport, index) => {
                 viewport.sceneCamera = sceneCamera;
                 viewport.updateCamera();
                 const camera = viewport.camera;
