@@ -17,7 +17,8 @@
 
 import Component from "@ff/core/ecs/Component";
 
-import { IRenderer, TUnitType, TShaderType, EShaderType } from "common/types";
+import { IRenderer, TUnitType, TShaderType } from "common/types";
+import { EShaderMode } from "./RenderController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,14 +27,14 @@ export default class Renderer extends Component
     static readonly type: string = "Renderer";
 
     units: TUnitType = "cm";
-    shader: EShaderType = EShaderType.Default;
+    shader: EShaderMode = EShaderMode.Default;
     exposure: number = 1;
     gamma: number = 1;
 
     fromData(data: IRenderer)
     {
         this.units = data.units;
-        this.shader = EShaderType[data.shader];
+        this.shader = EShaderMode[data.shader];
         this.exposure = data.exposure;
         this.gamma = data.gamma;
     }
@@ -42,7 +43,7 @@ export default class Renderer extends Component
     {
         return {
             units: this.units,
-            shader: EShaderType[this.shader] as TShaderType,
+            shader: EShaderMode[this.shader] as TShaderType,
             exposure: this.exposure,
             gamma: this.gamma
         };

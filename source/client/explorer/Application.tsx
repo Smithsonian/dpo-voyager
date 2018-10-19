@@ -20,7 +20,7 @@ import "./application.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import VoyagerView from "../core/views/VoyagerView";
+import ExplorerView from "../core/views/ExplorerView";
 import BaseApplication, { IApplicationProps } from "../core/app/BaseApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,8 +37,7 @@ export default class ExplorerApplication extends BaseApplication
         this.parseArguments(props);
 
         ReactDOM.render(
-            <VoyagerView
-                viewManager={this.viewManager}
+            <ExplorerView
                 system={this.system} />,
         props.element
     );

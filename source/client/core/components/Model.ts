@@ -38,17 +38,15 @@ import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
-const _euler = new THREE.Euler();
-const _quat = new THREE.Quaternion();
-
+const _vec3 = new THREE.Vector3();
 
 export default class Model extends Object3D
 {
     static readonly type: string = "Model";
 
     ins = this.makeProps({
+        alo: types.Boolean("Autoload", true),
+        qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.Medium),
         pos: types.Vector3("Position"),
         rot: types.Vector3("Rotation"),
         ord: types.Enum("Order", ERotationOrder),
@@ -63,8 +61,8 @@ export default class Model extends Object3D
 
     protected assetLoader: AssetLoader = null;
     protected assetPath: string = "";
-    protected currentModel: THREE.Object3D = null;
 
+    protected currentModel: THREE.Object3D = null;
 
     create()
     {
@@ -82,9 +80,18 @@ export default class Model extends Object3D
     update()
     {
         const object = this.object3D;
-        const { pos, rot, ord, sca } = this.ins;
+        const { alo, qua, pos, rot, ord, sca } = this.ins;
+
+        if (!this.currentModel && alo.value) {
+            this.load(qua.value)
+                .catch(error => {
+                    console.warn("Model.update - failed to load derivative");
+                    console.warn(error);
+                });
+        }
 
         if (pos.changed) {
+            console.log("position", pos.value);
             object.position.fromArray(pos.value);
         }
         if (rot.changed) {
@@ -98,6 +105,7 @@ export default class Model extends Object3D
             object.rotation.order = types.getEnumName(ERotationOrder, ord.value);
         }
         if (sca.changed) {
+            console.log("scale", sca.value);
             object.scale.fromArray(sca.value);
         }
 
@@ -106,6 +114,12 @@ export default class Model extends Object3D
 
     load(quality: EDerivativeQuality): Promise<void>
     {
+        // display bounding box
+        if (!this.currentModel && this.boundingBox) {
+            this.currentModel = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
+            this.object3D.add(this.currentModel);
+        }
+
         const derivatives = this.derivatives;
         if (!derivatives) {
             return Promise.reject(new Error("missing derivatives component"));
@@ -141,13 +155,22 @@ export default class Model extends Object3D
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
         return derivative.load(this.assetLoader, this.assetPath)
-        .then(object => {
-            if (this.currentModel) {
+        .then(() => {
+            if (derivative.model && this.currentModel) {
                 this.object3D.remove(this.currentModel);
             }
 
-            this.currentModel = object;
-            this.object3D.add(object);
+            if (!this.boundingBox && derivative.boundingBox) {
+                this.boundingBox = derivative.boundingBox.clone();
+            }
+
+            // TODO: Test
+            const bb = derivative.boundingBox;
+            const box = { min: bb.min.toArray(), max: bb.max.toArray() };
+            console.log("derivative bounding box: ", box);
+
+            this.currentModel = derivative.model;
+            this.object3D.add(derivative.model);
         });
     }
 
@@ -155,27 +178,35 @@ export default class Model extends Object3D
     {
         this.units = data.units;
 
+        if (data.transform) {
+            // decompose transform matrix
+            const matrix = this.object3D.matrix;
+            matrix.fromArray(data.transform);
+
+            const { pos, rot, ord, sca } = this.ins;
+            threeMath.decomposeTransformMatrix(data.transform, pos.value, rot.value, sca.value);
+            ord.value = ERotationOrder.XYZ;
+
+            this.ins.setAll();
+        }
+
         if (data.boundingBox) {
             this.boundingBox = new THREE.Box3();
             this.boundingBox.min.fromArray(data.boundingBox.min);
             this.boundingBox.max.fromArray(data.boundingBox.max);
-        }
 
-        if (data.transform) {
-            const matrix = this.object3D.matrix;
-            matrix.fromArray(data.transform);
-            matrix.decompose(_vec3a, _quat, _vec3b);
-            _euler.setFromQuaternion(_quat, "XYZ");
+            const size = this.boundingBox.getSize(_vec3);
+            const maxSize = Math.max(size.x, size.y, size.z);
+            const scale = 10 / maxSize;
+            this.ins.sca.setValue([ scale, scale, scale ]);
 
-            const { pos, rot, ord, sca } = this.ins;
-            _vec3a.toArray(pos.value);
-            _vec3b.toArray(sca.value);
-            _euler.toVector3(_vec3a);
-            _vec3a.toArray(rot.value);
-            ord.value = ERotationOrder.XYZ;
+            const center = this.boundingBox.getCenter(_vec3);
+            this.ins.pos.setValue([ -center.x * scale, -center.y * scale, -center.z * scale ]);
 
-            this.ins.pushAll();
-            this.changed = true;
+            console.log("Model.fromData");
+            console.log("  bounding box: ", data.boundingBox);
+            console.log("  auto scale: ", scale);
+            console.log("  auto translate: ", this.ins.pos.value);
         }
 
         if (data.material) {

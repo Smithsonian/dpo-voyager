@@ -55,6 +55,7 @@ export default class Camera extends Object3D
         const hw = hh * aspect;
 
         if (pro.changed) {
+            console.log("Camera.update - change projection");
             this.object3D = types.isEnumEntry(EProjectionType.Perspective, pro.value)
                 ? new THREE.PerspectiveCamera(fov.value, aspect, zn.value, zf.value)
                 : new THREE.OrthographicCamera(-hw, hw, hh, -hh, zn.value, zf.value);

@@ -80,7 +80,7 @@ export default class PresentationController extends Controller<PresentationContr
         return Promise.resolve().then(() => {
             console.log(`Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[quality]}\n`,
                 `model url: ${modelUrl}`);
-            const item = new Item(this.system, this.loaders);
+            const item = new Item(this.system.createEntity("Item"), this.loaders);
             item.addWebModelDerivative(modelUrl, quality);
 
             return this.openDefaultPresentation(modelUrl, item);
@@ -92,7 +92,7 @@ export default class PresentationController extends Controller<PresentationContr
         return Promise.resolve().then(() => {
             console.log(`Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
                 `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
-            const item = new Item(this.system, this.loaders);
+            const item = new Item(this.system.createEntity("Item"), this.loaders);
             item.addGeometryAndTextureDerivative(geometryUrl, textureUrl, quality);
 
             return this.openDefaultPresentation(geometryUrl, item);
@@ -115,7 +115,7 @@ export default class PresentationController extends Controller<PresentationContr
             : "";
 
         return this.loaders.validateItem(json).then(itemData => {
-            const item = new Item(this.system, this.loaders);
+            const item = new Item(this.system.createEntity("Item"), this.loaders);
             item.inflate(itemData, url);
 
             if (item.templateName) {
@@ -145,7 +145,6 @@ export default class PresentationController extends Controller<PresentationContr
 
             this.presentations.push(presentation);
             this.setActivePresentation(this.presentations.length - 1);
-            presentation.loadModels();
         });
     }
 
@@ -180,18 +179,19 @@ export default class PresentationController extends Controller<PresentationContr
             // detach camera from orbit manip
             const cameraTransform = current.cameraTransform;
             if (cameraTransform) {
-                cameraTransform.in("Matrix").unlinkFrom(orbitManip.out("Matrix"));
+                cameraTransform.in("Matrix").unlinkFrom(orbitManip.out("Orbit.Matrix"));
             }
 
             const cameraComponent = current.cameraComponent;
             if (cameraComponent) {
-                cameraComponent.in("Projection").unlinkFrom(orbitManip.out("Projection"));
+                cameraComponent.in("Projection").unlinkFrom(orbitManip.out("View.Projection"));
+                cameraComponent.in("Size").unlinkFrom(orbitManip.out("View.Size"));
             }
 
             // detach light group from orbit manip
             const lightsTransform = current.lightsTransform;
             if (lightsTransform) {
-                lightsTransform.in("Rotation").unlinkFrom(orbitManip.out("Inverse.Orbit"));
+                lightsTransform.in("Rotation").unlinkFrom(orbitManip.out("Orbit.InverseOrientation"));
             }
         }
 
@@ -202,19 +202,20 @@ export default class PresentationController extends Controller<PresentationContr
             const cameraTransform = next.cameraTransform;
             if (cameraTransform) {
                 orbitManip.setFromMatrix(cameraTransform.matrix);
-                cameraTransform.in("Matrix").linkFrom(orbitManip.out("Matrix"));
+                cameraTransform.in("Matrix").linkFrom(orbitManip.out("Orbit.Matrix"));
             }
 
             const cameraComponent = next.cameraComponent;
             if (cameraComponent) {
-                cameraComponent.in("Projection").linkFrom(orbitManip.out("Projection"));
+                cameraComponent.in("Projection").linkFrom(orbitManip.out("View.Projection"));
+                cameraComponent.in("Size").linkFrom(orbitManip.out("View.Size"));
             }
 
             // attach lights group to orbit manip
             const lightsTransform = next.lightsTransform;
             if (lightsTransform) {
                 lightsTransform.in("Order").setValue(4);
-                lightsTransform.in("Rotation").linkFrom(orbitManip.out("Inverse.Orbit"));
+                lightsTransform.in("Rotation").linkFrom(orbitManip.out("Orbit.InverseOrientation"));
             }
         }
     }

@@ -35,7 +35,7 @@ import Snapshots from "../components/Snapshots";
 
 import Loaders from "../loaders/Loaders";
 import Transform from "../components/Transform";
-import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../app/Derivative";
+import { EDerivativeQuality } from "./Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,11 +47,10 @@ export default class Item
     protected templateUri: string;
     protected loaders: Loaders;
 
-    constructor(system: System, loaders: Loaders)
+    constructor(entity: Entity, loaders: Loaders)
     {
-        this.entity = system.createEntity("Item");
-        this.entity.createComponent(Transform);
-        this.entity.createComponent(Meta);
+        this.entity = entity;
+        this.entity.getOrCreateComponent(Transform);
 
         this.itemUrl = "";
         this.templateUri = "";
@@ -115,7 +114,7 @@ export default class Item
         let groupIds = [];
         let snapIds = [];
 
-        entity.getComponent(Meta).fromData(item.meta);
+        entity.createComponent(Meta).fromData(item.meta);
 
         if (item.process) {
             entity.createComponent(Process)

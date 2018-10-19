@@ -17,32 +17,66 @@
 
 import * as THREE from "three";
 
-import ViewportLayout, { EViewportLayoutMode, IViewportManip } from "../app/ViewportLayout";
-import VoyagerView from "../views/VoyagerView";
+import types from "@ff/core/ecs/propertyTypes";
 
-import RenderSystem from "./RenderSystem";
-import RenderContext from "./RenderContext";
+import Controller, { Actions, Commander } from "./Controller";
+
+import ViewportLayout, { EViewportLayoutMode, IViewportManip } from "../app/ViewportLayout";
+import ExplorerView from "../views/ExplorerView";
+
+import RenderSystem from "../app/RenderSystem";
+import RenderContext from "../app/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _color = new THREE.Color();
+
+export enum EShaderMode { Inherit, Default, PBR, Phong, Clay, Normals, Wireframe, XRay }
+
 interface IViewEntry
 {
-    view: VoyagerView;
+    view: ExplorerView;
     viewportLayout: ViewportLayout;
 }
 
-export default class ViewManager
+export type RenderActions = Actions<RenderController>;
+
+export default class RenderController extends Controller<RenderController>
 {
-    protected system: RenderSystem;
+    static readonly type: string = "RenderController";
+
+    ins = this.makeProps({
+        col: types.ColorRGB("Background.Color", [ 0.1, 0.1, 0.1 ]),
+        sha: types.Enum("Shader.Mode", EShaderMode)
+    });
+
+    actions: RenderActions = null;
+
     protected context: RenderContext = new RenderContext();
     protected views: IViewEntry[] = [];
 
     protected layoutMode: EViewportLayoutMode = EViewportLayoutMode.Single;
     protected nextManip: IViewportManip = null;
 
-    constructor(system: RenderSystem)
+    update()
     {
-        this.system = system;
+        const ins = this.ins;
+
+        _color.fromArray(ins.col.value);
+
+        this.views.forEach(entry => {
+            const renderer = entry.view.renderer;
+            renderer.setClearColor(_color);
+        });
+    }
+
+    createActions(commander: Commander)
+    {
+        const actions = {
+        };
+
+        this.actions = actions;
+        return actions;
     }
 
     renderViews(scene: THREE.Scene, sceneCamera: THREE.Camera)
@@ -55,7 +89,6 @@ export default class ViewManager
                 return;
             }
 
-            view.renderer.setClearColor("#0080a0");
             view.renderer.clear();
 
             viewportLayout.forEachViewport((viewport, index) => {
@@ -63,7 +96,8 @@ export default class ViewManager
                 viewport.updateCamera();
                 const camera = viewport.camera;
                 context.set(viewport, camera, scene);
-                this.system.render(context);
+
+                (this.system as RenderSystem).render(context);
                 viewport.render(view.renderer, scene);
             });
         });
@@ -89,10 +123,10 @@ export default class ViewManager
 
     /**
      * Called by a view after it has been created/mounted.
-     * @param {VoyagerView} view
+     * @param {ExplorerView} view
      * @returns {string}
      */
-    registerView(view: VoyagerView): ViewportLayout
+    registerView(view: ExplorerView): ViewportLayout
     {
         const orphanEntry = this.views.find(entry => entry.view === null);
 
@@ -119,9 +153,9 @@ export default class ViewManager
 
     /**
      * Called by a view before it is unmounted.
-     * @param {VoyagerView} view
+     * @param {ExplorerView} view
      */
-    unregisterView(view: VoyagerView)
+    unregisterView(view: ExplorerView)
     {
         const entry = this.views.find(entry => entry.view === view);
 

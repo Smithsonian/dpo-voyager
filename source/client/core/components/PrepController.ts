@@ -17,7 +17,7 @@
 
 import { IPublisherEvent } from "@ff/core/Publisher";
 
-import ViewManager from "../app/ViewManager";
+import RenderController from "./RenderController";
 import { EViewportLayoutMode } from "../app/ViewportLayout";
 
 import PresentationController, { IPresentationChangeEvent } from "./PresentationController";
@@ -42,17 +42,20 @@ export default class PrepController extends Controller<PrepController>
 
     actions: PrepActions = null;
 
-    protected viewManager: ViewManager = null;
+    protected renderController: RenderController = null;
+    protected presentationController: PresentationController = null;
+
     protected prepMode: EPrepMode = EPrepMode.Explore;
-    protected explorerController: PresentationController = null;
 
     create()
     {
         super.create();
         this.addEvent("mode");
 
-        this.explorerController = this.getComponent(PresentationController);
-        this.explorerController.on("presentation", this.onPresentationChange, this);
+        this.renderController = this.getComponent(RenderController);
+
+        this.presentationController = this.getComponent(PresentationController);
+        this.presentationController.on("presentation", this.onPresentationChange, this);
     }
 
     createActions(commander: Commander)
@@ -67,7 +70,7 @@ export default class PrepController extends Controller<PrepController>
 
     dispose()
     {
-        this.explorerController.off("presentation", this.onPresentationChange, this);
+        this.presentationController.off("presentation", this.onPresentationChange, this);
         super.dispose();
     }
 
@@ -79,10 +82,10 @@ export default class PrepController extends Controller<PrepController>
     set mode(mode: EPrepMode)
     {
         if (mode === EPrepMode.Pose) {
-            this.viewManager.setViewportLayout(EViewportLayoutMode.Quad);
+            this.renderController.setViewportLayout(EViewportLayoutMode.Quad);
         }
         else {
-            this.viewManager.setViewportLayout(EViewportLayoutMode.Single);
+            this.renderController.setViewportLayout(EViewportLayoutMode.Single);
         }
 
         this.prepMode = mode;

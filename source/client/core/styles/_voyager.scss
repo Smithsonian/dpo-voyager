@@ -19,8 +19,11 @@
 // BASE COLORS
 
 $color-background: #3e3e3e;
-$color-primary: #e66e19; // deep orange
-$color-secondary: #303f9f; // indigo
+$color-primary: #cc671f; // Smithsonian primary blue
+$color-secondary: #0080b3; // Smithsonian secondary indigo
+$color-text-explorer: #f0f0f0;
+$color-text-explorer-dim: #a0a0a0;
+$color-background-explorer: transparentize(black, 0.3);
 
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENT STYLES
@@ -60,37 +63,51 @@ html {
   color: $color-text;
 }
 
-#main, #overlay {
+#main {
   font-size: 0.9rem;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MENUS
+// EXPLORER VIEW
 
-.presentation-menu-view {
+.explorer-view {
+  @include font-ui-normal;
+  background: $color-background-dark;
+  color: $color-text;
+  font-size: 0.9rem;
 
-}
+  .canvas {
+    @include full-size;
+  }
 
-.popup-button {
-  width: min-content;
-  height: min-content;
-  margin: 4px;
-  padding: 4px;
-  border-radius: 100px;
-  font-size: 1.5rem;
-  color: $color-icon;
+  .explorer-menu-view {
+    margin: 4px;
+  }
 
-  &:hover {
-    color: $color-text;
+  .popup-button {
+    @include focus-frame;
+    width: min-content;
+    height: min-content;
+    margin: 4px;
+    padding: 8px;
+    border-radius: 100px;
+    font-size: 1.5rem;
+    background: $color-background-explorer;
+    color: transparentize($color-text-explorer, 0.4);
+    transition: color $tx-short;
+
+    &:hover {
+      color: $color-text-explorer;
+    }
   }
 }
 
-.popup-menu {
+.explorer-popup-menu {
   margin: 4px;
-  background: rgba(32, 32, 32, 0.5);
+  background: $color-background-explorer;
   border: 1px solid $color-background;
-  border-radius: 5px;
-  font-size: 0.9rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
 
   // top triangle
   //&:after {
@@ -107,13 +124,15 @@ html {
   //}
 
   .control {
-    margin: 3px 4px;
+    margin: 6px;
   }
 
   .label {
-    background: rgba(64, 64, 64, 0.5);
-    border-radius: 3px;
+    background: $color-background;
+    border-radius: 2px;
+    margin: 0;
     padding: 0 2px 2px 2px;
+    color: $color-text-explorer;
   }
 
   .button {
@@ -121,20 +140,20 @@ html {
     padding: 3px;
     background: transparent;
     border-radius: 3px;
-    color: $color-icon;
+    color: $color-text-explorer-dim;
 
     &:not(.disabled):hover {
       background: inherit;
-      color: $color-text;
+      color: $color-text-explorer;
     }
 
     &.selected {
-      background: rgba(128, 128, 128, 0.5) !important;
-      color: $color-text;
+      background: $color-secondary !important;
+      color: $color-text-explorer;
     }
 
     .text {
-      font-size: 0.85em;
+      font-size: 0.9em;
     }
 
     .icon {
@@ -143,15 +162,16 @@ html {
     }
 
     &.cube {
-      width: 2em;
-      height: 2em;
+      width: 2.2em;
+      height: 2.2em;
       margin: 0 -1px -1px 0;
       background: rgba(32, 32, 32, 0.3);
       border: 1px solid #404040;
       border-radius: 0;
 
       .text {
-        font-size: 1.3em;
+        font-size: 1.5em;
+        line-height: 1em;
       }
 
       .icon {
@@ -164,17 +184,11 @@ html {
   }
 
   .group.view {
-    padding: 4px;
+    padding: 8px;
   }
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// EXPLORER CONTENT VIEW
-
-.canvas {
-  @include full-size;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENTS

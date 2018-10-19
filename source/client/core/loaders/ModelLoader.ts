@@ -55,12 +55,11 @@ export default class ModelLoader
         return ModelLoader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    load(url: string): Promise<THREE.Group>
+    load(url: string): Promise<THREE.Object3D>
     {
         return new Promise((resolve, reject) => {
             this.gltfLoader.load(url, gltf => {
-                const model = this.createModelGroup(gltf);
-                resolve(model);
+                resolve(this.createModelGroup(gltf));
             }, null, error => {
                 console.error(`failed to load '${url}': ${error}`);
                 reject(new Error(error));
@@ -68,17 +67,17 @@ export default class ModelLoader
         });
     }
 
-    protected createModelGroup(gltf): THREE.Group
+    protected createModelGroup(gltf): THREE.Object3D
     {
         const scene: THREE.Scene = gltf.scene;
         if (scene.type !== "Scene") {
             throw new Error("not a valid gltf scene");
         }
 
-        const group = new THREE.Group();
-        scene.children.forEach(child => group.add(child));
+        const model = new THREE.Group();
+        scene.children.forEach(child => model.add(child));
 
-        group.traverse((object: any) => {
+        model.traverse((object: any) => {
             if (object.type === "Mesh") {
                 const mesh: THREE.Mesh = object;
                 const material = mesh.material as THREE.MeshStandardMaterial;
@@ -87,9 +86,7 @@ export default class ModelLoader
                     material.map.encoding = THREE.sRGBEncoding;
                 }
 
-                // TODO: Test only
                 mesh.geometry.computeBoundingBox();
-                mesh.geometry.center();
 
                 const uberMat = new UberMaterial();
                 if (material.type === "MeshStandardMaterial") {
@@ -99,15 +96,16 @@ export default class ModelLoader
                 // TODO: Temp to correct test assets
                 uberMat.roughness = 0.6;
                 uberMat.metalness = 0;
+                uberMat.setNormalMapObjectSpace(false);
 
                 if (!uberMat.map) {
-                    uberMat.color.multiplyScalar(0.6);
+                    uberMat.color.set("#c0c0c0");
                 }
 
                 mesh.material = uberMat;
             }
         });
 
-        return group;
+        return model;
     }
 }

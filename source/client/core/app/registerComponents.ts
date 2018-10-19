@@ -42,6 +42,7 @@ import PoseManip from "../components/PoseManip";
 import Process from "../components/Process";
 import Reader from "../components/Reader";
 import Reference from "../components/Reference";
+import RenderController from "../components/RenderController";
 import Renderer from "../components/Renderer";
 import Scene from "../components/Scene";
 import Snapshots from "../components/Snapshots";
@@ -81,6 +82,7 @@ export function registerComponents(registry: Registry)
         Process,
         Reader,
         Reference,
+        RenderController,
         Renderer,
         Scene,
         Snapshots,

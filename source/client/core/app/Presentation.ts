@@ -24,7 +24,7 @@ import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import { IPresentation, INode, IExplorer, EDerivativeQuality } from "common/types";
+import { IPresentation, IItem, INode, IExplorer, EDerivativeQuality } from "common/types";
 
 import Transform from "../components/Transform";
 import Scene from "../components/Scene";
@@ -120,14 +120,6 @@ export default class Presentation
         return this._cameraComponent ? this._cameraComponent.camera : null;
     }
 
-    loadModels()
-    {
-        const models = this._sceneComponent.getComponentsInSubtree(Model);
-        models.forEach(model => {
-            model.load(EDerivativeQuality.Medium);
-        });
-    }
-
     inflate(pres: IPresentation, url?: string, item?: Item): this
     {
         const entity = this.entity;
@@ -200,42 +192,74 @@ export default class Presentation
 
     protected inflateNode(parent: Hierarchy, node: INode, pres: IPresentation, item?: Item)
     {
-        const system = parent.system;
-
-        let name = "Node";
-        let transform: Transform = null;
+        let entity;
         let referenceParsed = false;
+        let name;
 
-        if (node.item !== undefined) {
-            const itemData = pres.items[node.item];
-            const item = new Item(system, this.loaders).inflate(itemData, this.path);
-            this.items.push(item);
-            name = item.name;
-            transform = item.entity.getComponent(Transform);
-        }
-        else if (node.reference !== undefined) {
+        if (node.reference !== undefined) {
             const reference = pres.references[node.reference];
-            if (item && reference.mimeType === "application/si-dpo-3d.item+json") {
-                referenceParsed = true;
-                this.items.push(item);
-                name = item.name;
-                transform = item.entity.getComponent(Transform);
+            if (reference.mimeType === "application/si-dpo-3d.item+json") {
+                if (Number(reference.uri) === 0 && item) {
+                    entity = item.entity;
+                    this.items.push(item);
+                    referenceParsed = true;
+                }
             }
         }
 
-        if (!transform) {
-            transform = parent.createEntity().createComponent(Transform);
+        if (!entity) {
+            entity = parent.createEntity("Node");
         }
 
-        parent.addChild(transform);
+        const transform = entity.getOrCreateComponent(Transform);
         transform.fromData(node);
+        parent.addChild(transform);
 
-        if (node.camera !== undefined) {
+        if (node.item !== undefined) {
+            const itemData = pres.items[node.item];
+            const item = new Item(entity, this.loaders).inflate(itemData, this.path);
+            this.items.push(item);
+            name = "Item";
+        }
+        else if (node.reference !== undefined && !referenceParsed) {
+            const reference = pres.references[node.reference];
+            if (reference.mimeType === "application/si-dpo-3d.item+json") {
+                if (Number(reference.uri) === 0) {
+                    name = "Reference";
+                    const reference = pres.references[node.reference];
+                    transform.createComponent(Reference).fromData(reference);
+                }
+                else {
+                    name = "Item";
+
+                    // load external item referenced by uri
+                    const itemUrl = resolvePathname(reference.uri, this.presentationUrl);
+                    this.loaders.loadJSON(itemUrl).then(json =>
+                        this.loaders.validateItem(json).then(itemData => {
+                            const item = new Item(entity, this.loaders).inflate(itemData, itemUrl);
+                            this.items.push(item);
+                        })
+                    ).catch(error => {
+                        console.log(`failed to create item from reference uri: ${error}`);
+                        entity.name = "Reference";
+                        const reference = pres.references[node.reference];
+                        transform.createComponent(Reference).fromData(reference);
+                    })
+                }
+            }
+            else {
+                name = "Reference";
+                const reference = pres.references[node.reference];
+                transform.createComponent(Reference).fromData(reference);
+            }
+        }
+        else if (node.camera !== undefined) {
             name = "Camera";
             const camera = pres.cameras[node.camera];
             transform.createComponent(Camera).fromData(camera);
         }
         else if (node.light !== undefined) {
+            console.log("Light");
             name = "Light";
             const light = pres.lights[node.light];
 
@@ -249,13 +273,8 @@ export default class Presentation
                 transform.createComponent(SpotLight).fromData(light);
             }
         }
-        else if (node.reference !== undefined && !referenceParsed) {
-            const reference = pres.references[node.reference];
-            name = "Reference";
-            transform.createComponent(Reference).fromData(reference);
-        }
 
-        transform.entity.name = node.name || name;
+        entity.name = node.name || name || "Entity";
 
         if (node.children) {
             node.children.forEach(childIndex => {

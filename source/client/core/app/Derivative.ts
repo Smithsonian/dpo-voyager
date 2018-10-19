@@ -40,6 +40,8 @@ export default class Derivative
     usage: EDerivativeUsage;
     quality: EDerivativeQuality;
     assets: IAsset[];
+    model: THREE.Object3D;
+    boundingBox: THREE.Box3;
 
     constructor(usage: EDerivativeUsage, quality: EDerivativeQuality, assets?: IAsset[])
     {
@@ -47,14 +49,21 @@ export default class Derivative
         this.usage = usage;
         this.quality = quality;
         this.assets = assets || [];
+        this.model = null;
+        this.boundingBox = new THREE.Box3();
     }
 
-    load(loader: AssetLoader, assetPath?: string): Promise<THREE.Object3D>
+    load(loader: AssetLoader, assetPath?: string): Promise<this>
     {
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return loader.loadModel(modelAsset, assetPath);
+            return loader.loadModel(modelAsset, assetPath)
+                .then(object => {
+                    this.model = object;
+                    this.boundingBox.makeEmpty().expandByObject(object);
+                    return this;
+                });
         }
 
         const geoAsset = this.findAsset(EAssetType.Geometry);
@@ -67,7 +76,9 @@ export default class Derivative
                     .then(textures => {
                         const material = new UberMaterial();
                         this.assignTextures(imageAssets, textures, material);
-                        return new THREE.Mesh(geometry, material);
+                        this.model = new THREE.Mesh(geometry, material);
+                        this.boundingBox.makeEmpty().expandByObject(this.model);
+                        return this;
                     });
                 });
         }

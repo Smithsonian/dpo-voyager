@@ -31,7 +31,7 @@ import MenuBar from "./MenuBar";
 import SideBarView from "./SideBarView";
 
 import Application from "./Application";
-import VoyagerView from "../core/views/VoyagerView";
+import ExplorerView from "../core/views/ExplorerView";
 import TestEditor from "./TestEditor";
 import HierarchyView from "../core/views/HierarchyView";
 
@@ -112,8 +112,7 @@ export default class MainView extends React.Component<IMainViewProps, {}>
             },
             {
                 id: "explorer-view", factory: () =>
-                    <VoyagerView
-                        viewManager={application.viewManager}
+                    <ExplorerView
                         system={application.system} />
             },
             {

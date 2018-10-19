@@ -24,24 +24,25 @@ import Container from "@ff/react/Container";
 import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
-import PresentationOverlay from "./PresentationOverlay";
-import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
 import ViewportLayout, { EViewportLayoutMode, IViewportLayoutChangeEvent } from "../app/ViewportLayout";
 import RenderController from "../components/RenderController";
 
+import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
+import ExplorerOverlayView from "./ExplorerOverlayView";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-/** Properties for [[VoyagerView]] component. */
-export interface IVoyagerViewProps
+/** Properties for [[ExplorerView]] component. */
+export interface IExplorerViewProps
 {
     className?: string;
     system: System;
 }
 
-export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> implements IManipEventHandler
+export default class ExplorerView extends React.Component<IExplorerViewProps, {}> implements IManipEventHandler
 {
     static readonly defaultProps = {
-        className: "voyager-view"
+        className: "explorer-view"
     };
 
     renderer: THREE.WebGLRenderer = null;
@@ -52,7 +53,7 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> 
 
     protected containerRef: React.RefObject<Container>;
 
-    constructor(props: IVoyagerViewProps)
+    constructor(props: IExplorerViewProps)
     {
         super(props);
 
@@ -115,7 +116,7 @@ export default class VoyagerView extends React.Component<IVoyagerViewProps, {}> 
                 <Container
                     ref={this.containerRef} />
 
-                <PresentationOverlay
+                <ExplorerOverlayView
                     system={system} />
 
                 <QuadSplitOverlay

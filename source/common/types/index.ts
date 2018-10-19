@@ -29,7 +29,4 @@ export enum EDerivativeUsage { Web, Print, Editorial }
 export { TDerivativeQuality }
 export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
 
-export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
-
 export { TShaderType }
-export enum EShaderType { Inherit, Default, PBR, Phong, Clay, Normals, Wireframe, XRay }

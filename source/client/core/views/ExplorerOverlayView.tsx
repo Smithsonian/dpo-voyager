@@ -22,7 +22,7 @@ import System from "@ff/core/ecs/System";
 import FlexContainer from "@ff/react/FlexContainer";
 import FlexSpacer from "@ff/react/FlexSpacer";
 
-import PresentationMenuView from "./PresentationMenuView";
+import PopupMenuBar from "./PopupMenuBar";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,10 +33,10 @@ export interface IExplorerMenuOverlayProps
     system: System;
 }
 
-export default class ExplorerMenuOverlay extends React.Component<IExplorerMenuOverlayProps, {}>
+export default class ExplorerOverlayView extends React.Component<IExplorerMenuOverlayProps, {}>
 {
     static readonly defaultProps = {
-        className: "explorer-menu-overlay"
+        className: "explorer-overlay-view"
     };
 
     constructor(props: IExplorerMenuOverlayProps)
@@ -58,9 +58,16 @@ export default class ExplorerMenuOverlay extends React.Component<IExplorerMenuOv
                 position="fill"
                 direction="vertical">
 
-                <PresentationMenuView
-                    system={system}
-                    portal={this}/>
+                <FlexContainer
+                    direction="horizontal">
+
+                    <PopupMenuBar
+                        system={system}
+                        portal={this}/>
+
+                    <FlexSpacer/>
+
+                </FlexContainer>
 
                 <FlexSpacer/>
 

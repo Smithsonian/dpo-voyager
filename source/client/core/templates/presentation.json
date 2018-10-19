@@ -10,7 +10,7 @@
     "nodes": [{
         "reference": 0
     }, {
-        "translation": [0, 0, 50],
+        "translation": [0, 0, 15],
         "camera": 0
     }, {
         "name": "Lights",
@@ -39,8 +39,8 @@
     "cameras": [{
         "type": "perspective",
         "perspective": {
-            "yfov": 50,
-            "znear": 0.001,
+            "yfov": 45,
+            "znear": 0.1,
             "zfar": 10000
         }
     }],

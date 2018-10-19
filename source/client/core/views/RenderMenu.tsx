@@ -17,78 +17,120 @@
 
 import * as React from "react";
 
+import System from "@ff/core/ecs/System";
+
 import { IComponentProps } from "@ff/react/common";
 import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import { EShaderType } from "common/types";
+import RenderController, { EShaderMode } from "../components/RenderController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IRenderMenuSelectEvent extends IButtonTapEvent {}
-
 export interface IRenderMenuProps extends IComponentProps
 {
-    renderMode: EShaderType;
-    onSelectRenderMode?: (event: IRenderMenuSelectEvent) => void;
+    className?: string;
+    system: System;
 }
 
-const RenderMenu: React.SFC<IRenderMenuProps> = function(props)
+export interface IRenderMenuState
 {
-    const {
-        className,
-        onSelectRenderMode
-    } = props;
+    shaderMode: EShaderMode;
+}
 
-    return (
-        <FlexContainer
-            className={className}
-            direction="vertical">
+export default class RenderMenu extends React.Component<IRenderMenuProps, IRenderMenuState>
+{
+    static readonly defaultProps = {
+        className: "render-menu"
+    };
 
-            <Label text="Render mode"/>
+    constructor(props: IRenderMenuProps)
+    {
+        super(props);
 
-            <Button
-                index={EShaderType.Default}
-                text="Standard"
-                title="Display model in standard mode"
-                focused={true}
-                onTap={onSelectRenderMode} />
+        this.onSelectShaderMode = this.onSelectShaderMode.bind(this);
 
-            <Button
-                index={EShaderType.Clay}
-                text="Clay"
-                title="Display model without colors"
-                focused={true}
-                onTap={onSelectRenderMode} />
+        this.state = {
+            shaderMode: EShaderMode.Default
+        };
+    }
 
-            <Button
-                index={EShaderType.Normals}
-                text="Normals"
-                title="Display normals"
-                focused={true}
-                onTap={onSelectRenderMode} />
+    componentDidMount()
+    {
+        const renderController = this.props.system.getComponent(RenderController);
+        renderController.in("Shader.Mode").on("value", this.onShaderModeChanged, this);
+    }
 
-            <Button
-                index={EShaderType.XRay}
-                text="X-Ray"
-                title="Display model in X-Ray mode"
-                focused={true}
-                onTap={onSelectRenderMode} />
+    componentWillUnmount()
+    {
+        const renderController = this.props.system.getComponent(RenderController);
+        renderController.in("Shader.Mode").off("value", this.onShaderModeChanged, this);
+    }
 
-            <Button
-                index={EShaderType.Wireframe}
-                text="Wireframe"
-                title="Display model as wireframe"
-                focused={true}
-                onTap={onSelectRenderMode} />
+    render()
+    {
+        const shaderMode = this.state.shaderMode;
 
-        </FlexContainer>
-    );
+        return (
+            <FlexContainer
+                className={this.props.className}
+                direction="vertical">
+
+                <Label text="Render mode"/>
+
+                <Button
+                    index={EShaderMode.Default}
+                    text="Standard"
+                    title="Display model in standard mode"
+                    selected={shaderMode === EShaderMode.Default}
+                    focused={shaderMode === EShaderMode.Default}
+                    onTap={this.onSelectShaderMode} />
+
+                <Button
+                    index={EShaderMode.Clay}
+                    text="Clay"
+                    title="Display model without colors"
+                    selected={shaderMode === EShaderMode.Clay}
+                    focused={shaderMode === EShaderMode.Clay}
+                    onTap={this.onSelectShaderMode} />
+
+                <Button
+                    index={EShaderMode.Normals}
+                    text="Normals"
+                    title="Display normals"
+                    selected={shaderMode === EShaderMode.Normals}
+                    focused={shaderMode === EShaderMode.Normals}
+                    onTap={this.onSelectShaderMode} />
+
+                <Button
+                    index={EShaderMode.XRay}
+                    text="X-Ray"
+                    title="Display model in X-Ray mode"
+                    selected={shaderMode === EShaderMode.XRay}
+                    focused={shaderMode === EShaderMode.XRay}
+                    onTap={this.onSelectShaderMode} />
+
+                <Button
+                    index={EShaderMode.Wireframe}
+                    text="Wireframe"
+                    title="Display model as wireframe"
+                    selected={shaderMode === EShaderMode.Wireframe}
+                    focused={shaderMode === EShaderMode.Wireframe}
+                    onTap={this.onSelectShaderMode} />
+
+            </FlexContainer>
+        );
+    }
+
+    protected onSelectShaderMode(event: IButtonTapEvent)
+    {
+        const renderController = this.props.system.getComponent(RenderController);
+        renderController.in("Shader.Mode").setValue(event.index);
+    }
+
+    protected onShaderModeChanged(shaderMode: EShaderMode)
+    {
+        this.setState({ shaderMode });
+    }
 };
-
-RenderMenu.defaultProps = {
-    className: "render-menu"
-};
-
-export default RenderMenu;
