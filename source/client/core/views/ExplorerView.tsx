@@ -42,7 +42,7 @@ export interface IExplorerViewProps
 export default class ExplorerView extends React.Component<IExplorerViewProps, {}> implements IManipEventHandler
 {
     static readonly defaultProps = {
-        className: "explorer-view"
+        className: "sv-explorer-view"
     };
 
     renderer: THREE.WebGLRenderer = null;
@@ -125,6 +125,10 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
                     verticalSplit={verticalSplit}
                     onChange={this.onQuadSplitChange}
                 />
+                <div
+                    className="sv-logo">
+                    <img src="images/si-dpo3d-logo-neg.svg" />
+                </div>
             </ManipTarget>
         );
     }

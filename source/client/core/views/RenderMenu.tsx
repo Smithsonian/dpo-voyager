@@ -24,7 +24,8 @@ import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import RenderController, { EShaderMode } from "../components/RenderController";
+import Scene, { EShaderMode } from "../components/Scene";
+import PresentationController from "../components/PresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,16 +35,13 @@ export interface IRenderMenuProps extends IComponentProps
     system: System;
 }
 
-export interface IRenderMenuState
-{
-    shaderMode: EShaderMode;
-}
-
-export default class RenderMenu extends React.Component<IRenderMenuProps, IRenderMenuState>
+export default class RenderMenu extends React.Component<IRenderMenuProps, {}>
 {
     static readonly defaultProps = {
-        className: "render-menu"
+        className: "sv-render-menu"
     };
+
+    protected controller: PresentationController;
 
     constructor(props: IRenderMenuProps)
     {
@@ -51,26 +49,22 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, IRende
 
         this.onSelectShaderMode = this.onSelectShaderMode.bind(this);
 
-        this.state = {
-            shaderMode: EShaderMode.Default
-        };
+        this.controller = props.system.getComponent(PresentationController);
     }
 
     componentDidMount()
     {
-        const renderController = this.props.system.getComponent(RenderController);
-        renderController.in("Shader.Mode").on("value", this.onShaderModeChanged, this);
+        this.controller.addInputListener(Scene, "Shader.Mode", this.onShaderModeChanged, this);
     }
 
     componentWillUnmount()
     {
-        const renderController = this.props.system.getComponent(RenderController);
-        renderController.in("Shader.Mode").off("value", this.onShaderModeChanged, this);
+        this.controller.removeInputListener(Scene, "Shader.Mode", this.onShaderModeChanged, this);
     }
 
     render()
     {
-        const shaderMode = this.state.shaderMode;
+        const shaderMode = this.controller.getInputValue(Scene, "Shader.Mode");
 
         return (
             <FlexContainer
@@ -96,19 +90,19 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, IRende
                     onTap={this.onSelectShaderMode} />
 
                 <Button
-                    index={EShaderMode.Normals}
-                    text="Normals"
-                    title="Display normals"
-                    selected={shaderMode === EShaderMode.Normals}
-                    focused={shaderMode === EShaderMode.Normals}
-                    onTap={this.onSelectShaderMode} />
-
-                <Button
                     index={EShaderMode.XRay}
                     text="X-Ray"
                     title="Display model in X-Ray mode"
                     selected={shaderMode === EShaderMode.XRay}
                     focused={shaderMode === EShaderMode.XRay}
+                    onTap={this.onSelectShaderMode} />
+
+                <Button
+                    index={EShaderMode.Normals}
+                    text="Normals"
+                    title="Display normals"
+                    selected={shaderMode === EShaderMode.Normals}
+                    focused={shaderMode === EShaderMode.Normals}
                     onTap={this.onSelectShaderMode} />
 
                 <Button
@@ -125,12 +119,11 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, IRende
 
     protected onSelectShaderMode(event: IButtonTapEvent)
     {
-        const renderController = this.props.system.getComponent(RenderController);
-        renderController.in("Shader.Mode").setValue(event.index);
+        this.controller.actions.setInputValue(Scene, "Shader.Mode", event.index);
     }
 
     protected onShaderModeChanged(shaderMode: EShaderMode)
     {
-        this.setState({ shaderMode });
+        this.forceUpdate();
     }
 };

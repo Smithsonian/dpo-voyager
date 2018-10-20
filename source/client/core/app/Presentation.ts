@@ -259,7 +259,6 @@ export default class Presentation
             transform.createComponent(Camera).fromData(camera);
         }
         else if (node.light !== undefined) {
-            console.log("Light");
             name = "Light";
             const light = pres.lights[node.light];
 

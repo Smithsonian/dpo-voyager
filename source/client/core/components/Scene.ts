@@ -17,21 +17,32 @@
 
 import * as THREE from "three";
 
+import { Readonly } from "@ff/core/types";
+import types from "@ff/core/ecs/propertyTypes";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import Transform from "./Transform";
-import { Readonly } from "@ff/core/types";
+
+import { EShaderMode } from "../shaders/UberMaterial";
+import Model from "./Model";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export { EShaderMode };
+
+const _color = new THREE.Color();
+
 
 export default class Scene extends Hierarchy
 {
     static readonly type: string = "Scene";
 
     ins = this.makeProps({
+        col: types.ColorRGB("Background.Color", [ 0.1, 0.1, 0.1 ]),
+        sha: types.Enum("Shader.Mode", EShaderMode, EShaderMode.Default)
     });
 
-    private _scene: THREE.Scene = new THREE.Scene();
+    protected _scene: THREE.Scene = new THREE.Scene();
 
     get scene(): THREE.Scene
     {
@@ -45,6 +56,20 @@ export default class Scene extends Hierarchy
     get children(): Readonly<Transform[]>
     {
         return this._children as Transform[] || [];
+    }
+
+    update()
+    {
+        const { col, sha } = this.ins;
+
+        if (col.changed) {
+            _color.fromArray(col.value);
+            this._scene.background = _color;
+        }
+        if (sha.changed) {
+            const index = types.getEnumEntry(EShaderMode, sha.value);
+            this.getComponentsInSubtree(Model).forEach(model => model.setShaderMode(index));
+        }
     }
 
     addChild(component: Transform)

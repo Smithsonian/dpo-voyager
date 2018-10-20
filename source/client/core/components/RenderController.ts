@@ -29,10 +29,6 @@ import RenderContext from "../app/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _color = new THREE.Color();
-
-export enum EShaderMode { Inherit, Default, PBR, Phong, Clay, Normals, Wireframe, XRay }
-
 interface IViewEntry
 {
     view: ExplorerView;
@@ -46,8 +42,6 @@ export default class RenderController extends Controller<RenderController>
     static readonly type: string = "RenderController";
 
     ins = this.makeProps({
-        col: types.ColorRGB("Background.Color", [ 0.1, 0.1, 0.1 ]),
-        sha: types.Enum("Shader.Mode", EShaderMode)
     });
 
     actions: RenderActions = null;
@@ -57,18 +51,6 @@ export default class RenderController extends Controller<RenderController>
 
     protected layoutMode: EViewportLayoutMode = EViewportLayoutMode.Single;
     protected nextManip: IViewportManip = null;
-
-    update()
-    {
-        const ins = this.ins;
-
-        _color.fromArray(ins.col.value);
-
-        this.views.forEach(entry => {
-            const renderer = entry.view.renderer;
-            renderer.setClearColor(_color);
-        });
-    }
 
     createActions(commander: Commander)
     {

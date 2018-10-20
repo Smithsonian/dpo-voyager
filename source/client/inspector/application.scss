@@ -16,3 +16,143 @@
  */
 
 @import "../core/styles/voyager";
+
+
+////////////////////////////////////////////////////////////////////////////////
+// MENU BAR
+
+$bar-size: 48px;
+
+.menubar {
+  height: $bar-size;
+  min-height: $bar-size;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: $color-background-dark;
+
+  .button {
+    height: $bar-size - 20;
+    line-height: $bar-size - 24;
+  }
+
+  .logo {
+    flex-shrink: 0;
+    width: 140px;
+    height: 100%;
+    //margin: 0 20px 0 $bar-size;
+    margin: 0 20px 0 8px;
+    background-image: url("/images/voyager-75grey.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+
+  .search {
+
+  }
+
+  .menu {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin: 0 12px;
+
+    .button + .button {
+      margin-left: 6px;
+    }
+  }
+}
+
+.scene-info {
+  margin: 0 0 0 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  .badge {
+    margin: 0 4px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// INSPECTOR SIDEBAR
+
+.inspector-sidebar {
+  flex-shrink: 0;
+  width: 300px;
+  overflow-y: auto;
+  background: $color-background-dark;
+  font-size: 0.85rem;
+}
+
+.file-slot {
+  margin: 0 6px 6px 6px;
+  padding: 2px 6px 6px 6px;
+  background: $color-background-darker;
+
+  .title {
+    font-size: 1rem;
+    line-height: 1.4rem;
+  }
+
+  .file-drop-target {
+    box-sizing: border-box;
+    min-height: 40px;
+    flex-grow: 1;
+    margin: 6px 0 8px 0;
+    padding: 2px 4px;
+    border: 1px dashed $color-background-light;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    &.full {
+      background: $color-secondary-dark;
+    }
+
+    .label {
+      pointer-events: none;
+      text-align: center;
+      word-wrap: break-word;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.targeted {
+      border: 2px solid $color-background-light;
+    }
+  }
+}
+
+.inspector-editor {
+  margin: 0 6px 6px 6px;
+  padding: 2px 6px 6px 6px;
+  background: $color-background-darker;
+
+  & > label {
+    display: block;
+    padding-bottom: 4px;
+    font-size: 1rem;
+  }
+
+  .slider, .switch {
+    padding-bottom: 3px;
+    line-height: 1.4rem;
+
+    & > .label {
+      flex-shrink: 0;
+      width: 33%;
+      padding-left: 12px;
+    }
+
+    .checkbox {
+      margin: 0;
+    }
+  }
+
+  .selection-group {
+    .checkbox {
+      display: inline;
+    }
+  }
+}

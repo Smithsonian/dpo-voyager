@@ -104,7 +104,7 @@ export default class PrepController extends Controller<PrepController>
             transformManip.setScene(event.next.scene);
 
             // TODO: Serialization test
-            console.log("Presentation changed\n", event.next.url, "\n", event.next.path);
+            //console.log("Presentation changed\n", event.next.url, "\n", event.next.path);
 
             //const data = this.explorerController.writePresentation();
             //console.log(JSON.stringify(data));

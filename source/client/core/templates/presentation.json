@@ -16,11 +16,11 @@
         "name": "Lights",
         "children": [3, 4, 5, 6]
     }, {
-        "translation": [-2, 1, 2],
+        "translation": [-3, 1, 2],
         "name": "Light",
         "light": 0
     }, {
-        "translation": [2, 1, 2],
+        "translation": [2, 0, 3],
         "name": "Light",
         "light": 1
     }, {
@@ -46,12 +46,12 @@
     }],
     "lights": [{
         "type": "directional",
-        "color": [1, 1, 1],
-        "intensity": 1
+        "color": [1, 0.95, 0.9],
+        "intensity": 0.8
     }, {
         "type": "directional",
         "color": [1, 1, 1],
-        "intensity": 1
+        "intensity": 0.8
     }, {
         "type": "directional",
         "color": [1, 0.95, 0.85],

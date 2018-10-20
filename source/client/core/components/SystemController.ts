@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component from "@ff/core/ecs/Component";
+import Component, { ComponentType } from "@ff/core/ecs/Component";
 
 import Controller, { Actions, Commander } from "./Controller";
 
@@ -37,8 +37,8 @@ export default class SystemController extends Controller<SystemController>
     createActions(commander: Commander)
     {
         const actions = {
-            setValue: commander.register({
-                name: "Set Value", do: this.setComponentValue, target: this
+            setInputValue: commander.register({
+                name: "Set Value", do: this.setInputValue, target: this
             })
         };
 
@@ -46,8 +46,48 @@ export default class SystemController extends Controller<SystemController>
         return actions;
     }
 
-    protected setComponentValue(component: Component, path: string, value: any)
+    addInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
     {
-        component.setValue(path, value);
+        this.getSafeComponent(componentType).in(path).on("value", callback, context);
+    }
+
+    removeInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    {
+        this.getSafeComponent(componentType).in(path).off("value", callback, context);
+    }
+
+    addOutputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    {
+        this.getSafeComponent(componentType).out(path).on("value", callback, context);
+    }
+
+    removeOutputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    {
+        this.getSafeComponent(componentType).out(path).off("value", callback, context);
+    }
+
+    getInputValue(componentType: ComponentType, path: string)
+    {
+        return this.getSafeComponent(componentType).in(path).value
+    }
+
+    getOutputVaue(componentType: ComponentType, path: string)
+    {
+        return this.getSafeComponent(componentType).out(path).value;
+    }
+
+    protected setInputValue(componentType: ComponentType, path: string, value: any)
+    {
+        this.getSafeComponent(componentType).in(path).setValue(value);
+    }
+
+    protected getSafeComponent(componentType: ComponentType): Component
+    {
+        const component = this.getComponent(componentType);
+        if (!component) {
+            throw new Error(`SystemController, component type not found: ${componentType}`);
+        }
+
+        return component;
     }
 }

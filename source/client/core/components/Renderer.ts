@@ -18,7 +18,7 @@
 import Component from "@ff/core/ecs/Component";
 
 import { IRenderer, TUnitType, TShaderType } from "common/types";
-import { EShaderMode } from "./RenderController";
+import { EShaderMode } from "../shaders/UberMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 

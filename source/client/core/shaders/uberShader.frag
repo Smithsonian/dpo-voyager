@@ -57,6 +57,10 @@ uniform vec3 aoMapMix;
 uniform mat3 normalMatrix;
 #endif
 
+#ifdef MODE_XRAY
+varying float vIntensity;
+#endif
+
 void main() {
 
 	#include <clipping_planes_fragment>
@@ -116,7 +120,7 @@ void main() {
 	#ifdef USE_AOMAP
     	// reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
     	vec3 aoSample = texture2D(aoMap, vUv).rgb;
-    	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix, 0.0, 1.0));
+    	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
     	float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;
     	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
     	reflectedLight.directDiffuse *= ambientOcclusion2;
@@ -139,4 +143,11 @@ void main() {
 	#include <premultiplied_alpha_fragment>
 	#include <dithering_fragment>
 
+    #ifdef MODE_NORMALS
+        gl_FragColor = vec4(vec3(normal * 0.5 + 0.5), 1.0);
+    #endif
+
+    #ifdef MODE_XRAY
+        gl_FragColor = vec4(vec3(0.4, 0.7, 1.0) * vIntensity, 1.0);
+    #endif
 }

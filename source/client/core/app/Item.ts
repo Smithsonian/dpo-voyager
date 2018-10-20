@@ -17,7 +17,6 @@
 
 import resolvePathname from "resolve-pathname";
 
-import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
 
 import { IItem } from "common/types/item";
@@ -25,7 +24,6 @@ import { IItem } from "common/types/item";
 import Meta from "../components/Meta";
 import Process from "../components/Process";
 import Model from "../components/Model";
-import Derivatives from "../components/Derivatives";
 import Documents from "../components/Documents";
 import Groups from "../components/Groups";
 import Annotations from "../components/Annotations";
@@ -84,9 +82,7 @@ export default class Item
 
         const model = this.entity.getOrCreateComponent(Model);
         model.setAssetLoader(this.loaders.assetLoader, this.path);
-
-        const derivatives = this.entity.getOrCreateComponent(Derivatives);
-        derivatives.addWebModelDerivative(modelFile, quality);
+        model.addWebModelDerivative(modelFile, quality);
     }
 
     addGeometryAndTextureDerivative(geometryUri: string, textureUri: string, quality: EDerivativeQuality)
@@ -97,9 +93,7 @@ export default class Item
 
         const model = this.entity.getOrCreateComponent(Model);
         model.setAssetLoader(this.loaders.assetLoader, this.path);
-
-        const derivatives = this.entity.getOrCreateComponent(Derivatives);
-        derivatives.addGeometryAndTextureDerivative(geometryFile, textureFile, quality);
+        model.addGeometryAndTextureDerivative(geometryFile, textureFile, quality);
     }
 
     inflate(item: IItem, url?: string): this
@@ -124,9 +118,6 @@ export default class Item
         if (item.model) {
             entity.createComponent(Model).fromData(item.model)
                 .setAssetLoader(this.loaders.assetLoader, this.path);
-
-            entity.createComponent(Derivatives)
-            .fromData(item.model.derivatives);
         }
 
         if (item.documents) {
@@ -184,9 +175,6 @@ export default class Item
         const modelComponent = entity.getComponent(Model);
         if (modelComponent) {
             itemData.model = modelComponent.toData();
-
-            const derivativesComponent = entity.getComponent(Derivatives);
-            itemData.model.derivatives = derivativesComponent.toData();
         }
 
         const documentsComponent = entity.getComponent(Documents);

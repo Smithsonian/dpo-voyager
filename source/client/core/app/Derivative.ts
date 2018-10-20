@@ -17,15 +17,14 @@
 
 import * as THREE from "three";
 
-import {
-    IAsset,
-    TAssetType
-} from "common/types/item";
+import clone from "@ff/core/clone";
+
+import { IDerivative, IAsset, TAssetType, TDerivativeQuality, TDerivativeUsage, TMapType } from "common/types/item";
 
 import AssetLoader from "../loaders/AssetLoader";
 import UberMaterial from "../shaders/UberMaterial";
 
-import Asset, { EAssetType } from "./Asset";
+import Asset, { EAssetType, EMapType } from "./Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,27 +66,60 @@ export default class Derivative
         }
 
         const geoAsset = this.findAsset(EAssetType.Geometry);
+        const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
             return loader.loadGeometry(geoAsset, assetPath)
                 .then(geometry => {
-                    const imageAssets = this.findAssets(EAssetType.Image);
-                    return Promise.all(imageAssets.map(asset => loader.loadTexture(asset)))
-                    .then(textures => {
-                        const material = new UberMaterial();
-                        this.assignTextures(imageAssets, textures, material);
-                        this.model = new THREE.Mesh(geometry, material);
-                        this.boundingBox.makeEmpty().expandByObject(this.model);
-                        return this;
-                    });
+                    this.model = new THREE.Mesh(geometry, new UberMaterial());
+                    this.boundingBox.makeEmpty().expandByObject(this.model);
+
+                    return Promise.all(imageAssets.map(asset => loader.loadTexture(asset, assetPath)))
+                        .catch(error => {
+                            console.warn("failed to load texture files");
+                            return [];
+                        });
+                })
+                .then(textures => {
+                    const material = (this.model as THREE.Mesh).material as UberMaterial;
+                    this.assignTextures(imageAssets, textures, material);
+
+                    if (!material.map) {
+                        material.color.setScalar(0.5);
+                        material.roughness = 0.8;
+                        material.metalness = 0;
+                    }
+
+                    return this;
                 });
         }
     }
 
-    addAsset(uri: string, type: EAssetType)
+    addAsset(uri: string, type: EAssetType, mapType?: EMapType)
     {
-        const t = EAssetType[type] as TAssetType;
-        this.assets.push({ uri, type: t });
+        if (!uri) {
+            throw new Error("uri must be specified");
+        }
+
+        const asset: Partial<IAsset> = {
+            uri,
+            type: EAssetType[type] as TAssetType
+        };
+
+        if (type === EAssetType.Image && mapType !== undefined) {
+            asset.mapType = EMapType[mapType] as TMapType;
+        }
+
+        this.assets.push(asset as IAsset);
+    }
+
+    toData(): IDerivative
+    {
+        return {
+            usage: EDerivativeUsage[this.usage] as TDerivativeUsage,
+            quality: EDerivativeQuality[this.quality] as TDerivativeQuality,
+            assets: clone(this.assets)
+        };
     }
 
     protected findAsset(type: EAssetType): IAsset | undefined
@@ -109,20 +141,24 @@ export default class Derivative
             const texture = textures[i];
 
             switch(asset.mapType) {
-                case "Color":
+                case EMapType[EMapType.Color]:
                     material.map = texture;
                     break;
-                case "Occlusion":
+
+                case EMapType[EMapType.Occlusion]:
                     material.aoMap = texture;
                     break;
-                case "Emissive":
+
+                case EMapType[EMapType.Emissive]:
                     material.emissiveMap = texture;
                     break;
-                case "MetallicRoughness":
+
+                case EMapType[EMapType.MetallicRoughness]:
                     material.metalnessMap = texture;
                     material.roughnessMap = texture;
                     break;
-                case "Normal":
+
+                case EMapType[EMapType.Normal]:
                     material.normalMap = texture;
                     break;
             }

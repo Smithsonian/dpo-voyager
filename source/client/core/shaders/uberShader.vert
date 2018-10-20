@@ -26,6 +26,10 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
 
+#ifdef MODE_XRAY
+varying float vIntensity;
+#endif
+
 void main() {
 
 //	#include <uv_vertex>
@@ -63,4 +67,12 @@ void main() {
 	#include <shadowmap_vertex>
 	#include <fog_vertex>
 
+#ifdef MODE_XRAY
+    vec3 viewNormal = normalize(normalMatrix * objectNormal);
+    vIntensity = pow(abs(1.0 - abs(dot(viewNormal, vec3(0.0, 0.0, 1.0)))), 3.0);
+#endif
+
+#ifdef MODE_NORMALS
+    vNormal = normal;
+#endif
 }

@@ -38,7 +38,7 @@ export interface IPopupMenuBarProps
 export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}>
 {
     static readonly defaultProps = {
-        className: "explorer-menu-view"
+        className: "sv-popup-menu-bar"
     };
 
     render()
@@ -61,7 +61,7 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
                     icon="fas fa-eye"
                     title="View/Projection Settings">
                     <ViewportMenu
-                        className="explorer-popup-menu viewport-menu"
+                        className="sv-explorer-popup-menu sv-viewport-menu"
                         system={system} />
                 </PopupButton>
 
@@ -69,10 +69,10 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
                     portal={portal}
                     anchor="bottom"
                     modal={true}
-                    icon="fas fa-palette"
+                    icon="fas fa-paint-brush"
                     title="Render Mode">
                     <RenderMenu
-                        className="explorer-popup-menu render-menu"
+                        className="sv-explorer-popup-menu sv-render-menu"
                         system={system} />
                 </PopupButton>
 

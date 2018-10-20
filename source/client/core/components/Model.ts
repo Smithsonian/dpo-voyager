@@ -17,229 +17,105 @@
 
 import * as THREE from "three";
 
-import math from "@ff/core/math";
-import threeMath from "@ff/three/math";
 import types from "@ff/core/ecs/propertyTypes";
 
-import {
-    IModel as IModelData,
-    Vector3,
-    TUnitType
-} from "common/types/item";
-
-import UberMaterial from "../shaders/UberMaterial";
+import { IModel } from "common/types/item";
 import AssetLoader from "../loaders/AssetLoader";
+import { EShaderMode } from "../shaders/UberMaterial";
 
-import Derivatives, { EDerivativeQuality } from "./Derivatives";
-import Derivative from "../app/Derivative";
+import Model from "../app/Model";
+import { EDerivativeQuality } from "../app/Derivative";
 
-import { ERotationOrder } from "./Transform";
 import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new THREE.Vector3();
 
-export default class Model extends Object3D
+
+export default class ModelComponent extends Object3D
 {
     static readonly type: string = "Model";
 
     ins = this.makeProps({
-        alo: types.Boolean("Autoload", true),
-        qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.Medium),
-        pos: types.Vector3("Position"),
-        rot: types.Vector3("Rotation"),
-        ord: types.Enum("Order", ERotationOrder),
-        sca: types.Vector3("Scale", [ 1, 1, 1 ])
+        alo: types.Boolean("Auto.Load", true),
+        asc: types.Boolean("Auto.Pose", true),
+        qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High)
     });
 
-    protected units: TUnitType = "cm";
-    protected boundingBox: THREE.Box3 = null;
-    protected material = new UberMaterial();
+    protected currentModel: Model = null;
 
-    protected derivatives: Derivatives = null;
 
-    protected assetLoader: AssetLoader = null;
-    protected assetPath: string = "";
-
-    protected currentModel: THREE.Object3D = null;
+    get model(): Model
+    {
+        return this.object3D as Model;
+    }
 
     create()
     {
         super.create();
 
-        this.object3D = new THREE.Group();
-
-        this.trackComponent(Derivatives, component => {
-            this.derivatives = component;
-        }, component => {
-            this.derivatives = null;
-        });
+        const model = this.object3D = new Model();
+        model.onLoad = this.onLoad.bind(this);
+        this.object3D = model;
     }
 
     update()
     {
-        const object = this.object3D;
-        const { alo, qua, pos, rot, ord, sca } = this.ins;
+        const { alo, qua } = this.ins;
 
         if (!this.currentModel && alo.value) {
-            this.load(qua.value)
+            this.model.autoLoad(qua.value)
                 .catch(error => {
                     console.warn("Model.update - failed to load derivative");
                     console.warn(error);
                 });
         }
-
-        if (pos.changed) {
-            console.log("position", pos.value);
-            object.position.fromArray(pos.value);
-        }
-        if (rot.changed) {
-            object.rotation.set(
-                rot.value[0] * math.DEG2RAD,
-                rot.value[1] * math.DEG2RAD,
-                rot.value[2] * math.DEG2RAD
-            );
-        }
-        if (ord.changed) {
-            object.rotation.order = types.getEnumName(ERotationOrder, ord.value);
-        }
-        if (sca.changed) {
-            console.log("scale", sca.value);
-            object.scale.fromArray(sca.value);
-        }
-
-        object.updateMatrix();
     }
 
-    load(quality: EDerivativeQuality): Promise<void>
+    addWebModelDerivative(uri: string, quality: EDerivativeQuality)
     {
-        // display bounding box
-        if (!this.currentModel && this.boundingBox) {
-            this.currentModel = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
-            this.object3D.add(this.currentModel);
-        }
+        this.model.addWebModelDerivative(uri, quality);
+    }
 
-        const derivatives = this.derivatives;
-        if (!derivatives) {
-            return Promise.reject(new Error("missing derivatives component"));
-        }
+    addGeometryAndTextureDerivative(geoUri: string, textureUri: string, quality: EDerivativeQuality)
+    {
+        this.model.addGeometryAndTextureDerivative(geoUri, textureUri, quality);
+    }
 
-        const sequence = [];
-
-        const thumb = derivatives.findDerivative(EDerivativeQuality.Thumb);
-        if (thumb) {
-            sequence.push(thumb);
-        }
-
-        const second = derivatives.findDerivative(quality);
-        if (second) {
-            sequence.push(second);
-        }
-
-        if (sequence.length === 0) {
-            return Promise.reject(new Error("no suitable web-derivatives available"));
-        }
-
-        return sequence.reduce((promise, derivative) => {
-            return promise.then(() => this.loadDerivative(derivative));
-        }, Promise.resolve());
+    setShaderMode(shaderMode: EShaderMode)
+    {
+        this.model.setShaderMode(shaderMode);
     }
 
     setAssetLoader(assetLoader: AssetLoader, assetPath: string)
     {
-        this.assetLoader = assetLoader;
-        this.assetPath = assetPath;
+        this.model.setAssetLoader(assetLoader, assetPath);
     }
 
-    protected loadDerivative(derivative: Derivative): Promise<void>
+    fromData(data: IModel): this
     {
-        return derivative.load(this.assetLoader, this.assetPath)
-        .then(() => {
-            if (derivative.model && this.currentModel) {
-                this.object3D.remove(this.currentModel);
-            }
-
-            if (!this.boundingBox && derivative.boundingBox) {
-                this.boundingBox = derivative.boundingBox.clone();
-            }
-
-            // TODO: Test
-            const bb = derivative.boundingBox;
-            const box = { min: bb.min.toArray(), max: bb.max.toArray() };
-            console.log("derivative bounding box: ", box);
-
-            this.currentModel = derivative.model;
-            this.object3D.add(derivative.model);
-        });
-    }
-
-    fromData(data: IModelData): this
-    {
-        this.units = data.units;
-
-        if (data.transform) {
-            // decompose transform matrix
-            const matrix = this.object3D.matrix;
-            matrix.fromArray(data.transform);
-
-            const { pos, rot, ord, sca } = this.ins;
-            threeMath.decomposeTransformMatrix(data.transform, pos.value, rot.value, sca.value);
-            ord.value = ERotationOrder.XYZ;
-
-            this.ins.setAll();
-        }
-
-        if (data.boundingBox) {
-            this.boundingBox = new THREE.Box3();
-            this.boundingBox.min.fromArray(data.boundingBox.min);
-            this.boundingBox.max.fromArray(data.boundingBox.max);
-
-            const size = this.boundingBox.getSize(_vec3);
-            const maxSize = Math.max(size.x, size.y, size.z);
-            const scale = 10 / maxSize;
-            this.ins.sca.setValue([ scale, scale, scale ]);
-
-            const center = this.boundingBox.getCenter(_vec3);
-            this.ins.pos.setValue([ -center.x * scale, -center.y * scale, -center.z * scale ]);
-
-            console.log("Model.fromData");
-            console.log("  bounding box: ", data.boundingBox);
-            console.log("  auto scale: ", scale);
-            console.log("  auto translate: ", this.ins.pos.value);
-        }
-
-        if (data.material) {
-            // TODO: Implement
-        }
-
+        this.model.fromData(data);
         return this;
     }
 
-    toData(): IModelData
+    toData(): IModel
     {
-        const data: IModelData = {
-            units: this.units,
-            derivatives: []
-        };
+        return this.model.toData();
+    }
 
-        if (this.boundingBox) {
-            data.boundingBox = {
-                min: this.boundingBox.min.toArray() as Vector3,
-                max: this.boundingBox.max.toArray() as Vector3
-            }
+    protected onLoad()
+    {
+        // auto scale and center
+        if (this.ins.asc && this.transform) {
+            const model = this.model;
+            const size = model.boundingBox.getSize(_vec3);
+            const scale = 10 / Math.max(size.x, size.y, size.z);
+            const center = model.boundingBox.getCenter(_vec3);
+
+            this.transform.setValue("Scale", [ scale, scale, scale ]);
+            this.transform.setValue("Position", [-center.x * scale, -center.y * scale, -center.z * scale]);
         }
-
-        const matrix = this.object3D.matrix;
-        if (!threeMath.isMatrix4Identity(matrix)) {
-            data.transform = matrix.toArray();
-        }
-
-        if (this.material) {
-            // TODO: Implement
-        }
-
-        return data;
     }
 }
 

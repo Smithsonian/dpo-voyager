@@ -68,9 +68,24 @@ html {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RESPONSIVENESS
+
+@media (max-width: 320px) {
+  .sv-logo {
+    display: none !important;
+  }
+}
+
+@media (max-height: 240px) {
+  .sv-popup-menu-bar {
+    display: none !important;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // EXPLORER VIEW
 
-.explorer-view {
+.sv-explorer-view {
   @include font-ui-normal;
   background: $color-background-dark;
   color: $color-text;
@@ -80,12 +95,11 @@ html {
     @include full-size;
   }
 
-  .explorer-menu-view {
+  .sv-popup-menu-bar {
     margin: 4px;
   }
 
   .popup-button {
-    @include focus-frame;
     width: min-content;
     height: min-content;
     margin: 4px;
@@ -96,43 +110,42 @@ html {
     color: transparentize($color-text-explorer, 0.4);
     transition: color $tx-short;
 
-    &:hover {
+    &:hover, &:focus {
+      outline: none;
       color: $color-text-explorer;
     }
   }
+
+  .sv-logo {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    max-width: 200px;
+    min-width: 160px;
+    width: 18%;
+  }
 }
 
-.explorer-popup-menu {
-  margin: 4px;
+.sv-explorer-popup-menu {
+  margin: 8px;
   background: $color-background-explorer;
-  border: 1px solid $color-background;
-  border-radius: 4px;
+  border: 1px solid $color-background-light;
+  border-radius: 3px;
   font-size: 0.8rem;
 
-  // top triangle
-  //&:after {
-  //  content: " ";
-  //  position: absolute;
-  //  bottom: 100%;
-  //  left: 50%;
-  //  height: 0;
-  //  width: 0;
-  //  margin-left: -10px;
-  //  border: 10px solid transparent;
-  //  border-bottom-color: $color-background;
-  //  pointer-events: none;
-  //}
-
   .control {
-    margin: 6px;
+    margin: 2px 4px;
   }
 
   .label {
-    background: $color-background;
-    border-radius: 2px;
-    margin: 0;
-    padding: 0 2px 2px 2px;
+    background: $color-background-light;
+    margin: 4px 0;
+    padding: 1px 2px 3px 2px;
     color: $color-text-explorer;
+  }
+
+  .label:first-child {
+    margin-top: 0;
   }
 
   .button {
@@ -142,8 +155,9 @@ html {
     border-radius: 3px;
     color: $color-text-explorer-dim;
 
-    &:not(.disabled):hover {
+    &:not(.disabled):hover, &:focus {
       background: inherit;
+      outline: none;
       color: $color-text-explorer;
     }
 
@@ -161,7 +175,7 @@ html {
       font-size: 1.8em;
     }
 
-    &.cube {
+    &.sv-cube {
       width: 2.2em;
       height: 2.2em;
       margin: 0 -1px -1px 0;
@@ -183,12 +197,16 @@ html {
     }
   }
 
-  .group.view {
+  &.sv-render-menu {
+    .button {
+      font-size: 1.1em;
+    }
+  }
+
+  .sv-cube-group {
     padding: 8px;
   }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENTS
@@ -202,7 +220,7 @@ html {
 ////////////////////////////////////////////////////////////////////////////////
 // EXPLORER PANE
 
-.quad-split-overlay {
+.sv-quad-split-overlay {
   @include full-size;
   pointer-events: none;
 
@@ -222,190 +240,10 @@ html {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// MENU BAR
 
-$bar-size: 48px;
 
-.menubar {
-  height: $bar-size;
-  min-height: $bar-size;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: $color-background-dark;
 
-  .button {
-    height: $bar-size - 20;
-    line-height: $bar-size - 24;
-  }
 
-  .logo {
-    flex-shrink: 0;
-    width: 140px;
-    height: 100%;
-    //margin: 0 20px 0 $bar-size;
-    margin: 0 20px 0 8px;
-    background-image: url("/images/voyager-75grey.svg");
-    background-repeat: no-repeat;
-    background-position: center center;
-  }
 
-  .search {
 
-  }
 
-  .menu {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    margin: 0 12px;
-
-    .button + .button {
-      margin-left: 6px;
-    }
-  }
-}
-
-.scene-info {
-  margin: 0 0 0 20px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  .badge {
-    margin: 0 4px;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SIDEBAR
-
-$sidebar-expanded-size: 250px;
-
-.sidebar {
-  width: 48px;
-  background: green; //$color-background-dark;
-
-  .expandable {
-    width: $sidebar-expanded-size;
-  }
-
-  .tool-header {
-    height: 42px;
-    width: 100%;
-    padding: 0 6px;
-
-    .icon {
-      display: inline-block;
-      width: 36px;
-      height: 36px;
-      margin-right: 8px;
-      font-size: 28px;
-      line-height: 36px;
-      vertical-align: middle;
-      text-align: center;
-      background: $color-background;
-      transition: background $tx-short;
-      color: $color-icon;
-    }
-
-    &:hover .icon {
-      background: $color-background-hover;
-    }
-    .text {
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// INSPECTOR SIDEBAR
-
-.inspector-sidebar {
-  flex-shrink: 0;
-  width: 300px;
-  overflow-y: auto;
-  background: $color-background-dark;
-  font-size: 0.85rem;
-}
-
-.file-slot {
-  margin: 0 6px 6px 6px;
-  padding: 2px 6px 6px 6px;
-  background: $color-background-darker;
-
-  .title {
-    font-size: 1rem;
-    line-height: 1.4rem;
-  }
-
-  .file-drop-target {
-    box-sizing: border-box;
-    min-height: 40px;
-    flex-grow: 1;
-    margin: 6px 0 8px 0;
-    padding: 2px 4px;
-    border: 1px dashed $color-background-light;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-
-    &.full {
-      background: $color-secondary-dark;
-    }
-
-    .label {
-      pointer-events: none;
-      text-align: center;
-      word-wrap: break-word;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    &.targeted {
-      border: 2px solid $color-background-light;
-    }
-  }
-}
-
-.inspector-editor {
-  margin: 0 6px 6px 6px;
-  padding: 2px 6px 6px 6px;
-  background: $color-background-darker;
-
-  & > label {
-    display: block;
-    padding-bottom: 4px;
-    font-size: 1rem;
-  }
-
-  .slider, .switch {
-    padding-bottom: 3px;
-    line-height: 1.4rem;
-
-    & > .label {
-      flex-shrink: 0;
-      width: 33%;
-      padding-left: 12px;
-    }
-
-    .checkbox {
-      margin: 0;
-    }
-  }
-
-  .selection-group {
-    .checkbox {
-      display: inline;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// MARKDOWN-EDITOR
-
-.markdown-editor {
-  @include full-size;
-  color: black;
-  background-color: white;
-}

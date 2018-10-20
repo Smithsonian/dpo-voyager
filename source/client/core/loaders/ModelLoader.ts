@@ -83,14 +83,14 @@ export default class ModelLoader
                 const material = mesh.material as THREE.MeshStandardMaterial;
 
                 if (material.map) {
-                    material.map.encoding = THREE.sRGBEncoding;
+                    material.map.encoding = THREE.LinearEncoding;
                 }
 
                 mesh.geometry.computeBoundingBox();
 
                 const uberMat = new UberMaterial();
                 if (material.type === "MeshStandardMaterial") {
-                    uberMat.copy(material);
+                    uberMat.copyStandardMaterial(material);
                 }
 
                 // TODO: Temp to correct test assets

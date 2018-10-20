@@ -22,7 +22,6 @@ import AnnotationsView from "../components/AnnotationsView";
 import Camera from "../components/Camera";
 import Collection from "../components/Collection";
 import Controller from "../components/Controller";
-import Derivatives from "../components/Derivatives";
 import DirectionalLight from "../components/DirectionalLight";
 import Documents from "../components/Documents";
 import PresentationController from "../components/PresentationController";
@@ -62,7 +61,6 @@ export function registerComponents(registry: Registry)
         Camera,
         Collection,
         Controller,
-        Derivatives,
         DirectionalLight,
         Documents,
         PresentationController,

@@ -25,6 +25,7 @@ import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
 import OrbitManip, { EViewPreset, EProjectionType } from "../components/OrbitManip";
+import SystemController from "../components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,8 +45,10 @@ export interface IViewportMenuState
 export default class ViewportMenu extends React.Component<IViewportMenuProps, IViewportMenuState>
 {
     static readonly defaultProps = {
-        className: "viewport-menu"
+        className: "sv-viewport-menu"
     };
+
+    protected controller: SystemController;
 
     constructor(props: IViewportMenuProps)
     {
@@ -53,6 +56,8 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
         this.onSelectProjection = this.onSelectProjection.bind(this);
         this.onSelectViewPreset = this.onSelectViewPreset.bind(this);
+
+        this.controller = props.system.getComponent(SystemController);
 
         this.state = {
             projectionType: EProjectionType.Perspective,
@@ -62,18 +67,14 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
     componentDidMount()
     {
-        const system = this.props.system;
-
-        const orbitManip = system.getComponent(OrbitManip);
-        orbitManip.out("Orbit.Manip").on("value", this.onManipChanged, this);
-        orbitManip.out("View.Projection").on("value", this.onProjectionChanged, this);
+        this.controller.addOutputListener(OrbitManip, "Orbit.Manip", this.onManipChanged, this);
+        this.controller.addOutputListener(OrbitManip, "View.Projection", this.onProjectionChanged, this);
     }
 
     componentWillUnmount()
     {
-        const orbitManip = this.props.system.getComponent(OrbitManip);
-        orbitManip.out("Orbit.Manip").off("value", this.onManipChanged, this);
-        orbitManip.out("View.Projection").off("value", this.onProjectionChanged, this);
+        this.controller.removeOutputListener(OrbitManip, "Orbit.Manip", this.onManipChanged, this);
+        this.controller.removeOutputListener(OrbitManip, "View.Projection", this.onProjectionChanged, this);
     }
 
     render()
@@ -87,7 +88,6 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                 <Label text="Projection"/>
                 <FlexContainer
-                    className="group projection"
                     direction="horizontal">
 
                     <Button
@@ -112,12 +112,12 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                 <Label text="View"/>
                 <GridContainer
-                    className="group view"
+                    className="sv-cube-group"
                     justifyContent="center" >
 
                     <Button
                         index={EViewPreset.Top}
-                        className="control button cube"
+                        className="control button sv-cube"
                         text="T"
                         title="Top View"
                         selected={viewPreset === EViewPreset.Top}
@@ -126,7 +126,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Left}
-                        className="control button cube"
+                        className="control button sv-cube"
                         text="L"
                         title="Left View"
                         selected={viewPreset === EViewPreset.Left}
@@ -135,7 +135,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Front}
-                        className="control button cube"
+                        className="control button sv-cube"
                         text="F"
                         title="Front View"
                         selected={viewPreset === EViewPreset.Front}
@@ -144,7 +144,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Right}
-                        className="control button cube"
+                        className="control button sv-cube"
                         text="R"
                         title="Right View"
                         selected={viewPreset === EViewPreset.Right}
@@ -153,7 +153,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Back}
-                        className="control button cube"
+                        className="control button sv-cube"
                         text="B"
                         title="Back View"
                         selected={viewPreset === EViewPreset.Back}
@@ -162,7 +162,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Bottom}
-                        className="control button cube"
+                        className="control button sv-cube"
                         text="B" title="Bottom View"
                         selected={viewPreset === EViewPreset.Bottom}
                         style={{gridColumnStart: 2, gridRowStart: 3}}
@@ -176,14 +176,12 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
     protected onSelectProjection(event: IButtonTapEvent)
     {
-        const orbitManip = this.props.system.getComponent(OrbitManip);
-        orbitManip.in("View.Projection").setValue(event.index as EProjectionType);
+        this.controller.actions.setInputValue(OrbitManip, "View.Projection", event.index);
     }
 
     protected onSelectViewPreset(event: IButtonTapEvent)
     {
-        const orbitManip = this.props.system.getComponent(OrbitManip);
-        orbitManip.in("View.Preset").setValue(event.index as EViewPreset);
+        this.controller.actions.setInputValue(OrbitManip, "View.Preset", event.index);
 
         this.setState({ viewPreset: event.index });
     }

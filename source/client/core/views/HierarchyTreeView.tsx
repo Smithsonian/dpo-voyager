@@ -18,8 +18,6 @@
 import * as React from "react";
 import { MouseEvent } from "react";
 
-import { Dictionary } from "@ff/core/types";
-
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 import Component from "@ff/core/ecs/Component";
 import Entity from "@ff/core/ecs/Entity";
@@ -27,7 +25,7 @@ import System from "@ff/core/ecs/System";
 
 import Tree from "@ff/react/Tree";
 
-import SelectionController, { SelectionActions } from "../components/SelectionController";
+import SelectionController from "../components/SelectionController";
 
 ////////////////////////////////////////////////////////////////////////////////
 

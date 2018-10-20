@@ -16,3 +16,12 @@
  */
 
 @import "../core/styles/voyager";
+
+////////////////////////////////////////////////////////////////////////////////
+// MARKDOWN-EDITOR
+
+.markdown-editor {
+  @include full-size;
+  color: black;
+  background-color: white;
+}

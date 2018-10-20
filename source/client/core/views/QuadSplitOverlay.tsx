@@ -46,7 +46,7 @@ export interface IQuadSplitOverlayProps extends IComponentProps
 export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayProps, {}>
 {
     static readonly defaultProps: IQuadSplitOverlayProps = {
-        className: "quad-split-overlay",
+        className: "sv-quad-split-overlay",
         mode: EViewportLayoutMode.Single,
         horizontalSplit: 0.5,
         verticalSplit: 0.5

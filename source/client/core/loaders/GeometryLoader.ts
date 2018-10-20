@@ -52,7 +52,8 @@ export default class GeometryLoader
             if (extension === "obj") {
                 this.objLoader.load(url, result => {
                     const geometry = result.children[0].geometry;
-                    if (geometry && geometry.type === "Geometry") {
+                    console.log(geometry);
+                    if (geometry && geometry.type === "Geometry" || geometry.type === "BufferGeometry") {
                         return resolve(geometry);
                     }
 

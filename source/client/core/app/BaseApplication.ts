@@ -121,12 +121,12 @@ export default class BaseApplication
     protected parseArguments(props: IApplicationProps)
     {
         const presentationUrl = parseUrlParameter("presentation") || props.presentationUrl;
-        const itemUrl = parseUrlParameter("item") || props.itemUrl;
-        const templateUrl = parseUrlParameter("template") || props.templateUrl;
-        const modelUrl = parseUrlParameter("model") || props.modelUrl;
-        const geometryUrl = parseUrlParameter("geometry") || props.geometryUrl;
-        const textureUrl = parseUrlParameter("texture") || props.textureUrl;
-        const qualityText = parseUrlParameter("quality") || props.quality;
+        const itemUrl = parseUrlParameter("item") || parseUrlParameter("i") || props.itemUrl;
+        const templateUrl = parseUrlParameter("template") || parseUrlParameter("t") || props.templateUrl;
+        const modelUrl = parseUrlParameter("model") || parseUrlParameter("m") || props.modelUrl;
+        const geometryUrl = parseUrlParameter("geometry") || parseUrlParameter("g") || props.geometryUrl;
+        const textureUrl = parseUrlParameter("texture") || parseUrlParameter("t") || props.textureUrl;
+        const qualityText = parseUrlParameter("quality") || parseUrlParameter("q") || props.quality;
 
         let quality = EDerivativeQuality[qualityText];
         quality = quality !== undefined ? quality : EDerivativeQuality.Medium;
