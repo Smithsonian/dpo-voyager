@@ -45,12 +45,42 @@ $menu-bar-size: 48px;
 ////////////////////////////////////////////////////////////////////////////////
 // SIDE BAR
 
-.sv-side-bar-view {
+.sv-side-bar {
 
   .ff-tab-header-item {
     padding: 6px 10px;
     .ff-icon {
       font-size: 20px;
+    }
+  }
+
+  .sv-pose-editor {
+
+    & > label {
+      display: block;
+      padding-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .sv-slider, .sv-switch {
+      padding-bottom: 3px;
+      line-height: 1.4rem;
+
+      & > .ff-label {
+        flex-shrink: 0;
+        width: 33%;
+        padding-left: 12px;
+      }
+
+      .ff-checkbox {
+        margin: 0;
+      }
+    }
+
+    .ff-selection-group {
+      .ff-checkbox {
+        display: inline;
+      }
     }
   }
 }

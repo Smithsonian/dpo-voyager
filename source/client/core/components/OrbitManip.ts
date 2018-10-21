@@ -50,8 +50,8 @@ export default class OrbitManip extends Manip
     static readonly type: string = "OrbitManip";
 
     ins = this.makeProps({
-        pro: types.Enum("View.Projection", EProjectionType),
-        pre: types.Enum("View.Preset", EViewPreset),
+        pro: types.Enum("View.Projection", EProjectionType, EProjectionType.Perspective),
+        pre: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
         ena: types.Boolean("Override.Enabled", false),
         pus: types.Event("Override.Push"),
         ori: types.Vector3("Override.Orientation"),
@@ -64,6 +64,7 @@ export default class OrbitManip extends Manip
 
     outs = this.makeProps({
         pro: types.Enum("View.Projection", EProjectionType),
+        pre: types.Enum("View.Preset", EViewPreset),
         siz: types.Number("View.Size"),
         ori: types.Vector3("Orbit.Orientation"),
         ior: types.Vector3("Orbit.InverseOrientation"),
@@ -78,6 +79,7 @@ export default class OrbitManip extends Manip
     protected viewportHeight = 100;
 
     protected updateMatrix = false;
+    protected onPreset = false;
 
 
     update()
@@ -90,26 +92,32 @@ export default class OrbitManip extends Manip
         }
 
         if (ins.pre.changed) {
-            outs.ori.value = types.getOptionValue(_orientationPresets, ins.pre.value);
+            outs.pre.pushValue(ins.pre.value);
+            outs.ori.value =types.getOptionValue(_orientationPresets, ins.pre.value);
             outs.ofs.value[0] = 0;
             outs.ofs.value[1] = 0;
+            this.onPreset = true;
         }
 
         if (ins.pus.changed) {
             outs.ori.value = ins.ori.value.slice();
             outs.ofs.value = ins.ofs.value.slice();
+            this.onPreset = false;
         }
 
         if (ins.ena.value) {
             if (ins.ena.changed) {
                 outs.ori.value = ins.ori.value.slice();
                 outs.ofs.value = ins.ofs.value.slice();
+                this.onPreset = false;
             }
             if (ins.ori.changed) {
                 outs.ori.value = ins.ori.value;
+                this.onPreset = false;
             }
             if (ins.ofs.changed) {
                 outs.ofs.value = ins.ofs.value;
+                this.onPreset = false;
             }
         }
 
@@ -119,7 +127,7 @@ export default class OrbitManip extends Manip
     tick()
     {
         const ins = this.ins;
-        const { siz, ori, ofs, mat, ior, man } = this.outs;
+        const { pre, siz, ori, ofs, mat, ior, man } = this.outs;
 
         const delta = this.manip.getDeltaPose();
 
@@ -144,6 +152,7 @@ export default class OrbitManip extends Manip
 
             man.push();
             this.updateMatrix = true;
+            this.onPreset = false;
         }
 
         if (this.updateMatrix) {
@@ -170,6 +179,10 @@ export default class OrbitManip extends Manip
             ior.push();
             ofs.push();
             mat.push();
+        }
+
+        if (!this.onPreset && pre.value !== EViewPreset.None) {
+            pre.pushValue(EViewPreset.None);
         }
     }
 

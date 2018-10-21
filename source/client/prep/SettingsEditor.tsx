@@ -17,36 +17,33 @@
 
 import * as React from "react";
 
+import System from "@ff/core/ecs/System";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-/** Properties for [[SettingsModeView]] component. */
-export interface ISettingsModeViewProps
+/** Properties for [[SettingsEditor]] component. */
+export interface ISettingsEditorProps
 {
     className?: string;
+    system: System;
 }
 
-interface ISettingsModeViewState
+export default class SettingsEditor extends React.Component<ISettingsEditorProps, {}>
 {
-}
-
-export default class SettingsModeView extends React.Component<ISettingsModeViewProps, ISettingsModeViewState>
-{
-    static readonly defaultProps: ISettingsModeViewProps = {
-        className: "settings-mode-view"
+    static readonly defaultProps = {
+        className: "sv-settings-editor"
     };
 
-    constructor(props: ISettingsModeViewProps)
+    constructor(props: ISettingsEditorProps)
     {
         super(props);
-
-        this.state = {
-        };
     }
 
     render()
     {
         const {
-            className
+            className,
+            system
         } = this.props;
 
         return (

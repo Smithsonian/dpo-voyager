@@ -79,8 +79,10 @@ export default class PresentationController extends Controller<PresentationContr
         return this.presentation;
     }
 
-    loadModel(modelUrl: string, quality?: EDerivativeQuality, templateUrl?: string): Promise<void>
+    loadModel(modelUrl: string, quality?: EDerivativeQuality): Promise<void>
     {
+        quality = quality !== undefined ? quality : EDerivativeQuality.Medium;
+
         return Promise.resolve().then(() => {
             console.log(`Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[quality]}\n`,
                 `model url: ${modelUrl}`);
@@ -93,6 +95,8 @@ export default class PresentationController extends Controller<PresentationContr
 
     loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: EDerivativeQuality): Promise<void>
     {
+        quality = quality !== undefined ? quality : EDerivativeQuality.Medium;
+
         return Promise.resolve().then(() => {
             console.log(`Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
                 `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
@@ -161,6 +165,17 @@ export default class PresentationController extends Controller<PresentationContr
     writePresentation(): IPresentation
     {
         return this.activePresentation.deflate();
+    }
+
+    closeAll()
+    {
+        this.setActivePresentation(null);
+
+        this.presentations.forEach(presentation => {
+            presentation.dispose();
+        });
+
+        this.presentations.length = 0;
     }
 
     addInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)

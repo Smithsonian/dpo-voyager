@@ -66,7 +66,7 @@ export default class BaseApplication
 
     protected systemController: SystemController;
     readonly renderController: RenderController;
-    protected explorerController: PresentationController;
+    protected presentationController: PresentationController;
 
     protected pickManip: PickManip;
     protected orbitManip: OrbitManip;
@@ -102,8 +102,8 @@ export default class BaseApplication
         this.renderController = this.main.createComponent(RenderController);
         this.renderController.createActions(this.commander);
 
-        this.explorerController = this.main.createComponent(PresentationController);
-        this.explorerController.createActions(this.commander);
+        this.presentationController = this.main.createComponent(PresentationController);
+        this.presentationController.createActions(this.commander);
 
         this.pickManip = this.main.createComponent(PickManip);
         this.renderController.setNextManip(this.pickManip);
@@ -111,11 +111,35 @@ export default class BaseApplication
         this.orbitManip = this.main.createComponent(OrbitManip);
         this.pickManip.next.component = this.orbitManip;
 
-        const loadingManager = this.explorerController.loaders.manager;
+        const loadingManager = this.presentationController.loaders.manager;
         loadingManager.onStart = this.onLoadingStart;
         loadingManager.onProgress = this.onLoadingProgress;
         loadingManager.onLoad = this.onLoadingCompleted;
         loadingManager.onError = this.onLoadingError;
+    }
+
+    loadItem(itemUrl, templatePath?: string)
+    {
+        this.presentationController.closeAll();
+        this.presentationController.loadItem(itemUrl, templatePath);
+    }
+
+    loadPresentation(presentationUrl)
+    {
+        this.presentationController.closeAll();
+        this.presentationController.loadPresentation(presentationUrl);
+    }
+
+    loadModel(modelUrl: string)
+    {
+        this.presentationController.closeAll();
+        this.presentationController.loadModel(modelUrl);
+    }
+
+    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string)
+    {
+        this.presentationController.closeAll();
+        this.presentationController.loadGeometryAndTexture(geometryUrl, textureUrl);
     }
 
     protected parseArguments(props: IApplicationProps)
@@ -125,13 +149,13 @@ export default class BaseApplication
         const templateUrl = parseUrlParameter("template") || parseUrlParameter("t") || props.templateUrl;
         const modelUrl = parseUrlParameter("model") || parseUrlParameter("m") || props.modelUrl;
         const geometryUrl = parseUrlParameter("geometry") || parseUrlParameter("g") || props.geometryUrl;
-        const textureUrl = parseUrlParameter("texture") || parseUrlParameter("t") || props.textureUrl;
+        const textureUrl = parseUrlParameter("texture") || parseUrlParameter("tex") || props.textureUrl;
         const qualityText = parseUrlParameter("quality") || parseUrlParameter("q") || props.quality;
 
         let quality = EDerivativeQuality[qualityText];
         quality = quality !== undefined ? quality : EDerivativeQuality.Medium;
 
-        const controller = this.explorerController;
+        const controller = this.presentationController;
 
         if (presentationUrl) {
             console.log(`loading presentation from arguments url: ${presentationUrl}`);
@@ -189,7 +213,7 @@ export default class BaseApplication
         this.system.update(this.context);
         this.system.tick(this.context);
 
-        const presentation = this.explorerController.activePresentation;
+        const presentation = this.presentationController.activePresentation;
         if (!presentation) {
             return;
         }

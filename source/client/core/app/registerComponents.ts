@@ -49,7 +49,6 @@ import SpotLight from "../components/SpotLight";
 import SystemController from "../components/SystemController";
 import Tours from "../components/Tours";
 import Transform from "../components/Transform";
-import ViewController from "../components/ViewController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +86,6 @@ export function registerComponents(registry: Registry)
         SpotLight,
         SystemController,
         Tours,
-        Transform,
-        ViewController
+        Transform
     ]);
 }

@@ -24,7 +24,7 @@ import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import { IPresentation, IItem, INode, IExplorer, EDerivativeQuality } from "common/types";
+import { IPresentation, INode, IExplorer } from "common/types";
 
 import Transform from "../components/Transform";
 import Scene from "../components/Scene";
@@ -35,7 +35,6 @@ import DirectionalLight from "../components/DirectionalLight";
 import PointLight from "../components/PointLight";
 import SpotLight from "../components/SpotLight";
 
-import Model from "../components/Model";
 import Documents from "../components/Documents";
 import Groups from "../components/Groups";
 import Tours from "../components/Tours";
@@ -118,6 +117,11 @@ export default class Presentation
     get camera(): THREE.Camera | null
     {
         return this._cameraComponent ? this._cameraComponent.camera : null;
+    }
+
+    dispose()
+    {
+        this.entity.dispose();
     }
 
     inflate(pres: IPresentation, url?: string, item?: Item): this

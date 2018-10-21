@@ -36,12 +36,7 @@ export interface IViewportMenuProps
     system: System;
 }
 
-export interface IViewportMenuState
-{
-    viewPreset: EViewPreset;
-}
-
-export default class ViewportMenu extends React.Component<IViewportMenuProps, IViewportMenuState>
+export default class ViewportMenu extends React.Component<IViewportMenuProps, {}>
 {
     static readonly defaultProps = {
         className: "sv-viewport-menu"
@@ -57,28 +52,24 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
         this.onSelectViewPreset = this.onSelectViewPreset.bind(this);
 
         this.controller = props.system.getComponent(SystemController);
-
-        this.state = {
-            viewPreset: EViewPreset.None
-        };
     }
 
     componentDidMount()
     {
-        this.controller.addOutputListener(OrbitManip, "Orbit.Manip", this.onManipChanged, this);
         this.controller.addOutputListener(OrbitManip, "View.Projection", this.onProjectionChanged, this);
+        this.controller.addOutputListener(OrbitManip, "View.Preset", this.onPresetChanged, this);
     }
 
     componentWillUnmount()
     {
-        this.controller.removeOutputListener(OrbitManip, "Orbit.Manip", this.onManipChanged, this);
         this.controller.removeOutputListener(OrbitManip, "View.Projection", this.onProjectionChanged, this);
+        this.controller.removeOutputListener(OrbitManip, "View.Preset", this.onPresetChanged, this);
     }
 
     render()
     {
-        const viewPreset = this.state.viewPreset;
-        const projectionType = this.controller.getInputValue(OrbitManip, "View.Projection");
+        const viewPreset = this.controller.getOutputValue(OrbitManip, "View.Preset");
+        const projectionType = this.controller.getOutputValue(OrbitManip, "View.Projection");
 
         return (
             <FlexContainer
@@ -185,12 +176,12 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
         this.setState({ viewPreset: event.index });
     }
 
-    protected onManipChanged()
+    protected onProjectionChanged()
     {
-        this.setState({ viewPreset: EViewPreset.None });
+        this.forceUpdate();
     }
 
-    protected onProjectionChanged()
+    protected onPresetChanged()
     {
         this.forceUpdate();
     }

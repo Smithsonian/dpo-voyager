@@ -62,7 +62,7 @@ export default class GeometryLoader
             }
             else if (extension === "ply") {
                 this.plyLoader.load(url, geometry => {
-                    if (geometry && geometry.type === "Geometry") {
+                    if (geometry && geometry.type === "Geometry" || geometry.type === "BufferGeometry") {
                         return resolve(geometry);
                     }
 

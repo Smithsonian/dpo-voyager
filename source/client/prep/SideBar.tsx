@@ -17,10 +17,14 @@
 
 import * as React from "react";
 
+import System from "@ff/core/ecs/System";
 import TabContainer, { ITabSelectEvent, TabItem } from "@ff/react/TabContainer";
 
-import SettingsModeView from "./SettingsModeView";
 import PrepController, { EPrepMode, IPrepModeChangeEvent } from "../core/components/PrepController";
+
+import SettingsEditor from "./SettingsEditor";
+import PoseEditor from "./PoseEditor";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,40 +32,44 @@ import PrepController, { EPrepMode, IPrepModeChangeEvent } from "../core/compone
 export interface ISideBarViewProps
 {
     className?: string;
-    controller: PrepController;
+    system: System;
 }
 
-export default class SideBarView extends React.Component<ISideBarViewProps, {}>
+export default class SideBar extends React.Component<ISideBarViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "sv-side-bar-view ff-tab-container"
+        className: "sv-side-bar ff-tab-container"
     };
+
+    protected controller: PrepController;
 
     constructor(props: ISideBarViewProps)
     {
         super(props);
 
         this.onTabSelect = this.onTabSelect.bind(this);
+
+        this.controller = props.system.getComponent(PrepController);
     }
 
     componentDidMount()
     {
-        this.props.controller.on("mode", this.onMode, this);
+        this.controller.on("mode", this.onMode, this);
     }
 
     componentWillUnmount()
     {
-        this.props.controller.off("mode", this.onMode, this);
+        this.controller.off("mode", this.onMode, this);
     }
 
     render()
     {
         const {
             className,
-            controller
+            system
         } = this.props;
 
-        const mode = controller.mode;
+        const mode = this.controller.mode;
 
         return (
             <TabContainer
@@ -85,7 +93,8 @@ export default class SideBarView extends React.Component<ISideBarViewProps, {}>
                     closable={false}
                     movable={false}>
 
-                    <SettingsModeView/>
+                    <SettingsEditor
+                        system={system}/>
                 </TabItem>
 
                 <TabItem
@@ -103,7 +112,9 @@ export default class SideBarView extends React.Component<ISideBarViewProps, {}>
                     faIcon="wrench"
                     closable={false}
                     movable={false}>
-                    <div>Pose</div>
+
+                    <PoseEditor
+                        system={system}/>
                 </TabItem>
 
             </TabContainer>
@@ -112,7 +123,7 @@ export default class SideBarView extends React.Component<ISideBarViewProps, {}>
 
     protected onTabSelect(event: ITabSelectEvent)
     {
-        this.props.controller.mode = event.tabIndex;
+        this.controller.mode = event.tabIndex;
     }
 
     protected onMode(event: IPrepModeChangeEvent)

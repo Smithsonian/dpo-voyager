@@ -71,7 +71,7 @@ export default class SystemController extends Controller<SystemController>
         return this.getSafeComponent(componentType).in(path).value
     }
 
-    getOutputVaue(componentType: ComponentType, path: string)
+    getOutputValue(componentType: ComponentType, path: string)
     {
         return this.getSafeComponent(componentType).out(path).value;
     }
