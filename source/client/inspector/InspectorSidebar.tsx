@@ -37,7 +37,7 @@ export interface IInspectorSidebarProps
 export default class InspectorSidebar extends React.Component<IInspectorSidebarProps, {}>
 {
     static defaultProps: IInspectorSidebarProps = {
-        className: "inspector-sidebar"
+        className: "sv-inspector-sidebar"
     };
 
     constructor(props: IInspectorSidebarProps)

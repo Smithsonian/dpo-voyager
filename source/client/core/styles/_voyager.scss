@@ -23,7 +23,7 @@ $color-primary: #cc671f; // Smithsonian primary blue
 $color-secondary: #0080b3; // Smithsonian secondary indigo
 $color-text-explorer: #f0f0f0;
 $color-text-explorer-dim: #a0a0a0;
-$color-background-explorer: transparentize(black, 0.3);
+$color-background-explorer: transparentize(#202020, 0.3);
 
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENT STYLES
@@ -50,7 +50,7 @@ $font-ui: "Segoe UI", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-
 ////////////////////////////////////////////////////////////////////////////////
 // HELPER
 
-.scroll-wrapper {
+.sv-scroll-wrapper {
   overflow-y: auto;
 }
 
@@ -91,7 +91,7 @@ html {
   color: $color-text;
   font-size: 0.9rem;
 
-  .canvas {
+  .ff-canvas {
     @include full-size;
   }
 
@@ -99,7 +99,7 @@ html {
     margin: 4px;
   }
 
-  .popup-button {
+  .ff-popup-button {
     width: min-content;
     height: min-content;
     margin: 4px;
@@ -133,44 +133,44 @@ html {
   border-radius: 3px;
   font-size: 0.8rem;
 
-  .control {
+  .ff-control {
     margin: 2px 4px;
   }
 
-  .label {
+  .ff-label {
     background: $color-background-light;
     margin: 4px 0;
     padding: 1px 2px 3px 2px;
     color: $color-text-explorer;
   }
 
-  .label:first-child {
+  .ff-label:first-child {
     margin-top: 0;
   }
 
-  .button {
+  .ff-button {
     flex-grow: 1;
     padding: 3px;
     background: transparent;
     border-radius: 3px;
     color: $color-text-explorer-dim;
 
-    &:not(.disabled):hover, &:focus {
+    &:not(.ff-disabled):hover, &:focus {
       background: inherit;
       outline: none;
       color: $color-text-explorer;
     }
 
-    &.selected {
+    &.ff-selected {
       background: $color-secondary !important;
       color: $color-text-explorer;
     }
 
-    .text {
+    .ff-text {
       font-size: 0.9em;
     }
 
-    .icon {
+    .ff-icon {
       display: block;
       font-size: 1.8em;
     }
@@ -183,12 +183,12 @@ html {
       border: 1px solid #404040;
       border-radius: 0;
 
-      .text {
+      .ff-text {
         font-size: 1.5em;
         line-height: 1em;
       }
 
-      .icon {
+      .ff-icon {
         font-size: 1.2em;
         line-height: 1em;
         vertical-align: center;
@@ -198,7 +198,7 @@ html {
   }
 
   &.sv-render-menu {
-    .button {
+    .ff-button {
       font-size: 1.1em;
     }
   }
@@ -211,8 +211,8 @@ html {
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENTS
 
-.property-field {
-  .edit {
+.ff-property-field {
+  .ff-edit {
     @include font-ui-normal;
   }
 }
@@ -224,17 +224,17 @@ html {
   @include full-size;
   pointer-events: none;
 
-  .splitter-handle {
+  .ff-splitter-handle {
     pointer-events: auto;
   }
 
-  .splitter-section {
+  .ff-splitter-section {
     box-sizing: border-box;
 
-    &.vertical {
+    &:first-child.ff-vertical {
       border-bottom: 1px solid $color-background;
     }
-    &.horizontal {
+    &:first-child.ff-horizontal {
       border-right: 1px solid $color-background;
     }
   }

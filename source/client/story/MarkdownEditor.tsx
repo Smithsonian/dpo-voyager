@@ -38,7 +38,7 @@ interface IMarkdownEditorState
 export default class MarkdownEditor extends React.Component<IMarkdownEditorProps, IMarkdownEditorState>
 {
     static defaultProps: IMarkdownEditorProps = {
-        className: "markdown-editor"
+        className: "sv-markdown-editor"
     };
 
     private static style: CSSProperties = {

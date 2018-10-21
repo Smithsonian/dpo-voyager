@@ -19,10 +19,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-.main-view {
+.sv-main-view {
   @include full-size;
 
-  .dockable-view {
+  .ff-dock-view {
     @include full-size;
     border-top: 10px solid $color-background-darker;
   }
@@ -33,10 +33,10 @@
 
 $menu-bar-size: 48px;
 
-.menu-bar {
+.sv-menu-bar {
   background: $color-background-dark;
 
-  .logo {
+  .sv-logo {
     height: 32px;
     margin: 8px 8px;
   }
@@ -45,14 +45,11 @@ $menu-bar-size: 48px;
 ////////////////////////////////////////////////////////////////////////////////
 // SIDE BAR
 
-.side-bar {
+.sv-side-bar-view {
 
-  .header {
-  }
-
-  .header-item {
+  .ff-tab-header-item {
     padding: 6px 10px;
-    .icon {
+    .ff-icon {
       font-size: 20px;
     }
   }
@@ -61,52 +58,52 @@ $menu-bar-size: 48px;
 ////////////////////////////////////////////////////////////////////////////////
 // HIERARCHY TREE VIEW
 
-.tree {
-  .node {
+.ff-tree {
+  .ff-node {
     margin-left: -500px;
     border-top: 1px solid $color-background;
 
-    .content {
+    .ff-content {
       margin-left: 500px;
 
-      &.expanded .header {
+      &.ff-expanded .sv-header {
         @include triangle($color-icon, 3px, 180deg);
       }
-      &.collapsed .header {
+      &.ff-collapsed .sv-header {
         @include triangle($color-icon, 3px, 90deg);
       }
-      &.leaf .header {
+      &.ff-leaf .sv-header {
         @include dot($color-icon-disabled, 3px, 6px, 0.6em);
       }
 
-      .header {
+      .sv-header {
         position: relative;
         cursor: pointer;
         padding: 2px 0 2px 14px;
       }
-      .children {
+      .ff-children {
         margin-left: 12px;
       }
 
-      &.entity {
+      &.sv-entity {
         font-weight: bold;
         background: darken($color-background-dark, 4%);
 
-        & > .children {
+        & > .ff-children {
           margin-left: 8px;
         }
       }
 
-      &.component {
+      &.sv-component {
         font-weight: normal;
         background: $color-background-dark;
 
-        & > .children {
+        & > .ff-children {
           margin-left: 12px;
         }
       }
 
-      &.selected {
+      &.ff-selected {
         background: $color-secondary;
       }
     }

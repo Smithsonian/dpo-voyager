@@ -33,7 +33,7 @@ export interface IFileDropAreaProps
 export default class FileDropArea extends React.Component<IFileDropAreaProps, {}>
 {
     static defaultProps: IFileDropAreaProps = {
-        className: "file-drop-area"
+        className: "sv-file-drop-area"
     };
 
     constructor(props: IFileDropAreaProps)

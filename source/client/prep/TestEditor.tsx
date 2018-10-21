@@ -32,7 +32,7 @@ interface ITestEditorState
 export default class TestEditor extends React.Component<ITestEditorProps, ITestEditorState>
 {
     static readonly defaultProps: ITestEditorProps = {
-        className: "test-editor"
+        className: "sv-test-editor"
     };
 
     constructor(props: ITestEditorProps)

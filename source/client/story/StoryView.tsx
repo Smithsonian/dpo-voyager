@@ -34,7 +34,7 @@ interface IStoryViewState
 export default class StoryView extends React.Component<IStoryViewProps, IStoryViewState>
 {
     static defaultProps: IStoryViewProps = {
-        className: "story-main-view"
+        className: "sv-story-view"
     };
 
     constructor(props: IStoryViewProps)

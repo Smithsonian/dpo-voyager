@@ -40,7 +40,7 @@ export interface ICanvas3DState
 export default class Canvas3D extends React.Component<ICanvas3DProps, ICanvas3DState>
 {
     static defaultProps: ICanvas3DProps = {
-        className: "canvas-3d",
+        className: "sv-canvas-3d",
         scene: null,
         play: true
     };

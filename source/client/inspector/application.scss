@@ -17,13 +17,18 @@
 
 @import "../core/styles/voyager";
 
+////////////////////////////////////////////////////////////////////////////////
+
+.sv-canvas-3d {
+  @include full-size;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // MENU BAR
 
 $bar-size: 48px;
 
-.menubar {
+.sv-inspector-menubar {
   height: $bar-size;
   min-height: $bar-size;
   display: flex;
@@ -31,12 +36,12 @@ $bar-size: 48px;
   align-items: center;
   background: $color-background-dark;
 
-  .button {
+  .ff-button {
     height: $bar-size - 20;
     line-height: $bar-size - 24;
   }
 
-  .logo {
+  .sv-logo {
     flex-shrink: 0;
     width: 140px;
     height: 100%;
@@ -47,36 +52,36 @@ $bar-size: 48px;
     background-position: center center;
   }
 
-  .search {
+  .sv-search {
 
   }
 
-  .menu {
+  .sv-menu {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
     margin: 0 12px;
 
-    .button + .button {
+    .ff-button + .ff-button {
       margin-left: 6px;
     }
   }
 }
 
-.scene-info {
+.sv-scene-info {
   margin: 0 0 0 20px;
   white-space: nowrap;
   text-overflow: ellipsis;
 
-  .badge {
+  .ff-badge {
     margin: 0 4px;
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// INSPECTOR SIDEBAR
+// SIDEBAR
 
-.inspector-sidebar {
+.sv-inspector-sidebar {
   flex-shrink: 0;
   width: 300px;
   overflow-y: auto;
@@ -84,17 +89,17 @@ $bar-size: 48px;
   font-size: 0.85rem;
 }
 
-.file-slot {
+.sv-file-drop-slot {
   margin: 0 6px 6px 6px;
   padding: 2px 6px 6px 6px;
   background: $color-background-darker;
 
-  .title {
+  .sv-title {
     font-size: 1rem;
     line-height: 1.4rem;
   }
 
-  .file-drop-target {
+  .ff-file-drop-target {
     box-sizing: border-box;
     min-height: 40px;
     flex-grow: 1;
@@ -106,11 +111,11 @@ $bar-size: 48px;
     align-items: center;
     overflow: hidden;
 
-    &.full {
+    &.sv-full {
       background: $color-secondary-dark;
     }
 
-    .label {
+    .ff-label {
       pointer-events: none;
       text-align: center;
       word-wrap: break-word;
@@ -118,13 +123,13 @@ $bar-size: 48px;
       text-overflow: ellipsis;
     }
 
-    &.targeted {
+    &.ff-targeted {
       border: 2px solid $color-background-light;
     }
   }
 }
 
-.inspector-editor {
+.sv-inspector-editor {
   margin: 0 6px 6px 6px;
   padding: 2px 6px 6px 6px;
   background: $color-background-darker;
@@ -135,23 +140,23 @@ $bar-size: 48px;
     font-size: 1rem;
   }
 
-  .slider, .switch {
+  .sv-slider, .sv-switch {
     padding-bottom: 3px;
     line-height: 1.4rem;
 
-    & > .label {
+    & > .ff-label {
       flex-shrink: 0;
       width: 33%;
       padding-left: 12px;
     }
 
-    .checkbox {
+    .ff-checkbox {
       margin: 0;
     }
   }
 
-  .selection-group {
-    .checkbox {
+  .ff-selection-group {
+    .ff-checkbox {
       display: inline;
     }
   }

@@ -41,7 +41,7 @@ interface IInspectorViewState
 export default class InspectorView extends React.Component<IInspectorViewProps, IInspectorViewState>
 {
     static defaultProps: IInspectorViewProps = {
-        className: "inspector"
+        className: "sv-inspector-view"
     };
 
     protected scene: InspectorScene;

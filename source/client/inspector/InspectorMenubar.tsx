@@ -27,7 +27,7 @@ import { IInspectorSceneInfo } from "./InspectorScene";
 
 const Logo = function() {
     return(
-        <div className="logo" />
+        <div className="sv-logo" />
     );
 };
 
@@ -72,7 +72,7 @@ const SceneInfo: React.SFC<SceneInfoProps> = function(props)
     const TextureHeader = DiffuseMap || OcclusionMap || NormalMap ?
         <span>&nbsp;&nbsp;Textures:&nbsp;</span> : null;
 
-    return(<span className="scene-info">
+    return(<span className="sv-scene-info">
         {MeshHeader}
         {MeshNumVertices}
         {MeshNumFaces}
@@ -95,7 +95,7 @@ export interface InspectorMenubarProps
 export default class InspectorMenubar extends React.Component<InspectorMenubarProps, any>
 {
     static defaultProps: InspectorMenubarProps = {
-        className: "menubar"
+        className: "sv-inspector-menubar"
     };
 
     constructor(props: InspectorMenubarProps)

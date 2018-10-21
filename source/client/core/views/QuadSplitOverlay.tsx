@@ -87,7 +87,6 @@ export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayP
                     onResize={this.onHorizontalResize}>
 
                     <SplitterSection
-                        className="splitter-section horizontal"
                         size={horizontalSplit}/>
 
                     <SplitterSection
@@ -100,7 +99,6 @@ export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayP
                     onResize={this.onVerticalResize}>
 
                     <SplitterSection
-                        className="splitter-section vertical"
                         size={verticalSplit}/>
 
                     <SplitterSection

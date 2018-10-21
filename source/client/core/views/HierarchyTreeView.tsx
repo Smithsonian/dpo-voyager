@@ -40,10 +40,10 @@ const _getId = (node: ECS) => {
 
 const _getClass = (node: ECS) => {
     if (node instanceof Component) {
-        return "component";
+        return "sv-component";
     }
     if (node instanceof Entity) {
-        return "entity";
+        return "sv-entity";
     }
     return "system";
 };
@@ -70,7 +70,7 @@ export interface IHierarchyTreeViewProps
 export default class HierarchyTreeView extends React.Component<IHierarchyTreeViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "tree"
+        className: "sv-hierarchy-tree-view"
     };
 
     componentDidMount()
@@ -100,7 +100,7 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
             }
 
             return (<div
-                className="header"
+                className="sv-header"
                 onClick={(e) => this.onClickHeader(e, node)}>
                 {text}
             </div>);

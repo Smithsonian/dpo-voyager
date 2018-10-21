@@ -38,7 +38,6 @@ export interface IViewportMenuProps
 
 export interface IViewportMenuState
 {
-    projectionType: EProjectionType;
     viewPreset: EViewPreset;
 }
 
@@ -60,7 +59,6 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
         this.controller = props.system.getComponent(SystemController);
 
         this.state = {
-            projectionType: EProjectionType.Perspective,
             viewPreset: EViewPreset.None
         };
     }
@@ -79,7 +77,8 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
     render()
     {
-        const { projectionType, viewPreset } = this.state;
+        const viewPreset = this.state.viewPreset;
+        const projectionType = this.controller.getInputValue(OrbitManip, "View.Projection");
 
         return (
             <FlexContainer
@@ -117,7 +116,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Top}
-                        className="control button sv-cube"
+                        className="ff-control ff-button sv-cube"
                         text="T"
                         title="Top View"
                         selected={viewPreset === EViewPreset.Top}
@@ -126,7 +125,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Left}
-                        className="control button sv-cube"
+                        className="ff-control ff-button sv-cube"
                         text="L"
                         title="Left View"
                         selected={viewPreset === EViewPreset.Left}
@@ -135,7 +134,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Front}
-                        className="control button sv-cube"
+                        className="ff-control ff-button sv-cube"
                         text="F"
                         title="Front View"
                         selected={viewPreset === EViewPreset.Front}
@@ -144,7 +143,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Right}
-                        className="control button sv-cube"
+                        className="ff-control ff-button sv-cube"
                         text="R"
                         title="Right View"
                         selected={viewPreset === EViewPreset.Right}
@@ -153,7 +152,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Back}
-                        className="control button sv-cube"
+                        className="ff-control ff-button sv-cube"
                         text="B"
                         title="Back View"
                         selected={viewPreset === EViewPreset.Back}
@@ -162,7 +161,7 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
 
                     <Button
                         index={EViewPreset.Bottom}
-                        className="control button sv-cube"
+                        className="ff-control ff-button sv-cube"
                         text="B" title="Bottom View"
                         selected={viewPreset === EViewPreset.Bottom}
                         style={{gridColumnStart: 2, gridRowStart: 3}}
@@ -191,9 +190,9 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, IV
         this.setState({ viewPreset: EViewPreset.None });
     }
 
-    protected onProjectionChanged(projectionType: EProjectionType)
+    protected onProjectionChanged()
     {
-        this.setState({ projectionType });
+        this.forceUpdate();
     }
 }
 

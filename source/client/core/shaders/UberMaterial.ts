@@ -75,7 +75,7 @@ export default class UberMaterial extends Material
     morphNormals: boolean;
 
     protected _params: any = {};
-    protected _clayColor = new THREE.Color("#e6cab8");
+    protected _clayColor = new THREE.Color("#a67a6c");
 
     constructor(params?: MeshStandardMaterialParameters)
     {
@@ -95,7 +95,7 @@ export default class UberMaterial extends Material
         this.uniforms = UniformsUtils.merge([
             ShaderLib.standard.uniforms,
             {
-                aoMapMix: { value: new THREE.Vector3(0.2, 0.2, 0.2) }
+                aoMapMix: { value: new THREE.Vector3(0.25, 0.25, 0.25) }
             },
         ]);
 
@@ -178,9 +178,9 @@ export default class UberMaterial extends Material
                 };
                 this.color = this._clayColor;
                 this.map = null;
-                this.roughness = 0.8;
+                this.roughness = 1;
                 this.metalness = 0;
-                this.aoMapIntensity = this.aoMapIntensity * 0.3;
+                this.aoMapIntensity *= 1;
                 this.side = THREE.FrontSide;
                 this.blending = THREE.NoBlending;
                 this.transparent = false;

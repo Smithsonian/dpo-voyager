@@ -35,7 +35,7 @@ const Slider = function(props)
         min: props.min || 0, max: props.max || 1, step: 0.01, precision: 2, bar: true
     };
 
-    return (<FlexContainer direction="horizontal" className="slider">
+    return (<FlexContainer direction="horizontal" className="sv-slider">
         <Label>{props.children}</Label>
         <PropertyField id={props.id} value={props.value} format={fieldFormat} onChange={props.onChange} />
     </FlexContainer>)
@@ -43,7 +43,7 @@ const Slider = function(props)
 
 const Switch = function(props)
 {
-    return (<FlexContainer direction="horizontal" className="switch">
+    return (<FlexContainer direction="horizontal" className="sv-switch">
         <Label>{props.children}</Label>
         <Checkbox id={props.id} text={props.text} onSelect={props.onSelect} />
     </FlexContainer>)
@@ -60,7 +60,7 @@ export interface IInspectorEditorProps
 export default class InspectorEditor extends React.Component<IInspectorEditorProps, {}>
 {
     static defaultProps: IInspectorEditorProps = {
-        className: "inspector-editor",
+        className: "sv-inspector-editor",
         settings: null
     };
 

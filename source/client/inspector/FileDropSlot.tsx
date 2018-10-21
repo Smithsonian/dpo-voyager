@@ -49,7 +49,7 @@ interface IFileDropSlotState
 export default class FileDropSlot extends React.Component<IFileDropSlotProps, IFileDropSlotState>
 {
     static defaultProps: IFileDropSlotProps = {
-        className: "file-slot"
+        className: "sv-file-drop-slot"
     };
 
     constructor(props: IFileDropSlotProps)
@@ -98,9 +98,9 @@ export default class FileDropSlot extends React.Component<IFileDropSlotProps, IF
         return (<FlexContainer direction="vertical"
                                className={className}
                                style={style}>
-            <label className="title">{title}</label>
+            <label className="sv-title">{title}</label>
             <FileDropTarget
-                className={"file-drop-target " + (file ? "full" : "empty")}
+                className={"ff-file-drop-target " + (file ? "sv-full" : "sv-empty")}
                 fileTypes={fileTypes}
                 onFiles={this.onFiles}>
                 <Label>{file ? file.name : blankContent}</Label>

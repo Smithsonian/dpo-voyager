@@ -35,7 +35,7 @@ interface IMenuBarState
 export default class MenuBar extends React.Component<IMenuBarProps, IMenuBarState>
 {
     static readonly defaultProps: Partial<IMenuBarProps> = {
-        className: "menu-bar"
+        className: "sv-menu-bar"
     };
 
     constructor(props: IMenuBarProps)
@@ -61,7 +61,7 @@ export default class MenuBar extends React.Component<IMenuBarProps, IMenuBarStat
                 grow={0}
                 alignItems="center">
 
-                <img className="logo" src="/images/voyager-75grey.svg"/>
+                <img className="sv-logo" src="/images/voyager-75grey.svg"/>
 
                 <FLexItem/>
 

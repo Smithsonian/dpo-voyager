@@ -47,7 +47,7 @@ export interface IMainViewProps
 export default class MainView extends React.Component<IMainViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "main-view"
+        className: "sv-main-view"
     };
 
     protected static readonly initialLayout: IDockLayout = {

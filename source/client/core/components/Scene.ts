@@ -38,7 +38,7 @@ export default class Scene extends Hierarchy
     static readonly type: string = "Scene";
 
     ins = this.makeProps({
-        col: types.ColorRGB("Background.Color", [ 0.1, 0.1, 0.1 ]),
+        col: types.ColorRGB("Background.Color", [ 0.0, 0.0, 0.0 ]),
         sha: types.Enum("Shader.Mode", EShaderMode, EShaderMode.Default)
     });
 

@@ -34,7 +34,7 @@ export interface ISideBarViewProps
 export default class SideBarView extends React.Component<ISideBarViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "side-bar tab-container"
+        className: "sv-side-bar-view ff-tab-container"
     };
 
     constructor(props: ISideBarViewProps)
