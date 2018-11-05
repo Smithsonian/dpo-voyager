@@ -40,6 +40,7 @@ export interface IPickResult
     normal: THREE.Vector3;
 }
 
+
 export interface IPickManipPickEvent extends IPublisherEvent<PickManip>, IPickResult
 {
     pointerEvent: IViewportPointerEvent;

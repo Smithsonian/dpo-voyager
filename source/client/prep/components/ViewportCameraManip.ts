@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
+import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "../../core/components/Manip";
 
 ////////////////////////////////////////////////////////////////////////////////
 

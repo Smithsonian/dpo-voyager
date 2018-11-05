@@ -18,7 +18,6 @@
 import * as THREE from "three";
 
 import { IAnnotation } from "../components/Annotations";
-import { IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "../components/PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,6 +26,7 @@ const _vec3 = new THREE.Vector3();
 export default class AnnotationView extends THREE.Group
 {
     annotation: IAnnotation;
+    protected mesh: THREE.Mesh;
 
     constructor(annotation: IAnnotation)
     {
@@ -40,25 +40,18 @@ export default class AnnotationView extends THREE.Group
 
         const mat = new THREE.MeshPhongMaterial({ color: "red" });
 
-        const mesh = new THREE.Mesh(geo, mat);
-        _vec3.fromArray(annotation.direction);
-        mesh.quaternion.setFromUnitVectors(THREE.Object3D.DefaultUp, _vec3);
-        mesh.position.fromArray(annotation.position);
+        this.mesh = new THREE.Mesh(geo, mat);
+        this.mesh.matrixAutoUpdate = false;
 
-        this.add(mesh);
+        this.add(this.mesh);
+        this.update();
     }
 
-    onPointer(event: IViewportPointerEvent, pickInfo: IPickResult)
+    update()
     {
-        if (event.isPrimary && event.type === "up") {
-            console.log(this.annotation.title);
-        }
-
-        return false;
-    }
-
-    onTrigger(event: IViewportTriggerEvent, pickInfo: IPickResult)
-    {
-        return false;
+        _vec3.fromArray(this.annotation.direction);
+        this.mesh.quaternion.setFromUnitVectors(THREE.Object3D.DefaultUp, _vec3);
+        this.mesh.position.fromArray(this.annotation.position);
+        this.mesh.updateMatrix();
     }
 }

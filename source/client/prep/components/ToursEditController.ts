@@ -15,26 +15,30 @@
  * limitations under the License.
  */
 
-import Controller, { Actions } from "@ff/core/Controller";
-import Commander from "@ff/core/Commander";
+import Controller, { Actions, Commander } from "../../core/components/Controller";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type ItemActions = Actions<ItemController>;
+export type ToursEditActions = Actions<ToursEditController>;
 
-export default class ItemController extends Controller<ItemController>
+export default class ToursEditController extends Controller<ToursEditController>
 {
-    public readonly actions: ItemActions;
+    static readonly type: string = "ToursEditController";
 
-    constructor(commander: Commander)
+    actions: ToursEditActions = null;
+
+    create()
     {
-        super(commander);
+        super.create();
     }
 
     createActions(commander: Commander)
     {
-        return {
+        const actions = {
 
         };
+
+        this.actions = actions;
+        return actions;
     }
 }

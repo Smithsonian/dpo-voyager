@@ -18,91 +18,93 @@
 import * as THREE from "three";
 
 import { Dictionary } from "@ff/core/types";
-import { ComponentTracker } from "@ff/core/ecs/Component";
+
+import Annotations, { IAnnotation, IAnnotationsChangeEvent, Vector3 } from "./Annotations";
+import Model from "./Model";
 
 import AnnotationView from "../views/AnnotationView";
-import AnnotationFactory from "../views/AnnotationFactory";
 
-import { IPickResult, IViewportPointerEvent, IViewportTriggerEvent } from "../components/PickManip";
-import Annotations, { IAnnotation, IAnnotationsChangeEvent } from "./Annotations";
-import Model from "./Model";
+import PickManip, { IPickManipPickEvent } from "./PickManip";
+import AnnotationsController from "./AnnotationsController";
 import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
-
 
 export default class AnnotationsView extends Object3D
 {
     static readonly type: string = "AnnotationsView";
 
-    protected annotationsTracker: ComponentTracker<Annotations> = null;
-    protected modelTracker: ComponentTracker<Model> = null;
+    protected annotations: Annotations = null;
+    protected model: Model = null;
 
-    protected factory: AnnotationFactory;
     protected views: Dictionary<AnnotationView> = {};
-    protected activeView: AnnotationView = null;
+
+    protected pickManip: PickManip = null;
+    protected controller: AnnotationsController = null;
+
+    constructor(id?: string)
+    {
+        super(id);
+        this.addEvents("tap-model", "tap-annotation");
+
+        this.object3D = new THREE.Group();
+        this.object3D.updateMatrix();
+    }
 
     create()
     {
         super.create();
 
-        this.object3D = new THREE.Group();
-        this.object3D.updateMatrix();
+        this.model = this.getComponent(Model);
+        this.model.object3D.add(this.object3D);
 
-        this.modelTracker = this.trackComponent(Model, model => {
-            model.object3D.add(this.object3D);
-        }, model => {
-            model.object3D.remove(this.object3D);
-        });
+        this.annotations = this.getComponent(Annotations);
+        this.annotations.getArray().forEach(annotation => this.addView(annotation));
+        this.annotations.on("change", this.onAnnotationsChange, this);
 
-        this.annotationsTracker = this.trackComponent(Annotations, component => {
-            component.getArray().forEach(annotation => this.addView(annotation));
-            component.on("change", this.onAnnotationsChange, this);
-        }, component => {
-            component.off("change", this.onAnnotationsChange, this);
-            component.getArray().forEach(annotation => this.removeView(annotation));
-        });
+        this.pickManip = this.getComponent(PickManip, true);
+        this.pickManip.on("down", this.onPick, this);
+
+        this.controller = this.getComponent(AnnotationsController, true);
     }
 
-    setFactory(factory: AnnotationFactory)
+    dispose()
     {
-        this.factory = factory;
+        this.model.object3D.remove(this.object3D);
+
+        this.annotations.off("change", this.onAnnotationsChange, this);
+        this.annotations.getArray().forEach(annotation => this.removeView(annotation));
+
+        this.pickManip.off("down", this.onPick, this);
     }
 
-    onPointer(event: IViewportPointerEvent, pickInfo: IPickResult)
+    protected onPick(event: IPickManipPickEvent)
     {
-        if (event.isPrimary) {
-            if (event.type === "down") {
-                const view = this.findViewByObject(pickInfo.object);
-
-                if (view) {
-                    this.activeView = view;
-                }
-            }
-            else if (event.type === "up") {
-                if (this.activeView) {
-                    console.log(this.activeView.annotation.title);
-                }
-
-                this.activeView = null;
+        if (event.component === this) {
+            // find picked annotation view
+            const view = this.findViewByObject(event.object);
+            if (view) {
+                this.controller.actions.select(this.annotations, view.annotation);
+                return;
             }
         }
 
-        return false;
-    }
-
-    onTrigger(event: IViewportTriggerEvent, pickInfo: IPickResult)
-    {
-        return false;
+        // clear annotation selection
+        this.controller.actions.select(null, null);
     }
 
     protected onAnnotationsChange(event: IAnnotationsChangeEvent)
     {
-        if (event.what === "add") {
-            this.addView(event.annotation);
-        }
-        else if (event.what === "remove") {
-            this.removeView(event.annotation);
+        switch(event.what) {
+            case "add":
+                this.addView(event.annotation);
+                break;
+            case "remove":
+                this.removeView(event.annotation);
+                break;
+            case "move":
+                this.updateView(event.annotation);
+                break;
         }
     }
 
@@ -118,6 +120,12 @@ export default class AnnotationsView extends Object3D
         const view = this.findViewByAnnotation(annotation);
         this.object3D.remove(view);
         delete this.views[view.id];
+    }
+
+    protected updateView(annotation: IAnnotation)
+    {
+        const view = this.findViewByAnnotation(annotation);
+        view.update();
     }
 
     protected findViewByAnnotation(annotation: IAnnotation): AnnotationView | null

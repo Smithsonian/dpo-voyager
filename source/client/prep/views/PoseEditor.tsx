@@ -52,11 +52,6 @@ export default class PoseEditor extends React.Component<IPoseEditorProps, {}>
         className: "sv-pose-editor"
     };
 
-    constructor(props: IPoseEditorProps)
-    {
-        super(props);
-    }
-
     render()
     {
         const {

@@ -17,13 +17,13 @@
 
 import { IPublisherEvent } from "@ff/core/Publisher";
 
-import RenderController from "./RenderController";
-import { EViewportLayoutMode } from "../app/ViewportLayout";
+import RenderController from "../../core/components/RenderController";
+import { EViewportLayoutMode } from "../../core/app/ViewportLayout";
 
-import PresentationController, { IPresentationChangeEvent } from "./PresentationController";
+import PresentationController, { IPresentationChangeEvent } from "../../core/components/PresentationController";
 import TransformManip from "./TransformManip";
 
-import Controller, { Actions, Commander } from "./Controller";
+import Controller, { Actions, Commander } from "../../core/components/Controller";
 
 ////////////////////////////////////////////////////////////////////////////////
 

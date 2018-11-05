@@ -30,10 +30,10 @@ import ComponentFactory from "@ff/react/ComponentFactory";
 import MenuBar from "./MenuBar";
 import SideBar from "./SideBar";
 
-import Application from "./Application";
-import ExplorerView from "../core/views/ExplorerView";
+import Application from "../Application";
+import ExplorerView from "../../core/views/ExplorerView";
 import TestEditor from "./TestEditor";
-import HierarchyView from "../core/views/HierarchyView";
+import HierarchyView from "./HierarchyView";
 
 ////////////////////////////////////////////////////////////////////////////////
 

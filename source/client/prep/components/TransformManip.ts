@@ -17,16 +17,16 @@
 
 import * as THREE from "three";
 
-import Object3D from "../components/Object3D";
+import Object3D from "../../core/components/Object3D";
 
-import { TransformControls } from "../three/TransformControls";
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
-import RenderContext, { IRenderable } from "../app/RenderContext";
+import { TransformControls } from "../../core/three/TransformControls";
+import { IViewportPointerEvent, IViewportTriggerEvent } from "../../core/app/Viewport";
+import RenderContext, { IRenderable } from "../../core/app/RenderContext";
 
 import SelectionController, { ISelectComponentEvent } from "./SelectionController";
-import Model from "./Model";
+import Model from "../../core/components/Model";
 
-import Manip from "./Manip";
+import Manip from "../../core/components/Manip";
 
 ////////////////////////////////////////////////////////////////////////////////
 

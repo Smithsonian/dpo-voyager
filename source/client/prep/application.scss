@@ -29,6 +29,9 @@
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// COMPONENTS
+
+////////////////////////////////////////////////////////////////////////////////
 // MENU BAR
 
 $menu-bar-size: 48px;
@@ -82,6 +85,58 @@ $menu-bar-size: 48px;
         display: inline;
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ANNOTATIONS EDITOR
+
+.sv-menu-bar {
+  padding: 4px;
+
+  .ff-control + .ff-control {
+    margin: 0 0 0 4px;
+  }
+
+}
+
+.sv-editor {
+  padding: 4px;
+
+  .ff-control + .ff-control {
+    margin: 4px 0 0 0;
+  }
+}
+
+
+.ff-label {
+  color: $color-text-disabled;
+}
+
+.ff-button.ff-selected {
+  background: $color-secondary;
+}
+
+.ff-line-edit, .ff-text-edit {
+  background: $color-background;
+  color: $color-text;
+}
+
+.sv-annotations-list-view {
+  @include full-size;
+  background: $color-background-darker;
+
+  .sv-item {
+    background: darken($color-background-dark, 4%);
+    border-bottom: 1px solid $color-background;
+    padding: 2px;
+  }
+}
+
+.sv-annotations-detail-view {
+  .ff-text-edit {
+    flex-grow: 1;
+    max-height: 100px;
   }
 }
 

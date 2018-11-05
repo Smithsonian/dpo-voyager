@@ -17,9 +17,11 @@
 
 import { Dictionary } from "@ff/core/types";
 import { IComponentChangeEvent } from "@ff/core/ecs/Component";
+import types from "@ff/core/ecs/propertyTypes";
 
 import { IAnnotation as IAnnotationData, Vector3 } from "common/types/item";
 
+import Model from "./Model";
 import Collection from "./Collection";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +30,7 @@ export { Vector3 };
 
 export interface IAnnotationsChangeEvent extends IComponentChangeEvent<Annotations>
 {
-    what: "add" | "remove",
+    what: "add" | "remove" | "move",
     annotation: IAnnotation;
 }
 
@@ -50,8 +52,17 @@ export default class Annotations extends Collection<IAnnotation>
 {
     static readonly type: string = "Annotations";
 
+    protected model: Model = null;
 
-    createAnnotation(position: Vector3, direction: Vector3, index: number = -1): string
+    create()
+    {
+        super.create();
+
+        this.model = this.getComponent(Model);
+
+    }
+
+    createAnnotation(position: Vector3, direction: Vector3, index: number = -1): IAnnotation
     {
         const annotation = {
             title: "New Annotation",
@@ -65,7 +76,8 @@ export default class Annotations extends Collection<IAnnotation>
             index
         };
 
-        return this.addAnnotation(annotation);
+        this.addAnnotation(annotation);
+        return annotation;
     }
 
     addAnnotation(annotation: IAnnotation): string
@@ -80,6 +92,14 @@ export default class Annotations extends Collection<IAnnotation>
         const annotation = this.remove(id);
         this.emit<IAnnotationsChangeEvent>("change", { what: "remove", annotation });
         return annotation;
+    }
+
+    moveAnnotation(id: string, position: Vector3, direction: Vector3)
+    {
+        const annotation = this.get(id);
+        annotation.position = position;
+        annotation.direction = direction;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "move", annotation });
     }
 
     fromData(data: IAnnotationData[], groupIds: string[], docIds: string[], snapIds: string[])

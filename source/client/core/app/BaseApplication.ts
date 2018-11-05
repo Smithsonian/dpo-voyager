@@ -26,6 +26,7 @@ import { IPresentation, IItem } from "common/types";
 import SystemController from "../components/SystemController";
 import RenderController from "../components/RenderController";
 import PresentationController from "../components/PresentationController";
+import AnnotationsController from "../components/AnnotationsController";
 
 import PickManip from "../components/PickManip";
 import OrbitManip from "../components/OrbitManip";
@@ -67,6 +68,7 @@ export default class BaseApplication
     protected systemController: SystemController;
     readonly renderController: RenderController;
     protected presentationController: PresentationController;
+    protected annotationsController: AnnotationsController;
 
     protected pickManip: PickManip;
     protected orbitManip: OrbitManip;
@@ -104,6 +106,9 @@ export default class BaseApplication
 
         this.presentationController = this.main.createComponent(PresentationController);
         this.presentationController.createActions(this.commander);
+
+        this.annotationsController = this.main.createComponent(AnnotationsController);
+        this.annotationsController.createActions(this.commander);
 
         this.pickManip = this.main.createComponent(PickManip);
         this.renderController.setNextManip(this.pickManip);

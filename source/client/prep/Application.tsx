@@ -22,14 +22,16 @@ import * as ReactDOM from "react-dom";
 
 import DockController from "@ff/react/DockController";
 
-import PrepController from "../core/components/PrepController";
-import SelectionController from "../core/components/SelectionController";
+import PrepController from "./components/PrepController";
+import SelectionController from "./components/SelectionController";
+import AnnotationsEditController from "./components/AnnotationsEditController";
+import ToursEditController from "./components/ToursEditController";
 
-import ViewportCameraManip from "../core/components/ViewportCameraManip";
-import TransformManip from "../core/components/TransformManip";
+import ViewportCameraManip from "./components/ViewportCameraManip";
+import TransformManip from "./components/TransformManip";
 
 import { registerComponents } from "./registerComponents";
-import MainView from "./MainView";
+import MainView from "./views/MainView";
 
 import BaseApplication, { IApplicationProps } from "../core/app/BaseApplication";
 
@@ -43,6 +45,8 @@ export default class PrepApplication extends BaseApplication
     readonly dockableController: DockController;
     readonly selectionController: SelectionController;
     readonly prepController: PrepController;
+    readonly annotationsEditController: AnnotationsEditController;
+    readonly toursEditController: ToursEditController;
 
     protected transformManip: |TransformManip;
     protected viewportCameraManip: ViewportCameraManip;
@@ -59,6 +63,12 @@ export default class PrepApplication extends BaseApplication
 
         this.selectionController = this.main.createComponent(SelectionController);
         this.selectionController.createActions(this.commander);
+
+        this.annotationsEditController = this.main.createComponent(AnnotationsEditController);
+        this.annotationsEditController.createActions(this.commander);
+
+        this.toursEditController = this.main.createComponent(ToursEditController);
+        this.toursEditController.createActions(this.commander);
 
         this.dockableController = new DockController(this.commander);
 

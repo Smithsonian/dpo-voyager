@@ -22,8 +22,8 @@ import System, { ISystemComponentEvent, ISystemEntityEvent } from "@ff/core/ecs/
 import Component, { IComponentChangeEvent } from "@ff/core/ecs/Component";
 import Entity from "@ff/core/ecs/Entity";
 
-import Controller, { Actions, Commander } from "./Controller";
-import PickManip, { IPickManipPickEvent } from "./PickManip";
+import Controller, { Actions, Commander } from "../../core/components/Controller";
+import PickManip, { IPickManipPickEvent } from "../../core/components/PickManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,6 +73,7 @@ export default class SelectionController extends Controller<SelectionController>
 
     update()
     {
+        // notify about change in tree structure
         this.emit<IComponentChangeEvent>("change", { what: "state" });
     }
 
@@ -191,12 +192,16 @@ export default class SelectionController extends Controller<SelectionController>
     protected onComponent(event: ISystemComponentEvent)
     {
         this.expandedIds[event.component.id] = true;
+
+        // set changed flag to provoke call to update()
         this.changed = true;
     }
 
     protected onEntity(event: ISystemEntityEvent)
     {
         this.expandedIds[event.entity.id] = true;
+
+        // set changed flag to provoke call to update()
         this.changed = true;
     }
 

@@ -20,10 +20,11 @@ import * as React from "react";
 import System from "@ff/core/ecs/System";
 import TabContainer, { ITabSelectEvent, TabItem } from "@ff/react/TabContainer";
 
-import PrepController, { EPrepMode, IPrepModeChangeEvent } from "../core/components/PrepController";
+import PrepController, { EPrepMode, IPrepModeChangeEvent } from "../components/PrepController";
 
 import SettingsEditor from "./SettingsEditor";
 import PoseEditor from "./PoseEditor";
+import AnnotationsEditor from "./AnnotationsEditor";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +104,9 @@ export default class SideBar extends React.Component<ISideBarViewProps, {}>
                     faIcon="comment"
                     closable={false}
                     movable={false}>
-                    <div>Annotate</div>
+
+                    <AnnotationsEditor
+                        system={system}/>
                 </TabItem>
 
                 <TabItem

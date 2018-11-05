@@ -17,10 +17,12 @@
 
 import Registry from "@ff/core/ecs/Registry";
 
-import TransformManip from "../core/components/TransformManip";
-import PrepController from "../core/components/PrepController";
-import SelectionController from "../core/components/SelectionController";
-import ViewportCameraManip from "../core/components/ViewportCameraManip";
+import TransformManip from "./components/TransformManip";
+import PrepController from "./components/PrepController";
+import SelectionController from "./components/SelectionController";
+import ViewportCameraManip from "./components/ViewportCameraManip";
+import AnnotationsEditController from "./components/AnnotationsEditController";
+import ToursEditController from "./components/ToursEditController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,6 +32,8 @@ export function registerComponents(registry: Registry)
         TransformManip,
         PrepController,
         SelectionController,
-        ViewportCameraManip
+        ViewportCameraManip,
+        AnnotationsEditController,
+        ToursEditController
     ]);
 }
