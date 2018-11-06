@@ -16,6 +16,6 @@
  */
 
 import "./main.scss";
-import Application from "../prep/Application";
+import Application from "./Application";
 
 window["Voyager"] = Application;

@@ -34,7 +34,6 @@ module.exports = {
 
     entry: {
         "voyager-explorer": path.resolve(sourceDir, "client/explorer/Application.tsx"),
-        "voyager-prep": path.resolve(sourceDir, "client/prep/Application.tsx"),
         "voyager-story": path.resolve(sourceDir, "client/story/Application.tsx"),
         "voyager-inspector": path.resolve(sourceDir, "client/inspector/Application.tsx")
     },

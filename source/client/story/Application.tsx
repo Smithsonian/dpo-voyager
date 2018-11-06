@@ -20,29 +20,74 @@ import "./application.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-//import MainView from "./MainView";
+import DockController from "@ff/react/DockController";
+
+import PrepController from "./components/PrepController";
+import SelectionController from "./components/SelectionController";
+import AnnotationsEditController from "./components/AnnotationsEditController";
+import ToursEditController from "./components/ToursEditController";
+
+import ViewportCameraManip from "./components/ViewportCameraManip";
+import TransformManip from "./components/TransformManip";
+
+import { registerComponents } from "./registerComponents";
+import MainView from "./views/MainView";
+
 import BaseApplication, { IApplicationProps } from "../core/app/BaseApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class StoryApplication extends BaseApplication
+/**
+ * Voyager prep main application.
+ */
+export default class PrepApplication extends BaseApplication
 {
+    readonly dockableController: DockController;
+    readonly selectionController: SelectionController;
+    readonly prepController: PrepController;
+    readonly annotationsEditController: AnnotationsEditController;
+    readonly toursEditController: ToursEditController;
+
+    protected transformManip: |TransformManip;
+    protected viewportCameraManip: ViewportCameraManip;
+
     constructor(props: IApplicationProps)
     {
-        console.log("Voyager Story");
+        console.log("Voyager Prep");
 
         super();
+        registerComponents(this.registry);
+
+        this.prepController = this.main.createComponent(PrepController);
+        this.prepController.createActions(this.commander);
+
+        this.selectionController = this.main.createComponent(SelectionController);
+        this.selectionController.createActions(this.commander);
+
+        this.annotationsEditController = this.main.createComponent(AnnotationsEditController);
+        this.annotationsEditController.createActions(this.commander);
+
+        this.toursEditController = this.main.createComponent(ToursEditController);
+        this.toursEditController.createActions(this.commander);
+
+        this.dockableController = new DockController(this.commander);
+
+        this.transformManip = this.main.createComponent(TransformManip);
+        this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
+
+        this.pickManip.next.component = this.transformManip;
+        this.transformManip.next.component = this.orbitManip;
+        this.orbitManip.next.component = this.viewportCameraManip;
 
         this.start();
         this.parseArguments(props);
 
         ReactDOM.render(
-            <div>
-                Voyager Story Application
-            </div>,
+            <MainView
+                application={this} />,
             props.element
         );
     }
 }
 
-window["Voyager"] = StoryApplication;
+window["Voyager"] = PrepApplication;

@@ -18,10 +18,180 @@
 @import "../core/styles/voyager";
 
 ////////////////////////////////////////////////////////////////////////////////
-// MARKDOWN-EDITOR
 
-.sv-markdown-editor {
+.sv-main-view {
   @include full-size;
-  color: black;
-  background-color: white;
+
+  .ff-dock-view {
+    @include full-size;
+    border-top: 10px solid $color-background-darker;
+  }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// COMPONENTS
+
+////////////////////////////////////////////////////////////////////////////////
+// MENU BAR
+
+$menu-bar-size: 48px;
+
+.sv-menu-bar {
+  background: $color-background-dark;
+
+  .sv-logo {
+    height: 32px;
+    margin: 8px 8px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SIDE BAR
+
+.sv-side-bar {
+
+  .ff-tab-header-item {
+    padding: 6px 10px;
+    .ff-icon {
+      font-size: 20px;
+    }
+  }
+
+  .sv-pose-editor {
+
+    & > label {
+      display: block;
+      padding-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .sv-slider, .sv-switch {
+      padding-bottom: 3px;
+      line-height: 1.4rem;
+
+      & > .ff-label {
+        flex-shrink: 0;
+        width: 33%;
+        padding-left: 12px;
+      }
+
+      .ff-checkbox {
+        margin: 0;
+      }
+    }
+
+    .ff-selection-group {
+      .ff-checkbox {
+        display: inline;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ANNOTATIONS EDITOR
+
+.sv-menu-bar {
+  padding: 4px;
+
+  .ff-control + .ff-control {
+    margin: 0 0 0 4px;
+  }
+
+}
+
+.sv-editor {
+  padding: 4px;
+
+  .ff-control + .ff-control {
+    margin: 4px 0 0 0;
+  }
+}
+
+
+.ff-label {
+  color: $color-text-disabled;
+}
+
+.ff-button.ff-selected {
+  background: $color-secondary;
+}
+
+.ff-line-edit, .ff-text-edit {
+  background: $color-background;
+  color: $color-text;
+}
+
+.sv-annotations-list-view {
+  @include full-size;
+  background: $color-background-darker;
+
+  .sv-item {
+    background: darken($color-background-dark, 4%);
+    border-bottom: 1px solid $color-background;
+    padding: 2px;
+  }
+}
+
+.sv-annotations-detail-view {
+  .ff-text-edit {
+    flex-grow: 1;
+    max-height: 100px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HIERARCHY TREE VIEW
+
+.ff-tree {
+  .ff-node {
+    margin-left: -500px;
+    border-top: 1px solid $color-background;
+
+    .ff-content {
+      margin-left: 500px;
+
+      &.ff-expanded .sv-header {
+        @include triangle($color-icon, 3px, 180deg);
+      }
+      &.ff-collapsed .sv-header {
+        @include triangle($color-icon, 3px, 90deg);
+      }
+      &.ff-leaf .sv-header {
+        @include dot($color-icon-disabled, 3px, 6px, 0.6em);
+      }
+
+      .sv-header {
+        position: relative;
+        cursor: pointer;
+        padding: 2px 0 2px 14px;
+      }
+      .ff-children {
+        margin-left: 12px;
+      }
+
+      &.sv-entity {
+        font-weight: bold;
+        background: darken($color-background-dark, 4%);
+
+        & > .ff-children {
+          margin-left: 8px;
+        }
+      }
+
+      &.sv-component {
+        font-weight: normal;
+        background: $color-background-dark;
+
+        & > .ff-children {
+          margin-left: 12px;
+        }
+      }
+
+      &.ff-selected {
+        background: $color-secondary;
+      }
+    }
+  }
+}
+
