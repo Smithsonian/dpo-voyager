@@ -18,7 +18,7 @@
 import Component, { ComponentLink } from "@ff/core/ecs/Component";
 
 import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
-import { IViewportManip } from "../app/ViewportLayout";
+import { IViewportManip } from "../app/ViewportManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 

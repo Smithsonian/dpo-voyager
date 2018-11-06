@@ -18,13 +18,13 @@
 import * as THREE from "three";
 
 import { Dictionary } from "@ff/core/types";
-import Publisher, { IPublisherEvent } from "@ff/core/Publisher";
-import System, { ISystemComponentEvent } from "@ff/core/ecs/System";
+import { IPublisherEvent } from "@ff/core/Publisher";
+import { ISystemComponentEvent } from "@ff/core/ecs/System";
 
 import Object3D, { IObject3DObjectEvent } from "../components/Object3D";
 
 import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
-import { IViewportManip } from "../app/ViewportLayout";
+import { IViewportManip } from "../app/ViewportManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +63,7 @@ export default class PickManip extends Manip implements IViewportManip
     constructor(id?: string)
     {
         super(id);
-        this.addEvents("down", "up");
+        this.addEvents("down", "up", "pick");
     }
 
     create()
@@ -96,35 +96,50 @@ export default class PickManip extends Manip implements IViewportManip
 
                 const pickResults = this.pick(event.deviceX, event.deviceY, camera);
                 const pick = this.activePick = pickResults[0];
-
-                this.emit<IPickManipPickEvent>("down", {
-                    pointerEvent: event,
-                    component: pick ? pick.component : null,
-                    object: pick ? pick.object : null,
-                    point: pick ? pick.point : null,
-                    normal: pick ? pick.normal : null
-                });
+                this.emitPickEvent("down", event, pick);
             }
             else if (event.type === "up") {
+                this.emitPickEvent("up", event, this.activePick);
+
                 const dx = event.centerX - this.startX;
                 const dy = event.centerY - this.startY;
 
                 if (Math.abs(dx) + Math.abs(dy) < 3) {
-                    const pick = this.activePick;
-                    this.emit<IPickManipPickEvent>("up", {
-                        pointerEvent: event,
-                        component: pick ? pick.component : null,
-                        object: pick ? pick.object : null,
-                        point: pick ? pick.point : null,
-                        normal: pick ? pick.normal : null
-                    });
+                    this.emitPickEvent("pick", event, this.activePick);
                 }
+
+                this.activePick = null;
             }
         }
 
         return super.onPointer(event);
     }
 
+    /**
+     * Emits an event with pick results.
+     * @param {string} name Name of the event, one of "down", "up", and "pick".
+     * @param {IViewportPointerEvent} event
+     * @param {IPickResult} pick
+     */
+    protected emitPickEvent(name: string, event: IViewportPointerEvent, pick: IPickResult)
+    {
+        this.emit<IPickManipPickEvent>(name, {
+            pointerEvent: event,
+            component: pick ? pick.component : null,
+            object: pick ? pick.object : null,
+            point: pick ? pick.point : null,
+            normal: pick ? pick.normal : null
+        });
+    }
+
+    /**
+     * Performs a picking operation, searching for all components containing
+     * Three.js Object3Ds intersected by the pick ray.
+     * @param {number} deviceX X position in normalized device coordinates (NDC).
+     * @param {number} deviceY Y position in normalized device coordinates (NDC).
+     * @param {Camera} camera The camera used to render the pick view.
+     * @returns {IPickResult[]} Array of pick results containing information about the intersected objects.
+     */
     protected pick(deviceX: number, deviceY: number, camera: THREE.Camera): IPickResult[]
     {
         if (!this.root) {
@@ -156,7 +171,7 @@ export default class PickManip extends Manip implements IViewportManip
                     component,
                     object: intersect.object,
                     point: intersect.point,
-                    normal: intersect.face.normal
+                    normal: intersect.face ? intersect.face.normal : new THREE.Vector3(0, 0, -1)
                 });
             }
         });
@@ -164,6 +179,11 @@ export default class PickManip extends Manip implements IViewportManip
         return pickResults;
     }
 
+    /**
+     * Called whenever an Object3D component is added or removed.
+     * Subscribes to object change events of Object3D components.
+     * @param {ISystemComponentEvent<Object3D>} event
+     */
     protected onObject3D(event: ISystemComponentEvent<Object3D>)
     {
         const component = event.component;
@@ -180,6 +200,11 @@ export default class PickManip extends Manip implements IViewportManip
         }
     }
 
+    /**
+     * Called whenever the Three.js Object3D of an Object3D component changes.
+     * Maintains a dictionary of Object3D components as pickable targets.
+     * @param {IObject3DObjectEvent} event
+     */
     protected onObject3DObject(event: IObject3DObjectEvent)
     {
         if (event.current) {

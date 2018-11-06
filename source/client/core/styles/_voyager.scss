@@ -68,6 +68,59 @@ html {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ANNOTATIONS
+
+#sv-annotations {
+  @include full-size;
+  overflow: hidden;
+}
+
+.sv-annotation {
+  position: absolute;
+  max-width: 17%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  background: transparentize(black, 0.4);
+  cursor: pointer;
+
+  &.sv-q0 {
+    transform: translate(0, -100%);
+    border-bottom: 1px solid #009cde;
+    text-align: left;
+  }
+  &.sv-q1 {
+    transform: translate(-100%, -100%);
+    border-bottom: 1px solid #009cde;
+    text-align: right;
+  }
+  &.sv-q2 {
+    transform: translate(-100%, 0);
+    border-top: 1px solid #009cde;
+    text-align: right;
+  }
+  &.sv-q3 {
+    transform: translate(0, 0);
+    border-top: 1px solid #009cde;
+    text-align: left;
+  }
+
+
+  .sv-text {
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 0 0 3px 0;
+  }
+
+  .sv-description {
+    font-size: 0.85rem;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RESPONSIVENESS
 
 @media (max-width: 320px) {
@@ -95,11 +148,25 @@ html {
     @include full-size;
   }
 
+  .sv-logo {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    max-width: 200px;
+    min-width: 160px;
+    width: 18%;
+  }
+}
+
+.sv-explorer-overlay-view {
+  pointer-events: none;
+
   .sv-popup-menu-bar {
     margin: 4px;
   }
 
   .ff-popup-button {
+    pointer-events: auto;
     box-sizing: border-box;
     width: 44px;
     height: 44px;
@@ -115,15 +182,6 @@ html {
       outline: none;
       color: $color-text-explorer;
     }
-  }
-
-  .sv-logo {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    max-width: 200px;
-    min-width: 160px;
-    width: 18%;
   }
 }
 

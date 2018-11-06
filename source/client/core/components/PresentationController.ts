@@ -18,7 +18,7 @@
 import resolvePathname from "resolve-pathname";
 
 import { IPublisherEvent } from "@ff/core/Publisher";
-import Component, { ComponentType } from "@ff/core/ecs/Component";
+import Component, { ComponentOrType, ComponentType } from "@ff/core/ecs/Component";
 
 import { IPresentation, IItem } from "common/types";
 import * as template from "../templates/presentation.json";
@@ -32,6 +32,7 @@ import Presentation from "../app/Presentation";
 import Item from "../app/Item";
 
 import Controller, { Actions, Commander } from "./Controller";
+import Entity from "@ff/core/ecs/Entity";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,6 +78,33 @@ export default class PresentationController extends Controller<PresentationContr
     get activePresentation(): Presentation
     {
         return this.presentation;
+    }
+
+    forEachItem(callback: (item: Item, index: number) => void)
+    {
+        if (this.activePresentation) {
+            this.activePresentation.forEachItem(callback);
+        }
+    }
+
+    forEachComponent<T extends Component>
+        (componentOrType: ComponentOrType<T>, callback: (component: T) => void)
+    {
+        if (this.activePresentation) {
+            this.activePresentation.forEachComponent(componentOrType, callback);
+        }
+    }
+
+    getItemByEntity(entity: Entity): Item | null
+    {
+        for (let i = 0, n = this.presentations.length; i < n; ++i) {
+            const item = this.presentations[i].getItemByEntity(entity);
+            if (item) {
+                return item;
+            }
+        }
+
+        return null;
     }
 
     loadModel(modelUrl: string, quality?: EDerivativeQuality): Promise<void>

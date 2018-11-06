@@ -23,6 +23,7 @@ import Model from "../../core/components/Model";
 import Annotations, { IAnnotation, Vector3 } from "../../core/components/Annotations";
 
 import PickManip, { IPickManipPickEvent } from "../../core/components/PickManip";
+import PrepController, { EPrepMode, IPrepModeChangeEvent } from "./PrepController";
 import AnnotationsController, { ISelectAnnotationEvent } from "../../core/components/AnnotationsController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
@@ -36,7 +37,7 @@ const _dir = new THREE.Vector3();
 
 export { IAnnotation };
 
-export enum AnnotationsEditMode { Off, Select, Create, Move }
+export enum EAnnotationsEditMode { Off, Select, Create, Move }
 
 export interface IAnnotationsChangeEvent extends IComponentChangeEvent<AnnotationsEditController>
 {
@@ -50,11 +51,13 @@ export type AnnotationsEditActions = Actions<AnnotationsEditController>;
 export default class AnnotationsEditController extends Controller<AnnotationsEditController>
 {
     static readonly type: string = "AnnotationsEditController";
+    static readonly isSystemSingleton: boolean = true;
 
     actions: AnnotationsEditActions = null;
 
-    protected mode: AnnotationsEditMode = AnnotationsEditMode.Off;
+    protected mode: EAnnotationsEditMode = EAnnotationsEditMode.Off;
 
+    protected prepController: PrepController = null;
     protected annotationsController: AnnotationsController = null;
     protected pickManip: PickManip = null;
 
@@ -71,38 +74,51 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
     {
         super.create();
 
+        this.prepController = this.getComponent(PrepController);
+        this.prepController.on("mode", this.onPrepMode, this);
+
         this.annotationsController = this.getComponent(AnnotationsController);
         this.annotationsController.on("select", this.onSelectAnnotation, this);
 
         this.pickManip = this.getComponent(PickManip, true);
-        this.pickManip.on("down", this.onPick, this);
+        this.pickManip.on("pick", this.onPick, this);
     }
 
     dispose()
     {
+        this.prepController.off("mode", this.onPrepMode, this);
         this.annotationsController.off("select", this.onSelectAnnotation, this);
-        this.pickManip.off("down", this.onPick, this);
+        this.pickManip.off("pick", this.onPick, this);
     }
 
     createActions(commander: Commander)
     {
         const actions = {
+            selectAnnotation: commander.register({
+                name: "Select Annotation", do: this.selectAnnotation, target: this
+            }),
             createAnnotation: commander.register({
                 name: "Create Annotation", do: this.createAnnotation, target: this
             }),
             moveAnnotation: commander.register({
                 name: "Move Annotation", do: this.moveAnnotation, target: this
-            })
+            }),
+            setTitle: commander.register({
+                name: "Set Annotation Title", do: this.setTitle, target: this
+            }),
+            setDescription: commander.register({
+                name: "Set Annotation Description", do: this.setDescription, target: this
+            }),
         };
 
         this.actions = actions;
         return actions;
     }
 
-    setMode(mode: AnnotationsEditMode)
+    setMode(mode: EAnnotationsEditMode)
     {
         this.mode = mode;
-        console.log("AnnotationsEditController.setMode - ", AnnotationsEditMode[mode]);
+        console.log("AnnotationsEditController.setMode - ", EAnnotationsEditMode[mode]);
     }
 
     getActiveAnnotations()
@@ -115,10 +131,15 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
         return this.selectedAnnotation;
     }
 
+    protected selectAnnotation(annotations: Annotations, annotation: IAnnotation)
+    {
+        this.annotationsController.selectAnnotation(annotations, annotation);
+    }
+
     protected createAnnotation(position: Vector3, direction: Vector3)
     {
         const annotation = this.activeAnnotations.createAnnotation(position, direction);
-        this.annotationsController.actions.select(this.activeAnnotations, annotation);
+        this.annotationsController.selectAnnotation(this.activeAnnotations, annotation);
     }
 
     protected removeAnnotation()
@@ -141,17 +162,39 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
         }
     }
 
-    protected setContent(title: string, description: string)
+    protected setTitle(title: string)
     {
         const annotation = this.selectedAnnotation;
 
         if (annotation) {
-            annotation.title = title;
-            annotation.description = description;
+            this.activeAnnotations.setAnnotationTitle(annotation.id, title);
 
             this.emit<IAnnotationsChangeEvent>("change", {
                 what: "set", annotations: this.activeAnnotations, annotation
             });
+        }
+    }
+
+    protected setDescription(description: string)
+    {
+        const annotation = this.selectedAnnotation;
+
+        if (annotation) {
+            this.activeAnnotations.setAnnotationDescription(annotation.id, description);
+
+            this.emit<IAnnotationsChangeEvent>("change", {
+                what: "set", annotations: this.activeAnnotations, annotation
+            });
+        }
+    }
+
+    protected onPrepMode(event: IPrepModeChangeEvent)
+    {
+        if (event.mode === EPrepMode.Annotate) {
+            this.setMode(EAnnotationsEditMode.Select);
+        }
+        else {
+            this.setMode(EAnnotationsEditMode.Off);
         }
     }
 
@@ -171,13 +214,13 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
             });
 
             // if in move mode and target model/annotation set has changed, abort
-            if (this.mode === AnnotationsEditMode.Move) {
+            if (this.mode === EAnnotationsEditMode.Move) {
                 return;
             }
         }
 
         // early abort if no active model/annotation set or edit mode is off
-        if (!this.activeAnnotations || this.mode === AnnotationsEditMode.Off) {
+        if (!this.activeAnnotations || this.mode === EAnnotationsEditMode.Off) {
             return;
         }
 
@@ -197,11 +240,11 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
 
             // perform action depending on current edit mode
             switch(this.mode) {
-                case AnnotationsEditMode.Create:
+                case EAnnotationsEditMode.Create:
                     this.actions.createAnnotation(_pos.toArray(), _dir.toArray());
                     break;
 
-                case AnnotationsEditMode.Move:
+                case EAnnotationsEditMode.Move:
                     this.actions.moveAnnotation(_pos.toArray(), _dir.toArray());
                     break;
             }
@@ -211,16 +254,17 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
     protected onSelectAnnotation(event: ISelectAnnotationEvent)
     {
         switch(this.mode) {
-            case AnnotationsEditMode.Select:
-                this.activeAnnotations = event.annotations;
-                this.selectedAnnotation = event.annotation;
-                break;
-
-            case AnnotationsEditMode.Move:
+            case EAnnotationsEditMode.Create:
+            case EAnnotationsEditMode.Move:
                 if (event.annotation) {
                     this.activeAnnotations = event.annotations;
                     this.selectedAnnotation = event.annotation;
                 }
+                break;
+
+            case EAnnotationsEditMode.Select:
+                this.activeAnnotations = event.annotations;
+                this.selectedAnnotation = event.annotation;
                 break;
         }
 

@@ -18,7 +18,10 @@
 import * as React from "react";
 
 import FlexContainer from "@ff/react/FlexContainer";
-import FLexItem from "@ff/react/FlexItem";
+import FlexSpacer from "@ff/react/FlexSpacer";
+import Button from "@ff/react/Button";
+
+import PrepController from "../components/PrepController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,13 +29,10 @@ import FLexItem from "@ff/react/FlexItem";
 export interface IMenuBarProps
 {
     className?: string;
+    controller: PrepController;
 }
 
-interface IMenuBarState
-{
-}
-
-export default class MenuBar extends React.Component<IMenuBarProps, IMenuBarState>
+export default class MenuBar extends React.Component<IMenuBarProps, {}>
 {
     static readonly defaultProps: Partial<IMenuBarProps> = {
         className: "sv-menu-bar"
@@ -42,8 +42,8 @@ export default class MenuBar extends React.Component<IMenuBarProps, IMenuBarStat
     {
         super(props);
 
-        this.state = {
-        };
+        this.onTapItem = this.onTapItem.bind(this);
+        this.onTapPresentation = this.onTapPresentation.bind(this);
     }
 
     render()
@@ -51,7 +51,6 @@ export default class MenuBar extends React.Component<IMenuBarProps, IMenuBarStat
         const {
             className,
         } = this.props;
-
 
         return (
             <FlexContainer
@@ -61,11 +60,33 @@ export default class MenuBar extends React.Component<IMenuBarProps, IMenuBarStat
                 grow={0}
                 alignItems="center">
 
-                <img className="sv-logo" src="/images/voyager-75grey.svg"/>
+                <img
+                    className="sv-logo"
+                    src="/images/voyager-75grey.svg"/>
 
-                <FLexItem/>
+                <FlexSpacer/>
+
+                <Button
+                    text="Item"
+                    faIcon="file-download"
+                    onTap={this.onTapItem}/>
+
+                <Button
+                    text="Presentation"
+                    faIcon="file-download"
+                    onTap={this.onTapPresentation}/>
 
             </FlexContainer>
         );
+    }
+
+    protected onTapItem()
+    {
+        this.props.controller.actions.downloadItem();
+    }
+
+    protected onTapPresentation()
+    {
+        this.props.controller.actions.downloadPresentation();
     }
 }

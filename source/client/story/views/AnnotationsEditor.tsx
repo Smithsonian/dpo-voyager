@@ -27,7 +27,7 @@ import Button from "@ff/react/Button";
 import AnnotationsListView from "./AnnotationsListView";
 import AnnotationsDetailView from "./AnnotationsDetailView";
 import SelectionGroup, { ISelectionGroupSelectEvent } from "@ff/react/SelectionGroup";
-import AnnotationsEditController, { AnnotationsEditMode } from "../components/AnnotationsEditController";
+import AnnotationsEditController, { EAnnotationsEditMode } from "../components/AnnotationsEditController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +41,7 @@ export interface IAnnotationsEditorProps
 export default class AnnotationsEditor extends React.Component<IAnnotationsEditorProps, {}>
 {
     static readonly defaultProps = {
-        className: "sv-sidebar-editor"
+        className: "sv-editor sv-annotations-editor"
     };
 
     protected controller: AnnotationsEditController = null;
@@ -87,11 +87,13 @@ export default class AnnotationsEditor extends React.Component<IAnnotationsEdito
                         onSelect={this.onSelectMode}>
 
                         <Button
-                            index={AnnotationsEditMode.Create}
-                            text="Create"/>
+                            index={EAnnotationsEditMode.Create}
+                            text="Create"
+                            faIcon="plus"/>
                         <Button
-                            index={AnnotationsEditMode.Move}
-                            text="Move"/>
+                            index={EAnnotationsEditMode.Move}
+                            text="Move"
+                            faIcon="arrows-alt"/>
                     </SelectionGroup>
 
                 </FlexContainer>
@@ -124,9 +126,9 @@ export default class AnnotationsEditor extends React.Component<IAnnotationsEdito
 
     protected onSelectMode(event: ISelectionGroupSelectEvent)
     {
-        let mode = event.selectionIndex as AnnotationsEditMode;
+        let mode = event.selectionIndex as EAnnotationsEditMode;
         if (mode === -1) {
-            mode = AnnotationsEditMode.Select;
+            mode = EAnnotationsEditMode.Select;
         }
 
         this.controller.setMode(mode);

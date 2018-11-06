@@ -16,10 +16,12 @@
  */
 
 import { IPublisherEvent } from "@ff/core/ecs/Component";
+import types from "@ff/core/ecs/propertyTypes";
 
+import PresentationController, { IPresentationChangeEvent } from "./PresentationController";
 import Annotations, { IAnnotation, Vector3 } from "./Annotations";
-
 import Controller, { Actions, Commander } from "./Controller";
+import AnnotationsView from "./AnnotationsView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +37,13 @@ export default class AnnotationsController extends Controller<AnnotationsControl
 {
     static readonly type: string = "AnnotationsController";
 
+    ins = this.makeProps({
+        enabled: types.Boolean("Enabled", true)
+    });
+
     actions: AnnotationsActions;
+
+    protected presentationController: PresentationController = null;
 
     protected activeAnnotations: Annotations = null;
     protected selectedAnnotation: IAnnotation = null;
@@ -49,13 +57,30 @@ export default class AnnotationsController extends Controller<AnnotationsControl
     create()
     {
         super.create();
+        this.presentationController = this.getComponent(PresentationController);
+        this.presentationController.on("presentation", this.onPresentationChange, this);
+    }
+
+    dispose()
+    {
+        this.presentationController.off("presentation", this.onPresentationChange, this);
+    }
+
+    update()
+    {
+        const enabled = this.ins.enabled;
+        if (enabled.changed) {
+            this.presentationController.forEachComponent(AnnotationsView, component => {
+                component.setVisible(enabled.value);
+            });
+        }
     }
 
     createActions(commander: Commander)
     {
         const actions = {
-            select: commander.register({
-                name: "Select Annotation", do: this.select, target: this
+            selectAnnotation: commander.register({
+                name: "Select Annotation", do: this.selectAnnotation, target: this
             })
         };
 
@@ -68,12 +93,17 @@ export default class AnnotationsController extends Controller<AnnotationsControl
         return this.selectedAnnotation;
     }
 
-    protected select(annotations: Annotations, annotation: IAnnotation)
+    selectAnnotation(annotations: Annotations, annotation: IAnnotation)
     {
         if (annotation !== this.selectedAnnotation) {
             this.activeAnnotations = annotations;
             this.selectedAnnotation = annotation;
             this.emit<ISelectAnnotationEvent>("select", { annotations, annotation });
         }
+    }
+
+    protected onPresentationChange(event: IPresentationChangeEvent)
+    {
+
     }
 }

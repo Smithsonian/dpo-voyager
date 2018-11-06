@@ -22,8 +22,9 @@ import System, { ISystemComponentEvent, ISystemEntityEvent } from "@ff/core/ecs/
 import Component, { IComponentChangeEvent } from "@ff/core/ecs/Component";
 import Entity from "@ff/core/ecs/Entity";
 
-import Controller, { Actions, Commander } from "../../core/components/Controller";
 import PickManip, { IPickManipPickEvent } from "../../core/components/PickManip";
+
+import Controller, { Actions, Commander } from "../../core/components/Controller";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +49,7 @@ type ECS = Component | Entity | System;
 export default class SelectionController extends Controller<SelectionController>
 {
     static readonly type: string = "SelectionController";
+    static readonly isSystemSingleton: boolean = true;
 
     actions: SelectionActions;
 
@@ -128,6 +130,16 @@ export default class SelectionController extends Controller<SelectionController>
 
         this.expandedIds[item.id] = !this.expandedIds[item.id];
         this.emit("change");
+    }
+
+    getSelectedComponents(): Readonly<Component[]>
+    {
+        return this.selectedComponents;
+    }
+
+    getSelectedEntities(): Readonly<Entity[]>
+    {
+        return this.selectedEntities;
     }
 
     protected select(item: ECS, multi: boolean)

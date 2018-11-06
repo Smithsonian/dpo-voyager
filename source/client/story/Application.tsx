@@ -26,9 +26,9 @@ import PrepController from "./components/PrepController";
 import SelectionController from "./components/SelectionController";
 import AnnotationsEditController from "./components/AnnotationsEditController";
 import ToursEditController from "./components/ToursEditController";
+import PoseController from "./components/PoseController";
 
 import ViewportCameraManip from "./components/ViewportCameraManip";
-import TransformManip from "./components/TransformManip";
 
 import { registerComponents } from "./registerComponents";
 import MainView from "./views/MainView";
@@ -47,22 +47,22 @@ export default class PrepApplication extends BaseApplication
     readonly prepController: PrepController;
     readonly annotationsEditController: AnnotationsEditController;
     readonly toursEditController: ToursEditController;
+    readonly poseController: PoseController;
 
-    protected transformManip: |TransformManip;
     protected viewportCameraManip: ViewportCameraManip;
 
     constructor(props: IApplicationProps)
     {
-        console.log("Voyager Prep");
+        console.log("Voyager Story");
 
         super();
         registerComponents(this.registry);
 
-        this.prepController = this.main.createComponent(PrepController);
-        this.prepController.createActions(this.commander);
-
         this.selectionController = this.main.createComponent(SelectionController);
         this.selectionController.createActions(this.commander);
+
+        this.prepController = this.main.createComponent(PrepController);
+        this.prepController.createActions(this.commander);
 
         this.annotationsEditController = this.main.createComponent(AnnotationsEditController);
         this.annotationsEditController.createActions(this.commander);
@@ -70,13 +70,14 @@ export default class PrepApplication extends BaseApplication
         this.toursEditController = this.main.createComponent(ToursEditController);
         this.toursEditController.createActions(this.commander);
 
+        this.poseController = this.main.createComponent(PoseController);
+        this.poseController.createActions(this.commander);
+
         this.dockableController = new DockController(this.commander);
 
-        this.transformManip = this.main.createComponent(TransformManip);
         this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
 
-        this.pickManip.next.component = this.transformManip;
-        this.transformManip.next.component = this.orbitManip;
+        this.pickManip.next.component = this.orbitManip;
         this.orbitManip.next.component = this.viewportCameraManip;
 
         this.start();

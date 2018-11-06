@@ -133,7 +133,8 @@ export default class MainView extends React.Component<IMainViewProps, {}>
                 position="fill"
                 direction="vertical">
 
-                <MenuBar />
+                <MenuBar
+                    controller={application.prepController}/>
 
                 <FlexItem>
                     <SplitterContainer

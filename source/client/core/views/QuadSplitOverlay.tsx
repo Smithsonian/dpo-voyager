@@ -20,15 +20,13 @@ import * as React from "react";
 import { IComponentProps, IComponentEvent } from "@ff/react/common";
 import { ISplitterContainerResizeEvent, SplitterContainer, SplitterSection } from "@ff/react/Splitter";
 
-import { EViewportLayoutMode } from "../app/ViewportLayout";
+import { EViewportLayout } from "../app/ViewportManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-
 export interface IQuadSplitOverlayChangeEvent extends IComponentEvent<QuadSplitOverlay>
 {
-    mode: EViewportLayoutMode;
+    layout: EViewportLayout;
     horizontalSplit: number;
     verticalSplit: number;
     isDragging: boolean;
@@ -37,7 +35,7 @@ export interface IQuadSplitOverlayChangeEvent extends IComponentEvent<QuadSplitO
 /** Properties for [[QuadSplitOverlay]] component. */
 export interface IQuadSplitOverlayProps extends IComponentProps
 {
-    mode?: EViewportLayoutMode;
+    layout?: EViewportLayout;
     horizontalSplit?: number;
     verticalSplit?: number;
     onChange?: (event: IQuadSplitOverlayChangeEvent) => void;
@@ -47,7 +45,7 @@ export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayP
 {
     static readonly defaultProps: IQuadSplitOverlayProps = {
         className: "sv-quad-split-overlay",
-        mode: EViewportLayoutMode.Single,
+        layout: EViewportLayout.Single,
         horizontalSplit: 0.5,
         verticalSplit: 0.5
     };
@@ -70,13 +68,13 @@ export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayP
     {
         const {
             className,
-            mode,
+            layout,
             horizontalSplit,
             verticalSplit
         } = this.props;
 
-        const splitHorizontal = mode === EViewportLayoutMode.HorizontalSplit || mode === EViewportLayoutMode.Quad;
-        const splitVertical = mode === EViewportLayoutMode.VerticalSplit || mode === EViewportLayoutMode.Quad;
+        const splitHorizontal = layout === EViewportLayout.HorizontalSplit || layout === EViewportLayout.Quad;
+        const splitVertical = layout === EViewportLayout.VerticalSplit || layout === EViewportLayout.Quad;
 
         return (
             <div
@@ -124,12 +122,12 @@ export default class QuadSplitOverlay extends React.Component<IQuadSplitOverlayP
 
     protected emitChange(isDragging: boolean)
     {
-        const { id, index, mode, onChange } = this.props;
+        const { id, index, layout, onChange } = this.props;
         if (onChange) {
             onChange({
                 id,
                 index,
-                mode,
+                layout: layout,
                 horizontalSplit: this.horizontalSplit,
                 verticalSplit: this.verticalSplit,
                 isDragging,

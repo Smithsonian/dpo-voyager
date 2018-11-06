@@ -36,7 +36,7 @@ export interface IExplorerMenuOverlayProps
 export default class ExplorerOverlayView extends React.Component<IExplorerMenuOverlayProps, {}>
 {
     static readonly defaultProps = {
-        className: "explorer-overlay-view"
+        className: "sv-explorer-overlay-view"
     };
 
     constructor(props: IExplorerMenuOverlayProps)

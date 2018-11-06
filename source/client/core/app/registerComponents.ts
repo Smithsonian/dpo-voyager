@@ -17,14 +17,19 @@
 
 import Registry from "@ff/core/ecs/Registry";
 
+import Controller from "../components/Controller";
+import PresentationController from "../components/PresentationController";
+import ViewportController from "../components/ViewportController";
+import SystemController from "../components/SystemController";
+import AnnotationsController from "../components/AnnotationsController";
+import ToursController from "../components/ToursController";
+
 import Annotations from "../components/Annotations";
 import AnnotationsView from "../components/AnnotationsView";
 import Camera from "../components/Camera";
 import Collection from "../components/Collection";
-import Controller from "../components/Controller";
 import DirectionalLight from "../components/DirectionalLight";
 import Documents from "../components/Documents";
-import PresentationController from "../components/PresentationController";
 import Groups from "../components/Groups";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 import HomeGrid from "../components/HomeGrid";
@@ -41,12 +46,10 @@ import PoseManip from "../components/PoseManip";
 import Process from "../components/Process";
 import Reader from "../components/Reader";
 import Reference from "../components/Reference";
-import RenderController from "../components/RenderController";
 import Renderer from "../components/Renderer";
 import Scene from "../components/Scene";
 import Snapshots from "../components/Snapshots";
 import SpotLight from "../components/SpotLight";
-import SystemController from "../components/SystemController";
 import Tours from "../components/Tours";
 import Transform from "../components/Transform";
 
@@ -56,6 +59,7 @@ export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
         Annotations,
+        AnnotationsController,
         AnnotationsView,
         Camera,
         Collection,
@@ -79,13 +83,14 @@ export function registerComponents(registry: Registry)
         Process,
         Reader,
         Reference,
-        RenderController,
+        ViewportController,
         Renderer,
         Scene,
         Snapshots,
         SpotLight,
         SystemController,
         Tours,
+        ToursController,
         Transform
     ]);
 }

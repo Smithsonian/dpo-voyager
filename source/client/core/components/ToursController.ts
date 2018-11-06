@@ -15,22 +15,26 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import Viewport from "./Viewport";
+import Controller, { Actions, Commander } from "./Controller";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class RenderContext
-{
-    viewport: Viewport = null;
-    camera: THREE.Camera = null;
-    scene: THREE.Scene = null;
+export type ToursActions = Actions<ToursController>;
 
-    set(viewport: Viewport, camera: THREE.Camera, scene: THREE.Scene)
+export default class ToursController extends Controller<ToursController>
+{
+    static readonly type: string = "ToursController";
+    static readonly isSystemSingleton: boolean = true;
+
+    actions: ToursActions = null;
+
+    createActions(commander: Commander)
     {
-        this.viewport = viewport;
-        this.camera = camera;
-        this.scene = scene;
+        const actions = {
+
+        };
+
+        this.actions = actions;
+        return actions;
     }
 }

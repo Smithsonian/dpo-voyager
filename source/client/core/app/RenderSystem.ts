@@ -16,35 +16,59 @@
  */
 
 import System from "@ff/core/ecs/System";
+import Component from "@ff/core/ecs/Component";
 
-import RenderContext, { IRenderable } from "./RenderContext";
+import RenderContext from "./RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export interface IRenderable extends Component
+{
+    preRender?: (context: RenderContext) => void;
+    postRender?: (context: RenderContext) => void;
+}
+
 export default class RenderSystem extends System
 {
-    protected renderables: IRenderable[] = [];
+    protected preRenderList: IRenderable[] = [];
+    protected postRenderList: IRenderable[] = [];
 
-    render(context: RenderContext)
+    preRender(context: RenderContext)
     {
-        const renderables = this.renderables;
+        const renderables = this.preRenderList;
         for (let i = 0, n = renderables.length; i < n; ++i) {
-            renderables[i].render(context);
+            renderables[i].preRender(context);
+        }
+    }
+
+    postRender(context: RenderContext)
+    {
+        const renderables = this.postRenderList;
+        for (let i = 0, n = renderables.length; i < n; ++i) {
+            renderables[i].postRender(context);
         }
     }
 
     protected didAddComponent(component: IRenderable)
     {
-        if (component.render) {
-            this.renderables.push(component);
+        if (component.preRender) {
+            this.preRenderList.push(component);
+        }
+        if (component.postRender) {
+            this.postRenderList.push(component);
         }
     }
 
     protected willRemoveComponent(component: IRenderable)
     {
-        const index = this.renderables.indexOf(component);
+        let index = this.preRenderList.indexOf(component);
         if (index >= 0) {
-            this.renderables.splice(index, 1);
+            this.preRenderList.splice(index, 1);
+        }
+
+        index = this.postRenderList.indexOf(component);
+        if (index >= 0) {
+            this.postRenderList.splice(index, 1);
         }
     }
 }

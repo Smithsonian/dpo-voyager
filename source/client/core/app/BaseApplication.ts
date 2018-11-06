@@ -24,9 +24,10 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import { IPresentation, IItem } from "common/types";
 
 import SystemController from "../components/SystemController";
-import RenderController from "../components/RenderController";
+import ViewportController from "../components/ViewportController";
 import PresentationController from "../components/PresentationController";
 import AnnotationsController from "../components/AnnotationsController";
+import ToursController from "../components/ToursController";
 
 import PickManip from "../components/PickManip";
 import OrbitManip from "../components/OrbitManip";
@@ -66,9 +67,10 @@ export default class BaseApplication
     protected main: Entity;
 
     protected systemController: SystemController;
-    readonly renderController: RenderController;
+    readonly viewportController: ViewportController;
     protected presentationController: PresentationController;
     protected annotationsController: AnnotationsController;
+    protected toursController: ToursController;
 
     protected pickManip: PickManip;
     protected orbitManip: OrbitManip;
@@ -101,8 +103,8 @@ export default class BaseApplication
         this.systemController = this.main.createComponent(SystemController);
         this.systemController.createActions(this.commander);
 
-        this.renderController = this.main.createComponent(RenderController);
-        this.renderController.createActions(this.commander);
+        this.viewportController = this.main.createComponent(ViewportController);
+        this.viewportController.createActions(this.commander);
 
         this.presentationController = this.main.createComponent(PresentationController);
         this.presentationController.createActions(this.commander);
@@ -110,8 +112,11 @@ export default class BaseApplication
         this.annotationsController = this.main.createComponent(AnnotationsController);
         this.annotationsController.createActions(this.commander);
 
+        this.toursController = this.main.createComponent(ToursController);
+        this.toursController.createActions(this.commander);
+
         this.pickManip = this.main.createComponent(PickManip);
-        this.renderController.setNextManip(this.pickManip);
+        this.viewportController.setNextManip(this.pickManip);
 
         this.orbitManip = this.main.createComponent(OrbitManip);
         this.pickManip.next.component = this.orbitManip;
@@ -230,7 +235,7 @@ export default class BaseApplication
             return;
         }
 
-        this.renderController.renderViews(scene, camera);
+        this.viewportController.renderViews(scene, camera);
     }
 
     protected onAnimationFrame()

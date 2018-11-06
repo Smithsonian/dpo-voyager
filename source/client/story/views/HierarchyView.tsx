@@ -35,7 +35,7 @@ export interface IHierarchyViewProps
 export default class HierarchyView extends React.Component<IHierarchyViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "hierarchy-view"
+        className: "sv-editor sv-hierarchy-view"
     };
 
     render()

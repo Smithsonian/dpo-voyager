@@ -26,6 +26,7 @@ export type SystemActions = Actions<SystemController>;
 export default class SystemController extends Controller<SystemController>
 {
     static readonly type: string = "SystemController";
+    static readonly isSystemSingleton: boolean = true;
 
     actions: SystemActions = null;
 

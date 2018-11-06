@@ -31,17 +31,59 @@
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENTS
 
+.ff-label {
+  color: $color-text-disabled;
+}
+
+.ff-button {
+  &.ff-selected {
+    background: $color-secondary !important;
+  }
+}
+
+.ff-line-edit, .ff-text-edit {
+  background: $color-background;
+  color: $color-text;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MENU BAR
 
-$menu-bar-size: 48px;
-
 .sv-menu-bar {
+  padding: 4px;
   background: $color-background-dark;
 
   .sv-logo {
-    height: 32px;
-    margin: 8px 8px;
+    height: 30px;
+    margin: 4px 4px;
+  }
+
+  .ff-control + .ff-control {
+    margin: 0 0 0 4px;
+  }
+
+  .ff-button {
+    background: transparent;
+    padding: 3px;
+
+    &:not(.ff-disabled):hover {
+      background-color: $color-background;
+    }
+
+    .ff-content {
+      display: inline-block;
+      vertical-align: middle;
+      margin: 0 3px;
+    }
+
+    .ff-icon {
+      font-size: 20px;
+      color: $color-icon;
+    }
+
+    .ff-text {
+      margin-top: -2px;
+    }
   }
 }
 
@@ -91,105 +133,93 @@ $menu-bar-size: 48px;
 ////////////////////////////////////////////////////////////////////////////////
 // ANNOTATIONS EDITOR
 
-.sv-menu-bar {
-  padding: 4px;
-
-  .ff-control + .ff-control {
-    margin: 0 0 0 4px;
-  }
-
-}
-
 .sv-editor {
-  padding: 4px;
-
-  .ff-control + .ff-control {
-    margin: 4px 0 0 0;
-  }
-}
-
-
-.ff-label {
-  color: $color-text-disabled;
-}
-
-.ff-button.ff-selected {
-  background: $color-secondary;
-}
-
-.ff-line-edit, .ff-text-edit {
-  background: $color-background;
-  color: $color-text;
-}
-
-.sv-annotations-list-view {
-  @include full-size;
-  background: $color-background-darker;
-
-  .sv-item {
-    background: darken($color-background-dark, 4%);
+  .sv-menu-bar {
     border-bottom: 1px solid $color-background;
-    padding: 2px;
   }
-}
 
-.sv-annotations-detail-view {
-  .ff-text-edit {
-    flex-grow: 1;
-    max-height: 100px;
+  .sv-editor-pane {
+    padding: 4px;
+
+    .ff-control + .ff-control {
+      margin: 4px 0 0 0;
+    }
   }
-}
 
-////////////////////////////////////////////////////////////////////////////////
-// HIERARCHY TREE VIEW
+  .sv-annotations-list-view {
+    @include full-size;
+    box-sizing: border-box;
+    border-bottom: 2px solid $color-background-darker;
 
-.ff-tree {
-  .ff-node {
-    margin-left: -500px;
-    border-top: 1px solid $color-background;
+    .sv-item {
+      border-bottom: 1px solid $color-background;
+      padding: 2px 0;
+      cursor: pointer;
 
-    .ff-content {
-      margin-left: 500px;
-
-      &.ff-expanded .sv-header {
-        @include triangle($color-icon, 3px, 180deg);
+      &.sv-selected {
+        background: $color-secondary !important;
       }
-      &.ff-collapsed .sv-header {
-        @include triangle($color-icon, 3px, 90deg);
-      }
-      &.ff-leaf .sv-header {
-        @include dot($color-icon-disabled, 3px, 6px, 0.6em);
-      }
+    }
+  }
 
-      .sv-header {
-        position: relative;
-        cursor: pointer;
-        padding: 2px 0 2px 14px;
-      }
-      .ff-children {
-        margin-left: 12px;
-      }
+  .sv-annotations-detail-view {
+    .ff-text-edit {
+      flex-grow: 1;
+      max-height: 100px;
+    }
+  }
 
-      &.sv-entity {
-        font-weight: bold;
-        background: darken($color-background-dark, 4%);
+  ////////////////////////////////////////////////////////////////////////////////
+  // HIERARCHY TREE VIEW
 
-        & > .ff-children {
-          margin-left: 8px;
+  .ff-tree {
+    .ff-node {
+      margin-left: -500px;
+      border-top: 1px solid $color-background;
+
+      .ff-content {
+        margin-left: 500px;
+
+        &.ff-expanded .sv-header {
+          @include triangle($color-icon, 3px, 180deg);
         }
-      }
+        &.ff-collapsed .sv-header {
+          @include triangle($color-icon, 3px, 90deg);
+        }
+        &.ff-leaf .sv-header {
+          @include dot($color-icon-disabled, 3px, 6px, 0.6em);
+        }
 
-      &.sv-component {
-        font-weight: normal;
-        background: $color-background-dark;
-
-        & > .ff-children {
+        .sv-header {
+          position: relative;
+          cursor: pointer;
+          padding: 2px 0 2px 14px;
+        }
+        .ff-children {
           margin-left: 12px;
         }
-      }
 
-      &.ff-selected {
-        background: $color-secondary;
+        &.sv-entity {
+          font-weight: bold;
+          background: darken($color-background-dark, 4%);
+
+          & > .ff-children {
+            margin-left: 8px;
+          }
+        }
+
+        &.sv-component {
+          font-weight: normal;
+          background: $color-background-dark;
+
+          & > .ff-children {
+            margin-left: 12px;
+          }
+        }
+
+        &.ff-selected {
+          background: $color-secondary;
+        }
       }
     }
   }

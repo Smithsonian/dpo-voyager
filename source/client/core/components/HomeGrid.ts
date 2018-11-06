@@ -52,11 +52,6 @@ export default class HomeGrid extends Object3D
 
     }
 
-    render(context: RenderContext)
-    {
-
-    }
-
     get grid()
     {
         return this.object3D as Grid;

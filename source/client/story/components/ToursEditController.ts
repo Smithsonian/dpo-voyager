@@ -24,6 +24,7 @@ export type ToursEditActions = Actions<ToursEditController>;
 export default class ToursEditController extends Controller<ToursEditController>
 {
     static readonly type: string = "ToursEditController";
+    static readonly isSystemSingleton: boolean = true;
 
     actions: ToursEditActions = null;
 

@@ -58,13 +58,18 @@ export default class Scene extends Hierarchy
         return this._children as Transform[] || [];
     }
 
+    create()
+    {
+        this._scene.background = new THREE.TextureLoader().load("images/bg-gradient-grey.jpg");
+    }
+
     update()
     {
         const { col, sha } = this.ins;
 
         if (col.changed) {
-            _color.fromArray(col.value);
-            this._scene.background = _color;
+            //_color.fromArray(col.value);
+            //this._scene.background = _color;
         }
         if (sha.changed) {
             const index = types.getEnumEntry(EShaderMode, sha.value);

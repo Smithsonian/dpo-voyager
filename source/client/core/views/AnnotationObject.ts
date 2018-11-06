@@ -17,41 +17,49 @@
 
 import * as THREE from "three";
 
+import RenderContext from "../app/RenderContext";
+
 import { IAnnotation } from "../components/Annotations";
+import AnnotationsView from "../components/AnnotationsView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new THREE.Vector3();
 
-export default class AnnotationView extends THREE.Group
-{
-    annotation: IAnnotation;
-    protected mesh: THREE.Mesh;
+export { IAnnotation };
 
-    constructor(annotation: IAnnotation)
+export default class AnnotationObject extends THREE.Object3D
+{
+    views: AnnotationsView;
+    annotation: IAnnotation;
+
+    constructor(views: AnnotationsView, annotation: IAnnotation)
     {
         super();
 
+        this.matrixAutoUpdate = false;
+
+        this.views = views;
         this.annotation = annotation;
-
-        const geo = new THREE.ConeBufferGeometry(0.8, 1.6, 24);
-        geo.translate(0, -0.8, 0);
-        geo.rotateX(Math.PI);
-
-        const mat = new THREE.MeshPhongMaterial({ color: "red" });
-
-        this.mesh = new THREE.Mesh(geo, mat);
-        this.mesh.matrixAutoUpdate = false;
-
-        this.add(this.mesh);
-        this.update();
     }
 
     update()
     {
         _vec3.fromArray(this.annotation.direction);
-        this.mesh.quaternion.setFromUnitVectors(THREE.Object3D.DefaultUp, _vec3);
-        this.mesh.position.fromArray(this.annotation.position);
-        this.mesh.updateMatrix();
+        this.quaternion.setFromUnitVectors(THREE.Object3D.DefaultUp, _vec3);
+        this.position.fromArray(this.annotation.position);
+        this.updateMatrix();
+    }
+
+    render(context: RenderContext)
+    {
+    }
+
+    dispose()
+    {
+    }
+
+    setSelected(selected: boolean)
+    {
     }
 }

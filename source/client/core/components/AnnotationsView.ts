@@ -19,13 +19,15 @@ import * as THREE from "three";
 
 import { Dictionary } from "@ff/core/types";
 
-import Annotations, { IAnnotation, IAnnotationsChangeEvent, Vector3 } from "./Annotations";
+import Annotations, { IAnnotation, IAnnotationsChangeEvent } from "./Annotations";
 import Model from "./Model";
 
-import AnnotationView from "../views/AnnotationView";
+import AnnotationObject from "../views/AnnotationObject";
+import AnnotationCone from "../views/AnnotationCone";
+import AnnotationHTML from "../views/AnnotationHTML";
 
 import PickManip, { IPickManipPickEvent } from "./PickManip";
-import AnnotationsController from "./AnnotationsController";
+import AnnotationsController, { ISelectAnnotationEvent } from "./AnnotationsController";
 import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +39,8 @@ export default class AnnotationsView extends Object3D
     protected annotations: Annotations = null;
     protected model: Model = null;
 
-    protected views: Dictionary<AnnotationView> = {};
+    protected views: Dictionary<AnnotationObject> = {};
+    protected selectedView: AnnotationObject = null;
 
     protected pickManip: PickManip = null;
     protected controller: AnnotationsController = null;
@@ -45,7 +48,6 @@ export default class AnnotationsView extends Object3D
     constructor(id?: string)
     {
         super(id);
-        this.addEvents("tap-model", "tap-annotation");
 
         this.object3D = new THREE.Group();
         this.object3D.updateMatrix();
@@ -63,9 +65,15 @@ export default class AnnotationsView extends Object3D
         this.annotations.on("change", this.onAnnotationsChange, this);
 
         this.pickManip = this.getComponent(PickManip, true);
-        this.pickManip.on("down", this.onPick, this);
+        this.pickManip.on("pick", this.onPick, this);
 
         this.controller = this.getComponent(AnnotationsController, true);
+        this.controller.on("select", this.onControllerSelect, this);
+    }
+
+    postRender(context)
+    {
+        Object.keys(this.views).forEach(key => this.views[key].render(context));
     }
 
     dispose()
@@ -75,7 +83,18 @@ export default class AnnotationsView extends Object3D
         this.annotations.off("change", this.onAnnotationsChange, this);
         this.annotations.getArray().forEach(annotation => this.removeView(annotation));
 
-        this.pickManip.off("down", this.onPick, this);
+        this.pickManip.off("pick", this.onPick, this);
+        this.controller.off("select", this.onControllerSelect, this);
+    }
+
+    setVisible(visible: boolean)
+    {
+
+    }
+
+    onClick(view: AnnotationObject)
+    {
+        this.controller.actions.selectAnnotation(this.annotations, view.annotation);
     }
 
     protected onPick(event: IPickManipPickEvent)
@@ -84,13 +103,27 @@ export default class AnnotationsView extends Object3D
             // find picked annotation view
             const view = this.findViewByObject(event.object);
             if (view) {
-                this.controller.actions.select(this.annotations, view.annotation);
+                this.controller.actions.selectAnnotation(this.annotations, view.annotation);
                 return;
             }
         }
 
         // clear annotation selection
-        this.controller.actions.select(null, null);
+        this.controller.actions.selectAnnotation(null, null);
+    }
+
+    protected onControllerSelect(event: ISelectAnnotationEvent)
+    {
+        const view = this.findViewByAnnotation(event.annotation);
+        if (view !== this.selectedView) {
+            if (this.selectedView) {
+                this.selectedView.setSelected(false);
+            }
+            this.selectedView = view;
+            if (view) {
+                view.setSelected(true);
+            }
+        }
     }
 
     protected onAnnotationsChange(event: IAnnotationsChangeEvent)
@@ -102,7 +135,7 @@ export default class AnnotationsView extends Object3D
             case "remove":
                 this.removeView(event.annotation);
                 break;
-            case "move":
+            case "update":
                 this.updateView(event.annotation);
                 break;
         }
@@ -110,7 +143,7 @@ export default class AnnotationsView extends Object3D
 
     protected addView(annotation: IAnnotation)
     {
-        const view = new AnnotationView(annotation);
+        const view = new AnnotationHTML(this, annotation); // new AnnotationCone(annotation);
         this.views[view.id] = view;
         this.object3D.add(view);
     }
@@ -120,6 +153,7 @@ export default class AnnotationsView extends Object3D
         const view = this.findViewByAnnotation(annotation);
         this.object3D.remove(view);
         delete this.views[view.id];
+        view.dispose();
     }
 
     protected updateView(annotation: IAnnotation)
@@ -128,7 +162,7 @@ export default class AnnotationsView extends Object3D
         view.update();
     }
 
-    protected findViewByAnnotation(annotation: IAnnotation): AnnotationView | null
+    protected findViewByAnnotation(annotation: IAnnotation): AnnotationObject | null
     {
         const views = this.views;
         const keys = Object.keys(views);
@@ -142,7 +176,7 @@ export default class AnnotationsView extends Object3D
         return null;
     }
 
-    protected findViewByObject(object: THREE.Object3D): AnnotationView | null
+    protected findViewByObject(object: THREE.Object3D): AnnotationObject | null
     {
         let view;
         while(object && (view = this.views[object.id]) === undefined) {

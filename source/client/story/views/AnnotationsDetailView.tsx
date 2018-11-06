@@ -21,10 +21,10 @@ import System from "@ff/core/ecs/System";
 
 import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
-import LineEdit from "@ff/react/LineEdit";
-import TextEdit from "@ff/react/TextEdit";
+import LineEdit, { ILineEditChangeEvent } from "@ff/react/LineEdit";
+import TextEdit, { ITextEditChangeEvent } from "@ff/react/TextEdit";
 
-import AnnotationsEditController from "../components/AnnotationsEditController";
+import AnnotationsEditController, { IAnnotationsChangeEvent } from "../components/AnnotationsEditController";
 import FlexItem from "@ff/react/FlexItem";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,53 +36,80 @@ export interface IAnnotationsDetailViewProps
     system: System;
 }
 
-interface IAnnotationsDetailViewState
-{
-}
-
-export default class AnnotationsDetailView extends React.Component<IAnnotationsDetailViewProps, IAnnotationsDetailViewState>
+export default class AnnotationsDetailView extends React.Component<IAnnotationsDetailViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "sv-editor sv-annotations-detail-view"
+        className: "sv-editor-pane sv-annotations-detail-view"
     };
 
-    protected controller: AnnotationsEditController;
+    protected controller: AnnotationsEditController = null;
+    protected isEditing = false;
 
     constructor(props: IAnnotationsDetailViewProps)
     {
         super(props);
+        this.onTitleChange = this.onTitleChange.bind(this);
+        this.onDescriptionChange = this.onDescriptionChange.bind(this);
+    }
 
-        this.state = {
-        };
+    componentWillMount()
+    {
+        this.controller = this.props.system.getComponent(AnnotationsEditController);
+        this.controller.on("change", this.onControllerChange, this);
+    }
+
+    componentWillUnmount()
+    {
+        this.controller.off("change", this.onControllerChange, this);
     }
 
     render()
     {
-        const {
-            className,
-            system,
-        } = this.props;
+        const selectedAnnotation = this.controller.getSelectedAnnotation();
 
         return (
             <FlexContainer
-                className={className}
+                className={this.props.className}
                 position="fill"
                 direction="vertical">
 
                 <Label
                     text="Title"/>
                 <LineEdit
-                    text="Hello"/>
+                    text={selectedAnnotation ? selectedAnnotation.title : ""}
+                    onChange={this.onTitleChange}/>
 
                 <Label
                     text="Description"/>
                 <TextEdit
-                    text="World"/>
+                    text={selectedAnnotation ? selectedAnnotation.description : ""}
+                    onChange={this.onDescriptionChange}/>
 
                 <Label
                     text="Groups"/>
 
             </FlexContainer>
         );
+    }
+
+    protected onTitleChange(event: ILineEditChangeEvent)
+    {
+        this.isEditing = true;
+        this.controller.actions.setTitle(event.text);
+        this.isEditing = false;
+    }
+
+    protected onDescriptionChange(event: ITextEditChangeEvent)
+    {
+        this.isEditing = true;
+        this.controller.actions.setDescription(event.text);
+        this.isEditing = false;
+    }
+
+    protected onControllerChange(event: IAnnotationsChangeEvent)
+    {
+        if (!this.isEditing) {
+            this.forceUpdate();
+        }
     }
 }

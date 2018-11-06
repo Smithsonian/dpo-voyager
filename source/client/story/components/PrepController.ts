@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
+import * as FileSaver from "file-saver";
+
 import { IPublisherEvent } from "@ff/core/Publisher";
 
-import RenderController from "../../core/components/RenderController";
-import { EViewportLayoutMode } from "../../core/app/ViewportLayout";
+import Item from "../../core/app/Item";
+import Meta from "../../core/components/Meta";
 
 import PresentationController, { IPresentationChangeEvent } from "../../core/components/PresentationController";
-import TransformManip from "./TransformManip";
+import SelectionController from "./SelectionController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
 
@@ -33,17 +35,18 @@ type IPrepControllerEvent = IPublisherEvent<PrepController>;
 
 export interface IPrepModeChangeEvent extends IPrepControllerEvent { mode: EPrepMode }
 
-
 export type PrepActions = Actions<PrepController>;
+
 
 export default class PrepController extends Controller<PrepController>
 {
     static readonly type: string = "PrepController";
+    static readonly isSystemSingleton: boolean = true;
 
     actions: PrepActions = null;
 
-    protected renderController: RenderController = null;
     protected presentationController: PresentationController = null;
+    protected selectionController: SelectionController = null;
 
     protected prepMode: EPrepMode = EPrepMode.Explore;
 
@@ -52,16 +55,21 @@ export default class PrepController extends Controller<PrepController>
         super.create();
         this.addEvent("mode");
 
-        this.renderController = this.getComponent(RenderController);
-
         this.presentationController = this.getComponent(PresentationController);
         this.presentationController.on("presentation", this.onPresentationChange, this);
+
+        this.selectionController = this.getComponent(SelectionController);
     }
 
     createActions(commander: Commander)
     {
         const actions = {
-
+            downloadItem: commander.register({
+                name: "Download Item", do: this.downloadItem, target: this
+            }),
+            downloadPresentation: commander.register({
+                name: "Download Presentation", do: this.downloadPresentation, target: this
+            })
         };
 
         this.actions = actions;
@@ -71,6 +79,7 @@ export default class PrepController extends Controller<PrepController>
     dispose()
     {
         this.presentationController.off("presentation", this.onPresentationChange, this);
+
         super.dispose();
     }
 
@@ -81,27 +90,76 @@ export default class PrepController extends Controller<PrepController>
 
     set mode(mode: EPrepMode)
     {
-        if (mode === EPrepMode.Pose) {
-            this.renderController.setViewportLayout(EViewportLayoutMode.Quad);
-        }
-        else {
-            this.renderController.setViewportLayout(EViewportLayoutMode.Single);
-        }
-
         this.prepMode = mode;
         this.emit<IPrepModeChangeEvent>("mode", { mode });
     }
 
-    onPresentationChange(event: IPresentationChangeEvent)
+    protected downloadItem()
     {
-        const transformManip = this.system.getComponent(TransformManip);
+        const item = this.findFirstSelectedItem();
+        if (item) {
+            const json = JSON.stringify(item.deflate());
+            console.log(json);
+
+            this.copyToClipboard(json);
+            const blob = new Blob([json], { type: "text/json;charset=utf-8"});
+            FileSaver.saveAs(blob, "item.json");
+        }
+    }
+
+    protected downloadPresentation()
+    {
+        const presentation = this.presentationController.activePresentation;
+        if (presentation) {
+            const json = JSON.stringify(presentation.deflate());
+            console.log(json);
+
+            this.copyToClipboard(json);
+            const blob = new Blob([json], { type: "text/json;charset=utf-8"});
+            FileSaver.saveAs(blob, "presentation.json");
+        }
+    }
+
+    protected findFirstSelectedItem(): Item | null
+    {
+        const components = this.selectionController.getSelectedComponents();
+        for (let i = 0, n = components.length; i < n; ++i) {
+            const meta = components[i].getComponent(Meta);
+            if (meta) {
+                return this.presentationController.getItemByEntity(meta.entity);
+            }
+        }
+
+        const entities = this.selectionController.getSelectedEntities();
+        for (let i = 0, n = entities.length; i < n; ++i) {
+            const meta = entities[i].getComponent(Meta);
+            if (meta) {
+                return this.presentationController.getItemByEntity(meta.entity);
+            }
+        }
+
+        return null;
+    }
+
+    protected copyToClipboard(text: string)
+    {
+        const element = document.createElement("textarea");
+        document.body.appendChild(element);
+        element.value = text;
+        element.select();
+        document.execCommand("copy");
+        document.body.removeChild(element);
+    }
+
+    protected onPresentationChange(event: IPresentationChangeEvent)
+    {
 
         if (event.current) {
-            transformManip.setScene(null);
+            //transformManip.setScene(null);
         }
 
         if (event.next) {
-            transformManip.setScene(event.next.scene);
+            //transformManip.setScene(event.next.scene);
 
             // TODO: Serialization test
             //console.log("Presentation changed\n", event.next.url, "\n", event.next.path);

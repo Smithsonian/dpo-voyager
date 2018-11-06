@@ -22,6 +22,7 @@ import { Index } from "@ff/core/types";
 
 import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
+import Component, { ComponentOrType } from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import { IPresentation, INode, IExplorer } from "common/types";
@@ -119,6 +120,31 @@ export default class Presentation
         return this._cameraComponent ? this._cameraComponent.camera : null;
     }
 
+    forEachItem(callback: (item: Item, index: number) => void)
+    {
+        this.items.forEach(callback);
+    }
+
+    forEachComponent<T extends Component>
+        (componentOrType: ComponentOrType<T>, callback: (component: T) => void)
+    {
+        this.items.forEach(item => {
+            const component = item.entity.getComponent(componentOrType);
+            if (component) {
+                callback(component as T);
+            }
+        });
+    }
+
+    getItemByEntity(entity: Entity): Item | null
+    {
+        for (let i = 0, n = this.items.length; i < n; ++i) {
+            if (this.items[i].entity === entity) {
+                return this.items[i];
+            }
+        }
+    }
+
     dispose()
     {
         this.entity.dispose();
@@ -205,6 +231,7 @@ export default class Presentation
             if (reference.mimeType === "application/si-dpo-3d.item+json") {
                 if (Number(reference.uri) === 0 && item) {
                     entity = item.entity;
+                    name = entity.name;
                     this.items.push(item);
                     referenceParsed = true;
                 }

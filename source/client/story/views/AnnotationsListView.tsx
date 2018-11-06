@@ -33,15 +33,10 @@ export interface IAnnotationsListViewProps
 export default class AnnotationsListView extends React.Component<IAnnotationsListViewProps, {}>
 {
     static readonly defaultProps = {
-        className: "sv-annotations-list-view"
+        className: "sv-editor-pane sv-annotations-list-view"
     };
 
     protected controller: AnnotationsEditController = null;
-
-    constructor(props: IAnnotationsListViewProps)
-    {
-        super(props);
-    }
 
     componentWillMount()
     {
@@ -57,10 +52,12 @@ export default class AnnotationsListView extends React.Component<IAnnotationsLis
     render()
     {
         const annotations = this.controller.getActiveAnnotations();
+        const selectedAnnotation = this.controller.getSelectedAnnotation();
+
         const list = annotations ? annotations.getArray().map(annotation =>
             <div
                 key={annotation.id}
-                className="sv-item"
+                className={"sv-item" + (annotation === selectedAnnotation ? " sv-selected" : "")}
                 onClick={() => this.onClick(annotation)}>
                 {annotation.title}
                 </div>
@@ -81,6 +78,7 @@ export default class AnnotationsListView extends React.Component<IAnnotationsLis
 
     protected onClick(annotation: IAnnotation)
     {
-
+        const annotations = this.controller.getActiveAnnotations();
+        this.controller.actions.selectAnnotation(annotations, annotation);
     }
 }

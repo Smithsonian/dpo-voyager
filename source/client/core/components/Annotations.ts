@@ -30,7 +30,7 @@ export { Vector3 };
 
 export interface IAnnotationsChangeEvent extends IComponentChangeEvent<Annotations>
 {
-    what: "add" | "remove" | "move",
+    what: "add" | "remove" | "update",
     annotation: IAnnotation;
 }
 
@@ -99,7 +99,21 @@ export default class Annotations extends Collection<IAnnotation>
         const annotation = this.get(id);
         annotation.position = position;
         annotation.direction = direction;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "move", annotation });
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+    }
+
+    setAnnotationTitle(id: string, title: string)
+    {
+        const annotation = this.get(id);
+        annotation.title = title;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+    }
+
+    setAnnotationDescription(id: string, description: string)
+    {
+        const annotation = this.get(id);
+        annotation.description = description;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
     }
 
     fromData(data: IAnnotationData[], groupIds: string[], docIds: string[], snapIds: string[])

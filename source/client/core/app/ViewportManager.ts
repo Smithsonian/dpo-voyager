@@ -31,7 +31,7 @@ import { IViewportPointerEvent, IViewportTriggerEvent } from "./Viewport";
 
 const _vec2 = new THREE.Vector2();
 
-export enum EViewportLayoutMode { Single, HorizontalSplit, VerticalSplit, Quad }
+export enum EViewportLayout { Single, HorizontalSplit, VerticalSplit, Quad }
 
 export interface IViewportManip
 {
@@ -39,19 +39,19 @@ export interface IViewportManip
     onTrigger: (event: IViewportTriggerEvent) => boolean;
 }
 
-export interface IViewportLayoutChangeEvent extends IPublisherEvent<ViewportLayout>
+export interface IViewportLayoutChangeEvent extends IPublisherEvent<ViewportManager>
 {
-    layoutMode: EViewportLayoutMode;
+    layout: EViewportLayout;
     viewports: Viewport[];
 }
 
-export default class ViewportLayout extends Publisher<ViewportLayout>
+export default class ViewportManager extends Publisher<ViewportManager>
 {
     static readonly type: string = "Viewports";
 
     next: IViewportManip;
 
-    protected _layoutMode: EViewportLayoutMode = -1;
+    protected _layoutMode: EViewportLayout = -1;
     protected _horizontalSplit: number = 0.5;
     protected _verticalSplit: number = 0.5;
 
@@ -66,7 +66,7 @@ export default class ViewportLayout extends Publisher<ViewportLayout>
         super();
         this.addEvent("layout");
 
-        this.layoutMode = EViewportLayoutMode.Single;
+        this.layout = EViewportLayout.Single;
     }
 
     forEachViewport(callback: (viewport: Viewport, index: number) => void)
@@ -74,42 +74,42 @@ export default class ViewportLayout extends Publisher<ViewportLayout>
         this.viewports.forEach(callback);
     }
 
-    get layoutMode()
+    get layout()
     {
         return this._layoutMode;
     }
 
-    set layoutMode(layoutMode: EViewportLayoutMode)
+    set layout(layout: EViewportLayout)
     {
-        if (layoutMode === this._layoutMode) {
+        if (layout === this._layoutMode) {
             return;
         }
 
-        this._layoutMode = layoutMode;
+        this._layoutMode = layout;
 
         const viewports = this.viewports;
         const h = this._horizontalSplit;
         const v = this._verticalSplit;
 
-        switch(layoutMode) {
-            case EViewportLayoutMode.Single:
+        switch(layout) {
+            case EViewportLayout.Single:
                 viewports.length = 1;
                 viewports[0] = new Viewport(0, 0, 1, 1);
                 break;
 
-            case EViewportLayoutMode.HorizontalSplit:
+            case EViewportLayout.HorizontalSplit:
                 viewports.length = 2;
                 viewports[0] = new Viewport(0, 0, h, 1);
                 viewports[1] = new Viewport(h, 0, 1-h, 1);
                 break;
 
-            case EViewportLayoutMode.VerticalSplit:
+            case EViewportLayout.VerticalSplit:
                 viewports.length = 2;
                 viewports[0] = new Viewport(0, 0, 1, v);
                 viewports[1] = new Viewport(0, v, 1, 1-v);
                 break;
 
-            case EViewportLayoutMode.Quad:
+            case EViewportLayout.Quad:
                 viewports.length = 4;
                 viewports[0] = new Viewport(0, 0, h, v);
                 viewports[1] = new Viewport(h, 0, 1-h, v).setCamera(EViewportCameraType.Orthographic, EViewportCameraView.Top);
@@ -123,7 +123,7 @@ export default class ViewportLayout extends Publisher<ViewportLayout>
             viewport.setCanvasSize(this.canvasWidth, this.canvasHeight);
         });
 
-        this.emit<IViewportLayoutChangeEvent>("layout", { viewports, layoutMode });
+        this.emit<IViewportLayoutChangeEvent>("layout", { viewports, layout: layout });
     }
 
     get horizontalSplit()
@@ -145,17 +145,17 @@ export default class ViewportLayout extends Publisher<ViewportLayout>
         this._verticalSplit = v;
 
         switch(layoutMode) {
-            case EViewportLayoutMode.HorizontalSplit:
+            case EViewportLayout.HorizontalSplit:
                 viewports[0].set(0, 0, h, 1);
                 viewports[1].set(h, 0, 1-h, 1);
                 break;
 
-            case EViewportLayoutMode.VerticalSplit:
+            case EViewportLayout.VerticalSplit:
                 viewports[0].set(0, 0, 1, v);
                 viewports[1].set(0, v, 1, 1-v);
                 break;
 
-            case EViewportLayoutMode.Quad:
+            case EViewportLayout.Quad:
                 viewports[0].set(0, 0, h, v);
                 viewports[1].set(h, 0, 1-h, v);
                 viewports[2].set(0, v, h, 1-v);

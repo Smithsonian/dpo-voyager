@@ -21,7 +21,7 @@ import types from "@ff/core/ecs/propertyTypes";
 
 import Controller, { Actions, Commander } from "./Controller";
 
-import ViewportLayout, { EViewportLayoutMode, IViewportManip } from "../app/ViewportLayout";
+import ViewportManager, { EViewportLayout, IViewportManip } from "../app/ViewportManager";
 import ExplorerView from "../views/ExplorerView";
 
 import RenderSystem from "../app/RenderSystem";
@@ -29,27 +29,29 @@ import RenderContext from "../app/RenderContext";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { EViewportLayout };
+
 interface IViewEntry
 {
     view: ExplorerView;
-    viewportLayout: ViewportLayout;
+    manager: ViewportManager;
 }
 
-export type RenderActions = Actions<RenderController>;
+export type ViewportActions = Actions<ViewportController>;
 
-export default class RenderController extends Controller<RenderController>
+export default class ViewportController extends Controller<ViewportController>
 {
-    static readonly type: string = "RenderController";
+    static readonly type: string = "ViewportController";
 
     ins = this.makeProps({
     });
 
-    actions: RenderActions = null;
+    actions: ViewportActions = null;
 
     protected context: RenderContext = new RenderContext();
     protected views: IViewEntry[] = [];
 
-    protected layoutMode: EViewportLayoutMode = EViewportLayoutMode.Single;
+    protected layoutMode: EViewportLayout = EViewportLayout.Single;
     protected nextManip: IViewportManip = null;
 
     createActions(commander: Commander)
@@ -66,31 +68,32 @@ export default class RenderController extends Controller<RenderController>
         const context = this.context;
 
         this.views.forEach(entry => {
-            const { view, viewportLayout } = entry;
+            const { view, manager } = entry;
             if (!view) {
                 return;
             }
 
             view.renderer.clear();
 
-            viewportLayout.forEachViewport((viewport, index) => {
+            manager.forEachViewport((viewport, index) => {
                 viewport.sceneCamera = sceneCamera;
                 viewport.updateCamera();
                 const camera = viewport.camera;
                 context.set(viewport, camera, scene);
 
-                (this.system as RenderSystem).render(context);
+                (this.system as RenderSystem).preRender(context);
                 viewport.render(view.renderer, scene);
+                (this.system as RenderSystem).postRender(context);
             });
         });
     }
 
-    setViewportLayout(layout: EViewportLayoutMode)
+    setViewportLayout(layout: EViewportLayout)
     {
         this.layoutMode = layout;
 
         this.views.forEach(entry => {
-            entry.viewportLayout.layoutMode = layout;
+            entry.manager.layout = layout;
         });
     }
 
@@ -99,7 +102,7 @@ export default class RenderController extends Controller<RenderController>
         this.nextManip = manip;
 
         this.views.forEach(entry => {
-            entry.viewportLayout.next = manip;
+            entry.manager.next = manip;
         });
     }
 
@@ -108,29 +111,29 @@ export default class RenderController extends Controller<RenderController>
      * @param {ExplorerView} view
      * @returns {string}
      */
-    registerView(view: ExplorerView): ViewportLayout
+    registerView(view: ExplorerView): ViewportManager
     {
         const orphanEntry = this.views.find(entry => entry.view === null);
 
         if (orphanEntry) {
             orphanEntry.view = view;
-            return orphanEntry.viewportLayout;
+            return orphanEntry.manager;
         }
 
-        const viewportLayout = new ViewportLayout();
+        const manager = new ViewportManager();
 
-        viewportLayout.setCanvasSize(view.canvasWidth, view.canvasHeight);
-        viewportLayout.next = this.nextManip;
-        viewportLayout.layoutMode = this.layoutMode;
+        manager.setCanvasSize(view.canvasWidth, view.canvasHeight);
+        manager.next = this.nextManip;
+        manager.layout = this.layoutMode;
 
         const entry = {
-            viewportLayout,
+            manager,
             view
         };
 
         this.views.push(entry);
 
-        return viewportLayout;
+        return manager;
     }
 
     /**

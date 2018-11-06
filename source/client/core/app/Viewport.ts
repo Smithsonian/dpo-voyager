@@ -74,6 +74,7 @@ export default class Viewport
     private _height: number;
 
     private vpCamera: THREE.Camera;
+    private vpObjects: THREE.Group;
     private vpManip: OrbitManip;
     private vpController: OrbitController;
 
@@ -86,6 +87,7 @@ export default class Viewport
         this._height = height !== undefined ? height : 1;
 
         this.vpCamera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.001, 10000);
+        this.vpObjects = new THREE.Group();
 
         this.vpManip = new OrbitManip();
         this.vpController = new OrbitController();
@@ -109,7 +111,9 @@ export default class Viewport
     render(renderer: THREE.WebGLRenderer, scene: THREE.Scene)
     {
         const camera = this.apply(renderer);
+        scene.add(this.vpObjects);
         renderer.render(scene, camera);
+        scene.remove(this.vpObjects);
     }
 
     updateCamera(force?: boolean)
@@ -187,6 +191,16 @@ export default class Viewport
         return this;
     }
 
+    addObject(object: THREE.Object3D)
+    {
+        this.vpObjects.add(object);
+    }
+
+    removeObject(object: THREE.Object3D)
+    {
+        this.vpObjects.remove(object);
+    }
+
     isPointInside(x: number, y: number): boolean
     {
         return x >= this.x && x < this.x + this.width
@@ -199,6 +213,14 @@ export default class Viewport
         const ndy = 1 - ((y - this.y) / this.height) * 2;
 
         return result ? result.set(ndx, ndy) : new THREE.Vector2(ndx, ndy);
+    }
+
+    getScreenCoords(ndc: THREE.Vector3, result?: THREE.Vector2)
+    {
+        const x = this.x + (ndc.x + 1) * 0.5 * this.width;
+        const y = this.y + (1 - ndc.y) * 0.5 * this.height;
+
+        return result ? result.set(x, y) : new THREE.Vector2(x, y);
     }
 
     setCanvasSize(width: number, height: number)

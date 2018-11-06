@@ -24,8 +24,8 @@ import Container from "@ff/react/Container";
 import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
-import ViewportLayout, { EViewportLayoutMode, IViewportLayoutChangeEvent } from "../app/ViewportLayout";
-import RenderController from "../components/RenderController";
+import ViewportManager, { EViewportLayout, IViewportLayoutChangeEvent } from "../app/ViewportManager";
+import ViewportController from "../components/ViewportController";
 
 import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
 import ExplorerOverlayView from "./ExplorerOverlayView";
@@ -46,7 +46,7 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
     };
 
     renderer: THREE.WebGLRenderer = null;
-    viewportLayout: ViewportLayout = null;
+    viewportManager: ViewportManager = null;
 
     canvasWidth: number = 0;
     canvasHeight: number = 0;
@@ -69,25 +69,24 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
         return this.containerRef.current;
     }
 
-    componentDidMount()
+    componentWillMount()
     {
-        const renderController = this.props.system.getComponent(RenderController);
+        const viewportController = this.props.system.getComponent(ViewportController);
 
-        if (renderController) {
-            this.viewportLayout = renderController.registerView(this);
-            this.viewportLayout.on("layout", this.onLayout, this);
-            this.forceUpdate();
+        if (viewportController) {
+            this.viewportManager = viewportController.registerView(this);
+            this.viewportManager.on("layout", this.onLayout, this);
         }
     }
 
     componentWillUnmount()
     {
-        const renderController = this.props.system.getComponent(RenderController);
+        const viewportController = this.props.system.getComponent(ViewportController);
 
-        if (renderController) {
-            renderController.unregisterView(this);
-            this.viewportLayout.off("layout", this.onLayout, this);
-            this.viewportLayout = null;
+        if (viewportController) {
+            viewportController.unregisterView(this);
+            this.viewportManager.off("layout", this.onLayout, this);
+            this.viewportManager = null;
         }
     }
 
@@ -98,11 +97,11 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
             system
         } = this.props;
 
-        const viewportLayout = this.viewportLayout;
+        const manager = this.viewportManager;
 
-        const layoutMode = viewportLayout ? viewportLayout.layoutMode : EViewportLayoutMode.Single;
-        const horizontalSplit = viewportLayout ? viewportLayout.horizontalSplit : 0.5;
-        const verticalSplit = viewportLayout ? viewportLayout.verticalSplit : 0.5;
+        const layout = manager ? manager.layout : EViewportLayout.Single;
+        const horizontalSplit = manager ? manager.horizontalSplit : 0.5;
+        const verticalSplit = manager ? manager.verticalSplit : 0.5;
 
         return (
             <ManipTarget
@@ -116,15 +115,19 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
                 <Container
                     ref={this.containerRef} />
 
+                <div
+                    id="sv-annotations"
+                    className="sv-annotations" />
+
                 <ExplorerOverlayView
                     system={system} />
 
                 <QuadSplitOverlay
-                    mode={layoutMode}
+                    layout={layout}
                     horizontalSplit={horizontalSplit}
                     verticalSplit={verticalSplit}
-                    onChange={this.onQuadSplitChange}
-                />
+                    onChange={this.onQuadSplitChange}/>
+
                 <div
                     className="sv-logo">
                     <img src="images/si-dpo3d-logo-neg.svg" />
@@ -135,8 +138,8 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
 
     onPointer(event: IManipPointerEvent)
     {
-        if (this.viewportLayout) {
-            return this.viewportLayout.onPointer(event);
+        if (this.viewportManager) {
+            return this.viewportManager.onPointer(event);
         }
 
         return false;
@@ -144,8 +147,8 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
 
     onTrigger(event: IManipTriggerEvent)
     {
-        if (this.viewportLayout) {
-            return this.viewportLayout.onTrigger(event);
+        if (this.viewportManager) {
+            return this.viewportManager.onTrigger(event);
         }
 
         return false;
@@ -177,8 +180,8 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
             this.renderer.setSize(event.width, event.height, false);
         }
 
-        if (this.viewportLayout) {
-            this.viewportLayout.setCanvasSize(event.width, event.height);
+        if (this.viewportManager) {
+            this.viewportManager.setCanvasSize(event.width, event.height);
         }
     }
 
@@ -189,8 +192,8 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
 
     protected onQuadSplitChange(event: IQuadSplitOverlayChangeEvent)
     {
-        if (this.viewportLayout) {
-            this.viewportLayout.setSplit(event.horizontalSplit, event.verticalSplit);
+        if (this.viewportManager) {
+            this.viewportManager.setSplit(event.horizontalSplit, event.verticalSplit);
         }
     }
 }
