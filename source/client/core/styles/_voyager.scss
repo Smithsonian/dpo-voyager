@@ -100,12 +100,13 @@ html {
   }
 
   .ff-popup-button {
-    width: min-content;
-    height: min-content;
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
     margin: 4px;
     padding: 8px;
     border-radius: 100px;
-    font-size: 1.5rem;
+    font-size: 24px;
     background: $color-background-explorer;
     color: transparentize($color-text-explorer, 0.4);
     transition: color $tx-short;
