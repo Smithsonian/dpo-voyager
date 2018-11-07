@@ -5,9 +5,9 @@ node_modules/
 
 test/
 doc/
-source/shared/flow/
 services/server/bin
 services/server/static/app
+services/server/static/libs
 
 # FILES
 *.log

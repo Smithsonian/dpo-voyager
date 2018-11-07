@@ -27,6 +27,7 @@ import ExpressServer, { IExpressServerConfiguration } from "./ExpressServer";
 
 const port = parseInt(process.env["NODE_SERVER_PORT"]) || 8000;
 const devMode = process.env.NODE_ENV !== "production";
+const localMode = process.env.NODE_SERVER_LOCAL === "true";
 const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +37,11 @@ console.log([
     "",
     "------------------------------------------",
     "3D Foundation Project - Development Server",
-    "------------------------------------------"
+    "------------------------------------------",
+    "Port: " + port,
+    "Root Directory: " + rootDir,
+    "Development Mode: " + devMode,
+    "Local Mode: " + localMode
 ].join("\n"));
 
 const expressServerConfig: IExpressServerConfiguration = {
@@ -51,12 +56,8 @@ const expressServerConfig: IExpressServerConfiguration = {
 const expressServer = new ExpressServer(expressServerConfig);
 
 expressServer.app.get("/:component", (req, res) => {
-    res.render("app", { component: req.params.component, devMode: true });
+    res.render("app", { component: req.params.component, devMode: devMode, local: localMode });
 });
-
-// expressServer.app.get("/:component", (req, res) => {
-//     res.render("app", { component: req.params.component, devMode: false });
-// });
 
 expressServer.start().then(() => {
     console.info(`\nServer ready and listening on port ${port}`);

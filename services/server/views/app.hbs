@@ -12,17 +12,33 @@
     <link rel="stylesheet" href="/app/css/voyager-{{component}}.css">
 
     {{#if devMode}}
-        <!--<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.6.1/umd/react.development.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.6.1/umd/react-dom.development.js"></script>
-        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/98/three.js"></script>
+        {{#if local}}
+            <!--<script src="/libs/es6-promise.auto.min.js"></script>-->
+            <script src="/libs/react.development.js"></script>
+            <script src="/libs/react-dom.development.js"></script>
+            <script src="/libs/pep.js"></script>
+            <script src="/libs/three.js"></script>
+        {{else}}
+            <!--<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>-->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.6.1/umd/react.development.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.6.1/umd/react-dom.development.js"></script>
+            <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/98/three.js"></script>
+        {{/if}}
     {{else}}
-        <!--<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.6.1/umd/react.production.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.6.1/umd/react-dom.production.min.js"></script>
-        <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/98/three.min.js"></script>
+        {{#if local}}
+            <!--<script src="/libs/es6-promise.auto.min.js"></script>-->
+            <script src="/libs/react.production.min.js"></script>
+            <script src="/libs/react-dom.production.min.js"></script>
+            <script src="/libs/pep.min.js"></script>
+            <script src="/libs/three.min.js"></script>
+        {{else}}
+            <!--<script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>-->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.6.1/umd/react.production.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.6.1/umd/react-dom.production.min.js"></script>
+            <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/98/three.min.js"></script>
+        {{/if}}
     {{/if}}
 
 </head>
