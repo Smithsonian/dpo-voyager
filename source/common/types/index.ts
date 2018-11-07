@@ -16,12 +16,15 @@
  */
 
 import { IItem, TDerivativeUsage, TDerivativeQuality } from "./item";
-import { IPresentation, IRenderer, INode, IExplorer, TShaderType, TUnitType } from "./presentation";
+import { IPresentation, IExplorer, IRenderer, ITools, INode, IVoyager, TShaderType, TUnitType } from "./presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IItem, IPresentation }
-export { INode, IExplorer, IRenderer, TUnitType };
+export { INode, IVoyager, IExplorer, IRenderer, ITools };
+
+export { TUnitType }
+export enum EUnitType { mm, cm, m, in, ft }
 
 export { TDerivativeUsage }
 export enum EDerivativeUsage { Web, Print, Editorial }

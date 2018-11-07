@@ -23,23 +23,13 @@ import Hierarchy from "@ff/core/ecs/Hierarchy";
 
 import Transform from "./Transform";
 
-import { EShaderMode } from "../shaders/UberMaterial";
-import Model from "./Model";
-
 ////////////////////////////////////////////////////////////////////////////////
-
-export { EShaderMode };
-
-const _color = new THREE.Color();
-
 
 export default class Scene extends Hierarchy
 {
     static readonly type: string = "Scene";
 
     ins = this.makeProps({
-        col: types.ColorRGB("Background.Color", [ 0.0, 0.0, 0.0 ]),
-        sha: types.Enum("Shader.Mode", EShaderMode, EShaderMode.Default)
     });
 
     protected _scene: THREE.Scene = new THREE.Scene();
@@ -60,21 +50,11 @@ export default class Scene extends Hierarchy
 
     create()
     {
-        this._scene.background = new THREE.TextureLoader().load("images/bg-gradient-grey.jpg");
+        this._scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
     }
 
     update()
     {
-        const { col, sha } = this.ins;
-
-        if (col.changed) {
-            //_color.fromArray(col.value);
-            //this._scene.background = _color;
-        }
-        if (sha.changed) {
-            const index = types.getEnumEntry(EShaderMode, sha.value);
-            this.getComponentsInSubtree(Model).forEach(model => model.setShaderMode(index));
-        }
     }
 
     addChild(component: Transform)

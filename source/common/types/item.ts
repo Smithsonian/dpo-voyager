@@ -165,6 +165,7 @@ export interface IAnnotation
 {
     title?: string;
     description?: string;
+    visible?: boolean;
     expanded?: boolean;
     snapshot?: Index;
     documents?: Index[];

@@ -43,6 +43,9 @@ export default class AnnotationHTML extends AnnotationObject
     protected isSelected = true;
     protected handler = 0;
 
+    protected currentOpacity = 0;
+    protected targetOpacity = 0;
+
     protected container: HTMLDivElement;
     protected text: HTMLDivElement;
     protected description: HTMLDivElement;
@@ -85,10 +88,21 @@ export default class AnnotationHTML extends AnnotationObject
 
         _vec3c.copy(_vec3b).sub(_vec3a).normalize();
         _vec3d.set(0, 0, 1);
-        const opacity = math.scaleLimit(_vec3c.angleTo(_vec3d) * math.RAD2DEG, 90, 100, 1, 0);
+        const angleOpacity = math.scaleLimit(_vec3c.angleTo(_vec3d) * math.RAD2DEG, 90, 100, 1, 0);
 
-        this.container.style.opacity = opacity;
+        if (this.currentOpacity > this.targetOpacity) {
+            this.currentOpacity = Math.max(this.currentOpacity - 0.05, 0);
+        }
+        else if (this.currentOpacity < this.targetOpacity) {
+            this.currentOpacity = Math.min(this.currentOpacity + 0.05, 1);
+        }
+
+        const opacity = angleOpacity * this.currentOpacity;
+        this.container.style.opacity = opacity.toString();
         this.line.material["opacity"] = opacity;
+
+        this.container.style.visibility = opacity ? "visible" : "hidden";
+        //this.line.visible = !!opacity;
 
         _vec3a.applyMatrix4(context.camera.projectionMatrix);
         _vec3b.applyMatrix4(context.camera.projectionMatrix);
@@ -162,6 +176,7 @@ export default class AnnotationHTML extends AnnotationObject
     {
         this.text.textContent = this.annotation.title;
         this.description.textContent = this.annotation.description;
+        this.targetOpacity = this.annotation.visible ? 1 : 0;
     }
 
     protected onPointerDown(event: PointerEvent)

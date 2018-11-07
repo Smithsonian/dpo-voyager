@@ -59,6 +59,11 @@ export default class AnnotationObject extends THREE.Object3D
     {
     }
 
+    setVisible(visible: boolean)
+    {
+
+    }
+
     setSelected(selected: boolean)
     {
     }

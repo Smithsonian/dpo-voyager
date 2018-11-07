@@ -39,6 +39,7 @@ export interface IAnnotation
     id?: string;
     title: string;
     description: string;
+    visible: boolean;
     expanded: boolean;
     snapshot: string;
     documents: string[];
@@ -57,9 +58,7 @@ export default class Annotations extends Collection<IAnnotation>
     create()
     {
         super.create();
-
         this.model = this.getComponent(Model);
-
     }
 
     createAnnotation(position: Vector3, direction: Vector3, index: number = -1): IAnnotation
@@ -67,6 +66,7 @@ export default class Annotations extends Collection<IAnnotation>
         const annotation = {
             title: "New Annotation",
             description: "",
+            visible: true,
             expanded: true,
             snapshot: "",
             documents: [],
@@ -78,6 +78,48 @@ export default class Annotations extends Collection<IAnnotation>
 
         this.addAnnotation(annotation);
         return annotation;
+    }
+
+    setEnabled(enabled: boolean)
+    {
+        this.getArray().forEach(annotation => annotation.visible = enabled);
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation: null });
+    }
+
+    setVisible(id: string, visible: boolean)
+    {
+        const annotation = this.get(id);
+        annotation.visible = visible;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+    }
+
+    setExpanded(id: string, expanded: boolean)
+    {
+        const annotation = this.get(id);
+        annotation.expanded = expanded;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+    }
+
+    setPosition(id: string, position: Vector3, direction: Vector3)
+    {
+        const annotation = this.get(id);
+        annotation.position = position;
+        annotation.direction = direction;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+    }
+
+    setTitle(id: string, title: string)
+    {
+        const annotation = this.get(id);
+        annotation.title = title;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+    }
+
+    setDescription(id: string, description: string)
+    {
+        const annotation = this.get(id);
+        annotation.description = description;
+        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
     }
 
     addAnnotation(annotation: IAnnotation): string
@@ -94,34 +136,13 @@ export default class Annotations extends Collection<IAnnotation>
         return annotation;
     }
 
-    moveAnnotation(id: string, position: Vector3, direction: Vector3)
-    {
-        const annotation = this.get(id);
-        annotation.position = position;
-        annotation.direction = direction;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
-    }
-
-    setAnnotationTitle(id: string, title: string)
-    {
-        const annotation = this.get(id);
-        annotation.title = title;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
-    }
-
-    setAnnotationDescription(id: string, description: string)
-    {
-        const annotation = this.get(id);
-        annotation.description = description;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
-    }
-
     fromData(data: IAnnotationData[], groupIds: string[], docIds: string[], snapIds: string[])
     {
         data.forEach(data => {
             const annotation = {
                 title: data.title || "",
                 description: data.description || "",
+                visible: data.visible || false,
                 expanded: data.expanded || false,
                 snapshot: data.snapshot !== undefined ? snapIds[data.snapshot] : "",
                 documents: data.documents ? data.documents.map(index => docIds[index]) : [],
@@ -148,6 +169,9 @@ export default class Annotations extends Collection<IAnnotation>
 
             if (annotation.description) {
                 data.description = annotation.description;
+            }
+            if (annotation.visible) {
+                data.visible = annotation.visible;
             }
             if (annotation.expanded) {
                 data.expanded = annotation.expanded;

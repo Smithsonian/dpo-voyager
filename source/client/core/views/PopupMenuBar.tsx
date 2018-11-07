@@ -21,6 +21,10 @@ import System from "@ff/core/ecs/System";
 
 import FlexContainer from "@ff/react/FlexContainer";
 import PopupButton from "@ff/react/PopupButton";
+import Button, { IButtonTapEvent } from "@ff/react/Button";
+
+import SystemController from "../components/SystemController";
+import Explorer from "../components/Explorer";
 
 import ViewportMenu from "./ViewportMenu";
 import RenderMenu from "./RenderMenu";
@@ -41,6 +45,30 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
         className: "sv-popup-menu-bar"
     };
 
+    protected controller: SystemController;
+
+    constructor(props: IPopupMenuBarProps)
+    {
+        super(props);
+
+        this.onTapAnnotations = this.onTapAnnotations.bind(this);
+        this.onTapArticle = this.onTapArticle.bind(this);
+
+        this.controller = props.system.getComponent(SystemController);
+    }
+
+    componentDidMount()
+    {
+        this.controller.addInputListener(Explorer, "Annotations.Enabled", this.onPropertyChange, this);
+        this.controller.addInputListener(Explorer, "Reader.Enabled", this.onPropertyChange, this);
+    }
+
+    componentWillUnmount()
+    {
+        this.controller.removeInputListener(Explorer, "Annotations.Enabled", this.onPropertyChange, this);
+        this.controller.removeInputListener(Explorer, "Reader.Enabled", this.onPropertyChange, this);
+    }
+
     render()
     {
         const {
@@ -48,6 +76,9 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
             system,
             portal
         } = this.props;
+
+        const annotationsVisible = this.controller.getInputValue(Explorer, "Annotations.Enabled");
+        const readerVisible = this.controller.getInputValue(Explorer, "Reader.Enabled");
 
         return (
             <FlexContainer
@@ -76,9 +107,36 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
                         system={system} />
                 </PopupButton>
 
+                <Button
+                    className="ff-popup-button"
+                    icon="fas fa-comment-alt"
+                    selected={annotationsVisible}
+                    onTap={this.onTapAnnotations}/>
+
+                <Button
+                    className="ff-popup-button"
+                    icon="fas fa-file-alt"
+                    selected={readerVisible}
+                    onTap={this.onTapArticle}/>
+
             </FlexContainer>
         );
     }
 
+    protected onTapAnnotations(event: IButtonTapEvent)
+    {
+        const visible = this.controller.getInputValue(Explorer, "Annotations.Enabled");
+        this.controller.actions.setInputValue(Explorer, "Annotations.Enabled", !visible);
+    }
 
+    protected onTapArticle()
+    {
+        const visible = this.controller.getInputValue(Explorer, "Reader.Enabled");
+        this.controller.actions.setInputValue(Explorer, "Reader.Enabled", !visible);
+    }
+
+    protected onPropertyChange()
+    {
+        this.forceUpdate();
+    }
 }

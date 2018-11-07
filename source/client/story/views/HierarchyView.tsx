@@ -52,7 +52,7 @@ export default class HierarchyView extends React.Component<IHierarchyViewProps, 
                 direction="vertical">
 
                 <FlexItem
-                    className="scroll-wrapper">
+                    className="sv-scroll-wrapper">
 
                     <HierarchyTreeView
                         controller={controller} />

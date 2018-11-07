@@ -25,7 +25,7 @@ import Entity from "@ff/core/ecs/Entity";
 import Component, { ComponentOrType } from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import { IPresentation, INode, IExplorer } from "common/types";
+import { IPresentation, INode, IVoyager } from "common/types";
 
 import Transform from "../components/Transform";
 import Scene from "../components/Scene";
@@ -41,8 +41,8 @@ import Groups from "../components/Groups";
 import Tours from "../components/Tours";
 import Meta from "../components/Meta";
 
+import Explorer from "../components/Explorer";
 import Renderer from "../components/Renderer";
-import Reader from "../components/Reader";
 
 import Loaders from "../loaders/Loaders";
 
@@ -166,17 +166,17 @@ export default class Presentation
             this.inflateNode(scene, node, pres, item);
         });
 
-        // explorer settings
-        const explorer: IExplorer = pres.explorer || {};
+        // Voyager settings
+        const voyager: IVoyager = pres.voyager || {};
 
-        const rendererComponent = entity.getOrCreateComponent(Renderer);
-        if (explorer.renderer) {
-            rendererComponent.fromData(explorer.renderer);
+        const explorerComponent = entity.getComponent(Explorer);
+        if (voyager.explorer) {
+            explorerComponent.fromData(voyager.explorer);
         }
 
-        const readerComponent = entity.getOrCreateComponent(Reader);
-        if (explorer.reader) {
-            readerComponent.fromData(explorer.reader);
+        const rendererComponent = entity.getComponent(Renderer);
+        if (voyager.renderer) {
+            rendererComponent.fromData(voyager.renderer);
         }
 
         this._cameraComponent = scene.getComponentInSubtree(Camera);
@@ -212,9 +212,9 @@ export default class Presentation
         }
 
         // explorer settings
-        pres.explorer = {
-            renderer: this.entity.getComponent(Renderer).toData(),
-            reader: this.entity.getComponent(Reader).toData()
+        pres.voyager = {
+            explorer: this.entity.system.getComponent(Explorer).toData(),
+            renderer: this.entity.system.getComponent(Renderer).toData()
         };
 
         return pres as IPresentation;

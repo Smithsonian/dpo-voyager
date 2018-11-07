@@ -158,8 +158,13 @@ export default class AnnotationsView extends Object3D
 
     protected updateView(annotation: IAnnotation)
     {
-        const view = this.findViewByAnnotation(annotation);
-        view.update();
+        if (annotation) {
+            const view = this.findViewByAnnotation(annotation);
+            view.update();
+        }
+        else {
+            Object.keys(this.views).forEach(key => this.views[key].update());
+        }
     }
 
     protected findViewByAnnotation(annotation: IAnnotation): AnnotationObject | null

@@ -52,7 +52,7 @@ export interface IPresentation
     references?: IReference[];
     cameras?: ICamera[];
     lights?: ILight[];
-    explorer?: IExplorer;
+    voyager?: IVoyager;
 }
 
 export interface IAsset
@@ -172,38 +172,30 @@ export interface ISpotLightProps extends IPointLightProps
 /**
  * Viewer-specific properties.
  */
-export interface IExplorer
+export interface IVoyager
 {
+    explorer?: IExplorer;
     renderer?: IRenderer;
-    reader?: IReader;
     tools?: ITools;
 }
 
-export interface IViewport
+export interface IExplorer
 {
-    transform: TMatrix4;
-    camera: ICamera;
+    units: TUnitType;
+    annotationsEnabled: boolean;
+    readerEnabled: boolean;
+    readerDocument: string;
 }
 
 /**
- * Engine state.
+ * Render settings.
  */
 export interface IRenderer
 {
-    units: TUnitType;
     shader: TShaderType;
     exposure: number;
     gamma: number;
     //environment: any; // TODO
-}
-
-/**
- * Reader properties.
- */
-export interface IReader
-{
-    enabled: boolean;
-    document?: Identifier;
 }
 
 export interface ITools

@@ -37,7 +37,7 @@
 
 .ff-button {
   &.ff-selected {
-    background: $color-secondary !important;
+    background: $color-primary !important;
   }
 }
 
@@ -139,8 +139,6 @@
   }
 
   .sv-editor-pane {
-    padding: 4px;
-
     .ff-control + .ff-control {
       margin: 4px 0 0 0;
     }
@@ -157,12 +155,14 @@
       cursor: pointer;
 
       &.sv-selected {
-        background: $color-secondary !important;
+        background: $color-primary !important;
       }
     }
   }
 
   .sv-annotations-detail-view {
+    padding: 4px;
+
     .ff-text-edit {
       flex-grow: 1;
       max-height: 100px;
@@ -218,7 +218,7 @@
         }
 
         &.ff-selected {
-          background: $color-secondary;
+          background: $color-primary;
         }
       }
     }

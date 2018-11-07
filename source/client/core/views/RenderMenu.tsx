@@ -24,8 +24,8 @@ import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
 import Button, { IButtonTapEvent } from "@ff/react/Button";
 
-import Scene, { EShaderMode } from "../components/Scene";
-import PresentationController from "../components/PresentationController";
+import Renderer, { EShaderMode } from "../components/Renderer";
+import SystemController from "../components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +41,7 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, {}>
         className: "sv-render-menu"
     };
 
-    protected controller: PresentationController;
+    protected controller: SystemController;
 
     constructor(props: IRenderMenuProps)
     {
@@ -49,22 +49,22 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, {}>
 
         this.onSelectShaderMode = this.onSelectShaderMode.bind(this);
 
-        this.controller = props.system.getComponent(PresentationController);
+        this.controller = props.system.getComponent(SystemController);
     }
 
     componentDidMount()
     {
-        this.controller.addInputListener(Scene, "Shader.Mode", this.onShaderModeChanged, this);
+        this.controller.addInputListener(Renderer, "Shader", this.onPropertyChange, this);
     }
 
     componentWillUnmount()
     {
-        this.controller.removeInputListener(Scene, "Shader.Mode", this.onShaderModeChanged, this);
+        this.controller.removeInputListener(Renderer, "Shader", this.onPropertyChange, this);
     }
 
     render()
     {
-        const shaderMode = this.controller.getInputValue(Scene, "Shader.Mode");
+        const shaderMode = this.controller.getInputValue(Renderer, "Shader");
 
         return (
             <FlexContainer
@@ -119,10 +119,10 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, {}>
 
     protected onSelectShaderMode(event: IButtonTapEvent)
     {
-        this.controller.actions.setInputValue(Scene, "Shader.Mode", event.index);
+        this.controller.actions.setInputValue(Renderer, "Shader", event.index);
     }
 
-    protected onShaderModeChanged(shaderMode: EShaderMode)
+    protected onPropertyChange()
     {
         this.forceUpdate();
     }

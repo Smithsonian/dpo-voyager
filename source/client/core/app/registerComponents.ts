@@ -19,7 +19,6 @@ import Registry from "@ff/core/ecs/Registry";
 
 import Controller from "../components/Controller";
 import PresentationController from "../components/PresentationController";
-import ViewportController from "../components/ViewportController";
 import SystemController from "../components/SystemController";
 import AnnotationsController from "../components/AnnotationsController";
 import ToursController from "../components/ToursController";
@@ -30,6 +29,7 @@ import Camera from "../components/Camera";
 import Collection from "../components/Collection";
 import DirectionalLight from "../components/DirectionalLight";
 import Documents from "../components/Documents";
+import Explorer from "../components/Explorer";
 import Groups from "../components/Groups";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 import HomeGrid from "../components/HomeGrid";
@@ -44,7 +44,6 @@ import PickManip from "../components/PickManip";
 import PointLight from "../components/PointLight";
 import PoseManip from "../components/PoseManip";
 import Process from "../components/Process";
-import Reader from "../components/Reader";
 import Reference from "../components/Reference";
 import Renderer from "../components/Renderer";
 import Scene from "../components/Scene";
@@ -66,6 +65,7 @@ export function registerComponents(registry: Registry)
         Controller,
         DirectionalLight,
         Documents,
+        Explorer,
         PresentationController,
         Groups,
         Hierarchy,
@@ -81,9 +81,7 @@ export function registerComponents(registry: Registry)
         PointLight,
         PoseManip,
         Process,
-        Reader,
         Reference,
-        ViewportController,
         Renderer,
         Scene,
         Snapshots,

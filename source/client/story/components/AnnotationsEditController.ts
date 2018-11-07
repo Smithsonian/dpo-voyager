@@ -19,12 +19,14 @@ import * as THREE from "three";
 
 import { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
+import Explorer from "../../core/components/Explorer";
 import Model from "../../core/components/Model";
 import Annotations, { IAnnotation, Vector3 } from "../../core/components/Annotations";
 
 import PickManip, { IPickManipPickEvent } from "../../core/components/PickManip";
-import PrepController, { EPrepMode, IPrepModeChangeEvent } from "./PrepController";
+import SystemController from "../../core/components/SystemController";
 import AnnotationsController, { ISelectAnnotationEvent } from "../../core/components/AnnotationsController";
+import PrepController, { EPrepMode, IPrepModeChangeEvent } from "./PrepController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
 
@@ -57,6 +59,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
 
     protected mode: EAnnotationsEditMode = EAnnotationsEditMode.Off;
 
+    protected systemController: SystemController = null;
     protected prepController: PrepController = null;
     protected annotationsController: AnnotationsController = null;
     protected pickManip: PickManip = null;
@@ -73,6 +76,8 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
     create()
     {
         super.create();
+
+        this.systemController = this.getComponent(SystemController);
 
         this.prepController = this.getComponent(PrepController);
         this.prepController.on("mode", this.onPrepMode, this);
@@ -100,8 +105,8 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
             createAnnotation: commander.register({
                 name: "Create Annotation", do: this.createAnnotation, target: this
             }),
-            moveAnnotation: commander.register({
-                name: "Move Annotation", do: this.moveAnnotation, target: this
+            setPosition: commander.register({
+                name: "Move Annotation", do: this.setPosition, target: this
             }),
             setTitle: commander.register({
                 name: "Set Annotation Title", do: this.setTitle, target: this
@@ -149,12 +154,12 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
         }
     }
 
-    protected moveAnnotation(position: Vector3, direction: Vector3)
+    protected setPosition(position: Vector3, direction: Vector3)
     {
         const annotation = this.selectedAnnotation;
 
         if (annotation) {
-            this.activeAnnotations.moveAnnotation(annotation.id, position, direction);
+            this.activeAnnotations.setPosition(annotation.id, position, direction);
 
             this.emit<IAnnotationsChangeEvent>("change", {
                 what: "item", annotations: this.activeAnnotations, annotation
@@ -167,7 +172,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
         const annotation = this.selectedAnnotation;
 
         if (annotation) {
-            this.activeAnnotations.setAnnotationTitle(annotation.id, title);
+            this.activeAnnotations.setTitle(annotation.id, title);
 
             this.emit<IAnnotationsChangeEvent>("change", {
                 what: "set", annotations: this.activeAnnotations, annotation
@@ -180,7 +185,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
         const annotation = this.selectedAnnotation;
 
         if (annotation) {
-            this.activeAnnotations.setAnnotationDescription(annotation.id, description);
+            this.activeAnnotations.setDescription(annotation.id, description);
 
             this.emit<IAnnotationsChangeEvent>("change", {
                 what: "set", annotations: this.activeAnnotations, annotation
@@ -191,7 +196,9 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
     protected onPrepMode(event: IPrepModeChangeEvent)
     {
         if (event.mode === EPrepMode.Annotate) {
+            this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", true);
             this.setMode(EAnnotationsEditMode.Select);
+
         }
         else {
             this.setMode(EAnnotationsEditMode.Off);
@@ -245,7 +252,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
                     break;
 
                 case EAnnotationsEditMode.Move:
-                    this.actions.moveAnnotation(_pos.toArray(), _dir.toArray());
+                    this.actions.setPosition(_pos.toArray(), _dir.toArray());
                     break;
             }
         }

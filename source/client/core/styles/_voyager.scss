@@ -19,8 +19,8 @@
 // BASE COLORS
 
 $color-background: #3e3e3e;
-$color-primary: #cc671f; // Smithsonian primary blue
-$color-secondary: #0080b3; // Smithsonian secondary indigo
+$color-primary: #0089bf; // Smithsonian primary blue
+$color-secondary: #ffcd00; // Smithsonian secondary yellow
 $color-text-explorer: #f0f0f0;
 $color-text-explorer-dim: #a0a0a0;
 $color-background-explorer: transparentize(#202020, 0.3);
@@ -77,12 +77,15 @@ html {
 
 .sv-annotation {
   position: absolute;
-  max-width: 17%;
-  min-width: 120px;
+  max-width: 20%;
   box-sizing: border-box;
   padding: 3px 4px;
   background: transparentize(black, 0.4);
   cursor: pointer;
+
+  &.sv-selected {
+    min-width: 120px;
+  }
 
   &.sv-q0 {
     transform: translate(0, -100%);
@@ -105,7 +108,6 @@ html {
     text-align: left;
   }
 
-
   .sv-text {
     font-weight: bold;
     font-size: 0.9rem;
@@ -117,21 +119,6 @@ html {
     height: 0;
     overflow: hidden;
     transition: height 0.2s;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RESPONSIVENESS
-
-@media (max-width: 320px) {
-  .sv-logo {
-    display: none !important;
-  }
-}
-
-@media (max-height: 240px) {
-  .sv-popup-menu-bar {
-    display: none !important;
   }
 }
 
@@ -162,9 +149,19 @@ html {
     position: absolute;
     top: 8px;
     right: 8px;
-    max-width: 200px;
-    min-width: 160px;
-    width: 18%;
+    width: 190px;
+    //max-width: 200px;
+    //min-width: 160px;
+    //width: 18%;
+  }
+
+  @media (max-width: 450px) {
+    .sv-logo {
+      //display: none !important;
+      top: unset;
+      bottom: 8px;
+      width: 160px;
+    }
   }
 }
 
@@ -175,22 +172,39 @@ html {
     margin: 4px;
   }
 
+  @media (max-height: 250px) {
+    .sv-popup-menu-bar {
+      display: none !important;
+    }
+  }
+
   .ff-popup-button {
     pointer-events: auto;
     box-sizing: border-box;
     width: 44px;
     height: 44px;
     margin: 4px;
-    padding: 8px;
     border-radius: 100px;
-    font-size: 24px;
     background: $color-background-explorer;
     color: transparentize($color-text-explorer, 0.4);
-    transition: color $tx-short;
+    transition: color $tx-short, background-color $tx-short;
+    font-size: 22px;
+    line-height: 42px;
+    text-align: center;
+    vertical-align: middle;
 
     &:hover, &:focus {
       outline: none;
       color: $color-text-explorer;
+    }
+
+    &.ff-selected {
+      background: $color-primary;
+      color: $color-text-explorer;
+
+      .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+      }
     }
   }
 }
@@ -231,7 +245,7 @@ html {
     }
 
     &.ff-selected {
-      background: $color-secondary !important;
+      background: $color-primary !important;
       color: $color-text-explorer;
     }
 

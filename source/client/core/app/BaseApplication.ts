@@ -23,8 +23,10 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import { IPresentation, IItem } from "common/types";
 
+import Explorer from "../components/Explorer";
+import Renderer from "../components/Renderer";
+
 import SystemController from "../components/SystemController";
-import ViewportController from "../components/ViewportController";
 import PresentationController from "../components/PresentationController";
 import AnnotationsController from "../components/AnnotationsController";
 import ToursController from "../components/ToursController";
@@ -66,8 +68,10 @@ export default class BaseApplication
     protected context: UpdateContext;
     protected main: Entity;
 
+    protected explorer: Explorer;
+    protected renderer: Renderer;
+
     protected systemController: SystemController;
-    readonly viewportController: ViewportController;
     protected presentationController: PresentationController;
     protected annotationsController: AnnotationsController;
     protected toursController: ToursController;
@@ -100,11 +104,11 @@ export default class BaseApplication
         // main entity
         this.main = this.system.createEntity("Main");
 
+        this.explorer = this.main.createComponent(Explorer);
+        this.renderer = this.main.createComponent(Renderer);
+
         this.systemController = this.main.createComponent(SystemController);
         this.systemController.createActions(this.commander);
-
-        this.viewportController = this.main.createComponent(ViewportController);
-        this.viewportController.createActions(this.commander);
 
         this.presentationController = this.main.createComponent(PresentationController);
         this.presentationController.createActions(this.commander);
@@ -116,7 +120,7 @@ export default class BaseApplication
         this.toursController.createActions(this.commander);
 
         this.pickManip = this.main.createComponent(PickManip);
-        this.viewportController.setNextManip(this.pickManip);
+        this.renderer.setNextManip(this.pickManip);
 
         this.orbitManip = this.main.createComponent(OrbitManip);
         this.pickManip.next.component = this.orbitManip;
@@ -235,7 +239,7 @@ export default class BaseApplication
             return;
         }
 
-        this.viewportController.renderViews(scene, camera);
+        this.renderer.renderViews(scene, camera);
     }
 
     protected onAnimationFrame()

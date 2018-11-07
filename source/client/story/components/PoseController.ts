@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import ViewportController, { EViewportLayout } from "../../core/components/ViewportController";
+import Renderer, { EViewportLayout } from "../../core/components/Renderer";
 import PrepController, { IPrepModeChangeEvent, EPrepMode } from "./PrepController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
@@ -38,7 +38,7 @@ export default class PoseController extends Controller<PoseController>
     protected mode: EPoseEditMode = EPoseEditMode.Off;
 
     protected prepController: PrepController = null;
-    protected viewportController: ViewportController = null;
+    protected renderer: Renderer = null;
 
     constructor(id?: string)
     {
@@ -53,7 +53,7 @@ export default class PoseController extends Controller<PoseController>
         this.prepController = this.getComponent(PrepController);
         this.prepController.on("mode", this.onPrepMode, this);
 
-        this.viewportController = this.getComponent(ViewportController);
+        this.renderer = this.getComponent(Renderer);
     }
 
     dispose()
@@ -81,11 +81,11 @@ export default class PoseController extends Controller<PoseController>
     {
         if (event.mode === EPrepMode.Pose) {
             this.setMode(EPoseEditMode.Select);
-            this.viewportController.setViewportLayout(EViewportLayout.Quad);
+            this.renderer.setViewportLayout(EViewportLayout.Quad);
         }
         else {
             this.setMode(EPoseEditMode.Off);
-            this.viewportController.setViewportLayout(EViewportLayout.Single);
+            this.renderer.setViewportLayout(EViewportLayout.Single);
         }
     }
 }

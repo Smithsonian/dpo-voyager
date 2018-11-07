@@ -18,9 +18,9 @@
 import resolvePathname from "resolve-pathname";
 
 import { IPublisherEvent } from "@ff/core/Publisher";
-import Component, { ComponentOrType, ComponentType } from "@ff/core/ecs/Component";
+import Component, { ComponentOrType } from "@ff/core/ecs/Component";
 
-import { IPresentation, IItem } from "common/types";
+import { IPresentation } from "common/types";
 import * as template from "../templates/presentation.json";
 
 import { EDerivativeQuality } from "../app/Derivative";
@@ -63,9 +63,6 @@ export default class PresentationController extends Controller<PresentationContr
     createActions(commander: Commander)
     {
         const actions = {
-            setInputValue: commander.register({
-                name: "Set Value", do: this.setInputValue, target: this
-            }),
             loadPresentation: commander.register({
                 name: "Load Presentation", do: this.loadPresentation, target: this
             })
@@ -204,56 +201,6 @@ export default class PresentationController extends Controller<PresentationContr
         });
 
         this.presentations.length = 0;
-    }
-
-    addInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
-    {
-        this.getSafeComponent(componentType).in(path).on("value", callback, context);
-    }
-
-    removeInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
-    {
-        this.getSafeComponent(componentType).in(path).off("value", callback, context);
-    }
-
-    addOutputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
-    {
-        this.getSafeComponent(componentType).out(path).on("value", callback, context);
-    }
-
-    removeOutputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
-    {
-        this.getSafeComponent(componentType).out(path).off("value", callback, context);
-    }
-
-    getInputValue(componentType: ComponentType, path: string)
-    {
-        return this.getSafeComponent(componentType).in(path).value
-    }
-
-    getOutputVaue(componentType: ComponentType, path: string)
-    {
-        return this.getSafeComponent(componentType).out(path).value;
-    }
-
-    protected setInputValue(componentType: ComponentType, path: string, value: any)
-    {
-        this.getSafeComponent(componentType).in(path).setValue(value);
-    }
-
-    protected getSafeComponent(componentType: ComponentType): Component
-    {
-        const presentation = this.presentation;
-        if (!presentation) {
-            throw new Error("PresentationController - no active presentation");
-        }
-
-        const component = presentation.entity.getComponent(componentType);
-        if (!component) {
-            throw new Error(`PresentationController, component type not found: ${componentType}`);
-        }
-
-        return component;
     }
 
     protected setActivePresentation(index: number)

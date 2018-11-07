@@ -41,6 +41,8 @@ const _qualityLevels = [
     EDerivativeQuality.Highest
 ];
 
+export { EShaderMode };
+
 export default class ModelComponent extends Object3D
 {
     static readonly type: string = "Model";

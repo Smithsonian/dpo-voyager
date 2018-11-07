@@ -24,7 +24,7 @@ import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
 import ViewportManager, { EViewportLayout, IViewportLayoutChangeEvent } from "../app/ViewportManager";
-import ViewportController from "../components/ViewportController";
+import Renderer from "../components/Renderer";
 
 import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
 import ExplorerOverlayView from "./ExplorerOverlayView";
@@ -61,20 +61,20 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
 
     componentWillMount()
     {
-        const viewportController = this.props.system.getComponent(ViewportController);
+        const renderer = this.props.system.getComponent(Renderer);
 
-        if (viewportController) {
-            this.viewportManager = viewportController.registerView(this);
+        if (renderer) {
+            this.viewportManager = renderer.registerView(this);
             this.viewportManager.on("layout", this.onLayout, this);
         }
     }
 
     componentWillUnmount()
     {
-        const viewportController = this.props.system.getComponent(ViewportController);
+        const renderer = this.props.system.getComponent(Renderer);
 
-        if (viewportController) {
-            viewportController.unregisterView(this);
+        if (renderer) {
+            renderer.unregisterView(this);
             this.viewportManager.off("layout", this.onLayout, this);
             this.viewportManager = null;
         }
