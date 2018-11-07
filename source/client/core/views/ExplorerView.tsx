@@ -20,7 +20,6 @@ import * as THREE from "three";
 
 import System from "@ff/core/ecs/System";
 
-import Container from "@ff/react/Container";
 import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
@@ -51,8 +50,6 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
     canvasWidth: number = 0;
     canvasHeight: number = 0;
 
-    protected containerRef: React.RefObject<Container>;
-
     constructor(props: IExplorerViewProps)
     {
         super(props);
@@ -60,13 +57,6 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
         this.onCanvas = this.onCanvas.bind(this);
         this.onCanvasResize = this.onCanvasResize.bind(this);
         this.onQuadSplitChange = this.onQuadSplitChange.bind(this);
-
-        this.containerRef = React.createRef();
-    }
-
-    get container(): Container | null
-    {
-        return this.containerRef.current;
     }
 
     componentWillMount()
@@ -108,30 +98,37 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
                 className={className}
                 handler={this}>
 
-                <Canvas
-                    onCanvas={this.onCanvas}
-                    onResize={this.onCanvasResize} />
-
-                <Container
-                    ref={this.containerRef} />
-
                 <div
-                    id="sv-annotations"
-                    className="sv-annotations" />
+                    className="sv-explorer-content">
 
-                <ExplorerOverlayView
-                    system={system} />
+                    <Canvas
+                        onCanvas={this.onCanvas}
+                        onResize={this.onCanvasResize} />
 
-                <QuadSplitOverlay
-                    layout={layout}
-                    horizontalSplit={horizontalSplit}
-                    verticalSplit={verticalSplit}
-                    onChange={this.onQuadSplitChange}/>
-
-                <div
-                    className="sv-logo">
-                    <img src="images/si-dpo3d-logo-neg.svg" />
+                    <div
+                        id="sv-annotations"
+                        className="sv-annotations" />
                 </div>
+
+                <div
+                    className="sv-explorer-ui">
+
+                    <ExplorerOverlayView
+                        system={system} />
+
+                    <QuadSplitOverlay
+                        layout={layout}
+                        horizontalSplit={horizontalSplit}
+                        verticalSplit={verticalSplit}
+                        onChange={this.onQuadSplitChange}/>
+
+                    <div
+                        className="sv-logo">
+                        <img src="images/si-dpo3d-logo-neg.svg" />
+                    </div>
+
+                </div>
+
             </ManipTarget>
         );
     }

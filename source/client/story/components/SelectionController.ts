@@ -69,7 +69,7 @@ export default class SelectionController extends Controller<SelectionController>
 
         const pickManip = this.system.getComponent(PickManip);
         if (pickManip) {
-            pickManip.on("up", this.onPick, this);
+            pickManip.on("pick", this.onPick, this);
         }
     }
 
@@ -83,7 +83,7 @@ export default class SelectionController extends Controller<SelectionController>
     {
         const pickManip = this.system.getComponent(PickManip);
         if (pickManip) {
-            pickManip.off("up", this.onPick, this);
+            pickManip.off("pick", this.onPick, this);
         }
 
         this.system.off("component", this.onComponent, this);

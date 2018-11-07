@@ -77,7 +77,7 @@ export default class PrepApplication extends BaseApplication
 
         this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
 
-        this.pickManip.next.component = this.orbitManip;
+        //this.pickManip.next.component = this.orbitManip;
         this.orbitManip.next.component = this.viewportCameraManip;
 
         this.start();

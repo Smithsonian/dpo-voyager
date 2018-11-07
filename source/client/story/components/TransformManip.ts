@@ -21,7 +21,7 @@ import Object3D from "../../core/components/Object3D";
 
 import { TransformControls } from "../../core/three/TransformControls";
 import { IViewportPointerEvent, IViewportTriggerEvent } from "../../core/app/Viewport";
-import RenderContext, { IRenderable } from "../../core/app/RenderContext";
+import RenderContext from "../../core/app/RenderContext";
 
 import SelectionController, { ISelectComponentEvent } from "./SelectionController";
 import Model from "../../core/components/Model";
@@ -30,7 +30,7 @@ import Manip from "../../core/components/Manip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TransformManip extends Manip implements IRenderable
+export default class TransformManip extends Manip
 {
     static readonly type: string = "TransformManip";
 
@@ -53,7 +53,7 @@ export default class TransformManip extends Manip implements IRenderable
         this.manip.camera.position.set(0, 0, 50);
     }
 
-    render(context: RenderContext)
+    preRender(context: RenderContext)
     {
         const viewport = context.viewport;
         //this.manip.camera = viewport.camera;

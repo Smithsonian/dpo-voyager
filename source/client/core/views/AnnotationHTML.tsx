@@ -52,7 +52,8 @@ export default class AnnotationHTML extends AnnotationObject
     {
         super(views, annotation);
 
-        this.onClick = this.onClick.bind(this);
+        this.onPointerDown = this.onPointerDown.bind(this);
+        this.onPointerUp = this.onPointerUp.bind(this);
 
         const geo = new THREE.Geometry();
         geo.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 5, 0));
@@ -148,7 +149,8 @@ export default class AnnotationHTML extends AnnotationObject
         this.container.className = "sv-annotation";
         this.container.appendChild(this.text);
         this.container.appendChild(this.wrapper);
-        this.container.addEventListener("click", this.onClick);
+        this.container.addEventListener("pointerdown", this.onPointerDown);
+        this.container.addEventListener("pointerup", this.onPointerUp);
 
         const canvas = document.getElementById("sv-annotations");
         canvas.appendChild(this.container);
@@ -162,9 +164,15 @@ export default class AnnotationHTML extends AnnotationObject
         this.description.textContent = this.annotation.description;
     }
 
-    protected onClick()
+    protected onPointerDown(event: PointerEvent)
+    {
+        event.stopPropagation();
+    }
+
+    protected onPointerUp(event: PointerEvent)
     {
         this.views.onClick(this);
+        event.stopPropagation();
     }
 }
 

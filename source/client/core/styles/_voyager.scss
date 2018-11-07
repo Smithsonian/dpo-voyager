@@ -78,7 +78,7 @@ html {
 .sv-annotation {
   position: absolute;
   max-width: 17%;
-  min-width: 0;
+  min-width: 120px;
   box-sizing: border-box;
   padding: 3px 4px;
   background: transparentize(black, 0.4);
@@ -143,10 +143,20 @@ html {
   background: $color-background-dark;
   color: $color-text;
   font-size: 0.9rem;
+}
+
+.sv-explorer-content {
+  @include full-size;
+  //filter: blur(5px);
 
   .ff-canvas {
     @include full-size;
   }
+}
+
+.sv-explorer-ui {
+  @include full-size;
+  pointer-events: none;
 
   .sv-logo {
     position: absolute;
@@ -159,7 +169,7 @@ html {
 }
 
 .sv-explorer-overlay-view {
-  pointer-events: none;
+  @include full-size;
 
   .sv-popup-menu-bar {
     margin: 4px;

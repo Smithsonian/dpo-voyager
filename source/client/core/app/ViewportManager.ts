@@ -179,7 +179,7 @@ export default class ViewportManager extends Publisher<ViewportManager>
         const x = vpEvent.centerX - rect.left;
         const y = vpEvent.centerY - rect.top;
 
-        if (event.downPointerCount === 0 || (event.isPrimary && event.type === "down")) {
+        if ((event.pointerCount === 0 && event.type === "move") || (event.isPrimary && event.type === "down")) {
             this.activeViewport = vpEvent.viewport = this.viewports.find(viewport => viewport.isPointInside(x, y));
         }
         else {
