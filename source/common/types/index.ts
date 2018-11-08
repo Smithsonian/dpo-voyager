@@ -15,13 +15,20 @@
  * limitations under the License.
  */
 
-import { IItem, TDerivativeUsage, TDerivativeQuality } from "./item";
-import { IPresentation, IExplorer, IRenderer, ITools, INode, IVoyager, TShaderType, TUnitType } from "./presentation";
+import {
+    IItem, TDerivativeUsage, TDerivativeQuality
+} from "./item";
+
+import {
+    IPresentation,
+    IExplorer, IRenderer, IReader, ITools,
+    INode, IVoyager, TShaderType, TUnitType
+} from "./presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IItem, IPresentation }
-export { INode, IVoyager, IExplorer, IRenderer, ITools };
+export { INode, IVoyager, IExplorer, IRenderer, IReader, ITools };
 
 export { TUnitType }
 export enum EUnitType { mm, cm, m, in, ft }

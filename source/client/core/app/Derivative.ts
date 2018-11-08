@@ -52,6 +52,17 @@ export default class Derivative
         this.boundingBox = new THREE.Box3();
     }
 
+    dispose()
+    {
+        if (this.model) {
+            this.model.traverse((object: THREE.Mesh) => {
+                if (object.isMesh) {
+                    this.disposeMesh(object);
+                }
+            })
+        }
+    }
+
     load(loader: AssetLoader, assetPath?: string): Promise<this>
     {
         const modelAsset = this.findAsset(EAssetType.Model);
@@ -162,6 +173,31 @@ export default class Derivative
                     material.normalMap = texture;
                     break;
             }
+        }
+    }
+
+    protected disposeMesh(mesh: THREE.Mesh)
+    {
+        mesh.geometry.dispose();
+        const material: any = mesh.material;
+
+        if (material.map) {
+            material.map.dispose();
+        }
+        if (material.aoMap) {
+            material.aoMap.dispose();
+        }
+        if (material.emissiveMap) {
+            material.emissiveMap.dispose();
+        }
+        if (material.metalnessMap) {
+            material.metalnessMap.dispose();
+        }
+        if (material.roughnessMap) {
+            material.roughnessMap.dispose();
+        }
+        if (material.normalMap) {
+            material.normalMap.dispose();
         }
     }
 }

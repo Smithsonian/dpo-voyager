@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
+import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
-import { IComponentChangeEvent } from "@ff/core/ecs/Component";
+import Component, { IComponentChangeEvent } from "@ff/core/ecs/Component";
 
-import { IDocument as IDocumentData } from "common/types/item";
+import { IDocuments, IDocument as IDocumentData } from "common/types/item";
 
-import Collection from "./Collection";
+import Reader from "./Reader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,15 +41,18 @@ export interface IDocument
     thumbnailUri: string;
 }
 
-export default class Documents extends Collection<IDocument>
+export default class Documents extends Component
 {
     static readonly type: string = "Documents";
 
-    protected rootCollection: Documents = null;
+    protected mainDocument: IDocument;
+    protected documents: Dictionary<IDocument> = {};
+    protected documentList: IDocument[] = [];
+    protected reader: Reader = null;
 
     create()
     {
-        this.rootCollection = this.findRootCollection();
+        this.reader = this.system.getComponent(Reader);
     }
 
     createDocument(): string
@@ -66,33 +70,40 @@ export default class Documents extends Collection<IDocument>
 
     addDocument(document: IDocument): string
     {
-        const id = this.insert(document);
-
-        if (this.rootCollection) {
-            this.rootCollection.addDocument(document);
+        if (!document.id) {
+            document.id = uniqueId();
         }
+
+        this.documents[document.id] = document;
+        this.documentList.push(document);
+        this.reader.addDocument(document);
 
         this.emit<IDocumentChangeEvent>("change", { what: "add", document });
 
-        return id;
+        return document.id;
     }
 
     removeDocument(id: string): IDocument
     {
-        const document = this.remove(id);
-
-        if (this.rootCollection) {
-            this.rootCollection.removeDocument(id);
-        }
+        const document = this.documents[id];
+        const index = this.documentList.indexOf(document);
+        this.documentList.splice(index, 1);
+        delete this.documents[id];
+        this.reader.removeDocument(id);
 
         this.emit<IDocumentChangeEvent>("change", { what: "remove", document });
 
         return document;
     }
 
-    fromData(data: IDocumentData[]): string[]
+    getDocuments(): Readonly<IDocument[]>
     {
-        return data.map(docData =>
+        return this.documentList;
+    }
+
+    fromData(data: IDocuments): string[]
+    {
+        const ids = data.documents.map(docData =>
             this.addDocument({
                 title: docData.title,
                 description: docData.description || "",
@@ -101,15 +112,20 @@ export default class Documents extends Collection<IDocument>
                 thumbnailUri: docData.thumbnailUri || ""
             })
         );
+
+        if (data.mainDocument !== undefined) {
+            this.mainDocument = this.documentList[data.mainDocument];
+        }
+
+        return ids;
     }
 
-    toData(): { data: IDocumentData[], ids: Dictionary<number> }
+    toData(): { data: IDocuments, ids: Dictionary<number> }
     {
-        const documents = this.getArray();
-        const result = { data: [], ids: {} };
+        const result = { data: { documents: [] } as IDocuments, ids: {} };
 
-        documents.forEach((document, index) => {
-
+        Object.keys(this.documents).forEach((key, index) => {
+            const document = this.documents[key];
             result.ids[document.id] = index;
 
             const docData: IDocumentData = {
@@ -127,8 +143,12 @@ export default class Documents extends Collection<IDocument>
                 docData.thumbnailUri = document.thumbnailUri;
             }
 
-            result.data.push(docData);
+            result.data.documents.push(docData);
         });
+
+        if (this.mainDocument) {
+            result.data.mainDocument = result.ids[this.mainDocument.id];
+        }
 
         return result;
     }

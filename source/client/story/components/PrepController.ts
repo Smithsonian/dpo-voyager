@@ -19,8 +19,7 @@ import * as FileSaver from "file-saver";
 
 import { IPublisherEvent } from "@ff/core/Publisher";
 
-import Item from "../../core/app/Item";
-import Meta from "../../core/components/Meta";
+import Item from "../../core/components/Item";
 
 import PresentationController, { IPresentationChangeEvent } from "../../core/components/PresentationController";
 import SelectionController from "./SelectionController";
@@ -124,17 +123,17 @@ export default class PrepController extends Controller<PrepController>
     {
         const components = this.selectionController.getSelectedComponents();
         for (let i = 0, n = components.length; i < n; ++i) {
-            const meta = components[i].getComponent(Meta);
-            if (meta) {
-                return this.presentationController.getItemByEntity(meta.entity);
+            const item = components[i].getComponent(Item);
+            if (item) {
+                return item;
             }
         }
 
         const entities = this.selectionController.getSelectedEntities();
         for (let i = 0, n = entities.length; i < n; ++i) {
-            const meta = entities[i].getComponent(Meta);
-            if (meta) {
-                return this.presentationController.getItemByEntity(meta.entity);
+            const item = components[i].getComponent(Item);
+            if (item) {
+                return item;
             }
         }
 

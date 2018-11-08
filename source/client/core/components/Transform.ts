@@ -104,7 +104,9 @@ export default class Transform extends Hierarchy
         }
 
         // detach the three.js object from its parent and children
-        this._object.parent.remove(this._object);
+        if (this._object.parent) {
+            this._object.parent.remove(this._object);
+        }
         this._object.children.slice().forEach(child => this._object.remove(child));
 
         super.dispose();

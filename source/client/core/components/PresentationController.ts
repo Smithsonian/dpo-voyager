@@ -22,17 +22,15 @@ import Component, { ComponentOrType } from "@ff/core/ecs/Component";
 
 import { IPresentation } from "common/types";
 import * as template from "../templates/presentation.json";
-
 import { EDerivativeQuality } from "../app/Derivative";
+import Loaders from "../loaders/Loaders";
+
 import PickManip from "./PickManip";
 import OrbitManip from "./OrbitManip";
-
-import Loaders from "../loaders/Loaders";
-import Presentation from "../app/Presentation";
-import Item from "../app/Item";
+import Presentation from "./Presentation";
+import Item from "./Item";
 
 import Controller, { Actions, Commander } from "./Controller";
-import Entity from "@ff/core/ecs/Entity";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,31 +75,12 @@ export default class PresentationController extends Controller<PresentationContr
         return this.presentation;
     }
 
-    forEachItem(callback: (item: Item, index: number) => void)
-    {
-        if (this.activePresentation) {
-            this.activePresentation.forEachItem(callback);
-        }
-    }
-
     forEachComponent<T extends Component>
         (componentOrType: ComponentOrType<T>, callback: (component: T) => void)
     {
         if (this.activePresentation) {
             this.activePresentation.forEachComponent(componentOrType, callback);
         }
-    }
-
-    getItemByEntity(entity: Entity): Item | null
-    {
-        for (let i = 0, n = this.presentations.length; i < n; ++i) {
-            const item = this.presentations[i].getItemByEntity(entity);
-            if (item) {
-                return item;
-            }
-        }
-
-        return null;
     }
 
     loadModel(modelUrl: string, quality?: EDerivativeQuality): Promise<void>
@@ -111,7 +90,10 @@ export default class PresentationController extends Controller<PresentationContr
         return Promise.resolve().then(() => {
             console.log(`Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[quality]}\n`,
                 `model url: ${modelUrl}`);
-            const item = new Item(this.system.createEntity("Item"), this.loaders);
+
+            const entity = this.system.createEntity("Item");
+            const item = entity.createComponent(Item);
+            item.setLoaders(this.loaders);
             item.addWebModelDerivative(modelUrl, quality);
 
             return this.openDefaultPresentation(modelUrl, item);
@@ -125,7 +107,10 @@ export default class PresentationController extends Controller<PresentationContr
         return Promise.resolve().then(() => {
             console.log(`Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
                 `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
-            const item = new Item(this.system.createEntity("Item"), this.loaders);
+
+            const entity = this.system.createEntity("Item");
+            const item = entity.createComponent(Item);
+            item.setLoaders(this.loaders);
             item.addGeometryAndTextureDerivative(geometryUrl, textureUrl, quality);
 
             return this.openDefaultPresentation(geometryUrl, item);
@@ -148,8 +133,11 @@ export default class PresentationController extends Controller<PresentationContr
             : "";
 
         return this.loaders.validateItem(json).then(itemData => {
-            const item = new Item(this.system.createEntity("Item"), this.loaders);
-            item.inflate(itemData, url);
+            const entity = this.system.createEntity("Item");
+            const item = entity.createComponent(Item);
+            item.url = url;
+            item.setLoaders(this.loaders);
+            item.fromData(itemData);
 
             if (item.templateName) {
                 const templateUrl =  resolvePathname(templateName, item.templateName, templatePathOrUrl || url);
@@ -168,28 +156,41 @@ export default class PresentationController extends Controller<PresentationContr
         );
     }
 
-    openPresentation(json: any, url?: string, item?: Item): Promise<void>
-    {
-        url = url || window.location.href;
-
-        return this.loaders.validatePresentation(json).then(presentationData => {
-            const presentation = new Presentation(this.system, this.loaders);
-            presentation.inflate(presentationData, url, item);
-
-            this.presentations.push(presentation);
-            this.setActivePresentation(this.presentations.length - 1);
-        });
-    }
-
     openDefaultPresentation(url?: string, item?: Item): Promise<void>
     {
         console.log("opening presentation from default template");
         return this.openPresentation(template, url, item);
     }
 
+    openPresentation(json: any, url?: string, item?: Item): Promise<void>
+    {
+        // currently opening multiple presentations is not supported
+        this.closeAll();
+
+        url = url || window.location.href;
+
+        return this.loaders.validatePresentation(json).then(presentationData => {
+            const entity = this.system.createEntity("Presentation");
+            const presentation = entity.createComponent(Presentation);
+            presentation.url = url;
+            presentation.setLoaders(this.loaders);
+            presentation.fromData(presentationData, item);
+
+            this.presentations.push(presentation);
+            this.setActivePresentation(this.presentations.length - 1);
+        });
+    }
+
     writePresentation(): IPresentation
     {
-        return this.activePresentation.deflate();
+        return this.activePresentation.toData();
+    }
+
+    closeActivePresentation()
+    {
+        if (this.activePresentation) {
+            this.activePresentation.entity.dispose();
+        }
     }
 
     closeAll()
@@ -197,7 +198,7 @@ export default class PresentationController extends Controller<PresentationContr
         this.setActivePresentation(null);
 
         this.presentations.forEach(presentation => {
-            presentation.dispose();
+            presentation.entity.dispose();
         });
 
         this.presentations.length = 0;

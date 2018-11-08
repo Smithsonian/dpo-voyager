@@ -176,6 +176,7 @@ export interface IVoyager
 {
     explorer?: IExplorer;
     renderer?: IRenderer;
+    reader?: IReader;
     tools?: ITools;
 }
 
@@ -183,8 +184,6 @@ export interface IExplorer
 {
     units: TUnitType;
     annotationsEnabled: boolean;
-    readerEnabled: boolean;
-    readerDocument: string;
 }
 
 /**
@@ -196,6 +195,12 @@ export interface IRenderer
     exposure: number;
     gamma: number;
     //environment: any; // TODO
+}
+
+export interface IReader
+{
+    enabled: boolean;
+    documentUri: string;
 }
 
 export interface ITools

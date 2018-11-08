@@ -85,6 +85,14 @@ export default class ModelComponent extends Object3D
         }
     }
 
+    dispose()
+    {
+        this.derivatives.forEach(derivative => derivative.dispose());
+        this.activeDerivative = null;
+
+        super.dispose();
+    }
+
     addDerivative(derivative: Derivative)
     {
         this.derivatives.push(derivative);
@@ -223,9 +231,11 @@ export default class ModelComponent extends Object3D
 
             if (this.boxFrame) {
                 this.object3D.remove(this.boxFrame);
+                (this.boxFrame as any).geometry.dispose();
             }
             if (this.activeDerivative) {
                 this.object3D.remove(this.activeDerivative.model);
+                this.activeDerivative.dispose();
             }
 
             if (!this.boundingBox && derivative.boundingBox) {

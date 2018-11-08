@@ -64,6 +64,8 @@ export default class AnnotationsController extends Controller<AnnotationsControl
     dispose()
     {
         this.presentationController.off("presentation", this.onPresentationChange, this);
+
+        super.dispose();
     }
 
     update()

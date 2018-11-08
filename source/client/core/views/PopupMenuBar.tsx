@@ -25,6 +25,7 @@ import Button, { IButtonTapEvent } from "@ff/react/Button";
 
 import SystemController from "../components/SystemController";
 import Explorer from "../components/Explorer";
+import Reader from "../components/Reader";
 
 import ViewportMenu from "./ViewportMenu";
 import RenderMenu from "./RenderMenu";
@@ -60,13 +61,13 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
     componentDidMount()
     {
         this.controller.addInputListener(Explorer, "Annotations.Enabled", this.onPropertyChange, this);
-        this.controller.addInputListener(Explorer, "Reader.Enabled", this.onPropertyChange, this);
+        this.controller.addInputListener(Reader, "Enabled", this.onPropertyChange, this);
     }
 
     componentWillUnmount()
     {
         this.controller.removeInputListener(Explorer, "Annotations.Enabled", this.onPropertyChange, this);
-        this.controller.removeInputListener(Explorer, "Reader.Enabled", this.onPropertyChange, this);
+        this.controller.removeInputListener(Reader, "Enabled", this.onPropertyChange, this);
     }
 
     render()
@@ -78,7 +79,7 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
         } = this.props;
 
         const annotationsVisible = this.controller.getInputValue(Explorer, "Annotations.Enabled");
-        const readerVisible = this.controller.getInputValue(Explorer, "Reader.Enabled");
+        const readerVisible = this.controller.getInputValue(Reader, "Enabled");
 
         return (
             <FlexContainer
@@ -131,8 +132,8 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
 
     protected onTapArticle()
     {
-        const visible = this.controller.getInputValue(Explorer, "Reader.Enabled");
-        this.controller.actions.setInputValue(Explorer, "Reader.Enabled", !visible);
+        const visible = this.controller.getInputValue(Reader, "Enabled");
+        this.controller.actions.setInputValue(Reader, "Enabled", !visible);
     }
 
     protected onPropertyChange()

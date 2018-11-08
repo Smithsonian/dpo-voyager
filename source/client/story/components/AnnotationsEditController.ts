@@ -94,6 +94,8 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
         this.prepController.off("mode", this.onPrepMode, this);
         this.annotationsController.off("select", this.onSelectAnnotation, this);
         this.pickManip.off("pick", this.onPick, this);
+
+        super.dispose();
     }
 
     createActions(commander: Commander)

@@ -73,10 +73,10 @@ export default class Viewport
     private _width: number;
     private _height: number;
 
-    private vpCamera: THREE.Camera;
-    private vpObjects: THREE.Group;
-    private vpManip: OrbitManip;
-    private vpController: OrbitController;
+    protected vpCamera: THREE.Camera;
+    protected vpObjects: THREE.Group;
+    protected vpManip: OrbitManip;
+    protected vpController: OrbitController;
 
 
     constructor(x?: number, y?: number, width?: number, height?: number)

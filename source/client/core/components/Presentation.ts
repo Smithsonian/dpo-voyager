@@ -20,7 +20,6 @@ import resolvePathname from "resolve-pathname";
 
 import { Index } from "@ff/core/types";
 
-import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
 import Component, { ComponentOrType } from "@ff/core/ecs/Component";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
@@ -36,88 +35,72 @@ import DirectionalLight from "../components/DirectionalLight";
 import PointLight from "../components/PointLight";
 import SpotLight from "../components/SpotLight";
 
+import Item from "../components/Item";
 import Documents from "../components/Documents";
 import Groups from "../components/Groups";
 import Tours from "../components/Tours";
-import Meta from "../components/Meta";
 
 import Explorer from "../components/Explorer";
 import Renderer from "../components/Renderer";
+import Reader from "../components/Reader";
 
 import Loaders from "../loaders/Loaders";
 
-import Item from "./Item";
-
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Presentation
+export default class Presentation extends Component
 {
-    readonly entity: Entity;
+    static readonly type: string = "Presentation";
 
-    protected presentationUrl: string;
-    protected loaders: Loaders;
+    url: string = "";
 
-    protected _sceneComponent: Scene;
-    protected _cameraComponent: Camera;
-    protected lightsEntity: Entity;
-    protected items: Item[];
+    protected loaders: Loaders = null;
+    protected primaryCamera: Camera = null;
+    protected lightsGroup: Entity = null;
+    protected items: Item[] = [];
 
-
-    constructor(system: System, loaders: Loaders)
+    create()
     {
-        const entity = this.entity = system.createEntity("Presentation");
-
-        this._sceneComponent = entity.createComponent(Scene);
-        entity.createComponent(Documents);
-        entity.createComponent(Groups);
-        entity.createComponent(Tours);
-
-        this._cameraComponent = null;
-        this.lightsEntity = null;
-        this.items = [];
-
-        this.presentationUrl = "";
-        this.loaders = loaders;
-    }
-
-    get url(): string
-    {
-        return this.presentationUrl;
+        this.entity.createComponent(Documents);
+        this.entity.createComponent(Groups);
+        this.entity.createComponent(Tours);
+        this.entity.createComponent(Scene);
     }
 
     get path(): string
     {
-        return resolvePathname(".", this.presentationUrl);
+        return resolvePathname(".", this.url);
     }
 
     get cameraComponent(): Camera
     {
-        return this._cameraComponent;
+        return this.primaryCamera;
     }
 
     get cameraTransform(): Transform
     {
-        return this._cameraComponent ? this._cameraComponent.transform : null;
+        return this.primaryCamera ? this.primaryCamera.transform : null;
     }
 
     get lightsTransform(): Transform
     {
-        return this.lightsEntity ? this.lightsEntity.getComponent(Transform) : null;
-    }
-
-    get sceneComponent(): Scene
-    {
-        return this._sceneComponent;
+        return this.lightsGroup ? this.lightsGroup.getComponent(Transform) : null;
     }
 
     get scene(): THREE.Scene | null
     {
-        return this._sceneComponent ? this._sceneComponent.scene : null;
+        const component = this.getComponent(Scene);
+        return component ? component.scene : null;
     }
 
     get camera(): THREE.Camera | null
     {
-        return this._cameraComponent ? this._cameraComponent.camera : null;
+        return this.primaryCamera ? this.primaryCamera.camera : null;
+    }
+
+    setLoaders(loaders: Loaders)
+    {
+        this.loaders = loaders;
     }
 
     forEachItem(callback: (item: Item, index: number) => void)
@@ -145,29 +128,20 @@ export default class Presentation
         }
     }
 
-    dispose()
-    {
-        this.entity.dispose();
-    }
-
-    inflate(pres: IPresentation, url?: string, item?: Item): this
+    fromData(data: IPresentation, item?: Item): this
     {
         const entity = this.entity;
-        const scene = this._sceneComponent;
-
-        if (url) {
-            this.presentationUrl = url;
-        }
+        const scene = this.getComponent(Scene);
 
         // scene, nodes
-        const nodes = pres.scene.nodes;
+        const nodes = data.scene.nodes;
         nodes.forEach(nodeIndex => {
-            const node = pres.nodes[nodeIndex];
-            this.inflateNode(scene, node, pres, item);
+            const node = data.nodes[nodeIndex];
+            this.inflateNode(scene, node, data, item);
         });
 
         // Voyager settings
-        const voyager: IVoyager = pres.voyager || {};
+        const voyager: IVoyager = data.voyager || {};
 
         const explorerComponent = entity.getComponent(Explorer);
         if (voyager.explorer) {
@@ -179,13 +153,18 @@ export default class Presentation
             rendererComponent.fromData(voyager.renderer);
         }
 
-        this._cameraComponent = scene.getComponentInSubtree(Camera);
-        this.lightsEntity = scene.findEntityInSubtree("Lights");
+        const readerComponent = entity.getComponent(Reader);
+        if (voyager.reader) {
+            readerComponent.fromData(voyager.reader);
+        }
+
+        this.primaryCamera = scene.getComponentInSubtree(Camera);
+        this.lightsGroup = scene.findEntityInSubtree("Lights");
 
         return this;
     }
 
-    deflate(): IPresentation
+    toData(): IPresentation
     {
         const pres: Partial<IPresentation> = {};
 
@@ -200,7 +179,7 @@ export default class Presentation
         };
 
         // scene, nodes
-        const transforms = this._sceneComponent.children;
+        const transforms = this.getComponent(Scene).children;
 
 
         if (transforms.length > 0) {
@@ -214,7 +193,8 @@ export default class Presentation
         // explorer settings
         pres.voyager = {
             explorer: this.entity.system.getComponent(Explorer).toData(),
-            renderer: this.entity.system.getComponent(Renderer).toData()
+            renderer: this.entity.system.getComponent(Renderer).toData(),
+            reader: this.entity.system.getComponent(Reader).toData()
         };
 
         return pres as IPresentation;
@@ -248,7 +228,10 @@ export default class Presentation
 
         if (node.item !== undefined) {
             const itemData = pres.items[node.item];
-            const item = new Item(entity, this.loaders).inflate(itemData, this.path);
+            const item = entity.createComponent(Item);
+            item.url = this.path;
+            item.setLoaders(this.loaders);
+            item.fromData(itemData);
             this.items.push(item);
             name = "Item";
         }
@@ -264,10 +247,13 @@ export default class Presentation
                     name = "Item";
 
                     // load external item referenced by uri
-                    const itemUrl = resolvePathname(reference.uri, this.presentationUrl);
+                    const itemUrl = resolvePathname(reference.uri, this.url);
                     this.loaders.loadJSON(itemUrl).then(json =>
                         this.loaders.validateItem(json).then(itemData => {
-                            const item = new Item(entity, this.loaders).inflate(itemData, itemUrl);
+                            const item = entity.createComponent(Item);
+                            item.url = itemUrl;
+                            item.setLoaders(this.loaders);
+                            item.fromData(itemData);
                             this.items.push(item);
                         })
                     ).catch(error => {
@@ -328,7 +314,7 @@ export default class Presentation
         const cameraComponent = transform.getComponent(Camera);
         const lightComponent = transform.getComponent(Light);
         const referenceComponent = transform.getComponent(Reference);
-        const metaComponent = transform.getComponent(Meta);
+        const itemComponent = transform.getComponent(Item);
 
         if (cameraComponent) {
             pres.cameras = pres.cameras || [];
@@ -345,13 +331,10 @@ export default class Presentation
             pres.references.push(referenceComponent.toData());
             node.reference = pres.references.length - 1;
         }
-        else if (metaComponent) {
-            const item = this.items.find(item => item.entity === transform.entity);
-            if (item) {
-                pres.items = pres.items || [];
-                pres.items.push(item.deflate());
-                node.item = pres.items.length - 1;
-            }
+        else if (itemComponent) {
+            pres.items = pres.items || [];
+            pres.items.push(itemComponent.toData());
+            node.item = pres.items.length - 1;
         }
 
         // deflate children

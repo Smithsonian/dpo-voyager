@@ -25,6 +25,7 @@ import { IPresentation, IItem } from "common/types";
 
 import Explorer from "../components/Explorer";
 import Renderer from "../components/Renderer";
+import Reader from "../components/Reader";
 
 import SystemController from "../components/SystemController";
 import PresentationController from "../components/PresentationController";
@@ -70,6 +71,7 @@ export default class BaseApplication
 
     protected explorer: Explorer;
     protected renderer: Renderer;
+    protected reader: Reader;
 
     protected systemController: SystemController;
     protected presentationController: PresentationController;
@@ -106,6 +108,7 @@ export default class BaseApplication
 
         this.explorer = this.main.createComponent(Explorer);
         this.renderer = this.main.createComponent(Renderer);
+        this.reader = this.main.createComponent(Reader);
 
         this.systemController = this.main.createComponent(SystemController);
         this.systemController.createActions(this.commander);

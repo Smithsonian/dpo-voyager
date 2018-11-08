@@ -126,24 +126,82 @@ html {
 // EXPLORER VIEW
 
 .sv-explorer-view {
+  @include full-size;
   @include font-ui-normal;
   background: $color-background-dark;
   color: $color-text;
   font-size: 0.9rem;
 }
 
-.sv-explorer-content {
+.sv-explorer-canvas {
   @include full-size;
-  //filter: blur(5px);
+
+  &.sv-blur {
+    filter: brightness(65%) blur(4px);
+    transition: filter 0.5s;
+  }
 
   .ff-canvas {
     @include full-size;
   }
 }
 
+.sv-explorer-reader {
+  @include full-size;
+  pointer-events: none;
+
+  .sv-reader-view {
+    position: absolute;
+    top: 60px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
 .sv-explorer-ui {
   @include full-size;
   pointer-events: none;
+
+  .sv-popup-menu-bar {
+    margin: 4px;
+
+    .ff-popup-button {
+      pointer-events: auto;
+      box-sizing: border-box;
+      width: 44px;
+      height: 44px;
+      margin: 4px;
+      border-radius: 100px;
+      background: $color-background-explorer;
+      color: transparentize($color-text-explorer, 0.4);
+      transition: color $tx-short, background-color $tx-short;
+      font-size: 22px;
+      line-height: 42px;
+      text-align: center;
+      vertical-align: middle;
+
+      &:hover, &:focus {
+        outline: none;
+        color: $color-text-explorer;
+      }
+
+      &.ff-selected {
+        background: $color-primary;
+        color: $color-text-explorer;
+
+        .ff-icon {
+          filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        }
+      }
+    }
+  }
+
+  @media (max-height: 250px) {
+    .sv-popup-menu-bar {
+      display: none !important;
+    }
+  }
 
   .sv-logo {
     position: absolute;
@@ -161,50 +219,6 @@ html {
       top: unset;
       bottom: 8px;
       width: 160px;
-    }
-  }
-}
-
-.sv-explorer-overlay-view {
-  @include full-size;
-
-  .sv-popup-menu-bar {
-    margin: 4px;
-  }
-
-  @media (max-height: 250px) {
-    .sv-popup-menu-bar {
-      display: none !important;
-    }
-  }
-
-  .ff-popup-button {
-    pointer-events: auto;
-    box-sizing: border-box;
-    width: 44px;
-    height: 44px;
-    margin: 4px;
-    border-radius: 100px;
-    background: $color-background-explorer;
-    color: transparentize($color-text-explorer, 0.4);
-    transition: color $tx-short, background-color $tx-short;
-    font-size: 22px;
-    line-height: 42px;
-    text-align: center;
-    vertical-align: middle;
-
-    &:hover, &:focus {
-      outline: none;
-      color: $color-text-explorer;
-    }
-
-    &.ff-selected {
-      background: $color-primary;
-      color: $color-text-explorer;
-
-      .ff-icon {
-        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-      }
     }
   }
 }

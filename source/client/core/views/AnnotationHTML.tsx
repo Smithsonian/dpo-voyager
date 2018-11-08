@@ -125,8 +125,12 @@ export default class AnnotationHTML extends AnnotationObject
 
     dispose()
     {
-        const canvas = document.getElementById("sv-annotations");
-        canvas.removeChild(this.container);
+        this.line.geometry.dispose();
+
+        //const canvas = document.getElementById("sv-annotations");
+        //canvas.removeChild(this.container);
+        this.container.remove();
+        this.container = null;
     }
 
     setSelected(selected: boolean)

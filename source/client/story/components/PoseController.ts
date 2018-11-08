@@ -59,6 +59,8 @@ export default class PoseController extends Controller<PoseController>
     dispose()
     {
         this.prepController.off("mode", this.onPrepMode, this);
+
+        super.dispose();
     }
 
     createActions(commander: Commander)

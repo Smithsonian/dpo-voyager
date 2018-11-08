@@ -17,42 +17,38 @@
 
 import resolvePathname from "resolve-pathname";
 
-import Entity from "@ff/core/ecs/Entity";
+import { Dictionary } from "@ff/core/types";
+import Component from "@ff/core/ecs/Component";
+import { IItem } from "common/types";
 
-import { IItem } from "common/types/item";
-
-import Meta from "../components/Meta";
-import Process from "../components/Process";
-import Model from "../components/Model";
-import Documents from "../components/Documents";
-import Groups from "../components/Groups";
-import Annotations from "../components/Annotations";
-import AnnotationsView from "../components/AnnotationsView";
-import Tours from "../components/Tours";
-import Snapshots from "../components/Snapshots";
+import Process from "./Process";
+import Model from "./Model";
+import Documents from "./Documents";
+import Groups from "./Groups";
+import Annotations from "./Annotations";
+import AnnotationsView from "./AnnotationsView";
+import Tours from "./Tours";
+import Snapshots from "./Snapshots";
+import Transform from "./Transform";
 
 import Loaders from "../loaders/Loaders";
-import Transform from "../components/Transform";
-import { EDerivativeQuality } from "./Derivative";
+import { EDerivativeQuality } from "../app/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Item
+export default class Item extends Component
 {
-    readonly entity: Entity;
+    static readonly type: string = "Item";
 
-    protected itemUrl: string;
-    protected templateUri: string;
-    protected loaders: Loaders;
+    url: string = "";
 
-    constructor(entity: Entity, loaders: Loaders)
+    protected templateUri: string = "";
+    protected loaders: Loaders = null;
+    protected meta: Dictionary<any> = {};
+
+    create()
     {
-        this.entity = entity;
         this.entity.getOrCreateComponent(Transform);
-
-        this.itemUrl = "";
-        this.templateUri = "";
-        this.loaders = loaders;
     }
 
     get name()
@@ -60,14 +56,9 @@ export default class Item
         return this.entity.name;
     }
 
-    get url()
-    {
-        return this.itemUrl;
-    }
-
     get path()
     {
-        return resolvePathname(".", this.itemUrl);
+        return resolvePathname(".", this.url);
     }
 
     get templateName()
@@ -75,9 +66,14 @@ export default class Item
         return this.templateUri;
     }
 
+    setLoaders(loaders: Loaders)
+    {
+        this.loaders = loaders;
+    }
+
     addWebModelDerivative(modelUri: string, quality: EDerivativeQuality)
     {
-        this.itemUrl = modelUri;
+        this.url = modelUri;
         const modelFile = modelUri.substr(resolvePathname(".", modelUri).length);
 
         const model = this.entity.getOrCreateComponent(Model);
@@ -87,7 +83,7 @@ export default class Item
 
     addGeometryAndTextureDerivative(geometryUri: string, textureUri: string, quality: EDerivativeQuality)
     {
-        this.itemUrl = geometryUri;
+        this.url = geometryUri;
         const geometryFile = geometryUri.substr(resolvePathname(".", geometryUri).length);
         const textureFile = textureUri ? textureUri.substr(resolvePathname(".", textureUri).length) : undefined;
 
@@ -96,38 +92,34 @@ export default class Item
         model.addGeometryAndTextureDerivative(geometryFile, textureFile, quality);
     }
 
-    inflate(item: IItem, url?: string): this
+    fromData(data: IItem)
     {
         const entity = this.entity;
-
-        if (url) {
-            this.itemUrl = url;
-        }
 
         let docIds = [];
         let groupIds = [];
         let snapIds = [];
 
-        entity.createComponent(Meta).fromData(item.meta);
+        this.meta = Object.assign({}, data.meta);
 
-        if (item.process) {
+        if (data.process) {
             entity.createComponent(Process)
-            .fromData(item.process);
+            .fromData(data.process);
         }
 
-        if (item.model) {
-            entity.createComponent(Model).fromData(item.model)
-                .setAssetLoader(this.loaders.assetLoader, this.path);
+        if (data.model) {
+            entity.createComponent(Model).fromData(data.model)
+            .setAssetLoader(this.loaders.assetLoader, this.path);
         }
 
-        if (item.documents) {
-            const documentsData = item.documents;
+        if (data.documents) {
+            const documentsData = data.documents;
             docIds = entity.createComponent(Documents)
-            .fromData(documentsData.documents);
+            .fromData(documentsData);
         }
 
-        if (item.story) {
-            const storyData = item.story;
+        if (data.story) {
+            const storyData = data.story;
             this.templateUri = storyData.templateUri;
 
             snapIds = entity.createComponent(Snapshots)
@@ -139,8 +131,8 @@ export default class Item
             }
         }
 
-        if (item.annotations) {
-            const annotationsData = item.annotations;
+        if (data.annotations) {
+            const annotationsData = data.annotations;
             if (annotationsData.groups) {
                 groupIds = entity.createComponent(Groups)
                 .fromData(annotationsData.groups);
@@ -150,22 +142,19 @@ export default class Item
             .fromData(annotationsData.annotations, groupIds, docIds, snapIds);
             entity.createComponent(AnnotationsView);
         }
-
-        return this;
     }
 
-    deflate(): IItem
+    toData(): IItem
     {
         const entity = this.entity;
+
         const itemData: Partial<IItem> = {};
+
         let docIds = {};
         let groupIds = {};
         let snapIds = {};
 
-        const metaComponent = entity.getComponent(Meta);
-        if (metaComponent) {
-            itemData.meta = metaComponent.toData();
-        }
+        itemData.meta = Object.assign({}, this.meta);
 
         const processComponent = entity.getComponent(Process);
         if (processComponent) {
@@ -180,8 +169,8 @@ export default class Item
         const documentsComponent = entity.getComponent(Documents);
         if (documentsComponent) {
             const { data, ids } = documentsComponent.toData();
-            if (data.length > 0) {
-                itemData.documents = { documents: data };
+            if (data.documents.length > 0) {
+                itemData.documents = data;
                 docIds = ids;
             }
         }

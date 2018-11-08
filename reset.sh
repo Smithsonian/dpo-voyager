@@ -3,6 +3,9 @@
 docker-compose stop server
 docker-compose rm -f server
 
+# remove image
+docker rmi voyager/server
+
 # remove npm packages
 sudo rm -rf node_modules
 

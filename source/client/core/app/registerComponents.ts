@@ -33,16 +33,17 @@ import Explorer from "../components/Explorer";
 import Groups from "../components/Groups";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 import HomeGrid from "../components/HomeGrid";
+import Item from "../components/Item";
 import Light from "../components/Light";
 import Manip from "../components/Manip";
 import Mesh from "../components/Mesh";
-import Meta from "../components/Meta";
 import Model from "../components/Model";
 import Object3D from "../components/Object3D";
 import OrbitManip from "../components/OrbitManip";
 import PickManip from "../components/PickManip";
 import PointLight from "../components/PointLight";
 import PoseManip from "../components/PoseManip";
+import Presentation from "../components/Presentation";
 import Process from "../components/Process";
 import Reference from "../components/Reference";
 import Renderer from "../components/Renderer";
@@ -70,16 +71,17 @@ export function registerComponents(registry: Registry)
         Groups,
         Hierarchy,
         HomeGrid,
+        Item,
         Light,
         Manip,
         Mesh,
-        Meta,
         Model,
         Object3D,
         OrbitManip,
         PickManip,
         PointLight,
         PoseManip,
+        Presentation,
         Process,
         Reference,
         Renderer,

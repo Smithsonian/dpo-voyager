@@ -78,13 +78,15 @@ export default class AnnotationsView extends Object3D
 
     dispose()
     {
-        this.model.object3D.remove(this.object3D);
-
         this.annotations.off("change", this.onAnnotationsChange, this);
         this.annotations.getArray().forEach(annotation => this.removeView(annotation));
 
         this.pickManip.off("pick", this.onPick, this);
         this.controller.off("select", this.onControllerSelect, this);
+
+        this.model.object3D.remove(this.object3D);
+
+        super.dispose();
     }
 
     setVisible(visible: boolean)

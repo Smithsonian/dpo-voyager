@@ -23,11 +23,14 @@ import System from "@ff/core/ecs/System";
 import Canvas, { ICanvasEvent, ICanvasResizeEvent } from "@ff/react/Canvas";
 import ManipTarget, { IManipEventHandler, IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 
-import ViewportManager, { EViewportLayout, IViewportLayoutChangeEvent } from "../app/ViewportManager";
+import SystemController from "../components/SystemController";
+import ViewportManager, { EViewportLayout } from "../app/ViewportManager";
 import Renderer from "../components/Renderer";
+import Reader from "../components/Reader";
 
+import PopupMenuBar from "./PopupMenuBar";
+import ReaderView from "./ReaderView";
 import QuadSplitOverlay, { IQuadSplitOverlayChangeEvent } from "./QuadSplitOverlay";
-import ExplorerOverlayView from "./ExplorerOverlayView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,10 +48,14 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
     };
 
     renderer: THREE.WebGLRenderer = null;
-    viewportManager: ViewportManager = null;
-
     canvasWidth: number = 0;
     canvasHeight: number = 0;
+
+    protected viewportManager: ViewportManager = null;
+
+    protected controller: SystemController = null;
+    protected rendererComponent: Renderer = null;
+
 
     constructor(props: IExplorerViewProps)
     {
@@ -57,27 +64,26 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
         this.onCanvas = this.onCanvas.bind(this);
         this.onCanvasResize = this.onCanvasResize.bind(this);
         this.onQuadSplitChange = this.onQuadSplitChange.bind(this);
+
+        this.controller = props.system.getComponent(SystemController);
+        this.rendererComponent = props.system.getComponent(Renderer);
     }
 
     componentWillMount()
     {
-        const renderer = this.props.system.getComponent(Renderer);
+        this.viewportManager = this.rendererComponent.registerView(this);
+        this.viewportManager.on("layout", this.onPropertyChange, this);
 
-        if (renderer) {
-            this.viewportManager = renderer.registerView(this);
-            this.viewportManager.on("layout", this.onLayout, this);
-        }
+        this.controller.addInputListener(Reader, "Enabled", this.onPropertyChange, this);
     }
 
     componentWillUnmount()
     {
-        const renderer = this.props.system.getComponent(Renderer);
+        this.rendererComponent.unregisterView(this);
+        this.viewportManager.off("layout", this.onPropertyChange, this);
+        this.viewportManager = null;
 
-        if (renderer) {
-            renderer.unregisterView(this);
-            this.viewportManager.off("layout", this.onLayout, this);
-            this.viewportManager = null;
-        }
+        this.controller.removeInputListener(Reader, "Enabled", this.onPropertyChange, this);
     }
 
     render()
@@ -93,13 +99,15 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
         const horizontalSplit = manager ? manager.horizontalSplit : 0.5;
         const verticalSplit = manager ? manager.verticalSplit : 0.5;
 
+        const readerEnabled = this.controller.getInputValue(Reader, "Enabled");
+
         return (
             <ManipTarget
                 className={className}
                 handler={this}>
 
                 <div
-                    className="sv-explorer-content">
+                    className={"sv-explorer-canvas" + (readerEnabled ? " sv-blur" : "")}>
 
                     <Canvas
                         onCanvas={this.onCanvas}
@@ -111,10 +119,18 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
                 </div>
 
                 <div
+                    className="sv-explorer-reader">
+
+                    <ReaderView
+                        system={system}/>
+                </div>
+
+                <div
                     className="sv-explorer-ui">
 
-                    <ExplorerOverlayView
-                        system={system} />
+                    <PopupMenuBar
+                        system={system}
+                        portal={this}/>
 
                     <QuadSplitOverlay
                         layout={layout}
@@ -182,7 +198,7 @@ export default class ExplorerView extends React.Component<IExplorerViewProps, {}
         }
     }
 
-    protected onLayout(event: IViewportLayoutChangeEvent)
+    protected onPropertyChange()
     {
         this.forceUpdate();
     }
