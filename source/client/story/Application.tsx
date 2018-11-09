@@ -22,12 +22,13 @@ import * as ReactDOM from "react-dom";
 
 import DockController from "@ff/react/DockController";
 
-import PrepController from "./components/PrepController";
+import StoryAppController from "./components/StoryAppController";
 import SelectionController from "./components/SelectionController";
 import AnnotationsEditController from "./components/AnnotationsEditController";
 import ToursEditController from "./components/ToursEditController";
-import PoseController from "./components/PoseController";
+import PoseEditController from "./components/PoseEditController";
 
+import ViewportPoseManip from "./components/ViewportPoseManip";
 import ViewportCameraManip from "./components/ViewportCameraManip";
 
 import { registerComponents } from "./registerComponents";
@@ -44,11 +45,13 @@ export default class PrepApplication extends BaseApplication
 {
     readonly dockableController: DockController;
     readonly selectionController: SelectionController;
-    readonly prepController: PrepController;
-    readonly annotationsEditController: AnnotationsEditController;
-    readonly toursEditController: ToursEditController;
-    readonly poseController: PoseController;
+    readonly prepController: StoryAppController;
 
+    protected annotationsEditController: AnnotationsEditController;
+    protected toursEditController: ToursEditController;
+    protected poseController: PoseEditController;
+
+    protected viewportPoseManip: ViewportPoseManip;
     protected viewportCameraManip: ViewportCameraManip;
 
     constructor(props: IApplicationProps)
@@ -61,7 +64,7 @@ export default class PrepApplication extends BaseApplication
         this.selectionController = this.main.createComponent(SelectionController);
         this.selectionController.createActions(this.commander);
 
-        this.prepController = this.main.createComponent(PrepController);
+        this.prepController = this.main.createComponent(StoryAppController);
         this.prepController.createActions(this.commander);
 
         this.annotationsEditController = this.main.createComponent(AnnotationsEditController);
@@ -70,15 +73,16 @@ export default class PrepApplication extends BaseApplication
         this.toursEditController = this.main.createComponent(ToursEditController);
         this.toursEditController.createActions(this.commander);
 
-        this.poseController = this.main.createComponent(PoseController);
+        this.poseController = this.main.createComponent(PoseEditController);
         this.poseController.createActions(this.commander);
 
         this.dockableController = new DockController(this.commander);
 
+        this.viewportPoseManip = this.main.createComponent(ViewportPoseManip);
         this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
 
-        //this.pickManip.next.component = this.orbitManip;
-        this.orbitManip.next.component = this.viewportCameraManip;
+        this.orbitManip.next.component = this.viewportPoseManip;
+        this.viewportPoseManip.next.component = this.viewportCameraManip;
 
         this.start();
         this.parseArguments(props);

@@ -45,7 +45,7 @@ const _getClass = (node: ECS) => {
     if (node instanceof Entity) {
         return "sv-entity";
     }
-    return "system";
+    return "sv-system";
 };
 
 const _getChildren = (node: ECS) => {
@@ -64,6 +64,7 @@ const _getChildren = (node: ECS) => {
 /** Properties for [[HierarchyTreeView]] component. */
 export interface IHierarchyTreeViewProps
 {
+    className?: string;
     controller: SelectionController
 }
 
@@ -108,6 +109,7 @@ export default class HierarchyTreeView extends React.Component<IHierarchyTreeVie
 
         return (
             <Tree
+                className={this.props.className}
                 tree={controller.system}
                 includeRoot={false}
                 selected={controller.selected}

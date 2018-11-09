@@ -48,11 +48,13 @@ export default class ModelComponent extends Object3D
     static readonly type: string = "Model";
 
     ins = this.makeProps({
+        qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         alo: types.Boolean("Auto.Load", true),
         asc: types.Boolean("Auto.Pose", true),
-        qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High)
+        pos: types.Vector3("Pose.Position"),
+        rot: types.Vector3("Pose.Rotation"),
+        sca: types.Number("Pose.Scale", 1)
     });
-
 
     protected units: TUnitType = "cm";
     protected boundingBox: THREE.Box3 = null;
@@ -74,7 +76,7 @@ export default class ModelComponent extends Object3D
 
     update()
     {
-        const { alo, qua } = this.ins;
+        const { qua, alo, pos, rot, sca } = this.ins;
 
         if (!this.activeDerivative && alo.value) {
             this.autoLoad(qua.value)
@@ -82,6 +84,15 @@ export default class ModelComponent extends Object3D
                     console.warn("Model.update - failed to load derivative");
                     console.warn(error);
                 });
+        }
+
+        if (pos.changed || rot.changed || sca.changed) {
+            const object3D = this.object3D;
+            object3D.position.fromArray(pos.value);
+            _vec3.fromArray(rot.value);
+            object3D.rotation.setFromVector3(_vec3, "XYZ");
+            object3D.scale.setScalar(sca.value);
+            object3D.updateMatrix();
         }
     }
 

@@ -20,11 +20,12 @@ import * as React from "react";
 import System from "@ff/core/ecs/System";
 import TabContainer, { ITabSelectEvent, TabItem } from "@ff/react/TabContainer";
 
-import PrepController, { EPrepMode, IPrepModeChangeEvent } from "../components/PrepController";
+import StoryAppController, { EPrepMode, IPrepModeChangeEvent } from "../components/StoryAppController";
 
 import SettingsEditor from "./SettingsEditor";
 import PoseEditor from "./PoseEditor";
 import AnnotationsEditor from "./AnnotationsEditor";
+import ToursEditor from "./ToursEditor";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +43,7 @@ export default class SideBar extends React.Component<ISideBarViewProps, {}>
         className: "sv-side-bar ff-tab-container"
     };
 
-    protected controller: PrepController;
+    protected controller: StoryAppController;
 
     constructor(props: ISideBarViewProps)
     {
@@ -50,7 +51,7 @@ export default class SideBar extends React.Component<ISideBarViewProps, {}>
 
         this.onTabSelect = this.onTabSelect.bind(this);
 
-        this.controller = props.system.getComponent(PrepController);
+        this.controller = props.system.getComponent(StoryAppController);
     }
 
     componentDidMount()
@@ -79,15 +80,6 @@ export default class SideBar extends React.Component<ISideBarViewProps, {}>
                 onTabSelect={this.onTabSelect}>
 
                 <TabItem
-                    index={EPrepMode.Explore}
-                    title="Information"
-                    faIcon="globe"
-                    closable={false}
-                    movable={false}>
-                    <div>Explore</div>
-                </TabItem>
-
-                <TabItem
                     index={EPrepMode.Settings}
                     title="Settings"
                     faIcon="palette"
@@ -99,13 +91,24 @@ export default class SideBar extends React.Component<ISideBarViewProps, {}>
                 </TabItem>
 
                 <TabItem
-                    index={EPrepMode.Annotate}
+                    index={EPrepMode.Annotations}
                     title="Annotations"
-                    faIcon="comment"
+                    faIcon="comment-alt"
                     closable={false}
                     movable={false}>
 
                     <AnnotationsEditor
+                        system={system}/>
+                </TabItem>
+
+                <TabItem
+                    index={EPrepMode.Tours}
+                    title="Information"
+                    faIcon="globe"
+                    closable={false}
+                    movable={false}>
+
+                    <ToursEditor
                         system={system}/>
                 </TabItem>
 

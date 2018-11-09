@@ -28,16 +28,16 @@ import Controller, { Actions, Commander } from "../../core/components/Controller
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EPrepMode { Explore, Settings, Pose, Annotate }
+export enum EPrepMode { Settings, Annotations, Tours, Pose }
 
-type IPrepControllerEvent = IPublisherEvent<PrepController>;
+type IPrepControllerEvent = IPublisherEvent<StoryAppController>;
 
 export interface IPrepModeChangeEvent extends IPrepControllerEvent { mode: EPrepMode }
 
-export type PrepActions = Actions<PrepController>;
+export type PrepActions = Actions<StoryAppController>;
 
 
-export default class PrepController extends Controller<PrepController>
+export default class StoryAppController extends Controller<StoryAppController>
 {
     static readonly type: string = "PrepController";
     static readonly isSystemSingleton: boolean = true;
@@ -47,7 +47,7 @@ export default class PrepController extends Controller<PrepController>
     protected presentationController: PresentationController = null;
     protected selectionController: SelectionController = null;
 
-    protected prepMode: EPrepMode = EPrepMode.Explore;
+    protected prepMode: EPrepMode = EPrepMode.Settings;
 
     create()
     {

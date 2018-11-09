@@ -51,17 +51,15 @@ export default class AnnotationsEditor extends React.Component<IAnnotationsEdito
         super(props);
 
         this.onSelectMode = this.onSelectMode.bind(this);
+        this.controller = props.system.getComponent(AnnotationsEditController);
     }
-
 
     componentDidMount()
     {
-        this.controller = this.props.system.getComponent(AnnotationsEditController);
     }
 
     componentWillUnmount()
     {
-
     }
 
     render()

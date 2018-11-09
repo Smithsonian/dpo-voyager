@@ -17,23 +17,29 @@
 
 import Registry from "@ff/core/ecs/Registry";
 
-import TransformManip from "./components/TransformManip";
-import PrepController from "./components/PrepController";
+import StoryAppController from "./components/StoryAppController";
 import SelectionController from "./components/SelectionController";
-import ViewportCameraManip from "./components/ViewportCameraManip";
 import AnnotationsEditController from "./components/AnnotationsEditController";
 import ToursEditController from "./components/ToursEditController";
+import PoseEditController from "./components/PoseEditController";
+
+import ViewportPoseManip from "./components/ViewportPoseManip";
+import ViewportCameraManip from "./components/ViewportCameraManip";
+
+import PoseManip from "./components/PoseManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export function registerComponents(registry: Registry)
 {
     registry.registerComponentType([
-        TransformManip,
-        PrepController,
+        StoryAppController,
         SelectionController,
-        ViewportCameraManip,
         AnnotationsEditController,
-        ToursEditController
+        ToursEditController,
+        PoseEditController,
+        ViewportCameraManip,
+        ViewportPoseManip,
+        PoseManip,
     ]);
 }

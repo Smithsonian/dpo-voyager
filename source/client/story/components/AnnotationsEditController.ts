@@ -26,7 +26,7 @@ import Annotations, { IAnnotation, Vector3 } from "../../core/components/Annotat
 import PickManip, { IPickManipPickEvent } from "../../core/components/PickManip";
 import SystemController from "../../core/components/SystemController";
 import AnnotationsController, { ISelectAnnotationEvent } from "../../core/components/AnnotationsController";
-import PrepController, { EPrepMode, IPrepModeChangeEvent } from "./PrepController";
+import StoryAppController, { EPrepMode, IPrepModeChangeEvent } from "./StoryAppController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
 
@@ -60,7 +60,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
     protected mode: EAnnotationsEditMode = EAnnotationsEditMode.Off;
 
     protected systemController: SystemController = null;
-    protected prepController: PrepController = null;
+    protected appController: StoryAppController = null;
     protected annotationsController: AnnotationsController = null;
     protected pickManip: PickManip = null;
 
@@ -79,8 +79,8 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
 
         this.systemController = this.getComponent(SystemController);
 
-        this.prepController = this.getComponent(PrepController);
-        this.prepController.on("mode", this.onPrepMode, this);
+        this.appController = this.getComponent(StoryAppController);
+        this.appController.on("mode", this.onPrepMode, this);
 
         this.annotationsController = this.getComponent(AnnotationsController);
         this.annotationsController.on("select", this.onSelectAnnotation, this);
@@ -91,7 +91,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
 
     dispose()
     {
-        this.prepController.off("mode", this.onPrepMode, this);
+        this.appController.off("mode", this.onPrepMode, this);
         this.annotationsController.off("select", this.onSelectAnnotation, this);
         this.pickManip.off("pick", this.onPick, this);
 
@@ -197,7 +197,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
 
     protected onPrepMode(event: IPrepModeChangeEvent)
     {
-        if (event.mode === EPrepMode.Annotate) {
+        if (event.mode === EPrepMode.Annotations) {
             this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", true);
             this.setMode(EAnnotationsEditMode.Select);
 

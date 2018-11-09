@@ -172,7 +172,67 @@
   ////////////////////////////////////////////////////////////////////////////////
   // HIERARCHY TREE VIEW
 
-  .ff-tree {
+  .ff-property-tree-view {
+    .ff-node {
+      margin-left: -500px;
+      border-top: 1px solid $color-background;
+
+      .ff-content {
+        margin-left: 500px;
+
+        &.ff-inner {
+          background: darken($color-background-dark, 4%);
+        }
+        &.ff-leaf {
+          background: darken($color-background, 6%);
+        }
+        &.ff-root {
+          background: $color-background-darker;
+        }
+
+        &.ff-expanded .ff-header {
+          @include triangle($color-icon, 3px, 180deg);
+        }
+        &.ff-collapsed .ff-header {
+          @include triangle($color-icon, 3px, 90deg);
+        }
+        &.ff-leaf .ff-header {
+          @include dot($color-icon-disabled, 3px, 6px, 0.6em);
+        }
+
+        .ff-header {
+          position: relative;
+          cursor: pointer;
+          padding: 2px 0 2px 14px;
+          display: flex;
+
+          .ff-name {
+            width: 30%;
+          }
+
+          .ff-property-view {
+            width: 70%;
+            display: flex;
+            overflow: hidden;
+          }
+
+          .ff-property-field {
+            margin: 0 2px;
+            background: darken($color-background-dark, 2%);
+          }
+        }
+        .ff-children {
+          margin-left: 12px;
+        }
+
+        &.ff-selected {
+          background: $color-primary;
+        }
+      }
+    }
+  }
+
+  .sv-hierarchy-tree-view {
     .ff-node {
       margin-left: -500px;
       border-top: 1px solid $color-background;

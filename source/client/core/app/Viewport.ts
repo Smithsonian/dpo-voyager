@@ -65,6 +65,7 @@ export default class Viewport
     canvasWidth = 100;
     canvasHeight = 100;
 
+    viewportCameraView: EViewportCameraView;
     sceneCamera: THREE.Camera = null;
     useSceneCamera = true;
 
@@ -173,6 +174,7 @@ export default class Viewport
 
     setCameraView(view: EViewportCameraView)
     {
+        this.viewportCameraView = view;
         this.vpController.orientation.copy(_cameraOrientation[view]);
         this.vpController.offset.set(0, 0, 1000);
 

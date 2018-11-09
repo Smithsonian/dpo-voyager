@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import types from "@ff/core/ecs/propertyTypes";
 
-import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
+import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "../../core/components/Manip";
 
 ////////////////////////////////////////////////////////////////////////////////
 

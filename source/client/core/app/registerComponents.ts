@@ -42,7 +42,6 @@ import Object3D from "../components/Object3D";
 import OrbitManip from "../components/OrbitManip";
 import PickManip from "../components/PickManip";
 import PointLight from "../components/PointLight";
-import PoseManip from "../components/PoseManip";
 import Presentation from "../components/Presentation";
 import Process from "../components/Process";
 import Reference from "../components/Reference";
@@ -80,7 +79,6 @@ export function registerComponents(registry: Registry)
         OrbitManip,
         PickManip,
         PointLight,
-        PoseManip,
         Presentation,
         Process,
         Reference,

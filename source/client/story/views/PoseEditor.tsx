@@ -20,9 +20,14 @@ import * as React from "react";
 import System from "@ff/core/ecs/System";
 
 import FlexContainer from "@ff/react/FlexContainer";
+import FlexItem from "@ff/react/FlexItem";
+import Button from "@ff/react/Button";
+
 import Label from "@ff/react/Label";
 import SelectionGroup, { ISelectionGroupSelectEvent } from "@ff/react/SelectionGroup";
 import PropertyField, { IPropertyFieldChangeEvent, IPropertyFieldFormat } from "@ff/react/PropertyField";
+
+import PoseEditController, { EPoseEditMode } from "../components/PoseEditController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,8 +54,26 @@ export interface IPoseEditorProps
 export default class PoseEditor extends React.Component<IPoseEditorProps, {}>
 {
     static readonly defaultProps = {
-        className: "sv-pose-editor"
+        className: "sv-editor sv-pose-editor"
     };
+
+    protected controller: PoseEditController = null;
+
+    constructor(props: IPoseEditorProps)
+    {
+        super(props);
+
+        this.onSelectMode = this.onSelectMode.bind(this);
+        this.controller = props.system.getComponent(PoseEditController);
+    }
+
+    componentDidMount()
+    {
+    }
+
+    componentWillUnmount()
+    {
+    }
 
     render()
     {
@@ -60,19 +83,50 @@ export default class PoseEditor extends React.Component<IPoseEditorProps, {}>
         } = this.props;
 
         return (
-            <div
-                className={className}>
-                <label>Position</label>
-                <Slider id="px" onChange={this.onSliderChange} value={0}>X</Slider>
-                <Slider id="py" onChange={this.onSliderChange} value={0}>Y</Slider>
-                <Slider id="pz" onChange={this.onSliderChange} value={0}>Z</Slider>
-                <label>Rotation</label>
-                <Slider id="rx" onChange={this.onSliderChange} value={0}>X</Slider>
-                <Slider id="ry" onChange={this.onSliderChange} value={0}>Y</Slider>
-                <Slider id="rz" onChange={this.onSliderChange} value={0}>Z</Slider>
+            <FlexContainer
+                className={className}
+                direction="vertical"
+                position="fill">
 
-            </div>
+                <FlexContainer
+                    className="sv-menu-bar"
+                    direction="horizontal"
+                    grow={0}>
+
+                    <SelectionGroup
+                        mode="exclusive"
+                        onSelect={this.onSelectMode}>
+
+                        <Button
+                            index={EPoseEditMode.Translate}
+                            text="Translate"
+                            faIcon="arrows-alt"/>
+                        <Button
+                            index={EPoseEditMode.Rotate}
+                            text="Rotate"
+                            faIcon="sync"/>
+                        <Button
+                            index={EPoseEditMode.Scale}
+                            text="Scale"
+                            faIcon="arrows-alt-v"/>
+                    </SelectionGroup>
+
+                </FlexContainer>
+
+                <FlexItem/>
+
+            </FlexContainer>
         );
+    }
+
+    protected onSelectMode(event: ISelectionGroupSelectEvent)
+    {
+        let mode = event.selectionIndex as EPoseEditMode;
+        if (mode === -1) {
+            mode = EPoseEditMode.Select;
+        }
+
+        this.controller.setMode(mode);
     }
 
     protected onSliderChange(event: IPropertyFieldChangeEvent)

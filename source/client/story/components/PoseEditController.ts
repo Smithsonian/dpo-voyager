@@ -15,50 +15,61 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { IPublisherEvent } from "@ff/core/ecs/Component";
 
 import Renderer, { EViewportLayout } from "../../core/components/Renderer";
-import PrepController, { IPrepModeChangeEvent, EPrepMode } from "./PrepController";
+import StoryAppController, { IPrepModeChangeEvent, EPrepMode } from "./StoryAppController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
+import Explorer from "../../core/components/Explorer";
+import SystemController from "../../core/components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export enum EPoseEditMode { Off, Select, Translate, Rotate, Scale }
 
-export type PoseActions = Actions<PoseController>;
-
-export default class PoseController extends Controller<PoseController>
+export interface IPoseEditModeEvent extends IPublisherEvent<PoseEditController>
 {
-    static readonly type: string = "PoseController";
+    mode: EPoseEditMode;
+}
+
+export type PoseActions = Actions<PoseEditController>;
+
+export default class PoseEditController extends Controller<PoseEditController>
+{
+    static readonly type: string = "PoseEditController";
     static readonly isSystemSingleton: boolean = true;
 
     actions: PoseActions = null;
 
     protected mode: EPoseEditMode = EPoseEditMode.Off;
 
-    protected prepController: PrepController = null;
+    protected systemController: SystemController = null;
+    protected appController: StoryAppController = null;
     protected renderer: Renderer = null;
+
 
     constructor(id?: string)
     {
         super(id);
-        this.addEvents("change");
+        this.addEvents("change", "mode");
     }
 
     create()
     {
         super.create();
 
-        this.prepController = this.getComponent(PrepController);
-        this.prepController.on("mode", this.onPrepMode, this);
+        this.systemController = this.getComponent(SystemController);
+
+        this.appController = this.getComponent(StoryAppController);
+        this.appController.on("mode", this.onPrepMode, this);
 
         this.renderer = this.getComponent(Renderer);
     }
 
     dispose()
     {
-        this.prepController.off("mode", this.onPrepMode, this);
+        this.appController.off("mode", this.onPrepMode, this);
 
         super.dispose();
     }
@@ -76,12 +87,13 @@ export default class PoseController extends Controller<PoseController>
     setMode(mode: EPoseEditMode)
     {
         this.mode = mode;
-        console.log("PoseController.setMode - ", EPoseEditMode[mode]);
+        this.emit<IPoseEditModeEvent>("mode", { mode });
     }
 
     protected onPrepMode(event: IPrepModeChangeEvent)
     {
         if (event.mode === EPrepMode.Pose) {
+            this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", false);
             this.setMode(EPoseEditMode.Select);
             this.renderer.setViewportLayout(EViewportLayout.Quad);
         }

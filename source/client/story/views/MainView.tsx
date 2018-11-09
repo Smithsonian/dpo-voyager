@@ -32,8 +32,9 @@ import SideBar from "./SideBar";
 
 import Application from "../Application";
 import ExplorerView from "../../core/views/ExplorerView";
-import TestEditor from "./TestEditor";
+//import TestEditor from "./TestEditor";
 import HierarchyView from "./HierarchyView";
+import PropertyView from "./PropertyView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,26 +68,42 @@ export default class MainView extends React.Component<IMainViewProps, {}>
                         title: "Explorer",
                         closable: false,
                         componentId: "explorer-view"
-                    },
-                    {
-                        id: uniqueId(),
-                        title: "Editor",
-                        closable: false,
-                        componentId: "property-editor"
-                    },
+                    }
                 ]
             },
             {
-                type: "stack",
+                type: "split",
                 id: uniqueId(),
-                activePaneId: "",
+                direction: "vertical",
                 size: 0.3,
-                panes: [
+                sections: [
                     {
+                        type: "stack",
                         id: uniqueId(),
-                        title: "Hierarchy",
-                        closable: false,
-                        componentId: "hierarchy-view"
+                        activePaneId: "",
+                        size: 0.6,
+                        panes: [
+                            {
+                                id: uniqueId(),
+                                title: "Hierarchy",
+                                closable: false,
+                                componentId: "hierarchy-view"
+                            }
+                        ]
+                    },
+                    {
+                        type: "stack",
+                        id: uniqueId(),
+                        activePaneId: "",
+                        size: 0.4,
+                        panes: [
+                            {
+                                id: uniqueId(),
+                                title: "Properties",
+                                closable: false,
+                                componentId: "property-view"
+                            }
+                        ]
                     }
                 ]
             }
@@ -106,10 +123,10 @@ export default class MainView extends React.Component<IMainViewProps, {}>
         );
 
         this.componentFactory = new ComponentFactory([
-            {
-                id: "property-editor", factory: () =>
-                    <TestEditor />
-            },
+            // {
+            //     id: "property-editor", factory: () =>
+            //         <TestEditor />
+            // },
             {
                 id: "explorer-view", factory: () =>
                     <ExplorerView
@@ -118,6 +135,11 @@ export default class MainView extends React.Component<IMainViewProps, {}>
             {
                 id: "hierarchy-view", factory: () =>
                     <HierarchyView
+                        controller={application.selectionController}/>
+            },
+            {
+                id: "property-view", factory: () =>
+                    <PropertyView
                         controller={application.selectionController}/>
             }
         ]);

@@ -21,7 +21,7 @@ import FlexContainer from "@ff/react/FlexContainer";
 import FlexSpacer from "@ff/react/FlexSpacer";
 import Button from "@ff/react/Button";
 
-import PrepController from "../components/PrepController";
+import StoryAppController from "../components/StoryAppController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,7 @@ import PrepController from "../components/PrepController";
 export interface IMenuBarProps
 {
     className?: string;
-    controller: PrepController;
+    controller: StoryAppController;
 }
 
 export default class MenuBar extends React.Component<IMenuBarProps, {}>
