@@ -17,6 +17,7 @@
 
 import * as THREE from "three";
 
+import math from "@ff/core/math";
 import threeMath from "@ff/three/math";
 import types from "@ff/core/ecs/propertyTypes";
 
@@ -26,12 +27,17 @@ import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
 import AssetLoader from "../loaders/AssetLoader";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../app/Derivative";
 import { EAssetType, EMapType } from "../app/Asset";
+import Renderer from "./Renderer";
 
 import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3 = new THREE.Vector3();
+const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
+const _quat = new THREE.Quaternion();
+const _quatZero = new THREE.Quaternion();
+const _euler = new THREE.Euler();
 
 const _qualityLevels = [
     EDerivativeQuality.Thumb,
@@ -50,10 +56,14 @@ export default class ModelComponent extends Object3D
     ins = this.makeProps({
         qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         alo: types.Boolean("Auto.Load", true),
-        asc: types.Boolean("Auto.Pose", true),
         pos: types.Vector3("Pose.Position"),
         rot: types.Vector3("Pose.Rotation"),
         sca: types.Number("Pose.Scale", 1)
+    });
+
+    outs = this.makeProps({
+        asc: types.Number("Auto.Scale", 1),
+        aof: types.Vector3("Auto.Offset")
     });
 
     protected units: TUnitType = "cm";
@@ -89,11 +99,29 @@ export default class ModelComponent extends Object3D
         if (pos.changed || rot.changed || sca.changed) {
             const object3D = this.object3D;
             object3D.position.fromArray(pos.value);
-            _vec3.fromArray(rot.value);
-            object3D.rotation.setFromVector3(_vec3, "XYZ");
-            object3D.scale.setScalar(sca.value);
+            _vec3a.fromArray(rot.value).multiplyScalar(math.DEG2RAD);
+            object3D.rotation.setFromVector3(_vec3a, "ZYX");
             object3D.updateMatrix();
         }
+    }
+
+    updatePropsFromMatrix()
+    {
+        const { pos, rot, sca } = this.ins;
+
+        this.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
+
+        _vec3a.toArray(pos.value);
+
+        _euler.setFromQuaternion(_quat, "ZYX");
+        _euler.toVector3(_vec3a);
+        _vec3a.multiplyScalar(math.RAD2DEG).toArray(rot.value);
+
+        sca.value = _vec3b.x;
+
+        pos.set();
+        rot.set();
+        sca.set();
     }
 
     dispose()
@@ -161,6 +189,7 @@ export default class ModelComponent extends Object3D
         if (data.transform) {
             this.object3D.matrix.fromArray(data.transform);
             this.object3D.matrixWorldNeedsUpdate = true;
+            this.updatePropsFromMatrix();
         }
 
         if (data.boundingBox) {
@@ -200,14 +229,13 @@ export default class ModelComponent extends Object3D
             data.transform = this.object3D.matrix.toArray();
         }
 
+        console.log(data.transform);
         //if (this.material) {
         // TODO: Implement
         //}
 
         return data;
     }
-
-
 
     protected autoLoad(quality: EDerivativeQuality): Promise<void>
     {
@@ -266,15 +294,39 @@ export default class ModelComponent extends Object3D
 
     protected onLoad()
     {
-        // auto scale and center
-        if (this.ins.asc && this.transform) {
-            const size = this.boundingBox.getSize(_vec3);
-            const scale = 10 / Math.max(size.x, size.y, size.z);
-            const center = this.boundingBox.getCenter(_vec3);
-
-            this.transform.setValue("Scale", [ scale, scale, scale ]);
-            this.transform.setValue("Position", [-center.x * scale, -center.y * scale, -center.z * scale]);
+        const renderer = this.system.getComponent(Renderer);
+        if (renderer) {
+            renderer.updateBoundingBox(this);
         }
+
+        // auto scale
+        //const { asc, aof } = this.outs;
+
+        //this.boundingBox.getSize(_vec3a);
+
+        // if (this.ins.asc) {
+        //     asc.pushValue(20 / Math.max(_vec3a.x, _vec3a.y, _vec3a.z));
+        // }
+        // else {
+        //     asc.pushValue(1);
+        // }
+        //
+        // if (this.ins.ace) {
+        //     this.boundingBox.getCenter(_vec3a);
+        //     _vec3a.multiplyScalar(-asc.value).toArray(aof.value);
+        //     aof.push();
+        // }
+        // else {
+        //     aof.pushValue([ 0, 0, 0 ]);
+        // }
+        //
+        // _vec3a.fromArray(aof.value);
+        // _vec3b.setScalar(asc.value);
+        // this.autoMatrix.compose(_vec3a, _quatZero, _vec3b);
+        //
+        // this.object3D.matrix.copy(this.poseMatrix);
+        // this.object3D.matrix.multiply(this.autoMatrix);
+        // this.object3D.matrixWorldNeedsUpdate = true;
     }
 
     protected selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null

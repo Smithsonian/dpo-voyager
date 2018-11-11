@@ -84,8 +84,7 @@ export default class OrbitManip extends Manip
 
     update()
     {
-        const ins = this.ins;
-        const outs = this.outs;
+        const { ins, outs } = this;
 
         if (ins.pro.changed) {
             outs.pro.pushValue(ins.pro.value);
@@ -158,9 +157,7 @@ export default class OrbitManip extends Manip
         if (this.updateMatrix) {
             this.updateMatrix = false;
 
-            _orientation.fromArray(ori.value);
-            _orientation.multiplyScalar(coreMath.DEG2RAD);
-
+            _orientation.fromArray(ori.value).multiplyScalar(coreMath.DEG2RAD);
             _offset.fromArray(ofs.value);
 
             if (types.isEnumEntry(EProjectionType.Orthographic, ins.pro.value)) {
@@ -222,8 +219,7 @@ export default class OrbitManip extends Manip
 
         threeMath.decomposeOrbitMatrix(matrix, _orientation, _offset);
 
-        _orientation.multiplyScalar(coreMath.RAD2DEG);
-        _orientation.toArray(ori.value);
+        _orientation.multiplyScalar(coreMath.RAD2DEG).toArray(ori.value);
         _offset.toArray(ofs.value);
 
         pus.set();

@@ -20,13 +20,23 @@ import { IPublisherEvent } from "@ff/core/ecs/Component";
 import Renderer, { EViewportLayout } from "../../core/components/Renderer";
 import StoryAppController, { IPrepModeChangeEvent, EPrepMode } from "./StoryAppController";
 
-import Controller, { Actions, Commander } from "../../core/components/Controller";
+import Model from "../../core/components/Model";
 import Explorer from "../../core/components/Explorer";
 import SystemController from "../../core/components/SystemController";
+import SelectionController, { ISelectComponentEvent } from "./SelectionController";
+
+import Controller, { Actions, Commander } from "../../core/components/Controller";
+import PoseManip, { EPoseManipMode } from "./PoseManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EPoseEditMode { Off, Select, Translate, Rotate, Scale }
+export enum EPoseEditMode {
+    Off = EPoseManipMode.Off,
+    Translate = EPoseManipMode.Translate,
+    Rotate =  EPoseManipMode.Rotate,
+    Scale = EPoseManipMode.Scale,
+    Select
+}
 
 export interface IPoseEditModeEvent extends IPublisherEvent<PoseEditController>
 {
@@ -46,6 +56,8 @@ export default class PoseEditController extends Controller<PoseEditController>
 
     protected systemController: SystemController = null;
     protected appController: StoryAppController = null;
+    protected selectionController: SelectionController = null;
+    protected poseManip: PoseManip = null;
     protected renderer: Renderer = null;
 
 
@@ -64,12 +76,17 @@ export default class PoseEditController extends Controller<PoseEditController>
         this.appController = this.getComponent(StoryAppController);
         this.appController.on("mode", this.onPrepMode, this);
 
+        this.selectionController = this.getComponent(SelectionController);
+        this.selectionController.on("component", this.onSelectComponent, this);
+
+        this.poseManip = this.getComponent(PoseManip);
         this.renderer = this.getComponent(Renderer);
     }
 
     dispose()
     {
         this.appController.off("mode", this.onPrepMode, this);
+        this.selectionController.off("component", this.onSelectComponent, this);
 
         super.dispose();
     }
@@ -87,19 +104,50 @@ export default class PoseEditController extends Controller<PoseEditController>
     setMode(mode: EPoseEditMode)
     {
         this.mode = mode;
+
+        if (mode === EPoseEditMode.Select) {
+            this.poseManip.setMode(EPoseManipMode.Off);
+        }
+        else {
+            this.poseManip.setMode(mode as number);
+        }
+
         this.emit<IPoseEditModeEvent>("mode", { mode });
     }
 
     protected onPrepMode(event: IPrepModeChangeEvent)
     {
         if (event.mode === EPrepMode.Pose) {
-            this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", false);
             this.setMode(EPoseEditMode.Select);
             this.renderer.setViewportLayout(EViewportLayout.Quad);
+            this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", false);
+            this.systemController.actions.setInputValue(Renderer, "HomeGrid.Enabled", true);
+
+            const component = this.selectionController.getFirstSelectedComponent();
+            if (component && component.is(Model)) {
+                this.poseManip.attachModel(component as Model);
+            }
         }
         else {
             this.setMode(EPoseEditMode.Off);
             this.renderer.setViewportLayout(EViewportLayout.Single);
+            this.systemController.actions.setInputValue(Renderer, "HomeGrid.Enabled", false);
+
+            this.poseManip.attachModel(null);
+        }
+    }
+
+    protected onSelectComponent(event: ISelectComponentEvent)
+    {
+        if (this.mode === EPoseEditMode.Off) {
+            return;
+        }
+
+        if (event.component.is(Model)) {
+            this.poseManip.attachModel(event.selected ? event.component as Model : null);
+        }
+        else {
+            this.poseManip.attachModel(null);
         }
     }
 }

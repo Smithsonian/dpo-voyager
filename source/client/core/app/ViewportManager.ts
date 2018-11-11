@@ -136,6 +136,11 @@ export default class ViewportManager extends Publisher<ViewportManager>
         return this._verticalSplit;
     }
 
+    enableHomeGrid(state: boolean)
+    {
+        this.forEachViewport(viewport => viewport.enableHomeGrid(state));
+    }
+
     setSplit(h: number, v: number)
     {
         const viewports = this.viewports;

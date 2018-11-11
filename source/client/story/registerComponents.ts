@@ -23,9 +23,7 @@ import AnnotationsEditController from "./components/AnnotationsEditController";
 import ToursEditController from "./components/ToursEditController";
 import PoseEditController from "./components/PoseEditController";
 
-import ViewportPoseManip from "./components/ViewportPoseManip";
 import ViewportCameraManip from "./components/ViewportCameraManip";
-
 import PoseManip from "./components/PoseManip";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +37,6 @@ export function registerComponents(registry: Registry)
         ToursEditController,
         PoseEditController,
         ViewportCameraManip,
-        ViewportPoseManip,
         PoseManip,
     ]);
 }

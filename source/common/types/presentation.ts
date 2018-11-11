@@ -200,7 +200,7 @@ export interface IRenderer
 export interface IReader
 {
     enabled: boolean;
-    documentUri: string;
+    documentUri?: string;
 }
 
 export interface ITools

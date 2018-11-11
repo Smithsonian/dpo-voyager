@@ -29,8 +29,12 @@ import RenderContext from "../app/RenderContext";
 import { EShaderMode } from "../shaders/UberMaterial";
 import ExplorerView from "../views/ExplorerView";
 import Model from "./Model";
+import Scene from "./Scene";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _vec3 = new THREE.Vector3();
+const _mat4 = new THREE.Matrix4();
 
 export { EViewportLayout, EShaderMode };
 
@@ -45,6 +49,7 @@ export default class Renderer extends Component
     static readonly type: string = "Renderer";
 
     ins = this.makeProps({
+        grd: types.Boolean("HomeGrid.Enabled"),
         sha: types.Enum("Shader", EShaderMode, EShaderMode.Default),
         exp: types.Number("Exposure", 1),
         gam: types.Number("Gamma", 1),
@@ -56,10 +61,24 @@ export default class Renderer extends Component
     protected layoutMode: EViewportLayout = EViewportLayout.Single;
     protected nextManip: IViewportManip = null;
 
+    protected boundingBox = new THREE.Box3().makeEmpty();
+    protected globalScalingEnabled: boolean = true;
+    protected globalScalingFactor = 1;
+
+    get globalScaling()
+    {
+        return this.globalScalingFactor;
+    }
 
     update()
     {
-        const { sha, exp, gam } = this.ins;
+        const { grd, sha, exp, gam } = this.ins;
+
+        if (grd.changed) {
+            this.views.forEach(entry => {
+                entry.manager.enableHomeGrid(grd.value);
+            });
+        }
 
         if (sha.changed) {
             const index = types.getEnumEntry(EShaderMode, sha.value);
@@ -94,7 +113,17 @@ export default class Renderer extends Component
             manager.forEachViewport((viewport, index) => {
                 viewport.sceneCamera = sceneCamera;
                 viewport.updateCamera();
+
                 const camera = viewport.camera;
+
+                //const scale = this.globalScalingFactor;
+                //_mat4.makeScale(scale, scale, scale);
+                //camera.matrix.multiply(_mat4);
+                //camera.matrixWorldNeedsUpdate = true;
+
+                //scene.updateMatrix();
+                //scene.matrix.multiply(_mat4);
+
                 context.set(viewport, camera, scene);
 
                 (this.system as RenderSystem).preRender(context);
@@ -102,6 +131,19 @@ export default class Renderer extends Component
                 (this.system as RenderSystem).postRender(context);
             });
         });
+    }
+
+    updateBoundingBox(model: Model)
+    {
+        this.boundingBox.expandByObject(model.object3D);
+
+        if (this.globalScalingEnabled) {
+            this.boundingBox.getSize(_vec3);
+            this.globalScalingFactor = 20 / Math.max(_vec3.x, _vec3.y, _vec3.z);
+
+            console.log("Renderer.updateBoundingBox - set global scaling to ",
+                this.globalScalingFactor);
+        }
     }
 
     setViewportLayout(layout: EViewportLayout)

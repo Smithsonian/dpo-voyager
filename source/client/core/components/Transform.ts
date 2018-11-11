@@ -27,9 +27,9 @@ import { INode as ITransformData, TVector3 } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _pos = new THREE.Vector3();
+const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
-const _scale = new THREE.Vector3();
 
 export enum ERotationOrder { XYZ, YZX, ZXY, XZY, YXZ, ZYX }
 
@@ -77,15 +77,10 @@ export default class Transform extends Hierarchy
             if (pos.changed) {
                 object.position.fromArray(pos.value);
             }
-            if (rot.changed) {
-                object.rotation.set(
-                    rot.value[0] * math.DEG2RAD,
-                    rot.value[1] * math.DEG2RAD,
-                    rot.value[2] * math.DEG2RAD
-                );
-            }
-            if (ord.changed) {
-                object.rotation.order = types.getEnumName(ERotationOrder, ord.value);
+            if (rot.changed || ord.changed) {
+                _vec3a.fromArray(rot.value).multiplyScalar(math.DEG2RAD);
+                const order = types.getEnumName(ERotationOrder, ord.value);
+                object.rotation.setFromVector3(_vec3a, order);
             }
             if (sca.changed) {
                 object.scale.fromArray(sca.value);
@@ -197,14 +192,17 @@ export default class Transform extends Hierarchy
             }
             if (data.rotation) {
                 const q = new THREE.Quaternion().fromArray(data.rotation);
-                const e = new THREE.Euler().setFromQuaternion(q);
-                ins.rot.setValue(e.toVector3().toArray() as TVector3);
+                const e = new THREE.Euler().setFromQuaternion(q, "XYZ");
+                ins.rot.setValue(e.toVector3().multiplyScalar(math.RAD2DEG).toArray() as TVector3);
+                ins.ord.setValue(ERotationOrder.XYZ);
             }
             if (data.scale) {
                 ins.sca.setValue(data.scale);
             }
 
             ins.mat.changed = false;
+
+            // this updates the matrix from the input properties
             this.update();
         }
     }
@@ -214,18 +212,18 @@ export default class Transform extends Hierarchy
         //const ins = this.ins;
         //const quaternion = this._object.quaternion;
 
-        this._object.matrix.decompose(_pos, _quat, _scale);
+        this._object.matrix.decompose(_vec3a, _quat, _vec3b);
 
         const data: Partial<ITransformData> = {};
 
-        if (_pos.x !== 0 || _pos.y !== 0 || _pos.z !== 0) {
-            data.translation = _pos.toArray();
+        if (_vec3a.x !== 0 || _vec3a.y !== 0 || _vec3a.z !== 0) {
+            data.translation = _vec3a.toArray();
         }
         if (_quat.x !== 0 || _quat.y !== 0 || _quat.z !== 0 || _quat.w !== 1) {
             data.rotation = _quat.toArray();
         }
-        if (_scale.x !== 1 || _scale.y !== 1 || _scale.z !== 1) {
-            data.scale = _scale.toArray();
+        if (_vec3b.x !== 1 || _vec3b.y !== 1 || _vec3b.z !== 1) {
+            data.scale = _vec3b.toArray();
         }
 
         return data;

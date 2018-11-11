@@ -29,6 +29,8 @@ import AnnotationsController, { ISelectAnnotationEvent } from "../../core/compon
 import StoryAppController, { EPrepMode, IPrepModeChangeEvent } from "./StoryAppController";
 
 import Controller, { Actions, Commander } from "../../core/components/Controller";
+import AnnotationsView from "../../core/components/AnnotationsView";
+import Groups from "../../core/components/Groups";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -198,6 +200,12 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
     protected onPrepMode(event: IPrepModeChangeEvent)
     {
         if (event.mode === EPrepMode.Annotations) {
+            this.system.getComponents(Model).forEach(model => {
+                model.entity.getOrCreateComponent(Groups);
+                model.entity.getOrCreateComponent(Annotations);
+                model.entity.getOrCreateComponent(AnnotationsView);
+            });
+
             this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", true);
             this.setMode(EAnnotationsEditMode.Select);
 

@@ -86,10 +86,15 @@ export default class Reader extends Component
     {
         const { ena, doc } = this.ins;
 
-        return {
-            enabled: ena.value,
-            documentUri: doc.value
+        const data: IReader = {
+            enabled: ena.value
+        };
+
+        if (doc.value) {
+            data.documentUri = doc.value;
         }
+
+        return data;
     }
 
     protected loadDocument()

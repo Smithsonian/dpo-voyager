@@ -97,7 +97,7 @@ export default class StoryAppController extends Controller<StoryAppController>
     {
         const item = this.findFirstSelectedItem();
         if (item) {
-            const json = JSON.stringify(item.deflate());
+            const json = JSON.stringify(item.toData());
             console.log(json);
 
             this.copyToClipboard(json);
@@ -110,7 +110,7 @@ export default class StoryAppController extends Controller<StoryAppController>
     {
         const presentation = this.presentationController.activePresentation;
         if (presentation) {
-            const json = JSON.stringify(presentation.deflate());
+            const json = JSON.stringify(presentation.toData());
             console.log(json);
 
             this.copyToClipboard(json);

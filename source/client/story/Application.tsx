@@ -28,7 +28,7 @@ import AnnotationsEditController from "./components/AnnotationsEditController";
 import ToursEditController from "./components/ToursEditController";
 import PoseEditController from "./components/PoseEditController";
 
-import ViewportPoseManip from "./components/ViewportPoseManip";
+import PoseManip from "./components/PoseManip";
 import ViewportCameraManip from "./components/ViewportCameraManip";
 
 import { registerComponents } from "./registerComponents";
@@ -51,7 +51,7 @@ export default class PrepApplication extends BaseApplication
     protected toursEditController: ToursEditController;
     protected poseController: PoseEditController;
 
-    protected viewportPoseManip: ViewportPoseManip;
+    protected poseManip: PoseManip;
     protected viewportCameraManip: ViewportCameraManip;
 
     constructor(props: IApplicationProps)
@@ -73,16 +73,16 @@ export default class PrepApplication extends BaseApplication
         this.toursEditController = this.main.createComponent(ToursEditController);
         this.toursEditController.createActions(this.commander);
 
+        this.poseManip = this.main.createComponent(PoseManip);
         this.poseController = this.main.createComponent(PoseEditController);
         this.poseController.createActions(this.commander);
 
         this.dockableController = new DockController(this.commander);
 
-        this.viewportPoseManip = this.main.createComponent(ViewportPoseManip);
         this.viewportCameraManip = this.main.createComponent(ViewportCameraManip);
 
-        this.orbitManip.next.component = this.viewportPoseManip;
-        this.viewportPoseManip.next.component = this.viewportCameraManip;
+        this.orbitManip.next.component = this.poseManip;
+        this.poseManip.next.component = this.viewportCameraManip;
 
         this.start();
         this.parseArguments(props);

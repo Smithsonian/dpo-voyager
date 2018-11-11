@@ -143,18 +143,18 @@ export default class Presentation extends Component
         // Voyager settings
         const voyager: IVoyager = data.voyager || {};
 
-        const explorerComponent = entity.getComponent(Explorer);
         if (voyager.explorer) {
+            const explorerComponent = entity.system.getComponent(Explorer);
             explorerComponent.fromData(voyager.explorer);
         }
 
-        const rendererComponent = entity.getComponent(Renderer);
         if (voyager.renderer) {
+            const rendererComponent = entity.system.getComponent(Renderer);
             rendererComponent.fromData(voyager.renderer);
         }
 
-        const readerComponent = entity.getComponent(Reader);
         if (voyager.reader) {
+            const readerComponent = entity.system.getComponent(Reader);
             readerComponent.fromData(voyager.reader);
         }
 

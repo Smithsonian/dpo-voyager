@@ -137,6 +137,11 @@ export default class SelectionController extends Controller<SelectionController>
         return this.selectedComponents;
     }
 
+    getFirstSelectedComponent(): Component
+    {
+        return this.selectedComponents.length > 0 ? this.selectedComponents[0] : null;
+    }
+
     getSelectedEntities(): Readonly<Entity[]>
     {
         return this.selectedEntities;

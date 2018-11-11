@@ -21,9 +21,12 @@ import { IManipPointerEvent, IManipTriggerEvent } from "@ff/react/ManipTarget";
 import OrbitManip from "@ff/react/OrbitManip";
 import OrbitController from "@ff/three/OrbitController";
 
+import Grid from "../three/Grid";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const _pi2 = Math.PI * 0.5;
+const _vec3 = new THREE.Vector3();
 
 const _cameraOrientation = [
     new THREE.Vector3(0, -_pi2, 0),
@@ -32,6 +35,15 @@ const _cameraOrientation = [
     new THREE.Vector3(-_pi2, 0, 0),
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(0, 0, Math.PI),
+];
+
+const _gridOrientation = [
+    new THREE.Vector3(_pi2, -_pi2, 0),
+    new THREE.Vector3(_pi2, _pi2, 0),
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(Math.PI, 0, 0),
+    new THREE.Vector3(_pi2, 0, 0),
+    new THREE.Vector3(_pi2, Math.PI, 0),
 ];
 
 export enum EViewportCameraView { Left, Right, Top, Bottom, Front, Back }
@@ -76,6 +88,7 @@ export default class Viewport
 
     protected vpCamera: THREE.Camera;
     protected vpObjects: THREE.Group;
+    protected homeGrid: Grid;
     protected vpManip: OrbitManip;
     protected vpController: OrbitController;
 
@@ -89,6 +102,17 @@ export default class Viewport
 
         this.vpCamera = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.001, 10000);
         this.vpObjects = new THREE.Group();
+        this.vpObjects.matrixAutoUpdate = false;
+
+        this.homeGrid = new Grid({
+            size: 20,
+            mainDivisions: 2,
+            subDivisions: 10,
+            mainColor: "#4d7a99",
+            subColor: "#32424d"
+        });
+
+        this.homeGrid.matrixAutoUpdate = false;
 
         this.vpManip = new OrbitManip();
         this.vpController = new OrbitController();
@@ -97,6 +121,28 @@ export default class Viewport
     get camera(): THREE.Camera | null
     {
         return this.useSceneCamera ? this.sceneCamera : this.vpCamera;
+    }
+
+    enableHomeGrid(state: boolean)
+    {
+        if (state) {
+            this.vpObjects.add(this.homeGrid);
+        }
+        else {
+            this.vpObjects.remove(this.homeGrid);
+        }
+    }
+
+    getTranslationFactor(): number
+    {
+        const camera = this.camera;
+        if (camera.type === "PerspectiveCamera") {
+            const perspCam = camera as THREE.PerspectiveCamera;
+            return 20 / this.width;
+        }
+
+        const orthoCam = camera as THREE.OrthographicCamera;
+        return (orthoCam.right - orthoCam.left) / this.width;
     }
 
     apply(renderer: THREE.WebGLRenderer): THREE.Camera
@@ -177,9 +223,15 @@ export default class Viewport
         this.viewportCameraView = view;
         this.vpController.orientation.copy(_cameraOrientation[view]);
         this.vpController.offset.set(0, 0, 1000);
+        this.vpController.size = 25;
 
         this.vpController.toMatrix(this.vpCamera.matrix);
-        this.vpCamera.matrixWorldNeedsUpdate = true;
+        //this.vpCamera.matrixWorldNeedsUpdate = true;
+        this.updateCamera(true);
+
+        const grid = this.homeGrid;
+        grid.rotation.setFromVector3(_gridOrientation[view], "YXZ");
+        grid.updateMatrix();
     }
 
     set(x: number = 0, y: number = 0, width: number = 1, height: number = 1): this

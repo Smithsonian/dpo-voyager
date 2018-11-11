@@ -29,10 +29,12 @@ export default class Scene extends Hierarchy
 {
     static readonly type: string = "Scene";
 
-    ins = this.makeProps({
-    });
-
     protected _scene: THREE.Scene = new THREE.Scene();
+
+    get object3D(): THREE.Object3D
+    {
+        return this._scene;
+    }
 
     get scene(): THREE.Scene
     {
