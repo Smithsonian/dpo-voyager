@@ -23,26 +23,11 @@ import FlexContainer from "@ff/react/FlexContainer";
 import FlexItem from "@ff/react/FlexItem";
 import Button from "@ff/react/Button";
 
-import Label from "@ff/react/Label";
 import SelectionGroup, { ISelectionGroupSelectEvent } from "@ff/react/SelectionGroup";
-import PropertyField, { IPropertyFieldChangeEvent, IPropertyFieldFormat } from "@ff/react/PropertyField";
 
 import PoseEditController, { EPoseEditMode } from "../components/PoseEditController";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const Slider = function(props)
-{
-    const fieldFormat: IPropertyFieldFormat = {
-        type: "number",
-        min: props.min, max: props.max, step: props.step, precision: props.precision || 3, bar: props.bar
-    };
-
-    return (<FlexContainer direction="horizontal" className="sv-slider">
-        <Label>{props.children}</Label>
-        <PropertyField id={props.id} value={props.value} format={fieldFormat} onChange={props.onChange} />
-    </FlexContainer>)
-};
 
 /** Properties for [[PoseEditor]] component. */
 export interface IPoseEditorProps
@@ -127,10 +112,5 @@ export default class PoseEditor extends React.Component<IPoseEditorProps, {}>
         }
 
         this.controller.setMode(mode);
-    }
-
-    protected onSliderChange(event: IPropertyFieldChangeEvent)
-    {
-
     }
 }

@@ -22,7 +22,7 @@ import FlexContainer from "@ff/react/FlexContainer";
 import Label from "@ff/react/Label";
 import Checkbox, { ICheckboxSelectEvent } from "@ff/react/Checkbox";
 import SelectionGroup, { ISelectionGroupSelectEvent } from "@ff/react/SelectionGroup";
-import PropertyField, { IPropertyFieldChangeEvent, IPropertyFieldFormat } from "@ff/react/PropertyField";
+import FieldEdit, { IFieldEditChangeEvent, IFieldEditFormat } from "@ff/react/FieldEdit";
 
 import { IInspectorSceneSettings } from "./InspectorScene";
 
@@ -30,14 +30,14 @@ import { IInspectorSceneSettings } from "./InspectorScene";
 
 const Slider = function(props)
 {
-    const fieldFormat: IPropertyFieldFormat = {
+    const fieldFormat: IFieldEditFormat = {
         type: "number",
         min: props.min || 0, max: props.max || 1, step: 0.01, precision: 2, bar: true
     };
 
     return (<FlexContainer direction="horizontal" className="sv-slider">
         <Label>{props.children}</Label>
-        <PropertyField id={props.id} value={props.value} format={fieldFormat} onChange={props.onChange} />
+        <FieldEdit id={props.id} value={props.value} format={fieldFormat} onChange={props.onChange} />
     </FlexContainer>)
 };
 
@@ -114,7 +114,7 @@ export default class InspectorEditor extends React.Component<IInspectorEditorPro
         </div>);
     }
 
-    protected onSliderChange(event: IPropertyFieldChangeEvent)
+    protected onSliderChange(event: IFieldEditChangeEvent)
     {
         const settings = this.settings;
         const value = event.value as number;

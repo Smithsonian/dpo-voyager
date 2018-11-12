@@ -253,7 +253,7 @@ export default class AnnotationsEditController extends Controller<AnnotationsEdi
 
             _mat3.setFromMatrix4(matWorld).transpose();
             _dir.copy(event.normal);
-            _dir.applyMatrix3(_mat3).normalize();
+            //_dir.applyMatrix3(_mat3).normalize();
 
             // perform action depending on current edit mode
             switch(this.mode) {

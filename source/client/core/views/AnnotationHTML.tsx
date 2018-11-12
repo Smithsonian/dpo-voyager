@@ -37,6 +37,7 @@ const _quadClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
 
 export default class AnnotationHTML extends AnnotationObject
 {
+    protected stemSize: number;
     protected line: THREE.Line;
 
     protected quadrant = -1;
@@ -58,12 +59,14 @@ export default class AnnotationHTML extends AnnotationObject
         this.onPointerDown = this.onPointerDown.bind(this);
         this.onPointerUp = this.onPointerUp.bind(this);
 
+        this.stemSize = 5;
+
         const geo = new THREE.Geometry();
-        geo.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 5, 0));
+        geo.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
         const mat = new THREE.LineBasicMaterial({ color: "#009cde" });
         mat.transparent = true;
         this.line = new THREE.Line(geo, mat);
-        this.line.matrixAutoUpdate = false;
+        //this.line.matrixAutoUpdate = false;
         this.line.frustumCulled = false;
         this.add(this.line);
 
@@ -74,6 +77,15 @@ export default class AnnotationHTML extends AnnotationObject
 
     update()
     {
+        const box = this.views.getModelBoundingBox();
+        box.getSize(_vec3a);
+        const size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
+        if (size > 0) {
+            this.stemSize = size * 0.08;
+        }
+
+        this.line.scale.setScalar(this.stemSize);
+
         super.update();
         this.updateHTML();
     }
@@ -83,7 +95,7 @@ export default class AnnotationHTML extends AnnotationObject
         _vec3a.set(0, 0, 0);
         _vec3a.applyMatrix4(this.line.modelViewMatrix);
 
-        _vec3b.set(0, 5, 0);
+        _vec3b.set(0, 1, 0);
         _vec3b.applyMatrix4(this.line.modelViewMatrix);
 
         _vec3c.copy(_vec3b).sub(_vec3a).normalize();

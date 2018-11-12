@@ -89,6 +89,11 @@ export default class AnnotationsView extends Object3D
         super.dispose();
     }
 
+    getModelBoundingBox()
+    {
+        return this.model.getBoundingBox();
+    }
+
     setVisible(visible: boolean)
     {
 

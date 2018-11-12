@@ -105,6 +105,19 @@ export default class ModelComponent extends Object3D
         }
     }
 
+    dispose()
+    {
+        this.derivatives.forEach(derivative => derivative.dispose());
+        this.activeDerivative = null;
+
+        super.dispose();
+    }
+
+    getBoundingBox()
+    {
+        return this.boundingBox;
+    }
+
     updatePropsFromMatrix()
     {
         const { pos, rot, sca } = this.ins;
@@ -122,14 +135,6 @@ export default class ModelComponent extends Object3D
         pos.set();
         rot.set();
         sca.set();
-    }
-
-    dispose()
-    {
-        this.derivatives.forEach(derivative => derivative.dispose());
-        this.activeDerivative = null;
-
-        super.dispose();
     }
 
     addDerivative(derivative: Derivative)
@@ -298,35 +303,6 @@ export default class ModelComponent extends Object3D
         if (renderer) {
             renderer.updateBoundingBox(this);
         }
-
-        // auto scale
-        //const { asc, aof } = this.outs;
-
-        //this.boundingBox.getSize(_vec3a);
-
-        // if (this.ins.asc) {
-        //     asc.pushValue(20 / Math.max(_vec3a.x, _vec3a.y, _vec3a.z));
-        // }
-        // else {
-        //     asc.pushValue(1);
-        // }
-        //
-        // if (this.ins.ace) {
-        //     this.boundingBox.getCenter(_vec3a);
-        //     _vec3a.multiplyScalar(-asc.value).toArray(aof.value);
-        //     aof.push();
-        // }
-        // else {
-        //     aof.pushValue([ 0, 0, 0 ]);
-        // }
-        //
-        // _vec3a.fromArray(aof.value);
-        // _vec3b.setScalar(asc.value);
-        // this.autoMatrix.compose(_vec3a, _quatZero, _vec3b);
-        //
-        // this.object3D.matrix.copy(this.poseMatrix);
-        // this.object3D.matrix.multiply(this.autoMatrix);
-        // this.object3D.matrixWorldNeedsUpdate = true;
     }
 
     protected selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null

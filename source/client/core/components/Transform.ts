@@ -23,13 +23,15 @@ import math from "@ff/core/math";
 import types from "@ff/core/ecs/propertyTypes";
 import Hierarchy from "@ff/core/ecs/Hierarchy";
 
-import { INode as ITransformData, TVector3 } from "common/types/presentation";
+import { INode as ITransformData } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
+const _mat4 = new THREE.Matrix4();
 const _quat = new THREE.Quaternion();
+const _euler = new THREE.Euler();
 
 export enum ERotationOrder { XYZ, YZX, ZXY, XZY, YXZ, ZYX }
 
@@ -68,28 +70,23 @@ export default class Transform extends Hierarchy
     {
         const object = this._object;
         const { pos, rot, ord, sca, mat } = this.ins;
+        const matOut = this.outs.mat;
 
         if (mat.changed) {
             object.matrix.fromArray(mat.value);
             object.matrixWorldNeedsUpdate = true;
         }
         else {
-            if (pos.changed) {
-                object.position.fromArray(pos.value);
-            }
-            if (rot.changed || ord.changed) {
-                _vec3a.fromArray(rot.value).multiplyScalar(math.DEG2RAD);
-                const order = types.getEnumName(ERotationOrder, ord.value);
-                object.rotation.setFromVector3(_vec3a, order);
-            }
-            if (sca.changed) {
-                object.scale.fromArray(sca.value);
-            }
-
+            object.position.fromArray(pos.value);
+            _vec3b.fromArray(rot.value).multiplyScalar(math.DEG2RAD);
+            const order = types.getEnumName(ERotationOrder, ord.value);
+            object.rotation.setFromVector3(_vec3b, order);
+            object.scale.fromArray(sca.value);
             object.updateMatrix();
         }
 
-        (object.matrix as any).toArray(this.outs.mat.value);
+        (object.matrix as any).toArray(matOut.value);
+        matOut.push();
     }
 
     dispose()
@@ -176,33 +173,38 @@ export default class Transform extends Hierarchy
 
     fromData(data: ITransformData)
     {
-        const ins = this.ins;
+        const { pos, rot, ord, sca, mat } = this.ins;
+
+        ord.setValue(0);
 
         if (data.matrix) {
-            ins.mat.setValue(data.matrix);
+            _mat4.fromArray(data.matrix);
+            _mat4.decompose(_vec3a, _quat, _vec3b);
+            _vec3a.toArray(pos.value);
+            _euler.setFromQuaternion(_quat, "XYZ");
+            _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rot.value);
+            _vec3b.toArray(sca.value);
 
-            ins.pos.changed = false;
-            ins.rot.changed = false;
-            ins.ord.changed = false;
-            ins.sca.changed = false;
+            pos.set();
+            rot.set();
+            sca.set();
         }
         else {
             if (data.translation) {
-                ins.pos.setValue(data.translation);
+                pos.setValue(data.translation);
             }
             if (data.rotation) {
-                const q = new THREE.Quaternion().fromArray(data.rotation);
-                const e = new THREE.Euler().setFromQuaternion(q, "XYZ");
-                ins.rot.setValue(e.toVector3().multiplyScalar(math.RAD2DEG).toArray() as TVector3);
-                ins.ord.setValue(ERotationOrder.XYZ);
+                _quat.fromArray(data.rotation);
+                _euler.setFromQuaternion(_quat, "XYZ");
+                _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rot.value);
+                rot.set();
             }
             if (data.scale) {
-                ins.sca.setValue(data.scale);
+                sca.setValue(data.scale);
             }
 
-            ins.mat.changed = false;
-
-            // this updates the matrix from the input properties
+            // this updates the matrix from the PRS properties
+            mat.changed = false;
             this.update();
         }
     }

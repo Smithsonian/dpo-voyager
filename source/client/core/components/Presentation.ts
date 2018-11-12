@@ -224,6 +224,7 @@ export default class Presentation extends Component
 
         const transform = entity.getOrCreateComponent(Transform);
         transform.fromData(node);
+
         parent.addChild(transform);
 
         if (node.item !== undefined) {
