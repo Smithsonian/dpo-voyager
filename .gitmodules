@@ -10,3 +10,6 @@
 [submodule "libs/ff-three"]
 	path = libs/ff-three
 	url = https://github.com/framelab/ff-three
+[submodule "libs/ff-ui"]
+	path = libs/ff-ui
+	url = git@github.com:framelab/ff-ui.git
