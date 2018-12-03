@@ -56,7 +56,14 @@ const expressServerConfig: IExpressServerConfiguration = {
 const expressServer = new ExpressServer(expressServerConfig);
 
 expressServer.app.get("/:component", (req, res) => {
-    res.render("app", { component: req.params.component, devMode: devMode, local: localMode });
+    const component = req.params.component;
+    if (component.endsWith("legacy")) {
+        res.render("app", { component, devMode: devMode, local: localMode });
+    }
+    else {
+        res.render("component", { component, devMode: devMode, local: localMode });
+    }
+
 });
 
 expressServer.start().then(() => {

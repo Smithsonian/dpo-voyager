@@ -48,7 +48,7 @@ export default class Renderer extends Component
 {
     static readonly type: string = "Renderer";
 
-    ins = this.makeProps({
+    ins = this.ins.append({
         grd: types.Boolean("HomeGrid.Enabled"),
         sha: types.Enum("Shader", EShaderMode, EShaderMode.Default),
         exp: types.Number("Exposure", 1),

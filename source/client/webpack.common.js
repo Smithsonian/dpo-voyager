@@ -33,9 +33,12 @@ const libDir = path.resolve(projectDir, "libs");
 module.exports = {
 
     entry: {
-        "voyager-explorer": path.resolve(sourceDir, "client/explorer/Application.tsx"),
-        "voyager-story": path.resolve(sourceDir, "client/story/Application.tsx"),
-        "voyager-inspector": path.resolve(sourceDir, "client/inspector/Application.tsx")
+        "voyager-explorer-legacy": path.resolve(sourceDir, "client/explorer/Application.tsx"),
+        "voyager-story-legacy": path.resolve(sourceDir, "client/story/Application.tsx"),
+        "voyager-inspector-legacy": path.resolve(sourceDir, "client/inspector/Application.tsx"),
+
+        "voyager-explorer": path.resolve(sourceDir, "client/explorer/ExplorerApplication.ts"),
+        "voyager-story": path.resolve(sourceDir, "client/story/StoryApplication.ts"),
     },
 
     output: {
@@ -51,6 +54,7 @@ module.exports = {
         alias: {
             "common": path.resolve(sourceDir, "common"),
             "@ff/core": path.resolve(libDir, "ff-core/source"),
+            "@ff/ui": path.resolve(libDir, "ff-ui/source"),
             "@ff/react": path.resolve(libDir, "ff-react/source"),
             "@ff/browser": path.resolve(libDir, "ff-browser/source"),
             "@ff/three": path.resolve(libDir, "ff-three/source")
