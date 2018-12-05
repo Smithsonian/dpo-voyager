@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-import Stage from "./ui/Stage";
-import Overlay from "./ui/Overlay";
-import ExplorerApplication from "./ExplorerApplication";
+import LitElement, { customElement, property, PropertyValues } from "@ff/ui/LitElement";
 
-import CustomElement, { customElement, property, PropertyValues } from "@ff/ui/CustomElement";
+import SystemController from "../core/components/SystemController";
+
+import RenderView from "./ui/RenderView";
+import OverlayView from "./ui/OverlayView";
+import ExplorerApplication from "./ExplorerApplication";
 
 import "./ui/styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("voyager-explorer")
-export default class ExplorerElement extends CustomElement
+export default class ExplorerView extends LitElement
 {
     @property({ type: String })
     item = "";
@@ -68,16 +70,17 @@ export default class ExplorerElement extends CustomElement
         }
     }
 
-    firstConnected()
+    protected firstConnected()
     {
-        this.createElement(Stage, {
+        new RenderView(this.application.performer).setStyle({
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0"
-        }, this);
+        }).appendTo(this);
 
-        // this.createElement(Overlay, {
-        //     position: "absolute",
-        //     top: "0", bottom: "0", left: "0", right: "0"
-        // }, this);
+        const controller = this.application.system.getComponent(SystemController);
+        new OverlayView(controller).setStyle({
+            position: "absolute",
+            top: "0", bottom: "0", left: "0", right: "0"
+        }).appendTo(this);
     }
 }

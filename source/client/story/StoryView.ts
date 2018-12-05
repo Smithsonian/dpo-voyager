@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
+import LitElement, { customElement, html } from "@ff/ui/LitElement";
+
+import "./ui/styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-overlay")
-export default class Overlay extends CustomElement
+@customElement("voyager-story")
+export default class StoryView extends LitElement
 {
     constructor()
     {
         super();
+        console.log("Voyager Story");
     }
 
-    firstUpdated()
+    render()
     {
-        this.setStyle({
-            pointerEvents: "none"
-        });
-
-        this.setAttribute("pointer-events", "none");
+        return html`
+            <div>Voyager Story</div>
+        `;
     }
 }

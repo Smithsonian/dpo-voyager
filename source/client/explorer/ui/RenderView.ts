@@ -26,7 +26,7 @@ import Scene from "../../core/components/Scene";
 import Camera from "../../core/components/Camera";
 import QuadViewport from "../core/QuadViewport";
 
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,58 +43,57 @@ export default class RenderView extends CustomElement
 {
     static readonly resizeEvent: string = "sv-resize";
 
-    @property({ attribute: false })
-    performer: Performer;
+    protected performer: Performer;
+    protected manipTarget: ManipTarget;
 
-    protected _manipTarget: ManipTarget;
+    protected canvas: HTMLCanvasElement = null;
+    protected overlay: HTMLDivElement = null;
+    protected splitter: QuadSplitter = null;
+    protected renderer: THREE.WebGLRenderer = null;
+    protected viewports: QuadViewport = null;
 
-    protected _canvas: HTMLCanvasElement = null;
-    protected _overlay: HTMLDivElement = null;
-    protected _splitter: QuadSplitter = null;
-    protected _renderer: THREE.WebGLRenderer = null;
-    protected _viewports: QuadViewport = null;
-
-    constructor()
+    constructor(performer: Performer)
     {
         super();
 
         this.onResize = this.onResize.bind(this);
 
-        this._manipTarget = new ManipTarget();
+        this.performer = performer;
+        this.manipTarget = new ManipTarget();
 
-        this.addEventListener("pointerdown", this._manipTarget.onPointerDown);
-        this.addEventListener("pointermove", this._manipTarget.onPointerMove);
-        this.addEventListener("pointerup", this._manipTarget.onPointerUpOrCancel);
-        this.addEventListener("pointercancel", this._manipTarget.onPointerUpOrCancel);
+        this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
+        this.addEventListener("pointermove", this.manipTarget.onPointerMove);
+        this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
+        this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
     }
 
     protected firstConnected()
     {
-        this._canvas = this.createElement("canvas", {
+        this.canvas = this.createElement("canvas", {
             display: "block",
             width: "100%",
             height: "100%"
         }, this);
 
-        this._overlay = this.createElement("div", {
+        this.overlay = this.createElement("div", {
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0",
             overflow: "hidden"
         }, this);
 
-        this._splitter = this.createElement(QuadSplitter, {
+        this.splitter = new QuadSplitter().setStyle({
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0",
             overflow: "hidden"
-        }, this);
+        }).appendTo(this);
 
-        this._renderer = new THREE.WebGLRenderer({
-            canvas: this._canvas,
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: this.canvas,
             antialias: true,
             devicePixelRatio: window.devicePixelRatio
         });
 
-        this._viewports = new QuadViewport(this._renderer);
+        this.viewports = new QuadViewport(this.renderer);
     }
 
     protected connected()
@@ -111,13 +110,13 @@ export default class RenderView extends CustomElement
 
     protected onResize()
     {
-        const width = this._canvas.clientWidth;
-        const height = this._canvas.clientHeight;
+        const width = this.canvas.clientWidth;
+        const height = this.canvas.clientHeight;
 
-        this._canvas.width = width;
-        this._canvas.height = height;
+        this.canvas.width = width;
+        this.canvas.height = height;
 
-        this._renderer.setSize(width, height, false);
+        this.renderer.setSize(width, height, false);
 
         this.dispatchEvent(new CustomEvent(RenderView.resizeEvent, {
             detail: { width, height }
@@ -134,8 +133,8 @@ export default class RenderView extends CustomElement
             return;
         }
 
-        const viewports = this._viewports;
-        const renderer = this._renderer;
+        const viewports = this.viewports;
+        const renderer = this.renderer;
 
         renderer.clear();
         viewports.renderViewports(sceneComponent.scene, cameraComponent.camera);

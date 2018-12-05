@@ -22,6 +22,11 @@ $color-background: #3e3e3e;
 $color-primary: #0089bf; // Smithsonian primary blue
 $color-secondary: #ffcd00; // Smithsonian secondary yellow
 
+$menu-color-text: #f0f0f0;
+$menu-color-text-dim: #a0a0a0;
+$menu-color-background: transparentize(#202020, 0.3);
+$menu-color-background-hover: transparentize(#404040, 0.4);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @import "../../../../libs/ff-ui/source/themes/dark";
@@ -30,10 +35,13 @@ $color-secondary: #ffcd00; // Smithsonian secondary yellow
 // GLOBAL
 
 body {
+  @include font-ui-normal;
+  font-size: 0.9rem;
+  color: $color-text;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ELEMENTS
+// RENDER VIEW
 
 sv-quad-splitter {
   .sv-left {
@@ -45,3 +53,57 @@ sv-quad-splitter {
     border-bottom: 1px solid $color-background-light;
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// OVERLAY VIEW
+
+sv-overlay-view {
+
+  .sv-main-menu {
+    position: absolute;
+    margin: 4px;
+    display: flex;
+
+    ff-button-group {
+      display: flex;
+    }
+  }
+
+  .sv-popup-menu {
+    background: cadetblue;
+  }
+
+  .ff-popup-button {
+    pointer-events: auto;
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    margin: 4px;
+    padding: 6px 0 0 0;
+    border-radius: 50% !important;
+    font-size: 19px;
+    background: $menu-color-background;
+    color: transparentize($menu-color-text, 0.4);
+    transition: color $tx-short, background-color $tx-short;
+
+    &:hover, &:focus {
+      outline: none;
+      background-color: $menu-color-background-hover;
+      color: $menu-color-text;
+    }
+
+    &[selected] {
+      background-color: $color-primary;
+      color: $menu-color-text;
+
+      .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+      }
+
+      &:hover, &:focus {
+        background-color: $color-primary-light;
+      }
+    }
+  }
+}
+

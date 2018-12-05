@@ -41,7 +41,7 @@ import RenderSystem from "../core/app/RenderSystem";
 
 import { EDerivativeQuality } from "../core/app/Derivative";
 
-import "./ExplorerElement";
+import "./ExplorerView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,10 +56,10 @@ export default class ExplorerApplication
 
 
     readonly system: RenderSystem;
+    readonly performer: Performer;
 
     protected commander: Commander;
     protected registry: Registry;
-    protected performer: Performer;
 
     protected main: Entity;
 
