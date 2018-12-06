@@ -20,7 +20,7 @@ import { ISplitterChangeEvent } from "@ff/ui/Splitter";
 
 import { EViewportLayout } from "../core/QuadViewport";
 
-import LitElement, { customElement, html, property } from "@ff/ui/LitElement";
+import CustomElement, { customElement, html, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,7 @@ export interface IQuadSplitterChangeMessage
 }
 
 @customElement("sv-quad-splitter")
-export default class QuadSplitter extends LitElement
+export default class QuadSplitter extends CustomElement
 {
     @property({ attribute: false })
     layout: EViewportLayout = EViewportLayout.Quad;

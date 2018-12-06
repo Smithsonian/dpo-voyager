@@ -100,12 +100,20 @@ export default class RenderView extends CustomElement
     {
         window.addEventListener("resize", this.onResize);
         this.performer.on("render", this.onPerformerRender, this);
+
+        this.manipTarget.onPointer = this.viewports.onPointer;
+        this.manipTarget.onTrigger = this.viewports.onTrigger;
+
+        this.onResize();
     }
 
     protected disconnected()
     {
         this.performer.off("render", this.onPerformerRender, this);
         window.removeEventListener("resize", this.onResize);
+
+        this.manipTarget.onPointer = null;
+        this.manipTarget.onTrigger = null;
     }
 
     protected onResize()
@@ -117,6 +125,7 @@ export default class RenderView extends CustomElement
         this.canvas.height = height;
 
         this.renderer.setSize(width, height, false);
+        this.viewports.setCanvasSize(width, height);
 
         this.dispatchEvent(new CustomEvent(RenderView.resizeEvent, {
             detail: { width, height }
@@ -133,10 +142,7 @@ export default class RenderView extends CustomElement
             return;
         }
 
-        const viewports = this.viewports;
-        const renderer = this.renderer;
-
-        renderer.clear();
-        viewports.renderViewports(sceneComponent.scene, cameraComponent.camera);
+        this.renderer.clear();
+        this.viewports.renderViewports(sceneComponent.scene, cameraComponent.camera);
     }
 }

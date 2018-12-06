@@ -60,7 +60,7 @@ export default class QuadViewport extends Publisher<QuadViewport>
     protected _canvasHeight: number = 100;
 
     protected _renderer: THREE.WebGLRenderer;
-    protected _renderContext = new RenderContext();
+    //protected _renderContext = new RenderContext();
     protected _viewports: Viewport[] = [];
     protected _activeViewport: Viewport = null;
 
@@ -68,6 +68,9 @@ export default class QuadViewport extends Publisher<QuadViewport>
     {
         super();
         //this.addEvent("layout");
+
+        this.onPointer = this.onPointer.bind(this);
+        this.onTrigger = this.onTrigger.bind(this);
 
         this._renderer = renderer;
         this.layout = EViewportLayout.Single;
@@ -82,10 +85,10 @@ export default class QuadViewport extends Publisher<QuadViewport>
         });
     }
 
-    forEachViewport(callback: (viewport: Viewport, index: number) => void)
-    {
-        this._viewports.forEach(callback);
-    }
+    // forEachViewport(callback: (viewport: Viewport, index: number) => void)
+    // {
+    //     this._viewports.forEach(callback);
+    // }
 
     get layout()
     {

@@ -43,21 +43,26 @@ body {
 ////////////////////////////////////////////////////////////////////////////////
 // RENDER VIEW
 
-sv-quad-splitter {
-  .sv-left {
-    box-sizing: border-box;
-    border-right: 1px solid $color-background-light;
-  }
-  .sv-top {
-    box-sizing: border-box;
-    border-bottom: 1px solid $color-background-light;
+sv-render-view {
+  @include full-size;
+
+  sv-quad-splitter {
+    .sv-left {
+      box-sizing: border-box;
+      border-right: 1px solid $color-background-light;
+    }
+    .sv-top {
+      box-sizing: border-box;
+      border-bottom: 1px solid $color-background-light;
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OVERLAY VIEW
+// CHROME VIEW
 
-sv-overlay-view {
+sv-chrome-view {
+  @include full-size;
 
   .sv-main-menu {
     position: absolute;
@@ -69,11 +74,7 @@ sv-overlay-view {
     }
   }
 
-  .sv-popup-menu {
-    background: cadetblue;
-  }
-
-  .ff-popup-button {
+  .ff-menu-button {
     pointer-events: auto;
     box-sizing: border-box;
     width: 44px;
@@ -102,6 +103,90 @@ sv-overlay-view {
 
       &:hover, &:focus {
         background-color: $color-primary-light;
+      }
+    }
+  }
+
+  .sv-logo {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 190px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MENUS
+
+sv-view-menu {
+  width: 180px;
+  overflow: hidden;
+}
+
+.sv-popup-menu {
+  box-sizing: border-box;
+  background-color: $menu-color-background;
+  border: 1px solid $color-background-light;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity $tx-short;
+
+  label {
+    background: $color-background-light;
+    margin: 4px 0;
+    padding: 1px 2px 3px 2px;
+    color: $menu-color-text;
+  }
+
+  label:first-child {
+    margin-top: 0;
+  }
+
+  .ff-control {
+    margin: 2px 4px;
+  }
+
+  .ff-button {
+    padding: 3px;
+    background-color: transparent;
+    border-radius: 3px;
+    color: $menu-color-text-dim;
+
+    &:hover, &:focus {
+      background-color: inherit;
+      outline: none;
+      color: $menu-color-text;
+    }
+
+    &[selected] {
+      background: $color-primary !important;
+      color: $menu-color-text;
+    }
+  }
+
+  .sv-cube {
+    padding: 8px;
+
+    .ff-button {
+      box-sizing: border-box;
+      width: 2.2em;
+      height: 2.2em;
+      margin: 0 -1px -1px 0;
+      padding: 0;
+      background: rgba(32, 32, 32, 0.3);
+      border: 1px solid #404040;
+      border-radius: 0;
+
+      .ff-text {
+        font-size: 1.5em;
+        line-height: 0.9em;
+      }
+
+      .ff-icon {
+        font-size: 1.2em;
+        line-height: 1em;
+        vertical-align: center;
       }
     }
   }

@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+import "@ff/ui/Layout";
 import "@ff/ui/Button";
+import { IButtonClickEvent } from "@ff/ui/Button";
+
+import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
-import { customElement, html, property } from "@ff/ui/LitElement";
 
 import Renderer, { EShaderMode } from "../../../core/components/Renderer";
 import SystemController from "../../../core/components/SystemController";
@@ -27,44 +30,56 @@ import SystemController from "../../../core/components/SystemController";
 @customElement("sv-render-menu")
 export default class RenderMenu extends Popup
 {
-    readonly controller: SystemController;
+    @property({ attribute: false })
+    controller: SystemController;
 
-    constructor(controller: SystemController, portal: HTMLElement)
+    constructor()
     {
         super();
 
-        this.controller = controller;
-        this.portal = portal;
-        this.closable = true;
+        this.position = "anchor";
+        this.justify = "end";
+        this.offsetX = 8;
+        this.offsetY = 8;
+        this.keepVisible = true;
+    }
+
+    protected connected()
+    {
+        super.connected();
+        this.controller.addInputListener(Renderer, "Shader", this.onChange, this);
+    }
+
+    protected disconnected()
+    {
+        super.disconnected();
+        this.controller.removeInputListener(Renderer, "Shader", this.onChange, this);
     }
 
     protected render()
     {
-        const controller = this.controller;
-        if (!controller) {
-            throw new Error("controller not set");
-        }
-
-        const mode = controller.getInputValue(Renderer, "Shader");
+        const renderMode = this.controller.getInputValue(Renderer, "Shader");
 
         return html`
-            <div class="ff-label">Render Mode</div>
-            <ff-button index=${EShaderMode.Default} text="Standard" title="Display model in standard mode"
-                ?selected=${mode === EShaderMode.Default}></ff-button>
-            <ff-button index=${EShaderMode.Clay} text="Clay" title="Display model without colors"
-                ?selected=${mode === EShaderMode.Clay}></ff-button>
-            <ff-button index=${EShaderMode.XRay} text="X-Ray" title="Display model in X-Ray mode"
-                ?selected=${mode === EShaderMode.XRay}></ff-button>
-            <ff-button index=${EShaderMode.Normals} text="Normals" title="Display normals"
-                ?selected=${mode === EShaderMode.Normals}></ff-button>
-            <ff-button index=${EShaderMode.Wireframe} text="Wireframe" title="Display model as wireframe"
-                ?selected=${mode === EShaderMode.Wireframe}></ff-button>
+            <label>Shading</label>
+            <ff-flex-column @click=${this.onClickRenderMode}>
+                <ff-index-button .index=${EShaderMode.Default} .selectedIndex=${renderMode}
+                  text="Standard" title="Display model in standard mode"></ff-index-button>
+                <ff-index-button .index=${EShaderMode.Clay} .selectedIndex=${renderMode}
+                  text="Clay" title="Display model without colors"></ff-index-button>
+                <ff-index-button .index=${EShaderMode.XRay} .selectedIndex=${renderMode}
+                  text="X-Ray" title="Display model in X-Ray mode"></ff-index-button>
+                <ff-index-button .index=${EShaderMode.Normals} .selectedIndex=${renderMode}
+                  text="Normals" title="Display normals"></ff-index-button>
+                <ff-index-button .index=${EShaderMode.Wireframe} .selectedIndex=${renderMode}
+                  text="Wireframe" title="Display model as wireframe"></ff-index-button>
+            </ff-flex-column>
         `;
     }
 
-    protected firstUpdated(changedProperties)
+    protected firstUpdated()
     {
-        super.firstUpdated(changedProperties);
+        super.firstUpdated();
 
         this.setStyle({
             display: "flex",
@@ -72,5 +87,16 @@ export default class RenderMenu extends Popup
         });
 
         this.classList.add("sv-popup-menu");
+    }
+
+    protected onChange()
+    {
+        this.requestUpdate();
+    }
+
+    protected onClickRenderMode(event: IButtonClickEvent)
+    {
+        this.controller.actions.setInputValue(Renderer, "Shader", event.target.index);
+        event.stopPropagation();
     }
 }

@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-import LitElement, { customElement, html } from "@ff/ui/LitElement";
+import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 
 import "./ui/styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("voyager-story")
-export default class StoryView extends LitElement
+export default class StoryView extends CustomElement
 {
     constructor()
     {

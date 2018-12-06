@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-import LitElement, { customElement, property, PropertyValues } from "@ff/ui/LitElement";
+import parseUrlParameter from "@ff/browser/parseUrlParameter";
+import CustomElement, { customElement, property, PropertyValues } from "@ff/ui/CustomElement";
 
 import SystemController from "../core/components/SystemController";
 
 import RenderView from "./ui/RenderView";
-import OverlayView from "./ui/OverlayView";
+import ChromeView from "./ui/ChromeView";
 import ExplorerApplication from "./ExplorerApplication";
 
 import "./ui/styles.scss";
@@ -28,13 +29,19 @@ import "./ui/styles.scss";
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("voyager-explorer")
-export default class ExplorerView extends LitElement
+export default class ExplorerView extends CustomElement
 {
+    @property({ type: Boolean })
+    parseUrl = true;
+
     @property({ type: String })
     item = "";
 
     @property({ type: String })
     presentation = "";
+
+    @property({ type: String })
+    template = "";
 
     @property({ type: String })
     model = "";
@@ -54,33 +61,49 @@ export default class ExplorerView extends LitElement
         this.application = application || new ExplorerApplication();
     }
 
-    protected update(changedProperties: PropertyValues)
+    protected firstUpdated(changedProperties: PropertyValues)
     {
-        if (changedProperties.has("presentation") && this.presentation) {
-            this.application.loadPresentation(this.presentation);
+        const application = this.application;
+
+        let presentationUrl, itemUrl, templateUrl, modelUrl, geometryUrl, textureUrl, qualityText;
+
+        if (this.parseUrl) {
+            presentationUrl = parseUrlParameter("presentation") || parseUrlParameter("p");
+            itemUrl = parseUrlParameter("item") || parseUrlParameter("i");
+            templateUrl = parseUrlParameter("template") || parseUrlParameter("t");
+            modelUrl = parseUrlParameter("model") || parseUrlParameter("m");
+            geometryUrl = parseUrlParameter("geometry") || parseUrlParameter("g");
+            textureUrl = parseUrlParameter("texture") || parseUrlParameter("tex");
+            qualityText = parseUrlParameter("quality") || parseUrlParameter("q");
         }
-        else if (changedProperties.has("item") && this.item) {
-            this.application.loadItem(this.item);
+        else {
+            presentationUrl = this.presentation;
+            itemUrl = this.item;
+            templateUrl = this.template;
+            modelUrl = this.model;
+            geometryUrl = this.geometry;
+            textureUrl = this.texture;
         }
-        else if (changedProperties.has("model") && this.model) {
-            this.application.loadModel(this.model);
+
+        if (presentationUrl) {
+            return application.loadPresentation(presentationUrl);
         }
-        else if ((changedProperties.has("geometry") || changedProperties.has("texture")) && this.geometry) {
-            this.application.loadGeometry(this.geometry, this.texture);
+        if (itemUrl) {
+            return application.loadItem(itemUrl, templateUrl);
+        }
+        if (modelUrl) {
+            return this.application.loadModel(modelUrl);
+        }
+        if (geometryUrl) {
+            this.application.loadGeometry(geometryUrl, textureUrl);
         }
     }
 
     protected firstConnected()
     {
-        new RenderView(this.application.performer).setStyle({
-            position: "absolute",
-            top: "0", bottom: "0", left: "0", right: "0"
-        }).appendTo(this);
-
         const controller = this.application.system.getComponent(SystemController);
-        new OverlayView(controller).setStyle({
-            position: "absolute",
-            top: "0", bottom: "0", left: "0", right: "0"
-        }).appendTo(this);
+
+        new RenderView(this.application.performer).appendTo(this);
+        new ChromeView(controller).appendTo(this);
     }
 }

@@ -26,8 +26,8 @@ import SystemController from "../../core/components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-overlay-view")
-export default class OverlayView extends CustomElement
+@customElement("sv-chrome-view")
+export default class ChromeView extends CustomElement
 {
     readonly controller: SystemController;
 
@@ -42,26 +42,31 @@ export default class OverlayView extends CustomElement
         this.style.pointerEvents = "none";
         this.setAttribute("pointer-events", "none");
 
-        const controller = this.controller;
-        const viewMenu = new ViewMenu(controller, this);
-        const renderMenu = new RenderMenu(controller, this);
+
+        const viewMenu = new ViewMenu();
+        viewMenu.controller = this.controller;
+        viewMenu.portal = this;
+
+        const renderMenu = new RenderMenu();
+        renderMenu.controller = this.controller;
+        renderMenu.portal = this;
 
         const template = html`
             <div class="sv-main-menu">
                 <ff-button-group mode="exclusive">
-                    <ff-popup-button icon="fa fas fa-eye">
-                        ${viewMenu}
+                    <ff-popup-button class="ff-menu-button" icon="fa fas fa-eye" .content=${viewMenu}>
                     </ff-popup-button>
-                    <ff-popup-button icon="fa fas fa-palette">
-                        ${renderMenu}
+                    <ff-popup-button class="ff-menu-button" icon="fa fas fa-palette" .content=${renderMenu}>
                     </ff-popup-button>
                 </ff-button-group>
-                <ff-popup-button icon="fa fas fa-comment" selectable>
-                </ff-popup-button>
-                <ff-popup-button icon="fa fas fa-file-alt" selectable>
-                </ff-popup-button>
+                <ff-button class="ff-menu-button" icon="fa fas fa-comment" selectable>
+                </ff-button>
+                <ff-button class="ff-menu-button" icon="fa fas fa-file-alt" selectable>
+                </ff-button>
             </div>
-            <div class="sv-logo"></div>
+            <div class="sv-logo">
+                <img src="images/si-dpo3d-logo-neg.svg" alt="Smithsonian DPO 3D Logo">
+            </div>
         `;
 
         render(template, this);

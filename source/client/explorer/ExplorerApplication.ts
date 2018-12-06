@@ -17,12 +17,12 @@
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/core/ecs/Registry";
+import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
 import Performer from "@ff/core/ecs/Performer";
 
-import parseUrlParameter from "@ff/browser/parseUrlParameter";
-
 import { IPresentation, IItem } from "common/types";
+import { registerComponents } from "../core/app/registerComponents";
 
 import Explorer from "../core/components/Explorer";
 import Renderer from "../core/components/Renderer";
@@ -35,9 +35,6 @@ import ToursController from "../core/components/ToursController";
 
 import PickManip from "../core/components/PickManip";
 import OrbitManip from "../core/components/OrbitManip";
-
-import { registerComponents } from "../core/app/registerComponents";
-import RenderSystem from "../core/app/RenderSystem";
 
 import { EDerivativeQuality } from "../core/app/Derivative";
 
@@ -55,7 +52,7 @@ export default class ExplorerApplication
     ].join("\n");
 
 
-    readonly system: RenderSystem;
+    readonly system: System;
     readonly performer: Performer;
 
     protected commander: Commander;
@@ -90,7 +87,7 @@ export default class ExplorerApplication
         this.registry = new Registry();
         registerComponents(this.registry);
 
-        this.system = new RenderSystem(this.registry);
+        this.system = new System(this.registry);
         this.performer = new Performer(this.system);
 
         // main entity
@@ -123,6 +120,8 @@ export default class ExplorerApplication
         loadingManager.onProgress = this.onLoadingProgress;
         loadingManager.onLoad = this.onLoadingCompleted;
         loadingManager.onError = this.onLoadingError;
+
+        this.performer.start();
     }
 
     loadPresentation(url: string)
