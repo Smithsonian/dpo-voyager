@@ -126,14 +126,14 @@ export default class PopupMenuBar extends React.Component<IPopupMenuBarProps, {}
 
     protected onTapAnnotations(event: IButtonTapEvent)
     {
-        const visible = this.controller.getInputValue(Explorer, "Annotations.Enabled");
-        this.controller.actions.setInputValue(Explorer, "Annotations.Enabled", !visible);
+        const visible = this.controller.getInputValue(Explorer, "annotations");
+        this.controller.actions.setInputValue(Explorer, "annotations", !visible);
     }
 
     protected onTapArticle()
     {
-        const visible = this.controller.getInputValue(Reader, "Enabled");
-        this.controller.actions.setInputValue(Reader, "Enabled", !visible);
+        const visible = this.controller.getInputValue(Reader, "enabled");
+        this.controller.actions.setInputValue(Reader, "enabled", !visible);
     }
 
     protected onPropertyChange()

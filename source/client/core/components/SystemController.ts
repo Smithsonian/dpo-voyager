@@ -47,39 +47,39 @@ export default class SystemController extends Controller<SystemController>
         return actions;
     }
 
-    addInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    addInputListener(componentType: ComponentType, key: string, callback: (value: any) => void, context?: any)
     {
-        this.getSafeComponent(componentType).in(path).on("value", callback, context);
+        this.getSafeComponent(componentType).in(key).on("value", callback, context);
     }
 
-    removeInputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    removeInputListener(componentType: ComponentType, key: string, callback: (value: any) => void, context?: any)
     {
-        this.getSafeComponent(componentType).in(path).off("value", callback, context);
+        this.getSafeComponent(componentType).in(key).off("value", callback, context);
     }
 
-    addOutputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    addOutputListener(componentType: ComponentType, key: string, callback: (value: any) => void, context?: any)
     {
-        this.getSafeComponent(componentType).out(path).on("value", callback, context);
+        this.getSafeComponent(componentType).out(key).on("value", callback, context);
     }
 
-    removeOutputListener(componentType: ComponentType, path: string, callback: (value: any) => void, context?: any)
+    removeOutputListener(componentType: ComponentType, key: string, callback: (value: any) => void, context?: any)
     {
-        this.getSafeComponent(componentType).out(path).off("value", callback, context);
+        this.getSafeComponent(componentType).out(key).off("value", callback, context);
     }
 
-    getInputValue(componentType: ComponentType, path: string)
+    getInputValue(componentType: ComponentType, key: string)
     {
-        return this.getSafeComponent(componentType).in(path).value
+        return this.getSafeComponent(componentType).in(key).value
     }
 
-    getOutputValue(componentType: ComponentType, path: string)
+    getOutputValue(componentType: ComponentType, key: string)
     {
-        return this.getSafeComponent(componentType).out(path).value;
+        return this.getSafeComponent(componentType).out(key).value;
     }
 
-    protected setInputValue(componentType: ComponentType, path: string, value: any)
+    setInputValue(componentType: ComponentType, key: string, value: any)
     {
-        this.getSafeComponent(componentType).in(path).setValue(value);
+        this.getSafeComponent(componentType).in(key).setValue(value);
     }
 
     protected getSafeComponent(componentType: ComponentType): Component

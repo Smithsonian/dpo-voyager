@@ -23,8 +23,13 @@ import { ISystemComponentEvent } from "@ff/core/ecs/System";
 
 import Object3D, { IObject3DObjectEvent } from "../components/Object3D";
 
-import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
-import { IViewportManip } from "../app/ViewportManager";
+import Manip, {
+    IViewportManip,
+    IViewportPointerEvent,
+    IViewportTriggerEvent,
+    EManipPointerEventType
+} from "./Manip";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +51,7 @@ export interface IPickManipPickEvent extends IPublisherEvent<PickManip>, IPickRe
     pointerEvent: IViewportPointerEvent;
 }
 
-export default class PickManip extends Manip implements IViewportManip
+export default class PickManip extends Manip
 {
     static readonly type: string = "PickManip";
     static readonly isSystemSingleton: boolean = true;
@@ -90,7 +95,7 @@ export default class PickManip extends Manip implements IViewportManip
 
         if (camera && event.isPrimary) {
 
-            if (event.type === "down") {
+            if (event.type === EManipPointerEventType.Down) {
                 this.startX = event.centerX;
                 this.startY = event.centerY;
 
@@ -98,7 +103,7 @@ export default class PickManip extends Manip implements IViewportManip
                 const pick = this.activePick = pickResults[0];
                 this.emitPickEvent("down", event, pick);
             }
-            else if (event.type === "up") {
+            else if (event.type === EManipPointerEventType.Up) {
                 this.emitPickEvent("up", event, this.activePick);
 
                 const dx = event.centerX - this.startX;

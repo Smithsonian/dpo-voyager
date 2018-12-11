@@ -33,12 +33,12 @@ export default class Reader extends Component
 {
     static readonly type: string = "Reader";
 
-    ins = this.makeProps({
-        ena: types.Boolean("Enabled", false),
-        doc: types.String("DocumentUri", "")
+    ins = this.ins.append({
+        enabled: types.Boolean("Enabled", false),
+        document: types.String("DocumentUri", "")
     });
 
-    outs = this.makeProps({
+    outs = this.outs.append({
         html: types.String("HTML", "")
     });
 
@@ -47,19 +47,19 @@ export default class Reader extends Component
 
     update()
     {
-        const { ena, doc } = this.ins;
+        const { enabled, document } = this.ins;
 
-        if (ena.changed) {
+        if (enabled.changed) {
             // TODO: Test/Demo
-            if (ena.value && !doc.value) {
+            if (enabled.value && !document.value) {
                 const docs = this.getComponent(Documents, true).getDocuments();
                 if (docs.length > 0) {
-                    doc.setValue(docs[0].uri);
+                    document.setValue(docs[0].uri);
                 }
             }
         }
 
-        if (doc.changed) {
+        if (document.changed) {
             this.loadDocument();
         }
     }
@@ -77,21 +77,21 @@ export default class Reader extends Component
     fromData(data: IReader)
     {
         this.ins.setValues({
-            ena: data.enabled,
-            doc: data.documentUri
+            enabled: data.enabled,
+            document: data.documentUri
         });
     }
 
     toData(): IReader
     {
-        const { ena, doc } = this.ins;
+        const { enabled, document } = this.ins;
 
         const data: IReader = {
-            enabled: ena.value
+            enabled: enabled.value
         };
 
-        if (doc.value) {
-            data.documentUri = doc.value;
+        if (document.value) {
+            data.documentUri = document.value;
         }
 
         return data;
@@ -99,10 +99,10 @@ export default class Reader extends Component
 
     protected loadDocument()
     {
-        const { doc } = this.ins;
+        const { document } = this.ins;
         const { html } = this.outs;
 
-        const uri = doc.value;
+        const uri = document.value;
         if (!uri) {
             html.pushValue("");
             return;

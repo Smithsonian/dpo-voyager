@@ -18,16 +18,17 @@
 import * as THREE from "three";
 
 import coreMath from "@ff/core/math";
-import threeMath from "@ff/three/math";
 import types from "@ff/core/ecs/propertyTypes";
+
+import threeMath from "@ff/three/math";
+import UniversalCamera, { ECameraType } from "@ff/three/UniversalCamera";
 import OrbitManipController from "@ff/react/OrbitManip";
 
 import Manip, { IViewportPointerEvent, IViewportTriggerEvent } from "./Manip";
-import { EProjectionType } from "./Camera";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { EProjectionType };
+export { ECameraType };
 
 export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
 
@@ -49,28 +50,28 @@ export default class OrbitManip extends Manip
 {
     static readonly type: string = "OrbitManip";
 
-    ins = this.makeProps({
-        pro: types.Enum("View.Projection", EProjectionType, EProjectionType.Perspective),
-        pre: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
-        ena: types.Boolean("Override.Enabled", false),
-        pus: types.Event("Override.Push"),
-        ori: types.Vector3("Override.Orientation"),
-        ofs: types.Vector3("Override.Offset", [ 0, 0, 50 ]),
-        minOri: types.Vector3("Min.Orientation", [ -90, -_MAX, -180 ]),
-        minOfs: types.Vector3("Min.Offset", [ -_MAX, -_MAX, -_MAX ]),
-        maxOri: types.Vector3("Max.Orientation", [ 90, _MAX, 180 ]),
-        maxOfs: types.Vector3("Max.Offset", [ _MAX, _MAX, _MAX ]),
+    ins = this.ins.append({
+        proj: types.Enum("View.Projection", ECameraType, ECameraType.Perspective),
+        viewPreset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
+        overEnabled: types.Boolean("Override.Enabled", false),
+        overPush: types.Event("Override.Push"),
+        orient: types.Vector3("Override.Orientation"),
+        offset: types.Vector3("Override.Offset", [ 0, 0, 50 ]),
+        minOrient: types.Vector3("Min.Orientation", [ -90, -_MAX, -180 ]),
+        minOffset: types.Vector3("Min.Offset", [ -_MAX, -_MAX, -_MAX ]),
+        maxOrient: types.Vector3("Max.Orientation", [ 90, _MAX, 180 ]),
+        maxOffset: types.Vector3("Max.Offset", [ _MAX, _MAX, _MAX ]),
     });
 
-    outs = this.makeProps({
-        pro: types.Enum("View.Projection", EProjectionType),
-        pre: types.Enum("View.Preset", EViewPreset),
-        siz: types.Number("View.Size"),
-        ori: types.Vector3("Orbit.Orientation"),
-        ior: types.Vector3("Orbit.InverseOrientation"),
-        ofs: types.Vector3("Orbit.Offset"),
-        mat: types.Matrix4("Orbit.Matrix"),
-        man: types.Event("Orbit.Manip")
+    outs = this.outs.append({
+        proj: types.Enum("View.Projection", ECameraType),
+        viewPreset: types.Enum("View.Preset", EViewPreset),
+        size: types.Number("View.Size"),
+        orient: types.Vector3("Orbit.Orientation"),
+        invOrient: types.Vector3("Orbit.InverseOrientation"),
+        offset: types.Vector3("Orbit.Offset"),
+        matrix: types.Matrix4("Orbit.Matrix"),
+        manip: types.Event("Orbit.Manip")
     });
 
     protected manip = new OrbitManipController();
@@ -86,36 +87,36 @@ export default class OrbitManip extends Manip
     {
         const { ins, outs } = this;
 
-        if (ins.pro.changed) {
-            outs.pro.pushValue(ins.pro.value);
+        if (ins.proj.changed) {
+            outs.proj.pushValue(ins.proj.value);
         }
 
-        if (ins.pre.changed) {
-            outs.pre.pushValue(ins.pre.value);
-            outs.ori.value =types.getOptionValue(_orientationPresets, ins.pre.value);
-            outs.ofs.value[0] = 0;
-            outs.ofs.value[1] = 0;
+        if (ins.viewPreset.changed) {
+            outs.viewPreset.pushValue(ins.viewPreset.value);
+            outs.orient.value =types.getOptionValue(_orientationPresets, ins.viewPreset.value);
+            outs.offset.value[0] = 0;
+            outs.offset.value[1] = 0;
             this.onPreset = true;
         }
 
-        if (ins.pus.changed) {
-            outs.ori.value = ins.ori.value.slice();
-            outs.ofs.value = ins.ofs.value.slice();
+        if (ins.overPush.changed) {
+            outs.orient.value = ins.orient.value.slice();
+            outs.offset.value = ins.offset.value.slice();
             this.onPreset = false;
         }
 
-        if (ins.ena.value) {
-            if (ins.ena.changed) {
-                outs.ori.value = ins.ori.value.slice();
-                outs.ofs.value = ins.ofs.value.slice();
+        if (ins.overEnabled.value) {
+            if (ins.overEnabled.changed) {
+                outs.orient.value = ins.orient.value.slice();
+                outs.offset.value = ins.offset.value.slice();
                 this.onPreset = false;
             }
-            if (ins.ori.changed) {
-                outs.ori.value = ins.ori.value;
+            if (ins.orient.changed) {
+                outs.orient.value = ins.orient.value;
                 this.onPreset = false;
             }
-            if (ins.ofs.changed) {
-                outs.ofs.value = ins.ofs.value;
+            if (ins.offset.changed) {
+                outs.offset.value = ins.offset.value;
                 this.onPreset = false;
             }
         }
@@ -126,30 +127,30 @@ export default class OrbitManip extends Manip
     tick()
     {
         const ins = this.ins;
-        const { pre, siz, ori, ofs, mat, ior, man } = this.outs;
+        const { viewPreset, size, orient, offset, matrix, invOrient, manip } = this.outs;
 
         const delta = this.manip.getDeltaPose();
 
-        if (delta && !this.ins.ena.value) {
-            const { minOri, maxOri, minOfs, maxOfs } = ins;
+        if (delta && !this.ins.overEnabled.value) {
+            const { minOrient, maxOrient, minOffset, maxOffset } = ins;
 
-            const oriX = ori.value[0] + delta.dPitch * 300 / this.viewportHeight;
-            const oriY = ori.value[1] + delta.dHead * 300 / this.viewportHeight;
-            const oriZ = ori.value[2] + delta.dRoll * 300 / this.viewportHeight;
+            const oriX = orient.value[0] + delta.dPitch * 300 / this.viewportHeight;
+            const oriY = orient.value[1] + delta.dHead * 300 / this.viewportHeight;
+            const oriZ = orient.value[2] + delta.dRoll * 300 / this.viewportHeight;
 
-            ori.value[0] = coreMath.limit(oriX, minOri[0], maxOri[0]);
-            ori.value[1] = coreMath.limit(oriY, minOri[1], maxOri[1]);
-            ori.value[2] = coreMath.limit(oriZ, minOri[2], maxOri[2]);
+            orient.value[0] = coreMath.limit(oriX, minOrient[0], maxOrient[0]);
+            orient.value[1] = coreMath.limit(oriY, minOrient[1], maxOrient[1]);
+            orient.value[2] = coreMath.limit(oriZ, minOrient[2], maxOrient[2]);
 
-            const ofsZ = Math.max(ofs.value[2], 0.1) * delta.dScale;
-            const ofsX = ofs.value[0] - delta.dX * ofsZ / this.viewportHeight;
-            const ofsY = ofs.value[1] + delta.dY * ofsZ / this.viewportHeight;
+            const ofsZ = Math.max(offset.value[2], 0.1) * delta.dScale;
+            const ofsX = offset.value[0] - delta.dX * ofsZ / this.viewportHeight;
+            const ofsY = offset.value[1] + delta.dY * ofsZ / this.viewportHeight;
 
-            ofs.value[0] = coreMath.limit(ofsX, minOfs[0], maxOfs[0]);
-            ofs.value[1] = coreMath.limit(ofsY, minOfs[1], maxOfs[1]);
-            ofs.value[2] = coreMath.limit(ofsZ, minOfs[2], maxOfs[2]);
+            offset.value[0] = coreMath.limit(ofsX, minOffset[0], maxOffset[0]);
+            offset.value[1] = coreMath.limit(ofsY, minOffset[1], maxOffset[1]);
+            offset.value[2] = coreMath.limit(ofsZ, minOffset[2], maxOffset[2]);
 
-            man.push();
+            manip.push();
             this.updateMatrix = true;
             this.onPreset = false;
         }
@@ -157,29 +158,29 @@ export default class OrbitManip extends Manip
         if (this.updateMatrix) {
             this.updateMatrix = false;
 
-            _orientation.fromArray(ori.value).multiplyScalar(coreMath.DEG2RAD);
-            _offset.fromArray(ofs.value);
+            _orientation.fromArray(orient.value).multiplyScalar(coreMath.DEG2RAD);
+            _offset.fromArray(offset.value);
 
-            if (types.isEnumEntry(EProjectionType.Orthographic, ins.pro.value)) {
-                siz.pushValue(_offset.z);
+            if (types.isEnumEntry(ECameraType.Orthographic, ins.proj.value)) {
+                size.pushValue(_offset.z);
                 _offset.z = 1000;
             }
 
             threeMath.composeOrbitMatrix(_orientation, _offset, _matrix);
-            (_matrix as any).toArray(mat.value);
+            (_matrix as any).toArray(matrix.value);
 
-            ior.value[0] = -ori.value[0];
-            ior.value[1] = -ori.value[1];
-            ior.value[2] = -ori.value[2];
+            invOrient.value[0] = -orient.value[0];
+            invOrient.value[1] = -orient.value[1];
+            invOrient.value[2] = -orient.value[2];
 
-            ori.push();
-            ior.push();
-            ofs.push();
-            mat.push();
+            orient.push();
+            invOrient.push();
+            offset.push();
+            matrix.push();
         }
 
-        if (!this.onPreset && pre.value !== EViewPreset.None) {
-            pre.pushValue(EViewPreset.None);
+        if (!this.onPreset && viewPreset.value !== EViewPreset.None) {
+            viewPreset.pushValue(EViewPreset.None);
         }
     }
 
@@ -187,7 +188,7 @@ export default class OrbitManip extends Manip
     {
         const viewport = event.viewport;
 
-        if (viewport && viewport.useSceneCamera) {
+        if (viewport && !viewport.camera) {
             this.viewportWidth = viewport.width;
             this.viewportHeight = viewport.height;
 
@@ -201,7 +202,7 @@ export default class OrbitManip extends Manip
     {
         const viewport = event.viewport;
 
-        if (viewport && viewport.useSceneCamera) {
+        if (viewport && !viewport.camera) {
             return this.manip.onTrigger(event);
         }
 
@@ -210,18 +211,18 @@ export default class OrbitManip extends Manip
 
     setFromMatrix(matrix: THREE.Matrix4)
     {
-        const { ori, ofs, pus } = this.ins;
+        const { orient, offset, overPush } = this.ins;
 
-        if (ori.hasInLinks() || ofs.hasInLinks()) {
+        if (orient.hasInLinks() || offset.hasInLinks()) {
             console.warn("OrbitController.setFromMatrix - can't set, inputs are linked");
             return;
         }
 
         threeMath.decomposeOrbitMatrix(matrix, _orientation, _offset);
 
-        _orientation.multiplyScalar(coreMath.RAD2DEG).toArray(ori.value);
-        _offset.toArray(ofs.value);
+        _orientation.multiplyScalar(coreMath.RAD2DEG).toArray(orient.value);
+        _offset.toArray(offset.value);
 
-        pus.set();
+        overPush.set();
     }
 }

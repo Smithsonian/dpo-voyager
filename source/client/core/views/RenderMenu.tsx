@@ -119,7 +119,7 @@ export default class RenderMenu extends React.Component<IRenderMenuProps, {}>
 
     protected onSelectShaderMode(event: IButtonTapEvent)
     {
-        this.controller.actions.setInputValue(Renderer, "Shader", event.index);
+        this.controller.setInputValue(Renderer, "shader", event.index);
     }
 
     protected onPropertyChange()

@@ -159,7 +159,7 @@ export default class Viewport
     {
         const camera = this.apply(renderer);
         scene.add(this.vpObjects);
-        scene.userData["viewport"] = this;
+        renderer["viewport"] = this;
         renderer.render(scene, camera);
         scene.remove(this.vpObjects);
     }

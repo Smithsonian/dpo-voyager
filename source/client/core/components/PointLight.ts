@@ -28,11 +28,11 @@ export default class PointLight extends Light
 {
     static readonly type: string = "PointLight";
 
-    ins = this.makeProps({
-        col: types.ColorRGB("Color"),
-        int: types.Number("Intensity", 1),
-        dst: types.Number("Distance"),
-        dcy: types.Number("Decay", 1)
+    ins = this.ins.append({
+        color: types.ColorRGB("Color"),
+        intensity: types.Number("Intensity", 1),
+        distance: types.Number("Distance"),
+        decay: types.Number("Decay", 1)
     });
 
     get light(): THREE.PointLight
@@ -50,21 +50,21 @@ export default class PointLight extends Light
     update()
     {
         const light = this.light;
-        const { col, int, dst, dcy } = this.ins;
+        const { color, intensity, distance, decay } = this.ins;
 
-        light.color.fromArray(col.value);
-        light.intensity = int.value;
-        light.distance = dst.value;
-        light.decay = dcy.value;
+        light.color.fromArray(color.value);
+        light.intensity = intensity.value;
+        light.distance = distance.value;
+        light.decay = decay.value;
     }
 
     fromData(data: ILightData)
     {
-        this.ins.setValues({
-            col: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
-            int: data.intensity !== undefined ? data.intensity : 1,
-            dst: data.point.distance || 0,
-            dcy: data.point.decay !== undefined ? data.point.decay : 1
+        this.ins.setValuesByKey({
+            color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
+            intensity: data.intensity !== undefined ? data.intensity : 1,
+            distance: data.point.distance || 0,
+            decay: data.point.decay !== undefined ? data.point.decay : 1
         });
     }
 
@@ -74,11 +74,11 @@ export default class PointLight extends Light
         const ins = this.ins;
 
         data.type = "point";
-        data.color = ins.col.value.slice() as TVector3;
-        data.intensity = ins.int.value;
+        data.color = ins.color.value.slice() as TVector3;
+        data.intensity = ins.intensity.value;
         data.point = {
-            distance: ins.dst.value,
-            decay: ins.dcy.value
+            distance: ins.distance.value,
+            decay: ins.decay.value
         };
 
         return data as ILightData;

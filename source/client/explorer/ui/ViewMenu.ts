@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import { ECameraType } from "@ff/three/UniversalCamera";
+
 import "@ff/ui/Layout";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
@@ -23,8 +25,8 @@ import "@ff/ui/IndexButton";
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
 
-import SystemController from "../../../core/components/SystemController";
-import OrbitManip, { EProjectionType, EViewPreset } from "../../../core/components/OrbitManip";
+import SystemController from "../../core/components/SystemController";
+import OrbitManip, { EViewPreset } from "../../core/components/OrbitManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,9 +74,9 @@ export default class ViewMenu extends Popup
         return html`
             <label>Projection</label>
             <ff-flex-row @click=${this.onClickProjectionType}>
-                <ff-index-button .index=${EProjectionType.Perspective} .selectedIndex=${projectionType}
+                <ff-index-button .index=${ECameraType.Perspective} .selectedIndex=${projectionType}
                   text="Perspective" title="Perspective Projection" icon="fas fa-video"></ff-index-button>    
-                <ff-index-button .index=${EProjectionType.Orthographic} .selectedIndex=${projectionType}
+                <ff-index-button .index=${ECameraType.Orthographic} .selectedIndex=${projectionType}
                   text="Orthographic" title="Orthographic Projection" icon="fas fa-video"></ff-index-button>    
             </ff-flex-row>
             <label>View</label>

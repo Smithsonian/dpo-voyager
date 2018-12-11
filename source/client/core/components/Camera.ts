@@ -18,86 +18,67 @@
 import * as THREE from "three";
 
 import types from "@ff/core/ecs/propertyTypes";
+import UniversalCamera, { ECameraType } from "@ff/three/UniversalCamera";
 
 import { ICamera as ICameraData } from "common/types/presentation";
-
 import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EProjectionType { Perspective, Orthographic }
-
+export { ECameraType };
 
 export default class Camera extends Object3D
 {
     static readonly type: string = "Camera";
 
-    ins = this.makeProps({
-        pro: types.Enum("Projection", EProjectionType),
-        fov: types.Number("FovY", 50),
-        siz: types.Number("Size", 50),
-        zn: types.Number("Frustum.Near", 0.001),
-        zf: types.Number("Frustum.Far", 10000)
+    ins = this.ins.append({
+        projection: types.Enum("Projection", ECameraType),
+        fovY: types.Number("FovY", 50),
+        size: types.Number("Size", 50),
+        zNear: types.Number("Frustum.Near", 0.001),
+        zFar: types.Number("Frustum.Far", 10000)
     });
 
-    get camera(): THREE.Camera
+    get camera(): UniversalCamera
     {
-        return this.object3D as THREE.Camera;
+        return this.object3D as UniversalCamera;
+    }
+
+    create()
+    {
+        super.create();
+        this.object3D = new UniversalCamera();
     }
 
     update()
     {
-        const { pro, fov, siz, zn, zf } = this.ins;
+        const { projection, fovY, size, zNear, zFar } = this.ins;
 
         const camera = this.camera;
-        const aspect = camera ? camera.userData["aspect"] : 1;
-        const hh = siz.value * 0.5;
-        const hw = hh * aspect;
-
-        if (pro.changed) {
-            this.object3D = types.isEnumEntry(EProjectionType.Perspective, pro.value)
-                ? new THREE.PerspectiveCamera(fov.value, aspect, zn.value, zf.value)
-                : new THREE.OrthographicCamera(-hw, hw, hh, -hh, zn.value, zf.value);
-
-            this.object3D.userData["aspect"] = aspect;
-        }
-        else {
-            if (camera.type === "PerspectiveCamera") {
-                const perspCam = camera as THREE.PerspectiveCamera;
-                perspCam.fov = fov.value;
-                perspCam.near = zn.value;
-                perspCam.far = zf.value;
-                perspCam.updateProjectionMatrix();
-            }
-            else if (camera.type === "OrthographicCamera") {
-                const orthoCam = camera as THREE.OrthographicCamera;
-                orthoCam.left = -hw;
-                orthoCam.right = hw;
-                orthoCam.top = hh;
-                orthoCam.bottom = -hh;
-                orthoCam.near = zn.value;
-                orthoCam.far = zf.value;
-                orthoCam.updateProjectionMatrix();
-            }
-        }
+        camera.setType(projection.value);
+        camera.fov = fovY.value;
+        camera.size = size.value;
+        camera.near = zNear.value;
+        camera.far = zFar.value;
+        camera.updateProjectionMatrix();
     }
 
     fromData(data: ICameraData)
     {
         if (data.type === "perspective") {
-            this.ins.setValues({
-                pro: EProjectionType.Perspective,
-                fov: data.perspective.yfov,
-                zn: data.perspective.znear,
-                zf: data.perspective.zfar
+            this.ins.setValuesByKey({
+                projection: ECameraType.Perspective,
+                fovY: data.perspective.yfov,
+                zNear: data.perspective.znear,
+                zFar: data.perspective.zfar
             });
         }
         else {
-            this.ins.setValues({
-                pro: EProjectionType.Orthographic,
-                siz: data.orthographic.ymag,
-                zn: data.orthographic.znear,
-                zf: data.orthographic.zfar
+            this.ins.setValuesByKey({
+                projection: ECameraType.Orthographic,
+                size: data.orthographic.ymag,
+                zNear: data.orthographic.znear,
+                zFar: data.orthographic.zfar
             });
         }
     }
@@ -107,20 +88,20 @@ export default class Camera extends Object3D
         const data: Partial<ICameraData> = {};
         const ins = this.ins;
 
-        if (types.isEnumEntry(EProjectionType.Perspective, ins.pro.value)) {
+        if (types.isEnumEntry(ECameraType.Perspective, ins.projection.value)) {
             data.type = "perspective";
             data.perspective = {
-                yfov: ins.fov.value,
-                znear: ins.zn.value,
-                zfar: ins.zf.value
+                yfov: ins.fovY.value,
+                znear: ins.zNear.value,
+                zfar: ins.zFar.value
             };
         }
         else {
             data.type = "orthographic";
             data.orthographic = {
-                ymag: ins.siz.value,
-                znear: ins.zn.value,
-                zfar: ins.zf.value
+                ymag: ins.size.value,
+                znear: ins.zNear.value,
+                zfar: ins.zFar.value
             }
         }
 

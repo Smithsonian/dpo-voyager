@@ -28,11 +28,11 @@ export default class DirectionalLight extends Light
 {
     static readonly type: string = "DirectionalLight";
 
-    ins = this.makeProps({
-        col: types.ColorRGB("Color"),
-        int: types.Number("Intensity", 1),
-        pos: types.Vector3("Position", [ 0, 1, 0 ]),
-        tgt: types.Vector3("Target")
+    ins = this.ins.append({
+        color: types.ColorRGB("Color"),
+        intensity: types.Number("Intensity", 1),
+        position: types.Vector3("Position", [ 0, 1, 0 ]),
+        target: types.Vector3("Target")
     });
 
     get light(): THREE.DirectionalLight
@@ -50,22 +50,22 @@ export default class DirectionalLight extends Light
     update()
     {
         const light = this.light;
-        const { col, int, pos, tgt } = this.ins;
+        const { color, intensity, position, target } = this.ins;
 
-        light.color.fromArray(col.value);
-        light.intensity = int.value;
-        light.position.fromArray(pos.value);
-        light.target.position.fromArray(tgt.value);
+        light.color.fromArray(color.value);
+        light.intensity = intensity.value;
+        light.position.fromArray(position.value);
+        light.target.position.fromArray(target.value);
 
         light.updateMatrix();
     }
 
     fromData(data: ILightData)
     {
-        this.ins.setValues({
-            col: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
-            int: data.intensity !== undefined ? data.intensity : 1,
-            pos: [ 0, 0, 0 ]
+        this.ins.setValuesByKey({
+            color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
+            intensity: data.intensity !== undefined ? data.intensity : 1,
+            position: [ 0, 0, 0 ]
         });
     }
 
@@ -75,8 +75,8 @@ export default class DirectionalLight extends Light
         const ins = this.ins;
 
         data.type = "directional";
-        data.color = ins.col.value.slice() as TVector3;
-        data.intensity = ins.int.value;
+        data.color = ins.color.value.slice() as TVector3;
+        data.intensity = ins.intensity.value;
 
         return data as ILightData;
     }

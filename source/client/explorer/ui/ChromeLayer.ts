@@ -21,15 +21,15 @@ import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 import CustomElement, { customElement, html, render } from "@ff/ui/CustomElement";
 
-import ViewMenu from "./overlay/ViewMenu";
-import RenderMenu from "./overlay/RenderMenu";
+import ViewMenu from "./ViewMenu";
+import RenderMenu from "./RenderMenu";
 
 import SystemController from "../../core/components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-chrome-view")
-export default class ChromeView extends CustomElement
+@customElement("sv-chrome-layer")
+export default class ChromeLayer extends CustomElement
 {
     readonly controller: SystemController;
 

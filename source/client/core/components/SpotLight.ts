@@ -28,13 +28,13 @@ export default class SpotLight extends Light
 {
     static readonly type: string = "SpotLight";
 
-    ins = this.makeProps({
-        col: types.ColorRGB("Color"),
-        int: types.Number("Intensity", 1),
-        dst: types.Number("Distance"),
-        dcy: types.Number("Decay", 1),
-        ang: types.Number("Angle", 45),
-        pen: types.Number("Penumbra", 0.5)
+    ins = this.ins.append({
+        color: types.ColorRGB("Color"),
+        intensity: types.Number("Intensity", 1),
+        distance: types.Number("Distance"),
+        decay: types.Number("Decay", 1),
+        angle: types.Number("Angle", 45),
+        penumbra: types.Number("Penumbra", 0.5)
     });
 
     get light(): THREE.SpotLight
@@ -52,25 +52,25 @@ export default class SpotLight extends Light
     update()
     {
         const light = this.light;
-        const { col, int, dst, dcy, ang, pen } = this.ins;
+        const { color, intensity, distance, decay, angle, penumbra } = this.ins;
 
-        light.color.fromArray(col.value);
-        light.intensity = int.value;
-        light.distance = dst.value;
-        light.decay = dcy.value;
-        light.angle = ang.value;
-        light.penumbra = pen.value;
+        light.color.fromArray(color.value);
+        light.intensity = intensity.value;
+        light.distance = distance.value;
+        light.decay = decay.value;
+        light.angle = angle.value;
+        light.penumbra = penumbra.value;
     }
 
     fromData(data: ILightData)
     {
-        this.ins.setValues({
-            col: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
-            int: data.intensity !== undefined ? data.intensity : 1,
-            dst: data.point.distance || 0,
-            dcy: data.point.decay !== undefined ? data.point.decay : 1,
-            ang: data.spot.angle !== undefined ? data.spot.angle : Math.PI / 4,
-            pen: data.spot.penumbra || 0
+        this.ins.setValuesByKey({
+            color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
+            intensity: data.intensity !== undefined ? data.intensity : 1,
+            distance: data.point.distance || 0,
+            decay: data.point.decay !== undefined ? data.point.decay : 1,
+            angle: data.spot.angle !== undefined ? data.spot.angle : Math.PI / 4,
+            penumbra: data.spot.penumbra || 0
         });
     }
 
@@ -80,13 +80,13 @@ export default class SpotLight extends Light
         const ins = this.ins;
 
         data.type = "spot";
-        data.color = ins.col.value.slice() as TVector3;
-        data.intensity = ins.int.value;
+        data.color = ins.color.value.slice() as TVector3;
+        data.intensity = ins.intensity.value;
         data.spot = {
-            distance: ins.dst.value,
-            decay: ins.dcy.value,
-            angle: ins.ang.value,
-            penumbra: ins.pen.value
+            distance: ins.distance.value,
+            decay: ins.decay.value,
+            angle: ins.angle.value,
+            penumbra: ins.penumbra.value
         };
 
         return data as ILightData;

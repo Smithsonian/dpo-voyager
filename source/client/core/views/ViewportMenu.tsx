@@ -166,12 +166,12 @@ export default class ViewportMenu extends React.Component<IViewportMenuProps, {}
 
     protected onSelectProjection(event: IButtonTapEvent)
     {
-        this.controller.actions.setInputValue(OrbitManip, "View.Projection", event.index);
+        this.controller.setInputValue(OrbitManip, "projection", event.index);
     }
 
     protected onSelectViewPreset(event: IButtonTapEvent)
     {
-        this.controller.actions.setInputValue(OrbitManip, "View.Preset", event.index);
+        this.controller.setInputValue(OrbitManip, "view", event.index);
 
         this.setState({ viewPreset: event.index });
     }

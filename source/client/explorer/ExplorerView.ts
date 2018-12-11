@@ -18,10 +18,8 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import CustomElement, { customElement, property, PropertyValues } from "@ff/ui/CustomElement";
 
-import SystemController from "../core/components/SystemController";
-
-import RenderView from "./ui/RenderView";
-import ChromeView from "./ui/ChromeView";
+import ContentLayer from "./ui/ContentLayer";
+import ChromeLayer from "./ui/ChromeLayer";
 import ExplorerApplication from "./ExplorerApplication";
 
 import "./ui/styles.scss";
@@ -101,9 +99,9 @@ export default class ExplorerView extends CustomElement
 
     protected firstConnected()
     {
-        const controller = this.application.system.getComponent(SystemController);
+        const system = this.application.system;
 
-        new RenderView(this.application.performer).appendTo(this);
-        new ChromeView(controller).appendTo(this);
+        new ContentLayer(system).appendTo(this);
+        new ChromeLayer(system).appendTo(this);
     }
 }

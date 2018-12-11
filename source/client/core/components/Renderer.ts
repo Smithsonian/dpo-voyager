@@ -17,196 +17,50 @@
 
 import * as THREE from "three";
 
-import Component from "@ff/core/ecs/Component";
 import types from "@ff/core/ecs/propertyTypes";
+import Component, { IPublisherEvent } from "@ff/core/ecs/Component";
+import { EQuadViewLayout } from "@ff/three/ecs/RenderQuadView";
 
 import { IRenderer, TShaderType } from "common/types";
 
-import ViewportManager, { EViewportLayout, IViewportManip } from "../app/ViewportManager";
-import RenderSystem from "../app/RenderSystem";
-import RenderContext from "../app/RenderContext";
-
 import { EShaderMode } from "../shaders/UberMaterial";
-import ExplorerView from "../views/ExplorerView";
+
 import Model from "./Model";
-import Scene from "./Scene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new THREE.Vector3();
 const _mat4 = new THREE.Matrix4();
 
-export { EViewportLayout, EShaderMode };
+export { EQuadViewLayout, EShaderMode };
 
-interface IViewEntry
-{
-    view: ExplorerView;
-    manager: ViewportManager;
-}
 
 export default class Renderer extends Component
 {
     static readonly type: string = "Renderer";
 
     ins = this.ins.append({
-        grd: types.Boolean("HomeGrid.Enabled"),
-        sha: types.Enum("Shader", EShaderMode, EShaderMode.Default),
-        exp: types.Number("Exposure", 1),
-        gam: types.Number("Gamma", 1),
+        layout: types.Enum("Viewport.Layout", EQuadViewLayout, EQuadViewLayout.Single),
+        grid: types.Boolean("Viewport.HomeGrid"),
+        shader: types.Enum("Materials.Shader", EShaderMode, EShaderMode.Default),
+        exposure: types.Number("Renderer.Exposure", 1),
+        gamma: types.Number("Renderer.Gamma", 1)
     });
 
-    protected context: RenderContext = new RenderContext();
-    protected views: IViewEntry[] = [];
-
-    protected layoutMode: EViewportLayout = EViewportLayout.Single;
-    protected nextManip: IViewportManip = null;
-
-    protected boundingBox = new THREE.Box3().makeEmpty();
-    protected globalScalingEnabled: boolean = true;
-    protected globalScalingFactor = 1;
-
-    get globalScaling()
+    constructor(id?: string)
     {
-        return this.globalScalingFactor;
+        super(id);
+        this.addEvents("viewports", "renderer");
     }
 
     update()
     {
-        const { grd, sha, exp, gam } = this.ins;
+        const shader = this.ins.shader;
 
-        if (grd.changed) {
-            this.views.forEach(entry => {
-                entry.manager.enableHomeGrid(grd.value);
-            });
-        }
-
-        if (sha.changed) {
-            const index = types.getEnumEntry(EShaderMode, sha.value);
+        if (shader.changed) {
+            const index = types.getEnumEntry(EShaderMode, shader.value);
             this.system.getComponents(Model).forEach(model => model.setShaderMode(index));
         }
-
-        if (exp.changed) {
-            this.views.forEach(entry => {
-                entry.view.renderer.toneMappingExposure = exp.value;
-            });
-        }
-
-        if (gam.changed) {
-            this.views.forEach(entry => {
-                entry.view.renderer.gammaFactor = gam.value;
-            });
-        }
-    }
-
-    renderViews(scene: THREE.Scene, sceneCamera: THREE.Camera)
-    {
-        const context = this.context;
-
-        this.views.forEach(entry => {
-            const { view, manager } = entry;
-            if (!view) {
-                return;
-            }
-
-            view.renderer.clear();
-
-            manager.forEachViewport((viewport, index) => {
-                viewport.sceneCamera = sceneCamera;
-                viewport.updateCamera();
-
-                const camera = viewport.camera;
-
-                //const scale = this.globalScalingFactor;
-                //_mat4.makeScale(scale, scale, scale);
-                //camera.matrix.multiply(_mat4);
-                //camera.matrixWorldNeedsUpdate = true;
-
-                //scene.updateMatrix();
-                //scene.matrix.multiply(_mat4);
-
-                context.set(viewport, camera, scene);
-
-                (this.system as RenderSystem).preRender(context);
-                viewport.render(view.renderer, scene);
-                (this.system as RenderSystem).postRender(context);
-            });
-        });
-    }
-
-    updateBoundingBox(model: Model)
-    {
-        this.boundingBox.expandByObject(model.object3D);
-
-        if (this.globalScalingEnabled) {
-            this.boundingBox.getSize(_vec3);
-            this.globalScalingFactor = 20 / Math.max(_vec3.x, _vec3.y, _vec3.z);
-
-            console.log("Renderer.updateBoundingBox - set global scaling to ",
-                this.globalScalingFactor);
-        }
-    }
-
-    setViewportLayout(layout: EViewportLayout)
-    {
-        this.layoutMode = layout;
-
-        this.views.forEach(entry => {
-            entry.manager.layout = layout;
-        });
-    }
-
-    setNextManip(manip: IViewportManip)
-    {
-        this.nextManip = manip;
-
-        this.views.forEach(entry => {
-            entry.manager.next = manip;
-        });
-    }
-
-    /**
-     * Called by a view after it has been created/mounted.
-     * @param {ExplorerView} view
-     * @returns {string}
-     */
-    registerView(view: ExplorerView): ViewportManager
-    {
-        const orphanEntry = this.views.find(entry => entry.view === null);
-
-        if (orphanEntry) {
-            orphanEntry.view = view;
-            return orphanEntry.manager;
-        }
-
-        const manager = new ViewportManager();
-
-        manager.setCanvasSize(view.canvasWidth, view.canvasHeight);
-        manager.next = this.nextManip;
-        manager.layout = this.layoutMode;
-
-        const entry = {
-            manager,
-            view
-        };
-
-        this.views.push(entry);
-
-        return manager;
-    }
-
-    /**
-     * Called by a view before it is unmounted.
-     * @param {ExplorerView} view
-     */
-    unregisterView(view: ExplorerView)
-    {
-        const entry = this.views.find(entry => entry.view === view);
-
-        if (!entry) {
-            throw new Error("view not found");
-        }
-
-        entry.view = null;
     }
 
     fromData(data: IRenderer)

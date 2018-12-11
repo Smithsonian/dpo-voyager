@@ -22,8 +22,8 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
 
-import Renderer, { EShaderMode } from "../../../core/components/Renderer";
-import SystemController from "../../../core/components/SystemController";
+import Renderer, { EShaderMode } from "../../core/components/Renderer";
+import SystemController from "../../core/components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 

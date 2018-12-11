@@ -28,9 +28,11 @@ import AnnotationHTML from "../views/AnnotationHTML";
 
 import PickManip, { IPickManipPickEvent } from "./PickManip";
 import AnnotationsController, { ISelectAnnotationEvent } from "./AnnotationsController";
-import Object3D from "./Object3D";
+import Object3D, { IObject3DRenderContext } from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export { IObject3DRenderContext };
 
 export default class AnnotationsView extends Object3D
 {

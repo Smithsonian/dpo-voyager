@@ -15,26 +15,16 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import System from "@ff/core/ecs/System";
-import Performer, { IPerformerRenderEvent } from "@ff/core/ecs/Performer";
+import ExplorerSystem from "../core/ExplorerSystem";
+import RenderQuadView from "@ff/three/ecs/RenderQuadView";
 import ManipTarget from "@ff/browser/ManipTarget";
 
-import QuadSplitter, { EViewportLayout } from "./QuadSplitter";
-
-import Renderer from "../../core/components/Renderer";
-import Scene from "../../core/components/Scene";
-import Camera from "../../core/components/Camera";
-import PickManip from "../../core/components/PickManip";
-import SystemController from "../../core/components/SystemController";
-import QuadViewport from "../core/QuadViewport";
-
+import QuadSplitter from "./QuadSplitter";
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IRenderViewResizeEvent extends CustomEvent
+export interface IResizeEvent extends CustomEvent
 {
     detail: {
         width: number;
@@ -42,31 +32,26 @@ export interface IRenderViewResizeEvent extends CustomEvent
     }
 }
 
-@customElement("sv-render-view")
-export default class RenderView extends CustomElement
+@customElement("sv-content-layer")
+export default class ContentLayer extends CustomElement
 {
     static readonly resizeEvent: string = "sv-resize";
 
-    protected system: System;
-    protected controller: SystemController;
-    protected performer: Performer;
+    protected system: ExplorerSystem;
     protected manipTarget: ManipTarget;
 
+    protected view: RenderQuadView = null;
     protected canvas: HTMLCanvasElement = null;
     protected overlay: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
-    protected renderer: THREE.WebGLRenderer = null;
-    protected viewports: QuadViewport = null;
 
-    constructor(system: System, performer: Performer)
+    constructor(system: ExplorerSystem)
     {
         super();
 
         this.onResize = this.onResize.bind(this);
 
         this.system = system;
-        this.controller = system.getComponent(SystemController);
-        this.performer = performer;
         this.manipTarget = new ManipTarget();
 
         this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
@@ -95,46 +80,24 @@ export default class RenderView extends CustomElement
             top: "0", bottom: "0", left: "0", right: "0",
             overflow: "hidden"
         }).appendTo(this);
-
-        this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas,
-            antialias: true,
-            devicePixelRatio: window.devicePixelRatio
-        });
-
-        this.viewports = new QuadViewport(this.renderer);
     }
 
     protected connected()
     {
+        this.view = new RenderQuadView(this.system, this.canvas, this.overlay);
+        this.manipTarget.next = this.view;
+
         window.addEventListener("resize", this.onResize);
-        this.performer.on("render", this.onPerformerRender, this);
-
-        this.manipTarget.onPointer = this.viewports.onPointer;
-        this.manipTarget.onTrigger = this.viewports.onTrigger;
-        this.viewports.next = this.system.getComponent(PickManip);
-
-        this.controller.addInputListener(Renderer, "Viewport.Layout", this.onViewportLayout, this);
-        this.controller.addInputListener(Renderer, "Viewport.HomeGrid", this.onViewportGrid, this);
-        this.controller.addInputListener(Renderer, "Renderer.Exposure", this.onRendererExposure, this);
-        this.controller.addInputListener(Renderer, "Renderer.Gamma", this.onRendererGamma, this);
-
         this.onResize();
     }
 
     protected disconnected()
     {
-        this.performer.off("render", this.onPerformerRender, this);
+        this.view.dispose();
+        this.view = null;
+        this.manipTarget.next = null;
+
         window.removeEventListener("resize", this.onResize);
-
-        this.manipTarget.onPointer = null;
-        this.manipTarget.onTrigger = null;
-        this.viewports.next = null;
-
-        this.controller.removeInputListener(Renderer, "Viewport.Layout", this.onViewportLayout, this);
-        this.controller.removeInputListener(Renderer, "Viewport.HomeGrid", this.onViewportGrid, this);
-        this.controller.removeInputListener(Renderer, "Renderer.Exposure", this.onRendererExposure, this);
-        this.controller.removeInputListener(Renderer, "Renderer.Gamma", this.onRendererGamma, this);
     }
 
     protected onResize()
@@ -142,49 +105,12 @@ export default class RenderView extends CustomElement
         const width = this.canvas.clientWidth;
         const height = this.canvas.clientHeight;
 
-        this.canvas.width = width;
-        this.canvas.height = height;
-
-        this.renderer.setSize(width, height, false);
-        this.viewports.setCanvasSize(width, height);
-
-        this.dispatchEvent(new CustomEvent(RenderView.resizeEvent, {
-            detail: { width, height }
-        } as IRenderViewResizeEvent));
-    }
-
-    protected onPerformerRender(event: IPerformerRenderEvent)
-    {
-        const system = event.system;
-        const sceneComponent = system.getComponent(Scene);
-        const cameraComponent = system.getComponent(Camera);
-
-        if (!sceneComponent || !cameraComponent) {
-            return;
+        if (this.view) {
+            this.view.resize(width, height);
         }
 
-        this.renderer.clear();
-        this.renderer["overlay"] = this.overlay;
-        this.viewports.renderViewports(sceneComponent.scene, cameraComponent.camera);
-    }
-
-    protected onViewportLayout(value: EViewportLayout)
-    {
-        this.viewports.layout = value;
-    }
-
-    protected onViewportGrid(value: boolean)
-    {
-        this.viewports.enableHomeGrid(value);
-    }
-
-    protected onRendererExposure(value: number)
-    {
-        this.renderer.toneMappingExposure = value;
-    }
-
-    protected onRendererGamma(value: number)
-    {
-        this.renderer.gammaFactor = value;
+        this.dispatchEvent(new CustomEvent(ContentLayer.resizeEvent, {
+            detail: { width, height }
+        } as IResizeEvent));
     }
 }

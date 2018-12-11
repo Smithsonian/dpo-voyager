@@ -17,9 +17,10 @@
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/core/ecs/Registry";
-import System from "@ff/core/ecs/System";
 import Entity from "@ff/core/ecs/Entity";
-import Performer from "@ff/core/ecs/Performer";
+import Heartbeat from "@ff/core/ecs/Heartbeat";
+
+import ExplorerSystem from "./core/ExplorerSystem";
 
 import { IPresentation, IItem } from "common/types";
 import { registerComponents } from "../core/app/registerComponents";
@@ -52,8 +53,8 @@ export default class ExplorerApplication
     ].join("\n");
 
 
-    readonly system: System;
-    readonly performer: Performer;
+    readonly system: ExplorerSystem;
+    readonly heartbeat: Heartbeat;
 
     protected commander: Commander;
     protected registry: Registry;
@@ -87,8 +88,8 @@ export default class ExplorerApplication
         this.registry = new Registry();
         registerComponents(this.registry);
 
-        this.system = new System(this.registry);
-        this.performer = new Performer(this.system);
+        this.system = new ExplorerSystem(this.registry);
+        this.heartbeat = new Heartbeat(this.system);
 
         // main entity
         this.main = this.system.createEntity("Main");
@@ -109,8 +110,9 @@ export default class ExplorerApplication
         this.toursController = this.main.createComponent(ToursController);
         this.toursController.createActions(this.commander);
 
+        // 3D manipulators
         this.pickManip = this.main.createComponent(PickManip);
-        this.renderer.setNextManip(this.pickManip);
+        this.system.next = this.pickManip;
 
         this.orbitManip = this.main.createComponent(OrbitManip);
         this.pickManip.next.component = this.orbitManip;
@@ -121,7 +123,7 @@ export default class ExplorerApplication
         loadingManager.onLoad = this.onLoadingCompleted;
         loadingManager.onError = this.onLoadingError;
 
-        this.performer.start();
+        this.heartbeat.start();
     }
 
     loadPresentation(url: string)

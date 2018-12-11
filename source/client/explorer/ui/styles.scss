@@ -41,9 +41,9 @@ body {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RENDER VIEW
+// CONTENT LAYER
 
-sv-render-view {
+sv-content-layer {
   @include full-size;
 
   sv-quad-splitter {
@@ -59,9 +59,9 @@ sv-render-view {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CHROME VIEW
+// CHROME LAYER
 
-sv-chrome-view {
+sv-chrome-layer {
   @include full-size;
 
   .sv-main-menu {

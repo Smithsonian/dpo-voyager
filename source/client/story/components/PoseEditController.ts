@@ -119,9 +119,9 @@ export default class PoseEditController extends Controller<PoseEditController>
     {
         if (event.mode === EPrepMode.Pose) {
             this.setMode(EPoseEditMode.Select);
-            this.renderer.setViewportLayout(EViewportLayout.Quad);
-            this.systemController.actions.setInputValue(Explorer, "Annotations.Enabled", false);
-            this.systemController.actions.setInputValue(Renderer, "HomeGrid.Enabled", true);
+            this.systemController.setInputValue(Renderer, "layout", EViewportLayout.Quad);
+            this.systemController.setInputValue(Renderer, "grid", true);
+            this.systemController.setInputValue(Explorer, "annotations", false);
 
             const component = this.selectionController.getFirstSelectedComponent();
             if (component && component.is(Model)) {
@@ -130,8 +130,8 @@ export default class PoseEditController extends Controller<PoseEditController>
         }
         else {
             this.setMode(EPoseEditMode.Off);
-            this.renderer.setViewportLayout(EViewportLayout.Single);
-            this.systemController.actions.setInputValue(Renderer, "HomeGrid.Enabled", false);
+            this.systemController.setInputValue(Renderer, "layout", EViewportLayout.Single);
+            this.systemController.setInputValue(Renderer, "grid", false);
 
             this.poseManip.attachModel(null);
         }

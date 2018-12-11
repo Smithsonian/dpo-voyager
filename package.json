@@ -9,7 +9,12 @@
         "build": "concurrently \"npm run build-server\" \"npm run build-client\"",
         "build-client": "cd source/client && webpack --config webpack.prod.js && cd ../..",
         "build-server": "tsc -b source/server",
-        "build-libs": "tsc -b libs",
+        "build-libs": "npm run build-core; npm run build-ui; npm run build-react; npm run build-browser; npm run build-three",
+        "build-core": "tsc -p libs/ff-core/source --outDir node_modules/@ff/core",
+        "build-ui": "tsc -p libs/ff-ui/source --outDir node_modules/@ff/ui",
+        "build-react": "tsc -p libs/ff-react/source --outDir node_modules/@ff/react",
+        "build-browser": "tsc -p libs/ff-browser/source --outDir node_modules/@ff/browser",
+        "build-three": "tsc -p libs/ff-three/source --outDir node_modules/@ff/three",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

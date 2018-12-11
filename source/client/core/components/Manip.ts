@@ -16,13 +16,12 @@
  */
 
 import Component, { ComponentLink } from "@ff/core/ecs/Component";
-
-import { IViewportPointerEvent, IViewportTriggerEvent } from "../app/Viewport";
-import { IViewportManip } from "../app/ViewportManager";
+import { IViewportManip, IViewportPointerEvent, IViewportTriggerEvent } from "@ff/three/ecs/RenderView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IViewportPointerEvent, IViewportTriggerEvent };
+export { EManipPointerEventType, EManipTriggerEventType } from "@ff/browser/ManipTarget";
+export { IViewportManip, IViewportPointerEvent, IViewportTriggerEvent };
 
 export default class Manip extends Component implements IViewportManip
 {

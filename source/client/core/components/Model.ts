@@ -299,10 +299,6 @@ export default class ModelComponent extends Object3D
 
     protected onLoad()
     {
-        const renderer = this.system.getComponent(Renderer);
-        if (renderer) {
-            renderer.updateBoundingBox(this);
-        }
     }
 
     protected selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null

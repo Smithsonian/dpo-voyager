@@ -19,6 +19,7 @@ import * as THREE from "three";
 
 import Component, { IComponentEvent } from "@ff/core/ecs/Component";
 
+import Viewport from "../app/Viewport";
 import Transform from "./Transform";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +29,29 @@ export interface IObject3DObjectEvent extends IComponentEvent<Object3D>
     current: THREE.Object3D;
     next: THREE.Object3D;
 }
+
+export interface IObject3DRenderContext
+{
+    viewport: Viewport;
+    overlay: HTMLElement;
+    renderer: THREE.WebGLRenderer;
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    geometry: THREE.Geometry | THREE.BufferGeometry;
+    material: THREE.Material;
+    group: THREE.Group;
+}
+
+const _renderContext = {
+    viewport: null,
+    overlay: null,
+    renderer: null,
+    scene: null,
+    camera: null,
+    geometry: null,
+    material: null,
+    group: null
+};
 
 export default class Object3D extends Component
 {
@@ -56,6 +80,8 @@ export default class Object3D extends Component
     {
         if (this._object && this._transform) {
             this._transform.removeObject3D(this._object);
+            this._object.onBeforeRender = undefined;
+            this._object.onAfterRender = undefined;
         }
 
         this.emit<IObject3DObjectEvent>("object", { current: this._object, next: object });
@@ -64,11 +90,21 @@ export default class Object3D extends Component
         if (object) {
             object.matrixAutoUpdate = false;
 
+            if (this.beforeRender) {
+                object.onBeforeRender = this._onBeforeRender;
+            }
+            if (this.afterRender) {
+                object.onAfterRender = this._onAfterRender;
+            }
+
             if (this._transform) {
                 this._transform.addObject3D(object);
             }
         }
     }
+
+    beforeRender?(context: IObject3DRenderContext);
+    afterRender?(context: IObject3DRenderContext);
 
     create()
     {
@@ -97,5 +133,45 @@ export default class Object3D extends Component
     toString()
     {
         return super.toString() + (this._object ? ` - type: ${this._object.type}` : " - (null)");
+    }
+
+    private _onBeforeRender(
+        renderer: THREE.WebGLRenderer,
+        scene: THREE.Scene,
+        camera: THREE.Camera,
+        geometry: THREE.Geometry | THREE.BufferGeometry,
+        material: THREE.Material,
+        group: THREE.Group)
+    {
+        _renderContext.viewport = renderer["viewport"];
+        _renderContext.overlay = renderer["overlay"];
+        _renderContext.renderer = renderer;
+        _renderContext.scene = scene;
+        _renderContext.camera = camera;
+        _renderContext.geometry = geometry;
+        _renderContext.material = material;
+        _renderContext.group = group;
+
+        this.beforeRender(_renderContext);
+    }
+
+    private _onAfterRender(
+        renderer: THREE.WebGLRenderer,
+        scene: THREE.Scene,
+        camera: THREE.Camera,
+        geometry: THREE.Geometry | THREE.BufferGeometry,
+        material: THREE.Material,
+        group: THREE.Group)
+    {
+        _renderContext.viewport = renderer["viewport"];
+        _renderContext.overlay = renderer["overlay"];
+        _renderContext.renderer = renderer;
+        _renderContext.scene = scene;
+        _renderContext.camera = camera;
+        _renderContext.geometry = geometry;
+        _renderContext.material = material;
+        _renderContext.group = group;
+
+        this.afterRender(_renderContext);
     }
 }

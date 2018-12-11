@@ -44,16 +44,16 @@ export default class Transform extends Hierarchy
 {
     static readonly type: string = "Transform";
 
-    ins = this.makeProps({
-        pos: types.Vector3("Position"),
-        rot: types.Vector3("Rotation"),
-        ord: types.Enum("Order", ERotationOrder),
-        sca: types.Vector3("Scale", [ 1, 1, 1 ]),
-        mat: types.Matrix4("Matrix")
+    ins = this.ins.append({
+        position: types.Vector3("Position"),
+        rotation: types.Vector3("Rotation"),
+        order: types.Enum("Order", ERotationOrder),
+        scale: types.Vector3("Scale", [ 1, 1, 1 ]),
+        matrix: types.Matrix4("Matrix")
     });
 
-    outs = this.makeProps({
-        mat: types.Matrix4("Matrix")
+    outs = this.outs.append({
+        matrix: types.Matrix4("Matrix")
     });
 
     private _object: THREE.Object3D;
@@ -69,19 +69,19 @@ export default class Transform extends Hierarchy
     update()
     {
         const object = this._object;
-        const { pos, rot, ord, sca, mat } = this.ins;
-        const matOut = this.outs.mat;
+        const { position, rotation, order, scale, matrix } = this.ins;
+        const matOut = this.outs.matrix;
 
-        if (mat.changed) {
-            object.matrix.fromArray(mat.value);
+        if (matrix.changed) {
+            object.matrix.fromArray(matrix.value);
             object.matrixWorldNeedsUpdate = true;
         }
         else {
-            object.position.fromArray(pos.value);
-            _vec3b.fromArray(rot.value).multiplyScalar(math.DEG2RAD);
-            const order = types.getEnumName(ERotationOrder, ord.value);
-            object.rotation.setFromVector3(_vec3b, order);
-            object.scale.fromArray(sca.value);
+            object.position.fromArray(position.value);
+            _vec3b.fromArray(rotation.value).multiplyScalar(math.DEG2RAD);
+            const orderKey = types.getEnumName(ERotationOrder, order.value);
+            object.rotation.setFromVector3(_vec3b, orderKey);
+            object.scale.fromArray(scale.value);
             object.updateMatrix();
         }
 
@@ -173,38 +173,38 @@ export default class Transform extends Hierarchy
 
     fromData(data: ITransformData)
     {
-        const { pos, rot, ord, sca, mat } = this.ins;
+        const { position, rotation, order, scale, matrix } = this.ins;
 
-        ord.setValue(0);
+        order.setValue(0);
 
         if (data.matrix) {
             _mat4.fromArray(data.matrix);
             _mat4.decompose(_vec3a, _quat, _vec3b);
-            _vec3a.toArray(pos.value);
+            _vec3a.toArray(position.value);
             _euler.setFromQuaternion(_quat, "XYZ");
-            _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rot.value);
-            _vec3b.toArray(sca.value);
+            _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rotation.value);
+            _vec3b.toArray(scale.value);
 
-            pos.set();
-            rot.set();
-            sca.set();
+            position.set();
+            rotation.set();
+            scale.set();
         }
         else {
             if (data.translation) {
-                pos.setValue(data.translation);
+                position.setValue(data.translation);
             }
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
                 _euler.setFromQuaternion(_quat, "XYZ");
-                _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rot.value);
-                rot.set();
+                _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rotation.value);
+                rotation.set();
             }
             if (data.scale) {
-                sca.setValue(data.scale);
+                scale.setValue(data.scale);
             }
 
             // this updates the matrix from the PRS properties
-            mat.changed = false;
+            matrix.changed = false;
             this.update();
         }
     }

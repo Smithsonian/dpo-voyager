@@ -28,20 +28,20 @@ export default class Explorer extends Component
 {
     static readonly type: string = "Explorer";
 
-    ins = this.makeProps({
-        eu: types.Enum("Units", EUnitType, EUnitType.cm),
-        ae: types.Boolean("Annotations.Enabled", false)
+    ins = this.ins.append({
+        units: types.Enum("Units", EUnitType, EUnitType.cm),
+        annotations: types.Boolean("Annotations.Enabled", false)
     });
 
     update()
     {
-        const { eu, ae } = this.ins;
+        const { units, annotations } = this.ins;
 
-        if (eu.changed) {
+        if (units.changed) {
         }
 
-        if (ae.changed) {
-            const enabled = ae.value;
+        if (annotations.changed) {
+            const enabled = annotations.value;
             this.system.getComponents(Annotations).forEach(annotations => annotations.setEnabled(enabled));
         }
     }
@@ -49,18 +49,18 @@ export default class Explorer extends Component
     fromData(data: IExplorer)
     {
         this.ins.setValues({
-            eu: EUnitType[data.units],
-            ae: data.annotationsEnabled
+            units: EUnitType[data.units],
+            annotations: data.annotationsEnabled
         });
     }
 
     toData(): IExplorer
     {
-        const { eu, ae } = this.ins;
+        const { units, annotations } = this.ins;
 
         return {
-            units: EUnitType[eu.value] as TUnitType,
-            annotationsEnabled: ae.value
+            units: EUnitType[units.value] as TUnitType,
+            annotationsEnabled: annotations.value
         }
     }
 }

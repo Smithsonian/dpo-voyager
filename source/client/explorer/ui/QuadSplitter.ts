@@ -18,17 +18,17 @@
 import "@ff/ui/Splitter";
 import { ISplitterChangeEvent } from "@ff/ui/Splitter";
 
-import { EViewportLayout } from "../core/QuadViewport";
+import { EQuadViewLayout } from "@ff/three/ecs/RenderQuadView";
 
 import CustomElement, { customElement, html, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { EViewportLayout };
+export { EQuadViewLayout };
 
 export interface IQuadSplitterChangeMessage
 {
-    layout: EViewportLayout;
+    layout: EQuadViewLayout;
     horizontalSplit: number;
     verticalSplit: number;
     isDragging: boolean;
@@ -38,7 +38,7 @@ export interface IQuadSplitterChangeMessage
 export default class QuadSplitter extends CustomElement
 {
     @property({ attribute: false })
-    layout: EViewportLayout = EViewportLayout.Quad;
+    layout: EQuadViewLayout = EQuadViewLayout.Single;
 
     @property({ attribute: false })
     horizontalPosition = 0.5;
@@ -57,13 +57,13 @@ export default class QuadSplitter extends CustomElement
     {
         const layout = this.layout;
 
-        if (layout === EViewportLayout.Single) {
+        if (layout === EQuadViewLayout.Single) {
             return;
         }
 
         const elements = [];
 
-        if (layout === EViewportLayout.HorizontalSplit || layout === EViewportLayout.Quad) {
+        if (layout === EQuadViewLayout.HorizontalSplit || layout === EQuadViewLayout.Quad) {
             elements.push(html`
                 <div class="sv-horizontal" style="position:absolute; top:0; bottom:0; left:0; right:0; display:flex;">
                     <div class="sv-left" style="flex:1 1;"></div>
@@ -73,7 +73,7 @@ export default class QuadSplitter extends CustomElement
             `);
         }
 
-        if (layout === EViewportLayout.VerticalSplit || layout === EViewportLayout.Quad) {
+        if (layout === EQuadViewLayout.VerticalSplit || layout === EQuadViewLayout.Quad) {
             elements.push(html`
                 <div class="sv-vertical" style="position:absolute; top:0; bottom:0; left:0; right:0; display:flex; flex-direction: column">
                     <div class="sv-top" style="flex:1 1;"></div>
