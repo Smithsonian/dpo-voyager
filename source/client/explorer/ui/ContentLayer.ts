@@ -17,13 +17,17 @@
 
 import * as THREE from "three";
 
+import System from "@ff/core/ecs/System";
 import Performer, { IPerformerRenderEvent } from "@ff/core/ecs/Performer";
 import ManipTarget from "@ff/browser/ManipTarget";
 
 import QuadSplitter, { EViewportLayout } from "./QuadSplitter";
 
+import Renderer from "../../core/components/Renderer";
 import Scene from "../../core/components/Scene";
 import Camera from "../../core/components/Camera";
+import PickManip from "../../core/components/PickManip";
+import SystemController from "../../core/components/SystemController";
 import QuadViewport from "../core/QuadViewport";
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
@@ -43,6 +47,8 @@ export default class RenderView extends CustomElement
 {
     static readonly resizeEvent: string = "sv-resize";
 
+    protected system: System;
+    protected controller: SystemController;
     protected performer: Performer;
     protected manipTarget: ManipTarget;
 
@@ -52,12 +58,14 @@ export default class RenderView extends CustomElement
     protected renderer: THREE.WebGLRenderer = null;
     protected viewports: QuadViewport = null;
 
-    constructor(performer: Performer)
+    constructor(system: System, performer: Performer)
     {
         super();
 
         this.onResize = this.onResize.bind(this);
 
+        this.system = system;
+        this.controller = system.getComponent(SystemController);
         this.performer = performer;
         this.manipTarget = new ManipTarget();
 
@@ -65,6 +73,7 @@ export default class RenderView extends CustomElement
         this.addEventListener("pointermove", this.manipTarget.onPointerMove);
         this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
         this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+        this.addEventListener("wheel", this.manipTarget.onWheel);
     }
 
     protected firstConnected()
@@ -103,6 +112,12 @@ export default class RenderView extends CustomElement
 
         this.manipTarget.onPointer = this.viewports.onPointer;
         this.manipTarget.onTrigger = this.viewports.onTrigger;
+        this.viewports.next = this.system.getComponent(PickManip);
+
+        this.controller.addInputListener(Renderer, "Viewport.Layout", this.onViewportLayout, this);
+        this.controller.addInputListener(Renderer, "Viewport.HomeGrid", this.onViewportGrid, this);
+        this.controller.addInputListener(Renderer, "Renderer.Exposure", this.onRendererExposure, this);
+        this.controller.addInputListener(Renderer, "Renderer.Gamma", this.onRendererGamma, this);
 
         this.onResize();
     }
@@ -114,6 +129,12 @@ export default class RenderView extends CustomElement
 
         this.manipTarget.onPointer = null;
         this.manipTarget.onTrigger = null;
+        this.viewports.next = null;
+
+        this.controller.removeInputListener(Renderer, "Viewport.Layout", this.onViewportLayout, this);
+        this.controller.removeInputListener(Renderer, "Viewport.HomeGrid", this.onViewportGrid, this);
+        this.controller.removeInputListener(Renderer, "Renderer.Exposure", this.onRendererExposure, this);
+        this.controller.removeInputListener(Renderer, "Renderer.Gamma", this.onRendererGamma, this);
     }
 
     protected onResize()
@@ -143,6 +164,27 @@ export default class RenderView extends CustomElement
         }
 
         this.renderer.clear();
+        this.renderer["overlay"] = this.overlay;
         this.viewports.renderViewports(sceneComponent.scene, cameraComponent.camera);
+    }
+
+    protected onViewportLayout(value: EViewportLayout)
+    {
+        this.viewports.layout = value;
+    }
+
+    protected onViewportGrid(value: boolean)
+    {
+        this.viewports.enableHomeGrid(value);
+    }
+
+    protected onRendererExposure(value: number)
+    {
+        this.renderer.toneMappingExposure = value;
+    }
+
+    protected onRendererGamma(value: number)
+    {
+        this.renderer.gammaFactor = value;
     }
 }

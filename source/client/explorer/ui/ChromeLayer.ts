@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import System from "@ff/core/ecs/System";
+
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 import CustomElement, { customElement, html, render } from "@ff/ui/CustomElement";
@@ -31,10 +33,14 @@ export default class ChromeView extends CustomElement
 {
     readonly controller: SystemController;
 
-    constructor(controller: SystemController)
+    constructor(system: System)
     {
         super();
-        this.controller = controller;
+
+        this.controller = system.getComponent(SystemController);
+        if (!this.controller) {
+            throw new Error("failed to get SystemController component");
+        }
     }
 
     firstConnected()

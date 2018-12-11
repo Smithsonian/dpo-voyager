@@ -47,18 +47,18 @@ export default class RenderMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.controller.addInputListener(Renderer, "Shader", this.onChange, this);
+        this.controller.addInputListener(Renderer, "Materials.Shader", this.onChange, this);
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.controller.removeInputListener(Renderer, "Shader", this.onChange, this);
+        this.controller.removeInputListener(Renderer, "Materials.Shader", this.onChange, this);
     }
 
     protected render()
     {
-        const renderMode = this.controller.getInputValue(Renderer, "Shader");
+        const renderMode = this.controller.getInputValue(Renderer, "Materials.Shader");
 
         return html`
             <label>Shading</label>
@@ -96,7 +96,7 @@ export default class RenderMenu extends Popup
 
     protected onClickRenderMode(event: IButtonClickEvent)
     {
-        this.controller.actions.setInputValue(Renderer, "Shader", event.target.index);
+        this.controller.actions.setInputValue(Renderer, "Materials.Shader", event.target.index);
         event.stopPropagation();
     }
 }
