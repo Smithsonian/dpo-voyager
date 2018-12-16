@@ -15,23 +15,14 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import RenderSystem from "@ff/three/ecs/RenderSystem";
-import Scene from "../../core/components/Scene";
-import Camera from "../../core/components/Camera";
+import {
+    Component,
+    Subgraph
+} from "@ff/graph";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ExplorerSystem extends RenderSystem
+export default class Presentation extends Subgraph
 {
-    get scene(): THREE.Scene {
-        const component = this.getComponent(Scene);
-        return component ? component.scene : null;
-    }
-
-    get camera(): THREE.Camera {
-        const component = this.getComponent(Camera);
-        return component ? component.camera : null;
-    }
+    static readonly type: string = "Presentation";
 }

@@ -16,8 +16,7 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import { IComponentChangeEvent } from "@ff/core/ecs/Component";
-import types from "@ff/core/ecs/propertyTypes";
+import { types, IComponentChangeEvent } from "@ff/graph";
 
 import { IAnnotation as IAnnotationData, Vector3 } from "common/types/item";
 
@@ -58,7 +57,7 @@ export default class Annotations extends Collection<IAnnotation>
     create()
     {
         super.create();
-        this.model = this.getComponent(Model);
+        this.model = this.components.get(Model);
     }
 
     createAnnotation(position: Vector3, direction: Vector3, index: number = -1): IAnnotation

@@ -18,8 +18,10 @@
 import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
 
-import Component from "@ff/core/ecs/Component";
-import Hierarchy from "@ff/core/ecs/Hierarchy";
+import {
+    Component,
+    Hierarchy
+} from "@ff/graph";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,11 +98,11 @@ export default class Collection<T extends { id?: string }> extends Component
      */
     findRootCollection(): this | null
     {
-        const hierarchy = this.getComponent(Hierarchy);
+        const hierarchy = this.components.get(Hierarchy);
         if (hierarchy) {
             const root = hierarchy.getRoot();
             if (root !== hierarchy) {
-                return root.getComponent(this) as this;
+                return root.components.get(this) as this;
             }
         }
 

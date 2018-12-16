@@ -16,9 +16,9 @@
  */
 
 import { ReturnType } from "@ff/core/types";
-
 import Commander from "@ff/core/Commander";
-import Component from "@ff/core/ecs/Component";
+
+import { Component } from "@ff/graph";
 
 ////////////////////////////////////////////////////////////////////////////////
 

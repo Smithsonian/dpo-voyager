@@ -16,14 +16,18 @@
  */
 
 import Commander from "@ff/core/Commander";
-import Registry from "@ff/core/ecs/Registry";
-import Entity from "@ff/core/ecs/Entity";
-import Heartbeat from "@ff/core/ecs/Heartbeat";
 
-import ExplorerSystem from "./core/ExplorerSystem";
+import {
+    Registry,
+    Node
+} from "@ff/graph";
+
+import RenderSystem from "@ff/three/graph/RenderSystem";
 
 import { IPresentation, IItem } from "common/types";
-import { registerComponents } from "../core/app/registerComponents";
+
+import { registerComponents as registerBaseComponents } from "@ff/three/graph/components";
+import { registerComponents as registerCoreComponents } from "../core/app/registerComponents";
 
 import Explorer from "../core/components/Explorer";
 import Renderer from "../core/components/Renderer";
@@ -53,13 +57,12 @@ export default class ExplorerApplication
     ].join("\n");
 
 
-    readonly system: ExplorerSystem;
-    readonly heartbeat: Heartbeat;
+    readonly system: RenderSystem;
 
     protected commander: Commander;
     protected registry: Registry;
 
-    protected main: Entity;
+    protected main: Node;
 
     protected explorer: Explorer;
     protected renderer: Renderer;
@@ -83,16 +86,14 @@ export default class ExplorerApplication
         this.onLoadingCompleted = this.onLoadingCompleted.bind(this);
         this.onLoadingError = this.onLoadingError.bind(this);
 
+        this.system = new RenderSystem();
         this.commander = new Commander();
 
-        this.registry = new Registry();
-        registerComponents(this.registry);
+        registerBaseComponents(this.system.registry);
+        registerCoreComponents(this.system.registry);
 
-        this.system = new ExplorerSystem(this.registry);
-        this.heartbeat = new Heartbeat(this.system);
-
-        // main entity
-        this.main = this.system.createEntity("Main");
+        // main node
+        this.main = this.system.graph.createNode("Main");
 
         this.explorer = this.main.createComponent(Explorer);
         this.renderer = this.main.createComponent(Renderer);
@@ -110,20 +111,13 @@ export default class ExplorerApplication
         this.toursController = this.main.createComponent(ToursController);
         this.toursController.createActions(this.commander);
 
-        // 3D manipulators
-        this.pickManip = this.main.createComponent(PickManip);
-        this.system.next = this.pickManip;
-
-        this.orbitManip = this.main.createComponent(OrbitManip);
-        this.pickManip.next.component = this.orbitManip;
-
         const loadingManager = this.presentationController.loaders.manager;
         loadingManager.onStart = this.onLoadingStart;
         loadingManager.onProgress = this.onLoadingProgress;
         loadingManager.onLoad = this.onLoadingCompleted;
         loadingManager.onError = this.onLoadingError;
 
-        this.heartbeat.start();
+        this.system.start();
     }
 
     loadPresentation(url: string)

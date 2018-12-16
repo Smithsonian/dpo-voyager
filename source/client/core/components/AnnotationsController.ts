@@ -15,17 +15,20 @@
  * limitations under the License.
  */
 
-import { IPublisherEvent } from "@ff/core/ecs/Component";
-import types from "@ff/core/ecs/propertyTypes";
+import {
+    types,
+    Node,
+    IComponentEvent
+} from "@ff/graph";
 
 import PresentationController, { IPresentationChangeEvent } from "./PresentationController";
-import Annotations, { IAnnotation, Vector3 } from "./Annotations";
+import Annotations, { IAnnotation } from "./Annotations";
 import Controller, { Actions, Commander } from "./Controller";
 import AnnotationsView from "./AnnotationsView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface ISelectAnnotationEvent extends IPublisherEvent<AnnotationsController>
+export interface ISelectAnnotationEvent extends IComponentEvent<AnnotationsController>
 {
     annotations: Annotations;
     annotation: IAnnotation;
@@ -37,7 +40,7 @@ export default class AnnotationsController extends Controller<AnnotationsControl
 {
     static readonly type: string = "AnnotationsController";
 
-    ins = this.makeProps({
+    ins = this.ins.append({
         enabled: types.Boolean("Enabled", true)
     });
 
@@ -48,16 +51,16 @@ export default class AnnotationsController extends Controller<AnnotationsControl
     protected activeAnnotations: Annotations = null;
     protected selectedAnnotation: IAnnotation = null;
 
-    constructor(id?: string)
+    constructor(node: Node, id?: string)
     {
-        super(id);
+        super(node, id);
         this.addEvents("select");
     }
 
     create()
     {
         super.create();
-        this.presentationController = this.getComponent(PresentationController);
+        this.presentationController = this.components.get(PresentationController);
         this.presentationController.on("presentation", this.onPresentationChange, this);
     }
 
@@ -76,6 +79,8 @@ export default class AnnotationsController extends Controller<AnnotationsControl
                 component.setVisible(enabled.value);
             });
         }
+
+        return true;
     }
 
     createActions(commander: Commander)

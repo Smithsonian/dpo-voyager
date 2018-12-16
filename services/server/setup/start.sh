@@ -9,9 +9,6 @@ source /root/.nvm/nvm.sh
 cd /app
 npm install
 
-# Optional: start memcached service
-service memcached start
-
 # build client and server code
 npm run build
 

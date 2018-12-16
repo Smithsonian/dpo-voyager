@@ -18,6 +18,8 @@
 import * as THREE from "three";
 
 import { Dictionary } from "@ff/core/types";
+import { Node } from "@ff/graph";
+import { Object3D } from "@ff/three/graph/components";
 
 import Annotations, { IAnnotation, IAnnotationsChangeEvent } from "./Annotations";
 import Model from "./Model";
@@ -28,7 +30,6 @@ import AnnotationHTML from "../views/AnnotationHTML";
 
 import PickManip, { IPickManipPickEvent } from "./PickManip";
 import AnnotationsController, { ISelectAnnotationEvent } from "./AnnotationsController";
-import Object3D, { IObject3DRenderContext } from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,9 +48,9 @@ export default class AnnotationsView extends Object3D
     protected pickManip: PickManip = null;
     protected controller: AnnotationsController = null;
 
-    constructor(id?: string)
+    constructor(node: Node, id?: string)
     {
-        super(id);
+        super(node, id);
 
         this.object3D = new THREE.Group();
         this.object3D.updateMatrix();
@@ -59,17 +60,17 @@ export default class AnnotationsView extends Object3D
     {
         super.create();
 
-        this.model = this.getComponent(Model);
+        this.model = this.components.get(Model);
         this.model.object3D.add(this.object3D);
 
-        this.annotations = this.getComponent(Annotations);
+        this.annotations = this.components.get(Annotations);
         this.annotations.getArray().forEach(annotation => this.addView(annotation));
         this.annotations.on("change", this.onAnnotationsChange, this);
 
-        this.pickManip = this.getComponent(PickManip, true);
-        this.pickManip.on("pick", this.onPick, this);
+        //this.pickManip = this.components.get(PickManip, true);
+        //this.pickManip.on("pick", this.onPick, this);
 
-        this.controller = this.getComponent(AnnotationsController, true);
+        this.controller = this.components.get(AnnotationsController, true);
         this.controller.on("select", this.onControllerSelect, this);
     }
 
@@ -83,7 +84,7 @@ export default class AnnotationsView extends Object3D
         this.annotations.off("change", this.onAnnotationsChange, this);
         this.annotations.getArray().forEach(annotation => this.removeView(annotation));
 
-        this.pickManip.off("pick", this.onPick, this);
+        //this.pickManip.off("pick", this.onPick, this);
         this.controller.off("select", this.onControllerSelect, this);
 
         this.model.object3D.remove(this.object3D);
@@ -106,20 +107,20 @@ export default class AnnotationsView extends Object3D
         this.controller.actions.selectAnnotation(this.annotations, view.annotation);
     }
 
-    protected onPick(event: IPickManipPickEvent)
-    {
-        if (event.component === this) {
-            // find picked annotation view
-            const view = this.findViewByObject(event.object);
-            if (view) {
-                this.controller.actions.selectAnnotation(this.annotations, view.annotation);
-                return;
-            }
-        }
-
-        // clear annotation selection
-        this.controller.actions.selectAnnotation(null, null);
-    }
+    // protected onPick(event: IPickManipPickEvent)
+    // {
+    //     if (event.component === this) {
+    //         // find picked annotation view
+    //         const view = this.findViewByObject(event.object);
+    //         if (view) {
+    //             this.controller.actions.selectAnnotation(this.annotations, view.annotation);
+    //             return;
+    //         }
+    //     }
+    //
+    //     // clear annotation selection
+    //     this.controller.actions.selectAnnotation(null, null);
+    // }
 
     protected onControllerSelect(event: ISelectAnnotationEvent)
     {

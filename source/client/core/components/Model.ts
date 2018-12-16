@@ -19,7 +19,9 @@ import * as THREE from "three";
 
 import math from "@ff/core/math";
 import threeMath from "@ff/three/math";
-import types from "@ff/core/ecs/propertyTypes";
+
+import { types } from "@ff/graph";
+import { Object3D } from "@ff/three/graph/components";
 
 import { IModel, TUnitType, Vector3 } from "common/types/item";
 
@@ -28,8 +30,6 @@ import AssetLoader from "../loaders/AssetLoader";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../app/Derivative";
 import { EAssetType, EMapType } from "../app/Asset";
 import Renderer from "./Renderer";
-
-import Object3D from "./Object3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +53,7 @@ export default class ModelComponent extends Object3D
 {
     static readonly type: string = "Model";
 
-    ins = this.makeProps({
+    ins = this.ins.append({
         qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         alo: types.Boolean("Auto.Load", true),
         pos: types.Vector3("Pose.Position"),
@@ -61,7 +61,7 @@ export default class ModelComponent extends Object3D
         sca: types.Number("Pose.Scale", 1)
     });
 
-    outs = this.makeProps({
+    outs = this.outs.append({
         asc: types.Number("Auto.Scale", 1),
         aof: types.Vector3("Auto.Offset")
     });
@@ -103,6 +103,8 @@ export default class ModelComponent extends Object3D
             object3D.rotation.setFromVector3(_vec3a, "ZYX");
             object3D.updateMatrix();
         }
+
+        return true;
     }
 
     dispose()
