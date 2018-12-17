@@ -15,6 +15,44 @@
  * limitations under the License.
  */
 
+import Annotations from "./Annotations";
+import Documents from "./Documents";
+import Groups from "./Groups";
+import Meta from "./Meta";
+import Model from "./Model";
+import Process from "./Process";
+import Reader from "./Reader";
+import Reference from "./Reference";
+import Renderer from "./Renderer";
+import Snapshots from "./Snapshots";
+import Tours from "./Tours";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../../explorer/ui/styles";
+export {
+    Annotations,
+    Documents,
+    Groups,
+    Meta,
+    Model,
+    Process,
+    Reader,
+    Reference,
+    Renderer,
+    Snapshots,
+    Tours
+};
+
+export const componentTypes = [
+    Annotations,
+    Documents,
+    Groups,
+    Meta,
+    Model,
+    Process,
+    Reader,
+    Reference,
+    Renderer,
+    Snapshots,
+    Tours
+];

@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
+import { PropertyTracker } from "@ff/graph";
+import RenderSystem from "@ff/scene/RenderSystem";
+
 import "@ff/ui/Layout";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
+import Renderer, { EShaderMode } from "../components/Renderer";
+
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
-
-import Renderer, { EShaderMode } from "../../core/components/Renderer";
-import SystemController from "../../core/components/SystemController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,11 +33,15 @@ import SystemController from "../../core/components/SystemController";
 export default class RenderMenu extends Popup
 {
     @property({ attribute: false })
-    controller: SystemController;
+    system: RenderSystem;
 
-    constructor()
+    protected propShader: PropertyTracker<any>;
+
+    constructor(system?: RenderSystem)
     {
         super();
+        this.system = system;
+        this.propShader = new PropertyTracker(this.onPropertyChange, this);
 
         this.position = "anchor";
         this.justify = "end";
@@ -47,18 +53,18 @@ export default class RenderMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.controller.addInputListener(Renderer, "Materials.Shader", this.onChange, this);
+        this.propShader.attachInput(this.system, Renderer, "Materials.Shader");
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.controller.removeInputListener(Renderer, "Materials.Shader", this.onChange, this);
+        this.propShader.detach();
     }
 
     protected render()
     {
-        const renderMode = this.controller.getInputValue(Renderer, "Materials.Shader");
+        const renderMode = this.propShader.getValue(EShaderMode.Default);
 
         return html`
             <label>Shading</label>
@@ -89,14 +95,14 @@ export default class RenderMenu extends Popup
         this.classList.add("sv-popup-menu");
     }
 
-    protected onChange()
+    protected onPropertyChange()
     {
         this.requestUpdate();
     }
 
     protected onClickRenderMode(event: IButtonClickEvent)
     {
-        this.controller.actions.setInputValue(Renderer, "Materials.Shader", event.target.index);
+        this.propShader.setValue(event.target.index);
         event.stopPropagation();
     }
 }

@@ -15,6 +15,14 @@
  * limitations under the License.
  */
 
+import { Node } from "@ff/graph";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../../explorer/ui/styles";
+export default class Explorer extends Node
+{
+    create()
+    {
+        this.name = "Explorer";
+    }
+}

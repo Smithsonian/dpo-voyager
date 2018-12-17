@@ -15,6 +15,33 @@
  * limitations under the License.
  */
 
+import Controller, { Actions } from "@ff/core/Controller";
+import Commander from "@ff/core/Commander";
+import RenderSystem from "@ff/scene/RenderSystem";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../../explorer/ui/styles";
+type TaskActions = Actions<TaskController>;
+
+export default class TaskController extends Controller<TaskController>
+{
+    readonly system: RenderSystem;
+
+    constructor(system: RenderSystem, commander: Commander)
+    {
+        super(commander);
+        this.system = system;
+    }
+
+    createActions(commander: Commander)
+    {
+        return {
+
+        };
+    }
+
+    getTasks()
+    {
+
+    }
+}

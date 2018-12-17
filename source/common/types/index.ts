@@ -20,23 +20,25 @@ import {
 } from "./item";
 
 import {
-    IPresentation,
+    IPresentation, ITransform,
+    ICamera, ILight, IPointLightProps, ISpotLightProps,
     IExplorer, IRenderer, IReader, ITools,
     INode, IVoyager, TShaderType, TUnitType
 } from "./presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IItem, IPresentation }
+export { IItem, IPresentation };
+export { ICamera, ILight, IPointLightProps, ISpotLightProps };
 export { INode, IVoyager, IExplorer, IRenderer, IReader, ITools };
 
-export { TUnitType }
-export enum EUnitType { mm, cm, m, in, ft }
+export { TUnitType };
+export enum EUnitType { mm, cm, m, in, ft };
 
-export { TDerivativeUsage }
-export enum EDerivativeUsage { Web, Print, Editorial }
+export { TDerivativeUsage };
+export enum EDerivativeUsage { Web, Print, Editorial };
 
-export { TDerivativeQuality }
-export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
+export { TDerivativeQuality };
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream };
 
-export { TShaderType }
+export { TShaderType };

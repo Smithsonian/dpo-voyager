@@ -15,6 +15,21 @@
  * limitations under the License.
  */
 
+import RenderSystem from "@ff/scene/RenderSystem";
+import ExplorerApplication from "../explorer/Application";
+
+import "./ui/MainView";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../../explorer/ui/styles";
+export default class Application
+{
+    readonly explorer: ExplorerApplication;
+    readonly system: RenderSystem;
+
+    constructor()
+    {
+        this.explorer = new ExplorerApplication();
+        this.system = this.explorer.system;
+    }
+}

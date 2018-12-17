@@ -1,0 +1,56 @@
+/**
+ * 3D Foundation Project
+ * Copyright 2018 Smithsonian Institution
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import SelectionController from "@ff/graph/SelectionController";
+import HierarchyTree from "@ff/ui/graph/HierarchyTree";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+
+////////////////////////////////////////////////////////////////////////////////
+
+@customElement("sv-hierarchy-view")
+export default class HierarchyView extends CustomElement
+{
+    @property({ attribute: false })
+    controller: SelectionController;
+
+    constructor(controller?: SelectionController)
+    {
+        super();
+        this.controller = controller;
+
+        this.onClick = this.onClick.bind(this);
+        this.addEventListener("click", this.onClick);
+    }
+
+    protected firstConnected()
+    {
+        this.setStyle({
+            position: "absolute",
+            top: "0", left: "0", bottom: "0", right: "0",
+            overflowY: "auto"
+        });
+
+        this.classList.add("sv-hierarchy-view");
+
+        this.appendChild(new HierarchyTree(this.controller));
+    }
+
+    protected onClick()
+    {
+        this.controller.clearSelection();
+    }
+}

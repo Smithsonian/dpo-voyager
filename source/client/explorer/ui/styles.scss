@@ -43,25 +43,14 @@ body {
 ////////////////////////////////////////////////////////////////////////////////
 // CONTENT LAYER
 
-sv-content-layer {
+sv-content-view {
   @include full-size;
-
-  sv-quad-splitter {
-    .sv-left {
-      box-sizing: border-box;
-      border-right: 1px solid $color-background-light;
-    }
-    .sv-top {
-      box-sizing: border-box;
-      border-bottom: 1px solid $color-background-light;
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME LAYER
 
-sv-chrome-layer {
+sv-chrome-view {
   @include full-size;
 
   .sv-main-menu {

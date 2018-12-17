@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-import { ECameraType } from "@ff/three/UniversalCamera";
+import { PropertyTracker } from "@ff/graph";
+import RenderSystem from "@ff/scene/RenderSystem";
 
 import "@ff/ui/Layout";
+import "@ff/ui/IndexButton";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
-import "@ff/ui/IndexButton";
+
+import { EProjection, EViewPreset } from "@ff/three/UniversalCamera";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
-
-import SystemController from "../../core/components/SystemController";
-import OrbitManip, { EViewPreset } from "../../core/components/OrbitManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,16 +34,23 @@ import OrbitManip, { EViewPreset } from "../../core/components/OrbitManip";
 export default class ViewMenu extends Popup
 {
     @property({ attribute: false })
-    controller: SystemController;
+    system: RenderSystem;
 
     protected viewPreset: EViewPreset;
+    protected propProjection: PropertyTracker<EProjection>;
+    protected propView: PropertyTracker<EViewPreset>;
 
-    constructor()
+    constructor(system?: RenderSystem)
     {
         super();
 
+        this.system = system;
         this.viewPreset = EViewPreset.None;
+        this.propProjection = new PropertyTracker(this.onPropertyChange, this);
+        this.propView = new PropertyTracker(this.onPropertyChange, this);
+
         this.position = "anchor";
+        this.align = "center";
         this.justify = "end";
         this.offsetX = 8;
         this.offsetY = 8;
@@ -53,30 +60,31 @@ export default class ViewMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.controller.addOutputListener(OrbitManip, "View.Projection", this.requestUpdate, this);
-        this.controller.addOutputListener(OrbitManip, "View.Preset", this.requestUpdate, this);
+
+        //this.propProjection.attachInput(this.system, Component, "path");
+        //this.propView.attachInput(this.system, Component, "path");
 
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.controller.removeOutputListener(OrbitManip, "View.Projection", this.requestUpdate, this);
-        this.controller.removeOutputListener(OrbitManip, "View.Preset", this.requestUpdate, this);
 
+        this.propProjection.detach();
+        this.propView.detach();
     }
 
     protected render()
     {
-        const projectionType = this.controller.getOutputValue(OrbitManip, "View.Projection");
-        const viewPreset = this.controller.getOutputValue(OrbitManip, "View.Preset");
+        const projectionType = this.propProjection.getValue();
+        const viewPreset = this.propView.getValue();
 
         return html`
             <label>Projection</label>
             <ff-flex-row @click=${this.onClickProjectionType}>
-                <ff-index-button .index=${ECameraType.Perspective} .selectedIndex=${projectionType}
+                <ff-index-button .index=${EProjection.Perspective} .selectedIndex=${projectionType}
                   text="Perspective" title="Perspective Projection" icon="fas fa-video"></ff-index-button>    
-                <ff-index-button .index=${ECameraType.Orthographic} .selectedIndex=${projectionType}
+                <ff-index-button .index=${EProjection.Orthographic} .selectedIndex=${projectionType}
                   text="Orthographic" title="Orthographic Projection" icon="fas fa-video"></ff-index-button>    
             </ff-flex-row>
             <label>View</label>
@@ -111,13 +119,18 @@ export default class ViewMenu extends Popup
 
     protected onClickProjectionType(event: IButtonClickEvent)
     {
-        this.controller.actions.setInputValue(OrbitManip, "View.Projection", event.target.index);
+        this.propProjection.setValue(event.target.index);
         event.stopPropagation();
     }
 
     protected onClickViewPreset(event: IButtonClickEvent)
     {
-        this.controller.actions.setInputValue(OrbitManip, "View.Preset", event.target.index);
+        this.propView.setValue(event.target.index);
         event.stopPropagation();
+    }
+
+    protected onPropertyChange()
+    {
+        this.requestUpdate();
     }
 }
