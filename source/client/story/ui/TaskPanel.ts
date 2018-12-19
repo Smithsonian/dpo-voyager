@@ -15,42 +15,25 @@
  * limitations under the License.
  */
 
-import SelectionController from "@ff/graph/SelectionController";
-import HierarchyTree from "@ff/ui/graph/HierarchyTree";
+import TaskController from "../controllers/TaskController";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-hierarchy-view")
-export default class HierarchyView extends CustomElement
+@customElement("sv-task-panel")
+export default class TaskPanel extends CustomElement
 {
     @property({ attribute: false })
-    controller: SelectionController;
+    controller: TaskController;
 
-    constructor(controller?: SelectionController)
+    constructor(controller?: TaskController)
     {
         super();
         this.controller = controller;
-
-        this.onClick = this.onClick.bind(this);
-        this.addEventListener("click", this.onClick);
     }
 
     protected firstConnected()
     {
-        this.setStyle({
-            position: "absolute",
-            top: "0", left: "0", bottom: "0", right: "0",
-            overflowY: "auto"
-        });
-
-        this.classList.add("sv-hierarchy-view");
-
-        this.appendChild(new HierarchyTree(this.controller));
-    }
-
-    protected onClick()
-    {
-        this.controller.clearSelection();
+        this.classList.add("sv-scrollable", "sv-panel", "sv-task-panel");
     }
 }

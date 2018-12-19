@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
-
-import "./ui/MainView";
+import Publisher from "@ff/core/Publisher";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
+export default class Task extends Publisher<Task>
 {
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
+    static readonly text: string = "Task";
+    static readonly icon: string = "fa fa-task";
+
+    get text() {
+        return (this.constructor as typeof Task).text;
+    }
+    get icon() {
+        return (this.constructor as typeof Task).icon
+    }
 
     constructor()
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super();
     }
 }

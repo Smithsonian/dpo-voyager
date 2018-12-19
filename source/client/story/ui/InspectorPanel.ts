@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
-import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
+import SelectionController from "@ff/graph/SelectionController";
 
-import "./ui/MainView";
+import PropertyTree from "@ff/ui/graph/PropertyTree";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
+@customElement("sv-inspector-panel")
+export default class InspectorPanel extends CustomElement
 {
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
+    @property({ attribute: false })
+    controller: SelectionController;
 
-    constructor()
+    constructor(controller?: SelectionController)
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super();
+        this.controller = controller;
+    }
+
+    firstConnected()
+    {
+        this.classList.add("sv-scrollable", "sv-panel", "sv-inspector-panel");
+        this.appendChild(new PropertyTree(this.controller));
     }
 }

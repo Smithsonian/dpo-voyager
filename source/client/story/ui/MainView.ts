@@ -15,82 +15,152 @@
  * limitations under the License.
  */
 
-import DockView, { DockContentRegistry } from "@ff/ui/DockView";
+import localStorage from "@ff/browser/localStorage";
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
 import StoryApplication from "../Application";
 
-import ExplorerView from "../../explorer/ui/MainView";
-import HierarchyView from "./HierarchyView";
-import InspectorView from "./InspectorView";
+import TaskController from "../controllers/TaskController";
+import LogController from "../controllers/LogController";
+
+import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockView";
+import TaskBar from "./TaskBar";
+
+import ExplorerPanel from "./ExplorerPanel";
+import TaskPanel from "./TaskPanel";
+import LogPanel from "./LogPanel";
+import ConsolePanel from "./ConsolePanel";
+import HierarchyPanel from "./HierarchyPanel";
+import InspectorPanel from "./InspectorPanel";
 
 import "./styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+interface IMainViewState
+{
+    layout: IDockElementLayout;
+    expertMode: boolean;
+}
+
 @customElement("voyager-story")
 export default class MainView extends CustomElement
 {
     protected application: StoryApplication;
+    protected dockView: DockView;
+
+    protected taskController: TaskController;
+    protected logController: LogController;
+
+    protected state: IMainViewState;
 
     constructor(application?: StoryApplication)
     {
         super();
+        this.onUnload = this.onUnload.bind(this);
 
         this.application = application || new StoryApplication();
+        this.dockView = null;
+
+        this.taskController = new TaskController(this.application.system, this.application.commander);
+        this.logController = new LogController(this.application.system, this.application.commander);
+
+        this.state = /* localStorage.get("voyager-story", "main-view-state") || */ {
+            layout: MainView.defaultLayout,
+            expertMode: true
+        };
     }
 
-    firstConnected()
+    protected firstConnected()
     {
         const explorer = this.application.explorer;
         const selectionController = explorer.selectionController;
+
         const registry: DockContentRegistry = new Map();
+        registry.set("explorer", () => new ExplorerPanel(explorer));
+        registry.set("task", () => new TaskPanel(this.taskController));
+        registry.set("log", () => new LogPanel(this.logController));
+        registry.set("console", () => new ConsolePanel());
+        registry.set("hierarchy", () => new HierarchyPanel(selectionController));
+        registry.set("inspector", () => new InspectorPanel(selectionController));
 
-        registry.set("explorer", () => new ExplorerView(explorer));
-        registry.set("hierarchy", () => new HierarchyView(selectionController));
-        registry.set("inspector", () => new InspectorView(selectionController));
-
-        const dockView = this.appendElement(DockView, {
-            position: "absolute",
-            top: "0", left: "0", bottom: "0", right: "0"
+        this.setStyle({
+            display: "flex",
+            flexDirection: "column"
         });
 
-        dockView.setLayout({
+        this.appendElement(new TaskBar(this.taskController));
+
+        const dockView = this.dockView = this.appendElement(DockView);
+        dockView.setLayout(this.state.layout, registry);
+        dockView.setPanelsMovable(true);
+
+        window.addEventListener("beforeunload", this.onUnload);
+    }
+
+    protected onUnload()
+    {
+        this.state.layout = this.dockView.getLayout();
+        localStorage.set("voyager-story", "main-view-state", this.state);
+    }
+
+    protected static readonly defaultLayout: IDockElementLayout = {
+        type: "strip",
+        direction: "horizontal",
+        size: 1,
+        elements: [{
+            type: "stack",
+            size: 0.22,
+            activePanelIndex: 0,
+            panels: [{
+                contentId: "task",
+                text: "Task"
+            }]
+        },{
             type: "strip",
-            direction: "horizontal",
-            size: 1,
+            direction: "vertical",
+            size: 0.56,
             elements: [{
                 type: "stack",
-                size: 0.7,
+                size: 0.8,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "explorer",
                     text: "Explorer"
                 }]
             }, {
-                type: "strip",
-                direction: "vertical",
-                size: 0.3,
-                elements: [{
-                    type: "stack",
-                    size: 0.5,
-                    activePanelIndex: 0,
-                    panels: [{
-                        contentId: "hierarchy",
-                        text: "Hierarchy"
-                    }]
+                type: "stack",
+                size: 0.2,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "log",
+                    text: "Log"
                 }, {
-                    type: "stack",
-                    size: 0.5,
-                    activePanelIndex: 0,
-                    panels: [{
-                        contentId: "inspector",
-                        text: "Inspector"
-                    }]
+                    contentId: "console",
+                    text: "Console"
                 }]
             }]
-        }, registry);
-
-        dockView.setPanelsMovable(true);
-    }
+        }, {
+            type: "strip",
+            direction: "vertical",
+            size: 0.22,
+            elements: [{
+                type: "stack",
+                size: 0.5,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "hierarchy",
+                    text: "Hierarchy"
+                }]
+            }, {
+                type: "stack",
+                size: 0.5,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "inspector",
+                    text: "Inspector"
+                }]
+            }]
+        }]
+    };
 }

@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
-import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
+import ExplorerApplication from "../../explorer/Application";
+import ExplorerView from "../../explorer/ui/MainView";
 
-import "./ui/MainView";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
+@customElement("sv-explorer-panel")
+export default class ExplorerPanel extends CustomElement
 {
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
+    @property({ attribute: false })
+    application: ExplorerApplication;
 
-    constructor()
+    constructor(application?: ExplorerApplication)
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super();
+        this.application = application;
+    }
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-panel", "sv-explorer-panel");
+        this.appendElement(new ExplorerView(this.application));
     }
 }

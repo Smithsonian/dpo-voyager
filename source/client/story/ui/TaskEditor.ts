@@ -15,35 +15,14 @@
  * limitations under the License.
  */
 
-import SelectionController from "@ff/graph/SelectionController";
-
-import PropertyTree from "@ff/ui/graph/PropertyTree";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-inspector-view")
-export default class InspectorView extends CustomElement
+export default class TaskEditor extends CustomElement
 {
-    @property({ attribute: false })
-    controller: SelectionController;
-
-    constructor(controller?: SelectionController)
+    constructor()
     {
         super();
-        this.controller = controller;
-    }
-
-    firstConnected()
-    {
-        this.setStyle({
-            position: "absolute",
-            top: "0", left: "0", bottom: "0", right: "0",
-            overflowY: "auto"
-        });
-
-        this.classList.add("sv-inspector-view");
-
-        this.appendChild(new PropertyTree(this.controller));
     }
 }

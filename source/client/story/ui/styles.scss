@@ -18,3 +18,58 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 @import "../../explorer/ui/styles";
+
+////////////////////////////////////////////////////////////////////////////////
+// VIEWS
+
+voyager-story {
+  @include full-size;
+}
+
+sv-task-bar {
+  display: flex;
+  background-color: $color-background-dark;
+  border-bottom: 2px solid $color-background-darker;
+
+  .sv-logo {
+    height: 30px;
+    margin: 8px 24px 8px 8px;
+  }
+
+  .sv-spacer {
+    flex: 1 1 auto;
+  }
+
+  .sv-divider {
+    width: 1px;
+    background-color: $color-background-light;
+  }
+
+  .ff-button {
+    align-items: center;
+    background-color: transparent;
+    padding: 5px 12px;
+    font-size: 16px;
+
+    .ff-icon {
+      font-size: 24px;
+      color: $color-icon;
+    }
+
+    &:hover {
+      background: $color-primary-dark;
+      .ff-icon {
+        color: $color-text;
+      }
+    }
+
+  }
+}
+
+ff-dock-view {
+  flex: 1 1 auto;
+}
+
+.sv-scrollable {
+  overflow-y: auto;
+}

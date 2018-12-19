@@ -15,24 +15,16 @@
  * limitations under the License.
  */
 
-import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
-
-import "./ui/MainView";
+import { customElement, property } from "@ff/ui/CustomElement";
+import TaskEditor from "./TaskEditor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
+@customElement("sv-annotations-task-editor")
+export default class AnnotationsTaskEditor extends TaskEditor
 {
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
-
     constructor()
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super();
     }
 }

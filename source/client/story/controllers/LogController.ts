@@ -15,24 +15,33 @@
  * limitations under the License.
  */
 
+import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
 import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
-
-import "./ui/MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
-{
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
+type TaskActions = Actions<LogController>;
 
-    constructor()
+export default class LogController extends Controller<LogController>
+{
+    readonly system: RenderSystem;
+
+    constructor(system: RenderSystem, commander: Commander)
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super(commander);
+        this.system = system;
+    }
+
+    createActions(commander: Commander)
+    {
+        return {
+
+        };
+    }
+
+    getTasks()
+    {
+
     }
 }

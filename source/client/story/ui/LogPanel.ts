@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
-
-import "./ui/MainView";
+import LogController from "../controllers/LogController";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
+@customElement("sv-log-panel")
+export default class LogPanel extends CustomElement
 {
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
+    @property({ attribute: false })
+    controller: LogController;
 
-    constructor()
+    constructor(controller?: LogController)
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super();
+        this.controller = controller;
+    }
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-scrollable", "sv-panel", "sv-log-panel");
     }
 }

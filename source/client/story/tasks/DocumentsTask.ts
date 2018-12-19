@@ -15,24 +15,18 @@
  * limitations under the License.
  */
 
-import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
-import ExplorerApplication from "../explorer/Application";
-
-import "./ui/MainView";
+import TaskController from "../controllers/TaskController";
+import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Application
+export default class DocumentsTask extends Task
 {
-    readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
-    readonly commander: Commander;
+    static readonly text: string = "Documents";
+    static readonly icon: string = "fa fa-file-alt";
 
     constructor()
     {
-        this.explorer = new ExplorerApplication();
-        this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
+        super();
     }
 }
