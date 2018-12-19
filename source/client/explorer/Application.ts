@@ -65,9 +65,7 @@ export default class Application
         registry.registerComponentType(explorerComponents);
 
         // create main node and components
-        const explorer = this.system.graph.createCustomNode(Explorer);
-        const presentation = this.system.graph.createCustomNode(Presentation);
-        // TODO: add method on node and component to get direct access to hierarchy (if a hierarchy is available)
+        this.system.graph.createCustomNode(Explorer);
 
         // start rendering
         this.system.start();

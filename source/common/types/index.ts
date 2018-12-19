@@ -16,7 +16,8 @@
  */
 
 import {
-    IItem, TDerivativeUsage, TDerivativeQuality
+    IItem, TDerivativeUsage, TDerivativeQuality,
+    IAsset, TAssetType, TMapType
 } from "./item";
 
 import {
@@ -31,14 +32,15 @@ import {
 export { IItem, IPresentation };
 export { ICamera, ILight, IPointLightProps, ISpotLightProps };
 export { INode, IVoyager, IExplorer, IRenderer, IReader, ITools };
+export { IAsset, TAssetType, TMapType };
 
 export { TUnitType };
-export enum EUnitType { mm, cm, m, in, ft };
+export enum EUnitType { mm, cm, m, in, ft }
 
 export { TDerivativeUsage };
-export enum EDerivativeUsage { Web, Print, Editorial };
+export enum EDerivativeUsage { Web, Print, Editorial }
 
 export { TDerivativeQuality };
-export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream };
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
 
 export { TShaderType };

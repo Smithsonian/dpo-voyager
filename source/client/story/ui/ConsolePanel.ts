@@ -33,6 +33,8 @@ export default class ConsolePanel extends CustomElement
 
     protected connected()
     {
+        return;
+
         this.logFunction = console.log;
         console.log = (...args) => {
             const text = args.map(arg => String(arg)).join(" ");

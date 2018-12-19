@@ -65,7 +65,7 @@ export default class MainView extends CustomElement
         this.taskController = new TaskController(this.application.system, this.application.commander);
         this.logController = new LogController(this.application.system, this.application.commander);
 
-        this.state = /* localStorage.get("voyager-story", "main-view-state") || */ {
+        this.state = localStorage.get("voyager-story", "main-view-state") || {
             layout: MainView.defaultLayout,
             expertMode: true
         };

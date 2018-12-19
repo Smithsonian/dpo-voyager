@@ -26,11 +26,9 @@ import { Object3D } from "@ff/scene/components";
 import { IModel, TUnitType, Vector3 } from "common/types/item";
 
 import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
-import AssetLoader from "../loaders/AssetLoader";
+import LoadingManager from "../loaders/LoadingManager";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import { EAssetType, EMapType } from "../models/Asset";
-
-import Renderer from "./Renderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,16 +48,16 @@ const _qualityLevels = [
 
 export { EShaderMode };
 
-export default class ModelComponent extends Object3D
+export default class Model extends Object3D
 {
     static readonly type: string = "Model";
 
     ins = this.ins.append({
-        qua: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
-        alo: types.Boolean("Auto.Load", true),
-        pos: types.Vector3("Pose.Position"),
-        rot: types.Vector3("Pose.Rotation"),
-        sca: types.Number("Pose.Scale", 1)
+        quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
+        autoLoad: types.Boolean("Auto.Load", true),
+        position: types.Vector3("Pose.Position"),
+        rotation: types.Vector3("Pose.Rotation"),
+        scale: types.Number("Pose.Scale", 1)
     });
 
     outs = this.outs.append({
@@ -75,7 +73,7 @@ export default class ModelComponent extends Object3D
     protected derivatives: Derivative[] = [];
     protected activeDerivative: Derivative = null;
 
-    protected assetLoader: AssetLoader = null;
+    protected loadingManager: LoadingManager = null;
     protected assetPath: string = "";
 
 
@@ -87,20 +85,20 @@ export default class ModelComponent extends Object3D
 
     update()
     {
-        const { qua, alo, pos, rot, sca } = this.ins;
+        const { quality, autoLoad, position, rotation, scale } = this.ins;
 
-        if (!this.activeDerivative && alo.value) {
-            this.autoLoad(qua.value)
+        if (!this.activeDerivative && autoLoad.value) {
+            this.autoLoad(quality.value)
             .catch(error => {
                 console.warn("Model.update - failed to load derivative");
                 console.warn(error);
             });
         }
 
-        if (pos.changed || rot.changed || sca.changed) {
+        if (position.changed || rotation.changed || scale.changed) {
             const object3D = this.object3D;
-            object3D.position.fromArray(pos.value);
-            _vec3a.fromArray(rot.value).multiplyScalar(math.DEG2RAD);
+            object3D.position.fromArray(position.value);
+            _vec3a.fromArray(rotation.value).multiplyScalar(math.DEG2RAD);
             object3D.rotation.setFromVector3(_vec3a, "ZYX");
             object3D.updateMatrix();
         }
@@ -123,21 +121,21 @@ export default class ModelComponent extends Object3D
 
     updatePropsFromMatrix()
     {
-        const { pos, rot, sca } = this.ins;
+        const { position, rotation, scale } = this.ins;
 
         this.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
 
-        _vec3a.toArray(pos.value);
+        _vec3a.toArray(position.value);
 
         _euler.setFromQuaternion(_quat, "ZYX");
         _euler.toVector3(_vec3a);
-        _vec3a.multiplyScalar(math.RAD2DEG).toArray(rot.value);
+        _vec3a.multiplyScalar(math.RAD2DEG).toArray(rotation.value);
 
-        sca.value = _vec3b.x;
+        scale.value = _vec3b.x;
 
-        pos.set();
-        rot.set();
-        sca.set();
+        position.set();
+        rotation.set();
+        scale.set();
     }
 
     addDerivative(derivative: Derivative)
@@ -178,32 +176,40 @@ export default class ModelComponent extends Object3D
         });
     }
 
-    setAssetLoader(assetLoader: AssetLoader, assetPath: string)
+    setLoadingManager(loadingManager: LoadingManager)
     {
-        this.assetLoader = assetLoader;
+        this.loadingManager = loadingManager;
+    }
+
+    setPath(assetPath: string)
+    {
         this.assetPath = assetPath;
     }
 
-    fromData(data: IModel): this
+    fromData(modelData: IModel): this
     {
-        this.units = data.units;
+        this.units = modelData.units;
 
-        data.derivatives.forEach(derivativeData => {
+        if (this.derivatives.length > 0) {
+            throw new Error("existing derivatives; failed to inflate from modelData");
+        }
+
+        modelData.derivatives.forEach(derivativeData => {
             const usage = EDerivativeUsage[derivativeData.usage];
             const quality = EDerivativeQuality[derivativeData.quality];
             this.addDerivative(new Derivative(usage, quality, derivativeData.assets));
         });
 
-        if (data.transform) {
-            this.object3D.matrix.fromArray(data.transform);
+        if (modelData.transform) {
+            this.object3D.matrix.fromArray(modelData.transform);
             this.object3D.matrixWorldNeedsUpdate = true;
             this.updatePropsFromMatrix();
         }
 
-        if (data.boundingBox) {
+        if (modelData.boundingBox) {
             this.boundingBox = new THREE.Box3();
-            this.boundingBox.min.fromArray(data.boundingBox.min);
-            this.boundingBox.max.fromArray(data.boundingBox.max);
+            this.boundingBox.min.fromArray(modelData.boundingBox.min);
+            this.boundingBox.max.fromArray(modelData.boundingBox.max);
 
             this.boxFrame = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
             this.object3D.add(this.boxFrame);
@@ -212,7 +218,7 @@ export default class ModelComponent extends Object3D
             this.onLoad();
         }
 
-        //if (data.material) {
+        //if (modelData.material) {
         // TODO: Implement
         //}
 
@@ -270,7 +276,11 @@ export default class ModelComponent extends Object3D
 
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        return derivative.load(this.assetLoader, this.assetPath)
+        if (!this.loadingManager) {
+            throw new Error("can't load derivative, loading manager not set");
+        }
+
+        return derivative.load(this.loadingManager, this.assetPath)
         .then(() => {
             if (!derivative.model) {
                 return;

@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
+
 import { Node } from "@ff/graph";
 import Transform from "@ff/scene/components/Transform";
 
 import { IItem } from "common/types";
+
+import LoadingManager from "../loaders/LoadingManager";
 
 import Meta from "../components/Meta";
 import Process from "../components/Process";
@@ -32,6 +36,14 @@ import Groups from "../components/Groups";
 
 export default class Item extends Node
 {
+    protected path: string = "";
+    protected loadingManager: LoadingManager = null;
+
+    get presentationTemplateUri() {
+        const meta = this.meta;
+        return meta ? meta.get("presentationTemplateUri") : "";
+    }
+
     protected get meta() {
         return this.components.get(Meta);
     }
@@ -57,36 +69,45 @@ export default class Item extends Node
 
         this.createComponent(Transform);
         this.createComponent(Meta);
+        this.createComponent(Process);
         this.createComponent(Model);
         this.createComponent(Annotations);
         this.createComponent(Documents);
+        this.createComponent(Groups);
     }
 
-    fromData(data: IItem, loaders, path: string)
+    setLoadingManager(loadingManager: LoadingManager, url?: string)
+    {
+        this.loadingManager = loadingManager;
+        this.model.setLoadingManager(this.loadingManager);
+        this.path = resolvePathname(".", url || location.href);
+    }
+
+    fromData(itemData: IItem)
     {
         let docIds = [];
         let groupIds = [];
         let snapIds = [];
 
-        if (data.meta) {
-            this.meta.fromData(data.meta);
+        if (itemData.meta) {
+            this.meta.fromData(itemData.meta);
         }
 
-        if (data.process) {
-            this.process.fromData(data.process);
+        if (itemData.process) {
+            this.process.fromData(itemData.process);
         }
 
-        if (data.model) {
-            this.model.setAssetLoader(loaders.assetLoader, path);
-            this.model.fromData(data.model);
+        if (itemData.model) {
+            this.model.setPath(this.path);
+            this.model.fromData(itemData.model);
         }
 
-        if (data.documents) {
-            docIds = this.documents.fromData(data.documents);
+        if (itemData.documents) {
+            docIds = this.documents.fromData(itemData.documents);
         }
 
-        if (data.annotations) {
-            const annotationsData = data.annotations;
+        if (itemData.annotations) {
+            const annotationsData = itemData.annotations;
             if (annotationsData.groups) {
                 groupIds = this.groups.fromData(annotationsData.groups);
             }
@@ -94,8 +115,8 @@ export default class Item extends Node
             this.annotations.fromData(annotationsData.annotations, groupIds, docIds, snapIds);
         }
 
-        // if (data.story) {
-        //     const storyData = data.story;
+        // if (itemData.story) {
+        //     const storyData = itemData.story;
         //     this.templateUri = storyData.templateUri;
         //
         //     snapIds = entity.createComponent(Snapshots)

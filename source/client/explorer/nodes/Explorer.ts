@@ -17,12 +17,24 @@
 
 import { Node } from "@ff/graph";
 
+import Main from "@ff/scene/components/Main";
+import Scene from "@ff/scene/components/Scene";
+import Reader from "../components/Reader";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class Explorer extends Node
 {
+    get scene() {
+        return this.components.get(Scene);
+    }
+
     create()
     {
         this.name = "Explorer";
+
+        this.createComponent(Reader);
+        this.createComponent(Main);
+        this.createComponent(Scene);
     }
 }

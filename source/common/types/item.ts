@@ -25,7 +25,7 @@ export type TUnitType = "mm" | "cm" | "m" | "in" | "ft";
 export type TNormalSpaceType = "Tangent" | "Object";
 export type TDerivativeUsage = "Web" | "Print" | "Editorial";
 export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
-export type TAssetType = "Model" | "Geometry" | "Image" | "Points" | "Volume";
+export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";
 export type TMapType = "Color" | "Normal" | "Occlusion" | "Emissive" | "MetallicRoughness" | "Zone";
 export type TCurveType = "Linear" | "Ease" | "EaseIn" | "EaseOut";
 

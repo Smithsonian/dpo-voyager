@@ -34,7 +34,7 @@ import {
     IVoyager
 } from "common/types";
 
-import Loaders from "../loaders/Loaders";
+import LoadingManager from "../loaders/LoadingManager";
 import nodeParser from "../loaders/nodeParser";
 
 import Reference from "../components/Reference";
@@ -51,28 +51,21 @@ import Item from "./Item";
 
 export default class Presentation extends Node
 {
-    protected path: string;
-    protected loaders: Loaders;
-    protected items: Item[];
+    protected path: string = "";
+    protected loadingManager: LoadingManager = null;
+    protected items: Item[] = [];
 
-    protected get scene() {
+    get scene() {
         return this.components.get(Scene);
     }
-    protected get renderer() {
+    get camera() {
+        return this.getChildComponent(Camera);
+    }
+    get renderer() {
         return this.components.get(Renderer);
     }
-    protected get reader() {
+    get reader() {
         return this.components.get(Reader);
-    }
-
-    getSceneComponent()
-    {
-        return this.components.get(Scene);
-    }
-
-    getCameraComponent()
-    {
-        return this.getChildComponent(Camera);
     }
 
     create()
@@ -82,17 +75,23 @@ export default class Presentation extends Node
         this.createComponent(Scene);
         this.createComponent(Renderer);
         this.createComponent(Reader);
+        this.createComponent(Snapshots);
+        this.createComponent(Tours);
     }
 
-    fromData(data: IPresentation, item?: Item)
+    setLoadingManager(loadingManager: LoadingManager, url?: string)
     {
-        const scene = this.components.get(Scene);
+        this.loadingManager = loadingManager;
+        this.path = resolvePathname(".", url || location.href);
+    }
 
+    fromData(data: IPresentation, items?: Item[])
+    {
         // scene, nodes
         const nodes = data.scene.nodes;
         nodes.forEach(nodeIndex => {
             const node = data.nodes[nodeIndex];
-            this.inflateNode(scene, node, data, item);
+            this.inflateNode(this.scene, node, data, items);
         });
 
         // Voyager settings
@@ -143,17 +142,19 @@ export default class Presentation extends Node
         return presentationData as IPresentation;
     }
 
-    protected inflateNode(parent: Transform, nodeData: INodeData, presentationData: IPresentation, item?: Item)
+    protected inflateNode(parent: Transform, nodeData: INodeData, presentationData: IPresentation, items?: Item[])
     {
         let node;
         let referenceParsed = false;
         let name;
 
         if (nodeData.reference !== undefined) {
+            // node is a reference, if uri is a  number, insert corresponding item from supplied items array
             const reference = presentationData.references[nodeData.reference];
             if (reference.mimeType === "application/si-dpo-3d.item+json") {
-                if (Number(reference.uri) === 0 && item) {
-                    node = item;
+                const index = Number(reference.uri);
+                if (items && index >= 0 &&  index < items.length) {
+                    const item = node = items[index];
                     name = item.name;
                     this.items.push(item);
                     referenceParsed = true;
@@ -161,11 +162,13 @@ export default class Presentation extends Node
             }
         }
         else if (nodeData.item !== undefined) {
+            // node is an item, create an item node from data
             const itemData = presentationData.items[nodeData.item];
             const item = parent.graph.createCustomNode(Item);
-            item.fromData(itemData, this.loaders, this.path);
-            this.items.push(item);
+            item.setLoadingManager(this.loadingManager, this.path);
+            item.fromData(itemData);
             name = item.name;
+            this.items.push(item);
         }
 
         if (!node) {
@@ -179,22 +182,25 @@ export default class Presentation extends Node
 
         if (nodeData.reference !== undefined && !referenceParsed) {
             const reference = presentationData.references[nodeData.reference];
+            // node is a reference, if uri is an index (we already know we don't have an item for the index)
+            // keep node as reference, an item may be provided later
             if (reference.mimeType === "application/si-dpo-3d.item+json") {
-                if (Number(reference.uri) === 0) {
+                const index = Number(reference.uri);
+                if (index >= 0) {
                     name = "Reference";
                     const reference = presentationData.references[nodeData.reference];
                     node.createComponent(Reference).fromData(reference);
                 }
+                // now try to load the item from external reference
                 else {
                     name = "Item";
+                    const itemUrl = resolvePathname(reference.uri, this.path);
 
-                    // load external item referenced by uri
-                    const itemUrl = resolvePathname(reference.uri, this.url);
-                    this.loaders.loadJSON(itemUrl).then(json =>
-                        this.loaders.validateItem(json).then(itemData => {
+                    this.loadingManager.loadJSON(itemUrl).then(json =>
+                        this.loadingManager.validateItem(json).then(itemData => {
                             const item = node.createComponent(Item);
                             item.url = itemUrl;
-                            item.setLoaders(this.loaders);
+                            item.setLoadingManager(this.loadingManager);
                             item.fromData(itemData);
                             this.items.push(item);
                         })
@@ -241,7 +247,7 @@ export default class Presentation extends Node
         if (nodeData.children) {
             nodeData.children.forEach(childIndex => {
                 const child = presentationData.nodes[childIndex];
-                this.inflateNode(transform, child, presentationData, item);
+                this.inflateNode(transform, child, presentationData, items);
             })
         }
     }
