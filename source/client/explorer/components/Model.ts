@@ -56,8 +56,7 @@ export default class Model extends Object3D
         quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         autoLoad: types.Boolean("Auto.Load", true),
         position: types.Vector3("Pose.Position"),
-        rotation: types.Vector3("Pose.Rotation"),
-        scale: types.Number("Pose.Scale", 1)
+        rotation: types.Vector3("Pose.Rotation")
     });
 
     outs = this.outs.append({
@@ -85,7 +84,7 @@ export default class Model extends Object3D
 
     update()
     {
-        const { quality, autoLoad, position, rotation, scale } = this.ins;
+        const { quality, autoLoad, position, rotation } = this.ins;
 
         if (!this.activeDerivative && autoLoad.value) {
             this.autoLoad(quality.value)
@@ -95,7 +94,7 @@ export default class Model extends Object3D
             });
         }
 
-        if (position.changed || rotation.changed || scale.changed) {
+        if (position.changed || rotation.changed) {
             const object3D = this.object3D;
             object3D.position.fromArray(position.value);
             _vec3a.fromArray(rotation.value).multiplyScalar(math.DEG2RAD);
@@ -121,7 +120,7 @@ export default class Model extends Object3D
 
     updatePropsFromMatrix()
     {
-        const { position, rotation, scale } = this.ins;
+        const { position, rotation } = this.ins;
 
         this.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
 
@@ -131,11 +130,8 @@ export default class Model extends Object3D
         _euler.toVector3(_vec3a);
         _vec3a.multiplyScalar(math.RAD2DEG).toArray(rotation.value);
 
-        scale.value = _vec3b.x;
-
         position.set();
         rotation.set();
-        scale.set();
     }
 
     addDerivative(derivative: Derivative)

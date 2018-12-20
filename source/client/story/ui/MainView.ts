@@ -16,13 +16,13 @@
  */
 
 import localStorage from "@ff/browser/localStorage";
-import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
 import StoryApplication from "../Application";
 
 import TaskController from "../controllers/TaskController";
 import LogController from "../controllers/LogController";
 
+import CustomElement, { customElement } from "@ff/ui/CustomElement";
 import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockView";
 import TaskBar from "./TaskBar";
 
@@ -37,9 +37,10 @@ import "./styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface IMainViewState
+interface IUIState
 {
-    layout: IDockElementLayout;
+    regularLayout: IDockElementLayout;
+    expertLayout: IDockElementLayout;
     expertMode: boolean;
 }
 
@@ -49,62 +50,133 @@ export default class MainView extends CustomElement
     protected application: StoryApplication;
     protected dockView: DockView;
 
-    protected taskController: TaskController;
-    protected logController: LogController;
-
-    protected state: IMainViewState;
+    protected registry: DockContentRegistry;
+    protected state: IUIState;
 
     constructor(application?: StoryApplication)
     {
         super();
         this.onUnload = this.onUnload.bind(this);
 
-        this.application = application || new StoryApplication();
+        this.application = application || new StoryApplication(null, false);
         this.dockView = null;
 
-        this.taskController = new TaskController(this.application.system, this.application.commander);
-        this.logController = new LogController(this.application.system, this.application.commander);
+        const taskController = this.application.taskController;
+        taskController.on(TaskController.changeEvent, this.onTaskChange, this);
+
+        const registry = this.registry = new Map();
+        const explorer = this.application.explorer;
+        registry.set("explorer", () => new ExplorerPanel(explorer));
+        registry.set("task", () => new TaskPanel(taskController));
+        registry.set("log", () => new LogPanel(taskController));
+        registry.set("console", () => new ConsolePanel());
+        registry.set("hierarchy", () => new HierarchyPanel(explorer.selectionController));
+        registry.set("inspector", () => new InspectorPanel(explorer.selectionController));
 
         this.state = localStorage.get("voyager-story", "main-view-state") || {
-            layout: MainView.defaultLayout,
+            regularLayout: MainView.regularLayout,
+            expertLayout: MainView.expertLayout,
             expertMode: true
         };
+
+        taskController.expertMode = this.state.expertMode;
     }
 
     protected firstConnected()
     {
-        const explorer = this.application.explorer;
-        const selectionController = explorer.selectionController;
-
-        const registry: DockContentRegistry = new Map();
-        registry.set("explorer", () => new ExplorerPanel(explorer));
-        registry.set("task", () => new TaskPanel(this.taskController));
-        registry.set("log", () => new LogPanel(this.logController));
-        registry.set("console", () => new ConsolePanel());
-        registry.set("hierarchy", () => new HierarchyPanel(selectionController));
-        registry.set("inspector", () => new InspectorPanel(selectionController));
-
         this.setStyle({
             display: "flex",
             flexDirection: "column"
         });
 
-        this.appendElement(new TaskBar(this.taskController));
+        this.appendElement(new TaskBar(this.application.taskController));
 
-        const dockView = this.dockView = this.appendElement(DockView);
-        dockView.setLayout(this.state.layout, registry);
-        dockView.setPanelsMovable(true);
+        this.dockView = this.appendElement(DockView);
+        this.restoreLayout();
 
         window.addEventListener("beforeunload", this.onUnload);
     }
 
-    protected onUnload()
+    protected disconnected()
     {
-        this.state.layout = this.dockView.getLayout();
+        this.storeLayout();
         localStorage.set("voyager-story", "main-view-state", this.state);
     }
 
-    protected static readonly defaultLayout: IDockElementLayout = {
+    protected onUnload()
+    {
+        this.storeLayout();
+        localStorage.set("voyager-story", "main-view-state", this.state);
+    }
+
+    protected onTaskChange()
+    {
+        const controller = this.application.taskController;
+
+        if (controller.expertMode !== this.state.expertMode) {
+            this.storeLayout();
+            this.state.expertMode = controller.expertMode;
+            this.restoreLayout();
+        }
+    }
+
+    protected storeLayout()
+    {
+        const state = this.state;
+
+        if (state.expertMode) {
+            state.expertLayout = this.dockView.getLayout();
+        }
+        else {
+            state.regularLayout = this.dockView.getLayout();
+        }
+    }
+
+    protected restoreLayout()
+    {
+        const state = this.state;
+
+        this.dockView.setLayout(state.expertMode ? state.expertLayout : state.regularLayout, this.registry);
+        this.dockView.setPanelsMovable(true)
+    }
+
+    protected static readonly regularLayout: IDockElementLayout = {
+        type: "strip",
+        direction: "horizontal",
+        size: 1,
+        elements: [{
+            type: "strip",
+            direction: "vertical",
+            size: 1,
+            elements: [{
+                type: "stack",
+                size: 0.65,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "task",
+                    text: "Task"
+                }]
+            }, {
+                type: "stack",
+                size: 0.35,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "log",
+                    text: "Log"
+                }]
+            }]
+        },{
+            type: "stack",
+            size: 0.8,
+            activePanelIndex: 0,
+            panels: [{
+                contentId: "explorer",
+                text: "Explorer"
+            }]
+        }]
+    };
+
+    protected static readonly expertLayout: IDockElementLayout = {
         type: "strip",
         direction: "horizontal",
         size: 1,

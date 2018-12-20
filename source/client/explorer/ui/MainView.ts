@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import parseUrlParameter from "@ff/browser/parseUrlParameter";
-import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
+import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
-import Application from "../Application";
+import Application, { IApplicationProps } from "../Application";
 
 import ContentView from "./ContentView";
 import ChromeView from "./ChromeView";
@@ -30,70 +29,26 @@ import "./styles.scss";
 @customElement("voyager-explorer")
 export default class MainView extends CustomElement
 {
-    @property({ type: Boolean })
-    parseUrl = true;
-
-    @property({ type: String })
-    item = "";
-
-    @property({ type: String })
-    presentation = "";
-
-    @property({ type: String })
-    template = "";
-
-    @property({ type: String })
-    model = "";
-
-    @property({ type: String })
-    geometry = "";
-
-    @property({ type: String })
-    texture = "";
-
     readonly application: Application;
 
     constructor(application?: Application)
     {
         super();
-        this.application = application || new Application();
-    }
 
-    protected firstUpdated(changedProperties: PropertyValues)
-    {
-        const application = this.application;
-
-        let presentationUrl, itemUrl, templateUrl, modelUrl, geometryUrl, textureUrl, qualityText;
-
-        if (this.parseUrl) {
-            presentationUrl = parseUrlParameter("presentation") || parseUrlParameter("p");
-            itemUrl = parseUrlParameter("item") || parseUrlParameter("i");
-            templateUrl = parseUrlParameter("template") || parseUrlParameter("t");
-            modelUrl = parseUrlParameter("model") || parseUrlParameter("m");
-            geometryUrl = parseUrlParameter("geometry") || parseUrlParameter("g");
-            textureUrl = parseUrlParameter("texture") || parseUrlParameter("tex");
-            qualityText = parseUrlParameter("quality") || parseUrlParameter("q");
+        if (application) {
+            this.application = application;
         }
         else {
-            presentationUrl = this.presentation;
-            itemUrl = this.item;
-            templateUrl = this.template;
-            modelUrl = this.model;
-            geometryUrl = this.geometry;
-            textureUrl = this.texture;
-        }
+            const props: IApplicationProps = {
+                item: this.getAttribute("item"),
+                presentation: this.getAttribute("presentation"),
+                template: this.getAttribute("template"),
+                model: this.getAttribute("model"),
+                geometry: this.getAttribute("geometry"),
+                texture: this.getAttribute("texture")
+            };
 
-        if (presentationUrl) {
-            return application.loadPresentation(presentationUrl);
-        }
-        if (itemUrl) {
-            return application.loadItem(itemUrl, templateUrl);
-        }
-        if (modelUrl) {
-            return this.application.loadModel(modelUrl);
-        }
-        if (geometryUrl) {
-            this.application.loadGeometry(geometryUrl, textureUrl);
+            this.application = new Application(props, false);
         }
     }
 

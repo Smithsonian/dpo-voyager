@@ -67,11 +67,7 @@ export default class PresentationController extends Controller<PresentationContr
     }
 
     protected get explorerNode(): Explorer {
-        if (!this._explorer) {
-            this._explorer = this.system.nodes.findByName("Explorer") as Explorer;
-        }
-
-        return this._explorer;
+        return this.system.nodes.get(Explorer);
     }
 
     createActions(commander: Commander)
@@ -96,7 +92,7 @@ export default class PresentationController extends Controller<PresentationContr
 
         return this.loadingManager.validateItem(json).then(itemData => {
             const explorer = this.explorerNode;
-            const item = explorer.graph.createCustomNode(Item, "Item");
+            const item = explorer.graph.createNode(Item, "Item");
             item.setLoadingManager(this.loadingManager, url);
             item.fromData(itemData);
 
@@ -139,8 +135,7 @@ export default class PresentationController extends Controller<PresentationContr
         this.closeAll();
 
         return this.loadingManager.validatePresentation(json).then(presentationData => {
-            const explorer = this.explorerNode; // TODO: retrieve nodes by type
-            const presentation = explorer.graph.createCustomNode(Presentation, "Presentation");
+            const presentation = this.explorerNode.graph.createNode(Presentation, "Presentation");
             presentation.setLoadingManager(this.loadingManager, url);
             presentation.fromData(presentationData, items);
 

@@ -19,18 +19,33 @@ import Controller, { Actions } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
 import RenderSystem from "@ff/scene/RenderSystem";
 
+import Task from "../tasks/Task";
+import taskSets from "../tasks/taskSets";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-type TaskActions = Actions<TaskController>;
+export type TaskSet = "prep" | "author";
+export type TaskActions = Actions<TaskController>;
+
 
 export default class TaskController extends Controller<TaskController>
 {
+    static readonly changeEvent = "change";
+
     readonly system: RenderSystem;
+
+    protected _tasks: Task[] = [];
+    protected _activeTaskIndex: number = 0;
+    protected _currentSet: TaskSet = null;
+    protected _expertMode = false;
 
     constructor(system: RenderSystem, commander: Commander)
     {
         super(commander);
+        this.addEvents(TaskController.changeEvent);
+
         this.system = system;
+        this.taskSet = "prep";
     }
 
     createActions(commander: Commander)
@@ -40,8 +55,50 @@ export default class TaskController extends Controller<TaskController>
         };
     }
 
-    getTasks()
-    {
+    get taskSet() {
+        return this._currentSet;
+    }
 
+    set taskSet(set: TaskSet) {
+        if (set !== this._currentSet) {
+            this._currentSet = set;
+            const taskTypes = taskSets[set] as any;
+            this._tasks = taskTypes.map(type => new type(this));
+            this.emit(TaskController.changeEvent);
+        }
+    }
+
+    get expertMode() {
+        return this._expertMode;
+    }
+
+    set expertMode(state: boolean) {
+        this._expertMode = state;
+        this.emit(TaskController.changeEvent);
+    }
+
+    get activeTaskIndex() {
+        return this._activeTaskIndex;
+    }
+
+    set activeTaskIndex(index: number) {
+        if (index !== this._activeTaskIndex) {
+            this._activeTaskIndex = index;
+            this.emit(TaskController.changeEvent);
+        }
+    }
+
+    getActiveTask() {
+        return this._tasks[this._activeTaskIndex];
+    }
+
+    toggleExpertMode()
+    {
+        this.expertMode = !this.expertMode;
+    }
+
+    getTasks(): Readonly<Task[]>
+    {
+        return this._tasks;
     }
 }

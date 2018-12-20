@@ -16,6 +16,8 @@
  */
 
 import TaskController from "../controllers/TaskController";
+import TemplateTaskEditor from "./ui/TemplateTaskEditor";
+
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,8 +27,14 @@ export default class TemplateTask extends Task
     static readonly text: string = "Templates";
     static readonly icon: string = "fa fa-map";
 
-    constructor()
+
+    constructor(controller: TaskController)
     {
-        super();
+        super(controller);
+    }
+
+    createEditor()
+    {
+        return new TemplateTaskEditor(this);
     }
 }

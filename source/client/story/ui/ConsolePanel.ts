@@ -33,24 +33,22 @@ export default class ConsolePanel extends CustomElement
 
     protected connected()
     {
-        return;
-
-        this.logFunction = console.log;
-        console.log = (...args) => {
-            const text = args.map(arg => String(arg)).join(" ");
-            this.entries.push(text);
-            if (this.entries.length > 100) {
-                this.entries.shift();
-            }
-
-            this.requestUpdate();
-            this.logFunction.apply(console, args);
-        }
+        // this.logFunction = console.log;
+        // console.log = (...args) => {
+        //     const text = args.map(arg => String(arg)).join(" ");
+        //     this.entries.push(text);
+        //     if (this.entries.length > 100) {
+        //         this.entries.shift();
+        //     }
+        //
+        //     this.requestUpdate();
+        //     this.logFunction.apply(console, args);
+        // }
     }
 
     protected disconnected()
     {
-        console.log = this.logFunction;
+        //console.log = this.logFunction;
     }
 
     protected render()

@@ -17,16 +17,11 @@
 
 import "@ff/ui/Layout";
 import "@ff/ui/Button";
-import { IButtonClickEvent } from "@ff/ui/Button";
+
+import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 
 import TaskController from "../controllers/TaskController";
 import Task from "../tasks/Task";
-import SettingsTask from "../tasks/SettingsTask";
-import InspectionTask from "../tasks/InspectionTask";
-import PoseTask from "../tasks/PoseTask";
-import AnnotationsTask from "../tasks/AnnotationsTask";
-import ToursTask from "../tasks/ToursTask";
-import DocumentsTask from "../tasks/DocumentsTask";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
@@ -44,45 +39,71 @@ export default class TaskBar extends CustomElement
     {
         super();
         this.controller = controller;
-
-        this.tasks = [
-            new SettingsTask(),
-            new InspectionTask(),
-            new PoseTask(),
-            new AnnotationsTask(),
-            new ToursTask(),
-            new DocumentsTask(),
-        ];
     }
 
-    firstConnected()
+    protected firstConnected()
     {
-
     }
 
-    render()
+    protected connected()
     {
-        const tasks = this.tasks;
+        this.controller.on(TaskController.changeEvent, this.onControllerChange, this);
+    }
+
+    protected disconnected()
+    {
+        this.controller.off(TaskController.changeEvent, this.onControllerChange, this);
+    }
+
+    protected render()
+    {
+        const controller = this.controller;
+        const tasks = controller.getTasks();
+        const selectedIndex = controller.activeTaskIndex;
 
         return html`
             <img class="sv-logo" src="/images/voyager-75grey.svg" alt="Logo"/>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <ff-flex-row @click=${this.onClickTask}>
-                ${tasks.map(task => html`<ff-button text=${task.text} icon=${task.icon}></ff-button>`)}
+                ${tasks.map((task, index) => html`<ff-index-button text=${task.text} icon=${task.icon} index=${index} selectedIndex=${selectedIndex}></ff-index-button>`)}
             </ff-flex-row>
+            <div class="sv-divider"></div>
+            <div class="sv-spacer"></div>
+            <div class="sv-divider"></div>
             <ff-flex-row @click=${this.onClickTask}>
+                <ff-button text="Save" icon="fa fa-save" @click=${this.onClickSave}></ff-button>
+                <ff-button text="Exit" icon="fa fa-sign-out-alt" @click=${this.onClickExit}></ff-button>
                 <div class="sv-divider"></div>
-                <ff-button text="Expert Mode" icon="fa fa-code"></ff-button>
-                <div class="sv-divider"></div>
-                <ff-button text="Save" icon="fa fa-save"></ff-button>
-                <ff-button text="Exit" icon="fa fa-sign-out-alt"></ff-button>
+                <ff-button text="Expert Mode" icon="fa fa-code" ?selected=${controller.expertMode} @click=${this.onClickExpertMode}></ff-button>
             </ff-flex-row>
         `;
     }
 
-    protected onClickTask(event: MouseEvent)
+    protected onClickTask(event: IButtonClickEvent)
     {
+        if (event.target instanceof IndexButton) {
+            this.controller.activeTaskIndex = event.target.index;
+        }
+    }
 
+    protected onClickSave()
+    {
+        console.log("TaskBar.onClickSave");
+    }
+
+    protected onClickExit()
+    {
+        console.log("TaskBar.onClickExit");
+    }
+
+    protected onClickExpertMode()
+    {
+        this.controller.toggleExpertMode();
+    }
+
+    protected onControllerChange()
+    {
+        this.requestUpdate();
     }
 }

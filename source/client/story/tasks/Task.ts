@@ -17,12 +17,25 @@
 
 import Publisher from "@ff/core/Publisher";
 
+import TaskController from "../controllers/TaskController";
+import TaskEditor from "../tasks/ui/TaskEditor";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Task extends Publisher<Task>
+export default abstract class Task extends Publisher<Task>
 {
     static readonly text: string = "Task";
     static readonly icon: string = "fa fa-task";
+
+    readonly controller: TaskController;
+
+
+    constructor(controller: TaskController)
+    {
+        super();
+
+        this.controller = controller;
+    }
 
     get text() {
         return (this.constructor as typeof Task).text;
@@ -31,8 +44,5 @@ export default class Task extends Publisher<Task>
         return (this.constructor as typeof Task).icon
     }
 
-    constructor()
-    {
-        super();
-    }
+    abstract createEditor(): TaskEditor;
 }

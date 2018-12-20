@@ -31,11 +31,14 @@ import Annotations from "../components/Annotations";
 import Documents from "../components/Documents";
 import Groups from "../components/Groups";
 
+import Presentation from "./Presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class Item extends Node
 {
+    static readonly type: string = "Item";
+
     protected path: string = "";
     protected loadingManager: LoadingManager = null;
 
@@ -43,6 +46,14 @@ export default class Item extends Node
         const meta = this.meta;
         return meta ? meta.get("presentationTemplateUri") : "";
     }
+
+    // node accessors
+
+    protected get presentation() {
+        return this.getParent(Presentation, true);
+    }
+
+    // component accessors
 
     protected get meta() {
         return this.components.get(Meta);

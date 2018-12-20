@@ -16,7 +16,7 @@
  */
 
 import TaskController from "../controllers/TaskController";
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,5 +35,37 @@ export default class TaskPanel extends CustomElement
     protected firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-task-panel");
+    }
+
+    protected connected()
+    {
+        this.controller.on(TaskController.changeEvent, this.onControllerChange, this);
+    }
+
+    protected disconnected()
+    {
+        this.controller.off(TaskController.changeEvent, this.onControllerChange, this);
+    }
+
+    protected render()
+    {
+        const task = this.controller.getActiveTask();
+        const iconClasses = "ff-icon " + task.icon;
+        const editorElement = task.createEditor();
+
+        return html`
+            <div class="ff-header">
+                <div class=${iconClasses}></div>
+                <div class="ff-text">${task.text}</div>
+            </div>
+            <div class="ff-content">
+                ${editorElement}
+            </div>
+        `;
+    }
+
+    protected onControllerChange()
+    {
+        this.requestUpdate();
     }
 }

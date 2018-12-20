@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import { customElement, property } from "@ff/ui/CustomElement";
+
+import TaskEditor from "./TaskEditor";
+import InspectionTask from "../InspectionTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TaskEditor extends CustomElement
+@customElement("sv-inspection-task-editor")
+export default class InspectionTaskEditor extends TaskEditor
 {
-    constructor()
+    protected task: InspectionTask;
+
+    constructor(task: InspectionTask)
     {
-        super();
+        super(task);
     }
 }

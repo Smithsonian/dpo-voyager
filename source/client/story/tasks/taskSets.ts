@@ -15,25 +15,24 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
-import Task from "./Task";
-import ToursTaskEditor from "./ui/ToursTaskEditor";
+import AnnotationsTask from "./AnnotationsTask";
+import DocumentsTask from "./DocumentsTask";
+import InspectionTask from "./InspectionTask";
+import MigrationTask from "./MigrationTask";
+import PoseTask from "./PoseTask";
+import SettingsTask from "./SettingsTask";
+import ToursTask from "./ToursTask";
 
-////////////////////////////////////////////////////////////////////////////////
-
-export default class ToursTask extends Task
-{
-    static readonly text: string = "Tours";
-    static readonly icon: string = "fa fa-globe";
-
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
-
-    createEditor()
-    {
-        return new ToursTaskEditor(this);
-    }
-}
+export default {
+    prep: [
+        SettingsTask,
+        InspectionTask,
+        PoseTask,
+        MigrationTask
+    ],
+    author: [
+        AnnotationsTask,
+        ToursTask,
+        DocumentsTask
+    ]
+};

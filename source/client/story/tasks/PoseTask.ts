@@ -16,6 +16,8 @@
  */
 
 import TaskController from "../controllers/TaskController";
+import PoseTaskEditor from "./ui/PoseTaskEditor";
+
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,8 +27,14 @@ export default class PoseTask extends Task
     static readonly text: string = "Pose";
     static readonly icon: string = "fa fa-arrows-alt";
 
-    constructor()
+
+    constructor(controller: TaskController)
     {
-        super();
+        super(controller);
+    }
+
+    createEditor()
+    {
+        return new PoseTaskEditor(this);
     }
 }

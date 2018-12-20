@@ -38,8 +38,8 @@ import LoadingManager from "../loaders/LoadingManager";
 import nodeParser from "../loaders/nodeParser";
 
 import Reference from "../components/Reference";
+import Meta from "../components/Meta";
 import Documents from "../components/Documents";
-import Groups from "../components/Groups";
 import Snapshots from "../components/Snapshots";
 import Tours from "../components/Tours";
 import Renderer from "../components/Renderer";
@@ -51,6 +51,8 @@ import Item from "./Item";
 
 export default class Presentation extends Node
 {
+    static readonly type: string = "Presentation";
+
     protected path: string = "";
     protected loadingManager: LoadingManager = null;
     protected items: Item[] = [];
@@ -59,13 +61,13 @@ export default class Presentation extends Node
         return this.components.get(Transform);
     }
     get camera() {
-        return this.getChildComponent(Camera);
+        return this.hierarchy.getChild(Camera, true);
     }
     get renderer() {
-        return this.components.get(Renderer);
+        return this.hierarchy.getParent(Renderer, false);
     }
     get reader() {
-        return this.components.get(Reader);
+        return this.hierarchy.getParent(Reader, false);
     }
 
     create()
@@ -73,10 +75,10 @@ export default class Presentation extends Node
         this.name = "Presentation";
 
         this.createComponent(Transform);
-        this.createComponent(Renderer);
-        this.createComponent(Reader);
+        this.createComponent(Meta);
         this.createComponent(Snapshots);
         this.createComponent(Tours);
+        this.createComponent(Documents);
     }
 
     setLoadingManager(loadingManager: LoadingManager, url?: string)
@@ -164,7 +166,7 @@ export default class Presentation extends Node
         else if (nodeData.item !== undefined) {
             // node is an item, create an item node from data
             const itemData = presentationData.items[nodeData.item];
-            const item = parent.graph.createCustomNode(Item);
+            const item = parent.graph.createNode(Item);
             item.setLoadingManager(this.loadingManager, this.path);
             item.fromData(itemData);
             name = item.name;
@@ -172,7 +174,7 @@ export default class Presentation extends Node
         }
 
         if (!node) {
-            node = parent.graph.createNode("Node");
+            node = parent.graph.createNode(Node);
             node.createComponent(Transform);
         }
 

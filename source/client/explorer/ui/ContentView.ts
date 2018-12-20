@@ -89,7 +89,7 @@ export default class ContentView extends CustomElement
         this.view.layout = EQuadViewLayout.Single;
         this.splitter.layout = EQuadViewLayout.Single;
 
-        this.view.viewports[0].enableCameraManip(true);
+        //this.view.viewports[0].enableCameraManip(true);
         //this.view.addViewport().setSize(0, 0, 0.5, 1);
         //this.view.addViewport().setSize(0.5, 0, 0.5, 1);
 

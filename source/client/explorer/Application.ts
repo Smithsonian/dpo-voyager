@@ -15,27 +15,39 @@
  * limitations under the License.
  */
 
+import parseUrlParameter from "@ff/browser/parseUrlParameter";
+
 import Commander from "@ff/core/Commander";
 import LoadingManager from "@ff/three/LoadingManager";
 import RenderSystem from "@ff/scene/RenderSystem";
+
 import SelectionController from "@ff/scene/SelectionController";
+import PresentationController from "./controllers/PresentationController";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as explorerComponents } from "./components";
 
 import Explorer from "./nodes/Explorer";
-import Presentation from "./nodes/Presentation";
 
-import PresentationController from "./controllers/PresentationController";
-
-import "./ui/MainView";
+import MainView from "./ui/MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export interface IApplicationProps
+{
+    parseUrl?: boolean;
+    item?: string;
+    presentation?: string;
+    template?: string;
+    model?: string;
+    geometry?: string;
+    texture?: string;
+}
 
 export default class Application
 {
     protected static splashMessage = [
-        "Voyager Explorer",
+        "Voyager Tool Suite",
         "3D Foundation Project",
         "(c) 2018 Smithsonian Institution",
         "https://3d.si.edu"
@@ -48,7 +60,7 @@ export default class Application
     readonly selectionController: SelectionController;
     readonly presentationController: PresentationController;
 
-    constructor()
+    constructor(props?: IApplicationProps, createView?: boolean)
     {
         console.log(Application.splashMessage);
 
@@ -64,11 +76,19 @@ export default class Application
         registry.registerComponentType(sceneComponents);
         registry.registerComponentType(explorerComponents);
 
+        // create main view if not given
+        if (createView !== false) {
+            new MainView(this).appendTo(document.body);
+        }
+
         // create main node and components
-        this.system.graph.createCustomNode(Explorer);
+        this.system.graph.createNode(Explorer);
 
         // start rendering
         this.system.start();
+
+        // start loading from properties
+        this.initFromProps(props || {});
     }
 
     loadPresentation(url: string)
@@ -93,5 +113,32 @@ export default class Application
     {
         this.presentationController.closeAll();
         this.presentationController.loadGeometryAndTexture(geometryUrl, textureUrl);
+    }
+
+    protected initFromProps(props: IApplicationProps)
+    {
+        let { item, presentation, template, model, geometry, texture } = props;
+
+        if (!item && !presentation && !template && !model && !geometry && !texture) {
+            presentation = parseUrlParameter("presentation") || parseUrlParameter("p");
+            item = parseUrlParameter("item") || parseUrlParameter("i");
+            template = parseUrlParameter("template") || parseUrlParameter("t");
+            model = parseUrlParameter("model") || parseUrlParameter("m");
+            geometry = parseUrlParameter("geometry") || parseUrlParameter("g");
+            texture = parseUrlParameter("texture") || parseUrlParameter("tex");
+        }
+
+        if (presentation) {
+            this.loadPresentation(presentation);
+        }
+        else if (item) {
+            this.loadItem(item, template);
+        }
+        else if (model) {
+            this.loadModel(model);
+        }
+        else if (geometry) {
+            this.loadGeometry(geometry, texture);
+        }
     }
 }

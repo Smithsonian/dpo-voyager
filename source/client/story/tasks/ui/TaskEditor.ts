@@ -15,25 +15,24 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
-import Task from "./Task";
-import ToursTaskEditor from "./ui/ToursTaskEditor";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+
+import Task from "../Task";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ToursTask extends Task
+export default class TaskEditor extends CustomElement
 {
-    static readonly text: string = "Tours";
-    static readonly icon: string = "fa fa-globe";
+    protected task: Task;
 
-
-    constructor(controller: TaskController)
+    constructor(task: Task)
     {
-        super(controller);
+        super();
+        this.task = task;
     }
 
-    createEditor()
+    protected firstConnected()
     {
-        return new ToursTaskEditor(this);
+        this.classList.add("sv-task-editor");
     }
 }

@@ -15,16 +15,23 @@
  * limitations under the License.
  */
 
+import * as THREE from "three";
+
 import { Node } from "@ff/graph";
 
 import Main from "@ff/scene/components/Main";
 import Scene from "@ff/scene/components/Scene";
+import OrbitManipulator from "@ff/scene/components/OrbitManipulator";
+
+import Renderer from "../components/Renderer";
 import Reader from "../components/Reader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class Explorer extends Node
 {
+    static readonly type: string = "Explorer";
+
     get scene() {
         return this.components.get(Scene);
     }
@@ -33,8 +40,12 @@ export default class Explorer extends Node
     {
         this.name = "Explorer";
 
+        this.createComponent(Renderer);
         this.createComponent(Reader);
         this.createComponent(Main);
         this.createComponent(Scene);
+        this.createComponent(OrbitManipulator);
+
+        this.scene.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
     }
 }

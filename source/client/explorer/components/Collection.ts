@@ -96,12 +96,9 @@ export default class Collection<T extends { id?: string }> extends Component
      */
     findRootCollection(): this | null
     {
-        const hierarchy = this.components.get(Hierarchy);
+        const hierarchy = this.hierarchy;
         if (hierarchy) {
-            const root = hierarchy.getRoot();
-            if (root !== hierarchy) {
-                return root.components.get(this) as this;
-            }
+            return hierarchy.getRoot(this);
         }
 
         return null;

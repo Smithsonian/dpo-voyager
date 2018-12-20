@@ -20,16 +20,27 @@
 @import "../../explorer/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
-// VIEWS
+// MAIN VIEW
 
 voyager-story {
   @include full-size;
 }
 
+ff-dock-view {
+  flex: 1 1 auto;
+}
+
+.sv-scrollable {
+  overflow-y: auto;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TASK BAR
+
 sv-task-bar {
   display: flex;
   background-color: $color-background-dark;
-  border-bottom: 2px solid $color-background-darker;
+  border-bottom: 3px solid $color-background-darker;
 
   .sv-logo {
     height: 30px;
@@ -56,20 +67,39 @@ sv-task-bar {
       color: $color-icon;
     }
 
-    &:hover {
-      background: $color-primary-dark;
+    &:hover, &[selected] {
       .ff-icon {
-        color: $color-text;
+        color: $color-text-light;
       }
     }
-
+    &[selected] {
+      background-color: $color-primary;
+      color: $color-text-light;
+    }
   }
 }
 
-ff-dock-view {
-  flex: 1 1 auto;
-}
+////////////////////////////////////////////////////////////////////////////////
+// TASK PANEL
 
-.sv-scrollable {
-  overflow-y: auto;
+sv-task-panel {
+  display: flex;
+  flex-direction: column;
+
+  .ff-header {
+    align-items: center;
+    display: flex;
+    padding: 5px 12px;
+    background-color: $color-background-light;
+    font-size: 16px;
+
+    .ff-icon {
+      padding: 4px 3px;
+      font-size: 24px;
+      color: $color-text;
+    }
+    .ff-text {
+      padding: 4px 3px;
+    }
+  }
 }

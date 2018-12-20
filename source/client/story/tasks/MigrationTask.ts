@@ -16,15 +16,16 @@
  */
 
 import TaskController from "../controllers/TaskController";
+import MigrationTaskEditor from "./ui/MigrationTaskEditor";
+
 import Task from "./Task";
-import ToursTaskEditor from "./ui/ToursTaskEditor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ToursTask extends Task
+export default class MigrationTask extends Task
 {
-    static readonly text: string = "Tours";
-    static readonly icon: string = "fa fa-globe";
+    static readonly text: string = "Migration";
+    static readonly icon: string = "fa fa-file-import";
 
 
     constructor(controller: TaskController)
@@ -34,6 +35,6 @@ export default class ToursTask extends Task
 
     createEditor()
     {
-        return new ToursTaskEditor(this);
+        return new MigrationTaskEditor(this);
     }
 }

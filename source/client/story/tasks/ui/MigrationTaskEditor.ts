@@ -16,15 +16,19 @@
  */
 
 import { customElement, property } from "@ff/ui/CustomElement";
+
 import TaskEditor from "./TaskEditor";
+import MigrationTask from "../MigrationTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-pose-task-editor")
-export default class PoseTaskEditor extends TaskEditor
+@customElement("sv-migration-task-editor")
+export default class MigrationTaskEditor extends TaskEditor
 {
-    constructor()
+    protected task: MigrationTask;
+
+    constructor(task: MigrationTask)
     {
-        super();
+        super(task);
     }
 }

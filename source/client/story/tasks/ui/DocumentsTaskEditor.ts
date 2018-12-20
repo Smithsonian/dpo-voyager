@@ -16,15 +16,19 @@
  */
 
 import { customElement, property } from "@ff/ui/CustomElement";
+
 import TaskEditor from "./TaskEditor";
+import DocumentsTask from "../DocumentsTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-annotations-task-editor")
-export default class AnnotationsTaskEditor extends TaskEditor
+@customElement("sv-documents-task-editor")
+export default class DocumentsTaskEditor extends TaskEditor
 {
-    constructor()
+    protected task: DocumentsTask;
+
+    constructor(task: DocumentsTask)
     {
-        super();
+        super(task);
     }
 }

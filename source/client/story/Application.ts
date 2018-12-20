@@ -15,13 +15,22 @@
  * limitations under the License.
  */
 
+
 import Commander from "@ff/core/Commander";
 import RenderSystem from "@ff/scene/RenderSystem";
+
 import ExplorerApplication from "../explorer/Application";
 
-import "./ui/MainView";
+import LogController from "./controllers/LogController";
+import TaskController from "./controllers/TaskController";
+
+import MainView from "./ui/MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export interface IApplicationProps
+{
+}
 
 export default class Application
 {
@@ -29,10 +38,21 @@ export default class Application
     readonly system: RenderSystem;
     readonly commander: Commander;
 
-    constructor()
+    readonly taskController: TaskController;
+    readonly logController: LogController;
+
+    constructor(props?: IApplicationProps, createView?: boolean)
     {
-        this.explorer = new ExplorerApplication();
+        this.explorer = new ExplorerApplication(null, false);
         this.system = this.explorer.system;
         this.commander = this.explorer.commander;
+
+        this.logController = new LogController(this.system, this.commander);
+        this.taskController = new TaskController(this.system, this.commander);
+        this.taskController.taskSet = "prep";
+
+        if (createView !== false) {
+            new MainView(this).appendTo(document.body);
+        }
     }
 }
