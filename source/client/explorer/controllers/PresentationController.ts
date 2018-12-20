@@ -161,10 +161,10 @@ export default class PresentationController extends Controller<PresentationContr
 
         const explorer = this.explorerNode;
         if (current) {
-            explorer.scene.removeChild(current.scene);
+            explorer.scene.removeChild(current.transform);
         }
         if (next) {
-            explorer.scene.addChild(next.scene);
+            explorer.scene.addChild(next.transform);
         }
 
         this.onPresentationChange(current, next);

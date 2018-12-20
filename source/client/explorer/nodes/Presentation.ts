@@ -55,8 +55,8 @@ export default class Presentation extends Node
     protected loadingManager: LoadingManager = null;
     protected items: Item[] = [];
 
-    get scene() {
-        return this.components.get(Scene);
+    get transform() {
+        return this.components.get(Transform);
     }
     get camera() {
         return this.getChildComponent(Camera);
@@ -72,7 +72,7 @@ export default class Presentation extends Node
     {
         this.name = "Presentation";
 
-        this.createComponent(Scene);
+        this.createComponent(Transform);
         this.createComponent(Renderer);
         this.createComponent(Reader);
         this.createComponent(Snapshots);
@@ -91,7 +91,7 @@ export default class Presentation extends Node
         const nodes = data.scene.nodes;
         nodes.forEach(nodeIndex => {
             const node = data.nodes[nodeIndex];
-            this.inflateNode(this.scene, node, data, items);
+            this.inflateNode(this.transform, node, data, items);
         });
 
         // Voyager settings
@@ -123,7 +123,7 @@ export default class Presentation extends Node
         };
 
         // scene, nodes
-        const transforms = this.scene.children;
+        const transforms = this.transform.children;
 
         if (transforms.length > 0) {
             presentationData.nodes = [];

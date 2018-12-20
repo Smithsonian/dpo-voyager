@@ -212,7 +212,7 @@ export default class Model extends Object3D
             this.boundingBox.max.fromArray(modelData.boundingBox.max);
 
             this.boxFrame = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
-            this.object3D.add(this.boxFrame);
+            this.addChild(this.boxFrame);
 
             // update auto scale
             this.onLoad();
@@ -287,11 +287,11 @@ export default class Model extends Object3D
             }
 
             if (this.boxFrame) {
-                this.object3D.remove(this.boxFrame);
+                this.removeChild(this.boxFrame);
                 (this.boxFrame as any).geometry.dispose();
             }
             if (this.activeDerivative) {
-                this.object3D.remove(this.activeDerivative.model);
+                this.removeChild(this.activeDerivative.model);
                 this.activeDerivative.dispose();
             }
 
@@ -300,7 +300,7 @@ export default class Model extends Object3D
             }
 
             this.activeDerivative = derivative;
-            this.object3D.add(derivative.model);
+            this.addChild(derivative.model);
             this.onLoad();
 
             // TODO: Test
