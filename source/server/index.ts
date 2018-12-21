@@ -29,6 +29,7 @@ const port = parseInt(process.env["NODE_SERVER_PORT"]) || 8000;
 const devMode = process.env.NODE_ENV !== "production";
 const localMode = process.env.NODE_SERVER_LOCAL === "true";
 const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
+const staticDir = path.resolve(rootDir, "../../dist/");
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURE, START SERVER
@@ -40,6 +41,7 @@ console.log([
     "------------------------------------------",
     "Port: " + port,
     "Root Directory: " + rootDir,
+    "Static File Directory: " + staticDir,
     "Development Mode: " + devMode,
     "Local Mode: " + localMode
 ].join("\n"));
@@ -49,22 +51,10 @@ const expressServerConfig: IExpressServerConfiguration = {
     enableDevMode: devMode,
     enableLogging: devMode,
     staticRoute: "/",
-    staticDir: path.resolve(rootDir, "static/"),
-    viewsDir: path.resolve(rootDir, "views/"),
+    staticDir
 };
 
 const expressServer = new ExpressServer(expressServerConfig);
-
-expressServer.app.get("/:component", (req, res) => {
-    const component = req.params.component;
-    if (component.endsWith("legacy")) {
-        res.render("app", { component, devMode: devMode, local: localMode });
-    }
-    else {
-        res.render("component", { component, devMode: devMode, local: localMode });
-    }
-
-});
 
 expressServer.start().then(() => {
     console.info(`\nServer ready and listening on port ${port}`);

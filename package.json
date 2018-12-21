@@ -1,13 +1,14 @@
 {
     "name": "voyager",
-    "version": "0.9.4",
+    "version": "0.1.0",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
         "server": "nodemon services/server/bin/index.js",
-        "watch": "concurrently \"cd source/client && webpack --watch --config webpack.dev.js\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
-        "build": "concurrently \"npm run build-server\" \"npm run build-client\"",
-        "build-client": "cd source/client && webpack --config webpack.prod.js && cd ../..",
+        "watch": "concurrently \"cd source/client && webpack --watch --env.app=story\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+        "build": "concurrently \"npm run build-server\" \"npm run build-dev\"",
+        "build-dev": "cd source/client; webpack --mode=development --app=all; cd ../..",
+        "build-prod": "cd source/client; webpack --mode=production --app=all; cd ../..",
         "build-server": "tsc -b source/server",
         "build-libs": "npm run build-core; npm run build-graph; npm run build-browser; npm run build-ui; npm run build-react; npm run build-three; npm run build-scene",
         "build-core": "tsc -p libs/ff-core/source --outDir node_modules/@ff/core",
@@ -18,13 +19,18 @@
         "build-three": "tsc -p libs/ff-three/source --outDir node_modules/@ff/three",
         "build-scene": "tsc -p libs/ff-scene/source --outDir node_modules/@ff/scene",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "up": "docker-compose up -d; docker-compose logs -f",
+        "down": "docker-compose stop; docker-compose rm -f -v",
+        "bash": "docker-compose exec server bash",
+        "reset": "./scripts/reset.sh"
     },
     "nodemonConfig": {
         "delay": "1000",
         "watch": [
             "services/server/bin",
-            "node_modules/@ff"
+            "node_modules/@ff/core",
+            "node_modules/@ff/server"
         ]
     },
     "repository": {
@@ -53,6 +59,7 @@
         "express-handlebars": "^3.0.0",
         "express-session": "^1.15.6",
         "file-saver": "^2.0.0-rc.4",
+        "fs-extra": "^7.0.1",
         "morgan": "^1.9.1",
         "nodemon": "^1.18.9",
         "react": "^16.6.3",
@@ -77,18 +84,25 @@
         "chai": "^4.2.0",
         "concurrently": "^4.1.0",
         "css-loader": "^1.0.1",
+        "gulp": "^4.0.0",
+        "handlebars-loader": "^1.7.1",
+        "html-webpack-plugin": "^3.2.0",
         "mini-css-extract-plugin": "^0.5.0",
         "mocha": "^5.2.0",
         "node-sass": "^4.11.0",
+        "optimize-css-assets-webpack-plugin": "^5.0.1",
         "raw-loader": "^0.5.1",
         "sass-loader": "^7.1.0",
         "source-map-loader": "^0.2.4",
+        "terser-webpack-plugin": "^1.1.0",
         "typedoc": "^0.13.0",
         "typescript": "^3.1.6",
         "typescript-json-schema": "^0.33.0",
         "uglify-js": "^3.4.9",
+        "uglifyjs-webpack-plugin": "^2.0.1",
         "webpack": "^4.24.0",
         "webpack-cli": "^3.1.2",
+        "webpack-dev-middleware": "^3.4.0",
         "webpack-merge": "^4.1.5"
     }
 }

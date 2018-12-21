@@ -56,3 +56,5 @@ export default class Application
         }
     }
 }
+
+window["VoyagerStory"] = Application;

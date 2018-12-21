@@ -21,8 +21,6 @@ import * as express from "express";
 import { Router } from "express";
 
 import * as morgan from "morgan";
-import * as bodyParser from "body-parser";
-import * as handlebars from "express-handlebars";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,19 +65,6 @@ export default class ExpressServer
         // static file server
         if (this.config.staticDir) {
             this.app.use(this.config.staticRoute, express.static(this.config.staticDir));
-        }
-
-        // body parsing
-        this.app.use(bodyParser.json());
-        this.app.use(bodyParser.urlencoded({ extended: true }));
-
-        // setup handlebars templates
-        if (this.config.viewsDir) {
-            this.app.engine(".hbs", handlebars({
-                extname: ".hbs"
-            }));
-            this.app.set("view engine", ".hbs");
-            this.app.set("views", this.config.viewsDir);
         }
     }
 

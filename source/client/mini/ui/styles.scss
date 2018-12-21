@@ -15,19 +15,4 @@
  * limitations under the License.
  */
 
-"use strict";
-
-const path = require("path");
-const merge = require('webpack-merge');
-
-const common = require('./webpack.common.js');
-
-////////////////////////////////////////////////////////////////////////////////
-
-module.exports = merge(common, {
-    // build mode
-    mode: "development",
-
-    // Enable source maps for debugging webpack's output.
-    devtool: "source-map",
-});
+@import "../../explorer/ui/styles";

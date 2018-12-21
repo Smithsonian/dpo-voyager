@@ -3,6 +3,7 @@
 .vscode/
 node_modules/
 
+dist/
 test/
 doc/
 services/server/bin

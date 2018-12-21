@@ -22,12 +22,12 @@ import LoadingManager from "@ff/three/LoadingManager";
 import RenderSystem from "@ff/scene/RenderSystem";
 
 import SelectionController from "@ff/scene/SelectionController";
-import PresentationController from "./controllers/PresentationController";
+import PresentationController from "../explorer/controllers/PresentationController";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
-import { componentTypes as explorerComponents } from "./components";
+import { componentTypes as explorerComponents } from "../explorer/components";
 
-import Explorer from "./nodes/Explorer";
+import Explorer from "../explorer/nodes/Explorer";
 
 import MainView from "./ui/MainView";
 
@@ -143,4 +143,4 @@ export default class Application
     }
 }
 
-window["VoyagerExplorer"] = Application;
+window["VoyagerMini"] = Application;
