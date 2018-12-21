@@ -17,7 +17,7 @@
 
 import resolvePathname from "resolve-pathname";
 
-import { Node } from "@ff/graph";
+import Node from "@ff/graph/Node";
 import Transform from "@ff/scene/components/Transform";
 
 import { IItem } from "common/types";

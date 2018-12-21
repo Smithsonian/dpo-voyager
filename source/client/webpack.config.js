@@ -27,6 +27,19 @@ const HTMLWebpackPlugin = require("html-webpack-plugin");
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const project = path.resolve(__dirname, "../..");
+
+const dirs = {
+    project,
+    source: path.resolve(project, "source"),
+    assets: path.resolve(project, "assets"),
+    output: path.resolve(project, "dist"),
+    modules: path.resolve(project, "node_modules"),
+    libs: path.resolve(project, "libs")
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 const apps = {
     "explorer": {
         name: "voyager-explorer",
@@ -51,18 +64,6 @@ module.exports = function(env, argv) {
 
     const isDevMode = argv.mode !== "production";
     const app = argv.app || "explorer";
-
-
-    const project = path.resolve(__dirname, "../..");
-
-    const dirs = {
-        project,
-        source: path.resolve(project, "source"),
-        assets: path.resolve(project, "assets"),
-        output: path.resolve(project, "dist"),
-        modules: path.resolve(project, "node_modules"),
-        libs: path.resolve(project, "libs")
-    };
 
     // copy static assets
     fs.copy(dirs.assets, dirs.output, { overwrite: true });
@@ -110,10 +111,12 @@ function createAppConfig(app, dirs, isDevMode)
             alias: {
                 "common": path.resolve(dirs.source, "common"),
                 "@ff/core": path.resolve(dirs.libs, "ff-core/source"),
+                "@ff/graph": path.resolve(dirs.libs, "ff-graph/source"),
                 "@ff/ui": path.resolve(dirs.libs, "ff-ui/source"),
                 "@ff/react": path.resolve(dirs.libs, "ff-react/source"),
                 "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
-                "@ff/three": path.resolve(dirs.libs, "ff-three/source")
+                "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
+                "@ff/scene": path.resolve(dirs.libs, "ff-scene/source")
             },
             // Resolvable extensions
             extensions: [".ts", ".tsx", ".js", ".json"]

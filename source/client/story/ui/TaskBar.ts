@@ -62,7 +62,7 @@ export default class TaskBar extends CustomElement
         const selectedIndex = controller.activeTaskIndex;
 
         return html`
-            <img class="sv-logo" src="/images/voyager-75grey.svg" alt="Logo"/>
+            <img class="sv-logo" src="images/voyager-75grey.svg" alt="Logo"/>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <ff-flex-row @click=${this.onClickTask}>

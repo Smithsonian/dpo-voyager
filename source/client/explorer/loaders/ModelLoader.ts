@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
 import "three/examples/js/loaders/GLTFLoader";
@@ -22,7 +23,10 @@ import "three/examples/js/loaders/DRACOLoader";
 
 const GLTFLoader = (THREE as any).GLTFLoader;
 const DRACOLoader = (THREE as any).DRACOLoader;
-DRACOLoader.setDecoderPath('/js/draco/');
+
+const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
+DRACOLoader.setDecoderPath(dracoPath);
+console.log("DRACOLoader.setDracoPath - %s", dracoPath);
 
 import UberMaterial from "../shaders/UberMaterial";
 

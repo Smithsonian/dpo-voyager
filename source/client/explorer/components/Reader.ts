@@ -17,10 +17,8 @@
 
 import { Dictionary } from "@ff/core/types";
 
-import {
-    Component,
-    types
-} from "@ff/graph";
+import Component from "@ff/graph/Component";
+import { types } from "@ff/graph/propertyTypes";
 
 import { IReader } from "common/types";
 import Documents, { IDocument } from "./Documents";

@@ -20,7 +20,7 @@ import * as THREE from "three";
 import math from "@ff/core/math";
 import threeMath from "@ff/three/math";
 
-import { types } from "@ff/graph";
+import { types } from "@ff/graph/propertyTypes";
 import { Object3D } from "@ff/scene/components";
 
 import { IModel, TUnitType, Vector3 } from "common/types/item";

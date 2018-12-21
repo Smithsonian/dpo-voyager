@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-import {
-    Component,
-    types
-} from "@ff/graph";
+import Component from "@ff/graph/Component";
+import { types } from "@ff/graph/propertyTypes";
 
 import {
     IRenderContext

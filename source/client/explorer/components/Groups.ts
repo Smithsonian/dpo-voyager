@@ -16,7 +16,7 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import { IComponentChangeEvent } from "@ff/graph";
+import { IComponentChangeEvent } from "@ff/graph/Component";
 
 import { IGroup as IGroupData } from "common/types/item";
 

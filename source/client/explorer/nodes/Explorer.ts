@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import { Node } from "@ff/graph";
+import Node from "@ff/graph/Node";
 
 import Main from "@ff/scene/components/Main";
 import Scene from "@ff/scene/components/Scene";

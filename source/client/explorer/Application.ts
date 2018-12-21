@@ -47,7 +47,7 @@ export interface IApplicationProps
 export default class Application
 {
     protected static splashMessage = [
-        "Voyager - 3D Explorer and Tool Suite",
+        "Voyager - 3D Explorer and Tool Suite!!",
         "3D Foundation Project",
         "(c) 2018 Smithsonian Institution",
         "https://3d.si.edu"

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { PropertyTracker } from "@ff/graph";
+import PropertyTracker from "@ff/graph/PropertyTracker";
 import RenderSystem from "@ff/scene/RenderSystem";
 
 import "@ff/ui/Layout";

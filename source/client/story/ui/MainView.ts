@@ -58,7 +58,6 @@ export default class MainView extends CustomElement
         super();
         this.onUnload = this.onUnload.bind(this);
 
-        console.log("Here", application);
         this.application = application || new StoryApplication(null, false);
         this.dockView = null;
 

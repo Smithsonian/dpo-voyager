@@ -1,6 +1,5 @@
 {
     "references": [
-        { "path": "../../libs" },
         { "path": "../common" }
     ],
     "compilerOptions": {

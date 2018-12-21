@@ -5,7 +5,6 @@
         "module": "commonjs",
         "declaration": true,
         "sourceMap": true,
-        "jsx": "react",
         "experimentalDecorators": true,
 
         "outDir": "../node_modules/@ff/ui",
