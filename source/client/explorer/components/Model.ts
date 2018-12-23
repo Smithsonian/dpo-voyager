@@ -52,6 +52,8 @@ export default class Model extends Object3D
 {
     static readonly type: string = "Model";
 
+    static readonly updateEvent = "update";
+
     ins = this.ins.append({
         quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         autoLoad: types.Boolean("Auto.Load", true),
@@ -65,7 +67,7 @@ export default class Model extends Object3D
     });
 
     protected units: TUnitType = "cm";
-    protected boundingBox: THREE.Box3 = null;
+    protected boundingBox = new THREE.Box3();
 
     protected boxFrame: THREE.Object3D = null;
 
@@ -203,15 +205,13 @@ export default class Model extends Object3D
         }
 
         if (modelData.boundingBox) {
-            this.boundingBox = new THREE.Box3();
             this.boundingBox.min.fromArray(modelData.boundingBox.min);
             this.boundingBox.max.fromArray(modelData.boundingBox.max);
 
             this.boxFrame = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
             this.addChild(this.boxFrame);
 
-            // update auto scale
-            this.onLoad();
+            this.emit(Model.updateEvent);
         }
 
         //if (modelData.material) {
@@ -297,17 +297,14 @@ export default class Model extends Object3D
 
             this.activeDerivative = derivative;
             this.addChild(derivative.model);
-            this.onLoad();
+
+            this.emit(Model.updateEvent);
 
             // TODO: Test
             const bb = derivative.boundingBox;
             const box = { min: bb.min.toArray(), max: bb.max.toArray() };
             console.log("derivative bounding box: ", box);
         });
-    }
-
-    protected onLoad()
-    {
     }
 
     protected selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null

@@ -1,12 +1,12 @@
 {
     "references": [
-        { "path": "ff-core.tsconfig.json" },
-        { "path": "ff-browser.tsconfig.json" },
-        { "path": "ff-graph.tsconfig.json" },
-        { "path": "ff-ui.tsconfig.json" },
-        { "path": "ff-react.tsconfig.json" },
-        { "path": "ff-three.tsconfig.json" },
-        { "path": "ff-scene.tsconfig.json" }
+        { "path": "ff-core/tsconfig.module.json" },
+        { "path": "ff-browser/tsconfig.module.json" },
+        { "path": "ff-graph/tsconfig.module.json" },
+        { "path": "ff-ui/tsconfig.module.json" },
+        { "path": "ff-react/tsconfig.module.json" },
+        { "path": "ff-three/tsconfig.module.json" },
+        { "path": "ff-scene/tsconfig.module.json" }
     ],
     "compilerOptions": {
         "composite": true
