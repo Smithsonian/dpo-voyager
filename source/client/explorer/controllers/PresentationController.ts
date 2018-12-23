@@ -17,7 +17,7 @@
 
 import resolvePathname from "resolve-pathname";
 
-import Controller, { Actions, IPublisherEvent } from "@ff/core/Controller";
+import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
 import RenderSystem from "@ff/scene/RenderSystem";
 
@@ -30,7 +30,7 @@ import Item from "../nodes/Item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IPresentationChangeEvent extends IPublisherEvent<PresentationController>
+export interface IPresentationChangeEvent extends ITypedEvent<"presentation">
 {
     current: Presentation;
     next: Presentation;
@@ -40,8 +40,6 @@ type PresentationActions = Actions<PresentationController>;
 
 export default class PresentationController extends Controller<PresentationController>
 {
-    static readonly presentationEvent = "presentation";
-
     readonly system: RenderSystem;
     readonly loadingManager: LoadingManager;
 
@@ -52,7 +50,7 @@ export default class PresentationController extends Controller<PresentationContr
     constructor(system: RenderSystem, commander: Commander)
     {
         super(commander);
-        this.addEvent(PresentationController.presentationEvent);
+        this.addEvent("presentation");
 
         this.system = system;
         this.loadingManager = new LoadingManager();
@@ -163,7 +161,7 @@ export default class PresentationController extends Controller<PresentationContr
         }
 
         this.onPresentationChange(current, next);
-        this.emit<IPresentationChangeEvent>(PresentationController.presentationEvent, { current, next });
+        this.emit<IPresentationChangeEvent>({ type: "presentation", current, next });
     }
 
     protected onPresentationChange(current: Presentation, next: Presentation)

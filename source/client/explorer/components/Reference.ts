@@ -37,7 +37,7 @@ export default class Reference extends Component
 
         this.load();
 
-        this.emit<IReferenceChangeEvent>("change");
+        this.emit<IReferenceChangeEvent>({ type: "change", what: "reference", component: this });
     }
 
     fromData(data: IReferenceData)

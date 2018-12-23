@@ -82,21 +82,21 @@ export default class Annotations extends Collection<IAnnotation>
     setEnabled(enabled: boolean)
     {
         this.getArray().forEach(annotation => annotation.visible = enabled);
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation: null });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation: null, component: this });
     }
 
     setVisible(id: string, visible: boolean)
     {
         const annotation = this.get(id);
         annotation.visible = visible;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
     }
 
     setExpanded(id: string, expanded: boolean)
     {
         const annotation = this.get(id);
         annotation.expanded = expanded;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
     }
 
     setPosition(id: string, position: Vector3, direction: Vector3)
@@ -104,34 +104,34 @@ export default class Annotations extends Collection<IAnnotation>
         const annotation = this.get(id);
         annotation.position = position;
         annotation.direction = direction;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
     }
 
     setTitle(id: string, title: string)
     {
         const annotation = this.get(id);
         annotation.title = title;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
     }
 
     setDescription(id: string, description: string)
     {
         const annotation = this.get(id);
         annotation.description = description;
-        this.emit<IAnnotationsChangeEvent>("change", { what: "update", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
     }
 
     addAnnotation(annotation: IAnnotation): string
     {
         const id = this.insert(annotation);
-        this.emit<IAnnotationsChangeEvent>("change", { what: "add", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "add", annotation, component: this });
         return id;
     }
 
     removeAnnotation(id: string): IAnnotation
     {
         const annotation = this.remove(id);
-        this.emit<IAnnotationsChangeEvent>("change", { what: "remove", annotation });
+        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "remove", annotation, component: this });
         return annotation;
     }
 

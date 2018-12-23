@@ -79,7 +79,7 @@ export default class Documents extends Component
         this.documentList.push(document);
         this.reader.addDocument(document);
 
-        this.emit<IDocumentChangeEvent>("change", { what: "add", document });
+        this.emit<IDocumentChangeEvent>({ type: "change", what: "add", document, component: this });
 
         return document.id;
     }
@@ -92,7 +92,7 @@ export default class Documents extends Component
         delete this.documents[id];
         this.reader.removeDocument(id);
 
-        this.emit<IDocumentChangeEvent>("change", { what: "remove", document });
+        this.emit<IDocumentChangeEvent>({ type: "change", what: "remove", document, component: this });
 
         return document;
     }

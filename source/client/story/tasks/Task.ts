@@ -22,7 +22,7 @@ import TaskEditor from "../tasks/ui/TaskEditor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default abstract class Task extends Publisher<Task>
+export default abstract class Task extends Publisher
 {
     static readonly text: string = "Task";
     static readonly icon: string = "fa fa-task";

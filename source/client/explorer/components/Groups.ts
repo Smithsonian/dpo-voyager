@@ -66,7 +66,7 @@ export default class Groups extends Collection<IGroup>
             this.rootCollection.addGroup(group);
         }
 
-        this.emit<IGroupsChangeEvent>("change", { what: "add", group });
+        this.emit<IGroupsChangeEvent>({ type: "change", what: "add", group, component: this });
 
         return id;
     }
@@ -79,7 +79,7 @@ export default class Groups extends Collection<IGroup>
             this.rootCollection.removeGroup(id);
         }
 
-        this.emit<IGroupsChangeEvent>("change", { what: "remove", group });
+        this.emit<IGroupsChangeEvent>({ type: "change", what: "remove", group, component: this });
 
         return group;
     }
