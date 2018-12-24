@@ -19,6 +19,7 @@ import * as sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
 
 import * as path from "path";
+import * as express from "express";
 
 import ExpressServer, { IExpressServerConfiguration } from "./ExpressServer";
 
@@ -30,6 +31,7 @@ const devMode = process.env.NODE_ENV !== "production";
 const localMode = process.env.NODE_SERVER_LOCAL === "true";
 const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
 const staticDir = path.resolve(rootDir, "../../dist/");
+const docDir = path.resolve(rootDir, "../../doc/code");
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURE, START SERVER
@@ -51,7 +53,8 @@ const expressServerConfig: IExpressServerConfiguration = {
     enableDevMode: devMode,
     enableLogging: devMode,
     staticRoute: "/",
-    staticDir
+    staticDir,
+    docDir
 };
 
 const expressServer = new ExpressServer(expressServerConfig);

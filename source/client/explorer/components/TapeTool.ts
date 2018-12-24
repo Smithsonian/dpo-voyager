@@ -15,25 +15,18 @@
  * limitations under the License.
  */
 
-import AnnotationsTask from "./AnnotationsTask";
-import DocumentsTask from "./DocumentsTask";
-import InspectionTask from "./InspectionTask";
-import MigrationTask from "./MigrationTask";
-import PoseTask from "./PoseTask";
-import SettingsTask from "./SettingsTask";
-import ToursTask from "./ToursTask";
+import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/scene/Component";
 
-export default {
-    prep: [
-        SettingsTask,
-        InspectionTask,
-        PoseTask,
-        MigrationTask
-    ],
-    author: [
-        SettingsTask,
-        AnnotationsTask,
-        ToursTask,
-        DocumentsTask
-    ]
-};
+////////////////////////////////////////////////////////////////////////////////
+
+export default class TapeTool extends Component
+{
+    static readonly type: string = "TapeTool";
+
+    ins = this.ins.append({
+        enabled: types.Boolean("Enabled"),
+        start: types.Vector3("Start"),
+        end: types.Vector3("End")
+    });
+}

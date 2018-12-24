@@ -1,10 +1,20 @@
 # Voyager
-Suite of browser-based 3D editing and viewing tools, consisting of
+### Next Generation 3D editing and viewing tool suite
 
- * Voyager Explorer - public 3D viewer component
- * Voyager Prep - model QA, staging, editing component
- * Voyager Story - authoring annotations, articles, tours
+Suite of browser-based 3D tools, consisting of
+
+ * Voyager Story - quality control, authoring of presentations, annotations, articles, tours
+ * Voyager Explorer - feature-rich 3D viewer component
+ * Voyager Mini - bare-bone 3D viewer component, optimized for size and loading speed
  * Voyager Inspector - quick mesh inspection tool
+
+### Resources
+ * [Github repository](https://github.com/Smithsonian/dpo-voyager)
+ * Getting started with [Voyager Explorer](/doc/manual/explorer-start.md)
+ * Getting started with [Voyager Story](/doc/manual/story-start.md)
+
+### Pre-Release Software
+This software is pre-release and provided "as is". Breaking changes can and will happen during development.
 
 ### License Information
 Copyright 2018 Smithsonian Institution.

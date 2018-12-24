@@ -85,7 +85,7 @@ sv-chrome-view {
       background-color: $color-primary;
       color: $menu-color-text;
 
-      .ff-icon {
+      & > .ff-icon {
         filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
       }
 
@@ -93,7 +93,7 @@ sv-chrome-view {
         background-color: $color-primary-light;
       }
     }
-  }
+ }
 
   .sv-logo {
     position: absolute;

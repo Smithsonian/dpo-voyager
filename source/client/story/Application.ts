@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
+import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 import RenderSystem from "@ff/scene/RenderSystem";
 
-import ExplorerApplication from "../explorer/Application";
+import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Application";
 
 import LogController from "./controllers/LogController";
 import TaskController from "./controllers/TaskController";
@@ -28,12 +29,25 @@ import MainView from "./ui/MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IApplicationProps
+/**
+ * Initial properties of the Voyager Story main [[StoryApplication]].
+ */
+export interface IStoryApplicationProps extends IExplorerApplicationProps
 {
+    /** The page URL to navigate to when the user exits the story tool. */
+    referrer?: string;
+    /** The task set the application should display. Valid options: "prep" and "author". */
+    mode?: string;
+    /** When set to true, application displays additional expert level tools. */
+    expert?: boolean;
 }
 
-export default class Application
+/**
+ * Voyager Story main application.
+ */
+export default class StoryApplication
 {
+    readonly props: IStoryApplicationProps;
     readonly explorer: ExplorerApplication;
     readonly system: RenderSystem;
     readonly commander: Commander;
@@ -41,20 +55,34 @@ export default class Application
     readonly taskController: TaskController;
     readonly logController: LogController;
 
-    constructor(props?: IApplicationProps, createView?: boolean)
+    constructor(element?: HTMLElement, props?: IStoryApplicationProps)
     {
-        this.explorer = new ExplorerApplication(null, false);
+        this.explorer = new ExplorerApplication(null, props);
         this.system = this.explorer.system;
         this.commander = this.explorer.commander;
 
         this.logController = new LogController(this.system, this.commander);
         this.taskController = new TaskController(this.system, this.commander);
-        this.taskController.taskSet = "prep";
 
-        if (createView !== false) {
-            new MainView(this).appendTo(document.body);
+        this.props = this.initFromProps(props);
+
+        if (element) {
+            new MainView(this).appendTo(element);
         }
+    }
+
+    protected initFromProps(props: IStoryApplicationProps): IStoryApplicationProps
+    {
+        props.referrer = props.referrer || parseUrlParameter("referrer");
+        props.mode = props.mode || parseUrlParameter("mode") || "prep";
+        props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
+
+        this.taskController.referrer = props.referrer;
+        this.taskController.taskSet = props.mode;
+        this.taskController.expertMode = props.expert;
+
+        return props;
     }
 }
 
-window["VoyagerStory"] = Application;
+window["VoyagerStory"] = StoryApplication;

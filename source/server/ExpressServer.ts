@@ -32,6 +32,7 @@ export interface IExpressServerConfiguration
     enableLogging?: boolean;
     staticRoute?: string;
     staticDir?: string;
+    docDir?: string;
     viewsDir?: string;
     defaultLayout?: string;
 }
@@ -61,6 +62,9 @@ export default class ExpressServer
         if (this.config.enableLogging) {
             this.app.use(morgan("tiny"));
         }
+
+        // documentation server
+        this.app.use("/doc", express.static(this.config.docDir));
 
         // static file server
         if (this.config.staticDir) {

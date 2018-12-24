@@ -15,25 +15,18 @@
  * limitations under the License.
  */
 
-import AnnotationsTask from "./AnnotationsTask";
-import DocumentsTask from "./DocumentsTask";
-import InspectionTask from "./InspectionTask";
-import MigrationTask from "./MigrationTask";
-import PoseTask from "./PoseTask";
-import SettingsTask from "./SettingsTask";
-import ToursTask from "./ToursTask";
+import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/scene/Component";
 
-export default {
-    prep: [
-        SettingsTask,
-        InspectionTask,
-        PoseTask,
-        MigrationTask
-    ],
-    author: [
-        SettingsTask,
-        AnnotationsTask,
-        ToursTask,
-        DocumentsTask
-    ]
-};
+////////////////////////////////////////////////////////////////////////////////
+
+export default class CutTool extends Component
+{
+    static readonly type: string = "CutTool";
+
+    ins = this.ins.append({
+        enabled: types.Boolean("Enabled"),
+        direction: types.Vector3("Direction"),
+        depth: types.Vector3("Depth")
+    });
+}

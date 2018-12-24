@@ -24,7 +24,7 @@ import taskSets from "../tasks/taskSets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type TaskSet = "prep" | "author";
+export type TaskSetName = "prep" | "author";
 export type TaskActions = Actions<TaskController>;
 
 
@@ -34,10 +34,11 @@ export default class TaskController extends Controller<TaskController>
 
     readonly system: RenderSystem;
 
-    protected _tasks: Task[] = [];
-    protected _activeTaskIndex: number = 0;
-    protected _currentSet: TaskSet = null;
-    protected _expertMode = false;
+    private _tasks: Task[] = [];
+    private _activeTaskIndex: number = 0;
+    private _currentSet: TaskSetName = null;
+    private _expertMode = false;
+    private _referrer: string = "";
 
     constructor(system: RenderSystem, commander: Commander)
     {
@@ -55,16 +56,34 @@ export default class TaskController extends Controller<TaskController>
         };
     }
 
-    get taskSet() {
+    set referrer(url: string)
+    {
+        this._referrer = url;
+    }
+
+    exitApplication()
+    {
+        if (this._referrer) {
+            location.assign(this._referrer);
+        }
+    }
+
+    get tasks(): Readonly<Task[]> {
+        return this._tasks;
+    }
+
+    get taskSet(): string {
         return this._currentSet;
     }
 
-    set taskSet(set: TaskSet) {
+    set taskSet(set: string) {
         if (set !== this._currentSet) {
-            this._currentSet = set;
             const taskTypes = taskSets[set] as any;
-            this._tasks = taskTypes.map(type => new type(this));
-            this.emit(TaskController.changeEvent);
+            if (taskTypes) {
+                this._currentSet = set as TaskSetName;
+                this._tasks = taskTypes.map(type => new type(this));
+                this.emit(TaskController.changeEvent);
+            }
         }
     }
 
@@ -73,7 +92,7 @@ export default class TaskController extends Controller<TaskController>
     }
 
     set expertMode(state: boolean) {
-        this._expertMode = state;
+        this._expertMode = !!state;
         this.emit(TaskController.changeEvent);
     }
 
@@ -95,10 +114,5 @@ export default class TaskController extends Controller<TaskController>
     toggleExpertMode()
     {
         this.expertMode = !this.expertMode;
-    }
-
-    getTasks(): Readonly<Task[]>
-    {
-        return this._tasks;
     }
 }

@@ -18,7 +18,7 @@
         "build-react": "tsc -p libs/ff-react/tsconfig.module.json",
         "build-three": "tsc -p libs/ff-three/tsconfig.module.json",
         "build-scene": "tsc -p libs/ff-scene/tsconfig.module.json",
-        "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
+        "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/code/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
         "up": "docker-compose up -d; docker-compose logs -f",
         "down": "docker-compose stop; docker-compose rm -f -v",

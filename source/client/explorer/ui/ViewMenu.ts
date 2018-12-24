@@ -23,7 +23,7 @@ import "@ff/ui/IndexButton";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import { EProjection, EViewPreset } from "@ff/three/UniversalCamera";
+import View, { EProjectionType, EViewPreset } from "../components/View";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -37,8 +37,8 @@ export default class ViewMenu extends Popup
     system: RenderSystem;
 
     protected viewPreset: EViewPreset;
-    protected propProjection: PropertyTracker<EProjection>;
-    protected propView: PropertyTracker<EViewPreset>;
+    protected propProjection: PropertyTracker<EProjectionType>;
+    protected propPreset: PropertyTracker<EViewPreset>;
 
     constructor(system?: RenderSystem)
     {
@@ -47,7 +47,7 @@ export default class ViewMenu extends Popup
         this.system = system;
         this.viewPreset = EViewPreset.None;
         this.propProjection = new PropertyTracker(this.onPropertyChange, this);
-        this.propView = new PropertyTracker(this.onPropertyChange, this);
+        this.propPreset = new PropertyTracker(this.onPropertyChange, this);
 
         this.position = "anchor";
         this.align = "center";
@@ -61,8 +61,9 @@ export default class ViewMenu extends Popup
     {
         super.connected();
 
-        //this.propProjection.attachInput(this.system, Component, "path");
-        //this.propView.attachInput(this.system, Component, "path");
+        this.propProjection.attachInput(this.system, View, "View.Projection");
+        this.propPreset.attachInput(this.system, View, "View.Preset");
+        this.requestUpdate();
 
     }
 
@@ -71,35 +72,35 @@ export default class ViewMenu extends Popup
         super.disconnected();
 
         this.propProjection.detach();
-        this.propView.detach();
+        this.propPreset.detach();
     }
 
     protected render()
     {
-        const projectionType = this.propProjection.getValue();
-        const viewPreset = this.propView.getValue();
+        const projection = this.propProjection.getValue();
+        const preset = this.propPreset.getValue();
 
         return html`
             <label>Projection</label>
             <ff-flex-row @click=${this.onClickProjectionType}>
-                <ff-index-button .index=${EProjection.Perspective} .selectedIndex=${projectionType}
+                <ff-index-button .index=${EProjectionType.Perspective} .selectedIndex=${projection}
                   text="Perspective" title="Perspective Projection" icon="fas fa-video"></ff-index-button>    
-                <ff-index-button .index=${EProjection.Orthographic} .selectedIndex=${projectionType}
+                <ff-index-button .index=${EProjectionType.Orthographic} .selectedIndex=${projection}
                   text="Orthographic" title="Orthographic Projection" icon="fas fa-video"></ff-index-button>    
             </ff-flex-row>
             <label>View</label>
             <ff-grid class="sv-cube" justifyContent="center" @click=${this.onClickViewPreset}>
-                <ff-index-button .index=${EViewPreset.Top} .selectedIndex=${viewPreset}
+                <ff-index-button .index=${EViewPreset.Top} .selectedIndex=${preset}
                   text="T" title="Top View" style="grid-column-start: 2; grid-row-start: 1;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Left} .selectedIndex=${viewPreset}
+                <ff-index-button .index=${EViewPreset.Left} .selectedIndex=${preset}
                   text="L" title="Left View" style="grid-column-start: 1; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Front} .selectedIndex=${viewPreset}
+                <ff-index-button .index=${EViewPreset.Front} .selectedIndex=${preset}
                   text="F" title="Front View" style="grid-column-start: 2; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Right} .selectedIndex=${viewPreset}
+                <ff-index-button .index=${EViewPreset.Right} .selectedIndex=${preset}
                   text="R" title="Right View" style="grid-column-start: 3; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Back} .selectedIndex=${viewPreset}
+                <ff-index-button .index=${EViewPreset.Back} .selectedIndex=${preset}
                   text="B" title="Back View" style="grid-column-start: 4; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Bottom} .selectedIndex=${viewPreset}
+                <ff-index-button .index=${EViewPreset.Bottom} .selectedIndex=${preset}
                   text="B" title="Bottom View" style="grid-column-start: 2; grid-row-start: 3;"></ff-index-button>
             </ff-grid>
         `;
@@ -125,7 +126,7 @@ export default class ViewMenu extends Popup
 
     protected onClickViewPreset(event: IButtonClickEvent)
     {
-        this.propView.setValue(event.target.index);
+        this.propPreset.setValue(event.target.index);
         event.stopPropagation();
     }
 

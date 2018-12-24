@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
+import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
-import StoryApplication from "../Application";
+import StoryApplication, { IStoryApplicationProps } from "../Application";
 
 import TaskController from "../controllers/TaskController";
 import LogController from "../controllers/LogController";
@@ -58,25 +59,49 @@ export default class MainView extends CustomElement
         super();
         this.onUnload = this.onUnload.bind(this);
 
-        this.application = application || new StoryApplication(null, false);
+        if (application) {
+            this.application = application;
+        }
+        else {
+            const props: IStoryApplicationProps = {
+                item: this.getAttribute("item"),
+                presentation: this.getAttribute("presentation"),
+                template: this.getAttribute("template"),
+                model: this.getAttribute("model"),
+                geometry: this.getAttribute("geometry"),
+                texture: this.getAttribute("texture"),
+                quality: this.getAttribute("quality"),
+
+                referrer: this.getAttribute("referrer"),
+                mode: this.getAttribute("mode"),
+                expert: this.hasAttribute("expert")
+            };
+
+            this.application = new StoryApplication(null, props);
+        }
+
         this.dockView = null;
 
         const taskController = this.application.taskController;
+        const logController = this.application.logController;
         taskController.on(TaskController.changeEvent, this.onTaskChange, this);
 
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
         registry.set("task", () => new TaskPanel(taskController));
-        registry.set("log", () => new LogPanel(taskController));
+        registry.set("log", () => new LogPanel(logController));
         registry.set("console", () => new ConsolePanel());
         registry.set("hierarchy", () => new HierarchyPanel(explorer.selectionController));
         registry.set("inspector", () => new InspectorPanel(explorer.selectionController));
 
-        this.state = localStorage.get("voyager-story", "main-view-state") || {
+        const reset = parseUrlParameter("reset") !== undefined;
+        const state = reset ? null : localStorage.get("voyager-story", "main-view-state");
+
+        this.state = state || {
             regularLayout: MainView.regularLayout,
             expertLayout: MainView.expertLayout,
-            expertMode: true
+            expertMode: taskController.expertMode
         };
 
         taskController.expertMode = this.state.expertMode;
@@ -147,7 +172,7 @@ export default class MainView extends CustomElement
         elements: [{
             type: "strip",
             direction: "vertical",
-            size: 1,
+            size: 0.25,
             elements: [{
                 type: "stack",
                 size: 0.65,
@@ -167,7 +192,7 @@ export default class MainView extends CustomElement
             }]
         },{
             type: "stack",
-            size: 0.8,
+            size: 0.75,
             activePanelIndex: 0,
             panels: [{
                 contentId: "explorer",

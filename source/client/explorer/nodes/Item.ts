@@ -18,12 +18,13 @@
 import resolvePathname from "resolve-pathname";
 
 import Node from "@ff/graph/Node";
-import Transform from "@ff/scene/components/Transform";
 
 import { IItem } from "common/types";
 
+import { EDerivativeQuality } from "../models/Derivative";
 import LoadingManager from "../loaders/LoadingManager";
 
+import PTransform from "../components/PTransform";
 import Meta from "../components/Meta";
 import Process from "../components/Process";
 import Model from "../components/Model";
@@ -78,7 +79,7 @@ export default class Item extends Node
     {
         this.name = "Item";
 
-        this.createComponent(Transform);
+        this.createComponent(PTransform);
         this.createComponent(Meta);
         this.createComponent(Process);
         this.createComponent(Model);
@@ -87,15 +88,35 @@ export default class Item extends Node
         this.createComponent(Groups);
     }
 
-    setLoadingManager(loadingManager: LoadingManager, url?: string)
+    setLoadingManager(loadingManager: LoadingManager)
     {
         this.loadingManager = loadingManager;
         this.model.setLoadingManager(this.loadingManager);
-        this.path = resolvePathname(".", url || location.href);
     }
 
-    fromData(itemData: IItem)
+    addWebModelDerivative(modelUrl: string, quality: EDerivativeQuality)
     {
+        this.path = resolvePathname(".", modelUrl);
+        const modelFileName = modelUrl.substr(this.path.length);
+
+        this.model.setPath(this.path);
+        this.model.addWebModelDerivative(modelFileName, quality);
+    }
+
+    addGeometryAndTextureDerivative(geometryUrl: string, textureUrl: string, quality: EDerivativeQuality)
+    {
+        this.path = resolvePathname(".", geometryUrl);
+        const geometryFileName = geometryUrl.substr(this.path.length);
+        const textureFileName = textureUrl ? textureUrl.substr(this.path.length) : undefined;
+
+        this.model.setPath(this.path);
+        this.model.addGeometryAndTextureDerivative(geometryFileName, textureFileName, quality);
+    }
+
+    fromData(itemData: IItem, itemUrl?: string)
+    {
+        this.path = resolvePathname(".", itemUrl || location.href);
+
         let docIds = [];
         let groupIds = [];
         let snapIds = [];

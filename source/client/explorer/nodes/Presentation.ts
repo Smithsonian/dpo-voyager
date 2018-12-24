@@ -20,14 +20,6 @@ import resolvePathname from "resolve-pathname";
 import { Index } from "@ff/core/types";
 import Node from "@ff/graph/Node";
 
-import Scene from "@ff/scene/components/Scene";
-import Transform from "@ff/scene/components/Transform";
-import Camera from "@ff/scene/components/Camera";
-import Light from "@ff/scene/components/Light";
-import DirectionalLight from "@ff/scene/components/DirectionalLight";
-import PointLight from "@ff/scene/components/PointLight";
-import SpotLight from "@ff/scene/components/SpotLight";
-
 import {
     IPresentation,
     INode as INodeData,
@@ -35,7 +27,13 @@ import {
 } from "common/types";
 
 import LoadingManager from "../loaders/LoadingManager";
-import nodeParser from "../loaders/nodeParser";
+
+import PTransform from "../components/PTransform";
+import PCamera from "../components/PCamera";
+import PLight from "../components/PLight";
+import PDirectionalLight from "../components/PDirectionalLight";
+import PPointLight from "../components/PPointLight";
+import PSpotLight from "../components/PSpotLight";
 
 import Reference from "../components/Reference";
 import Meta from "../components/Meta";
@@ -58,10 +56,10 @@ export default class Presentation extends Node
     protected items: Item[] = [];
 
     get transform() {
-        return this.components.get(Transform);
+        return this.components.get(PTransform);
     }
     get camera() {
-        return this.hierarchy.getChild(Camera, true);
+        return this.hierarchy.getChild(PCamera, true);
     }
     get renderer() {
         return this.hierarchy.getParent(Renderer, false);
@@ -74,7 +72,7 @@ export default class Presentation extends Node
     {
         this.name = "Presentation";
 
-        this.createComponent(Transform);
+        this.createComponent(PTransform);
         this.createComponent(Meta);
         this.createComponent(Snapshots);
         this.createComponent(Tours);
@@ -130,8 +128,10 @@ export default class Presentation extends Node
         if (transforms.length > 0) {
             presentationData.nodes = [];
             transforms.forEach(transform => {
-                const index = this.deflateNode(transform, presentationData);
-                presentationData.scene.nodes.push(index);
+                if (transform instanceof PTransform) {
+                    const index = this.deflateNode(transform, presentationData);
+                    presentationData.scene.nodes.push(index);
+                }
             });
         }
 
@@ -144,7 +144,7 @@ export default class Presentation extends Node
         return presentationData as IPresentation;
     }
 
-    protected inflateNode(parent: Transform, nodeData: INodeData, presentationData: IPresentation, items?: Item[])
+    protected inflateNode(parent: PTransform, nodeData: INodeData, presentationData: IPresentation, items?: Item[])
     {
         let node;
         let referenceParsed = false;
@@ -167,19 +167,19 @@ export default class Presentation extends Node
             // node is an item, create an item node from data
             const itemData = presentationData.items[nodeData.item];
             const item = parent.graph.createNode(Item);
-            item.setLoadingManager(this.loadingManager, this.path);
-            item.fromData(itemData);
+            item.setLoadingManager(this.loadingManager);
+            item.fromData(itemData, this.path);
             name = item.name;
             this.items.push(item);
         }
 
         if (!node) {
             node = parent.graph.createNode(Node);
-            node.createComponent(Transform);
+            node.createComponent(PTransform);
         }
 
-        const transform = node.components.get(Transform);
-        nodeParser.dataToTransform(nodeData, transform);
+        const transform = node.components.get(PTransform);
+        transform.fromData(nodeData);
         parent.addChild(transform);
 
         if (nodeData.reference !== undefined && !referenceParsed) {
@@ -222,25 +222,22 @@ export default class Presentation extends Node
         }
         else if (nodeData.camera !== undefined) {
             name = "Camera";
-            const camera = presentationData.cameras[nodeData.camera];
-            const component = node.createComponent(Camera);
-            nodeParser.dataToCamera(camera, component);
+            const cameraData = presentationData.cameras[nodeData.camera];
+            node.createComponent(PCamera).fromData(cameraData);
         }
         else if (nodeData.light !== undefined) {
             name = "Light";
-            const light = presentationData.lights[nodeData.light];
-
-            if (light.type === "directional") {
-                const component = node.createComponent(DirectionalLight);
-                nodeParser.dataToDirectionalLight(light, component);
-            }
-            else if (light.type === "point") {
-                const component = node.createComponent(PointLight);
-                nodeParser.dataToPointLight(light, component);
-            }
-            else if (light.type === "spot") {
-                const component = node.createComponent(SpotLight);
-                nodeParser.dataToSpotLight(light, component);
+            const lightData = presentationData.lights[nodeData.light];
+            switch(lightData.type) {
+                case "directional":
+                    node.createComponent(PDirectionalLight).fromData(lightData);
+                    break;
+                case "point":
+                    node.createComponent(PPointLight).fromData(lightData);
+                    break;
+                case "spot":
+                    node.createComponent(PSpotLight).fromData(lightData);
+                    break;
             }
         }
 
@@ -254,9 +251,9 @@ export default class Presentation extends Node
         }
     }
 
-    protected deflateNode(transform: Transform, pres: Partial<IPresentation>): Index
+    protected deflateNode(transform: PTransform, pres: Partial<IPresentation>): Index
     {
-        const nodeData: INodeData = nodeParser.transformToData(transform);
+        const nodeData: INodeData = transform.toData() as Partial<INodeData>;
         const node = transform.node;
         if (node.name) {
             nodeData.name = node.name;
@@ -265,8 +262,8 @@ export default class Presentation extends Node
         pres.nodes.push(nodeData);
         const index = pres.nodes.length - 1;
 
-        const camera = transform.components.get(Camera);
-        const light = transform.components.get(Light);
+        const camera = transform.components.get(PCamera);
+        const light = transform.components.get(PLight);
         const reference = transform.components.get(Reference);
 
         if (node instanceof Item) {
@@ -276,12 +273,12 @@ export default class Presentation extends Node
         }
         else if (camera) {
             pres.cameras = pres.cameras || [];
-            pres.cameras.push(nodeParser.cameraToData(camera));
+            pres.cameras.push(camera.toData());
             nodeData.camera = pres.cameras.length -1;
         }
         else if (light) {
             pres.lights = pres.lights || [];
-            pres.lights.push(nodeParser.lightToData(light));
+            pres.lights.push(light.toData());
             nodeData.light = pres.lights.length - 1;
         }
         else if (reference) {
@@ -295,8 +292,10 @@ export default class Presentation extends Node
         if (transforms.length > 0) {
             nodeData.children = [];
             transforms.forEach(transform => {
-                const index = this.deflateNode(transform, pres);
-                nodeData.children.push(index);
+                if (transform instanceof PTransform) {
+                    const index = this.deflateNode(transform, pres);
+                    nodeData.children.push(index);
+                }
             })
         }
 

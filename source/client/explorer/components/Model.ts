@@ -301,9 +301,9 @@ export default class Model extends Object3D
             this.emit(Model.updateEvent);
 
             // TODO: Test
-            const bb = derivative.boundingBox;
-            const box = { min: bb.min.toArray(), max: bb.max.toArray() };
-            console.log("derivative bounding box: ", box);
+            //const bb = derivative.boundingBox;
+            //const box = { min: bb.min.toArray(), max: bb.max.toArray() };
+            //console.log("derivative bounding box: ", box);
         });
     }
 

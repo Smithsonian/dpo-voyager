@@ -29,6 +29,8 @@ import TextureLoader from "./TextureLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _VERBOSE = false;
+
 export default class LoadingManager extends THREE.LoadingManager
 {
     readonly jsonLoader: JSONLoader;
@@ -101,21 +103,29 @@ export default class LoadingManager extends THREE.LoadingManager
 
     protected onLoadingStart()
     {
-        console.log("Loading files...");
+        if (_VERBOSE) {
+            console.log("Loading files...");
+        }
     }
 
     protected onLoadingProgress(url, itemsLoaded, itemsTotal)
     {
-        console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
+        if (_VERBOSE) {
+            console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
+        }
     }
 
     protected onLoadingCompleted()
     {
-        console.log("Loading completed");
+        if (_VERBOSE) {
+            console.log("Loading completed");
+        }
     }
 
     protected onLoadingError()
     {
-        console.error(`Loading error`);
+        if (_VERBOSE) {
+            console.error(`Loading error`);
+        }
     }
 }

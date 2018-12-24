@@ -20,12 +20,18 @@ import Documents from "./Documents";
 import Groups from "./Groups";
 import Meta from "./Meta";
 import Model from "./Model";
+import PCamera from "./PCamera";
+import PDirectionalLight from "./PDirectionalLight";
+import PPointLight from "./PPointLight";
 import Process from "./Process";
+import PSpotLight from "./PSpotLight";
+import PTransform from "./PTransform";
 import Reader from "./Reader";
 import Reference from "./Reference";
 import Renderer from "./Renderer";
 import Snapshots from "./Snapshots";
 import Tours from "./Tours";
+import View from "./View";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,12 +41,18 @@ export {
     Groups,
     Meta,
     Model,
+    PCamera,
+    PDirectionalLight,
+    PPointLight,
     Process,
+    PSpotLight,
+    PTransform,
     Reader,
     Reference,
     Renderer,
     Snapshots,
-    Tours
+    Tours,
+    View
 };
 
 export const componentTypes = [
@@ -49,10 +61,16 @@ export const componentTypes = [
     Groups,
     Meta,
     Model,
+    PCamera,
+    PDirectionalLight,
+    PPointLight,
     Process,
+    PSpotLight,
+    PTransform,
     Reader,
     Reference,
     Renderer,
     Snapshots,
-    Tours
+    Tours,
+    View
 ];

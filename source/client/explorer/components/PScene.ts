@@ -15,25 +15,11 @@
  * limitations under the License.
  */
 
-import AnnotationsTask from "./AnnotationsTask";
-import DocumentsTask from "./DocumentsTask";
-import InspectionTask from "./InspectionTask";
-import MigrationTask from "./MigrationTask";
-import PoseTask from "./PoseTask";
-import SettingsTask from "./SettingsTask";
-import ToursTask from "./ToursTask";
+import Scene from "@ff/scene/components/Scene";
 
-export default {
-    prep: [
-        SettingsTask,
-        InspectionTask,
-        PoseTask,
-        MigrationTask
-    ],
-    author: [
-        SettingsTask,
-        AnnotationsTask,
-        ToursTask,
-        DocumentsTask
-    ]
-};
+////////////////////////////////////////////////////////////////////////////////
+
+export default class PScene extends Scene
+{
+    static readonly type: string = "PScene";
+}

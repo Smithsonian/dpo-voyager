@@ -20,6 +20,9 @@ import "@ff/ui/Button";
 
 import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 
+import Presentation from "../../explorer/nodes/Presentation";
+import Item from "../../explorer/nodes/Item";
+
 import TaskController from "../controllers/TaskController";
 import Task from "../tasks/Task";
 
@@ -58,7 +61,7 @@ export default class TaskBar extends CustomElement
     protected render()
     {
         const controller = this.controller;
-        const tasks = controller.getTasks();
+        const tasks = controller.tasks;
         const selectedIndex = controller.activeTaskIndex;
 
         return html`
@@ -89,12 +92,26 @@ export default class TaskBar extends CustomElement
 
     protected onClickSave()
     {
-        console.log("TaskBar.onClickSave");
+        const controller = this.controller;
+        const system = controller.system;
+
+        if (controller.taskSet === "prep") {
+            const item = system.nodes.get(Item);
+            if (item) {
+                console.log(item.toData());
+            }
+        }
+        else {
+            const presentation = system.nodes.get(Presentation);
+            if (presentation) {
+                console.log(presentation.toData());
+            }
+        }
     }
 
     protected onClickExit()
     {
-        console.log("TaskBar.onClickExit");
+        this.controller.exitApplication();
     }
 
     protected onClickExpertMode()

@@ -33,26 +33,41 @@ import MainView from "./ui/MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IApplicationProps
+/**
+ * Initial properties of the Voyager Explorer main [[ExplorerApplication]].
+ */
+export interface IExplorerApplicationProps
 {
-    parseUrl?: boolean;
-    item?: string;
+    /** URL of the presentation to load and display at startup. */
     presentation?: string;
+    /** If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. */
     template?: string;
+    /** URL of the item to load and display at startup. */
+    item?: string;
+    /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
     model?: string;
+    /** URL of a geometry (supported formats: obj, ply) to load and display at startup. */
     geometry?: string;
+    /** If a geometry URL is given, optional URL of a color texture to use with the geometry. */
     texture?: string;
+    /** When loading a model or geometry, the quality level to set for the asset.
+        Valid options: "thumb", "low", "medium", "high". */
+    quality?: string;
 }
 
-export default class Application
+/**
+ * Voyager Explorer main application.
+ */
+export default class ExplorerApplication
 {
     protected static splashMessage = [
-        "Voyager - 3D Explorer and Tool Suite!!",
+        "Voyager - 3D Explorer and Tool Suite",
         "3D Foundation Project",
         "(c) 2018 Smithsonian Institution",
         "https://3d.si.edu"
     ].join("\n");
 
+    readonly props: IExplorerApplicationProps;
     readonly system: RenderSystem;
     readonly commander: Commander;
     readonly loadingManager: LoadingManager;
@@ -60,9 +75,9 @@ export default class Application
     readonly selectionController: SelectionController;
     readonly presentationController: PresentationController;
 
-    constructor(props?: IApplicationProps, createView?: boolean)
+    constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
     {
-        console.log(Application.splashMessage);
+        console.log(ExplorerApplication.splashMessage);
 
         this.system = new RenderSystem();
         this.commander = new Commander();
@@ -77,8 +92,8 @@ export default class Application
         registry.registerComponentType(explorerComponents);
 
         // create main view if not given
-        if (createView !== false) {
-            new MainView(this).appendTo(document.body);
+        if (element) {
+            new MainView(this).appendTo(element);
         }
 
         // create main node and components
@@ -88,59 +103,35 @@ export default class Application
         this.system.start();
 
         // start loading from properties
-        this.initFromProps(props || {});
+        this.props = this.initFromProps(props);
     }
 
-    loadPresentation(url: string)
+    protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
     {
-        this.presentationController.closeAll();
-        this.presentationController.loadPresentation(url);
-    }
+        props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
+        props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
+        props.template = props.template || parseUrlParameter("template") || parseUrlParameter("t");
+        props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
+        props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
+        props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
+        props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
 
-    loadItem(url: string, templatePath?: string)
-    {
-        this.presentationController.closeAll();
-        this.presentationController.loadItem(url, templatePath);
-    }
-
-    loadModel(url: string)
-    {
-        this.presentationController.closeAll();
-        this.presentationController.loadModel(url);
-    }
-
-    loadGeometry(geometryUrl: string, textureUrl?: string)
-    {
-        this.presentationController.closeAll();
-        this.presentationController.loadGeometryAndTexture(geometryUrl, textureUrl);
-    }
-
-    protected initFromProps(props: IApplicationProps)
-    {
-        let { item, presentation, template, model, geometry, texture } = props;
-
-        if (!item && !presentation && !template && !model && !geometry && !texture) {
-            presentation = parseUrlParameter("presentation") || parseUrlParameter("p");
-            item = parseUrlParameter("item") || parseUrlParameter("i");
-            template = parseUrlParameter("template") || parseUrlParameter("t");
-            model = parseUrlParameter("model") || parseUrlParameter("m");
-            geometry = parseUrlParameter("geometry") || parseUrlParameter("g");
-            texture = parseUrlParameter("texture") || parseUrlParameter("tex");
+        if (props.presentation) {
+            this.presentationController.loadPresentation(props.presentation);
+        }
+        else if (props.item) {
+            this.presentationController.loadItem(props.item, props.template);
+        }
+        else if (props.model) {
+            this.presentationController.loadModel(props.model, props.quality, props.template);
+        }
+        else if (props.geometry) {
+            this.presentationController.loadGeometryAndTexture(
+                props.geometry, props.texture, props.quality, props.template);
         }
 
-        if (presentation) {
-            this.loadPresentation(presentation);
-        }
-        else if (item) {
-            this.loadItem(item, template);
-        }
-        else if (model) {
-            this.loadModel(model);
-        }
-        else if (geometry) {
-            this.loadGeometry(geometry, texture);
-        }
+        return props;
     }
 }
 
-window["VoyagerExplorer"] = Application;
+window["VoyagerExplorer"] = ExplorerApplication;

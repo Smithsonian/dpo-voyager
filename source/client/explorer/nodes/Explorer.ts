@@ -21,10 +21,9 @@ import Node, { IComponentEvent } from "@ff/graph/Node";
 
 import Transform from "@ff/scene/components/Transform";
 import Grid from "@ff/scene/components/Grid";
-import Main from "@ff/scene/components/Main";
 import Scene from "@ff/scene/components/Scene";
-import OrbitManipulator from "@ff/scene/components/OrbitManipulator";
 
+import View from "../components/View";
 import Renderer from "../components/Renderer";
 import Reader from "../components/Reader";
 import Model from "../components/Model";
@@ -40,7 +39,7 @@ export default class Explorer extends Node
 
     scene: Scene;
     grid: Grid;
-    manip: OrbitManipulator;
+    view: View;
 
     protected boundingBox = new THREE.Box3();
 
@@ -50,9 +49,8 @@ export default class Explorer extends Node
 
         this.scene = this.createComponent(Scene);
         this.grid = this.createComponent(Grid);
-        this.manip = this.createComponent(OrbitManipulator);
+        this.view = this.createComponent(View);
 
-        this.createComponent(Main);
         this.createComponent(Renderer);
         this.createComponent(Reader);
 
@@ -99,12 +97,11 @@ export default class Explorer extends Node
         box.getSize(_vec3);
         const maxLength = Math.max(_vec3.x, _vec3.y, _vec3.z);
 
-        const { maxOffset, overOffset, overPush } = this.manip.ins;
+        const { maxOffset, offset } = this.view.ins;
         maxOffset.value[2] = maxLength * 2;
         maxOffset.set();
-        overOffset.value[2] = maxLength * 1.5;
-        overOffset.set();
-        overPush.set();
+        offset.value[2] = maxLength * 1.5;
+        offset.set();
 
         let gridSize = this.grid.ins.size.value;
         while (gridSize < maxLength) {

@@ -23,6 +23,7 @@ import RenderSystem from "@ff/scene/RenderSystem";
 
 import * as template from "../templates/presentation.json";
 
+import { EDerivativeQuality } from "../models/Derivative";
 import LoadingManager from "../loaders/LoadingManager";
 import Explorer from "../nodes/Explorer";
 import Presentation from "../nodes/Presentation";
@@ -30,9 +31,9 @@ import Item from "../nodes/Item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IPresentationChangeEvent extends ITypedEvent<"presentation">
+export interface IActivePresentationEvent extends ITypedEvent<"active-presentation">
 {
-    current: Presentation;
+    previous: Presentation;
     next: Presentation;
 }
 
@@ -41,8 +42,8 @@ type PresentationActions = Actions<PresentationController>;
 export default class PresentationController extends Controller<PresentationController>
 {
     readonly system: RenderSystem;
-    readonly loadingManager: LoadingManager;
 
+    protected _loadingManager: LoadingManager;
     protected _explorer: Explorer;
     protected _presentations: Presentation[];
     protected _activePresentation: Presentation;
@@ -50,11 +51,11 @@ export default class PresentationController extends Controller<PresentationContr
     constructor(system: RenderSystem, commander: Commander)
     {
         super(commander);
-        this.addEvent("presentation");
+        this.addEvent("active-presentation");
 
         this.system = system;
-        this.loadingManager = new LoadingManager();
 
+        this._loadingManager = new LoadingManager();
         this._explorer = null
         this._presentations = [];
         this._activePresentation = null;
@@ -75,55 +76,79 @@ export default class PresentationController extends Controller<PresentationContr
         };
     }
 
-    loadItem(url: string, templatePath?: string)
+    loadItem(itemUrl: string, templateUrl?: string)
     {
-        return this.loadingManager.loadJSON(url).then(json =>
-            this.openItem(json, url, templatePath)
+        console.log("PresentationController.loadItem - URL: %s", itemUrl);
+
+        return this._loadingManager.loadJSON(itemUrl).then(json =>
+            this.openItem(json, itemUrl, templateUrl)
         );
     }
 
-    openItem(json: any, url?: string, templatePathOrUrl?: string): Promise<void>
+    openItem(json: any, itemUrl?: string, templateUrl?: string): Promise<void>
     {
-        const templateName = templatePathOrUrl
-            ? templatePathOrUrl.substr(resolvePathname(".", templatePathOrUrl).length)
-            : "";
+        // get last part from template url
+        const templateFileName = templateUrl ? templateUrl.substr(resolvePathname(".", templateUrl).length) : "";
 
-        return this.loadingManager.validateItem(json).then(itemData => {
-            const explorer = this.explorerNode;
-            const item = explorer.graph.createNode(Item, "Item");
-            item.setLoadingManager(this.loadingManager, url);
-            item.fromData(itemData);
+        return this._loadingManager.validateItem(json).then(itemData => {
+            const item = this.explorerNode.graph.createNode(Item, "Item");
+            item.setLoadingManager(this._loadingManager);
+            item.fromData(itemData, itemUrl);
 
             if (item.presentationTemplateUri) {
-                const templateUrl =  resolvePathname(templateName, item.presentationTemplateUri, templatePathOrUrl || url);
+                templateUrl =  resolvePathname(templateFileName, item.presentationTemplateUri, templateUrl || itemUrl);
                 console.log(`Loading presentation template: ${templateUrl}`);
                 return this.loadPresentation(templateUrl, [ item ]);
             }
 
-            return this.openDefaultPresentation(url, [ item ]);
+            return this.openDefaultPresentation(itemUrl, [ item ]);
         });
     }
 
-    loadModel(url: string)
+    loadModel(modelUrl: string, quality?: string, templateUrl?: string): Promise<void>
     {
+        const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
+        return Promise.resolve().then(() => {
+            console.log(`PresentationController.loadModel - Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[q]}\n`,
+                `model url: ${modelUrl}`);
+
+            const item = this.explorerNode.graph.createNode(Item, "Item");
+            item.setLoadingManager(this._loadingManager);
+            item.addWebModelDerivative(modelUrl, q);
+
+            return this.openDefaultPresentation(modelUrl, [ item ]);
+        });
     }
 
-    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string)
+    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, templateUrl?: string)
     {
+        const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
+        return Promise.resolve().then(() => {
+            console.log(`PresentationController.loadGeometryAndTexture - Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
+                `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
+
+            const item = this.explorerNode.graph.createNode(Item, "Item");
+            item.setLoadingManager(this._loadingManager);
+            item.addGeometryAndTextureDerivative(geometryUrl, textureUrl, q);
+
+            return this.openDefaultPresentation(geometryUrl, [ item ]);
+        });
     }
 
-    loadPresentation(url: string, items?: Item[])
+    loadPresentation(presentationUrl: string, items?: Item[])
     {
-        return this.loadingManager.loadJSON(url).then(json =>
-            this.openPresentation(json, url, items)
+        console.log("PresentationController.loadPresentation - URL: %s", presentationUrl);
+
+        return this._loadingManager.loadJSON(presentationUrl).then(json =>
+            this.openPresentation(json, presentationUrl, items)
         );
     }
 
     openDefaultPresentation(url?: string, items?: Item[]): Promise<void>
     {
-        console.log("opening presentation from default template");
+        console.log("PresentationController.openDefaultPresentation - Opening presentation from default template");
         return this.openPresentation(template, url, items);
     }
 
@@ -132,36 +157,37 @@ export default class PresentationController extends Controller<PresentationContr
         // currently opening multiple presentations is not supported
         this.closeAll();
 
-        return this.loadingManager.validatePresentation(json).then(presentationData => {
+        return this._loadingManager.validatePresentation(json).then(presentationData => {
             const presentation = this.explorerNode.graph.createNode(Presentation, "Presentation");
-            presentation.setLoadingManager(this.loadingManager, url);
+            presentation.setLoadingManager(this._loadingManager, url);
             presentation.fromData(presentationData, items);
 
             this._presentations.push(presentation);
-            this.setActivePresentation(this._presentations.length - 1);
+            this.setActivePresentation(presentation);
         });
     }
 
     closeAll()
     {
-
+        this._presentations.forEach(presentation => presentation.dispose());
     }
 
-    protected setActivePresentation(index: number)
+    protected setActivePresentation(presentation: Presentation)
     {
-        const current = this._activePresentation;
-        const next = this._activePresentation = this._presentations[index];
+        const previous = this._activePresentation;
+        const next = this._activePresentation = presentation;
 
         const explorer = this.explorerNode;
-        if (current) {
-            explorer.scene.removeChild(current.transform);
+
+        if (previous) {
+            explorer.scene.removeChild(previous.transform);
         }
         if (next) {
             explorer.scene.addChild(next.transform);
         }
 
-        this.onPresentationChange(current, next);
-        this.emit<IPresentationChangeEvent>({ type: "presentation", current, next });
+        this.onPresentationChange(previous, next);
+        this.emit<IActivePresentationEvent>({ type: "active-presentation", previous, next });
     }
 
     protected onPresentationChange(current: Presentation, next: Presentation)
