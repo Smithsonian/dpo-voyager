@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import SettingsTaskEditor from "./ui/SettingsTaskEditor";
-
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,11 +25,6 @@ export default class SettingsTask extends Task
     static readonly text: string = "Settings";
     static readonly icon: string = "fa fa-palette";
 
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
 
     createEditor()
     {

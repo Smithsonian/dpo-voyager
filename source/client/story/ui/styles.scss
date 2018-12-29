@@ -20,6 +20,31 @@
 @import "../../explorer/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
+// PROPERTY VIEW
+
+sv-property-view {
+  padding: 0 6px;
+
+  .sv-property-name {
+    margin: 8px 0 4px 0;
+  }
+
+  .sv-field-row {
+    margin: 2px 0;
+  }
+  .sv-field-label {
+    flex: 0 0 auto;
+    margin: 0 8px 0 24px;
+    color: $color-icon;
+  }
+  ff-property-field {
+    flex: 1 1 auto;
+    height: 1.05em;
+    background-color: $color-background !important;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MAIN VIEW
 
 voyager-story {
@@ -101,5 +126,49 @@ sv-task-panel {
     .ff-text {
       padding: 4px 3px;
     }
+  }
+
+  .ff-content {
+    position: relative;
+    flex: 1 1 auto;
+  }
+}
+
+.sv-task-editor {
+  @include full-size;
+
+  .sv-section {
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: column;
+
+    &:first-child {
+      border-bottom: 2px solid $color-background-darker;
+    }
+  }
+
+  .sv-header {
+    padding: 4px 2px;
+    background-color: $color-background-darker;
+  }
+  .ff-list {
+    flex: 1 1 auto;
+  }
+
+  .ff-list-item {
+    padding: 2px;
+    cursor: pointer;
+
+    &[selected] {
+      background-color: $color-primary;
+    }
+  }
+
+  .ff-list-item + .ff-list-item {
+    border-bottom: 1px solid $color-background-light;
+  }
+
+  ff-button {
+    margin: 4px;
   }
 }

@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import AnnotationsTaskEditor from "./ui/AnnotationsTaskEditor";
-
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,11 +25,6 @@ export default class AnnotationsTask extends Task
     static readonly text: string = "Annotations";
     static readonly icon: string = "fa fa-comment-alt";
 
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
 
     createEditor()
     {

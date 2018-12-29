@@ -23,7 +23,7 @@ import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 import Presentation from "../../explorer/nodes/Presentation";
 import Item from "../../explorer/nodes/Item";
 
-import TaskController from "../controllers/TaskController";
+import TaskController, { ITaskChangeEvent } from "../controllers/TaskController";
 import Task from "../tasks/Task";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
@@ -50,12 +50,12 @@ export default class TaskBar extends CustomElement
 
     protected connected()
     {
-        this.controller.on(TaskController.changeEvent, this.onControllerChange, this);
+        this.controller.on<ITaskChangeEvent>("change", this.onControllerChange, this);
     }
 
     protected disconnected()
     {
-        this.controller.off(TaskController.changeEvent, this.onControllerChange, this);
+        this.controller.off<ITaskChangeEvent>("change", this.onControllerChange, this);
     }
 
     protected render()

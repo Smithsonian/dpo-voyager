@@ -15,43 +15,38 @@
  * limitations under the License.
  */
 
-import Publisher from "@ff/core/Publisher";
+import Property from "@ff/graph/Property";
+import "@ff/ui/graph/PropertyView";
 
 import ExplorerSystem from "../../explorer/ExplorerSystem";
-import TaskEditor from "../tasks/ui/TaskEditor";
+import CustomElement, { customElement, property, html, TemplateResult } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Task extends Publisher
+@customElement("sv-property-list")
+export default class PropertyList extends CustomElement
 {
-    static readonly text: string = "Task";
-    static readonly icon: string = "fa fa-task";
+    @property({ attribute: false })
+    system: ExplorerSystem = null;
 
-    readonly system: ExplorerSystem;
+    private _elements: TemplateResult[] = [];
 
-    constructor(system: ExplorerSystem)
+    constructor(system?: ExplorerSystem)
     {
         super();
         this.system = system;
     }
 
-    get text() {
-        return (this.constructor as typeof Task).text;
-    }
-    get icon() {
-        return (this.constructor as typeof Task).icon
+    addProperty(property: Property, title: string)
+    {
+        this._elements.push(html`<div class="sv-property">
+            <div class="sv-title">${title}</div>
+            <ff-property-view></ff-property-view>
+        </div>`);
     }
 
-    activate()
+    protected render()
     {
-    }
-
-    deactivate()
-    {
-    }
-
-    createEditor(): TaskEditor
-    {
-        throw new Error("must override");
+        return html`${this._elements}`;
     }
 }

@@ -15,19 +15,14 @@
  * limitations under the License.
  */
 
-import TemplateTaskEditor from "./ui/TemplateTaskEditor";
-import Task from "./Task";
+import PoseManip from "./PoseManip";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TemplateTask extends Task
-{
-    static readonly text: string = "Templates";
-    static readonly icon: string = "fa fa-map";
+export {
+    PoseManip
+};
 
-
-    createEditor()
-    {
-        return new TemplateTaskEditor(this);
-    }
-}
+export const componentTypes = [
+    PoseManip
+];

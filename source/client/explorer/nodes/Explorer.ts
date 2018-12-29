@@ -19,10 +19,10 @@ import * as THREE from "three";
 
 import Node, { IComponentEvent } from "@ff/graph/Node";
 
-import Transform from "@ff/scene/components/Transform";
-import Grid from "@ff/scene/components/Grid";
 import Scene from "@ff/scene/components/Scene";
 
+import Explorer from "../components/Explorer";
+import HomeGrid from "../components/HomeGrid";
 import View from "../components/View";
 import Renderer from "../components/Renderer";
 import Reader from "../components/Reader";
@@ -33,12 +33,13 @@ import Model from "../components/Model";
 const _vec3 = new THREE.Vector3();
 const _box3 = new THREE.Box3();
 
-export default class Explorer extends Node
+export default class ExplorerNode extends Node
 {
     static readonly type: string = "Explorer";
 
+    explorer: Explorer;
     scene: Scene;
-    grid: Grid;
+    grid: HomeGrid;
     view: View;
 
     protected boundingBox = new THREE.Box3();
@@ -47,8 +48,9 @@ export default class Explorer extends Node
     {
         this.name = "Explorer";
 
+        this.explorer = this.createComponent(Explorer);
         this.scene = this.createComponent(Scene);
-        this.grid = this.createComponent(Grid);
+        this.grid = this.createComponent(HomeGrid);
         this.view = this.createComponent(View);
 
         this.createComponent(Renderer);

@@ -20,7 +20,7 @@ import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../Application";
 
-import TaskController from "../controllers/TaskController";
+import TaskController, { ITaskChangeEvent } from "../controllers/TaskController";
 import LogController from "../controllers/LogController";
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
@@ -84,7 +84,7 @@ export default class MainView extends CustomElement
 
         const taskController = this.application.taskController;
         const logController = this.application.logController;
-        taskController.on(TaskController.changeEvent, this.onTaskChange, this);
+        taskController.on<ITaskChangeEvent>("change", this.onTaskChange, this);
 
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
@@ -92,8 +92,8 @@ export default class MainView extends CustomElement
         registry.set("task", () => new TaskPanel(taskController));
         registry.set("log", () => new LogPanel(logController));
         registry.set("console", () => new ConsolePanel());
-        registry.set("hierarchy", () => new HierarchyPanel(explorer.selectionController));
-        registry.set("inspector", () => new InspectorPanel(explorer.selectionController));
+        registry.set("hierarchy", () => new HierarchyPanel(explorer.system.selection));
+        registry.set("inspector", () => new InspectorPanel(explorer.system.selection));
 
         const reset = parseUrlParameter("reset") !== undefined;
         const state = reset ? null : localStorage.get("voyager-story", "main-view-state");

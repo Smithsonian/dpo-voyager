@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import InspectionTaskEditor from "./ui/InspectionTaskEditor";
-
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,11 +25,6 @@ export default class InspectionTask extends Task
     static readonly text: string = "Inspection";
     static readonly icon: string = "fa fa-stethoscope";
 
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
 
     createEditor()
     {

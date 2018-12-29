@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import PoseTaskEditor from "./ui/PoseTaskEditor";
-
 import Task from "./Task";
+import { EQuadViewLayout } from "@ff/scene/RenderQuadView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,10 +26,16 @@ export default class PoseTask extends Task
     static readonly text: string = "Pose";
     static readonly icon: string = "fa fa-arrows-alt";
 
-
-    constructor(controller: TaskController)
+    activate()
     {
-        super(controller);
+        const view = this.system.getPrimaryView();
+        view.layout = EQuadViewLayout.Quad;
+    }
+
+    deactivate()
+    {
+        const view = this.system.getPrimaryView();
+        view.layout = EQuadViewLayout.Single;
     }
 
     createEditor()

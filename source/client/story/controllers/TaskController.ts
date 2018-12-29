@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import Controller, { Actions } from "@ff/core/Controller";
+import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
+import ExplorerSystem from "../../explorer/ExplorerSystem";
 
 import Task from "../tasks/Task";
 import taskSets from "../tasks/taskSets";
@@ -27,12 +27,15 @@ import taskSets from "../tasks/taskSets";
 export type TaskSetName = "prep" | "author";
 export type TaskActions = Actions<TaskController>;
 
+export interface ITaskChangeEvent extends ITypedEvent<"change">
+{
+    previous: Task;
+    next: Task;
+}
 
 export default class TaskController extends Controller<TaskController>
 {
-    static readonly changeEvent = "change";
-
-    readonly system: RenderSystem;
+    readonly system: ExplorerSystem;
 
     private _tasks: Task[] = [];
     private _activeTaskIndex: number = 0;
@@ -40,10 +43,10 @@ export default class TaskController extends Controller<TaskController>
     private _expertMode = false;
     private _referrer: string = "";
 
-    constructor(system: RenderSystem, commander: Commander)
+    constructor(system: ExplorerSystem, commander: Commander)
     {
         super(commander);
-        this.addEvents(TaskController.changeEvent);
+        this.addEvents("change");
 
         this.system = system;
         this.taskSet = "prep";
@@ -78,11 +81,24 @@ export default class TaskController extends Controller<TaskController>
 
     set taskSet(set: string) {
         if (set !== this._currentSet) {
-            const taskTypes = taskSets[set] as any;
+            const taskTypes = taskSets[set] as Array<typeof Task>;
             if (taskTypes) {
+                const previousTask = this.activeTask;
                 this._currentSet = set as TaskSetName;
-                this._tasks = taskTypes.map(type => new type(this));
-                this.emit(TaskController.changeEvent);
+                this._tasks = taskTypes.map(type => new type(this.system));
+                this._activeTaskIndex = 0;
+
+                if (previousTask) {
+                    previousTask.deactivate();
+                }
+
+                this.emit<ITaskChangeEvent>({
+                    type: "change", previous: previousTask, next: this.activeTask
+                });
+
+                if (this.activeTask) {
+                    this.activeTask.activate();
+                }
             }
         }
     }
@@ -93,7 +109,10 @@ export default class TaskController extends Controller<TaskController>
 
     set expertMode(state: boolean) {
         this._expertMode = !!state;
-        this.emit(TaskController.changeEvent);
+
+        this.emit<ITaskChangeEvent>({
+            type: "change", previous: this.activeTask, next: this.activeTask
+        });
     }
 
     get activeTaskIndex() {
@@ -102,12 +121,24 @@ export default class TaskController extends Controller<TaskController>
 
     set activeTaskIndex(index: number) {
         if (index !== this._activeTaskIndex) {
+            const previousTask = this.activeTask;
             this._activeTaskIndex = index;
-            this.emit(TaskController.changeEvent);
+
+            if (previousTask) {
+                previousTask.deactivate();
+            }
+
+            this.emit<ITaskChangeEvent>({
+                type: "change", previous: previousTask, next: this.activeTask
+            });
+
+            if (this.activeTask) {
+                this.activeTask.activate();
+            }
         }
     }
 
-    getActiveTask() {
+    get activeTask() {
         return this._tasks[this._activeTaskIndex];
     }
 

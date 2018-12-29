@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import Task from "./Task";
 import ToursTaskEditor from "./ui/ToursTaskEditor";
 
@@ -25,12 +24,6 @@ export default class ToursTask extends Task
 {
     static readonly text: string = "Tours";
     static readonly icon: string = "fa fa-globe";
-
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
 
     createEditor()
     {

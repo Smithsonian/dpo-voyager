@@ -17,7 +17,7 @@
 
 import ManipTarget from "@ff/browser/ManipTarget"
 import RenderSystem from "@ff/scene/RenderSystem";
-import RenderQuadView from "@ff/scene/RenderQuadView";
+import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
 
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
@@ -86,6 +86,8 @@ export default class ContentView extends CustomElement
         };
 
         this.view = new RenderQuadView(this.system, this.canvas, this.overlay);
+        this.view.on<ILayoutChange>("layout", event => this.splitter.layout = event.layout);
+
         this.view.layout = EQuadViewLayout.Single;
         this.splitter.layout = EQuadViewLayout.Single;
 

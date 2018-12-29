@@ -36,12 +36,12 @@ export default class HierarchyPanel extends CustomElement
         this.addEventListener("click", this.onClick);
     }
 
+
     protected firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-hierarchy-panel");
         this.appendChild(new HierarchyTree(this.controller));
     }
-
     protected onClick()
     {
         this.controller.clearSelection();

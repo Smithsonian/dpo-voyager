@@ -29,6 +29,7 @@ import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
 import LoadingManager from "../loaders/LoadingManager";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import { EAssetType, EMapType } from "../models/Asset";
+import { EUnitType } from "common/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,6 +56,7 @@ export default class Model extends Object3D
     static readonly updateEvent = "update";
 
     ins = this.ins.append({
+        units: types.Enum("Units", EUnitType, EUnitType.cm),
         quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         autoLoad: types.Boolean("Auto.Load", true),
         position: types.Vector3("Pose.Position"),

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
+import TaskController, { ITaskChangeEvent } from "../controllers/TaskController";
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,17 +39,17 @@ export default class TaskPanel extends CustomElement
 
     protected connected()
     {
-        this.controller.on(TaskController.changeEvent, this.onControllerChange, this);
+        this.controller.on<ITaskChangeEvent>("change", this.onControllerChange, this);
     }
 
     protected disconnected()
     {
-        this.controller.off(TaskController.changeEvent, this.onControllerChange, this);
+        this.controller.off<ITaskChangeEvent>("change", this.onControllerChange, this);
     }
 
     protected render()
     {
-        const task = this.controller.getActiveTask();
+        const task = this.controller.activeTask;
         const iconClasses = "ff-icon " + task.icon;
         const editorElement = task.createEditor();
 

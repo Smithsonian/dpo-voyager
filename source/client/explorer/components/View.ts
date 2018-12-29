@@ -18,9 +18,9 @@
 import { types } from "@ff/graph/propertyTypes";
 
 import Component from "@ff/scene/Component";
-import Camera, { EProjectionType } from "@ff/scene/components/Camera";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import { IActiveCameraEvent } from "@ff/scene/RenderSystem";
+import Camera, { EProjectionType } from "@ff/scene/components/Camera";
 
 import ObjectManipulator from "@ff/three/ObjectManipulator";
 
@@ -161,8 +161,12 @@ export default class View extends Component
 
     protected onPointer(event: IPointerEvent)
     {
+        const viewport = event.viewport;
+        if (viewport.viewportCamera) {
+            return;
+        }
+
         if (this.ins.enabled.value && this.activeCamera) {
-            const viewport = event.viewport;
             this.manip.setViewportSize(viewport.width, viewport.height);
             this.manip.onPointer(event);
             event.stopPropagation = true;
@@ -171,8 +175,12 @@ export default class View extends Component
 
     protected onTrigger(event: ITriggerEvent)
     {
+        const viewport = event.viewport;
+        if (viewport.viewportCamera) {
+            return;
+        }
+
         if (this.ins.enabled.value && this.activeCamera) {
-            const viewport = event.viewport;
             this.manip.setViewportSize(viewport.width, viewport.height);
             this.manip.onTrigger(event);
             event.stopPropagation = true;

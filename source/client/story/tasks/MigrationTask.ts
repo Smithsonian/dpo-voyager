@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import MigrationTaskEditor from "./ui/MigrationTaskEditor";
-
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,11 +25,6 @@ export default class MigrationTask extends Task
     static readonly text: string = "Migration";
     static readonly icon: string = "fa fa-file-import";
 
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
 
     createEditor()
     {

@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController from "../controllers/TaskController";
 import DocumentsTaskEditor from "./ui/DocumentsTaskEditor";
-
 import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,11 +25,6 @@ export default class DocumentsTask extends Task
     static readonly text: string = "Documents";
     static readonly icon: string = "fa fa-file-alt";
 
-
-    constructor(controller: TaskController)
-    {
-        super(controller);
-    }
 
     createEditor()
     {

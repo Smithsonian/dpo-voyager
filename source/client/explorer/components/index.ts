@@ -17,7 +17,9 @@
 
 import Annotations from "./Annotations";
 import Documents from "./Documents";
+import Explorer from "./Explorer";
 import Groups from "./Groups";
+import HomeGrid from "./HomeGrid";
 import Meta from "./Meta";
 import Model from "./Model";
 import PCamera from "./PCamera";
@@ -38,7 +40,9 @@ import View from "./View";
 export {
     Annotations,
     Documents,
+    Explorer,
     Groups,
+    HomeGrid,
     Meta,
     Model,
     PCamera,
@@ -58,7 +62,9 @@ export {
 export const componentTypes = [
     Annotations,
     Documents,
+    Explorer,
     Groups,
+    HomeGrid,
     Meta,
     Model,
     PCamera,

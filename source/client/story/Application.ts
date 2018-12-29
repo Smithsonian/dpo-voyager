@@ -18,12 +18,16 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Application";
+import ExplorerSystem from "../explorer/ExplorerSystem";
+import ExplorerNode from "../explorer/nodes/Explorer";
 
 import LogController from "./controllers/LogController";
 import TaskController from "./controllers/TaskController";
+
+import { componentTypes as storyComponents } from "./components";
+import PoseManip from "./components/PoseManip";
 
 import MainView from "./ui/MainView";
 
@@ -49,7 +53,7 @@ export default class StoryApplication
 {
     readonly props: IStoryApplicationProps;
     readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
+    readonly system: ExplorerSystem;
     readonly commander: Commander;
 
     readonly taskController: TaskController;
@@ -63,6 +67,14 @@ export default class StoryApplication
 
         this.logController = new LogController(this.system, this.commander);
         this.taskController = new TaskController(this.system, this.commander);
+
+        // register components
+        const registry = this.system.registry;
+        registry.registerComponentType(storyComponents);
+
+        // add story components
+        const explorerNode = this.system.nodes.get(ExplorerNode);
+        explorerNode.createComponent(PoseManip);
 
         this.props = this.initFromProps(props);
 
