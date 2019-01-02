@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
+
+import fetch from "@ff/browser/fetch";
+
 import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
 import ExplorerSystem from "../../explorer/ExplorerSystem";
 
 import Task from "../tasks/Task";
 import taskSets from "../tasks/taskSets";
+import Item from "../../explorer/nodes/Item";
+import Presentation from "../../explorer/nodes/Presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export type TaskSetName = "prep" | "author";
-export type TaskActions = Actions<TaskController>;
+export type StoryActions = Actions<StoryController>;
 
 export interface ITaskChangeEvent extends ITypedEvent<"change">
 {
@@ -33,7 +39,7 @@ export interface ITaskChangeEvent extends ITypedEvent<"change">
     next: Task;
 }
 
-export default class TaskController extends Controller<TaskController>
+export default class StoryController extends Controller<StoryController>
 {
     readonly system: ExplorerSystem;
 
@@ -145,5 +151,36 @@ export default class TaskController extends Controller<TaskController>
     toggleExpertMode()
     {
         this.expertMode = !this.expertMode;
+    }
+
+    save()
+    {
+        const system = this.system;
+
+        if (this.taskSet === "prep") {
+            const item = system.nodes.get(Item);
+            if (item) {
+                const data = item.toData();
+                let name = item.name;
+                name = name.toLowerCase().endsWith(".json") ? name : name + ".json";
+                const url = resolvePathname(name, )
+
+                console.log("StoryController.save - Item");
+                console.log(data);
+                fetch.json("url/filename", "PUT", data).then(() => {
+                    // done
+                }).catch(error => {
+                    console.error(error);
+                });
+            }
+        }
+        else {
+            const presentation = system.nodes.get(Presentation);
+            if (presentation) {
+                console.log("StoryController.save - Presentation");
+                console.log(presentation.toData());
+            }
+        }
+
     }
 }

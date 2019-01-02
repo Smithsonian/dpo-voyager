@@ -24,7 +24,7 @@ import ExplorerSystem from "../explorer/ExplorerSystem";
 import ExplorerNode from "../explorer/nodes/Explorer";
 
 import LogController from "./controllers/LogController";
-import TaskController from "./controllers/TaskController";
+import StoryController from "./controllers/StoryController";
 
 import { componentTypes as storyComponents } from "./components";
 import PoseManip from "./components/PoseManip";
@@ -56,7 +56,7 @@ export default class StoryApplication
     readonly system: ExplorerSystem;
     readonly commander: Commander;
 
-    readonly taskController: TaskController;
+    readonly taskController: StoryController;
     readonly logController: LogController;
 
     constructor(element?: HTMLElement, props?: IStoryApplicationProps)
@@ -66,7 +66,7 @@ export default class StoryApplication
         this.commander = this.explorer.commander;
 
         this.logController = new LogController(this.system, this.commander);
-        this.taskController = new TaskController(this.system, this.commander);
+        this.taskController = new StoryController(this.system, this.commander);
 
         // register components
         const registry = this.system.registry;

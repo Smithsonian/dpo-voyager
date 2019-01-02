@@ -20,7 +20,7 @@ import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../Application";
 
-import TaskController, { ITaskChangeEvent } from "../controllers/TaskController";
+import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
 import LogController from "../controllers/LogController";
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";

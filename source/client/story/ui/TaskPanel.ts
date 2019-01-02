@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import TaskController, { ITaskChangeEvent } from "../controllers/TaskController";
+import StoryController, { ITaskChangeEvent } from "../controllers/TaskController";
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -24,9 +24,9 @@ import CustomElement, { customElement, property, html } from "@ff/ui/CustomEleme
 export default class TaskPanel extends CustomElement
 {
     @property({ attribute: false })
-    controller: TaskController;
+    controller: StoryController;
 
-    constructor(controller?: TaskController)
+    constructor(controller?: StoryController)
     {
         super();
         this.controller = controller;

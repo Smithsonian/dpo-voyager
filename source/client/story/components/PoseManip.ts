@@ -18,19 +18,20 @@
 import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
+import { computeLocalBoundingBox } from "@ff/three/helpers";
 import Viewport from "@ff/three/Viewport";
 import Component from "@ff/scene/Component";
-import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
+import { IPointerEvent } from "@ff/scene/RenderView";
 
 import ExplorerSystem, { IComponentEvent } from "../../explorer/ExplorerSystem";
 import Model from "../../explorer/components/Model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3 = new THREE.Vector3();
-const _axisZ = new THREE.Vector3(0, 0, 1);
-const _mat4a = new THREE.Matrix4();
-const _mat4b = new THREE.Matrix4();
+const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
+const _axis = new THREE.Vector3();
+const _mat4 = new THREE.Matrix4();
 const _quat0 = new THREE.Quaternion();
 const _quat1 = new THREE.Quaternion();
 
@@ -41,7 +42,8 @@ export default class PoseManip extends Component
     static readonly type: string = "PoseManip";
 
     ins = this.ins.append({
-        mode: types.Enum("Mode", EManipMode, EManipMode.Off)
+        mode: types.Enum("Mode", EManipMode, EManipMode.Off),
+        center: types.Event("Center")
     });
 
     protected _model: Model = null;
@@ -68,6 +70,28 @@ export default class PoseManip extends Component
         system.selection.components.on(Model, this.onSelectModel, this);
     }
 
+    update()
+    {
+        const center = this.ins.center;
+        const model = this._model;
+
+        if (center.changed && model) {
+            const object = model.object3D;
+            _vec3a.set(0, 0, 0);
+            object.matrix.setPosition(_vec3a);
+
+            const box = new THREE.Box3();
+            box.setFromObject(object);
+            box.getCenter(_vec3a);
+
+            _vec3a.multiplyScalar(-1).toArray(model.ins.position.value);
+            model.ins.position.set();
+            return true;
+        }
+
+        return false;
+    }
+
     tick()
     {
         const mode = this.ins.mode.value;
@@ -82,27 +106,32 @@ export default class PoseManip extends Component
             return false;
         }
 
-        console.log("PoseManip.tick - (%s, %s), %s", deltaX, deltaY, EManipMode[mode]);
-
         this._deltaX = this._deltaY = 0;
-        const object3D = this._model.object3D;
-        const camera = this._viewport.camera;
 
-        camera.matrixWorldInverse.decompose(_vec3, _quat0, _vec3);
+        const object3D = this._model.object3D;
+        const camera = this._viewport.viewportCamera;
+        if (!camera) {
+            return false;
+        }
+
+        camera.matrixWorld.decompose(_vec3a, _quat0, _vec3a);
 
         if (mode === EManipMode.Rotate) {
-            const angle = (deltaX + deltaY) * 0.01;
-            _quat1.setFromAxisAngle(_axisZ, angle);
-            _mat4b.makeRotationFromQuaternion(_quat1);
+            const angle = (deltaX - deltaY) * 0.002;
+            _axis.set(0, 0, -1).applyQuaternion(_quat0);
+            _quat1.setFromAxisAngle(_axis, angle);
+            _mat4.makeRotationFromQuaternion(_quat1);
         }
         else {
-            _mat4a.makeTranslation(deltaX, deltaY, 0);
-            _mat4b.makeRotationFromQuaternion(_quat0);
-            _mat4b.multiply(_mat4a);
+            const f = camera.size * 2 / this._viewport.width;
+            _axis.set(deltaX * f, -deltaY * f, 0).applyQuaternion(_quat0);
+            _mat4.identity().setPosition(_axis);
         }
 
-        object3D.matrix.multiply(_mat4b);
-        object3D.matrixWorldNeedsUpdate = true;
+        _mat4.multiply(object3D.matrix);
+        this._model.setFromMatrix(_mat4);
+
+        return true;
     }
 
     protected onPointer(event: IPointerEvent)
@@ -112,8 +141,9 @@ export default class PoseManip extends Component
         }
 
         if (event.type === "pointer-move" && event.originalEvent.buttons === 1) {
-            this._deltaX += event.movementX;
-            this._deltaY += event.movementY;
+            const speed = event.ctrlKey ? 0.1 : (event.shiftKey ? 10 : 1);
+            this._deltaX += event.movementX * speed;
+            this._deltaY += event.movementY * speed;
             this._viewport = event.viewport;
             event.stopPropagation = true;
         }

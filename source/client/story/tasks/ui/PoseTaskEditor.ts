@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, html, property } from "@ff/ui/CustomElement";
+import PropertyTracker from "@ff/graph/PropertyTracker";
 import "@ff/ui/Splitter";
 import List from "@ff/ui/List";
 import "@ff/ui/Button";
+import "@ff/ui/IndexButton";
 
 import ExplorerSystem, { IComponentEvent } from "../../../explorer/ExplorerSystem";
 
 import Model from "../../../explorer/components/Model";
 
+import PoseManip, { EManipMode } from "../../components/PoseManip";
 import TaskEditor from "./TaskEditor";
 import PoseTask from "../PoseTask";
 
 import "../../ui/PropertyView";
+import { IButtonClickEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,9 +41,13 @@ export default class PoseTaskEditor extends TaskEditor
     protected task: PoseTask;
     protected model: Model;
 
+    protected system: ExplorerSystem;
+
     constructor(task: PoseTask)
     {
         super(task);
+
+        this.system = task.system;
     }
 
     protected firstConnected()
@@ -55,13 +63,15 @@ export default class PoseTaskEditor extends TaskEditor
     protected connected()
     {
         super.connected();
-        this.task.system.selection.components.on<IComponentEvent>("component", this.onControllerSelect, this);
+        this.system.selection.components.on<IComponentEvent>("component", this.onControllerSelect, this);
+        this.model = this.system.selection.components.get(Model);
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.task.system.selection.components.off<IComponentEvent>("component", this.onControllerSelect, this);
+        this.system.selection.components.off<IComponentEvent>("component", this.onControllerSelect, this);
+        this.model = null;
     }
 
     protected render()
@@ -75,7 +85,7 @@ export default class PoseTaskEditor extends TaskEditor
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-section" style="flex: 1 1 75%">
-                <sv-model-pose-properties .model=${model}></sv-model-pose-properties>
+                <sv-model-pose-properties .system=${system} .model=${model}></sv-model-pose-properties>
             </div>
         `;
     }
@@ -180,12 +190,34 @@ class ModelList extends List<Model>
 class ModelPoseProperties extends CustomElement
 {
     @property({ attribute: false })
+    system: ExplorerSystem;
+
+    @property({ attribute: false })
     model: Model;
+
+    protected modeProp: PropertyTracker<EManipMode>;
+    protected centerProp: PropertyTracker;
+
 
     constructor(model?: Model)
     {
         super();
+
         this.model = model;
+        this.modeProp = new PropertyTracker(this.onPropertyUpdate, this);
+        this.centerProp = new PropertyTracker(this.onPropertyUpdate, this);
+    }
+
+    protected connected()
+    {
+        this.modeProp.attachInput(this.system, PoseManip, "Mode");
+        this.centerProp.attachInput(this.system, PoseManip, "Center");
+    }
+
+    protected disconnected()
+    {
+        this.modeProp.detach();
+        this.centerProp.detach();
     }
 
     protected render()
@@ -195,18 +227,36 @@ class ModelPoseProperties extends CustomElement
             return html``;
         }
 
+        const mode = this.modeProp.getValue(EManipMode.Rotate);
         const units = model.ins.units;
         const position = model.ins.position;
         const rotation = model.ins.rotation;
 
         return html`
             <ff-flex-row>
-                <ff-button text="Center"></ff-button>
-                <ff-button text="Reset"></ff-button>
+                <ff-index-button text="Move" index=${EManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+                <ff-index-button text="Rotate" index=${EManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+                <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
             </ff-flex-row>
+                
             <sv-property-view .property=${units}></sv-property-view>
             <sv-property-view .property=${position}></sv-property-view>
             <sv-property-view .property=${rotation}></sv-property-view>
         `;
+    }
+
+    protected onClickMode(event: IButtonClickEvent)
+    {
+        this.modeProp.setValue(event.target.index);
+    }
+
+    protected onClickCenter()
+    {
+        this.centerProp.set();
+    }
+
+    protected onPropertyUpdate()
+    {
+        this.requestUpdate();
     }
 }

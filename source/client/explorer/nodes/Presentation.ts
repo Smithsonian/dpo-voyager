@@ -51,7 +51,7 @@ export default class Presentation extends Node
 {
     static readonly type: string = "Presentation";
 
-    protected path: string = "";
+    protected assetPath: string = "";
     protected loadingManager: LoadingManager = null;
     protected items: Item[] = [];
 
@@ -79,10 +79,14 @@ export default class Presentation extends Node
         this.createComponent(Documents);
     }
 
-    setLoadingManager(loadingManager: LoadingManager, url?: string)
+    setLoadingManager(loadingManager: LoadingManager)
     {
         this.loadingManager = loadingManager;
-        this.path = resolvePathname(".", url || location.href);
+    }
+
+    setAssetPath(assetPath: string)
+    {
+        this.assetPath = assetPath;
     }
 
     fromData(data: IPresentation, items?: Item[])
@@ -168,7 +172,8 @@ export default class Presentation extends Node
             const itemData = presentationData.items[nodeData.item];
             const item = parent.graph.createNode(Item);
             item.setLoadingManager(this.loadingManager);
-            item.fromData(itemData, this.path);
+            item.setAssetPath(this.assetPath);
+            item.fromData(itemData);
             name = item.name;
             this.items.push(item);
         }
@@ -196,7 +201,7 @@ export default class Presentation extends Node
                 // now try to load the item from external reference
                 else {
                     name = "Item";
-                    const itemUrl = resolvePathname(reference.uri, this.path);
+                    const itemUrl = resolvePathname(reference.uri, this.assetPath);
 
                     this.loadingManager.loadJSON(itemUrl).then(json =>
                         this.loadingManager.validateItem(json).then(itemData => {

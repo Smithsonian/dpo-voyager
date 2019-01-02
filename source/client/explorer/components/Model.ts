@@ -36,8 +36,8 @@ import { EUnitType } from "common/types";
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
-const _quatZero = new THREE.Quaternion();
 const _euler = new THREE.Euler();
+const _mat4 = new THREE.Matrix4();
 
 const _qualityLevels = [
     EDerivativeQuality.Thumb,
@@ -68,9 +68,7 @@ export default class Model extends Object3D
         aof: types.Vector3("Auto.Offset")
     });
 
-    protected units: TUnitType = "cm";
     protected boundingBox = new THREE.Box3();
-
     protected boxFrame: THREE.Object3D = null;
 
     protected derivatives: Derivative[] = [];
@@ -122,12 +120,11 @@ export default class Model extends Object3D
         return this.boundingBox;
     }
 
-    updatePropsFromMatrix()
+    setFromMatrix(matrix: THREE.Matrix4)
     {
         const { position, rotation } = this.ins;
 
-        this.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
-
+        matrix.decompose(_vec3a, _quat, _vec3b);
         _vec3a.toArray(position.value);
 
         _euler.setFromQuaternion(_quat, "ZYX");
@@ -181,14 +178,14 @@ export default class Model extends Object3D
         this.loadingManager = loadingManager;
     }
 
-    setPath(assetPath: string)
+    setAssetPath(assetPath: string)
     {
         this.assetPath = assetPath;
     }
 
     fromData(modelData: IModel): this
     {
-        this.units = modelData.units;
+        this.ins.units.setValue(EUnitType[modelData.units] || 0);
 
         if (this.derivatives.length > 0) {
             throw new Error("existing derivatives; failed to inflate from modelData");
@@ -201,9 +198,8 @@ export default class Model extends Object3D
         });
 
         if (modelData.transform) {
-            this.object3D.matrix.fromArray(modelData.transform);
-            this.object3D.matrixWorldNeedsUpdate = true;
-            this.updatePropsFromMatrix();
+            _mat4.fromArray(modelData.transform);
+            this.setFromMatrix(_mat4);
         }
 
         if (modelData.boundingBox) {
@@ -226,7 +222,7 @@ export default class Model extends Object3D
     toData(): IModel
     {
         const data: IModel = {
-            units: this.units,
+            units: EUnitType[this.ins.units.value] as TUnitType,
             derivatives: this.derivatives.map(derivative => derivative.toData())
         };
 
@@ -241,7 +237,6 @@ export default class Model extends Object3D
             data.transform = this.object3D.matrix.toArray();
         }
 
-        console.log(data.transform);
         //if (this.material) {
         // TODO: Implement
         //}

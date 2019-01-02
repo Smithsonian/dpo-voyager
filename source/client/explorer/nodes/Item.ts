@@ -40,9 +40,6 @@ export default class Item extends Node
 {
     static readonly type: string = "Item";
 
-    protected path: string = "";
-    protected loadingManager: LoadingManager = null;
-
     get presentationTemplateUri() {
         const meta = this.meta;
         return meta ? meta.get("presentationTemplateUri") : "";
@@ -88,35 +85,28 @@ export default class Item extends Node
         this.createComponent(Groups);
     }
 
-    setLoadingManager(loadingManager: LoadingManager)
+    setAssetPath(path: string)
     {
-        this.loadingManager = loadingManager;
-        this.model.setLoadingManager(this.loadingManager);
+        this.model.setAssetPath(path);
     }
 
-    addWebModelDerivative(modelUrl: string, quality: EDerivativeQuality)
+    setLoadingManager(loadingManager: LoadingManager)
     {
-        this.path = resolvePathname(".", modelUrl);
-        const modelFileName = modelUrl.substr(this.path.length);
+        this.model.setLoadingManager(loadingManager);
+    }
 
-        this.model.setPath(this.path);
+    addWebModelDerivative(modelFileName: string, quality: EDerivativeQuality)
+    {
         this.model.addWebModelDerivative(modelFileName, quality);
     }
 
-    addGeometryAndTextureDerivative(geometryUrl: string, textureUrl: string, quality: EDerivativeQuality)
+    addGeometryAndTextureDerivative(geometryFileName: string, textureFileName: string, quality: EDerivativeQuality)
     {
-        this.path = resolvePathname(".", geometryUrl);
-        const geometryFileName = geometryUrl.substr(this.path.length);
-        const textureFileName = textureUrl ? textureUrl.substr(this.path.length) : undefined;
-
-        this.model.setPath(this.path);
         this.model.addGeometryAndTextureDerivative(geometryFileName, textureFileName, quality);
     }
 
-    fromData(itemData: IItem, itemUrl?: string)
+    fromData(itemData: IItem)
     {
-        this.path = resolvePathname(".", itemUrl || location.href);
-
         let docIds = [];
         let groupIds = [];
         let snapIds = [];
@@ -130,7 +120,6 @@ export default class Item extends Node
         }
 
         if (itemData.model) {
-            this.model.setPath(this.path);
             this.model.fromData(itemData.model);
         }
 

@@ -19,10 +19,9 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 import LoadingManager from "@ff/three/LoadingManager";
-import RenderSystem from "@ff/scene/RenderSystem";
 
-import SelectionController from "@ff/scene/SelectionController";
 import PresentationController from "../explorer/controllers/PresentationController";
+import ExplorerSystem from "../explorer/ExplorerSystem";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as explorerComponents } from "../explorer/components";
@@ -53,22 +52,20 @@ export default class Application
         "https://3d.si.edu"
     ].join("\n");
 
-    readonly system: RenderSystem;
+    readonly system: ExplorerSystem;
     readonly commander: Commander;
     readonly loadingManager: LoadingManager;
 
-    readonly selectionController: SelectionController;
     readonly presentationController: PresentationController;
 
     constructor(props?: IApplicationProps, createView?: boolean)
     {
         console.log(Application.splashMessage);
 
-        this.system = new RenderSystem();
-        this.commander = new Commander();
         this.loadingManager = new LoadingManager();
+        this.commander = new Commander();
+        this.system = new ExplorerSystem(this.commander);
 
-        this.selectionController = new SelectionController(this.system, this.commander);
         this.presentationController = new PresentationController(this.system, this.commander);
 
         // register components

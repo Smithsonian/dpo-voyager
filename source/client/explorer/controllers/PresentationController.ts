@@ -31,6 +31,14 @@ import Item from "../nodes/Item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _splitUrl = function(url: string): { path: string, name: string }
+{
+    const path = resolvePathname(".", url);
+    const name = url.substr(path.length);
+
+    return { path, name };
+}
+
 export interface IActivePresentationEvent extends ITypedEvent<"active-presentation">
 {
     previous: Presentation;
@@ -80,32 +88,34 @@ export default class PresentationController extends Controller<PresentationContr
     {
         console.log("PresentationController.loadItem - URL: %s", itemUrl);
 
-        return this._loadingManager.loadJSON(itemUrl).then(json =>
-            this.openItem(json, itemUrl, templateUrl)
-        );
+        return this._loadingManager.loadJSON(itemUrl).then(json => {
+            const { path, name } = _splitUrl(itemUrl);
+            this.openItem(json, name, path, templateUrl)
+        });
     }
 
-    openItem(json: any, itemUrl?: string, templateUrl?: string): Promise<void>
+    openItem(json: any, itemName: string, assetPath: string, templateUrl?: string): Promise<void>
     {
         // get last part from template url
         const templateFileName = templateUrl ? templateUrl.substr(resolvePathname(".", templateUrl).length) : "";
 
         return this._loadingManager.validateItem(json).then(itemData => {
-            const item = this.explorerNode.graph.createNode(Item, "Item");
+            const item = this.explorerNode.graph.createNode(Item, itemName || "item");
             item.setLoadingManager(this._loadingManager);
-            item.fromData(itemData, itemUrl);
+            item.setAssetPath(assetPath);
+            item.fromData(itemData);
 
             if (item.presentationTemplateUri) {
-                templateUrl =  resolvePathname(templateFileName, item.presentationTemplateUri, templateUrl || itemUrl);
+                templateUrl =  resolvePathname(templateFileName, item.presentationTemplateUri, templateUrl || assetPath);
                 console.log(`Loading presentation template: ${templateUrl}`);
                 return this.loadPresentation(templateUrl, [ item ]);
             }
 
-            return this.openDefaultPresentation(itemUrl, [ item ]);
+            return this.openDefaultPresentation(assetPath, [ item ]);
         });
     }
 
-    loadModel(modelUrl: string, quality?: string, templateUrl?: string): Promise<void>
+    loadModel(modelUrl: string, quality?: string, itemName?: string, templateUrl?: string): Promise<void>
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
@@ -113,15 +123,17 @@ export default class PresentationController extends Controller<PresentationContr
             console.log(`PresentationController.loadModel - Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[q]}\n`,
                 `model url: ${modelUrl}`);
 
-            const item = this.explorerNode.graph.createNode(Item, "Item");
+            const { path, name } = _splitUrl(modelUrl);
+            const item = this.explorerNode.graph.createNode(Item, itemName || "item");
             item.setLoadingManager(this._loadingManager);
+            item.setAssetPath(path);
             item.addWebModelDerivative(modelUrl, q);
 
-            return this.openDefaultPresentation(modelUrl, [ item ]);
+            return this.openDefaultPresentation(path, [ item ]);
         });
     }
 
-    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, templateUrl?: string)
+    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, itemName?: string, templateUrl?: string)
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
@@ -129,11 +141,13 @@ export default class PresentationController extends Controller<PresentationContr
             console.log(`PresentationController.loadGeometryAndTexture - Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
                 `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
 
-            const item = this.explorerNode.graph.createNode(Item, "Item");
+            const { path, name } = _splitUrl(geometryUrl);
+            const item = this.explorerNode.graph.createNode(Item, itemName || "item");
             item.setLoadingManager(this._loadingManager);
+            item.setAssetPath(path);
             item.addGeometryAndTextureDerivative(geometryUrl, textureUrl, q);
 
-            return this.openDefaultPresentation(geometryUrl, [ item ]);
+            return this.openDefaultPresentation(path, [ item ]);
         });
     }
 
@@ -141,25 +155,27 @@ export default class PresentationController extends Controller<PresentationContr
     {
         console.log("PresentationController.loadPresentation - URL: %s", presentationUrl);
 
-        return this._loadingManager.loadJSON(presentationUrl).then(json =>
-            this.openPresentation(json, presentationUrl, items)
-        );
+        return this._loadingManager.loadJSON(presentationUrl).then(json => {
+            const { path } = _splitUrl(presentationUrl);
+            this.openPresentation(json, path, items);
+        });
     }
 
-    openDefaultPresentation(url?: string, items?: Item[]): Promise<void>
+    openDefaultPresentation(assetPath: string, items?: Item[]): Promise<void>
     {
         console.log("PresentationController.openDefaultPresentation - Opening presentation from default template");
-        return this.openPresentation(template, url, items);
+        return this.openPresentation(template, assetPath, items);
     }
 
-    openPresentation(json: any, url?: string, items?: Item[]): Promise<void>
+    openPresentation(json: any, assetPath: string, items?: Item[]): Promise<void>
     {
         // currently opening multiple presentations is not supported
         this.closeAll();
 
         return this._loadingManager.validatePresentation(json).then(presentationData => {
             const presentation = this.explorerNode.graph.createNode(Presentation, "Presentation");
-            presentation.setLoadingManager(this._loadingManager, url);
+            presentation.setLoadingManager(this._loadingManager);
+            presentation.setAssetPath(assetPath);
             presentation.fromData(presentationData, items);
 
             this._presentations.push(presentation);

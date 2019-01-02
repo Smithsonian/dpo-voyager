@@ -27,6 +27,7 @@ import View from "../components/View";
 import Renderer from "../components/Renderer";
 import Reader from "../components/Reader";
 import Model from "../components/Model";
+import ExplorerSystem from "../ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,24 +88,39 @@ export default class ExplorerNode extends Node
 
     protected onModelUpdate()
     {
+        // get bounding box of all models
         const box = this.boundingBox.makeEmpty();
         const models = this.graph.components.getArray(Model);
 
         for (let model of models) {
-            _box3.copy(model.getBoundingBox());
-            _box3.applyMatrix4(model.object3D.matrixWorld);
-            box.union(_box3);
+            box.expandByObject(model.object3D);
         }
 
         box.getSize(_vec3);
         const maxLength = Math.max(_vec3.x, _vec3.y, _vec3.z);
 
+        // adjust view controller/main camera
         const { maxOffset, offset } = this.view.ins;
-        maxOffset.value[2] = maxLength * 2;
+        maxOffset.value[2] = maxLength * 3;
         maxOffset.set();
         offset.value[2] = maxLength * 1.5;
         offset.set();
 
+        // adjust additional viewport cameras
+        const system = this.system as ExplorerSystem;
+        system.views.forEach(view => {
+            view.viewports.forEach(viewport => {
+                const camera = viewport.viewportCamera;
+                const manip = viewport.manip;
+                if (manip && camera) {
+                    manip.maxOffset.z = maxLength * 3;
+                    manip.offset.z = maxLength * 1.5;
+                    camera.far = maxLength * 6;
+                }
+            });
+        });
+
+        // adjust grid
         let gridSize = this.grid.ins.size.value;
         while (gridSize < maxLength) {
             gridSize *= 2;

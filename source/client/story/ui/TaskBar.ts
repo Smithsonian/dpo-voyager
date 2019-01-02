@@ -23,7 +23,7 @@ import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 import Presentation from "../../explorer/nodes/Presentation";
 import Item from "../../explorer/nodes/Item";
 
-import TaskController, { ITaskChangeEvent } from "../controllers/TaskController";
+import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
 import Task from "../tasks/Task";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
@@ -34,11 +34,11 @@ import CustomElement, { customElement, property, html } from "@ff/ui/CustomEleme
 export default class TaskBar extends CustomElement
 {
     @property({ attribute: false })
-    controller: TaskController;
+    controller: StoryController;
 
     protected tasks: Task[];
 
-    constructor(controller?: TaskController)
+    constructor(controller?: StoryController)
     {
         super();
         this.controller = controller;
@@ -92,21 +92,7 @@ export default class TaskBar extends CustomElement
 
     protected onClickSave()
     {
-        const controller = this.controller;
-        const system = controller.system;
-
-        if (controller.taskSet === "prep") {
-            const item = system.nodes.get(Item);
-            if (item) {
-                console.log(item.toData());
-            }
-        }
-        else {
-            const presentation = system.nodes.get(Presentation);
-            if (presentation) {
-                console.log(presentation.toData());
-            }
-        }
+        this.controller.save();
     }
 
     protected onClickExit()
