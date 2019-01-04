@@ -16,11 +16,14 @@
  */
 
 import * as THREE from "three";
-
 import math from "@ff/core/math";
+
+import Node from "@ff/graph/Node";
 import Transform from "@ff/scene/components/Transform";
 
-import { ITransform } from "common/types/presentation";
+import { INode, ITransform } from "common/types/presentation";
+
+import ExplorerSystem from "../ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,13 +33,33 @@ const _mat4 = new THREE.Matrix4();
 const _quat = new THREE.Quaternion();
 const _euler = new THREE.Euler();
 
-export default class PTransform extends Transform
+/**
+ * Base class for presentation nodes (nodes within the scene tree of a presentation).
+ */
+export default class PresentationNode extends Node
 {
-    static readonly type: string = "PTransform";
+    static readonly type: string = "PresentationNode";
 
-    fromData(data: ITransform)
+    readonly system: ExplorerSystem;
+
+    private _transform: Transform = null;
+
+    get transform() {
+        return this._transform;
+    }
+
+    createComponents()
     {
-        const { position, rotation, order, scale } = this.ins;
+        this._transform = this.createComponent(Transform);
+    }
+
+    fromNodeData(data: INode)
+    {
+        if (data.name) {
+            this.name = data.name;
+        }
+
+        const { position, rotation, order, scale } = this._transform.ins;
 
         order.setValue(0);
 
@@ -67,15 +90,15 @@ export default class PTransform extends Transform
             }
 
             // this updates the matrix from the PRS properties
-            this.changed = true;
+            this._transform.changed = true;
         }
     }
 
-    toData(): ITransform
+    toNodeData(): INode
     {
-        this.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
+        this._transform.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
 
-        const data: Partial<ITransform> = {};
+        const data: Partial<INode> = {};
 
         if (_vec3a.x !== 0 || _vec3a.y !== 0 || _vec3a.z !== 0) {
             data.translation = _vec3a.toArray();
@@ -85,6 +108,10 @@ export default class PTransform extends Transform
         }
         if (_vec3b.x !== 1 || _vec3b.y !== 1 || _vec3b.z !== 1) {
             data.scale = _vec3b.toArray();
+        }
+
+        if (this.name) {
+            data.name = this.name;
         }
 
         return data;

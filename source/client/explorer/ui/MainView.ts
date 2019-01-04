@@ -17,7 +17,7 @@
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
-import ExplorerApplication, { IExplorerApplicationProps } from "../Application";
+import ExplorerApplication, { IExplorerApplicationProps } from "../ExplorerApplication";
 
 import ContentView from "./ContentView";
 import ChromeView from "./ChromeView";
@@ -27,7 +27,7 @@ import "./styles.scss";
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Main UI View for the Voyager Explorer application.
+ * Main UI view for the Voyager Explorer application.
  */
 @customElement("voyager-explorer")
 export default class MainView extends CustomElement
@@ -48,7 +48,8 @@ export default class MainView extends CustomElement
                 template: this.getAttribute("template"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
-                texture: this.getAttribute("texture")
+                texture: this.getAttribute("texture"),
+                quality: this.getAttribute("quality")
             };
 
             this.application = new ExplorerApplication(null, props);

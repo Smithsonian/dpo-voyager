@@ -16,11 +16,11 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import Component from "@ff/scene/Component";
+import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Meta extends Component
+export default class Meta extends ExplorerComponent
 {
     static readonly type: string = "Meta";
 

@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import ExplorerComponent from "../ExplorerComponent";
+import RenderComponent from "@ff/scene/RenderComponent";
+import VoyagerSystem from "./VoyagerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TapeTool extends ExplorerComponent
+export interface IVoyagerComponent
 {
-    static readonly type: string = "TapeTool";
+    system: VoyagerSystem;
+}
 
-    ins = this.ins.append({
-        enabled: types.Boolean("Enabled"),
-        start: types.Vector3("Start"),
-        end: types.Vector3("End")
-    });
+/**
+ * Base class for components compatible with [[VoyagerSystem]].
+ * [[VoyagerSystem]] is the base class for MiniSystem, ExplorerSystem, and StorySystem.
+ */
+export default class VoyagerComponent extends RenderComponent implements IVoyagerComponent
+{
+    static readonly type: string = "Component";
+
+    get system() {
+        return this.node.system as VoyagerSystem;
+    }
 }

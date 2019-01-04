@@ -22,6 +22,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "up": "docker-compose up -d; docker-compose logs -f",
         "down": "docker-compose stop; docker-compose rm -f -v",
+        "restart": "docker-compose stop; docker-compose rm -f -v; docker-compose up -d; docker-compose logs -f",
         "bash": "docker-compose exec server bash",
         "reset": "./scripts/reset.sh"
     },

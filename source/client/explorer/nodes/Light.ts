@@ -15,18 +15,29 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import ExplorerComponent from "../ExplorerComponent";
+import LightComponent from "@ff/scene/components/Light";
+
+import { ILight, TVector3 } from "common/types/presentation";
+
+import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TapeTool extends ExplorerComponent
+export default class Light extends PresentationNode
 {
-    static readonly type: string = "TapeTool";
+    static readonly type: string = "Light";
 
-    ins = this.ins.append({
-        enabled: types.Boolean("Enabled"),
-        start: types.Vector3("Start"),
-        end: types.Vector3("End")
-    });
+    protected light: LightComponent = null;
+
+    toLightData(): ILight
+    {
+        const light = this.light;
+        let ins = light.ins;
+        const data: Partial<ILight> = {};
+
+        data.color = ins.color.value.slice() as TVector3;
+        data.intensity = ins.intensity.value;
+
+        return data as ILight;
+    }
 }

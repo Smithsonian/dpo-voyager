@@ -20,9 +20,6 @@ import "@ff/ui/Button";
 
 import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 
-import Presentation from "../../explorer/nodes/Presentation";
-import Item from "../../explorer/nodes/Item";
-
 import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
 import Task from "../tasks/Task";
 

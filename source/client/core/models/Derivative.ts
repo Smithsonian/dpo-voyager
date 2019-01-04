@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import { IDerivative, IAsset, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
+import { IDerivative, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
 
 import LoadingManager from "../loaders/LoadingManager";
 import UberMaterial from "../shaders/UberMaterial";
@@ -37,15 +37,25 @@ export default class Derivative
     usage: EDerivativeUsage;
     quality: EDerivativeQuality;
     assets: Asset[];
+
     model: THREE.Object3D;
     boundingBox: THREE.Box3;
 
-    constructor(usage: EDerivativeUsage, quality: EDerivativeQuality, assetData?: IAsset[])
+    constructor(usage: EDerivativeUsage, quality: EDerivativeQuality);
+    constructor(data: IDerivative);
+    constructor(usageOrData, quality?)
     {
         this.id = "";
-        this.usage = usage;
-        this.quality = quality;
-        this.assets = assetData.map(data => new Asset(data));
+
+        if (quality === undefined) {
+            this.fromData(usageOrData);
+        }
+        else {
+            this.usage = usageOrData;
+            this.quality = quality;
+            this.assets = [];
+        }
+
         this.model = null;
         this.boundingBox = new THREE.Box3();
     }
@@ -63,6 +73,8 @@ export default class Derivative
 
     load(loadingManager: LoadingManager, assetPath?: string): Promise<this>
     {
+        console.log("Derivative.load - path: %s", assetPath);
+
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
@@ -110,15 +122,14 @@ export default class Derivative
             throw new Error("uri must be specified");
         }
 
-        const asset = new Asset();
-        asset.uri = uri;
-        asset.type = type;
+        this.assets.push(new Asset(uri, type, mapType));
+    }
 
-        if (type === EAssetType.Texture && mapType !== undefined) {
-            asset.mapType = mapType;
-        }
-
-        this.assets.push(asset);
+    fromData(data: IDerivative)
+    {
+        this.usage = EDerivativeUsage[data.usage];
+        this.quality = EDerivativeQuality[data.quality];
+        this.assets = data.assets.map(assetData => new Asset(assetData));
     }
 
     toData(): IDerivative
@@ -132,7 +143,7 @@ export default class Derivative
 
     toString()
     {
-        return `Derivative (usage: ${EDerivativeUsage[this.usage]}, quality: ${EDerivativeQuality[this.quality]}, #assets: ${this.assets.length})`;
+        return `Derivative - usage: ${EDerivativeUsage[this.usage]}, quality: ${EDerivativeQuality[this.quality]}, #assets: ${this.assets.length})`;
     }
 
     protected findAsset(type: EAssetType): Asset | undefined

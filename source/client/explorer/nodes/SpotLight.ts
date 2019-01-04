@@ -15,56 +15,33 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import { types } from "@ff/graph/propertyTypes";
+import SpotLightComponent from "@ff/scene/components/SpotLight";
 
 import { ILight } from "common/types/presentation";
-import PLight from "./PLight";
+
+import Light from "./Light";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PSpotLight extends PLight
+/**
+ * Presentation node representing a spot light source.
+ */
+export default class SpotLight extends Light
 {
-    static readonly type: string = "PSpotLight";
+    static readonly type: string = "SpotLight";
 
-    ins = this.ins.append({
-        distance: types.Number("Distance"),
-        decay: types.Number("Decay", 1),
-        angle: types.Number("Angle", 45),
-        penumbra: types.Number("Penumbra", 0.5)
-    });
+    protected light: SpotLightComponent = null;
 
-    get light(): THREE.SpotLight
+    createComponents()
     {
-        return this.object3D as THREE.SpotLight;
+        super.createComponents();
+        this.light = this.createComponent(SpotLightComponent);
+        this.name = "SpotLight";
     }
 
-    create()
+    fromLightData(data: ILight)
     {
-        super.create();
-        this.object3D = new THREE.SpotLight();
-    }
-
-    update()
-    {
-        const light = this.light;
-        const { color, intensity, distance, decay, angle, penumbra } = this.ins;
-
-        light.color.fromArray(color.value);
-        light.intensity = intensity.value;
-        light.distance = distance.value;
-        light.decay = decay.value;
-        light.angle = angle.value;
-        light.penumbra = penumbra.value;
-
-        light.updateMatrix();
-        return true;
-    }
-
-    fromData(data: ILight)
-    {
-        this.ins.setValuesByKey({
+        this.light.ins.setValuesByKey({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
             distance: data.point.distance || 0,
@@ -74,10 +51,10 @@ export default class PSpotLight extends PLight
         });
     }
 
-    toData(): ILight
+    toLightData(): ILight
     {
-        const data = super.toData();
-        const ins = this.ins;
+        const ins = this.light.ins;
+        const data = super.toLightData();
 
         data.type = "spot";
         data.spot = {
@@ -87,6 +64,6 @@ export default class PSpotLight extends PLight
             penumbra: ins.penumbra.value
         };
 
-        return data as ILight;
+        return data;
     }
 }

@@ -16,11 +16,12 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/scene/Component";
+
+import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CutTool extends Component
+export default class CutTool extends ExplorerComponent
 {
     static readonly type: string = "CutTool";
 

@@ -16,16 +16,16 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-
-import Component from "@ff/graph/Component";
 import { types } from "@ff/graph/propertyTypes";
 
 import { IReader } from "common/types";
 import Documents, { IDocument } from "./Documents";
 
+import ExplorerComponent from "../ExplorerComponent";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Reader extends Component
+export default class Reader extends ExplorerComponent
 {
     static readonly type: string = "Reader";
 

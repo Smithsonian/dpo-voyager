@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Selection from "@ff/graph/Selection";
+import SelectionController from "@ff/graph/SelectionController";
 
 import PropertyTree from "@ff/ui/graph/PropertyTree";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
@@ -26,17 +26,17 @@ import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 export default class InspectorPanel extends CustomElement
 {
     @property({ attribute: false })
-    selection: Selection;
+    selectionController: SelectionController;
 
-    constructor(selection?: Selection)
+    constructor(selectionController?: SelectionController)
     {
         super();
-        this.selection = selection;
+        this.selectionController = selectionController;
     }
 
     firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-inspector-panel");
-        this.appendChild(new PropertyTree(this.selection));
+        this.appendChild(new PropertyTree(this.selectionController));
     }
 }

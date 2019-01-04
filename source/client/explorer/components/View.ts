@@ -17,12 +17,13 @@
 
 import { types } from "@ff/graph/propertyTypes";
 
-import Component from "@ff/scene/Component";
+import ObjectManipulator from "@ff/three/ObjectManipulator";
+
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import { IActiveCameraEvent } from "@ff/scene/RenderSystem";
 import Camera, { EProjectionType } from "@ff/scene/components/Camera";
 
-import ObjectManipulator from "@ff/three/ObjectManipulator";
+import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +44,7 @@ export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
  * Voyager explorer view component.
  * Controls manipulation and parameters of the camera.
  */
-export default class View extends Component
+export default class View extends ExplorerComponent
 {
     static readonly type: string = "View";
 

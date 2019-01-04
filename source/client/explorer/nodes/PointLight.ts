@@ -15,52 +15,33 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import { types } from "@ff/graph/propertyTypes";
+import PointLightComponent from "@ff/scene/components/PointLight";
 
 import { ILight } from "common/types/presentation";
-import PLight from "./PLight";
+
+import Light from "./Light";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PPointLight extends PLight
+/**
+ * Presentation node representing a point light source.
+ */
+export default class PointLight extends Light
 {
-    static readonly type: string = "PPointLight";
+    static readonly type: string = "PointLight";
 
-    ins = this.ins.append({
-        distance: types.Number("Distance"),
-        decay: types.Number("Decay", 1)
-    });
+    protected light: PointLightComponent = null;
 
-    get light(): THREE.PointLight
+    createComponents()
     {
-        return this.object3D as THREE.PointLight;
+        super.createComponents();
+        this.light = this.createComponent(PointLightComponent);
+        this.name = "PointLight";
     }
 
-    create()
+    fromLightData(data: ILight)
     {
-        super.create();
-        this.object3D = new THREE.PointLight();
-    }
-
-    update()
-    {
-        const light = this.light;
-        const { color, intensity, distance, decay } = this.ins;
-
-        light.color.fromArray(color.value);
-        light.intensity = intensity.value;
-        light.distance = distance.value;
-        light.decay = decay.value;
-
-        light.updateMatrix();
-        return true;
-    }
-
-    fromData(data: ILight)
-    {
-        this.ins.setValuesByKey({
+        this.light.ins.setValuesByKey({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
             distance: data.point.distance || 0,
@@ -68,10 +49,10 @@ export default class PPointLight extends PLight
         });
     }
 
-    toData(): ILight
+    toLightData(): ILight
     {
-        const data = super.toData();
-        const ins = this.ins;
+        const ins = this.light.ins;
+        const data = super.toLightData();
 
         data.type = "point";
         data.point = {
@@ -79,6 +60,6 @@ export default class PPointLight extends PLight
             decay: ins.decay.value
         };
 
-        return data as ILight;
+        return data;
     }
 }

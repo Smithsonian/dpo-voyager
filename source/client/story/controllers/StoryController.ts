@@ -21,12 +21,13 @@ import fetch from "@ff/browser/fetch";
 
 import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
+
 import ExplorerSystem from "../../explorer/ExplorerSystem";
+import Presentation from "../../explorer/nodes/Presentation";
+import Item from "../../explorer/nodes/Item";
 
 import Task from "../tasks/Task";
 import taskSets from "../tasks/taskSets";
-import Item from "../../explorer/nodes/Item";
-import Presentation from "../../explorer/nodes/Presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -160,15 +161,13 @@ export default class StoryController extends Controller<StoryController>
         if (this.taskSet === "prep") {
             const item = system.nodes.get(Item);
             if (item) {
-                const data = item.toData();
-                let name = item.name;
-                name = name.toLowerCase().endsWith(".json") ? name : name + ".json";
-                const url = resolvePathname(name, )
+                const data = item.toItemData();
+                const url = item.url;
 
-                console.log("StoryController.save - Item");
+                console.log("StoryController.save - Item URL: %s", url);
                 console.log(data);
-                fetch.json("url/filename", "PUT", data).then(() => {
-                    // done
+                fetch.json(url, "PUT", data).then(response => {
+                    console.log(response);
                 }).catch(error => {
                     console.error(error);
                 });

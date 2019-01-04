@@ -20,7 +20,7 @@ import { IComponentChangeEvent } from "@ff/graph/Component";
 
 import { IAnnotation as IAnnotationData, Vector3 } from "common/types/item";
 
-import Model from "./Model";
+import Model from "../../core/components/Model";
 import Collection from "./Collection";
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,42 +15,34 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { IReference } from "common/types/presentation";
 
-import { types } from "@ff/graph/propertyTypes";
-import Object3D from "@ff/scene/components/Object3D";
+import ReferenceComponent from "../components/Reference";
 
-import { ILight, TVector3 } from "common/types/presentation";
+import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PLight extends Object3D
+export default class Reference extends PresentationNode
 {
-    static readonly type: string = "PLight";
+    static readonly type: string = "Reference";
 
-    ins = this.ins.append({
-        color: types.ColorRGB("Color"),
-        intensity: types.Number("Intensity", 1)
-    });
+    protected reference: ReferenceComponent = null;
 
-    get light(): THREE.Light
+    createComponents()
     {
-        return this.object3D as THREE.Light;
+        super.createComponents();
+        this.reference = this.createComponent(ReferenceComponent);
+        this.name = "Reference";
     }
 
-    fromData(data: ILight)
+    fromReferenceData(data: IReference)
     {
-
+        this.reference.fromData(data);
     }
 
-    toData(): ILight
+    toReferenceData(): IReference
     {
-        const data: Partial<ILight> = {};
-        const ins = this.ins;
-
-        data.color = ins.color.value.slice() as TVector3;
-        data.intensity = ins.intensity.value;
-
-        return data as ILight;
+        return this.reference.toData();
     }
 }

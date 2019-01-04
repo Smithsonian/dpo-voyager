@@ -17,12 +17,12 @@
 
 import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
-
-import Component, { IComponentChangeEvent } from "@ff/scene/Component";
+import { IComponentChangeEvent } from "@ff/graph/Component";
 
 import { IDocuments, IDocument as IDocumentData } from "common/types/item";
 
 import Reader from "./Reader";
+import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +42,7 @@ export interface IDocument
     thumbnailUri: string;
 }
 
-export default class Documents extends Component
+export default class Documents extends ExplorerComponent
 {
     static readonly type: string = "Documents";
 

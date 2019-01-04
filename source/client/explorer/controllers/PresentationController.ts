@@ -19,15 +19,19 @@ import resolvePathname from "resolve-pathname";
 
 import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
+import Transform from "@ff/scene/components/Transform";
 
 import * as template from "../templates/presentation.json";
 
-import { EDerivativeQuality } from "../models/Derivative";
-import LoadingManager from "../loaders/LoadingManager";
-import Explorer from "../nodes/Explorer";
-import Presentation from "../nodes/Presentation";
+import { EDerivativeQuality } from "../../core/models/Derivative";
+import Model from "../../core/components/Model";
+
+import ExplorerSystem from "../ExplorerSystem";
+
+import ExplorerNode from "../nodes/Explorer";
+import Presentation, { ReferenceCallback } from "../nodes/Presentation";
 import Item from "../nodes/Item";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,9 +41,9 @@ const _splitUrl = function(url: string): { path: string, name: string }
     const name = url.substr(path.length);
 
     return { path, name };
-}
+};
 
-export interface IActivePresentationEvent extends ITypedEvent<"active-presentation">
+export interface IPresentationChangeEvent extends ITypedEvent<"presentation-change">
 {
     previous: Presentation;
     next: Presentation;
@@ -49,38 +53,40 @@ type PresentationActions = Actions<PresentationController>;
 
 export default class PresentationController extends Controller<PresentationController>
 {
-    readonly system: RenderSystem;
+    readonly system: ExplorerSystem;
+    readonly root: ExplorerNode;
 
-    protected _loadingManager: LoadingManager;
-    protected _explorer: Explorer;
-    protected _presentations: Presentation[];
-    protected _activePresentation: Presentation;
+    protected presentations: Presentation[];
+    private _activePresentation: Presentation;
 
-    constructor(system: RenderSystem, commander: Commander)
+    constructor(node: ExplorerNode, commander: Commander)
     {
         super(commander);
-        this.addEvent("active-presentation");
+        this.addEvent("presentation-change");
 
-        this.system = system;
+        this.system = node.system;
+        this.root = node;
 
-        this._loadingManager = new LoadingManager();
-        this._explorer = null
-        this._presentations = [];
+        this.presentations = [];
         this._activePresentation = null;
+    }
+
+    set activePresentation(presentation: Presentation) {
+        const previous = this._activePresentation;
+        this._activePresentation = presentation;
+
+        this.emit<IPresentationChangeEvent>({
+            type: "presentation-change", previous, next: presentation
+        });
     }
 
     get activePresentation() {
         return this._activePresentation;
     }
 
-    protected get explorerNode(): Explorer {
-        return this.system.nodes.get(Explorer);
-    }
-
     createActions(commander: Commander)
     {
         return {
-
         };
     }
 
@@ -88,34 +94,44 @@ export default class PresentationController extends Controller<PresentationContr
     {
         console.log("PresentationController.loadItem - URL: %s", itemUrl);
 
-        return this._loadingManager.loadJSON(itemUrl).then(json => {
-            const { path, name } = _splitUrl(itemUrl);
-            this.openItem(json, name, path, templateUrl)
+        return this.system.loadingManager.loadJSON(itemUrl).then(json => {
+            const assetPath = resolvePathname(".", itemUrl);
+            this.openItem(json, itemUrl, assetPath, templateUrl);
         });
     }
 
-    openItem(json: any, itemName: string, assetPath: string, templateUrl?: string): Promise<void>
+    openItem(json: any, url: string, assetPath: string, templateUrl?: string): Promise<void>
     {
         // get last part from template url
         const templateFileName = templateUrl ? templateUrl.substr(resolvePathname(".", templateUrl).length) : "";
 
-        return this._loadingManager.validateItem(json).then(itemData => {
-            const item = this.explorerNode.graph.createNode(Item, itemName || "item");
-            item.setLoadingManager(this._loadingManager);
-            item.setAssetPath(assetPath);
-            item.fromData(itemData);
+        return this.system.loadingManager.validateItem(json).then(itemData => {
 
-            if (item.presentationTemplateUri) {
-                templateUrl =  resolvePathname(templateFileName, item.presentationTemplateUri, templateUrl || assetPath);
+            const itemCallback = (index, graph, assetPath) => {
+                if (index === 0) {
+                    const node = graph.createNode(Item);
+                    node.createComponents();
+                    node.setUrl(url, assetPath);
+                    node.fromItemData(itemData);
+                    return node;
+                }
+
+                return null;
+            };
+
+            const templateUri = itemData.meta.presentationTemplateUri;
+            if (templateUri) {
+                templateUrl =  resolvePathname(templateFileName, templateUri, templateUrl || assetPath);
                 console.log(`Loading presentation template: ${templateUrl}`);
-                return this.loadPresentation(templateUrl, [ item ]);
+
+                return this.loadPresentation(templateUrl, itemCallback);
             }
 
-            return this.openDefaultPresentation(assetPath, [ item ]);
+            return this.openDefaultPresentation(assetPath, itemCallback);
         });
     }
 
-    loadModel(modelUrl: string, quality?: string, itemName?: string, templateUrl?: string): Promise<void>
+    loadModel(modelUrl: string, quality?: string, itemUrl?: string, templateUrl?: string): Promise<void>
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
@@ -124,16 +140,23 @@ export default class PresentationController extends Controller<PresentationContr
                 `model url: ${modelUrl}`);
 
             const { path, name } = _splitUrl(modelUrl);
-            const item = this.explorerNode.graph.createNode(Item, itemName || "item");
-            item.setLoadingManager(this._loadingManager);
-            item.setAssetPath(path);
-            item.addWebModelDerivative(modelUrl, q);
 
-            return this.openDefaultPresentation(path, [ item ]);
+            return this.openDefaultPresentation(path, (index, graph, assetPath) => {
+                if (index === 0) {
+                    const node = graph.createNode(Item);
+                    node.createComponents();
+                    node.setUrl(itemUrl || `${path}item.json`);
+                    const model = node.components.get(Model);
+                    model.addWebModelDerivative(name, q);
+                    return node;
+                }
+
+                return null;
+            });
         });
     }
 
-    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, itemName?: string, templateUrl?: string)
+    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, itemUrl?: string, templateUrl?: string)
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
@@ -141,72 +164,60 @@ export default class PresentationController extends Controller<PresentationContr
             console.log(`PresentationController.loadGeometryAndTexture - Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
                 `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
 
-            const { path, name } = _splitUrl(geometryUrl);
-            const item = this.explorerNode.graph.createNode(Item, itemName || "item");
-            item.setLoadingManager(this._loadingManager);
-            item.setAssetPath(path);
-            item.addGeometryAndTextureDerivative(geometryUrl, textureUrl, q);
+            const { path: assetPath, name: geoName } = _splitUrl(geometryUrl);
+            const texName = resolvePathname(textureUrl, assetPath);
 
-            return this.openDefaultPresentation(path, [ item ]);
+            return this.openDefaultPresentation(assetPath, (index, graph, assetPath) => {
+                if (index === 0) {
+                    const node = graph.createNode(Item);
+                    node.setUrl(itemUrl || `${assetPath}item.json`);
+                    const model = node.components.get(Model);
+                    model.addGeometryAndTextureDerivative(geoName, texName, q);
+                    return node;
+                }
+
+                return null;
+            });
         });
     }
 
-    loadPresentation(presentationUrl: string, items?: Item[])
+    loadPresentation(presentationUrl: string, callback?: ReferenceCallback)
     {
         console.log("PresentationController.loadPresentation - URL: %s", presentationUrl);
 
-        return this._loadingManager.loadJSON(presentationUrl).then(json => {
-            const { path } = _splitUrl(presentationUrl);
-            this.openPresentation(json, path, items);
+        return this.system.loadingManager.loadJSON(presentationUrl).then(json => {
+            const assetPath = resolvePathname(".", presentationUrl);
+            this.openPresentation(json, presentationUrl, assetPath, callback);
         });
     }
 
-    openDefaultPresentation(assetPath: string, items?: Item[]): Promise<void>
+    openDefaultPresentation(assetPath: string, callback: ReferenceCallback): Promise<void>
     {
         console.log("PresentationController.openDefaultPresentation - Opening presentation from default template");
-        return this.openPresentation(template, assetPath, items);
+        const url = assetPath + "template.json";
+        return this.openPresentation(template, url, assetPath, callback);
     }
 
-    openPresentation(json: any, assetPath: string, items?: Item[]): Promise<void>
+    openPresentation(json: any, url: string, assetPath: string, callback?: ReferenceCallback): Promise<void>
     {
         // currently opening multiple presentations is not supported
         this.closeAll();
 
-        return this._loadingManager.validatePresentation(json).then(presentationData => {
-            const presentation = this.explorerNode.graph.createNode(Presentation, "Presentation");
-            presentation.setLoadingManager(this._loadingManager);
-            presentation.setAssetPath(assetPath);
-            presentation.fromData(presentationData, items);
+        return this.system.loadingManager.validatePresentation(json).then(presentationData => {
 
-            this._presentations.push(presentation);
-            this.setActivePresentation(presentation);
+            const node = this.root.graph.createNode(Presentation);
+            node.createComponents();
+            node.setUrl(url);
+            node.fromData(presentationData, url, null, callback);
+            this.root.transform.addChild(node.transform);
+
+            this.presentations.push(node);
+            this.activePresentation = node;
         });
     }
 
     closeAll()
     {
-        this._presentations.forEach(presentation => presentation.dispose());
-    }
-
-    protected setActivePresentation(presentation: Presentation)
-    {
-        const previous = this._activePresentation;
-        const next = this._activePresentation = presentation;
-
-        const explorer = this.explorerNode;
-
-        if (previous) {
-            explorer.scene.removeChild(previous.transform);
-        }
-        if (next) {
-            explorer.scene.addChild(next.transform);
-        }
-
-        this.onPresentationChange(previous, next);
-        this.emit<IActivePresentationEvent>({ type: "active-presentation", previous, next });
-    }
-
-    protected onPresentationChange(current: Presentation, next: Presentation)
-    {
+        this.presentations.forEach(presentation => presentation.dispose());
     }
 }

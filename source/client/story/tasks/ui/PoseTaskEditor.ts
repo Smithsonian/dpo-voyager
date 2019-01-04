@@ -24,7 +24,7 @@ import "@ff/ui/IndexButton";
 
 import ExplorerSystem, { IComponentEvent } from "../../../explorer/ExplorerSystem";
 
-import Model from "../../../explorer/components/Model";
+import Model from "../../../core/components/Model";
 
 import PoseManip, { EManipMode } from "../../components/PoseManip";
 import TaskEditor from "./TaskEditor";
@@ -63,14 +63,14 @@ export default class PoseTaskEditor extends TaskEditor
     protected connected()
     {
         super.connected();
-        this.system.selection.components.on<IComponentEvent>("component", this.onControllerSelect, this);
-        this.model = this.system.selection.components.get(Model);
+        this.system.selectionController.components.on<IComponentEvent>("component", this.onControllerSelect, this);
+        this.model = this.system.selectionController.components.get(Model);
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.system.selection.components.off<IComponentEvent>("component", this.onControllerSelect, this);
+        this.system.selectionController.components.off<IComponentEvent>("component", this.onControllerSelect, this);
         this.model = null;
     }
 
@@ -132,14 +132,14 @@ class ModelList extends List<Model>
     protected connected()
     {
         super.connected();
-        this.system.selection.components.on<IComponentEvent>("component", this.onSelectComponent, this);
+        this.system.selectionController.components.on<IComponentEvent>("component", this.onSelectComponent, this);
         this.system.components.on<IComponentEvent>("component", this.onUpdateComponents, this);
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.system.selection.components.off<IComponentEvent>("component", this.onSelectComponent, this);
+        this.system.selectionController.components.off<IComponentEvent>("component", this.onSelectComponent, this);
         this.system.components.off<IComponentEvent>("component", this.onUpdateComponents, this);
     }
 
@@ -156,7 +156,7 @@ class ModelList extends List<Model>
 
     protected isItemSelected(item: Model): boolean
     {
-        return this.system.selection.components.contains(item);
+        return this.system.selectionController.components.contains(item);
     }
 
     protected onSelectComponent(event: IComponentEvent)
@@ -173,13 +173,13 @@ class ModelList extends List<Model>
 
     onClickItem(event: MouseEvent, model: Model)
     {
-        this.system.selection.selectComponent(model, event.ctrlKey);
+        this.system.selectionController.selectComponent(model, event.ctrlKey);
     }
 
     protected onClickEmpty(event: MouseEvent)
     {
-        if (this.system.selection.components.has(Model)) {
-            this.system.selection.clearSelection();
+        if (this.system.selectionController.components.has(Model)) {
+            this.system.selectionController.clearSelection();
         }
     }
 }

@@ -18,7 +18,7 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
-import StoryApplication, { IStoryApplicationProps } from "../Application";
+import StoryApplication, { IStoryApplicationProps } from "../StoryApplication";
 
 import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
 import LogController from "../controllers/LogController";
@@ -92,8 +92,8 @@ export default class MainView extends CustomElement
         registry.set("task", () => new TaskPanel(taskController));
         registry.set("log", () => new LogPanel(logController));
         registry.set("console", () => new ConsolePanel());
-        registry.set("hierarchy", () => new HierarchyPanel(explorer.system.selection));
-        registry.set("inspector", () => new InspectorPanel(explorer.system.selection));
+        registry.set("hierarchy", () => new HierarchyPanel(explorer.system.selectionController));
+        registry.set("inspector", () => new InspectorPanel(explorer.system.selectionController));
 
         const reset = parseUrlParameter("reset") !== undefined;
         const state = reset ? null : localStorage.get("voyager-story", "main-view-state");

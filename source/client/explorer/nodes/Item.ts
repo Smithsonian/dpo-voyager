@@ -17,95 +17,61 @@
 
 import resolvePathname from "resolve-pathname";
 
-import Node from "@ff/graph/Node";
-
 import { IItem } from "common/types";
 
-import { EDerivativeQuality } from "../models/Derivative";
-import LoadingManager from "../loaders/LoadingManager";
+import Model from "../../core/components/Model";
 
-import PTransform from "../components/PTransform";
 import Meta from "../components/Meta";
 import Process from "../components/Process";
-import Model from "../components/Model";
 import Annotations from "../components/Annotations";
 import Documents from "../components/Documents";
 import Groups from "../components/Groups";
 
-import Presentation from "./Presentation";
+import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Item extends Node
+export default class Item extends PresentationNode
 {
     static readonly type: string = "Item";
 
-    get presentationTemplateUri() {
-        const meta = this.meta;
-        return meta ? meta.get("presentationTemplateUri") : "";
-    }
+    url: string;
 
-    // node accessors
+    protected meta: Meta;
+    protected process: Process;
+    protected model: Model;
+    protected annotations: Annotations;
+    protected documents: Documents;
+    protected groups: Groups;
 
-    protected get presentation() {
-        return this.getParent(Presentation, true);
-    }
 
-    // component accessors
-
-    protected get meta() {
-        return this.components.get(Meta);
-    }
-    protected get process() {
-        return this.components.get(Process);
-    }
-    protected get model() {
-        return this.components.get(Model);
-    }
-    protected get annotations() {
-        return this.components.get(Annotations);
-    }
-    protected get documents() {
-        return this.components.get(Documents);
-    }
-    protected get groups() {
-        return this.components.get(Groups);
-    }
-
-    create()
+    setUrl(url: string, assetPath?: string)
     {
+        this.url = url;
+        const urlPath = resolvePathname(".", url);
+        this.model.setAssetPath(assetPath || urlPath);
+        const urlName = url.substr(urlPath.length);
+
+        if (urlName) {
+            this.name = urlName;
+        }
+    }
+
+    createComponents()
+    {
+        super.createComponents();
+
+        this.meta = this.createComponent(Meta);
+        this.process = this.createComponent(Process);
+        this.model = this.createComponent(Model);
+        this.annotations = this.createComponent(Annotations);
+        this.documents = this.createComponent(Documents);
+        this.groups = this.createComponent(Groups);
+
         this.name = "Item";
-
-        this.createComponent(PTransform);
-        this.createComponent(Meta);
-        this.createComponent(Process);
-        this.createComponent(Model);
-        this.createComponent(Annotations);
-        this.createComponent(Documents);
-        this.createComponent(Groups);
     }
 
-    setAssetPath(path: string)
-    {
-        this.model.setAssetPath(path);
-    }
-
-    setLoadingManager(loadingManager: LoadingManager)
-    {
-        this.model.setLoadingManager(loadingManager);
-    }
-
-    addWebModelDerivative(modelFileName: string, quality: EDerivativeQuality)
-    {
-        this.model.addWebModelDerivative(modelFileName, quality);
-    }
-
-    addGeometryAndTextureDerivative(geometryFileName: string, textureFileName: string, quality: EDerivativeQuality)
-    {
-        this.model.addGeometryAndTextureDerivative(geometryFileName, textureFileName, quality);
-    }
-
-    fromData(itemData: IItem)
+    fromItemData(itemData: IItem)
     {
         let docIds = [];
         let groupIds = [];
@@ -150,9 +116,11 @@ export default class Item extends Node
         // }
     }
 
-    toData(): IItem
+    toItemData(): IItem
     {
-        const itemData: Partial<IItem> = {};
+        const itemData: Partial<IItem> = {
+            model: this.model.toData()
+        };
 
         let docIds = {};
         let groupIds = {};
@@ -165,8 +133,6 @@ export default class Item extends Node
         if (this.process.hasData()) {
             itemData.process = this.process.toData();
         }
-
-        itemData.model = this.model.toData();
 
         {
             const { data, ids } = this.documents.toData();

@@ -17,7 +17,7 @@
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
-import Application, { IApplicationProps } from "../Application";
+import MiniApplication, { IMiniApplicationProps } from "../MiniApplication";
 
 import ContentView from "../../explorer/ui/ContentView";
 
@@ -25,12 +25,15 @@ import "./styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("voyager-explorer")
+/**
+ * Main UI view for the Voyager Mini application.
+ */
+@customElement("voyager-mini")
 export default class MainView extends CustomElement
 {
-    readonly application: Application;
+    readonly application: MiniApplication;
 
-    constructor(application?: Application)
+    constructor(application?: MiniApplication)
     {
         super();
 
@@ -38,16 +41,14 @@ export default class MainView extends CustomElement
             this.application = application;
         }
         else {
-            const props: IApplicationProps = {
+            const props: IMiniApplicationProps = {
                 item: this.getAttribute("item"),
-                presentation: this.getAttribute("presentation"),
-                template: this.getAttribute("template"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture")
             };
 
-            this.application = new Application(props, false);
+            this.application = new MiniApplication(null, props);
         }
     }
 

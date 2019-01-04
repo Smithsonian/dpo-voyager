@@ -15,21 +15,32 @@
  * limitations under the License.
  */
 
-import Camera, { EProjectionType } from "@ff/scene/components/Camera";
-
-import { ICamera as ICameraData, ICamera } from "common/types/presentation";
 import { types } from "@ff/graph/propertyTypes";
+import CameraComponent, { EProjectionType } from "@ff/scene/components/Camera";
+
+import { ICamera } from "common/types/presentation";
+
+import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PCamera extends Camera
+export default class Camera extends PresentationNode
 {
-    static readonly type: string = "PCamera";
+    static readonly type: string = "Camera";
 
-    fromData(data: ICamera)
+    protected camera: CameraComponent = null;
+
+    createComponents()
+    {
+        super.createComponents();
+        this.camera = this.createComponent(CameraComponent);
+        this.name = "Camera";
+    }
+
+    fromCameraData(data: ICamera)
     {
         if (data.type === "perspective") {
-            this.ins.setValuesByKey({
+            this.camera.ins.setValuesByKey({
                 projection: EProjectionType.Perspective,
                 fov: data.perspective.yfov,
                 near: data.perspective.znear,
@@ -37,7 +48,7 @@ export default class PCamera extends Camera
             });
         }
         else {
-            this.ins.setValuesByKey({
+            this.camera.ins.setValuesByKey({
                 projection: EProjectionType.Orthographic,
                 size: data.orthographic.ymag,
                 near: data.orthographic.znear,
@@ -46,10 +57,10 @@ export default class PCamera extends Camera
         }
     }
 
-    toData(): ICamera
+    toCameraData(): ICamera
     {
-        const data: Partial<ICameraData> = {};
-        const ins = this.ins;
+        const data: Partial<ICamera> = {};
+        const ins = this.camera.ins;
 
         if (types.isEnumIndex(EProjectionType.Perspective, ins.projection.value)) {
             data.type = "perspective";
@@ -68,6 +79,6 @@ export default class PCamera extends Camera
             }
         }
 
-        return data as ICameraData;
+        return data as ICamera;
     }
 }

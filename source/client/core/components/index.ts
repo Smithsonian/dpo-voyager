@@ -15,18 +15,14 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import ExplorerComponent from "../ExplorerComponent";
+import Model from "./Model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TapeTool extends ExplorerComponent
-{
-    static readonly type: string = "TapeTool";
+export {
+    Model
+};
 
-    ins = this.ins.append({
-        enabled: types.Boolean("Enabled"),
-        start: types.Vector3("Start"),
-        end: types.Vector3("End")
-    });
-}
+export const componentTypes = [
+    Model
+];

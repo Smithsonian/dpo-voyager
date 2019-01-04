@@ -16,17 +16,32 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+
 import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TapeTool extends ExplorerComponent
+export default class Interface extends ExplorerComponent
 {
-    static readonly type: string = "TapeTool";
+    static readonly type: string = "Interface";
 
     ins = this.ins.append({
-        enabled: types.Boolean("Enabled"),
-        start: types.Vector3("Start"),
-        end: types.Vector3("End")
+        visible: types.Boolean_true("Interface.Visible"),
+        logo: types.Boolean_true("Interface.Logo"),
     });
+
+    update()
+    {
+        const system = this.system;
+        const { visible, logo } = this.ins;
+
+        if (visible.changed) {
+            system.interfaceController.visible = visible.value;
+        }
+        if (logo.changed) {
+            system.interfaceController.logo = logo.value;
+        }
+
+        return true;
+    }
 }

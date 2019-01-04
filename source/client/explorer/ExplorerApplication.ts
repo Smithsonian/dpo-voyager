@@ -18,15 +18,15 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
-import LoadingManager from "@ff/three/LoadingManager";
+import Registry from "@ff/graph/Registry";
 
-import PresentationController from "./controllers/PresentationController";
 import ExplorerSystem from "./ExplorerSystem";
+import ExplorerNode from "./nodes/Explorer";
+import PresentationController from "./controllers/PresentationController";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
+import { componentTypes as coreComponents } from "../core/components";
 import { componentTypes as explorerComponents } from "./components";
-
-import Explorer from "./nodes/Explorer";
 
 import MainView from "./ui/MainView";
 
@@ -71,32 +71,31 @@ export default class ExplorerApplication
     readonly props: IExplorerApplicationProps;
     readonly system: ExplorerSystem;
     readonly commander: Commander;
-    readonly loadingManager: LoadingManager;
+    readonly root: ExplorerNode;
 
     readonly presentationController: PresentationController;
+
 
     constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
     {
         console.log(ExplorerApplication.splashMessage);
 
-        this.loadingManager = new LoadingManager();
-        this.commander = new Commander();
-        this.system = new ExplorerSystem(this.commander);
-
-        this.presentationController = new PresentationController(this.system, this.commander);
-
         // register components
-        const registry = this.system.registry;
+        const registry = new Registry();
         registry.registerComponentType(sceneComponents);
+        registry.registerComponentType(coreComponents);
         registry.registerComponentType(explorerComponents);
+
+        this.commander = new Commander();
+        this.system = new ExplorerSystem(this.commander, registry);
+
+        this.root = this.system.graph.createNode(ExplorerNode);
+        this.presentationController = new PresentationController(this.root, this.commander);
 
         // create main view if not given
         if (element) {
             new MainView(this).appendTo(element);
         }
-
-        // create main node and components
-        this.system.graph.createNode(Explorer);
 
         // start rendering
         this.system.start();
@@ -107,6 +106,8 @@ export default class ExplorerApplication
 
     protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
     {
+        const controller = this.presentationController;
+
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
         props.template = props.template || parseUrlParameter("template") || parseUrlParameter("t");
@@ -117,16 +118,16 @@ export default class ExplorerApplication
         props.name = props.name || parseUrlParameter("name") || parseUrlParameter("n");
 
         if (props.presentation) {
-            this.presentationController.loadPresentation(props.presentation);
+            controller.loadPresentation(props.presentation);
         }
         else if (props.item) {
-            this.presentationController.loadItem(props.item, props.template);
+            controller.loadItem(props.item, props.template);
         }
         else if (props.model) {
-            this.presentationController.loadModel(props.model, props.quality, props.name, props.template);
+            controller.loadModel(props.model, props.quality, props.name, props.template);
         }
         else if (props.geometry) {
-            this.presentationController.loadGeometryAndTexture(
+            controller.loadGeometryAndTexture(
                 props.geometry, props.texture, props.quality, props.name, props.template);
         }
 

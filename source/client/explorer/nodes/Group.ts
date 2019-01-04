@@ -15,11 +15,17 @@
  * limitations under the License.
  */
 
-import Scene from "@ff/scene/components/Scene";
+import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PScene extends Scene
+export default class Group extends PresentationNode
 {
-    static readonly type: string = "PScene";
+    static readonly type: string = "Group";
+
+    createComponents()
+    {
+        super.createComponents();
+        this.name = "Group";
+    }
 }

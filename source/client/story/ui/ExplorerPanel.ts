@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import ExplorerApplication from "../../explorer/Application";
+import ExplorerApplication from "../../explorer/ExplorerApplication";
 import ExplorerView from "../../explorer/ui/MainView";
 
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";

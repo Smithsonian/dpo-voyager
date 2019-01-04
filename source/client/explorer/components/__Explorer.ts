@@ -17,77 +17,77 @@
 
 import * as THREE from "three";
 
-import Node, { IComponentEvent } from "@ff/graph/Node";
+import { types } from "@ff/graph/propertyTypes";
 
-import Transform from "@ff/scene/components/Transform";
+import Scene from "@ff/scene/components/Scene";
+import HomeGrid from "./HomeGrid";
+import View from "./View";
+import Renderer from "./Renderer";
+import Reader from "./Reader";
 
+import ExplorerComponent from "../ExplorerComponent";
 import Model from "../../core/components/Model";
-
+import { IComponentEvent } from "@ff/graph/ComponentSet";
 import ExplorerSystem from "../ExplorerSystem";
-
-import HomeGrid from "../components/HomeGrid";
-import View from "../components/View";
-import Renderer from "../components/Renderer";
-import Reader from "../components/Reader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new THREE.Vector3();
-const _box3 = new THREE.Box3();
 
-/**
- * Root node for Voyager Explorer.
- */
-export default class Explorer extends Node
+
+export default class Explorer extends ExplorerComponent
 {
     static readonly type: string = "Explorer";
 
-    readonly system: ExplorerSystem;
-
-    private _transform: Transform;
-    private _grid: HomeGrid;
-    private _view: View;
+    protected scene: Scene;
+    protected grid: HomeGrid;
+    protected view: View;
 
     protected boundingBox = new THREE.Box3();
 
-    get transform() {
-        return this._transform;
-    }
-    get grid() {
-        return this._grid;
-    }
-    get view() {
-        return this._view;
-    }
+
+    ins = this.ins.append({
+        visible: types.Boolean_true("Interface.Visible"),
+        logo: types.Boolean_true("Interface.Logo"),
+    });
+
 
     create()
     {
-        this.name = "Explorer";
+        const node = this.node;
 
-        this._transform = this.createComponent(Transform);
-        this._grid = this.createComponent(HomeGrid);
-        this._view = this.createComponent(View);
+        this.scene = node.createComponent(Scene);
+        this.grid = node.createComponent(HomeGrid);
+        this.view = node.createComponent(View);
 
-        this.createComponent(Renderer);
-        this.createComponent(Reader);
-
-        // create grid node
-        // const gridNode = this.graph.createNode(Node, "Grid");
-        // const gridTransform = gridNode.createComponent(Transform);
-        // gridNode.createComponent(Grid);
-        // this.hierarchy.addChild(gridTransform);
+        node.createComponent(Renderer);
+        node.createComponent(Reader);
 
         // scene background
-        //this.scene.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
+        this.scene.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
 
         this.system.components.on(Model, this.onModelComponent, this);
-
     }
 
     dispose()
     {
         super.dispose();
         this.system.components.off(Model, this.onModelComponent, this);
+    }
+
+    update()
+    {
+        const system = this.system;
+        const { visible, logo } = this.ins;
+
+        if (visible.changed) {
+            system.interfaceController.visible = visible.value;
+        }
+        if (logo.changed) {
+            system.interfaceController.logo = logo.value;
+        }
+
+        return true;
     }
 
     protected onModelComponent(event: IComponentEvent<Model>)

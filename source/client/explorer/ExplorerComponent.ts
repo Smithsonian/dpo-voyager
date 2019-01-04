@@ -15,11 +15,24 @@
  * limitations under the License.
  */
 
-import Component from "@ff/scene/Component";
+import VoyagerComponent from "../core/VoyagerComponent";
+import ExplorerSystem from "./ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Explorer extends Component
+export interface IExplorerComponent
 {
-    static readonly type: string = "Explorer";
+    system: ExplorerSystem;
+}
+
+/**
+ * Base class for components compatible with the Explorer system.
+ */
+export default class ExplorerComponent extends VoyagerComponent implements IExplorerComponent
+{
+    static readonly type: string = "Component";
+
+    get system() {
+        return this.node.system as ExplorerSystem;
+    }
 }

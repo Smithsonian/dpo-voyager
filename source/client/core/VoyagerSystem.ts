@@ -17,26 +17,33 @@
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
+import RenderSystem from "@ff/scene/RenderSystem";
+import RenderQuadView from "@ff/scene/RenderQuadView";
 
-import VoyagerSystem from "../core/VoyagerSystem";
-
-import SelectionController, { INodeEvent, IComponentEvent } from "@ff/scene/SelectionController";
-import InterfaceController from "./controllers/InterfaceController";
+import LoadingManager from "./loaders/LoadingManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { INodeEvent, IComponentEvent };
-
-export default class ExplorerSystem extends VoyagerSystem
+export default class VoyagerSystem extends RenderSystem
 {
-    readonly selectionController: SelectionController;
-    readonly interfaceController: InterfaceController;
+    readonly loadingManager: LoadingManager;
 
     constructor(commander: Commander, registry?: Registry)
     {
-        super(commander, registry);
+        super(registry);
 
-        this.selectionController = new SelectionController(this, commander);
-        this.interfaceController = new InterfaceController(this, commander);
+        this.loadingManager = new LoadingManager();
+    }
+
+    getPrimaryView(): RenderQuadView
+    {
+        const views = this.views;
+        for (let i = 0, n = views.length; i < n; ++i) {
+            if (views[i] instanceof RenderQuadView) {
+                return views[i] as RenderQuadView;
+            }
+        }
+
+        return null;
     }
 }

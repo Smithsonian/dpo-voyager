@@ -18,96 +18,114 @@
 import resolvePathname from "resolve-pathname";
 
 import { Index } from "@ff/core/types";
+import Graph from "@ff/graph/Graph";
 import Node from "@ff/graph/Node";
 
-import {
-    IPresentation,
-    INode as INodeData,
-    IVoyager
-} from "common/types";
+import { IVoyager, IPresentation, INode } from "common/types";
 
-import LoadingManager from "../loaders/LoadingManager";
+// import LoadingManager from "../loaders/LoadingManager";
+//
+// import PTransform from "../components/PTransform";
+// import PCamera from "../components/PCamera";
+// import PLight from "../components/PLight";
+// import PDirectionalLight from "../components/PDirectionalLight";
+// import PPointLight from "../components/PPointLight";
+// import PSpotLight from "../components/PSpotLight";
+//
+// import Reference from "../components/Reference";
 
-import PTransform from "../components/PTransform";
-import PCamera from "../components/PCamera";
-import PLight from "../components/PLight";
-import PDirectionalLight from "../components/PDirectionalLight";
-import PPointLight from "../components/PPointLight";
-import PSpotLight from "../components/PSpotLight";
+import Transform from "@ff/scene/components/Transform";
+import Scene from "@ff/scene/components/Scene";
 
-import Reference from "../components/Reference";
 import Meta from "../components/Meta";
-import Documents from "../components/Documents";
 import Snapshots from "../components/Snapshots";
 import Tours from "../components/Tours";
-import Renderer from "../components/Renderer";
-import Reader from "../components/Reader";
+import Documents from "../components/Documents";
 
-import Item from "./Item";
+import PresentationNode from "./PresentationNode";
+
+import Group from "../nodes/Group";
+import Item from "../nodes/Item";
+import Reference from "../nodes/Reference";
+import Camera from "../nodes/Camera";
+import Light from "../nodes/Light";
+import DirectionalLight from "../nodes/DirectionalLight";
+import PointLight from "../nodes/PointLight";
+import SpotLight from "../nodes/SpotLight";
+import ExplorerSystem from "../ExplorerSystem";
+
+
+// import Renderer from "../components/Renderer";
+// import Reader from "../components/Reader";
+//
+// import Item from "./Item";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export type ReferenceCallback = (index: number, graph: Graph, assetPath: string) => Node;
+
 
 export default class Presentation extends Node
 {
     static readonly type: string = "Presentation";
 
-    protected assetPath: string = "";
-    protected loadingManager: LoadingManager = null;
-    protected items: Item[] = [];
+    readonly system: ExplorerSystem;
+
+    protected url: string;
+    protected assetPath: string;
+
+    private _scene: Scene;
+
+    get scene() {
+        return this._scene;
+    }
 
     get transform() {
-        return this.components.get(PTransform);
-    }
-    get camera() {
-        return this.hierarchy.getChild(PCamera, true);
-    }
-    get renderer() {
-        return this.hierarchy.getParent(Renderer, false);
-    }
-    get reader() {
-        return this.hierarchy.getParent(Reader, false);
+        return this._scene as Transform;
     }
 
-    create()
+    createComponents()
     {
-        this.name = "Presentation";
-
-        this.createComponent(PTransform);
+        this._scene = this.createComponent(Scene);
         this.createComponent(Meta);
         this.createComponent(Snapshots);
         this.createComponent(Tours);
         this.createComponent(Documents);
+
+        this.name = "Presentation";
     }
 
-    setLoadingManager(loadingManager: LoadingManager)
+    setUrl(url: string, assetPath?: string)
     {
-        this.loadingManager = loadingManager;
+        this.url = url;
+        const urlPath = resolvePathname(".", url);
+        this.assetPath = assetPath ? assetPath : urlPath;
+        const urlName = url.substr(urlPath.length);
+
+        if (urlName) {
+            this.name = urlName;
+        }
     }
 
-    setAssetPath(assetPath: string)
-    {
-        this.assetPath = assetPath;
-    }
-
-    fromData(data: IPresentation, items?: Item[])
+    fromData(presentationData: IPresentation, url: string, assetPath?: string, callback?: ReferenceCallback)
     {
         // scene, nodes
-        const nodes = data.scene.nodes;
+        const nodes = presentationData.scene.nodes;
         nodes.forEach(nodeIndex => {
-            const node = data.nodes[nodeIndex];
-            this.inflateNode(this.transform, node, data, items);
+            const nodeData = presentationData.nodes[nodeIndex];
+            this.inflateNode(this, nodeData, presentationData, callback);
         });
 
         // Voyager settings
-        const voyager: IVoyager = data.voyager || {};
+        const voyager: IVoyager = presentationData.voyager || {};
 
-        if (voyager.renderer) {
-            this.renderer.fromData(voyager.renderer);
-        }
-
-        if (voyager.reader) {
-            this.reader.fromData(voyager.reader);
-        }
+        // if (voyager.renderer) {
+        //     this.renderer.fromData(voyager.renderer);
+        // }
+        //
+        // if (voyager.reader) {
+        //     this.reader.fromData(voyager.reader);
+        // }
 
         return this;
     }
@@ -127,13 +145,14 @@ export default class Presentation extends Node
         };
 
         // scene, nodes
-        const transforms = this.transform.children;
+        const transforms = this.scene.children;
 
         if (transforms.length > 0) {
             presentationData.nodes = [];
             transforms.forEach(transform => {
-                if (transform instanceof PTransform) {
-                    const index = this.deflateNode(transform, presentationData);
+                const node = transform.node;
+                if (node instanceof PresentationNode) {
+                    const index = this.deflateNode(node, presentationData);
                     presentationData.scene.nodes.push(index);
                 }
             });
@@ -141,167 +160,247 @@ export default class Presentation extends Node
 
         // explorer settings
         presentationData.voyager = {
-            renderer: this.renderer.toData(),
-            reader: this.reader.toData()
+            //renderer: this.renderer.toData(),
+            //reader: this.reader.toData()
         };
 
         return presentationData as IPresentation;
     }
 
-    protected inflateNode(parent: PTransform, nodeData: INodeData, presentationData: IPresentation, items?: Item[])
+    protected inflateNode(parent: Presentation | PresentationNode, nodeData: INode,
+                          presentationData: IPresentation, callback?: ReferenceCallback)
     {
+        const graph = parent.graph;
         let node;
-        let referenceParsed = false;
-        let name;
 
         if (nodeData.reference !== undefined) {
-            // node is a reference, if uri is a  number, insert corresponding item from supplied items array
-            const reference = presentationData.references[nodeData.reference];
-            if (reference.mimeType === "application/si-dpo-3d.item+json") {
-                const index = Number(reference.uri);
-                if (items && index >= 0 &&  index < items.length) {
-                    const item = node = items[index];
-                    name = item.name;
-                    this.items.push(item);
-                    referenceParsed = true;
+            const referenceData = presentationData.references[nodeData.reference];
+            if (referenceData.mimeType === "application/si-dpo-3d.item+json") {
+                const index = Number(referenceData.uri);
+                if (index >= 0) {
+                    node = callback && callback(index, graph, this.assetPath);
+
+                    if (!node) {
+                        node = graph.createNode(Reference);
+                        node.createComponents();
+                        node.fromReferenceData(referenceData);
+                    }
+
+                    node.fromNodeData(nodeData);
+                }
+                else {
+                    // node is reference, try to load external reference
+                    const itemUrl = resolvePathname(referenceData.uri, this.url);
+                    const loadingManager = this.system.loadingManager;
+
+                    loadingManager.loadJSON(itemUrl).then(json =>
+                        loadingManager.validateItem(json).then(itemData => {
+                            node = graph.createNode(Item);
+                            node.createComponents();
+                            node.setUrl(itemUrl);
+                            node.fromNodeData(nodeData);
+                            node.fromItemData(itemData);
+                        })
+                    ).catch(error => {
+                        console.log(`failed to create item from reference uri: ${error}`);
+                        node = graph.createNode(Reference);
+                        node.createComponents();
+                        node.fromNodeData(nodeData);
+                        node.fromReferenceData(referenceData);
+                    });
                 }
             }
         }
         else if (nodeData.item !== undefined) {
-            // node is an item, create an item node from data
             const itemData = presentationData.items[nodeData.item];
-            const item = parent.graph.createNode(Item);
-            item.setLoadingManager(this.loadingManager);
-            item.setAssetPath(this.assetPath);
-            item.fromData(itemData);
-            name = item.name;
-            this.items.push(item);
-        }
-
-        if (!node) {
-            node = parent.graph.createNode(Node);
-            node.createComponent(PTransform);
-        }
-
-        const transform = node.components.get(PTransform);
-        transform.fromData(nodeData);
-        parent.addChild(transform);
-
-        if (nodeData.reference !== undefined && !referenceParsed) {
-            const reference = presentationData.references[nodeData.reference];
-            // node is a reference, if uri is an index (we already know we don't have an item for the index)
-            // keep node as reference, an item may be provided later
-            if (reference.mimeType === "application/si-dpo-3d.item+json") {
-                const index = Number(reference.uri);
-                if (index >= 0) {
-                    name = "Reference";
-                    const reference = presentationData.references[nodeData.reference];
-                    node.createComponent(Reference).fromData(reference);
-                }
-                // now try to load the item from external reference
-                else {
-                    name = "Item";
-                    const itemUrl = resolvePathname(reference.uri, this.assetPath);
-
-                    this.loadingManager.loadJSON(itemUrl).then(json =>
-                        this.loadingManager.validateItem(json).then(itemData => {
-                            const item = node.createComponent(Item);
-                            item.url = itemUrl;
-                            item.setLoadingManager(this.loadingManager);
-                            item.fromData(itemData);
-                            this.items.push(item);
-                        })
-                    ).catch(error => {
-                        console.log(`failed to create item from reference uri: ${error}`);
-                        node.name = "Reference";
-                        const reference = presentationData.references[nodeData.reference];
-                        node.createComponent(Reference).fromData(reference);
-                    })
-                }
-            }
-            else {
-                name = "Reference";
-                const reference = presentationData.references[nodeData.reference];
-                node.createComponent(Reference).fromData(reference);
-            }
+            node = graph.createNode(Item);
+            node.createComponents();
+            node.setUrl(`item-${nodeData.item}.json`, this.assetPath);
+            node.fromNodeData(nodeData);
+            node.fromItemData(itemData);
         }
         else if (nodeData.camera !== undefined) {
-            name = "Camera";
             const cameraData = presentationData.cameras[nodeData.camera];
-            node.createComponent(PCamera).fromData(cameraData);
+            node = graph.createNode(Camera);
+            node.createComponents();
+            node.fromNodeData(nodeData);
+            node.fromCameraData(cameraData);
         }
         else if (nodeData.light !== undefined) {
-            name = "Light";
             const lightData = presentationData.lights[nodeData.light];
             switch(lightData.type) {
                 case "directional":
-                    node.createComponent(PDirectionalLight).fromData(lightData);
+                    node = graph.createNode(DirectionalLight);
                     break;
                 case "point":
-                    node.createComponent(PPointLight).fromData(lightData);
+                    node = graph.createNode(PointLight);
                     break;
                 case "spot":
-                    node.createComponent(PSpotLight).fromData(lightData);
+                    node = graph.createNode(SpotLight);
                     break;
             }
+
+            node.createComponents();
+            node.fromNodeData(nodeData);
+            node.fromLightData(lightData);
+        }
+        else {
+            node = graph.createNode(Group);
+            node.createComponents();
+            node.fromNodeData(nodeData);
         }
 
-        node.name = nodeData.name || name || "Node";
+        parent.transform.addChild(node.transform);
 
         if (nodeData.children) {
             nodeData.children.forEach(childIndex => {
                 const child = presentationData.nodes[childIndex];
-                this.inflateNode(transform, child, presentationData, items);
+                this.inflateNode(node, child, presentationData, callback);
             })
         }
+
+        // if (nodeData.reference !== undefined) {
+        //     // node is a reference, if uri is a  number, insert corresponding item from supplied items array
+        //     const reference = presentationData.references[nodeData.reference];
+        //     if (reference.mimeType === "application/si-dpo-3d.item+json") {
+        //         const index = Number(reference.uri);
+        //         if (items && index >= 0 &&  index < items.length) {
+        //             const item = node = items[index];
+        //             name = item.name;
+        //             this.items.push(item);
+        //             referenceParsed = true;
+        //         }
+        //     }
+        // }
+        // else if (nodeData.item !== undefined) {
+        //     // node is an item, create an item node from data
+        //     const itemData = presentationData.items[nodeData.item];
+        //     const item = parent.graph.createNode(Item);
+        //     item.setLoadingManager(this.loadingManager);
+        //     item.setAssetPath(this.assetPath);
+        //     item.fromData(itemData);
+        //     name = item.name;
+        //     this.items.push(item);
+        // }
+        //
+        // if (!node) {
+        //     node = parent.graph.createNode(Node);
+        //     node.createComponent(PTransform);
+        // }
+        //
+        // const transform = node.components.get(PTransform);
+        // transform.fromData(nodeData);
+        // parent.addChild(transform);
+        //
+        // if (nodeData.reference !== undefined && !referenceParsed) {
+        //     const reference = presentationData.references[nodeData.reference];
+        //     // node is a reference, if uri is an index (we already know we don't have an item for the index)
+        //     // keep node as reference, an item may be provided later
+        //     if (reference.mimeType === "application/si-dpo-3d.item+json") {
+        //         const index = Number(reference.uri);
+        //         if (index >= 0) {
+        //             name = "Reference";
+        //             const reference = presentationData.references[nodeData.reference];
+        //             node.createComponent(Reference).fromData(reference);
+        //         }
+        //         // now try to load the item from external reference
+        //         else {
+        //             name = "Item";
+        //             const itemUrl = resolvePathname(reference.uri, this.assetPath);
+        //
+        //             this.loadingManager.loadJSON(itemUrl).then(json =>
+        //                 this.loadingManager.validateItem(json).then(itemData => {
+        //                     const item = node.createComponent(Item);
+        //                     item.url = itemUrl;
+        //                     item.setLoadingManager(this.loadingManager);
+        //                     item.fromData(itemData);
+        //                     this.items.push(item);
+        //                 })
+        //             ).catch(error => {
+        //                 console.log(`failed to create item from reference uri: ${error}`);
+        //                 node.name = "Reference";
+        //                 const reference = presentationData.references[nodeData.reference];
+        //                 node.createComponent(Reference).fromData(reference);
+        //             })
+        //         }
+        //     }
+        //     else {
+        //         name = "Reference";
+        //         const reference = presentationData.references[nodeData.reference];
+        //         node.createComponent(Reference).fromData(reference);
+        //     }
+        // }
+        // else if (nodeData.camera !== undefined) {
+        //     name = "Camera";
+        //     const cameraData = presentationData.cameras[nodeData.camera];
+        //     node.createComponent(PCamera).fromData(cameraData);
+        // }
+        // else if (nodeData.light !== undefined) {
+        //     name = "Light";
+        //     const lightData = presentationData.lights[nodeData.light];
+        //     switch(lightData.type) {
+        //         case "directional":
+        //             node.createComponent(PDirectionalLight).fromData(lightData);
+        //             break;
+        //         case "point":
+        //             node.createComponent(PPointLight).fromData(lightData);
+        //             break;
+        //         case "spot":
+        //             node.createComponent(PSpotLight).fromData(lightData);
+        //             break;
+        //     }
+        // }
+        //
+        // node.name = nodeData.name || name || "Node";
+        //
+        // if (nodeData.children) {
+        //     nodeData.children.forEach(childIndex => {
+        //         const child = presentationData.nodes[childIndex];
+        //         this.inflateNode(transform, child, presentationData, items);
+        //     })
+        // }
     }
 
-    protected deflateNode(transform: PTransform, pres: Partial<IPresentation>): Index
+    protected deflateNode(node: PresentationNode, pres: Partial<IPresentation>): Index
     {
-        const nodeData: INodeData = transform.toData() as Partial<INodeData>;
-        const node = transform.node;
-        if (node.name) {
-            nodeData.name = node.name;
-        }
+        let nodeData;
 
+        nodeData = node.toNodeData();
         pres.nodes.push(nodeData);
         const index = pres.nodes.length - 1;
 
-        const camera = transform.components.get(PCamera);
-        const light = transform.components.get(PLight);
-        const reference = transform.components.get(Reference);
-
         if (node instanceof Item) {
             pres.items = pres.items || [];
-            pres.items.push(node.toData());
+            pres.items.push(node.toItemData());
             nodeData.item = pres.items.length - 1;
         }
-        else if (camera) {
+        else if (node instanceof Reference) {
+            pres.references = pres.references || [];
+            pres.references.push(node.toReferenceData());
+            nodeData.reference = pres.references.length - 1;
+        }
+        else if (node instanceof Camera) {
             pres.cameras = pres.cameras || [];
-            pres.cameras.push(camera.toData());
+            pres.cameras.push(node.toCameraData());
             nodeData.camera = pres.cameras.length -1;
         }
-        else if (light) {
+        else if (node instanceof Light) {
             pres.lights = pres.lights || [];
-            pres.lights.push(light.toData());
+            pres.lights.push(node.toLightData());
             nodeData.light = pres.lights.length - 1;
-        }
-        else if (reference) {
-            pres.references = pres.references || [];
-            pres.references.push(reference.toData());
-            nodeData.reference = pres.references.length - 1;
         }
 
         // deflate children
-        const transforms = transform.children;
+        const transforms = this.components.get(Transform).children;
         if (transforms.length > 0) {
             nodeData.children = [];
             transforms.forEach(transform => {
-                if (transform instanceof PTransform) {
-                    const index = this.deflateNode(transform, pres);
+                const node = transform.node;
+                if (node instanceof PresentationNode) {
+                    const index = this.deflateNode(node, pres);
                     nodeData.children.push(index);
                 }
-            })
+            });
         }
 
         return index;

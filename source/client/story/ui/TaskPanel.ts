@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import StoryController, { ITaskChangeEvent } from "../controllers/TaskController";
+import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////

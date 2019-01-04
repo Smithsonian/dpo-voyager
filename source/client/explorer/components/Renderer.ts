@@ -15,22 +15,21 @@
  * limitations under the License.
  */
 
-import Component from "@ff/graph/Component";
 import { types } from "@ff/graph/propertyTypes";
+import { IRenderContext } from "@ff/scene/RenderSystem";
 
-import {
-    IRenderContext
-} from "@ff/scene/RenderSystem";
-
-import Model from "../components/Model";
-import { EShaderMode } from "../shaders/UberMaterial";
 import { IRenderer, TShaderType } from "common/types";
+
+import Model from "../../core/components/Model";
+import { EShaderMode } from "../../core/shaders/UberMaterial";
+
+import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EShaderMode };
 
-export default class Renderer extends Component
+export default class Renderer extends ExplorerComponent
 {
     static readonly type: string = "Renderer";
 

@@ -19,9 +19,8 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 
-import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Application";
+import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 import ExplorerSystem from "../explorer/ExplorerSystem";
-import ExplorerNode from "../explorer/nodes/Explorer";
 
 import LogController from "./controllers/LogController";
 import StoryController from "./controllers/StoryController";
@@ -62,19 +61,20 @@ export default class StoryApplication
     constructor(element?: HTMLElement, props?: IStoryApplicationProps)
     {
         this.explorer = new ExplorerApplication(null, props);
+
         this.system = this.explorer.system;
         this.commander = this.explorer.commander;
-
-        this.logController = new LogController(this.system, this.commander);
-        this.taskController = new StoryController(this.system, this.commander);
 
         // register components
         const registry = this.system.registry;
         registry.registerComponentType(storyComponents);
 
+        this.logController = new LogController(this.system, this.commander);
+        this.taskController = new StoryController(this.system, this.commander);
+
         // add story components
-        const explorerNode = this.system.nodes.get(ExplorerNode);
-        explorerNode.createComponent(PoseManip);
+        const rootNode = this.explorer.presentationController.root;
+        rootNode.createComponent(PoseManip);
 
         this.props = this.initFromProps(props);
 

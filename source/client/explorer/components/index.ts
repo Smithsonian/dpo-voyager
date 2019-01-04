@@ -16,22 +16,18 @@
  */
 
 import Annotations from "./Annotations";
+import CutTool from "./CutTool";
 import Documents from "./Documents";
-import Explorer from "./Explorer";
 import Groups from "./Groups";
 import HomeGrid from "./HomeGrid";
+import Interface from "./Interface";
 import Meta from "./Meta";
-import Model from "./Model";
-import PCamera from "./PCamera";
-import PDirectionalLight from "./PDirectionalLight";
-import PPointLight from "./PPointLight";
 import Process from "./Process";
-import PSpotLight from "./PSpotLight";
-import PTransform from "./PTransform";
 import Reader from "./Reader";
 import Reference from "./Reference";
 import Renderer from "./Renderer";
 import Snapshots from "./Snapshots";
+import TapeTool from "./TapeTool";
 import Tours from "./Tours";
 import View from "./View";
 
@@ -39,44 +35,36 @@ import View from "./View";
 
 export {
     Annotations,
+    CutTool,
     Documents,
-    Explorer,
     Groups,
     HomeGrid,
+    Interface,
     Meta,
-    Model,
-    PCamera,
-    PDirectionalLight,
-    PPointLight,
     Process,
-    PSpotLight,
-    PTransform,
     Reader,
     Reference,
     Renderer,
     Snapshots,
+    TapeTool,
     Tours,
     View
 };
 
 export const componentTypes = [
     Annotations,
+    CutTool,
     Documents,
-    Explorer,
     Groups,
     HomeGrid,
+    Interface,
     Meta,
-    Model,
-    PCamera,
-    PDirectionalLight,
-    PPointLight,
     Process,
-    PSpotLight,
-    PTransform,
     Reader,
     Reference,
     Renderer,
     Snapshots,
+    TapeTool,
     Tours,
     View
 ];

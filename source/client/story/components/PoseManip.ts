@@ -18,13 +18,12 @@
 import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
-import { computeLocalBoundingBox } from "@ff/three/helpers";
-import Viewport from "@ff/three/Viewport";
-import Component from "@ff/scene/Component";
 import { IPointerEvent } from "@ff/scene/RenderView";
+import Viewport from "@ff/three/Viewport";
 
-import ExplorerSystem, { IComponentEvent } from "../../explorer/ExplorerSystem";
-import Model from "../../explorer/components/Model";
+import Model from "../../core/components/Model";
+import ExplorerComponent from "../../explorer/ExplorerComponent";
+import { IComponentEvent } from "../../explorer/ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +36,7 @@ const _quat1 = new THREE.Quaternion();
 
 export enum EManipMode { Off, Translate, Rotate }
 
-export default class PoseManip extends Component
+export default class PoseManip extends ExplorerComponent
 {
     static readonly type: string = "PoseManip";
 
@@ -55,9 +54,9 @@ export default class PoseManip extends Component
     {
         super.create();
 
-        const system = this.system as ExplorerSystem;
+        const system = this.system;
         system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        system.selection.components.on(Model, this.onSelectModel, this);
+        system.selectionController.components.on(Model, this.onSelectModel, this);
 
     }
 
@@ -65,9 +64,9 @@ export default class PoseManip extends Component
     {
         super.dispose();
 
-        const system = this.system as ExplorerSystem;
+        const system = this.system;
         system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        system.selection.components.on(Model, this.onSelectModel, this);
+        system.selectionController.components.on(Model, this.onSelectModel, this);
     }
 
     update()

@@ -26,10 +26,12 @@ import { Object3D } from "@ff/scene/components";
 import { IModel, TUnitType, Vector3 } from "common/types/item";
 
 import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
-import LoadingManager from "../loaders/LoadingManager";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import { EAssetType, EMapType } from "../models/Asset";
 import { EUnitType } from "common/types";
+
+import VoyagerSystem from "../VoyagerSystem";
+import { IVoyagerComponent } from "../VoyagerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +51,10 @@ const _qualityLevels = [
 
 export { EShaderMode };
 
-export default class Model extends Object3D
+/**
+ * Renderable component representing a Voyager explorer model.
+ */
+export default class Model extends Object3D implements IVoyagerComponent
 {
     static readonly type: string = "Model";
 
@@ -68,15 +73,16 @@ export default class Model extends Object3D
         aof: types.Vector3("Auto.Offset")
     });
 
+    protected assetPath: string = "";
     protected boundingBox = new THREE.Box3();
     protected boxFrame: THREE.Object3D = null;
 
     protected derivatives: Derivative[] = [];
     protected activeDerivative: Derivative = null;
 
-    protected loadingManager: LoadingManager = null;
-    protected assetPath: string = "";
-
+    get system() {
+        return this.node.system as VoyagerSystem;
+    }
 
     create()
     {
@@ -118,6 +124,11 @@ export default class Model extends Object3D
     getBoundingBox()
     {
         return this.boundingBox;
+    }
+
+    setAssetPath(assetPath: string)
+    {
+        this.assetPath = assetPath;
     }
 
     setFromMatrix(matrix: THREE.Matrix4)
@@ -173,16 +184,6 @@ export default class Model extends Object3D
         });
     }
 
-    setLoadingManager(loadingManager: LoadingManager)
-    {
-        this.loadingManager = loadingManager;
-    }
-
-    setAssetPath(assetPath: string)
-    {
-        this.assetPath = assetPath;
-    }
-
     fromData(modelData: IModel): this
     {
         this.ins.units.setValue(EUnitType[modelData.units] || 0);
@@ -192,9 +193,7 @@ export default class Model extends Object3D
         }
 
         modelData.derivatives.forEach(derivativeData => {
-            const usage = EDerivativeUsage[derivativeData.usage];
-            const quality = EDerivativeQuality[derivativeData.quality];
-            this.addDerivative(new Derivative(usage, quality, derivativeData.assets));
+            this.addDerivative(new Derivative(derivativeData));
         });
 
         if (modelData.transform) {
@@ -244,36 +243,45 @@ export default class Model extends Object3D
         return data;
     }
 
+    /**
+     * Automatically loads derivatives up to the given quality.
+     * First loads the lowest available quality (usually thumb), then
+     * loads the desired quality level.
+     * @param quality
+     */
     protected autoLoad(quality: EDerivativeQuality): Promise<void>
     {
         const sequence = [];
 
-        const thumb = this.findDerivative(EDerivativeQuality.Thumb);
-        if (thumb) {
-            sequence.push(thumb);
+        const lowestQualityDerivative = this.selectDerivative(EDerivativeQuality.Thumb);
+        if (lowestQualityDerivative) {
+            sequence.push(lowestQualityDerivative);
         }
 
-        const second = this.selectDerivative(quality);
-        if (second) {
-            sequence.push(second);
+        const targetQualityDerivative = this.selectDerivative(quality);
+        if (targetQualityDerivative && targetQualityDerivative !== lowestQualityDerivative) {
+            sequence.push(targetQualityDerivative);
         }
 
         if (sequence.length === 0) {
             return Promise.reject(new Error("no suitable web-derivatives available"));
         }
 
+        // load sequence of derivatives one by one
         return sequence.reduce((promise, derivative) => {
             return promise.then(() => this.loadDerivative(derivative));
         }, Promise.resolve());
     }
 
+    /**
+     * Loads and displays the given derivative.
+     * @param derivative
+     */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        if (!this.loadingManager) {
-            throw new Error("can't load derivative, loading manager not set");
-        }
+        const loadingManager = this.system.loadingManager;
 
-        return derivative.load(this.loadingManager, this.assetPath)
+        return derivative.load(loadingManager, this.assetPath)
         .then(() => {
             if (!derivative.model) {
                 return;
@@ -304,6 +312,15 @@ export default class Model extends Object3D
         });
     }
 
+    /**
+     * From all derivatives with the given usage (e.g. web), select a derivative as close as possible to
+     * the given quality. The selection strategy works as follows:
+     * 1. Look for a derivative matching the quality exactly. If found, return it.
+     * 2. Look for a derivative with higher quality. If found, return it.
+     * 3. Look for a derivative with lower quality. If found return it, otherwise report an error.
+     * @param quality
+     * @param usage
+     */
     protected selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null
     {
         usage = usage !== undefined ? usage : EDerivativeUsage.Web;
@@ -314,13 +331,13 @@ export default class Model extends Object3D
             throw new Error(`derivative quality not supported: '${EDerivativeQuality[quality]}'`);
         }
 
-        const derivative = this.findDerivative(quality, usage);
+        const derivative = this.getDerivative(quality, usage);
         if (derivative) {
             return derivative;
         }
 
         for (let i = qualityIndex + 1; i < _qualityLevels.length; ++i) {
-            const derivative = this.findDerivative(_qualityLevels[i], usage);
+            const derivative = this.getDerivative(_qualityLevels[i], usage);
             if (derivative) {
                 console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using higher quality`);
                 return derivative;
@@ -328,7 +345,7 @@ export default class Model extends Object3D
         }
 
         for (let i = qualityIndex - 1; i >= 0; --i) {
-            const derivative = this.findDerivative(_qualityLevels[i], usage);
+            const derivative = this.getDerivative(_qualityLevels[i], usage);
             if (derivative) {
                 console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using lower quality`);
                 return derivative;
@@ -337,10 +354,16 @@ export default class Model extends Object3D
 
         console.warn(`no suitable derivative found for quality '${EDerivativeQuality[quality]}'`
             + ` and usage '${EDerivativeUsage[usage]}'`);
+
         return null;
     }
 
-    protected findDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative
+    /**
+     * Returns the derivative with the given quality and usage. Returns null if not found.
+     * @param quality The quality level of the derivative.
+     * @param usage The usage of the derivative.
+     */
+    protected getDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative
     {
         usage = usage !== undefined ? usage : EDerivativeUsage.Web;
 
@@ -352,6 +375,11 @@ export default class Model extends Object3D
         }
 
         return null;
+    }
+
+    protected dumpDerivatives()
+    {
+        this.derivatives.forEach(derivative => console.log(derivative.toString()));
     }
 }
 
