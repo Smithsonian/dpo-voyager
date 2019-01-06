@@ -19,7 +19,6 @@ import resolvePathname from "resolve-pathname";
 
 import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
 import Commander from "@ff/core/Commander";
-import Transform from "@ff/scene/components/Transform";
 
 import * as template from "../templates/presentation.json";
 
@@ -38,7 +37,7 @@ import Item from "../nodes/Item";
 const _splitUrl = function(url: string): { path: string, name: string }
 {
     const path = resolvePathname(".", url);
-    const name = url.substr(path.length);
+    const name = path === "/" && url[0] !== "/" ? url : url.substr(path.length);
 
     return { path, name };
 };
@@ -135,19 +134,23 @@ export default class PresentationController extends Controller<PresentationContr
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
+        const { path: modelPath, name: modelName } = _splitUrl(modelUrl);
+
+        if (itemUrl) {
+            itemUrl = resolvePathname(itemUrl, modelPath);
+        }
+
         return Promise.resolve().then(() => {
-            console.log(`PresentationController.loadModel - Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[q]}\n`,
-                `model url: ${modelUrl}`);
+            console.log(`PresentationController.loadModel - Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[q]}`,
+                `\nmodel url: ${modelUrl}`, `\nitem url: ${itemUrl}`);
 
-            const { path, name } = _splitUrl(modelUrl);
-
-            return this.openDefaultPresentation(path, (index, graph, assetPath) => {
+            return this.openDefaultPresentation(modelPath, (index, graph, assetPath) => {
                 if (index === 0) {
                     const node = graph.createNode(Item);
                     node.createComponents();
-                    node.setUrl(itemUrl || `${path}item.json`);
+                    node.setUrl(itemUrl || `${modelPath}item.json`, modelPath);
                     const model = node.components.get(Model);
-                    model.addWebModelDerivative(name, q);
+                    model.addWebModelDerivative(modelName, q);
                     return node;
                 }
 
@@ -160,17 +163,23 @@ export default class PresentationController extends Controller<PresentationContr
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
+        const { path: geoPath, name: geoName } = _splitUrl(geometryUrl);
+
+        const texName = textureUrl ? _splitUrl(textureUrl).name : "";
+
+        if (itemUrl) {
+            itemUrl = resolvePathname(itemUrl, geoPath);
+        }
+
         return Promise.resolve().then(() => {
-            console.log(`PresentationController.loadGeometryAndTexture - Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}\n`,
-                `geometry url: ${geometryUrl}, texture url: ${textureUrl}`);
+            console.log(`PresentationController.loadGeometryAndTexture - Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}`,
+                `\ngeometry url: ${geometryUrl}`, `\ntexture url: ${texName ? geoPath + texName : "(none)"}`, `\nitem url: ${itemUrl}`);
 
-            const { path: assetPath, name: geoName } = _splitUrl(geometryUrl);
-            const texName = resolvePathname(textureUrl, assetPath);
-
-            return this.openDefaultPresentation(assetPath, (index, graph, assetPath) => {
+            return this.openDefaultPresentation(geoPath, (index, graph, assetPath) => {
                 if (index === 0) {
                     const node = graph.createNode(Item);
-                    node.setUrl(itemUrl || `${assetPath}item.json`);
+                    node.createComponents();
+                    node.setUrl(itemUrl || `${assetPath}item.json`, geoPath);
                     const model = node.components.get(Model);
                     model.addGeometryAndTextureDerivative(geoName, texName, q);
                     return node;

@@ -61,8 +61,8 @@ export default class ViewMenu extends Popup
     {
         super.connected();
 
-        this.propProjection.attachInput(this.system, View, "View.Projection");
-        this.propPreset.attachInput(this.system, View, "View.Preset");
+        this.propProjection.property = this.system.components.get(View).ins.projection;
+        this.propPreset.property = this.system.components.get(View).ins.preset;
         this.requestUpdate();
 
     }

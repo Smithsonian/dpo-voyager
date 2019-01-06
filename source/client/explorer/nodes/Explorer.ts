@@ -20,6 +20,7 @@ import * as THREE from "three";
 import Node, { IComponentEvent } from "@ff/graph/Node";
 
 import Transform from "@ff/scene/components/Transform";
+import Scene from "@ff/scene/components/Scene";
 
 import Model from "../../core/components/Model";
 
@@ -29,6 +30,7 @@ import HomeGrid from "../components/HomeGrid";
 import View from "../components/View";
 import Renderer from "../components/Renderer";
 import Reader from "../components/Reader";
+import Interface from "../components/Interface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,14 +46,14 @@ export default class Explorer extends Node
 
     readonly system: ExplorerSystem;
 
-    private _transform: Transform;
+    private _scene: Scene;
     private _grid: HomeGrid;
     private _view: View;
 
     protected boundingBox = new THREE.Box3();
 
     get transform() {
-        return this._transform;
+        return this._scene as Transform;
     }
     get grid() {
         return this._grid;
@@ -64,12 +66,13 @@ export default class Explorer extends Node
     {
         this.name = "Explorer";
 
-        this._transform = this.createComponent(Transform);
+        this._scene = this.createComponent(Scene);
         this._grid = this.createComponent(HomeGrid);
         this._view = this.createComponent(View);
 
         this.createComponent(Renderer);
         this.createComponent(Reader);
+        this.createComponent(Interface);
 
         // create grid node
         // const gridNode = this.graph.createNode(Node, "Grid");
@@ -78,7 +81,7 @@ export default class Explorer extends Node
         // this.hierarchy.addChild(gridTransform);
 
         // scene background
-        //this.scene.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
+        this._scene.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
 
         this.system.components.on(Model, this.onModelComponent, this);
 

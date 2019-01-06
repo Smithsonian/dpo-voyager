@@ -40,7 +40,7 @@ export default class Camera extends PresentationNode
     fromCameraData(data: ICamera)
     {
         if (data.type === "perspective") {
-            this.camera.ins.setValuesByKey({
+            this.camera.ins.setPropertyValues({
                 projection: EProjectionType.Perspective,
                 fov: data.perspective.yfov,
                 near: data.perspective.znear,
@@ -48,7 +48,7 @@ export default class Camera extends PresentationNode
             });
         }
         else {
-            this.camera.ins.setValuesByKey({
+            this.camera.ins.setPropertyValues({
                 projection: EProjectionType.Orthographic,
                 size: data.orthographic.ymag,
                 near: data.orthographic.znear,

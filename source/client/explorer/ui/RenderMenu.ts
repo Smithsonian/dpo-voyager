@@ -53,7 +53,7 @@ export default class RenderMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.propShader.attachInput(this.system, Renderer, "Materials.Shader");
+        this.propShader.property = this.system.components.get(Renderer).ins.shader;
     }
 
     protected disconnected()

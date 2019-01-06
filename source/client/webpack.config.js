@@ -40,21 +40,23 @@ const dirs = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const version = "0.1.1";
+
 const apps = {
     "explorer": {
         name: "voyager-explorer",
         entryPoint: "client/explorer/ui/MainView.ts",
-        title: "Voyager Explorer"
+        title: "Voyager Explorer " + version
     },
     "mini": {
         name: "voyager-mini",
         entryPoint: "client/mini/ui/MainView.ts",
-        title: "Voyager Mini"
+        title: "Voyager Mini " + version
     },
     "story": {
         name: "voyager-story",
         entryPoint: "client/story/ui/MainView.ts",
-        title: "Voyager Story"
+        title: "Voyager Story " + version
     }
 };
 

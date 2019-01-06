@@ -41,7 +41,7 @@ export default class DirectionalLight extends Light
 
     fromLightData(data: ILight)
     {
-        this.light.ins.setValuesByKey({
+        this.light.ins.setPropertyValues({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
             position: [ 0, 0, 0 ],

@@ -122,7 +122,7 @@ export default class PoseManip extends ExplorerComponent
             _mat4.makeRotationFromQuaternion(_quat1);
         }
         else {
-            const f = camera.size * 2 / this._viewport.width;
+            const f = camera.size / this._viewport.width;
             _axis.set(deltaX * f, -deltaY * f, 0).applyQuaternion(_quat0);
             _mat4.identity().setPosition(_axis);
         }

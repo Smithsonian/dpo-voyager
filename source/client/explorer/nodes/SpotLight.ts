@@ -41,7 +41,7 @@ export default class SpotLight extends Light
 
     fromLightData(data: ILight)
     {
-        this.light.ins.setValuesByKey({
+        this.light.ins.setPropertyValues({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
             distance: data.point.distance || 0,

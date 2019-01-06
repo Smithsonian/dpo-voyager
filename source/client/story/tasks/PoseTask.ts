@@ -26,16 +26,24 @@ export default class PoseTask extends Task
     static readonly text: string = "Pose";
     static readonly icon: string = "fa fa-arrows-alt";
 
+    protected interfaceVisible: boolean = false;
+
     activate()
     {
         const view = this.system.getPrimaryView();
         view.layout = EQuadViewLayout.Quad;
+
+        const controller = this.system.interfaceController;
+        this.interfaceVisible = controller.visible;
+        controller.visible = false;
     }
 
     deactivate()
     {
         const view = this.system.getPrimaryView();
         view.layout = EQuadViewLayout.Single;
+
+        this.system.interfaceController.visible = this.interfaceVisible;
     }
 
     createEditor()

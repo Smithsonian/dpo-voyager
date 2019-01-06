@@ -27,6 +27,7 @@ import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
 
 import MainView from "./ui/MainView";
+import ExplorerNode from "../explorer/nodes/Explorer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +55,7 @@ export default class MiniApplication
     readonly props: IMiniApplicationProps;
     readonly system: ExplorerSystem;
     readonly commander: Commander;
+    readonly root: ExplorerNode; // TODO: create mini node
 
     readonly presentationController: PresentationController;
 
@@ -70,8 +72,9 @@ export default class MiniApplication
         this.commander = new Commander();
         this.system = new ExplorerSystem(this.commander, registry);
 
-        // create main controller, this creates system main node
-        this.presentationController = new PresentationController(this.system, this.commander);
+        this.root = this.system.graph.createNode(ExplorerNode);
+        // TODO: get rid of presentation functionality except default template
+        this.presentationController = new PresentationController(this.root, this.commander);
 
         // create main view if not given
         if (element) {

@@ -23,20 +23,7 @@ import Node from "@ff/graph/Node";
 
 import { IVoyager, IPresentation, INode } from "common/types";
 
-// import LoadingManager from "../loaders/LoadingManager";
-//
-// import PTransform from "../components/PTransform";
-// import PCamera from "../components/PCamera";
-// import PLight from "../components/PLight";
-// import PDirectionalLight from "../components/PDirectionalLight";
-// import PPointLight from "../components/PPointLight";
-// import PSpotLight from "../components/PSpotLight";
-//
-// import Reference from "../components/Reference";
-
 import Transform from "@ff/scene/components/Transform";
-import Scene from "@ff/scene/components/Scene";
-
 import Meta from "../components/Meta";
 import Snapshots from "../components/Snapshots";
 import Tours from "../components/Tours";
@@ -71,22 +58,18 @@ export default class Presentation extends Node
 
     readonly system: ExplorerSystem;
 
-    protected url: string;
-    protected assetPath: string;
+    protected url: string = "";
+    protected assetPath: string = "";
 
-    private _scene: Scene;
-
-    get scene() {
-        return this._scene;
-    }
+    private _transform: Transform = null;
 
     get transform() {
-        return this._scene as Transform;
+        return this._transform;
     }
 
     createComponents()
     {
-        this._scene = this.createComponent(Scene);
+        this._transform = this.createComponent(Transform);
         this.createComponent(Meta);
         this.createComponent(Snapshots);
         this.createComponent(Tours);
@@ -145,7 +128,7 @@ export default class Presentation extends Node
         };
 
         // scene, nodes
-        const transforms = this.scene.children;
+        const transforms = this.transform.children;
 
         if (transforms.length > 0) {
             presentationData.nodes = [];

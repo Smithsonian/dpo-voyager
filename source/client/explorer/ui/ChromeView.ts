@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-import RenderSystem from "@ff/scene/RenderSystem";
-
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
+
+import InterfaceController, { IInterfaceUpdateEvent } from "../controllers/InterfaceController";
+import ExplorerSystem from "../ExplorerSystem";
 
 import ViewMenu from "./ViewMenu";
 import RenderMenu from "./RenderMenu";
@@ -31,9 +32,9 @@ import CustomElement, { customElement, html, property } from "@ff/ui/CustomEleme
 export default class ChromeView extends CustomElement
 {
     @property({ attribute: false })
-    system: RenderSystem;
+    system: ExplorerSystem;
 
-    constructor(system?: RenderSystem)
+    constructor(system?: ExplorerSystem)
     {
         super();
         this.system = system;
@@ -45,8 +46,25 @@ export default class ChromeView extends CustomElement
         this.setAttribute("pointer-events", "none");
     }
 
+    protected connected()
+    {
+        this.system.interfaceController.on<IInterfaceUpdateEvent>("update", this.onInterfaceUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.system.interfaceController.off<IInterfaceUpdateEvent>("update", this.onInterfaceUpdate, this);
+    }
+
     protected render()
     {
+        const isVisible = this.system.interfaceController.visible;
+        const showLogo = this.system.interfaceController.logo;
+
+        if (!isVisible) {
+            return html``;
+        }
+
         const viewMenu = new ViewMenu(this.system);
         viewMenu.portal = this;
 
@@ -66,9 +84,16 @@ export default class ChromeView extends CustomElement
                 <ff-button class="ff-menu-button" icon="fa fas fa-file-alt" selectable>
                 </ff-button>
             </div>
-            <div class="sv-logo">
-                <img src="images/si-dpo3d-logo-neg.svg" alt="Smithsonian DPO 3D Logo">
-            </div>
+            ${showLogo ? html`
+                <div class="sv-logo">
+                    <img src="images/si-dpo3d-logo-neg.svg" alt="Smithsonian DPO 3D Logo">
+                </div>
+            ` : null}
         `;
+    }
+
+    protected onInterfaceUpdate()
+    {
+        this.requestUpdate();
     }
 }

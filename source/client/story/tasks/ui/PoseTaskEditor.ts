@@ -210,8 +210,8 @@ class ModelPoseProperties extends CustomElement
 
     protected connected()
     {
-        this.modeProp.attachInput(this.system, PoseManip, "Mode");
-        this.centerProp.attachInput(this.system, PoseManip, "Center");
+        this.modeProp.property = this.system.components.get(PoseManip).ins.mode;
+        this.centerProp.property = this.system.components.get(PoseManip).ins.center;
     }
 
     protected disconnected()
