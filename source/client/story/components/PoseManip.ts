@@ -20,6 +20,7 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import Viewport from "@ff/three/Viewport";
+import { computeLocalBoundingBox } from "@ff/three/helpers";
 
 import Model from "../../core/components/Model";
 import ExplorerComponent from "../../explorer/ExplorerComponent";
@@ -33,6 +34,7 @@ const _axis = new THREE.Vector3();
 const _mat4 = new THREE.Matrix4();
 const _quat0 = new THREE.Quaternion();
 const _quat1 = new THREE.Quaternion();
+const _box = new THREE.Box3();
 
 export enum EManipMode { Off, Translate, Rotate }
 
@@ -41,8 +43,7 @@ export default class PoseManip extends ExplorerComponent
     static readonly type: string = "PoseManip";
 
     ins = this.ins.append({
-        mode: types.Enum("Mode", EManipMode, EManipMode.Off),
-        center: types.Event("Center")
+        mode: types.Enum("Mode", EManipMode, EManipMode.Off)
     });
 
     protected _model: Model = null;
@@ -67,28 +68,6 @@ export default class PoseManip extends ExplorerComponent
         const system = this.system;
         system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         system.selectionController.components.on(Model, this.onSelectModel, this);
-    }
-
-    update()
-    {
-        const center = this.ins.center;
-        const model = this._model;
-
-        if (center.changed && model) {
-            const object = model.object3D;
-            _vec3a.set(0, 0, 0);
-            object.matrix.setPosition(_vec3a);
-
-            const box = new THREE.Box3();
-            box.setFromObject(object);
-            box.getCenter(_vec3a);
-
-            _vec3a.multiplyScalar(-1).toArray(model.ins.position.value);
-            model.ins.position.set();
-            return true;
-        }
-
-        return false;
     }
 
     tick()

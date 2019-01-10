@@ -101,16 +101,20 @@ export default class HomeGrid extends Object3D
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
-                console.log("HomeGrid.update - scene size: %s", Vector3.toString(_vec3a));
-
                 size = Math.ceil(size) * 2;
+
                 props.size = size;
+
+                this.outs.size.setValue(size);
+                this.outs.units.setValue(units);
+
+                while(size > 100) {
+                    size = size * 0.1;
+                }
 
                 props.mainDivisions = size;
                 props.subDivisions = 10;
 
-                this.outs.size.setValue(size);
-                this.outs.units.setValue(units);
             }
 
             if (!this.object3D) {

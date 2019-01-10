@@ -197,7 +197,6 @@ class ModelPoseProperties extends CustomElement
     model: Model;
 
     protected modeProp: PropertyTracker<EManipMode>;
-    protected centerProp: PropertyTracker;
 
     protected scene: VoyagerScene;
 
@@ -208,7 +207,6 @@ class ModelPoseProperties extends CustomElement
         this.model = model;
 
         this.modeProp = new PropertyTracker(this.onPropertyUpdate, this);
-        this.centerProp = new PropertyTracker(this.onPropertyUpdate, this);
 
         this.scene = null;
     }
@@ -229,13 +227,11 @@ class ModelPoseProperties extends CustomElement
     protected connected()
     {
         this.modeProp.property = this.system.components.get(PoseManip).ins.mode;
-        this.centerProp.property = this.system.components.get(PoseManip).ins.center;
     }
 
     protected disconnected()
     {
         this.modeProp.detach();
-        this.centerProp.detach();
     }
 
     protected render()
@@ -273,7 +269,7 @@ class ModelPoseProperties extends CustomElement
 
     protected onClickCenter()
     {
-        this.centerProp.set();
+        this.model.ins.center.set();
     }
 
     protected onClickZoomViews()

@@ -22,6 +22,7 @@ import threeMath from "@ff/three/math";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
+import { computeLocalBoundingBox } from "@ff/three/helpers";
 import { Object3D } from "@ff/scene/components";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
@@ -40,6 +41,7 @@ const _vec3b = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _euler = new THREE.Euler();
 const _mat4 = new THREE.Matrix4();
+const _box = new THREE.Box3();
 
 const _qualityLevels = [
     EDerivativeQuality.Thumb,
@@ -78,7 +80,8 @@ export default class Model extends Object3D implements IVoyagerComponent
         quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         autoLoad: types.Boolean("Auto.Load", true),
         position: types.Vector3("Pose.Position"),
-        rotation: types.Vector3("Pose.Rotation")
+        rotation: types.Vector3("Pose.Rotation"),
+        center: types.Event("Pose.Center")
     });
 
     outs = this.outs.append({
@@ -105,7 +108,7 @@ export default class Model extends Object3D implements IVoyagerComponent
 
     update()
     {
-        const { visible, units, quality, autoLoad, position, rotation } = this.ins;
+        const { visible, units, quality, autoLoad, position, rotation, center } = this.ins;
 
         if (!this.activeDerivative && autoLoad.value) {
             this.autoLoad(quality.value)
@@ -123,7 +126,9 @@ export default class Model extends Object3D implements IVoyagerComponent
             this.updateUnitScale();
             this.emit<IModelChangeEvent>({ type: "change", what: "boundingBox", component: this });
         }
-
+        if (center.changed) {
+            this.center();
+        }
         if (position.changed || rotation.changed) {
             this.updateMatrix();
         }
@@ -137,6 +142,20 @@ export default class Model extends Object3D implements IVoyagerComponent
         this.activeDerivative = null;
 
         super.dispose();
+    }
+
+    center()
+    {
+        const object3D = this.object3D;
+        const position = this.ins.position;
+
+        object3D.matrix.decompose(_vec3a, _quat, _vec3b);
+        object3D.matrix.makeRotationFromQuaternion(_quat);
+        _box.makeEmpty();
+        computeLocalBoundingBox(object3D, _box, object3D.parent);
+        _box.getCenter(_vec3a);
+        _vec3a.multiplyScalar(-1).toArray(position.value);
+        position.set();
     }
 
     getBoundingBox()

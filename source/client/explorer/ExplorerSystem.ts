@@ -17,10 +17,10 @@
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
+import { IRenderContext } from "@ff/scene/RenderSystem";
+import SelectionController, { INodeEvent, IComponentEvent } from "@ff/scene/SelectionController";
 
 import VoyagerSystem from "../core/VoyagerSystem";
-
-import SelectionController, { INodeEvent, IComponentEvent } from "@ff/scene/SelectionController";
 import InterfaceController from "./controllers/InterfaceController";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,5 +38,10 @@ export default class ExplorerSystem extends VoyagerSystem
 
         this.selectionController = new SelectionController(this, commander);
         this.interfaceController = new InterfaceController(this, commander);
+    }
+
+    onAfterRender(renderer, scene, camera)
+    {
+        this.selectionController.render(renderer, scene, camera);
     }
 }
