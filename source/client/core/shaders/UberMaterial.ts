@@ -26,10 +26,11 @@ import * as vertexShader from "!raw-loader!./uberShader.vert";
 import { IUniform, Texture } from "three/three-core";
 import { Material, MeshStandardMaterialParameters } from "three";
 
+import { EShaderMode } from "common/types/voyager";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EShaderMode { Inherit, Default, PBR, Phong, Clay, Normals, Wireframe, XRay }
-
+export { EShaderMode };
 
 export default class UberMaterial extends Material
 {

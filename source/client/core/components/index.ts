@@ -16,13 +16,19 @@
  */
 
 import Model from "./Model";
+import VoyagerScene from "./VoyagerScene";
+import OrbitNavigation from "./OrbitNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    Model
+    Model,
+    VoyagerScene,
+    OrbitNavigation
 };
 
 export const componentTypes = [
-    Model
+    Model,
+    VoyagerScene,
+    OrbitNavigation
 ];

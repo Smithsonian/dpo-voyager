@@ -24,9 +24,9 @@ import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Camera extends PresentationNode
+export default class CameraNode extends PresentationNode
 {
-    static readonly type: string = "Camera";
+    static readonly type: string = "CameraNode";
 
     protected camera: CameraComponent = null;
 
@@ -40,7 +40,7 @@ export default class Camera extends PresentationNode
     fromCameraData(data: ICamera)
     {
         if (data.type === "perspective") {
-            this.camera.ins.setPropertyValues({
+            this.camera.ins.copyValues({
                 projection: EProjectionType.Perspective,
                 fov: data.perspective.yfov,
                 near: data.perspective.znear,
@@ -48,7 +48,7 @@ export default class Camera extends PresentationNode
             });
         }
         else {
-            this.camera.ins.setPropertyValues({
+            this.camera.ins.copyValues({
                 projection: EProjectionType.Orthographic,
                 size: data.orthographic.ymag,
                 near: data.orthographic.znear,

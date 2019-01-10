@@ -18,18 +18,23 @@
 import * as THREE from "three";
 
 import math from "@ff/core/math";
+import Vector3 from "@ff/core/Vector3";
+
 import { types } from "@ff/graph/propertyTypes";
-import Viewport from "@ff/three/Viewport";
+import { IComponentChangeEvent } from "@ff/graph/Component";
+
 import { IRenderContext } from "@ff/scene/RenderSystem";
 import Object3D from "@ff/scene/components/Object3D";
 
+import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
-import { EUnitType } from "common/types";
+
+import { EUnitType, IGrid } from "common/types/voyager";
+import VoyagerScene from "../../core/components/VoyagerScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
 
 const _matRotationOffset = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
 const _matIdentity = new THREE.Matrix4();
@@ -39,31 +44,75 @@ export default class HomeGrid extends Object3D
     static readonly type: string = "HomeGrid";
 
     ins = this.ins.append({
-        units: types.Enum("Units", EUnitType, EUnitType.cm),
-        size: types.Number("Size", 20),
-        mainColor: types.ColorRGB("MainColor", [ 0.5, 0.7, 0.8 ]),
-        subColor: types.ColorRGB("SubColor", [ 0.25, 0.35, 0.4 ])
+        visible: types.Boolean_true("Visible"),
+        color: types.ColorRGB("Color", [ 0.5, 0.7, 0.8 ]),
+        update: types.Event("Update")
     });
 
-    private lastViewport: Viewport;
+    outs = this.outs.append({
+        size: types.Number("Size"),
+        units: types.Enum("Units", EUnitType)
+    });
+
+    private _scene: VoyagerScene = null;
+    private _lastViewport: Viewport = null;
+    private _gridProps: IGridProps = {
+        size: 20,
+        mainDivisions: 2,
+        subDivisions: 10,
+        mainColor: new THREE.Color(0.5, 0.7, 0.8),
+        subColor: new THREE.Color(0.25, 0.35, 0.4)
+    };
+
+    create()
+    {
+        this._scene = this.components.getSafe(VoyagerScene);
+        this._scene.on("change", this.onSceneChange, this);
+    }
+
+    dispose()
+    {
+        this._scene.off("change", this.onSceneChange, this);
+    }
 
     update(): boolean
     {
+        const ins = this.ins;
         let grid = this.object3D as ThreeGrid;
 
-        const { size, mainColor, subColor } = this.ins;
-        if (size.changed || mainColor.changed || subColor.changed) {
+        if (ins.color.changed || ins.update.changed) {
+            const props = this._gridProps;
 
-            const props: IGridProps = {
-                size: size.value,
-                mainDivisions: 2,
-                mainColor: new THREE.Color().fromArray(mainColor.value),
-                subDivisions: 10,
-                subColor: new THREE.Color().fromArray(subColor.value)
-            };
+            if (ins.color.changed) {
+                const mainColor = props.mainColor as THREE.Color;
+                const subColor = props.subColor as THREE.Color;
+                mainColor.fromArray(ins.color.value);
+                subColor.r = mainColor.r * 0.5;
+                subColor.g = mainColor.g * 0.5;
+                subColor.b = mainColor.b * 0.5;
+            }
+
+            if (ins.update.changed) {
+                const box = this._scene.boundingBox;
+                const units = this._scene.ins.units.value;
+
+                box.getSize(_vec3a as unknown as THREE.Vector3);
+                let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
+                console.log("HomeGrid.update - scene size: %s", Vector3.toString(_vec3a));
+
+                size = Math.ceil(size) * 2;
+                props.size = size;
+
+                props.mainDivisions = size;
+                props.subDivisions = 10;
+
+                this.outs.size.setValue(size);
+                this.outs.units.setValue(units);
+            }
 
             const newGrid = this.object3D = new ThreeGrid(props);
             if (grid) {
+                newGrid.visible = grid.visible;
                 newGrid.matrix.copy(grid.matrix);
                 newGrid.matrixWorldNeedsUpdate = true;
             }
@@ -71,14 +120,9 @@ export default class HomeGrid extends Object3D
             grid = newGrid;
         }
 
-        // const { position, rotation, scale } = this.ins;
-        // if (position.changed || rotation.changed || scale.changed) {
-        //     grid.position.fromArray(position.value);
-        //     _vec3a.fromArray(rotation.value).multiplyScalar(math.DEG2RAD);
-        //     grid.rotation.setFromVector3(_vec3a, "XYZ");
-        //     grid.scale.fromArray(scale.value);
-        //     grid.updateMatrix();
-        // }
+        if (ins.visible.changed) {
+            grid.visible = ins.visible.value;
+        }
 
         return true;
     }
@@ -86,8 +130,8 @@ export default class HomeGrid extends Object3D
     preRender(context: IRenderContext)
     {
         const viewport = context.viewport;
-        if (viewport !== this.lastViewport) {
-            this.lastViewport = viewport;
+        if (viewport !== this._lastViewport) {
+            this._lastViewport = viewport;
 
             const vpCamera = context.viewport.viewportCamera;
             this.object3D.matrixWorldNeedsUpdate = true;
@@ -98,6 +142,31 @@ export default class HomeGrid extends Object3D
             else {
                 this.object3D.matrix.extractRotation(_matIdentity);
             }
+        }
+    }
+
+    fromData(data: IGrid)
+    {
+        this.ins.copyValues({
+            visible: data.visible,
+            color: data.color
+        });
+    }
+
+    toData(): IGrid
+    {
+        const ins = this.ins;
+
+        return {
+            visible: ins.visible.cloneValue(),
+            color: ins.color.cloneValue()
+        };
+    }
+
+    protected onSceneChange(event: IComponentChangeEvent<VoyagerScene>)
+    {
+        if (event.what === "boundingBox") {
+            this.ins.update.set();
         }
     }
 }

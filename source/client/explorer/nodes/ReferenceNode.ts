@@ -17,22 +17,22 @@
 
 import { IReference } from "common/types/presentation";
 
-import ReferenceComponent from "../components/Reference";
+import Reference from "../components/Reference";
 
 import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Reference extends PresentationNode
+export default class ReferenceNode extends PresentationNode
 {
-    static readonly type: string = "Reference";
+    static readonly type: string = "ReferenceNode";
 
-    protected reference: ReferenceComponent = null;
+    protected reference: Reference = null;
 
     createComponents()
     {
         super.createComponents();
-        this.reference = this.createComponent(ReferenceComponent);
+        this.reference = this.createComponent(Reference);
         this.name = "Reference";
     }
 

@@ -19,9 +19,10 @@ import resolvePathname from "resolve-pathname";
 
 import { Index } from "@ff/core/types";
 import Graph from "@ff/graph/Graph";
-import Node from "@ff/graph/Node";
+import Camera from "@ff/scene/components/Camera";
+import RenderNode from "@ff/scene/RenderNode";
 
-import { IVoyager, IPresentation, INode } from "common/types";
+import { IPresentation, INode } from "common/types/presentation";
 
 import Transform from "@ff/scene/components/Transform";
 import Meta from "../components/Meta";
@@ -29,30 +30,35 @@ import Snapshots from "../components/Snapshots";
 import Tours from "../components/Tours";
 import Documents from "../components/Documents";
 
+import VoyagerScene from "../../core/components/VoyagerScene";
+import OrbitNavigation from "../../core/components/OrbitNavigation";
+
+import HomeGrid from "../components/HomeGrid";
+import Background from "../components/Background";
+import GroundPlane from "../components/GroundPlane";
+import Interface from "../components/Interface";
+import Reader from "../components/Reader";
+import TapeTool from "../components/TapeTool";
+import SectionTool from "../components/SectionTool";
+
 import PresentationNode from "./PresentationNode";
+import GroupNode from "../nodes/GroupNode";
+import ItemNode from "../nodes/ItemNode";
+import ReferenceNode from "../nodes/ReferenceNode";
+import CameraNode from "../nodes/CameraNode";
+import LightNode from "../nodes/LightNode";
+import DirectionalLightNode from "../nodes/DirectionalLightNode";
+import PointLightNode from "../nodes/PointLightNode";
+import SpotLightNode from "../nodes/SpotLightNode";
 
-import Group from "../nodes/Group";
-import Item from "../nodes/Item";
-import Reference from "../nodes/Reference";
-import Camera from "../nodes/Camera";
-import Light from "../nodes/Light";
-import DirectionalLight from "../nodes/DirectionalLight";
-import PointLight from "../nodes/PointLight";
-import SpotLight from "../nodes/SpotLight";
 import ExplorerSystem from "../ExplorerSystem";
-
-
-// import Renderer from "../components/Renderer";
-// import Reader from "../components/Reader";
-//
-// import Item from "./Item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type ReferenceCallback = (index: number, graph: Graph, assetPath: string) => Node;
+export type ReferenceCallback = (index: number, graph: Graph, assetPath: string) => PresentationNode;
 
 
-export default class Presentation extends Node
+export default class Presentation extends RenderNode
 {
     static readonly type: string = "Presentation";
 
@@ -61,15 +67,22 @@ export default class Presentation extends Node
     protected url: string = "";
     protected assetPath: string = "";
 
-    private _transform: Transform = null;
-
-    get transform() {
-        return this._transform;
+    activate()
+    {
+        this.components.get(VoyagerScene).ins.activate.set();
     }
 
     createComponents()
     {
-        this._transform = this.createComponent(Transform);
+        this.createComponent(VoyagerScene);
+        this.createComponent(HomeGrid);
+        this.createComponent(Background);
+        this.createComponent(GroundPlane);
+        this.createComponent(OrbitNavigation);
+        this.createComponent(Interface);
+        this.createComponent(Reader);
+        this.createComponent(TapeTool);
+        this.createComponent(SectionTool);
         this.createComponent(Meta);
         this.createComponent(Snapshots);
         this.createComponent(Tours);
@@ -100,17 +113,37 @@ export default class Presentation extends Node
         });
 
         // Voyager settings
-        const voyager: IVoyager = presentationData.voyager || {};
+        const voyager = presentationData.voyager;
 
-        // if (voyager.renderer) {
-        //     this.renderer.fromData(voyager.renderer);
-        // }
-        //
-        // if (voyager.reader) {
-        //     this.reader.fromData(voyager.reader);
-        // }
-
-        return this;
+        if (voyager) {
+            if (voyager.scene) {
+                this.components.get(VoyagerScene).fromData(voyager.scene);
+            }
+            if (voyager.grid) {
+                this.components.get(HomeGrid).fromData(voyager.grid);
+            }
+            if (voyager.background) {
+                this.components.get(Background).fromData(voyager.background);
+            }
+            if (voyager.groundPlane) {
+                this.components.get(GroundPlane).fromData(voyager.groundPlane);
+            }
+            if (voyager.navigation && voyager.navigation.type === "Orbit") {
+                this.components.get(OrbitNavigation).fromData(voyager.navigation);
+            }
+            if (voyager.interface) {
+                this.components.get(Interface).fromData(voyager.interface);
+            }
+            if (voyager.reader) {
+                this.components.get(Reader).fromData(voyager.reader);
+            }
+            if (voyager.tapeTool) {
+                this.components.get(TapeTool).fromData(voyager.tapeTool);
+            }
+            if (voyager.sectionTool) {
+                this.components.get(SectionTool).fromData(voyager.sectionTool);
+            }
+        }
     }
 
     toData()
@@ -143,8 +176,15 @@ export default class Presentation extends Node
 
         // explorer settings
         presentationData.voyager = {
-            //renderer: this.renderer.toData(),
-            //reader: this.reader.toData()
+            scene: this.components.get(VoyagerScene).toData(),
+            grid: this.components.get(HomeGrid).toData(),
+            background: this.components.get(Background).toData(),
+            groundPlane: this.components.get(GroundPlane).toData(),
+            navigation: this.components.get(OrbitNavigation).toData(),
+            interface: this.components.get(Interface).toData(),
+            reader: this.components.get(Reader).toData(),
+            tapeTool: this.components.get(TapeTool).toData(),
+            sectionTool: this.components.get(SectionTool).toData()
         };
 
         return presentationData as IPresentation;
@@ -164,7 +204,7 @@ export default class Presentation extends Node
                     node = callback && callback(index, graph, this.assetPath);
 
                     if (!node) {
-                        node = graph.createNode(Reference);
+                        node = graph.createNode(ReferenceNode);
                         node.createComponents();
                         node.fromReferenceData(referenceData);
                     }
@@ -178,7 +218,7 @@ export default class Presentation extends Node
 
                     loadingManager.loadJSON(itemUrl).then(json =>
                         loadingManager.validateItem(json).then(itemData => {
-                            node = graph.createNode(Item);
+                            node = graph.createNode(ItemNode);
                             node.createComponents();
                             node.setUrl(itemUrl);
                             node.fromNodeData(nodeData);
@@ -186,7 +226,7 @@ export default class Presentation extends Node
                         })
                     ).catch(error => {
                         console.log(`failed to create item from reference uri: ${error}`);
-                        node = graph.createNode(Reference);
+                        node = graph.createNode(ReferenceNode);
                         node.createComponents();
                         node.fromNodeData(nodeData);
                         node.fromReferenceData(referenceData);
@@ -196,7 +236,7 @@ export default class Presentation extends Node
         }
         else if (nodeData.item !== undefined) {
             const itemData = presentationData.items[nodeData.item];
-            node = graph.createNode(Item);
+            node = graph.createNode(ItemNode);
             node.createComponents();
             node.setUrl(`item-${nodeData.item}.json`, this.assetPath);
             node.fromNodeData(nodeData);
@@ -204,7 +244,7 @@ export default class Presentation extends Node
         }
         else if (nodeData.camera !== undefined) {
             const cameraData = presentationData.cameras[nodeData.camera];
-            node = graph.createNode(Camera);
+            node = graph.createNode(CameraNode);
             node.createComponents();
             node.fromNodeData(nodeData);
             node.fromCameraData(cameraData);
@@ -213,13 +253,13 @@ export default class Presentation extends Node
             const lightData = presentationData.lights[nodeData.light];
             switch(lightData.type) {
                 case "directional":
-                    node = graph.createNode(DirectionalLight);
+                    node = graph.createNode(DirectionalLightNode);
                     break;
                 case "point":
-                    node = graph.createNode(PointLight);
+                    node = graph.createNode(PointLightNode);
                     break;
                 case "spot":
-                    node = graph.createNode(SpotLight);
+                    node = graph.createNode(SpotLightNode);
                     break;
             }
 
@@ -228,7 +268,7 @@ export default class Presentation extends Node
             node.fromLightData(lightData);
         }
         else {
-            node = graph.createNode(Group);
+            node = graph.createNode(GroupNode);
             node.createComponents();
             node.fromNodeData(nodeData);
         }
@@ -241,107 +281,6 @@ export default class Presentation extends Node
                 this.inflateNode(node, child, presentationData, callback);
             })
         }
-
-        // if (nodeData.reference !== undefined) {
-        //     // node is a reference, if uri is a  number, insert corresponding item from supplied items array
-        //     const reference = presentationData.references[nodeData.reference];
-        //     if (reference.mimeType === "application/si-dpo-3d.item+json") {
-        //         const index = Number(reference.uri);
-        //         if (items && index >= 0 &&  index < items.length) {
-        //             const item = node = items[index];
-        //             name = item.name;
-        //             this.items.push(item);
-        //             referenceParsed = true;
-        //         }
-        //     }
-        // }
-        // else if (nodeData.item !== undefined) {
-        //     // node is an item, create an item node from data
-        //     const itemData = presentationData.items[nodeData.item];
-        //     const item = parent.graph.createNode(Item);
-        //     item.setLoadingManager(this.loadingManager);
-        //     item.setAssetPath(this.assetPath);
-        //     item.fromData(itemData);
-        //     name = item.name;
-        //     this.items.push(item);
-        // }
-        //
-        // if (!node) {
-        //     node = parent.graph.createNode(Node);
-        //     node.createComponent(PTransform);
-        // }
-        //
-        // const transform = node.components.get(PTransform);
-        // transform.fromData(nodeData);
-        // parent.addChild(transform);
-        //
-        // if (nodeData.reference !== undefined && !referenceParsed) {
-        //     const reference = presentationData.references[nodeData.reference];
-        //     // node is a reference, if uri is an index (we already know we don't have an item for the index)
-        //     // keep node as reference, an item may be provided later
-        //     if (reference.mimeType === "application/si-dpo-3d.item+json") {
-        //         const index = Number(reference.uri);
-        //         if (index >= 0) {
-        //             name = "Reference";
-        //             const reference = presentationData.references[nodeData.reference];
-        //             node.createComponent(Reference).fromData(reference);
-        //         }
-        //         // now try to load the item from external reference
-        //         else {
-        //             name = "Item";
-        //             const itemUrl = resolvePathname(reference.uri, this.assetPath);
-        //
-        //             this.loadingManager.loadJSON(itemUrl).then(json =>
-        //                 this.loadingManager.validateItem(json).then(itemData => {
-        //                     const item = node.createComponent(Item);
-        //                     item.url = itemUrl;
-        //                     item.setLoadingManager(this.loadingManager);
-        //                     item.fromData(itemData);
-        //                     this.items.push(item);
-        //                 })
-        //             ).catch(error => {
-        //                 console.log(`failed to create item from reference uri: ${error}`);
-        //                 node.name = "Reference";
-        //                 const reference = presentationData.references[nodeData.reference];
-        //                 node.createComponent(Reference).fromData(reference);
-        //             })
-        //         }
-        //     }
-        //     else {
-        //         name = "Reference";
-        //         const reference = presentationData.references[nodeData.reference];
-        //         node.createComponent(Reference).fromData(reference);
-        //     }
-        // }
-        // else if (nodeData.camera !== undefined) {
-        //     name = "Camera";
-        //     const cameraData = presentationData.cameras[nodeData.camera];
-        //     node.createComponent(PCamera).fromData(cameraData);
-        // }
-        // else if (nodeData.light !== undefined) {
-        //     name = "Light";
-        //     const lightData = presentationData.lights[nodeData.light];
-        //     switch(lightData.type) {
-        //         case "directional":
-        //             node.createComponent(PDirectionalLight).fromData(lightData);
-        //             break;
-        //         case "point":
-        //             node.createComponent(PPointLight).fromData(lightData);
-        //             break;
-        //         case "spot":
-        //             node.createComponent(PSpotLight).fromData(lightData);
-        //             break;
-        //     }
-        // }
-        //
-        // node.name = nodeData.name || name || "Node";
-        //
-        // if (nodeData.children) {
-        //     nodeData.children.forEach(childIndex => {
-        //         const child = presentationData.nodes[childIndex];
-        //         this.inflateNode(transform, child, presentationData, items);
-        //     })
-        // }
     }
 
     protected deflateNode(node: PresentationNode, pres: Partial<IPresentation>): Index
@@ -352,22 +291,22 @@ export default class Presentation extends Node
         pres.nodes.push(nodeData);
         const index = pres.nodes.length - 1;
 
-        if (node instanceof Item) {
+        if (node instanceof ItemNode) {
             pres.items = pres.items || [];
             pres.items.push(node.toItemData());
             nodeData.item = pres.items.length - 1;
         }
-        else if (node instanceof Reference) {
+        else if (node instanceof ReferenceNode) {
             pres.references = pres.references || [];
             pres.references.push(node.toReferenceData());
             nodeData.reference = pres.references.length - 1;
         }
-        else if (node instanceof Camera) {
+        else if (node instanceof CameraNode) {
             pres.cameras = pres.cameras || [];
             pres.cameras.push(node.toCameraData());
             nodeData.camera = pres.cameras.length -1;
         }
-        else if (node instanceof Light) {
+        else if (node instanceof LightNode) {
             pres.lights = pres.lights || [];
             pres.lights.push(node.toLightData());
             nodeData.light = pres.lights.length - 1;

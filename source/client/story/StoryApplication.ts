@@ -73,8 +73,8 @@ export default class StoryApplication
         this.taskController = new StoryController(this.system, this.commander);
 
         // add story components
-        const rootNode = this.explorer.presentationController.root;
-        rootNode.createComponent(PoseManip);
+        const storyNode = this.system.graph.createNode("Story");
+        storyNode.createComponent(PoseManip);
 
         this.props = this.initFromProps(props);
 

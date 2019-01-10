@@ -19,9 +19,9 @@ import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Group extends PresentationNode
+export default class GroupNode extends PresentationNode
 {
-    static readonly type: string = "Group";
+    static readonly type: string = "GroupNode";
 
     createComponents()
     {

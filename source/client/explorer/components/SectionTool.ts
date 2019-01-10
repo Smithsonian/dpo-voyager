@@ -15,29 +15,37 @@
  * limitations under the License.
  */
 
-import LightComponent from "@ff/scene/components/Light";
+import { types } from "@ff/graph/propertyTypes";
 
-import { ILight, TVector3 } from "common/types/presentation";
-
-import PresentationNode from "./PresentationNode";
+import { ISectionTool } from "common/types/voyager";
+import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Light extends PresentationNode
+export default class SectionTool extends ExplorerComponent
 {
-    static readonly type: string = "Light";
+    static readonly type: string = "SectionTool";
 
-    protected light: LightComponent = null;
+    ins = this.ins.append({
+        active: types.Boolean("Active"),
+        plane: types.Vector4("Plane")
+    });
 
-    toLightData(): ILight
+    fromData(data: ISectionTool)
     {
-        const light = this.light;
-        let ins = light.ins;
-        const data: Partial<ILight> = {};
+        this.ins.copyValues({
+            active: data.active,
+            plane: data.plane
+        });
+    }
 
-        data.color = ins.color.value.slice() as TVector3;
-        data.intensity = ins.intensity.value;
+    toData(): ISectionTool
+    {
+        const ins = this.ins;
 
-        return data as ILight;
+        return {
+            active: ins.active.value,
+            plane: ins.plane.cloneValue()
+        };
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, html, property } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import PropertyTracker from "@ff/graph/PropertyTracker";
 import "@ff/ui/Splitter";
 import List from "@ff/ui/List";
@@ -32,6 +32,7 @@ import PoseTask from "../PoseTask";
 
 import "../../ui/PropertyView";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import VoyagerScene from "../../../core/components/VoyagerScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -198,14 +199,31 @@ class ModelPoseProperties extends CustomElement
     protected modeProp: PropertyTracker<EManipMode>;
     protected centerProp: PropertyTracker;
 
+    protected scene: VoyagerScene;
 
     constructor(model?: Model)
     {
         super();
 
         this.model = model;
+
         this.modeProp = new PropertyTracker(this.onPropertyUpdate, this);
         this.centerProp = new PropertyTracker(this.onPropertyUpdate, this);
+
+        this.scene = null;
+    }
+
+    protected update(changedProperties: PropertyValues)
+    {
+        if (changedProperties.has("model") && this.model) {
+            if (this.modeProp.getValue() === EManipMode.Off) {
+                this.modeProp.setValue(EManipMode.Rotate);
+            }
+
+            this.scene = this.model.transform.getParent(VoyagerScene, true);
+        }
+
+        super.update(changedProperties);
     }
 
     protected connected()
@@ -228,18 +246,21 @@ class ModelPoseProperties extends CustomElement
         }
 
         const mode = this.modeProp.getValue(EManipMode.Rotate);
-        const units = model.ins.units;
+
+        const globalUnits = this.scene.ins.units;
+        const itemUnits = model.ins.units;
         const position = model.ins.position;
         const rotation = model.ins.rotation;
 
         return html`
-            <ff-flex-row>
-                <ff-index-button text="Move" index=${EManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+            <ff-flex-row wrap>
                 <ff-index-button text="Rotate" index=${EManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+                <ff-index-button text="Move" index=${EManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
                 <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
+                <ff-button text="Zoom Views" @click=${this.onClickZoomViews}></ff-button>
             </ff-flex-row>
-                
-            <sv-property-view .property=${units}></sv-property-view>
+            <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
+            <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
             <sv-property-view .property=${position}></sv-property-view>
             <sv-property-view .property=${rotation}></sv-property-view>
         `;
@@ -253,6 +274,11 @@ class ModelPoseProperties extends CustomElement
     protected onClickCenter()
     {
         this.centerProp.set();
+    }
+
+    protected onClickZoomViews()
+    {
+        this.scene.zoomViews();
     }
 
     protected onPropertyUpdate()

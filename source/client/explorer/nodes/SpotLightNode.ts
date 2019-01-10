@@ -15,37 +15,39 @@
  * limitations under the License.
  */
 
-import PointLightComponent from "@ff/scene/components/PointLight";
+import SpotLight from "@ff/scene/components/SpotLight";
 
 import { ILight } from "common/types/presentation";
 
-import Light from "./Light";
+import LightNode from "./LightNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Presentation node representing a point light source.
+ * Presentation node representing a spot light source.
  */
-export default class PointLight extends Light
+export default class SpotLightNode extends LightNode
 {
-    static readonly type: string = "PointLight";
+    static readonly type: string = "SpotLightNode";
 
-    protected light: PointLightComponent = null;
+    protected light: SpotLight = null;
 
     createComponents()
     {
         super.createComponents();
-        this.light = this.createComponent(PointLightComponent);
-        this.name = "PointLight";
+        this.light = this.createComponent(SpotLight);
+        this.name = "SpotLight";
     }
 
     fromLightData(data: ILight)
     {
-        this.light.ins.setPropertyValues({
+        this.light.ins.copyValues({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
             distance: data.point.distance || 0,
-            decay: data.point.decay !== undefined ? data.point.decay : 1
+            decay: data.point.decay !== undefined ? data.point.decay : 1,
+            angle: data.spot.angle !== undefined ? data.spot.angle : Math.PI / 4,
+            penumbra: data.spot.penumbra || 0
         });
     }
 
@@ -54,10 +56,12 @@ export default class PointLight extends Light
         const ins = this.light.ins;
         const data = super.toLightData();
 
-        data.type = "point";
-        data.point = {
+        data.type = "spot";
+        data.spot = {
             distance: ins.distance.value,
-            decay: ins.decay.value
+            decay: ins.decay.value,
+            angle: ins.angle.value,
+            penumbra: ins.penumbra.value
         };
 
         return data;

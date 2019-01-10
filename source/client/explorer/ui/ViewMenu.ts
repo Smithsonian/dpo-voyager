@@ -23,7 +23,7 @@ import "@ff/ui/IndexButton";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import View, { EProjectionType, EViewPreset } from "../components/View";
+import OrbitNavigation, { EProjectionType, EViewPreset } from "../../core/components/OrbitNavigation";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -61,8 +61,8 @@ export default class ViewMenu extends Popup
     {
         super.connected();
 
-        this.propProjection.property = this.system.components.get(View).ins.projection;
-        this.propPreset.property = this.system.components.get(View).ins.preset;
+        this.propProjection.property = this.system.components.get(OrbitNavigation).ins.projection;
+        this.propPreset.property = this.system.components.get(OrbitNavigation).ins.preset;
         this.requestUpdate();
 
     }

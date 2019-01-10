@@ -15,19 +15,14 @@
  * limitations under the License.
  */
 
-import {
-    Index,
-    Identifier
-} from "@ff/core/types";
+import { Index } from "@ff/core/types";
 
-import {
-    IItem,
-    TUnitType
-} from "./item";
+import { IItem } from "./item";
+import { IVoyager } from "./voyager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IItem, TUnitType };
+export { IItem, IVoyager };
 
 export type TMatrix4 = number[];
 export type TVector3 = number[];
@@ -38,7 +33,6 @@ export type TColorRGB = TVector3;
 export type TCameraType = "perspective" | "orthographic";
 export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
 
-export type TShaderType = "Inherit" | "Default" | "PBR" | "Phong" | "Clay" | "Normals" | "Wireframe" | "XRay";
 
 /**
  * A presentation describes an entire explorer setup.
@@ -167,67 +161,4 @@ export interface ISpotLightProps extends IPointLightProps
 {
     angle: number;
     penumbra: number;
-}
-
-/**
- * Viewer-specific properties.
- */
-export interface IVoyager
-{
-    explorer?: IExplorer;
-    renderer?: IRenderer;
-    reader?: IReader;
-    tools?: ITools;
-}
-
-export interface IExplorer
-{
-    units: TUnitType;
-    annotationsEnabled: boolean;
-}
-
-/**
- * Render settings.
- */
-export interface IRenderer
-{
-    shader: TShaderType;
-    exposure: number;
-    gamma: number;
-    //environment: any; // TODO
-}
-
-export interface IReader
-{
-    enabled: boolean;
-    documentUri?: string;
-}
-
-export interface ITools
-{
-    section?: ICrossSectionProps;
-    tape?: ITapeProps;
-}
-
-/**
- * Section tool properties.
- */
-export interface ICrossSectionProps
-{
-    enabled: boolean;
-    position: TVector3;
-    direction: TVector3;
-    color: TColorRGB;
-}
-
-/**
- * Measuring tape tool properties.
- */
-export interface ITapeProps
-{
-    enabled: boolean;
-    fromPosition: TVector3;
-    fromDirection: TVector3;
-    toPosition: TVector3;
-    toDirection: TVector3;
 }

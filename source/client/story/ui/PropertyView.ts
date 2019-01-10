@@ -32,6 +32,9 @@ export default class PropertyView extends CustomElement
     @property({ attribute: false })
     property: Property = null;
 
+    @property()
+    label: string = undefined;
+
     protected firstConnected()
     {
         this.setStyle({
@@ -46,8 +49,8 @@ export default class PropertyView extends CustomElement
     protected render()
     {
         const property = this.property;
-        const name = property.path.split(".").pop();
-        const headerElement = html`<div class="sv-property-name">${name}</div>`;
+        const label = this.label !== undefined ? this.label : property.path.split(".").pop();
+        const headerElement = html`<div class="sv-property-name">${label}</div>`;
 
         if (property.isArray()) {
             if (property.elementCount > 4) {

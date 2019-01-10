@@ -17,7 +17,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import { IAsset, TAssetType, TMapType } from "common/types";
+import { IAsset, TAssetType, TMapType } from "common/types/item";
 
 export enum EAssetType { Model, Geometry, Image, Texture, Points, Volume }
 export enum EMapType { Color, Normal, Occlusion, Emissive, MetallicRoughness, Zone }

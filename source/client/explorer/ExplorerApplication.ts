@@ -21,7 +21,6 @@ import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
 
 import ExplorerSystem from "./ExplorerSystem";
-import ExplorerNode from "./nodes/Explorer";
 import PresentationController from "./controllers/PresentationController";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
@@ -71,7 +70,6 @@ export default class ExplorerApplication
     readonly props: IExplorerApplicationProps;
     readonly system: ExplorerSystem;
     readonly commander: Commander;
-    readonly root: ExplorerNode;
 
     readonly presentationController: PresentationController;
 
@@ -89,8 +87,7 @@ export default class ExplorerApplication
         this.commander = new Commander();
         this.system = new ExplorerSystem(this.commander, registry);
 
-        this.root = this.system.graph.createNode(ExplorerNode);
-        this.presentationController = new PresentationController(this.root, this.commander);
+        this.presentationController = new PresentationController(this.system, this.commander);
 
         // create main view if not given
         if (element) {

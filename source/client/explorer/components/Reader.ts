@@ -18,7 +18,7 @@
 import { Dictionary } from "@ff/core/types";
 import { types } from "@ff/graph/propertyTypes";
 
-import { IReader } from "common/types";
+import { IReader, EReaderPosition, TReaderPosition } from "common/types/voyager";
 import Documents, { IDocument } from "./Documents";
 
 import ExplorerComponent from "../ExplorerComponent";
@@ -30,8 +30,9 @@ export default class Reader extends ExplorerComponent
     static readonly type: string = "Reader";
 
     ins = this.ins.append({
-        enabled: types.Boolean("Enabled", false),
-        document: types.String("DocumentUri", "")
+        visible: types.Boolean("Visible", false),
+        position: types.Enum("Position", EReaderPosition),
+        url: types.String("DocumentURL", "")
     });
 
     protected documents: Dictionary<IDocument> = {};
@@ -50,23 +51,20 @@ export default class Reader extends ExplorerComponent
     fromData(data: IReader)
     {
         this.ins.setValues({
-            enabled: data.enabled,
-            document: data.documentUri
+            visible: data.visible,
+            position: EReaderPosition[data.position] || EReaderPosition.Overlay,
+            url: data.url
         });
     }
 
     toData(): IReader
     {
-        const { enabled, document } = this.ins;
+        const ins = this.ins;
 
-        const data: IReader = {
-            enabled: enabled.value
+        return {
+            visible: ins.visible.cloneValue(),
+            position: EReaderPosition[ins.position.value] || "Overlay",
+            url: ins.url.cloneValue()
         };
-
-        if (document.value) {
-            data.documentUri = document.value;
-        }
-
-        return data;
     }
 }

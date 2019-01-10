@@ -24,7 +24,7 @@ import Commander from "@ff/core/Commander";
 
 import ExplorerSystem from "../../explorer/ExplorerSystem";
 import Presentation from "../../explorer/nodes/Presentation";
-import Item from "../../explorer/nodes/Item";
+import ItemNode from "../../explorer/nodes/ItemNode";
 
 import Task from "../tasks/Task";
 import taskSets from "../tasks/taskSets";
@@ -159,7 +159,7 @@ export default class StoryController extends Controller<StoryController>
         const system = this.system;
 
         if (this.taskSet === "prep") {
-            const item = system.nodes.get(Item);
+            const item = system.nodes.get(ItemNode);
             if (item) {
                 const data = item.toItemData();
                 const url = item.url;

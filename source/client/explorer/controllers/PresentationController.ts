@@ -27,9 +27,8 @@ import Model from "../../core/components/Model";
 
 import ExplorerSystem from "../ExplorerSystem";
 
-import ExplorerNode from "../nodes/Explorer";
 import Presentation, { ReferenceCallback } from "../nodes/Presentation";
-import Item from "../nodes/Item";
+import ItemNode from "../nodes/ItemNode";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,18 +52,16 @@ type PresentationActions = Actions<PresentationController>;
 export default class PresentationController extends Controller<PresentationController>
 {
     readonly system: ExplorerSystem;
-    readonly root: ExplorerNode;
 
     protected presentations: Presentation[];
     private _activePresentation: Presentation;
 
-    constructor(node: ExplorerNode, commander: Commander)
+    constructor(system: ExplorerSystem, commander: Commander)
     {
         super(commander);
         this.addEvent("presentation-change");
 
-        this.system = node.system;
-        this.root = node;
+        this.system = system;
 
         this.presentations = [];
         this._activePresentation = null;
@@ -73,6 +70,7 @@ export default class PresentationController extends Controller<PresentationContr
     set activePresentation(presentation: Presentation) {
         const previous = this._activePresentation;
         this._activePresentation = presentation;
+        presentation.activate();
 
         this.emit<IPresentationChangeEvent>({
             type: "presentation-change", previous, next: presentation
@@ -108,7 +106,7 @@ export default class PresentationController extends Controller<PresentationContr
 
             const itemCallback = (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(Item);
+                    const node = graph.createNode(ItemNode);
                     node.createComponents();
                     node.setUrl(url, assetPath);
                     node.fromItemData(itemData);
@@ -146,7 +144,7 @@ export default class PresentationController extends Controller<PresentationContr
 
             return this.openDefaultPresentation(modelPath, (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(Item);
+                    const node = graph.createNode(ItemNode);
                     node.createComponents();
                     node.setUrl(itemUrl || `${modelPath}item.json`, modelPath);
                     const model = node.components.get(Model);
@@ -177,7 +175,7 @@ export default class PresentationController extends Controller<PresentationContr
 
             return this.openDefaultPresentation(geoPath, (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(Item);
+                    const node = graph.createNode(ItemNode);
                     node.createComponents();
                     node.setUrl(itemUrl || `${assetPath}item.json`, geoPath);
                     const model = node.components.get(Model);
@@ -214,11 +212,10 @@ export default class PresentationController extends Controller<PresentationContr
 
         return this.system.loadingManager.validatePresentation(json).then(presentationData => {
 
-            const node = this.root.graph.createNode(Presentation);
+            const node = this.system.graph.createNode(Presentation);
             node.createComponents();
             node.setUrl(url);
             node.fromData(presentationData, url, null, callback);
-            this.root.transform.addChild(node.transform);
 
             this.presentations.push(node);
             this.activePresentation = node;

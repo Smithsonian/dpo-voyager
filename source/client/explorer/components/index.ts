@@ -16,8 +16,9 @@
  */
 
 import Annotations from "./Annotations";
-import CutTool from "./CutTool";
+import Background from "./Background";
 import Documents from "./Documents";
+import GroundPlane from "./GroundPlane";
 import Groups from "./Groups";
 import HomeGrid from "./HomeGrid";
 import Interface from "./Interface";
@@ -25,18 +26,18 @@ import Meta from "./Meta";
 import Process from "./Process";
 import Reader from "./Reader";
 import Reference from "./Reference";
-import Renderer from "./Renderer";
+import SectionTool from "./SectionTool";
 import Snapshots from "./Snapshots";
 import TapeTool from "./TapeTool";
 import Tours from "./Tours";
-import View from "./View";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
     Annotations,
-    CutTool,
+    Background,
     Documents,
+    GroundPlane,
     Groups,
     HomeGrid,
     Interface,
@@ -44,17 +45,17 @@ export {
     Process,
     Reader,
     Reference,
-    Renderer,
+    SectionTool,
     Snapshots,
     TapeTool,
-    Tours,
-    View
+    Tours
 };
 
 export const componentTypes = [
     Annotations,
-    CutTool,
+    Background,
     Documents,
+    GroundPlane,
     Groups,
     HomeGrid,
     Interface,
@@ -62,9 +63,8 @@ export const componentTypes = [
     Process,
     Reader,
     Reference,
-    Renderer,
+    SectionTool,
     Snapshots,
     TapeTool,
-    Tours,
-    View
+    Tours
 ];

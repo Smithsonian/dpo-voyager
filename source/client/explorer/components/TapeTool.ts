@@ -16,6 +16,8 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+
+import { ITapeTool } from "common/types/voyager";
 import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,8 +27,34 @@ export default class TapeTool extends ExplorerComponent
     static readonly type: string = "TapeTool";
 
     ins = this.ins.append({
-        enabled: types.Boolean("Enabled"),
-        start: types.Vector3("Start"),
-        end: types.Vector3("End")
+        active: types.Boolean("Active"),
+        startPosition: types.Vector3("Start.Position"),
+        startDirection: types.Vector3("Start.Direction"),
+        endPosition: types.Vector3("End.Position"),
+        endDirection: types.Vector3("End.Direction")
     });
+
+    fromData(data: ITapeTool)
+    {
+        this.ins.copyValues({
+            active: data.active,
+            startPosition: data.startPosition,
+            startDirection: data.startDirection,
+            endPosition: data.endPosition,
+            endDirection: data.endDirection
+        });
+    }
+
+    toData(): ITapeTool
+    {
+        const ins = this.ins;
+
+        return {
+            active: ins.active.cloneValue(),
+            startPosition: ins.startPosition.cloneValue(),
+            startDirection: ins.startDirection.cloneValue(),
+            endPosition: ins.endPosition.cloneValue(),
+            endDirection: ins.endDirection.cloneValue()
+        };
+    }
 }

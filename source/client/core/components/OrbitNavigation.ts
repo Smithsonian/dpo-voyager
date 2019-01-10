@@ -15,17 +15,27 @@
  * limitations under the License.
  */
 
+import * as THREE from "three";
+
+import math from "@ff/core/math";
 import { types } from "@ff/graph/propertyTypes";
 
-import ObjectManipulator from "@ff/three/ObjectManipulator";
+import OrbitManipulator from "@ff/three/OrbitManipulator";
 
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import { IActiveCameraEvent } from "@ff/scene/RenderSystem";
 import Camera, { EProjectionType } from "@ff/scene/components/Camera";
 
-import ExplorerComponent from "../ExplorerComponent";
+import { INavigation } from "common/types/voyager";
+import VoyagerComponent from "../VoyagerComponent";
+import VoyagerScene from "./VoyagerScene";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _box = new THREE.Box3();
+const _size = new THREE.Vector3();
+const _center = new THREE.Vector3();
+const _translation = new THREE.Vector3();
 
 const _orientationPreset = [
     [ 0, -90, 0 ], // left
@@ -41,29 +51,27 @@ export { EProjectionType };
 export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
 
 /**
- * Voyager explorer view component.
+ * Voyager explorer orbit navigation.
  * Controls manipulation and parameters of the camera.
  */
-export default class View extends ExplorerComponent
+export default class OrbitNavigation extends VoyagerComponent
 {
-    static readonly type: string = "View";
+    static readonly type: string = "OrbitNavigation";
 
     ins = this.ins.append({
         preset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
         projection: types.Enum("View.Projection", EProjectionType, EProjectionType.Perspective),
         enabled: types.Boolean_true("Manip.Enabled"),
-        orientation: types.Vector3("Manip.Orientation", [ 0, 0, 0 ]),
-        offset: types.Vector3("Manip.Offset", [ 0, 0, 50 ]),
-        minOrientation: types.Vector3("Manip.Min.Orientation", [ -90, -Infinity, -Infinity ]),
+        setup: types.Event("Manip.Setup"),
+        orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
+        offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
+        minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
         minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
-        maxOrientation: types.Vector3("Manip.Max.Orientation", [ 90, Infinity, Infinity ]),
-        maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, 1000 ])
+        maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
+        maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ])
     });
 
-    outs = this.outs.append({
-    });
-
-    protected manip = new ObjectManipulator();
+    protected manip = new OrbitManipulator();
     protected activeCamera: Camera = null;
 
     create()
@@ -92,7 +100,10 @@ export default class View extends ExplorerComponent
         const manip = this.manip;
         const cameraComponent = this.activeCamera;
 
-        const { projection, preset, orientation, offset, minOrientation, minOffset, maxOrientation, maxOffset } = this.ins;
+        const {
+            projection, preset, setup,
+            orbit, offset, minOrbit, minOffset, maxOrbit, maxOffset
+        } = this.ins;
 
         if (cameraComponent && projection.changed) {
             cameraComponent.camera.setProjection(projection.value);
@@ -100,18 +111,43 @@ export default class View extends ExplorerComponent
         }
 
         if (preset.changed && preset.value !== EViewPreset.None) {
-            orientation.setValue(_orientationPreset[types.getEnumIndex(EViewPreset, preset.value)].slice());
+            orbit.setValue(_orientationPreset[types.getEnumIndex(EViewPreset, preset.value)].slice());
         }
 
-        if (orientation.changed || offset.changed) {
-            manip.orientation.fromArray(orientation.value);
+        if (setup.changed) {
+            const sceneComponent = this.system.activeSceneComponent as VoyagerScene;
+            const cameraComponent = this.system.activeCameraComponent;
+
+            if (sceneComponent && cameraComponent) {
+                const camera = cameraComponent.camera;
+                camera.updateMatrixWorld(false);
+                _box.copy(sceneComponent.boundingBox);
+                _box.applyMatrix4(camera.matrixWorldInverse);
+                _box.getSize(_size);
+                _box.getCenter(_center);
+
+                const sizeXY = Math.max(_size.x / camera.aspect, _size.y);
+
+                if (camera.isPerspectiveCamera) {
+                    offset.value[2] = _size.z + sizeXY * 0.5 + sizeXY / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
+                }
+                else {
+                    offset.value[2] = _size.z * 2;
+                }
+
+                offset.set();
+            }
+        }
+
+        if (orbit.changed || offset.changed) {
+            manip.orbit.fromArray(orbit.value);
             manip.offset.fromArray(offset.value);
         }
 
-        if (minOrientation.changed || minOffset.changed || maxOrientation.changed || maxOffset.changed) {
-            manip.minOrientation.fromArray(minOrientation.value);
+        if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
+            manip.minOrbit.fromArray(minOrbit.value);
             manip.minOffset.fromArray(minOffset.value);
-            manip.maxOrientation.fromArray(maxOrientation.value);
+            manip.maxOrbit.fromArray(maxOrbit.value);
             manip.maxOffset.fromArray(maxOffset.value);
         }
 
@@ -130,8 +166,8 @@ export default class View extends ExplorerComponent
             const manipUpdated = manip.update();
 
             if (manipUpdated) {
-                manip.orientation.toArray(ins.orientation.value);
-                ins.orientation.set(true);
+                manip.orbit.toArray(ins.orbit.value);
+                ins.orbit.set(true);
                 manip.offset.toArray(ins.offset.value);
                 ins.offset.set(true);
                 ins.preset.setValue(EViewPreset.None, true);
@@ -158,6 +194,35 @@ export default class View extends ExplorerComponent
         }
 
         return false;
+    }
+
+    fromData(data: INavigation)
+    {
+        const orbit = data.orbit;
+
+        this.ins.copyValues({
+            enabled: data.enabled,
+            minOrbit: orbit.minOrbit,
+            maxOrbit: orbit.maxOrbit,
+            minOffset: orbit.minOffset,
+            maxOffset: orbit.maxOffset
+        });
+    }
+
+    toData(): INavigation
+    {
+        const ins = this.ins;
+
+        return {
+            type: "Orbit",
+            enabled: ins.enabled.value,
+            orbit: {
+                minOrbit: ins.minOrbit.cloneValue(),
+                maxOrbit: ins.maxOrbit.cloneValue(),
+                minOffset: ins.minOffset.cloneValue(),
+                maxOffset: ins.maxOffset.cloneValue()
+            }
+        };
     }
 
     protected onPointer(event: IPointerEvent)

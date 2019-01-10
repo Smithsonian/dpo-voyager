@@ -21,8 +21,11 @@ import {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type TUnitType = "mm" | "cm" | "m" | "in" | "ft";
+export type TUnitType = "mm" | "cm" | "m" | "in" | "ft" | "yd";
+export enum EUnitType { mm, cm, m, in, ft, yd }
+
 export type TNormalSpaceType = "Tangent" | "Object";
+
 export type TDerivativeUsage = "Web" | "Print" | "Editorial";
 export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
 export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";

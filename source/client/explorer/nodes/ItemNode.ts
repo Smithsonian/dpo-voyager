@@ -17,7 +17,7 @@
 
 import resolvePathname from "resolve-pathname";
 
-import { IItem } from "common/types";
+import { IItem } from "common/types/item";
 
 import Model from "../../core/components/Model";
 
@@ -31,9 +31,9 @@ import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Item extends PresentationNode
+export default class ItemNode extends PresentationNode
 {
-    static readonly type: string = "Item";
+    static readonly type: string = "ItemNode";
 
     url: string;
 

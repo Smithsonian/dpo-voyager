@@ -17,6 +17,7 @@
 
 import { types } from "@ff/graph/propertyTypes";
 
+import { IInterface } from "common/types/voyager";
 import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,5 +44,23 @@ export default class Interface extends ExplorerComponent
         }
 
         return true;
+    }
+
+    fromData(data: IInterface)
+    {
+        this.ins.setPropertyValues({
+            visible: data.visible,
+            logo: data.logo
+        });
+    }
+
+    toData(): IInterface
+    {
+        const ins = this.ins;
+
+        return {
+            visible: ins.visible.value,
+            logo: ins.logo.value
+        };
     }
 }

@@ -21,14 +21,14 @@ import math from "@ff/core/math";
 import threeMath from "@ff/three/math";
 
 import { types } from "@ff/graph/propertyTypes";
+import { IComponentChangeEvent } from "@ff/graph/Component";
 import { Object3D } from "@ff/scene/components";
 
-import { IModel, TUnitType, Vector3 } from "common/types/item";
+import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
 
 import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import { EAssetType, EMapType } from "../models/Asset";
-import { EUnitType } from "common/types";
 
 import VoyagerSystem from "../VoyagerSystem";
 import { IVoyagerComponent } from "../VoyagerComponent";
@@ -49,7 +49,21 @@ const _qualityLevels = [
     EDerivativeQuality.Highest
 ];
 
+const _unitConversionFactor = {
+    "mm": { "mm": 1, "cm": 0.1, "m": 0.001, "in": 0.0393701, "ft": 0.00328084, "yd": 0.00109361 },
+    "cm": { "mm": 10, "cm": 1, "m": 0.01, "in": 0.393701, "ft": 0.0328084, "yd": 0.0109361 },
+    "m": { "mm": 1000, "cm": 100, "m": 1, "in": 39.3701, "ft": 3.28084, "yd": 1.09361 },
+    "in": { "mm": 25.4, "cm": 2.54, "m": 0.0254, "in": 1, "ft": 0.0833333, "yd": 0.0277778 },
+    "ft": { "mm": 304.8, "cm": 30.48, "m": 0.3048, "in": 12, "ft": 1, "yd": 0.333334 },
+    "yd": { "mm": 914.4, "cm": 91.44, "m": 0.9144, "in": 36, "ft": 3, "yd": 1 },
+};
+
 export { EShaderMode };
+
+export interface IModelChangeEvent extends IComponentChangeEvent<Model>
+{
+    what: "derivative" | "boundingBox"
+}
 
 /**
  * Renderable component representing a Voyager explorer model.
@@ -57,8 +71,6 @@ export { EShaderMode };
 export default class Model extends Object3D implements IVoyagerComponent
 {
     static readonly type: string = "Model";
-
-    static readonly updateEvent = "update";
 
     ins = this.ins.append({
         units: types.Enum("Units", EUnitType, EUnitType.cm),
@@ -69,8 +81,8 @@ export default class Model extends Object3D implements IVoyagerComponent
     });
 
     outs = this.outs.append({
-        asc: types.Number("Auto.Scale", 1),
-        aof: types.Vector3("Auto.Offset")
+        globalUnits: types.Enum("GlobalUnits", EUnitType, EUnitType.cm),
+        unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
     });
 
     protected assetPath: string = "";
@@ -92,7 +104,7 @@ export default class Model extends Object3D implements IVoyagerComponent
 
     update()
     {
-        const { quality, autoLoad, position, rotation } = this.ins;
+        const { units, quality, autoLoad, position, rotation } = this.ins;
 
         if (!this.activeDerivative && autoLoad.value) {
             this.autoLoad(quality.value)
@@ -102,12 +114,13 @@ export default class Model extends Object3D implements IVoyagerComponent
             });
         }
 
+        if (units.changed) {
+            this.updateUnitScale();
+            this.emit<IModelChangeEvent>({ type: "change", what: "boundingBox", component: this });
+        }
+
         if (position.changed || rotation.changed) {
-            const object3D = this.object3D;
-            object3D.position.fromArray(position.value);
-            _vec3a.fromArray(rotation.value).multiplyScalar(math.DEG2RAD);
-            object3D.rotation.setFromVector3(_vec3a, "ZYX");
-            object3D.updateMatrix();
+            this.updateMatrix();
         }
 
         return true;
@@ -126,9 +139,10 @@ export default class Model extends Object3D implements IVoyagerComponent
         return this.boundingBox;
     }
 
-    setAssetPath(assetPath: string)
+    setGlobalUnits(units: EUnitType)
     {
-        this.assetPath = assetPath;
+        this.outs.globalUnits.setValue(units);
+        this.updateUnitScale();
     }
 
     setFromMatrix(matrix: THREE.Matrix4)
@@ -136,7 +150,7 @@ export default class Model extends Object3D implements IVoyagerComponent
         const { position, rotation } = this.ins;
 
         matrix.decompose(_vec3a, _quat, _vec3b);
-        _vec3a.toArray(position.value);
+        _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(position.value);
 
         _euler.setFromQuaternion(_quat, "ZYX");
         _euler.toVector3(_vec3a);
@@ -144,6 +158,11 @@ export default class Model extends Object3D implements IVoyagerComponent
 
         position.set();
         rotation.set();
+    }
+
+    setAssetPath(assetPath: string)
+    {
+        this.assetPath = assetPath;
     }
 
     addDerivative(derivative: Derivative)
@@ -208,7 +227,7 @@ export default class Model extends Object3D implements IVoyagerComponent
             this.boxFrame = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
             this.addChild(this.boxFrame);
 
-            this.emit(Model.updateEvent);
+            this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
         }
 
         //if (modelData.material) {
@@ -241,6 +260,31 @@ export default class Model extends Object3D implements IVoyagerComponent
         //}
 
         return data;
+    }
+
+    protected updateUnitScale()
+    {
+        const fromUnits = EUnitType[types.getEnumIndex(EUnitType, this.ins.units.value)];
+        const toUnits = EUnitType[this.outs.globalUnits.value];
+        console.log("Model.updateUnitScale, from: %s, to: %s", fromUnits, toUnits);
+        this.outs.unitScale.setValue(_unitConversionFactor[fromUnits][toUnits]);
+
+        this.updateMatrix();
+    }
+
+    protected updateMatrix()
+    {
+        const ins = this.ins;
+        const unitScale = this.outs.unitScale.value;
+
+        _vec3a.fromArray(ins.rotation.value).multiplyScalar(math.DEG2RAD);
+        _euler.setFromVector3(_vec3a, "ZYX");
+        _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);
+        _vec3b.setScalar(unitScale);
+
+        const object3D = this.object3D;
+        object3D.matrix.compose(_vec3a, _quat, _vec3b);
+        object3D.matrixWorldNeedsUpdate = true;
     }
 
     /**
@@ -303,7 +347,7 @@ export default class Model extends Object3D implements IVoyagerComponent
             this.activeDerivative = derivative;
             this.addChild(derivative.model);
 
-            this.emit(Model.updateEvent);
+            this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
 
             // TODO: Test
             //const bb = derivative.boundingBox;

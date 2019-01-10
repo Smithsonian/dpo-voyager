@@ -15,19 +15,29 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
+import Light from "@ff/scene/components/Light";
 
-import ExplorerComponent from "../ExplorerComponent";
+import { ILight, TVector3 } from "common/types/presentation";
+
+import PresentationNode from "./PresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CutTool extends ExplorerComponent
+export default class LightNode extends PresentationNode
 {
-    static readonly type: string = "CutTool";
+    static readonly type: string = "LightNode";
 
-    ins = this.ins.append({
-        enabled: types.Boolean("Enabled"),
-        direction: types.Vector3("Direction"),
-        depth: types.Vector3("Depth")
-    });
+    protected light: Light = null;
+
+    toLightData(): ILight
+    {
+        const light = this.light;
+        let ins = light.ins;
+        const data: Partial<ILight> = {};
+
+        data.color = ins.color.value.slice() as TVector3;
+        data.intensity = ins.intensity.value;
+
+        return data as ILight;
+    }
 }

@@ -15,44 +15,51 @@
  * limitations under the License.
  */
 
-import DirectionalLightComponent from "@ff/scene/components/DirectionalLight";
+import PointLight from "@ff/scene/components/PointLight";
 
 import { ILight } from "common/types/presentation";
 
-import Light from "./Light";
+import LightNode from "./LightNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Presentation node representing a directional light source.
+ * Presentation node representing a point light source.
  */
-export default class DirectionalLight extends Light
+export default class PointLightNode extends LightNode
 {
-    static readonly type: string = "DirectionalLight";
+    static readonly type: string = "PointLight";
 
-    protected light: DirectionalLightComponent = null;
+    protected light: PointLight = null;
 
     createComponents()
     {
         super.createComponents();
-        this.light = this.createComponent(DirectionalLightComponent);
-        this.name = "DirectionalLight";
+        this.light = this.createComponent(PointLight);
+        this.name = "PointLight";
     }
 
     fromLightData(data: ILight)
     {
-        this.light.ins.setPropertyValues({
+        this.light.ins.copyValues({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
-            position: [ 0, 0, 0 ],
-            target: [ 0, 0, 0 ]
+            distance: data.point.distance || 0,
+            decay: data.point.decay !== undefined ? data.point.decay : 1
         });
     }
 
     toLightData(): ILight
     {
+        const ins = this.light.ins;
         const data = super.toLightData();
-        data.type = "directional";
+
+        data.type = "point";
+        data.point = {
+            distance: ins.distance.value,
+            decay: ins.decay.value
+        };
+
         return data;
     }
 }

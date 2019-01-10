@@ -15,55 +15,44 @@
  * limitations under the License.
  */
 
-import SpotLightComponent from "@ff/scene/components/SpotLight";
+import DirectionalLight from "@ff/scene/components/DirectionalLight";
 
 import { ILight } from "common/types/presentation";
 
-import Light from "./Light";
+import LightNode from "./LightNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Presentation node representing a spot light source.
+ * Presentation node representing a directional light source.
  */
-export default class SpotLight extends Light
+export default class DirectionalLightNode extends LightNode
 {
-    static readonly type: string = "SpotLight";
+    static readonly type: string = "DirectionalLightNode";
 
-    protected light: SpotLightComponent = null;
+    protected light: DirectionalLight = null;
 
     createComponents()
     {
         super.createComponents();
-        this.light = this.createComponent(SpotLightComponent);
-        this.name = "SpotLight";
+        this.light = this.createComponent(DirectionalLight);
+        this.name = "DirectionalLight";
     }
 
     fromLightData(data: ILight)
     {
-        this.light.ins.setPropertyValues({
+        this.light.ins.copyValues({
             color: data.color !== undefined ? data.color.slice() : [ 1, 1, 1 ],
             intensity: data.intensity !== undefined ? data.intensity : 1,
-            distance: data.point.distance || 0,
-            decay: data.point.decay !== undefined ? data.point.decay : 1,
-            angle: data.spot.angle !== undefined ? data.spot.angle : Math.PI / 4,
-            penumbra: data.spot.penumbra || 0
+            position: [ 0, 0, 0 ],
+            target: [ 0, 0, 0 ]
         });
     }
 
     toLightData(): ILight
     {
-        const ins = this.light.ins;
         const data = super.toLightData();
-
-        data.type = "spot";
-        data.spot = {
-            distance: ins.distance.value,
-            decay: ins.decay.value,
-            angle: ins.angle.value,
-            penumbra: ins.penumbra.value
-        };
-
+        data.type = "directional";
         return data;
     }
 }
