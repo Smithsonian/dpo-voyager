@@ -64,6 +64,10 @@ export default class HomeGrid extends Object3D
         subColor: new THREE.Color(0.25, 0.35, 0.4)
     };
 
+    get grid() {
+        return this.object3D as ThreeGrid;
+    }
+
     create()
     {
         this._scene = this.components.getSafe(VoyagerScene);
@@ -78,7 +82,6 @@ export default class HomeGrid extends Object3D
     update(): boolean
     {
         const ins = this.ins;
-        let grid = this.object3D as ThreeGrid;
 
         if (ins.color.changed || ins.update.changed) {
             const props = this._gridProps;
@@ -110,18 +113,16 @@ export default class HomeGrid extends Object3D
                 this.outs.units.setValue(units);
             }
 
-            const newGrid = this.object3D = new ThreeGrid(props);
-            if (grid) {
-                newGrid.visible = grid.visible;
-                newGrid.matrix.copy(grid.matrix);
-                newGrid.matrixWorldNeedsUpdate = true;
+            if (!this.object3D) {
+                this.object3D = new ThreeGrid(props);
             }
-
-            grid = newGrid;
+            else {
+                this.grid.update(props);
+            }
         }
 
         if (ins.visible.changed) {
-            grid.visible = ins.visible.value;
+            this.grid.visible = ins.visible.value;
         }
 
         return true;

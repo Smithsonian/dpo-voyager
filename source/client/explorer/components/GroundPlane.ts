@@ -29,12 +29,17 @@ export default class GroundPlane extends Object3D
     static readonly type: string = "GroundPlane";
 
     ins = this.ins.append({
-        visible: types.Boolean("Visible"),
+        visible: types.Boolean_true("Visible"),
         offset: types.Number("Offset"),
         color: types.ColorRGB("Color", [ 0, 0, 1 ]),
         shadowVisible: types.Boolean("Shadow.Visible"),
         shadowColor: types.ColorRGBA("Shadow.Color")
     });
+
+    update()
+    {
+        return true;
+    }
 
     fromData(data: IGroundPlane)
     {

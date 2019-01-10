@@ -73,6 +73,7 @@ export default class Model extends Object3D implements IVoyagerComponent
     static readonly type: string = "Model";
 
     ins = this.ins.append({
+        visible: types.Boolean_true("Visible"),
         units: types.Enum("Units", EUnitType, EUnitType.cm),
         quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
         autoLoad: types.Boolean("Auto.Load", true),
@@ -104,7 +105,7 @@ export default class Model extends Object3D implements IVoyagerComponent
 
     update()
     {
-        const { units, quality, autoLoad, position, rotation } = this.ins;
+        const { visible, units, quality, autoLoad, position, rotation } = this.ins;
 
         if (!this.activeDerivative && autoLoad.value) {
             this.autoLoad(quality.value)
@@ -112,6 +113,10 @@ export default class Model extends Object3D implements IVoyagerComponent
                 console.warn("Model.update - failed to load derivative");
                 console.warn(error);
             });
+        }
+
+        if (visible.changed) {
+            this.object3D.visible = visible.value;
         }
 
         if (units.changed) {
