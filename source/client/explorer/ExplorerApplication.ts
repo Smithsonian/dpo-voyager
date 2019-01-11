@@ -20,8 +20,12 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
 
-import ExplorerSystem from "./ExplorerSystem";
-import PresentationController from "./controllers/PresentationController";
+import RenderSystem from "@ff/scene/RenderSystem";
+
+import CPickSelection from "@ff/scene/components/CPickSelection";
+import CLoadingManager from "../core/components/CLoadingManager";
+import CExplorer from "./components/CExplorer";
+import CPresentations from "./components/CPresentations";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
@@ -68,10 +72,8 @@ export default class ExplorerApplication
     ].join("\n");
 
     readonly props: IExplorerApplicationProps;
-    readonly system: ExplorerSystem;
+    readonly system: RenderSystem;
     readonly commander: Commander;
-
-    readonly presentationController: PresentationController;
 
 
     constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
@@ -85,9 +87,13 @@ export default class ExplorerApplication
         registry.registerComponentType(explorerComponents);
 
         this.commander = new Commander();
-        this.system = new ExplorerSystem(this.commander, registry);
+        const system = this.system = new RenderSystem(registry);
 
-        this.presentationController = new PresentationController(this.system, this.commander);
+        const node = system.graph.createNode("Explorer");
+        node.createComponent(CExplorer);
+        node.createComponent(CLoadingManager);
+        node.createComponent(CPickSelection).createActions(this.commander);
+        node.createComponent(CPresentations).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -103,7 +109,7 @@ export default class ExplorerApplication
 
     protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
     {
-        const controller = this.presentationController;
+        const presentationController = this.system.components.safeGet(CPresentations);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
@@ -115,16 +121,16 @@ export default class ExplorerApplication
         props.name = props.name || parseUrlParameter("name") || parseUrlParameter("n");
 
         if (props.presentation) {
-            controller.loadPresentation(props.presentation);
+            presentationController.loadPresentation(props.presentation);
         }
         else if (props.item) {
-            controller.loadItem(props.item, props.template);
+            presentationController.loadItem(props.item, props.template);
         }
         else if (props.model) {
-            controller.loadModel(props.model, props.quality, props.name, props.template);
+            presentationController.loadModel(props.model, props.quality, props.name, props.template);
         }
         else if (props.geometry) {
-            controller.loadGeometryAndTexture(
+            presentationController.loadGeometryAndTexture(
                 props.geometry, props.texture, props.quality, props.name, props.template);
         }
 

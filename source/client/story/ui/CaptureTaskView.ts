@@ -72,7 +72,6 @@ class ItemCaptureProperties extends ItemProperties<Model>
     protected render()
     {
         const model = this.component;
-        console.log("capPropRender", model);
         if (!model) {
             return html``;
         }

@@ -17,19 +17,18 @@
 
 import resolvePathname from "resolve-pathname";
 
-import Controller, { Actions, ITypedEvent } from "@ff/core/Controller";
-import Commander from "@ff/core/Commander";
+import { ITypedEvent } from "@ff/core/Publisher";
+import Node from "@ff/graph/Node";
+import CController, { Commander, Actions } from "@ff/graph/components/CController";
 
 import * as template from "../templates/presentation.json";
 
 import { EDerivativeQuality } from "../../core/models/Derivative";
+import CLoadingManager from "../../core/components/CLoadingManager";
 import Model from "../../core/components/Model";
-
-import ExplorerSystem from "../ExplorerSystem";
 
 import Presentation, { ReferenceCallback } from "../nodes/Presentation";
 import ItemNode from "../nodes/ItemNode";
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,34 +46,31 @@ export interface IPresentationChangeEvent extends ITypedEvent<"presentation-chan
     next: Presentation;
 }
 
-type PresentationActions = Actions<PresentationController>;
+type PresentationActions = Actions<CPresentations>;
 
-export default class PresentationController extends Controller<PresentationController>
+export default class CPresentations extends CController<CPresentations>
 {
-    readonly system: ExplorerSystem;
+    static readonly type: string = "CPresentations";
 
-    protected presentations: Presentation[];
-    private _activePresentation: Presentation;
+    private _presentations: Presentation[] = [];
+    private _activePresentation: Presentation = null;
+    private _loadingManager: CLoadingManager = null;
 
-    constructor(system: ExplorerSystem, commander: Commander)
+
+    constructor(node: Node, id?: string)
     {
-        super(commander);
+        super(node, id);
         this.addEvent("presentation-change");
-
-        this.system = system;
-
-        this.presentations = [];
-        this._activePresentation = null;
     }
 
     set activePresentation(presentation: Presentation) {
         const previous = this._activePresentation;
-        this._activePresentation = presentation;
-        presentation.activate();
+        previous && previous.deactivate();
 
-        this.emit<IPresentationChangeEvent>({
-            type: "presentation-change", previous, next: presentation
-        });
+        const next = this._activePresentation = presentation;
+        next && next.activate();
+
+        this.emit<IPresentationChangeEvent>({ type: "presentation-change", previous, next });
     }
 
     get activePresentation() {
@@ -83,15 +79,19 @@ export default class PresentationController extends Controller<PresentationContr
 
     createActions(commander: Commander)
     {
-        return {
-        };
+        return {};
+    }
+
+    create()
+    {
+        this._loadingManager = this.system.components.safeGet(CLoadingManager);
     }
 
     loadItem(itemUrl: string, templateUrl?: string)
     {
         console.log("PresentationController.loadItem - URL: %s", itemUrl);
 
-        return this.system.loadingManager.loadJSON(itemUrl).then(json => {
+        return this._loadingManager.loadJSON(itemUrl).then(json => {
             const assetPath = resolvePathname(".", itemUrl);
             this.openItem(json, itemUrl, assetPath, templateUrl);
         });
@@ -102,7 +102,7 @@ export default class PresentationController extends Controller<PresentationContr
         // get last part from template url
         const templateFileName = templateUrl ? templateUrl.substr(resolvePathname(".", templateUrl).length) : "";
 
-        return this.system.loadingManager.validateItem(json).then(itemData => {
+        return this._loadingManager.validateItem(json).then(itemData => {
 
             const itemCallback = (index, graph, assetPath) => {
                 if (index === 0) {
@@ -192,7 +192,7 @@ export default class PresentationController extends Controller<PresentationContr
     {
         console.log("PresentationController.loadPresentation - URL: %s", presentationUrl);
 
-        return this.system.loadingManager.loadJSON(presentationUrl).then(json => {
+        return this._loadingManager.loadJSON(presentationUrl).then(json => {
             const assetPath = resolvePathname(".", presentationUrl);
             this.openPresentation(json, presentationUrl, assetPath, callback);
         });
@@ -210,20 +210,20 @@ export default class PresentationController extends Controller<PresentationContr
         // currently opening multiple presentations is not supported
         this.closeAll();
 
-        return this.system.loadingManager.validatePresentation(json).then(presentationData => {
+        return this._loadingManager.validatePresentation(json).then(presentationData => {
 
             const node = this.system.graph.createNode(Presentation);
             node.createComponents();
             node.setUrl(url);
             node.fromData(presentationData, url, null, callback);
 
-            this.presentations.push(node);
+            this._presentations.push(node);
             this.activePresentation = node;
         });
     }
 
     closeAll()
     {
-        this.presentations.forEach(presentation => presentation.dispose());
+        this._presentations.forEach(presentation => presentation.dispose());
     }
 }

@@ -16,13 +16,13 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
 
 import { ISectionTool } from "common/types/voyager";
-import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class SectionTool extends ExplorerComponent
+export default class SectionTool extends Component
 {
     static readonly type: string = "SectionTool";
 

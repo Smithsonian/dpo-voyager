@@ -16,9 +16,10 @@
  */
 
 import fetch from "@ff/browser/fetch";
-import { types } from "@ff/graph/propertyTypes";
 
-import ExplorerComponent from "../../explorer/ExplorerComponent";
+import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
+
 import ItemNode from "../../explorer/nodes/ItemNode";
 import Presentation from "../../explorer/nodes/Presentation";
 
@@ -26,7 +27,7 @@ import Presentation from "../../explorer/nodes/Presentation";
 
 export enum ETaskSet { Prep, Author }
 
-export default class Story extends ExplorerComponent
+export default class Story extends Component
 {
     static readonly type: string = "Story";
 

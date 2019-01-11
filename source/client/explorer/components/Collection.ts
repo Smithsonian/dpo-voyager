@@ -18,7 +18,7 @@
 import { Dictionary } from "@ff/core/types";
 import uniqueId from "@ff/core/uniqueId";
 
-import ExplorerComponent from "../ExplorerComponent";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,7 +26,7 @@ import ExplorerComponent from "../ExplorerComponent";
  * Component managing a collection of items. Offers helper methods to keep
  * a master collection at root level in sync with this.
  */
-export default class Collection<T extends { id?: string }> extends ExplorerComponent
+export default class Collection<T extends { id?: string }> extends Component
 {
     static readonly type: string = "Collection";
 

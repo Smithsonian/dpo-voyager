@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
+import System, { IComponentEvent, INodeEvent } from "@ff/graph/System";
 import Component, { ComponentType } from "@ff/graph/Component";
+import CSelection from "@ff/graph/components/CSelection";
+
 import CustomElement, { property } from "@ff/ui/CustomElement";
 
 import ItemNode from "../../explorer/nodes/ItemNode";
-import ExplorerSystem, { IComponentEvent, INodeEvent } from "../../explorer/ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class ItemProperties<T extends Component> extends CustomElement
 {
     @property({ attribute: false })
-    system: ExplorerSystem = null;
+    system: System = null;
 
-    protected componentType: ComponentType<T>;
+    protected selection: CSelection = null;
+    protected componentType: ComponentType<T> = null;
     protected component: T = null;
 
 
@@ -38,25 +41,28 @@ export default class ItemProperties<T extends Component> extends CustomElement
         this.componentType = componentType;
     }
 
+    protected firstConnected()
+    {
+        this.selection = this.system.components.safeGet(CSelection);
+    }
+
     protected connected()
     {
-        const selectionController = this.system.selectionController;
-        selectionController.nodes.on(ItemNode, this.onSelectItem, this);
-        selectionController.components.on(this.componentType, this.onSelectComponent, this);
+        this.selection.selectedNodes.on(ItemNode, this.onSelectItem, this);
+        this.selection.selectedComponents.on(this.componentType, this.onSelectComponent, this);
 
-        const node = selectionController.nodes.get(ItemNode);
+        const node = this.selection.selectedNodes.get(ItemNode);
         const component = node
             ? node.components.get(this.componentType)
-            : selectionController.components.get(this.componentType);
+            : this.selection.selectedComponents.get(this.componentType);
 
         this.setComponent(component);
     }
 
     protected disconnected()
     {
-        const selectionController = this.system.selectionController;
-        selectionController.nodes.off(ItemNode, this.onSelectItem, this);
-        selectionController.components.off(this.componentType, this.onSelectComponent, this);
+        this.selection.selectedNodes.off(ItemNode, this.onSelectItem, this);
+        this.selection.selectedComponents.off(this.componentType, this.onSelectComponent, this);
     }
 
     protected onSelectItem(event: INodeEvent<ItemNode>)

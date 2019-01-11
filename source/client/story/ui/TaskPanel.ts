@@ -15,27 +15,22 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import RenderSystem from "@ff/scene/RenderSystem";
+import SystemElement, { customElement, html } from "./SystemElement";
 
-import ExplorerSystem from "../../explorer/ExplorerSystem";
 import Tasks, { ITaskChangeEvent } from "../nodes/Tasks";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-task-panel")
-export default class TaskPanel extends CustomElement
+export default class TaskPanel extends SystemElement
 {
-    @property({ attribute: false })
-    system: ExplorerSystem;
-
     protected tasks: Tasks = null;
 
-
-    constructor(system?: ExplorerSystem)
+    constructor(system?: RenderSystem)
     {
-        super();
+        super(system);
 
-        this.system = system;
         this.tasks = system.nodes.get(Tasks);
 
         if (!this.tasks) {

@@ -20,30 +20,25 @@ import "@ff/ui/Button";
 
 import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 
-import ExplorerSystem from "../../explorer/ExplorerSystem";
+import RenderSystem from "@ff/scene/RenderSystem";
 
 import Tasks, { ITaskChangeEvent } from "../nodes/Tasks";
 import Story from "../components/Story";
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import SystemElement, { customElement, property, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-task-bar")
-export default class TaskBar extends CustomElement
+export default class TaskBar extends SystemElement
 {
-    @property({ attribute: false })
-    system: ExplorerSystem;
-
     protected tasks: Tasks = null;
     protected story: Story = null;
 
 
-    constructor(system?: ExplorerSystem)
+    constructor(system?: RenderSystem)
     {
-        super();
-
-        this.system = system;
+        super(system);
 
         this.tasks = system.nodes.safeGet(Tasks);
         this.story = system.components.safeGet(Story);
@@ -56,12 +51,14 @@ export default class TaskBar extends CustomElement
 
     protected connected()
     {
-        this.tasks.on<ITaskChangeEvent>("task", this.onTaskChange, this);
+        this.tasks.on<ITaskChangeEvent>("task", this.onChange, this);
+        this.story.ins.expertMode.on("value", this.onChange, this);
     }
 
     protected disconnected()
     {
-        this.tasks.off<ITaskChangeEvent>("task", this.onTaskChange, this);
+        this.tasks.off<ITaskChangeEvent>("task", this.onChange, this);
+        this.story.ins.expertMode.off("value", this.onChange, this);
     }
 
     protected render()
@@ -112,7 +109,7 @@ export default class TaskBar extends CustomElement
         prop.setValue(!prop.value);
     }
 
-    protected onTaskChange()
+    protected onChange()
     {
         this.requestUpdate();
     }

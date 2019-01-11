@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import CLoadingManager from "./CLoadingManager";
 import Model from "./Model";
 import VoyagerScene from "./VoyagerScene";
 import OrbitNavigation from "./OrbitNavigation";
@@ -22,12 +23,14 @@ import OrbitNavigation from "./OrbitNavigation";
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
+    CLoadingManager,
     Model,
     VoyagerScene,
     OrbitNavigation
 };
 
 export const componentTypes = [
+    CLoadingManager,
     Model,
     VoyagerScene,
     OrbitNavigation

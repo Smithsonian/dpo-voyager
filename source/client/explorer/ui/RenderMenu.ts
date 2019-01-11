@@ -16,7 +16,7 @@
  */
 
 import PropertyTracker from "@ff/graph/PropertyTracker";
-import RenderSystem from "@ff/scene/RenderSystem";
+import System from "@ff/graph/System";
 
 import "@ff/ui/Layout";
 import "@ff/ui/Button";
@@ -33,11 +33,11 @@ import Popup from "@ff/ui/Popup";
 export default class RenderMenu extends Popup
 {
     @property({ attribute: false })
-    system: RenderSystem;
+    system: System;
 
     protected propShader: PropertyTracker<any>;
 
-    constructor(system?: RenderSystem)
+    constructor(system?: System)
     {
         super();
         this.system = system;

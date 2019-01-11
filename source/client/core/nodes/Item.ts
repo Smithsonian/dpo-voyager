@@ -19,20 +19,16 @@ import resolvePathname from "resolve-pathname";
 
 import { IItem } from "common/types/item";
 
-import Node from "@ff/graph/Node";
+import RenderNode from "@ff/scene/RenderNode";
 import Transform from "@ff/scene/components/Transform";
 import Model from "../components/Model";
-import VoyagerSystem from "../VoyagerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Item extends Node
+export default class Item extends RenderNode
 {
     static readonly type: string = "Item";
 
-    readonly system: VoyagerSystem;
-
-    protected transform: Transform;
     protected model: Model;
 
     url: string;
@@ -46,7 +42,7 @@ export default class Item extends Node
 
     createComponents()
     {
-        this.transform = this.createComponent(Transform);
+        this.createComponent(Transform);
         this.model = this.createComponent(Model);
 
         this.name = "Item";

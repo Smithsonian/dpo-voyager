@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
+import System, { IComponentEvent, INodeEvent } from "@ff/graph/System";
 import { ComponentType } from "@ff/graph/Component";
-import { customElement, property } from "@ff/ui/CustomElement";
+import CSelection from "@ff/graph/components/CSelection";
+
+import { customElement, property, PropertyValues } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
 import ItemNode from "../../explorer/nodes/ItemNode";
-import ExplorerSystem, { IComponentEvent, INodeEvent } from "../../explorer/ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,15 +30,19 @@ import ExplorerSystem, { IComponentEvent, INodeEvent } from "../../explorer/Expl
 class ItemList extends List<ItemNode>
 {
     @property({ attribute: false })
-    system: ExplorerSystem = null;
+    system: System = null;
 
     @property({ attribute: false })
     componentType: ComponentType = null;
 
+    protected selection: CSelection = null;
 
     protected firstConnected()
     {
         super.firstConnected();
+
+        this.selection = this.system.components.safeGet(CSelection);
+
         this.classList.add("sv-scrollable");
 
         if (!this.system) {
@@ -50,10 +56,9 @@ class ItemList extends List<ItemNode>
         this.system.components.on<INodeEvent>("component", this.onUpdate, this);
         this.system.components.on<IComponentEvent>("component", this.onUpdate, this);
 
-        const selectionController = this.system.selectionController;
-        selectionController.nodes.on(ItemNode, this.onSelectItemNode, this);
+        this.selection.selectedNodes.on(ItemNode, this.onSelectItemNode, this);
         if (this.componentType) {
-            selectionController.components.on(this.componentType, this.onSelectComponent, this);
+            this.selection.selectedComponents.on(this.componentType, this.onSelectComponent, this);
         }
     }
 
@@ -63,10 +68,9 @@ class ItemList extends List<ItemNode>
         this.system.components.off<INodeEvent>("component", this.onUpdate, this);
         this.system.components.off<IComponentEvent>("component", this.onUpdate, this);
 
-        const selectionController = this.system.selectionController;
-        selectionController.nodes.off(ItemNode, this.onSelectItemNode, this);
+        this.selection.selectedNodes.off(ItemNode, this.onSelectItemNode, this);
         if (this.componentType) {
-            selectionController.components.off(this.componentType, this.onSelectComponent, this);
+            this.selection.selectedComponents.off(this.componentType, this.onSelectComponent, this);
         }
     }
 
@@ -83,11 +87,10 @@ class ItemList extends List<ItemNode>
 
     protected isItemSelected(node: ItemNode): boolean
     {
-        const selectionController = this.system.selectionController;
         const component = this.componentType ? node.components.get(this.componentType) : null;
 
-        return selectionController.nodes.contains(node) ||
-            (component && selectionController.components.contains(component));
+        return this.selection.selectedNodes.contains(node) ||
+            (component && this.selection.selectedComponents.contains(component));
     }
 
     protected onSelectItemNode(event: INodeEvent)
@@ -114,26 +117,23 @@ class ItemList extends List<ItemNode>
 
     onClickItem(event: MouseEvent, node: ItemNode)
     {
-        const selectionController = this.system.selectionController;
         const component = this.componentType ? node.components.get(this.componentType) : null;
 
         if (component) {
-            selectionController.selectComponent(component, event.ctrlKey);
+            this.selection.selectComponent(component, event.ctrlKey);
         }
         else {
-            selectionController.selectNode(node, event.ctrlKey);
+            this.selection.selectNode(node, event.ctrlKey);
         }
     }
 
     protected onClickEmpty(event: MouseEvent)
     {
-        const selectionController = this.system.selectionController;
-
-        if (this.componentType && selectionController.components.has(this.componentType)) {
-            selectionController.clearSelection();
+        if (this.componentType && this.selection.selectedComponents.has(this.componentType)) {
+            this.selection.clearSelection();
         }
-        else if (selectionController.nodes.has(ItemNode)) {
-            selectionController.clearSelection();
+        else if (this.selection.selectedNodes.has(ItemNode)) {
+            this.selection.clearSelection();
         }
     }
 }

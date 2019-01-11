@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import PropertyTracker from "@ff/graph/PropertyTracker";
-
-import { customElement, html } from "@ff/ui/CustomElement";
+import { customElement, property, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Layout";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
@@ -61,7 +59,7 @@ export default class PoseTaskView extends TaskView
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-section" style="flex: 1 1 75%">
-                <sv-pose-task-property-view .system=${system}></sv-pose-task-property-view>
+                <sv-pose-task-property-view .system=${system} .task=${this.task}></sv-pose-task-property-view>
             </div>
         `;
     }
@@ -72,8 +70,10 @@ export default class PoseTaskView extends TaskView
 @customElement("sv-pose-task-property-view")
 class PoseTaskPropertyView extends ItemProperties<Model>
 {
+    @property({ attribute: false })
+    task: PoseTask = null;
+
     protected scene: VoyagerScene = null;
-    protected poseTask: PoseTask = null;
 
     constructor()
     {
@@ -83,14 +83,13 @@ class PoseTaskPropertyView extends ItemProperties<Model>
     protected connected()
     {
         super.connected();
-        this.poseTask = this.system.components.safeGet(PoseTask);
-        this.poseTask.ins.mode.on("value", this.onModeChange, this);
+        this.task.ins.mode.on("value", this.onModeChange, this);
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.poseTask.ins.mode.off("value", this.onModeChange, this);
+        this.task.ins.mode.off("value", this.onModeChange, this);
     }
 
     protected render()
@@ -101,7 +100,7 @@ class PoseTaskPropertyView extends ItemProperties<Model>
             return html``;
         }
 
-        const mode = this.poseTask.ins.mode.value;
+        const mode = this.task.ins.mode.value;
 
         const globalUnits = this.scene.ins.units;
         const itemUnits = model.ins.units;
@@ -124,7 +123,7 @@ class PoseTaskPropertyView extends ItemProperties<Model>
 
     protected onClickMode(event: IButtonClickEvent)
     {
-        this.poseTask.ins.mode.setValue(event.target.index);
+        this.task.ins.mode.setValue(event.target.index);
     }
 
     protected onClickCenter()
@@ -142,7 +141,7 @@ class PoseTaskPropertyView extends ItemProperties<Model>
         if (model) {
             this.scene = model.transform.getParent(VoyagerScene, true);
 
-            const prop = this.poseTask.ins.mode;
+            const prop = this.task.ins.mode;
             if (prop.value === EPoseManipMode.Off) {
                 prop.setValue(EPoseManipMode.Rotate);
             }

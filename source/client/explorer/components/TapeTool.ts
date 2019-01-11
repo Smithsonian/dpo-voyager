@@ -16,13 +16,13 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
 
 import { ITapeTool } from "common/types/voyager";
-import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TapeTool extends ExplorerComponent
+export default class TapeTool extends Component
 {
     static readonly type: string = "TapeTool";
 

@@ -17,6 +17,8 @@
 
 import Annotations from "./Annotations";
 import Background from "./Background";
+import CExplorer from "./CExplorer";
+import CPresentations from "./CPresentations";
 import Documents from "./Documents";
 import GroundPlane from "./GroundPlane";
 import Groups from "./Groups";
@@ -36,6 +38,8 @@ import Tours from "./Tours";
 export {
     Annotations,
     Background,
+    CExplorer,
+    CPresentations,
     Documents,
     GroundPlane,
     Groups,
@@ -54,6 +58,8 @@ export {
 export const componentTypes = [
     Annotations,
     Background,
+    CExplorer,
+    CPresentations,
     Documents,
     GroundPlane,
     Groups,

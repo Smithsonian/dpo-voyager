@@ -18,24 +18,15 @@
 import Property from "@ff/graph/Property";
 import "@ff/ui/graph/PropertyView";
 
-import ExplorerSystem from "../../explorer/ExplorerSystem";
-import CustomElement, { customElement, property, html, TemplateResult } from "@ff/ui/CustomElement";
+import SystemElement, { customElement, html, TemplateResult } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-list")
-export default class PropertyList extends CustomElement
+export default class PropertyList extends SystemElement
 {
-    @property({ attribute: false })
-    system: ExplorerSystem = null;
-
     private _elements: TemplateResult[] = [];
 
-    constructor(system?: ExplorerSystem)
-    {
-        super();
-        this.system = system;
-    }
 
     addProperty(property: Property, title: string)
     {
@@ -47,6 +38,7 @@ export default class PropertyList extends CustomElement
 
     protected render()
     {
-        return html`${this._elements}`;
+        const elements = this._elements;
+        return html`${elements}`;
     }
 }

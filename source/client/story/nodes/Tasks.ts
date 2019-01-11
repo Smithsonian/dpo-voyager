@@ -36,12 +36,21 @@ export default class Tasks extends Node
 
     private _activeTaskIndex = -1;
 
-    get tasks() {
+    get tasks(): Task[] {
         return this.components.getArray(Task);
     }
 
-    get activeTask() {
+    get activeTask(): Task {
         return this.tasks[this._activeTaskIndex];
+    }
+
+    set activeTask(task: Task) {
+        const index = this.tasks.indexOf(task);
+        if (index < 0) {
+            throw new Error("unregistered task");
+        }
+
+        this.activeTaskIndex = index;
     }
 
     get activeTaskIndex() {
@@ -50,9 +59,15 @@ export default class Tasks extends Node
 
     set activeTaskIndex(index: number) {
         if (index !== this._activeTaskIndex) {
+
             const previous = this.activeTask;
+            previous && previous.deactivate();
+
             this._activeTaskIndex = index;
+
             const next = this.activeTask;
+            next && next.activate();
+
             this.emit<ITaskChangeEvent>({ type: "task", previous, next });
         }
     }

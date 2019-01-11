@@ -18,14 +18,15 @@
 import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
-import { IPointerEvent } from "@ff/scene/RenderView";
+import { IComponentEvent } from "@ff/graph/ComponentSet";
 import Viewport from "@ff/three/Viewport";
+import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
 
 import Model from "../../core/components/Model";
+import Interface from "../../explorer/components/Interface";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import Task from "./Task";
-import { IComponentEvent } from "@ff/graph/ComponentSet";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +51,7 @@ export default class PoseTask extends Task
         mode: types.Enum("Mode", EPoseManipMode, EPoseManipMode.Off)
     });
 
+    protected _interfaceVisible = false;
     protected _model: Model = null;
     protected _viewport: Viewport = null;
     protected _deltaX = 0;
@@ -64,18 +66,46 @@ export default class PoseTask extends Task
     {
         super.create();
 
-        const system = this.system;
-        system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        system.selectionController.components.on(Model, this.onSelectModel, this);
+        this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.selection.selectedComponents.on(Model, this.onSelectModel, this);
     }
 
     dispose()
     {
         super.dispose();
 
-        const system = this.system;
-        system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        system.selectionController.components.on(Model, this.onSelectModel, this);
+        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.selection.selectedComponents.off(Model, this.onSelectModel, this);
+    }
+
+    activate()
+    {
+        this.system.views.forEach(view => {
+            if (view instanceof RenderQuadView) {
+                view.layout = EQuadViewLayout.Quad;
+            }
+        });
+
+        const interfaceComponent = this.system.components.get(Interface);
+        if (interfaceComponent) {
+            this._interfaceVisible = interfaceComponent.ins.visible.value;
+            interfaceComponent.ins.visible.setValue(false);
+        }
+
+    }
+
+    deactivate()
+    {
+        this.system.views.forEach(view => {
+            if (view instanceof RenderQuadView) {
+                view.layout = EQuadViewLayout.Single;
+            }
+        });
+
+        const interfaceComponent = this.system.components.get(Interface);
+        if (interfaceComponent) {
+            interfaceComponent.ins.visible.setValue(this._interfaceVisible);
+        }
     }
 
     tick()

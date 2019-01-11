@@ -16,7 +16,6 @@
  */
 
 import CaptureTask from "./CaptureTask";
-import PoseManip from "./PoseManip";
 import PoseTask from "./PoseTask";
 import Story from "./Story";
 
@@ -24,14 +23,12 @@ import Story from "./Story";
 
 export {
     CaptureTask,
-    PoseManip,
     PoseTask,
     Story
 };
 
 export const componentTypes = [
     CaptureTask,
-    PoseManip,
     PoseTask,
     Story
 ];

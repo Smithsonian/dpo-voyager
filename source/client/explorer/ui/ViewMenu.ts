@@ -16,7 +16,7 @@
  */
 
 import PropertyTracker from "@ff/graph/PropertyTracker";
-import RenderSystem from "@ff/scene/RenderSystem";
+import System from "@ff/graph/System";
 
 import "@ff/ui/Layout";
 import "@ff/ui/IndexButton";
@@ -34,13 +34,13 @@ import Popup from "@ff/ui/Popup";
 export default class ViewMenu extends Popup
 {
     @property({ attribute: false })
-    system: RenderSystem;
+    system: System;
 
     protected viewPreset: EViewPreset;
     protected propProjection: PropertyTracker<EProjectionType>;
     protected propPreset: PropertyTracker<EViewPreset>;
 
-    constructor(system?: RenderSystem)
+    constructor(system?: System)
     {
         super();
 

@@ -15,28 +15,18 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 import PropertyTree from "@ff/ui/graph/PropertyTree";
 
-import ExplorerSystem from "../../explorer/ExplorerSystem";
+import SystemElement, { customElement } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-inspector-panel")
-export default class InspectorPanel extends CustomElement
+export default class InspectorPanel extends SystemElement
 {
-    @property({ attribute: false })
-    system: ExplorerSystem;
-
-    constructor(system?: ExplorerSystem)
-    {
-        super();
-        this.system = system;
-    }
-
     firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-inspector-panel");
-        this.appendChild(new PropertyTree(this.system.selectionController));
+        this.appendChild(new PropertyTree(this.system));
     }
 }

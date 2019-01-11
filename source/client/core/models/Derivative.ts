@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import { IDerivative, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
 
-import LoadingManager from "../loaders/LoadingManager";
+import CLoadingManager from "../components/CLoadingManager";
 import UberMaterial from "../shaders/UberMaterial";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
@@ -71,7 +71,7 @@ export default class Derivative
         }
     }
 
-    load(loadingManager: LoadingManager, assetPath?: string): Promise<this>
+    load(loadingManager: CLoadingManager, assetPath?: string): Promise<this>
     {
         console.log("Derivative.load - path: %s", assetPath);
 

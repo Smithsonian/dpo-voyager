@@ -22,12 +22,12 @@ import { types } from "@ff/graph/propertyTypes";
 
 import OrbitManipulator from "@ff/three/OrbitManipulator";
 
-import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
+import RenderComponent from "@ff/scene/RenderComponent";
 import { IActiveCameraEvent } from "@ff/scene/RenderSystem";
+import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import Camera, { EProjectionType } from "@ff/scene/components/Camera";
 
 import { INavigation } from "common/types/voyager";
-import VoyagerComponent from "../VoyagerComponent";
 import VoyagerScene from "./VoyagerScene";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
  * Voyager explorer orbit navigation.
  * Controls manipulation and parameters of the camera.
  */
-export default class OrbitNavigation extends VoyagerComponent
+export default class OrbitNavigation extends RenderComponent
 {
     static readonly type: string = "OrbitNavigation";
 

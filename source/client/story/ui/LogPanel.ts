@@ -15,23 +15,13 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
-import ExplorerSystem from "../../explorer/ExplorerSystem";
+import SystemElement, { customElement } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-log-panel")
-export default class LogPanel extends CustomElement
+export default class LogPanel extends SystemElement
 {
-    @property({ attribute: false })
-    system: ExplorerSystem;
-
-    constructor(system?: ExplorerSystem)
-    {
-        super();
-        this.system = system;
-    }
-
     protected firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-log-panel");

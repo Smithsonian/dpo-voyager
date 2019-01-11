@@ -15,25 +15,15 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
-import ExplorerSystem from "../../explorer/ExplorerSystem";
+import SystemElement, { customElement, property, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-console-panel")
-export default class ConsolePanel extends CustomElement
+export default class ConsolePanel extends SystemElement
 {
-    @property({ attribute: false })
-    system: ExplorerSystem;
-
     protected entries: string[] = [];
     protected logFunction: (...args: any[]) => void = null;
-
-    constructor(system?: ExplorerSystem)
-    {
-        super();
-        this.system = system;
-    }
 
     protected firstConnected()
     {

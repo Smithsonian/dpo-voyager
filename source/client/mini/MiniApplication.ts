@@ -19,12 +19,13 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
-
-import PresentationController from "../explorer/controllers/PresentationController";
-import ExplorerSystem from "../explorer/ExplorerSystem";
+import RenderSystem from "@ff/scene/RenderSystem";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
+
+// TODO: Replace with simplified controller
+import CPresentations from "../explorer/components/CPresentations";
 
 import MainView from "./ui/MainView";
 
@@ -52,10 +53,8 @@ export default class MiniApplication
     ].join("\n");
 
     readonly props: IMiniApplicationProps;
-    readonly system: ExplorerSystem;
+    readonly system: RenderSystem;
     readonly commander: Commander;
-
-    readonly presentationController: PresentationController;
 
 
     constructor(element?: HTMLElement, props?: IMiniApplicationProps)
@@ -68,10 +67,10 @@ export default class MiniApplication
         registry.registerComponentType(coreComponents);
 
         this.commander = new Commander();
-        this.system = new ExplorerSystem(this.commander, registry);
+        const system = this.system = new RenderSystem(registry);
 
-        // TODO: get rid of presentation functionality except default template
-        this.presentationController = new PresentationController(this.system, this.commander);
+        const node = system.graph.createNode("Mini");
+        node.createComponent(CPresentations).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -87,7 +86,7 @@ export default class MiniApplication
 
     protected initFromProps(props: IMiniApplicationProps): IMiniApplicationProps
     {
-        const controller = this.presentationController;
+        const controller = this.system.components.get(CPresentations);
 
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");

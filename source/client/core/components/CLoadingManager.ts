@@ -18,41 +18,46 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
+import Component from "@ff/graph/Component";
+import Node from "@ff/graph/Node";
+
 import { IPresentation, IItem } from "common/types/presentation";
 import Asset from "../models/Asset";
 
-import JSONLoader from "./JSONLoader";
-import JSONValidator from "./JSONValidator";
-import ModelLoader from "./ModelLoader";
-import GeometryLoader from "./GeometryLoader";
-import TextureLoader from "./TextureLoader";
+import JSONLoader from "../loaders/JSONLoader";
+import JSONValidator from "../loaders/JSONValidator";
+import ModelLoader from "../loaders/ModelLoader";
+import GeometryLoader from "../loaders/GeometryLoader";
+import TextureLoader from "../loaders/TextureLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _VERBOSE = false;
 
-export default class LoadingManager extends THREE.LoadingManager
+export default class CLoadingManager extends Component
 {
+    static readonly type: string = "CLoadingManager";
+
     readonly jsonLoader: JSONLoader;
     readonly validator: JSONValidator;
     readonly modelLoader: ModelLoader;
     readonly geometryLoader: GeometryLoader;
     readonly textureLoader: TextureLoader;
 
-    constructor()
+    private _loadingManager: PrivateLoadingManager;
+
+
+    constructor(node: Node, id?: string)
     {
-        super();
+        super(node, id);
 
-        this.onStart = this.onLoadingStart.bind(this);
-        this.onProgress = this.onLoadingProgress.bind(this);
-        this.onLoad = this.onLoadingCompleted.bind(this);
-        this.onError = this.onLoadingError.bind(this);
+        const loadingManager = this._loadingManager = new PrivateLoadingManager();
 
-        this.jsonLoader = new JSONLoader(this);
+        this.jsonLoader = new JSONLoader(loadingManager);
         this.validator = new JSONValidator();
-        this.modelLoader = new ModelLoader(this);
-        this.geometryLoader = new GeometryLoader(this);
-        this.textureLoader = new TextureLoader(this);
+        this.modelLoader = new ModelLoader(loadingManager);
+        this.geometryLoader = new GeometryLoader(loadingManager);
+        this.textureLoader = new TextureLoader(loadingManager);
     }
 
     loadJSON(url: string, path?: string): Promise<any>
@@ -100,7 +105,12 @@ export default class LoadingManager extends THREE.LoadingManager
             return resolve(json as IItem);
         });
     }
+}
 
+////////////////////////////////////////////////////////////////////////////////
+
+class PrivateLoadingManager extends THREE.LoadingManager
+{
     protected onLoadingStart()
     {
         if (_VERBOSE) {

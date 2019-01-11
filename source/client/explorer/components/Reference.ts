@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-import { IComponentChangeEvent } from "@ff/graph/Component";
+import Component, { IComponentChangeEvent } from "@ff/graph/Component";
 
 import { IReference as IReferenceData } from "common/types/presentation";
-
-import ExplorerComponent from "../ExplorerComponent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface IReferenceChangeEvent extends IComponentChangeEvent<Reference> { }
 
-export default class Reference extends ExplorerComponent
+export default class Reference extends Component
 {
     static readonly type: string = "Reference";
 

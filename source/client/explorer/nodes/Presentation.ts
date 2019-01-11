@@ -30,6 +30,7 @@ import Snapshots from "../components/Snapshots";
 import Tours from "../components/Tours";
 import Documents from "../components/Documents";
 
+import CLoadingManager from "../../core/components/CLoadingManager";
 import VoyagerScene from "../../core/components/VoyagerScene";
 import OrbitNavigation from "../../core/components/OrbitNavigation";
 
@@ -51,8 +52,6 @@ import DirectionalLightNode from "../nodes/DirectionalLightNode";
 import PointLightNode from "../nodes/PointLightNode";
 import SpotLightNode from "../nodes/SpotLightNode";
 
-import ExplorerSystem from "../ExplorerSystem";
-
 ////////////////////////////////////////////////////////////////////////////////
 
 export type ReferenceCallback = (index: number, graph: Graph, assetPath: string) => PresentationNode;
@@ -62,18 +61,24 @@ export default class Presentation extends RenderNode
 {
     static readonly type: string = "Presentation";
 
-    readonly system: ExplorerSystem;
-
     protected url: string = "";
     protected assetPath: string = "";
+    protected loadingManager: CLoadingManager = null;
 
     activate()
     {
         this.components.get(VoyagerScene).ins.activate.set();
     }
 
+    deactivate()
+    {
+
+    }
+
     createComponents()
     {
+        this.loadingManager = this.system.components.safeGet(CLoadingManager);
+
         this.createComponent(VoyagerScene);
         this.createComponent(HomeGrid);
         this.createComponent(Background);
@@ -214,7 +219,7 @@ export default class Presentation extends RenderNode
                 else {
                     // node is reference, try to load external reference
                     const itemUrl = resolvePathname(referenceData.uri, this.url);
-                    const loadingManager = this.system.loadingManager;
+                    const loadingManager = this.loadingManager;
 
                     loadingManager.loadJSON(itemUrl).then(json =>
                         loadingManager.validateItem(json).then(itemData => {

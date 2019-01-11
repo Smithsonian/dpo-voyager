@@ -16,13 +16,13 @@
  */
 
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
-
 import Commander from "@ff/core/Commander";
+import RenderSystem from "@ff/scene/RenderSystem";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
-import ExplorerSystem from "../explorer/ExplorerSystem";
 
 import { componentTypes as storyComponents } from "./components";
+
 import Story from"./components/Story";
 import Tasks from "./nodes/Tasks";
 
@@ -50,7 +50,7 @@ export default class StoryApplication
 {
     readonly props: IStoryApplicationProps;
     readonly explorer: ExplorerApplication;
-    readonly system: ExplorerSystem;
+    readonly system: RenderSystem;
     readonly commander: Commander;
 
 
@@ -71,7 +71,6 @@ export default class StoryApplication
         // add story components
         const storyNode = this.system.graph.createNode("Story");
         storyNode.createComponent(Story);
-        //storyNode.createComponent(PoseManip);
 
         const tasksNode = this.system.graph.createNode(Tasks);
         tasksNode.createComponents();

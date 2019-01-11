@@ -16,11 +16,11 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import ExplorerComponent from "../ExplorerComponent";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Meta extends ExplorerComponent
+export default class Meta extends Component
 {
     static readonly type: string = "Meta";
 

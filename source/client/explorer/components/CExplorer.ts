@@ -15,19 +15,17 @@
  * limitations under the License.
  */
 
-import TemplateTaskEditor from "./ui/TemplateTaskEditor";
-import Task from "./Task";
+import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TemplateTask extends Task
+export default class CExplorer extends Component
 {
-    static readonly text: string = "Templates";
-    static readonly icon: string = "fa fa-map";
+    static readonly type: string = "CExplorer";
 
-
-    createEditor()
-    {
-        return new TemplateTaskEditor(this);
-    }
+    ins = this.ins.append({
+        visible: types.Boolean_true("Interface.Visible"),
+        logo: types.Boolean_true("Interface.Logo"),
+    });
 }

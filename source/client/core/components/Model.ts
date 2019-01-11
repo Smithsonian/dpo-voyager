@@ -31,8 +31,7 @@ import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import { EAssetType, EMapType } from "../models/Asset";
 
-import VoyagerSystem from "../VoyagerSystem";
-import { IVoyagerComponent } from "../VoyagerComponent";
+import CLoadingManager from "./CLoadingManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,7 +69,7 @@ export interface IModelChangeEvent extends IComponentChangeEvent<Model>
 /**
  * Renderable component representing a Voyager explorer model.
  */
-export default class Model extends Object3D implements IVoyagerComponent
+export default class Model extends Object3D
 {
     static readonly type: string = "Model";
 
@@ -95,10 +94,6 @@ export default class Model extends Object3D implements IVoyagerComponent
 
     protected derivatives: Derivative[] = [];
     protected activeDerivative: Derivative = null;
-
-    get system() {
-        return this.node.system as VoyagerSystem;
-    }
 
     create()
     {
@@ -358,7 +353,7 @@ export default class Model extends Object3D implements IVoyagerComponent
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        const loadingManager = this.system.loadingManager;
+        const loadingManager = this.system.components.safeGet(CLoadingManager);
 
         return derivative.load(loadingManager, this.assetPath)
         .then(() => {

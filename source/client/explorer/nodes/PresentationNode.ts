@@ -18,12 +18,10 @@
 import * as THREE from "three";
 import math from "@ff/core/math";
 
-import Node from "@ff/graph/Node";
+import RenderNode from "@ff/scene/RenderNode";
 import Transform from "@ff/scene/components/Transform";
 
 import { INode, ITransform } from "common/types/presentation";
-
-import ExplorerSystem from "../ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,21 +34,13 @@ const _euler = new THREE.Euler();
 /**
  * Base class for presentation nodes (nodes within the scene tree of a presentation).
  */
-export default class PresentationNode extends Node
+export default class PresentationNode extends RenderNode
 {
     static readonly type: string = "PresentationNode";
 
-    readonly system: ExplorerSystem;
-
-    private _transform: Transform = null;
-
-    get transform() {
-        return this._transform;
-    }
-
     createComponents()
     {
-        this._transform = this.createComponent(Transform);
+        this.createComponent(Transform);
     }
 
     fromNodeData(data: INode)
@@ -59,7 +49,7 @@ export default class PresentationNode extends Node
             this.name = data.name;
         }
 
-        const { position, rotation, order, scale } = this._transform.ins;
+        const { position, rotation, order, scale } = this.transform.ins;
 
         order.setValue(0);
 
@@ -90,13 +80,13 @@ export default class PresentationNode extends Node
             }
 
             // this updates the matrix from the PRS properties
-            this._transform.changed = true;
+            this.transform.changed = true;
         }
     }
 
     toNodeData(): INode
     {
-        this._transform.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
+        this.transform.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
 
         const data: Partial<INode> = {};
 

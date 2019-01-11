@@ -16,13 +16,16 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+import CSelection from "@ff/graph/components/CSelection";
+import RenderComponent from "@ff/scene/RenderComponent";
 
-import ExplorerComponent from "../../explorer/ExplorerComponent";
 import TaskView from "../ui/TaskView";
+
+import Tasks from "../nodes/Tasks";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Task extends ExplorerComponent
+export default class Task extends RenderComponent
 {
     static readonly type: string = "Task";
 
@@ -32,6 +35,23 @@ export default class Task extends ExplorerComponent
     ins = this.ins.append({
         activate: types.Event("Activate")
     });
+
+    protected selection: CSelection = null;
+
+    create()
+    {
+        this.selection = this.system.components.safeGet(CSelection);
+    }
+
+    update()
+    {
+        if (this.ins.activate.changed) {
+            const tasksNode = this.node as Tasks;
+            tasksNode.activeTask = this;
+        }
+
+        return false;
+    }
 
     get text() {
         return (this.constructor as typeof Task).text;
@@ -45,11 +65,11 @@ export default class Task extends ExplorerComponent
         throw new Error("must override");
     }
 
-    protected activate()
+    activate()
     {
     }
 
-    protected deactivate()
+    deactivate()
     {
     }
 }

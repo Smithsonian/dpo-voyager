@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-import { customElement, property } from "@ff/ui/CustomElement";
-
-import TaskEditor from "./TaskEditor";
-import SettingsTask from "../SettingsTask";
+import RenderSystem from "@ff/scene/RenderSystem";
+import CustomElement, { customElement, property, html, PropertyValues, TemplateResult } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-settings-task-editor")
-export default class SettingsTaskEditor extends TaskEditor
-{
-    protected task: SettingsTask;
+export { customElement, property, html, PropertyValues, TemplateResult };
 
-    constructor(task: SettingsTask)
+export default class SystemElement extends CustomElement
+{
+    @property({ attribute: false })
+    system: RenderSystem;
+
+    constructor(system?: RenderSystem)
     {
-        super(task);
+        super();
+        this.system = system;
     }
 }

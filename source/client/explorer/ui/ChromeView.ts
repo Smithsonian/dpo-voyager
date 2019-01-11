@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
+import System from "@ff/graph/System";
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
-import InterfaceController, { IInterfaceUpdateEvent } from "../controllers/InterfaceController";
-import ExplorerSystem from "../ExplorerSystem";
+import CExplorer from "../components/CExplorer";
 
 import ViewMenu from "./ViewMenu";
 import RenderMenu from "./RenderMenu";
@@ -32,12 +32,15 @@ import CustomElement, { customElement, html, property } from "@ff/ui/CustomEleme
 export default class ChromeView extends CustomElement
 {
     @property({ attribute: false })
-    system: ExplorerSystem;
+    system: System;
 
-    constructor(system?: ExplorerSystem)
+    protected explorer: CExplorer;
+
+    constructor(system?: System)
     {
         super();
         this.system = system;
+        this.explorer = system.components.safeGet(CExplorer);
     }
 
     protected firstConnected()
@@ -48,18 +51,23 @@ export default class ChromeView extends CustomElement
 
     protected connected()
     {
-        this.system.interfaceController.on<IInterfaceUpdateEvent>("update", this.onInterfaceUpdate, this);
+        const { visible, logo } = this.explorer.ins;
+        visible.on("value", this.onInterfaceUpdate, this);
+        logo.on("value", this.onInterfaceUpdate, this);
     }
 
     protected disconnected()
     {
-        this.system.interfaceController.off<IInterfaceUpdateEvent>("update", this.onInterfaceUpdate, this);
+        const { visible, logo } = this.explorer.ins;
+        visible.off("value", this.onInterfaceUpdate, this);
+        logo.off("value", this.onInterfaceUpdate, this);
     }
 
     protected render()
     {
-        const isVisible = this.system.interfaceController.visible;
-        const showLogo = this.system.interfaceController.logo;
+        const { visible, logo } = this.explorer.ins;
+        const isVisible = visible.value;
+        const showLogo = logo.value;
 
         if (!isVisible) {
             return html``;

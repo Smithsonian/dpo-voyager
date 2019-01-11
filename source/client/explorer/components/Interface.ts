@@ -16,13 +16,14 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
 
 import { IInterface } from "common/types/voyager";
-import ExplorerComponent from "../ExplorerComponent";
+import CExplorer from "./CExplorer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Interface extends ExplorerComponent
+export default class Interface extends Component
 {
     static readonly type: string = "Interface";
 
@@ -31,19 +32,26 @@ export default class Interface extends ExplorerComponent
         logo: types.Boolean_true("Interface.Logo"),
     });
 
+    protected explorer: CExplorer = null;
+
+    create()
+    {
+        this.explorer = this.system.components.safeGet(CExplorer);
+    }
+
     update()
     {
-        const system = this.system;
-        const { visible, logo } = this.ins;
+        const ins = this.ins;
+        const explorerIns = this.explorer.ins;
 
-        if (visible.changed) {
-            system.interfaceController.visible = visible.value;
+        if (ins.visible.changed) {
+            explorerIns.visible.setValue(ins.visible.value);
         }
-        if (logo.changed) {
-            system.interfaceController.logo = logo.value;
+        if (ins.logo.changed) {
+            explorerIns.logo.setValue(ins.logo.value);
         }
 
-        return true;
+        return false;
     }
 
     fromData(data: IInterface)
