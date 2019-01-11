@@ -15,23 +15,24 @@
  * limitations under the License.
  */
 
-import CaptureTask from "./CaptureTask";
-import PoseManip from "./PoseManip";
-import PoseTask from "./PoseTask";
-import Story from "./Story";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+
+import Task from "../components/Task";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CaptureTask,
-    PoseManip,
-    PoseTask,
-    Story
-};
+export default class TaskView extends CustomElement
+{
+    protected task: Task;
 
-export const componentTypes = [
-    CaptureTask,
-    PoseManip,
-    PoseTask,
-    Story
-];
+    constructor(task: Task)
+    {
+        super();
+        this.task = task;
+    }
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-task-view");
+    }
+}

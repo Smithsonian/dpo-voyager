@@ -24,24 +24,21 @@ import "@ff/ui/Button";
 import "@ff/ui/IndexButton";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import VoyagerScene from "../../../core/components/VoyagerScene";
-import Model from "../../../core/components/Model";
+import VoyagerScene from "../../core/components/VoyagerScene";
+import Model from "../../core/components/Model";
 
-import "../../ui/ItemList";
-import "../../ui/PropertyView";
-import ItemProperties from "../../ui/ItemProperties";
+import PoseTask, { EPoseManipMode } from "../components/PoseTask";
 
-import PoseManip, { EManipMode } from "../../components/PoseManip";
-import TaskEditor from "./TaskEditor";
-import PoseTask from "../PoseTask";
+import "./ItemList";
+import "./PropertyView";
+import ItemProperties from "./ItemProperties";
+import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-pose-task-editor")
-export default class PoseTaskEditor extends TaskEditor
+@customElement("sv-pose-task-view")
+export default class PoseTaskView extends TaskView
 {
-    protected task: PoseTask;
-
     protected firstConnected()
     {
         super.firstConnected();
@@ -50,6 +47,8 @@ export default class PoseTaskEditor extends TaskEditor
             display: "flex",
             flexDirection: "column"
         });
+
+        this.classList.add("sv-pose-task-view");
     }
 
     protected render()
@@ -62,7 +61,7 @@ export default class PoseTaskEditor extends TaskEditor
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-section" style="flex: 1 1 75%">
-                <sv-item-pose-properties .system=${system}></sv-item-pose-properties>
+                <sv-pose-task-property-view .system=${system}></sv-pose-task-property-view>
             </div>
         `;
     }
@@ -70,11 +69,11 @@ export default class PoseTaskEditor extends TaskEditor
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-item-pose-properties")
-class ItemPoseProperties extends ItemProperties<Model>
+@customElement("sv-pose-task-property-view")
+class PoseTaskPropertyView extends ItemProperties<Model>
 {
     protected scene: VoyagerScene = null;
-    protected modeProp = new PropertyTracker(this.onPropertyUpdate, this);
+    protected poseTask: PoseTask = null;
 
     constructor()
     {
@@ -84,25 +83,25 @@ class ItemPoseProperties extends ItemProperties<Model>
     protected connected()
     {
         super.connected();
-        this.modeProp.property = this.system.components.get(PoseManip).ins.mode;
+        this.poseTask = this.system.components.safeGet(PoseTask);
+        this.poseTask.ins.mode.on("value", this.onModeChange, this);
     }
 
     protected disconnected()
     {
         super.disconnected();
-        this.modeProp.detach();
+        this.poseTask.ins.mode.off("value", this.onModeChange, this);
     }
 
     protected render()
     {
         const model = this.component;
-        console.log("posePropRender", model);
 
         if (!model) {
             return html``;
         }
 
-        const mode = this.modeProp.getValue(EManipMode.Rotate);
+        const mode = this.poseTask.ins.mode.value;
 
         const globalUnits = this.scene.ins.units;
         const itemUnits = model.ins.units;
@@ -111,8 +110,8 @@ class ItemPoseProperties extends ItemProperties<Model>
 
         return html`
             <ff-flex-row wrap>
-                <ff-index-button text="Rotate" index=${EManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
-                <ff-index-button text="Move" index=${EManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+                <ff-index-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+                <ff-index-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
                 <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
                 <ff-button text="Zoom Views" @click=${this.onClickZoomViews}></ff-button>
             </ff-flex-row>
@@ -125,7 +124,7 @@ class ItemPoseProperties extends ItemProperties<Model>
 
     protected onClickMode(event: IButtonClickEvent)
     {
-        this.modeProp.setValue(event.target.index);
+        this.poseTask.ins.mode.setValue(event.target.index);
     }
 
     protected onClickCenter()
@@ -143,8 +142,9 @@ class ItemPoseProperties extends ItemProperties<Model>
         if (model) {
             this.scene = model.transform.getParent(VoyagerScene, true);
 
-            if (this.modeProp.getValue() === EManipMode.Off) {
-                this.modeProp.setValue(EManipMode.Rotate);
+            const prop = this.poseTask.ins.mode;
+            if (prop.value === EPoseManipMode.Off) {
+                prop.setValue(EPoseManipMode.Rotate);
             }
         }
         else {
@@ -154,7 +154,7 @@ class ItemPoseProperties extends ItemProperties<Model>
         super.setComponent(model);
     }
 
-    protected onPropertyUpdate()
+    protected onModeChange()
     {
         this.requestUpdate();
     }

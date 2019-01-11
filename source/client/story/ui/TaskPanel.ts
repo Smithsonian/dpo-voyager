@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+
+import ExplorerSystem from "../../explorer/ExplorerSystem";
+import Tasks, { ITaskChangeEvent } from "../nodes/Tasks";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,12 +26,21 @@ import CustomElement, { customElement, property, html } from "@ff/ui/CustomEleme
 export default class TaskPanel extends CustomElement
 {
     @property({ attribute: false })
-    controller: StoryController;
+    system: ExplorerSystem;
 
-    constructor(controller?: StoryController)
+    protected tasks: Tasks = null;
+
+
+    constructor(system?: ExplorerSystem)
     {
         super();
-        this.controller = controller;
+
+        this.system = system;
+        this.tasks = system.nodes.get(Tasks);
+
+        if (!this.tasks) {
+            throw new Error("missing 'Tasks' node");
+        }
     }
 
     protected firstConnected()
@@ -39,19 +50,23 @@ export default class TaskPanel extends CustomElement
 
     protected connected()
     {
-        this.controller.on<ITaskChangeEvent>("change", this.onControllerChange, this);
+        this.tasks.on<ITaskChangeEvent>("task", this.onTaskChange, this);
     }
 
     protected disconnected()
     {
-        this.controller.off<ITaskChangeEvent>("change", this.onControllerChange, this);
+        this.tasks.off<ITaskChangeEvent>("task", this.onTaskChange, this);
     }
 
     protected render()
     {
-        const task = this.controller.activeTask;
+        const task = this.tasks.activeTask;
+        if (!task) {
+            return html``;
+        }
+
         const iconClasses = "ff-icon " + task.icon;
-        const editorElement = task.createEditor();
+        const viewElement = task.createView();
 
         return html`
             <div class="ff-header">
@@ -59,12 +74,12 @@ export default class TaskPanel extends CustomElement
                 <div class="ff-text">${task.text}</div>
             </div>
             <div class="ff-content">
-                ${editorElement}
+                ${viewElement}
             </div>
         `;
     }
 
-    protected onControllerChange()
+    protected onTaskChange()
     {
         this.requestUpdate();
     }

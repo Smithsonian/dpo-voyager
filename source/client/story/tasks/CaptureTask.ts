@@ -15,23 +15,26 @@
  * limitations under the License.
  */
 
-import CaptureTask from "./CaptureTask";
-import PoseManip from "./PoseManip";
-import PoseTask from "./PoseTask";
-import Story from "./Story";
+import CaptureTaskEditor from "./ui/CaptureTaskEditor";
+import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CaptureTask,
-    PoseManip,
-    PoseTask,
-    Story
-};
+export default class CaptureTask extends Task
+{
+    static readonly text: string = "Capture";
+    static readonly icon: string = "fa fa-camera";
 
-export const componentTypes = [
-    CaptureTask,
-    PoseManip,
-    PoseTask,
-    Story
-];
+    activate()
+    {
+    }
+
+    deactivate()
+    {
+    }
+
+    createEditor()
+    {
+        return new CaptureTaskEditor(this);
+    }
+}

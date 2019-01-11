@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-import SelectionController from "@ff/graph/SelectionController";
 import HierarchyTree from "@ff/ui/graph/HierarchyTree";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+
+import ExplorerSystem from "../../explorer/ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,12 +26,12 @@ import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 export default class HierarchyPanel extends CustomElement
 {
     @property({ attribute: false })
-    selectionController: SelectionController;
+    system: ExplorerSystem;
 
-    constructor(selectionController?: SelectionController)
+    constructor(system?: ExplorerSystem)
     {
         super();
-        this.selectionController = selectionController;
+        this.system = system;
 
         this.onClick = this.onClick.bind(this);
         this.addEventListener("click", this.onClick);
@@ -40,10 +41,10 @@ export default class HierarchyPanel extends CustomElement
     protected firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-hierarchy-panel");
-        this.appendChild(new HierarchyTree(this.selectionController));
+        this.appendChild(new HierarchyTree(this.system.selectionController));
     }
     protected onClick()
     {
-        this.selectionController.clearSelection();
+        this.system.selectionController.clearSelection();
     }
 }

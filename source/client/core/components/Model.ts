@@ -110,13 +110,24 @@ export default class Model extends Object3D implements IVoyagerComponent
     {
         const { visible, units, quality, autoLoad, position, rotation, center } = this.ins;
 
-        if (!this.activeDerivative && autoLoad.value) {
+        if (!this.activeDerivative && autoLoad.changed && autoLoad.value) {
             this.autoLoad(quality.value)
             .catch(error => {
                 console.warn("Model.update - failed to load derivative");
                 console.warn(error);
             });
         }
+        else if (quality.changed) {
+            const derivative = this.selectDerivative(quality.value);
+            if (derivative && derivative !== this.activeDerivative) {
+                this.loadDerivative(derivative)
+                .catch(error => {
+                    console.warn("Model.update - failed to load derivative");
+                    console.warn(error);
+                });
+            }
+        }
+
 
         if (visible.changed) {
             this.object3D.visible = visible.value;
@@ -396,7 +407,8 @@ export default class Model extends Object3D implements IVoyagerComponent
         const qualityIndex = _qualityLevels.indexOf(quality);
 
         if (qualityIndex < 0) {
-            throw new Error(`derivative quality not supported: '${EDerivativeQuality[quality]}'`);
+            console.warn(`derivative quality not supported: '${EDerivativeQuality[quality]}'`);
+            return null;
         }
 
         const derivative = this.getDerivative(quality, usage);

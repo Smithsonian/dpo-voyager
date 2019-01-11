@@ -16,6 +16,7 @@
  */
 
 import AnnotationsTask from "./AnnotationsTask";
+import CaptureTask from "./CaptureTask";
 import DocumentsTask from "./DocumentsTask";
 import InspectionTask from "./InspectionTask";
 import MigrationTask from "./MigrationTask";
@@ -28,6 +29,7 @@ export default {
         SettingsTask,
         InspectionTask,
         PoseTask,
+        CaptureTask,
         MigrationTask
     ],
     author: [

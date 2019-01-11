@@ -15,23 +15,20 @@
  * limitations under the License.
  */
 
-import CaptureTask from "./CaptureTask";
-import PoseManip from "./PoseManip";
-import PoseTask from "./PoseTask";
-import Story from "./Story";
+import CaptureTaskView from "../ui/CaptureTaskView";
+import Task from "./Task";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CaptureTask,
-    PoseManip,
-    PoseTask,
-    Story
-};
+export default class CaptureTask extends Task
+{
+    static readonly type: string = "CaptureTask";
 
-export const componentTypes = [
-    CaptureTask,
-    PoseManip,
-    PoseTask,
-    Story
-];
+    static readonly text: string = "Capture";
+    static readonly icon: string = "fa fa-camera";
+
+    createView()
+    {
+        return new CaptureTaskView(this);
+    }
+}

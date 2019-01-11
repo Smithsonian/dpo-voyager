@@ -22,11 +22,9 @@ import Commander from "@ff/core/Commander";
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 import ExplorerSystem from "../explorer/ExplorerSystem";
 
-import LogController from "./controllers/LogController";
-import StoryController from "./controllers/StoryController";
-
 import { componentTypes as storyComponents } from "./components";
-import PoseManip from "./components/PoseManip";
+import Story from"./components/Story";
+import Tasks from "./nodes/Tasks";
 
 import MainView from "./ui/MainView";
 
@@ -55,8 +53,6 @@ export default class StoryApplication
     readonly system: ExplorerSystem;
     readonly commander: Commander;
 
-    readonly taskController: StoryController;
-    readonly logController: LogController;
 
     constructor(element?: HTMLElement, props?: IStoryApplicationProps)
     {
@@ -69,12 +65,16 @@ export default class StoryApplication
         const registry = this.system.registry;
         registry.registerComponentType(storyComponents);
 
-        this.logController = new LogController(this.system, this.commander);
-        this.taskController = new StoryController(this.system, this.commander);
+        //this.logController = new LogController(this.system, this.commander);
+        //this.taskController = new StoryController(this.system, this.commander);
 
         // add story components
         const storyNode = this.system.graph.createNode("Story");
-        storyNode.createComponent(PoseManip);
+        storyNode.createComponent(Story);
+        //storyNode.createComponent(PoseManip);
+
+        const tasksNode = this.system.graph.createNode(Tasks);
+        tasksNode.createComponents();
 
         this.props = this.initFromProps(props);
 
@@ -89,9 +89,9 @@ export default class StoryApplication
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
 
-        this.taskController.referrer = props.referrer;
-        this.taskController.taskSet = props.mode;
-        this.taskController.expertMode = props.expert;
+        const story = this.system.components.get(Story);
+        story.ins.referrer.setValue(props.referrer);
+        story.ins.expertMode.setValue(!!props.expert);
 
         return props;
     }

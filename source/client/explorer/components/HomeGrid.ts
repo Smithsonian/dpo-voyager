@@ -70,7 +70,7 @@ export default class HomeGrid extends Object3D
 
     create()
     {
-        this._scene = this.components.getSafe(VoyagerScene);
+        this._scene = this.components.safeGet(VoyagerScene);
         this._scene.on("change", this.onSceneChange, this);
     }
 
@@ -135,19 +135,27 @@ export default class HomeGrid extends Object3D
     preRender(context: IRenderContext)
     {
         const viewport = context.viewport;
+        const gridObject = this.object3D;
+        gridObject.visible = true;
+
         if (viewport !== this._lastViewport) {
             this._lastViewport = viewport;
 
             const vpCamera = context.viewport.viewportCamera;
-            this.object3D.matrixWorldNeedsUpdate = true;
+            gridObject.matrixWorldNeedsUpdate = true;
 
             if (vpCamera) {
-                this.object3D.matrix.extractRotation(vpCamera.matrixWorld).multiply(_matRotationOffset);
+                gridObject.matrix.extractRotation(vpCamera.matrixWorld).multiply(_matRotationOffset);
             }
             else {
-                this.object3D.matrix.extractRotation(_matIdentity);
+                gridObject.matrix.extractRotation(_matIdentity);
             }
         }
+    }
+
+    postRender(context: IRenderContext)
+    {
+        this.object3D.visible = false;
     }
 
     fromData(data: IGrid)

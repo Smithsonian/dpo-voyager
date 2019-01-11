@@ -15,25 +15,41 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
-import ExplorerSystem from "../../explorer/ExplorerSystem";
+import { types } from "@ff/graph/propertyTypes";
+
+import ExplorerComponent from "../../explorer/ExplorerComponent";
+import TaskView from "../ui/TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-log-panel")
-export default class LogPanel extends CustomElement
+export default class Task extends ExplorerComponent
 {
-    @property({ attribute: false })
-    system: ExplorerSystem;
+    static readonly type: string = "Task";
 
-    constructor(system?: ExplorerSystem)
-    {
-        super();
-        this.system = system;
+    static readonly text: string = "Task";
+    static readonly icon: string = "fa fa-tasks";
+
+    ins = this.ins.append({
+        activate: types.Event("Activate")
+    });
+
+    get text() {
+        return (this.constructor as typeof Task).text;
+    }
+    get icon() {
+        return (this.constructor as typeof Task).icon
     }
 
-    protected firstConnected()
+    createView(): TaskView
     {
-        this.classList.add("sv-scrollable", "sv-panel", "sv-log-panel");
+        throw new Error("must override");
+    }
+
+    protected activate()
+    {
+    }
+
+    protected deactivate()
+    {
     }
 }

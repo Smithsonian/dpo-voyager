@@ -20,8 +20,10 @@ import "@ff/ui/Button";
 
 import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 
-import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
-import Task from "../tasks/Task";
+import ExplorerSystem from "../../explorer/ExplorerSystem";
+
+import Tasks, { ITaskChangeEvent } from "../nodes/Tasks";
+import Story from "../components/Story";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
@@ -31,42 +33,49 @@ import CustomElement, { customElement, property, html } from "@ff/ui/CustomEleme
 export default class TaskBar extends CustomElement
 {
     @property({ attribute: false })
-    controller: StoryController;
+    system: ExplorerSystem;
 
-    protected tasks: Task[];
+    protected tasks: Tasks = null;
+    protected story: Story = null;
 
-    constructor(controller?: StoryController)
+
+    constructor(system?: ExplorerSystem)
     {
         super();
-        this.controller = controller;
+
+        this.system = system;
+
+        this.tasks = system.nodes.safeGet(Tasks);
+        this.story = system.components.safeGet(Story);
     }
 
     protected firstConnected()
     {
+        this.classList.add("sv-task-bar");
     }
 
     protected connected()
     {
-        this.controller.on<ITaskChangeEvent>("change", this.onControllerChange, this);
+        this.tasks.on<ITaskChangeEvent>("task", this.onTaskChange, this);
     }
 
     protected disconnected()
     {
-        this.controller.off<ITaskChangeEvent>("change", this.onControllerChange, this);
+        this.tasks.off<ITaskChangeEvent>("task", this.onTaskChange, this);
     }
 
     protected render()
     {
-        const controller = this.controller;
-        const tasks = controller.tasks;
-        const selectedIndex = controller.activeTaskIndex;
+        const taskList = this.tasks.tasks;
+        const selectedIndex = this.tasks.activeTaskIndex;
+        const expertMode = this.story.ins.expertMode.value;
 
         return html`
             <img class="sv-logo" src="images/voyager-75grey.svg" alt="Logo"/>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <ff-flex-row @click=${this.onClickTask}>
-                ${tasks.map((task, index) => html`<ff-index-button text=${task.text} icon=${task.icon} index=${index} selectedIndex=${selectedIndex}></ff-index-button>`)}
+                ${taskList.map((task, index) => html`<ff-index-button text=${task.text} icon=${task.icon} index=${index} selectedIndex=${selectedIndex}></ff-index-button>`)}
             </ff-flex-row>
             <div class="sv-divider"></div>
             <div class="sv-spacer"></div>
@@ -75,7 +84,7 @@ export default class TaskBar extends CustomElement
                 <ff-button text="Save" icon="fa fa-save" @click=${this.onClickSave}></ff-button>
                 <ff-button text="Exit" icon="fa fa-sign-out-alt" @click=${this.onClickExit}></ff-button>
                 <div class="sv-divider"></div>
-                <ff-button text="Expert Mode" icon="fa fa-code" ?selected=${controller.expertMode} @click=${this.onClickExpertMode}></ff-button>
+                <ff-button text="Expert Mode" icon="fa fa-code" ?selected=${expertMode} @click=${this.onClickExpertMode}></ff-button>
             </ff-flex-row>
         `;
     }
@@ -83,26 +92,27 @@ export default class TaskBar extends CustomElement
     protected onClickTask(event: IButtonClickEvent)
     {
         if (event.target instanceof IndexButton) {
-            this.controller.activeTaskIndex = event.target.index;
+            this.tasks.activeTaskIndex = event.target.index;
         }
     }
 
     protected onClickSave()
     {
-        this.controller.save();
+        this.story.ins.save.set();
     }
 
     protected onClickExit()
     {
-        this.controller.exitApplication();
+        this.story.ins.exit.set();
     }
 
     protected onClickExpertMode()
     {
-        this.controller.toggleExpertMode();
+        const prop = this.story.ins.expertMode;
+        prop.setValue(!prop.value);
     }
 
-    protected onControllerChange()
+    protected onTaskChange()
     {
         this.requestUpdate();
     }

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import SelectionController from "@ff/graph/SelectionController";
-
-import PropertyTree from "@ff/ui/graph/PropertyTree";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import PropertyTree from "@ff/ui/graph/PropertyTree";
+
+import ExplorerSystem from "../../explorer/ExplorerSystem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,17 +26,17 @@ import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 export default class InspectorPanel extends CustomElement
 {
     @property({ attribute: false })
-    selectionController: SelectionController;
+    system: ExplorerSystem;
 
-    constructor(selectionController?: SelectionController)
+    constructor(system?: ExplorerSystem)
     {
         super();
-        this.selectionController = selectionController;
+        this.system = system;
     }
 
     firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-inspector-panel");
-        this.appendChild(new PropertyTree(this.selectionController));
+        this.appendChild(new PropertyTree(this.system.selectionController));
     }
 }

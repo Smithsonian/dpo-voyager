@@ -19,9 +19,7 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../StoryApplication";
-
-import StoryController, { ITaskChangeEvent } from "../controllers/StoryController";
-import LogController from "../controllers/LogController";
+import Story from "../components/Story";
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockView";
@@ -82,18 +80,19 @@ export default class MainView extends CustomElement
 
         this.dockView = null;
 
-        const taskController = this.application.taskController;
-        const logController = this.application.logController;
-        taskController.on<ITaskChangeEvent>("change", this.onTaskChange, this);
+        const system = this.application.system;
+
+        const story = system.components.get(Story);
+        story.ins.expertMode.on("value", this.onExpertMode, this);
 
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
-        registry.set("task", () => new TaskPanel(taskController));
-        registry.set("log", () => new LogPanel(logController));
-        registry.set("console", () => new ConsolePanel());
-        registry.set("hierarchy", () => new HierarchyPanel(explorer.system.selectionController));
-        registry.set("inspector", () => new InspectorPanel(explorer.system.selectionController));
+        registry.set("task", () => new TaskPanel(system));
+        registry.set("log", () => new LogPanel(system));
+        registry.set("console", () => new ConsolePanel(system));
+        registry.set("hierarchy", () => new HierarchyPanel(system));
+        registry.set("inspector", () => new InspectorPanel(system));
 
         const reset = parseUrlParameter("reset") !== undefined;
         const state = reset ? null : localStorage.get("voyager-story", "main-view-state");
@@ -101,10 +100,10 @@ export default class MainView extends CustomElement
         this.state = state || {
             regularLayout: MainView.regularLayout,
             expertLayout: MainView.expertLayout,
-            expertMode: taskController.expertMode
+            expertMode: story.ins.expertMode.value
         };
 
-        taskController.expertMode = this.state.expertMode;
+        story.ins.expertMode.setValue(this.state.expertMode);
     }
 
     protected firstConnected()
@@ -114,7 +113,7 @@ export default class MainView extends CustomElement
             flexDirection: "column"
         });
 
-        this.appendElement(new TaskBar(this.application.taskController));
+        this.appendElement(new TaskBar(this.application.system));
 
         this.dockView = this.appendElement(DockView);
         this.restoreLayout();
@@ -134,13 +133,11 @@ export default class MainView extends CustomElement
         localStorage.set("voyager-story", "main-view-state", this.state);
     }
 
-    protected onTaskChange()
+    protected onExpertMode(expertMode: boolean)
     {
-        const controller = this.application.taskController;
-
-        if (controller.expertMode !== this.state.expertMode) {
+        if (expertMode !== this.state.expertMode) {
             this.storeLayout();
-            this.state.expertMode = controller.expertMode;
+            this.state.expertMode = expertMode;
             this.restoreLayout();
         }
     }
