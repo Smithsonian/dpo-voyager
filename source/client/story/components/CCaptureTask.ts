@@ -15,23 +15,20 @@
  * limitations under the License.
  */
 
-import CLoadingManager from "./CLoadingManager";
-import CModel from "./CModel";
-import CVoyagerScene from "./CVoyagerScene";
-import COrbitNavigation from "./COrbitNavigation";
+import CaptureTaskView from "../ui/CaptureTaskView";
+import CTask from "./CTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-};
+export default class CCaptureTask extends CTask
+{
+    static readonly type: string = "CCaptureTask";
 
-export const componentTypes = [
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-];
+    static readonly text: string = "Capture";
+    static readonly icon: string = "fa fa-camera";
+
+    createView()
+    {
+        return new CaptureTaskView(this);
+    }
+}

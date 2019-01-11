@@ -23,8 +23,8 @@ import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Expl
 
 import { componentTypes as storyComponents } from "./components";
 
-import Story from"./components/Story";
-import Tasks from "./nodes/Tasks";
+import CStory from"./components/CStory";
+import NTasks from "./nodes/NTasks";
 
 import MainView from "./ui/MainView";
 
@@ -70,9 +70,9 @@ export default class StoryApplication
 
         // add story components
         const storyNode = this.system.graph.createNode("Story");
-        storyNode.createComponent(Story);
+        storyNode.createComponent(CStory);
 
-        const tasksNode = this.system.graph.createNode(Tasks);
+        const tasksNode = this.system.graph.createNode(NTasks);
         tasksNode.createComponents();
 
         this.props = this.initFromProps(props);
@@ -88,7 +88,7 @@ export default class StoryApplication
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
 
-        const story = this.system.components.get(Story);
+        const story = this.system.components.get(CStory);
         story.ins.referrer.setValue(props.referrer);
         story.ins.expertMode.setValue(!!props.expert);
 

@@ -22,10 +22,10 @@ import "@ff/ui/Button";
 import "@ff/ui/IndexButton";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import VoyagerScene from "../../core/components/VoyagerScene";
-import Model from "../../core/components/Model";
+import CVoyagerScene from "../../core/components/CVoyagerScene";
+import CModel from "../../core/components/CModel";
 
-import PoseTask, { EPoseManipMode } from "../components/PoseTask";
+import CPoseTask, { EPoseManipMode } from "../components/CPoseTask";
 
 import "./ItemList";
 import "./PropertyView";
@@ -55,7 +55,7 @@ export default class PoseTaskView extends TaskView
 
         return html`
             <div class="sv-section" style="flex: 1 1 25%">
-                <sv-item-list .system=${system} .componentType=${Model}></sv-item-list>
+                <sv-item-list .system=${system} .componentType=${CModel}></sv-item-list>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-section" style="flex: 1 1 75%">
@@ -68,16 +68,16 @@ export default class PoseTaskView extends TaskView
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-pose-task-property-view")
-class PoseTaskPropertyView extends ItemProperties<Model>
+class PoseTaskPropertyView extends ItemProperties<CModel>
 {
     @property({ attribute: false })
-    task: PoseTask = null;
+    task: CPoseTask = null;
 
-    protected scene: VoyagerScene = null;
+    protected scene: CVoyagerScene = null;
 
     constructor()
     {
-        super(Model);
+        super(CModel);
     }
 
     protected connected()
@@ -136,10 +136,10 @@ class PoseTaskPropertyView extends ItemProperties<Model>
         this.scene.zoomViews();
     }
 
-    protected setComponent(model: Model)
+    protected setComponent(model: CModel)
     {
         if (model) {
-            this.scene = model.transform.getParent(VoyagerScene, true);
+            this.scene = model.transform.getParent(CVoyagerScene, true);
 
             const prop = this.task.ins.mode;
             if (prop.value === EPoseManipMode.Off) {

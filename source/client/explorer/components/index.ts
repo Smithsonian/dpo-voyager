@@ -15,62 +15,64 @@
  * limitations under the License.
  */
 
-import Annotations from "./Annotations";
-import Background from "./Background";
+import CAnnotations from "./CAnnotations";
+import CBackground from "./CBackground";
+import CCollection from "./CCollection";
+import CDocuments from "./CDocuments";
 import CExplorer from "./CExplorer";
+import CGroundPlane from "./CGroundPlane";
+import CGroups from "./CGroups";
+import CHomeGrid from "./CHomeGrid";
+import CInterface from "./CInterface";
+import CMeta from "./CMeta";
 import CPresentations from "./CPresentations";
-import Documents from "./Documents";
-import GroundPlane from "./GroundPlane";
-import Groups from "./Groups";
-import HomeGrid from "./HomeGrid";
-import Interface from "./Interface";
-import Meta from "./Meta";
-import Process from "./Process";
-import Reader from "./Reader";
-import Reference from "./Reference";
-import SectionTool from "./SectionTool";
-import Snapshots from "./Snapshots";
-import TapeTool from "./TapeTool";
-import Tours from "./Tours";
+import CProcess from "./CProcess";
+import CReader from "./CReader";
+import CReference from "./CReference";
+import CSectionTool from "./CSectionTool";
+import CSnapshots from "./CSnapshots";
+import CTapeTool from "./CTapeTool";
+import CTours from "./CTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    Annotations,
-    Background,
+    CAnnotations,
+    CBackground,
+    CCollection,
+    CDocuments,
     CExplorer,
+    CGroundPlane,
+    CGroups,
+    CHomeGrid,
+    CInterface,
+    CMeta,
     CPresentations,
-    Documents,
-    GroundPlane,
-    Groups,
-    HomeGrid,
-    Interface,
-    Meta,
-    Process,
-    Reader,
-    Reference,
-    SectionTool,
-    Snapshots,
-    TapeTool,
-    Tours
+    CProcess,
+    CReader,
+    CReference,
+    CSectionTool,
+    CSnapshots,
+    CTapeTool,
+    CTours
 };
 
 export const componentTypes = [
-    Annotations,
-    Background,
+    CAnnotations,
+    CBackground,
+    CDocuments,
     CExplorer,
+    CGroundPlane,
+    CGroups,
+    CHomeGrid,
+    CInterface,
+    CMeta,
     CPresentations,
-    Documents,
-    GroundPlane,
-    Groups,
-    HomeGrid,
-    Interface,
-    Meta,
-    Process,
-    Reader,
-    Reference,
-    SectionTool,
-    Snapshots,
-    TapeTool,
-    Tours
+    CProcess,
+    CReader,
+    CReference,
+    CSectionTool,
+    CSnapshots,
+    CTapeTool,
+    CTours
 ];

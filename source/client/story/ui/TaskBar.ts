@@ -22,26 +22,26 @@ import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
 
 import RenderSystem from "@ff/scene/RenderSystem";
 
-import Tasks, { ITaskChangeEvent } from "../nodes/Tasks";
-import Story from "../components/Story";
+import NTasks, { ITaskChangeEvent } from "../nodes/NTasks";
+import CStory from "../components/CStory";
 
-import SystemElement, { customElement, property, html } from "./SystemElement";
+import SystemElement, { customElement, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-task-bar")
 export default class TaskBar extends SystemElement
 {
-    protected tasks: Tasks = null;
-    protected story: Story = null;
+    protected tasks: NTasks = null;
+    protected story: CStory = null;
 
 
     constructor(system?: RenderSystem)
     {
         super(system);
 
-        this.tasks = system.nodes.safeGet(Tasks);
-        this.story = system.components.safeGet(Story);
+        this.tasks = system.nodes.safeGet(NTasks);
+        this.story = system.components.safeGet(CStory);
     }
 
     protected firstConnected()

@@ -18,20 +18,20 @@
 import RenderSystem from "@ff/scene/RenderSystem";
 import SystemElement, { customElement, html } from "./SystemElement";
 
-import Tasks, { ITaskChangeEvent } from "../nodes/Tasks";
+import NTasks, { ITaskChangeEvent } from "../nodes/NTasks";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-task-panel")
 export default class TaskPanel extends SystemElement
 {
-    protected tasks: Tasks = null;
+    protected tasks: NTasks = null;
 
     constructor(system?: RenderSystem)
     {
         super(system);
 
-        this.tasks = system.nodes.get(Tasks);
+        this.tasks = system.nodes.get(NTasks);
 
         if (!this.tasks) {
             throw new Error("missing 'Tasks' node");

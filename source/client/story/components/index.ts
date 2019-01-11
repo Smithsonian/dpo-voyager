@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-import CaptureTask from "./CaptureTask";
-import PoseTask from "./PoseTask";
-import Story from "./Story";
+import CCaptureTask from "./CCaptureTask";
+import CPoseTask from "./CPoseTask";
+import CStory from "./CStory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    CaptureTask,
-    PoseTask,
-    Story
+    CCaptureTask,
+    CPoseTask,
+    CStory
 };
 
 export const componentTypes = [
-    CaptureTask,
-    PoseTask,
-    Story
+    CCaptureTask,
+    CPoseTask,
+    CStory
 ];

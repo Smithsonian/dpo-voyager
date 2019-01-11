@@ -22,7 +22,7 @@ import "@ff/ui/Layout";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import VoyagerScene, { EShaderMode } from "../../core/components/VoyagerScene";
+import CVoyagerScene, { EShaderMode } from "../../core/components/CVoyagerScene";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -53,7 +53,7 @@ export default class RenderMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.propShader.property = this.system.components.get(VoyagerScene).ins.shader;
+        this.propShader.property = this.system.components.get(CVoyagerScene).ins.shader;
     }
 
     protected disconnected()

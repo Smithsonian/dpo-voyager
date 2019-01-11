@@ -15,23 +15,17 @@
  * limitations under the License.
  */
 
-import CLoadingManager from "./CLoadingManager";
-import CModel from "./CModel";
-import CVoyagerScene from "./CVoyagerScene";
-import COrbitNavigation from "./COrbitNavigation";
+import NPresentationNode from "./NPresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-};
+export default class NGroupNode extends NPresentationNode
+{
+    static readonly type: string = "NGroupNode";
 
-export const componentTypes = [
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-];
+    createComponents()
+    {
+        super.createComponents();
+        this.name = "Group";
+    }
+}

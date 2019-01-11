@@ -15,23 +15,29 @@
  * limitations under the License.
  */
 
-import CLoadingManager from "./CLoadingManager";
-import CModel from "./CModel";
-import CVoyagerScene from "./CVoyagerScene";
-import COrbitNavigation from "./COrbitNavigation";
+import CLight from "@ff/scene/components/CLight";
+
+import { ILight, TVector3 } from "common/types/presentation";
+
+import NPresentationNode from "./NPresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-};
+export default class NLightNode extends NPresentationNode
+{
+    static readonly type: string = "NLightNode";
 
-export const componentTypes = [
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-];
+    protected light: CLight = null;
+
+    toLightData(): ILight
+    {
+        const light = this.light;
+        let ins = light.ins;
+        const data: Partial<ILight> = {};
+
+        data.color = ins.color.value.slice() as TVector3;
+        data.intensity = ins.intensity.value;
+
+        return data as ILight;
+    }
+}

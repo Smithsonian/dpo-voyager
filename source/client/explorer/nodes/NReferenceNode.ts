@@ -15,23 +15,34 @@
  * limitations under the License.
  */
 
-import CLoadingManager from "./CLoadingManager";
-import CModel from "./CModel";
-import CVoyagerScene from "./CVoyagerScene";
-import COrbitNavigation from "./COrbitNavigation";
+import { IReference } from "common/types/presentation";
+
+import CReference from "../components/CReference";
+
+import NPresentationNode from "./NPresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-};
+export default class NReferenceNode extends NPresentationNode
+{
+    static readonly type: string = "NReferenceNode";
 
-export const componentTypes = [
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-];
+    protected reference: CReference = null;
+
+    createComponents()
+    {
+        super.createComponents();
+        this.reference = this.createComponent(CReference);
+        this.name = "Reference";
+    }
+
+    fromReferenceData(data: IReference)
+    {
+        this.reference.fromData(data);
+    }
+
+    toReferenceData(): IReference
+    {
+        return this.reference.toData();
+    }
+}

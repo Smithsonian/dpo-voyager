@@ -25,10 +25,10 @@ import * as template from "../templates/presentation.json";
 
 import { EDerivativeQuality } from "../../core/models/Derivative";
 import CLoadingManager from "../../core/components/CLoadingManager";
-import Model from "../../core/components/Model";
+import CModel from "../../core/components/CModel";
 
-import Presentation, { ReferenceCallback } from "../nodes/Presentation";
-import ItemNode from "../nodes/ItemNode";
+import NPresentation, { ReferenceCallback } from "../nodes/NPresentation";
+import NItemNode from "../nodes/NItemNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,8 +42,8 @@ const _splitUrl = function(url: string): { path: string, name: string }
 
 export interface IPresentationChangeEvent extends ITypedEvent<"presentation-change">
 {
-    previous: Presentation;
-    next: Presentation;
+    previous: NPresentation;
+    next: NPresentation;
 }
 
 type PresentationActions = Actions<CPresentations>;
@@ -52,8 +52,8 @@ export default class CPresentations extends CController<CPresentations>
 {
     static readonly type: string = "CPresentations";
 
-    private _presentations: Presentation[] = [];
-    private _activePresentation: Presentation = null;
+    private _presentations: NPresentation[] = [];
+    private _activePresentation: NPresentation = null;
     private _loadingManager: CLoadingManager = null;
 
 
@@ -63,7 +63,7 @@ export default class CPresentations extends CController<CPresentations>
         this.addEvent("presentation-change");
     }
 
-    set activePresentation(presentation: Presentation) {
+    set activePresentation(presentation: NPresentation) {
         const previous = this._activePresentation;
         previous && previous.deactivate();
 
@@ -106,7 +106,7 @@ export default class CPresentations extends CController<CPresentations>
 
             const itemCallback = (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(ItemNode);
+                    const node = graph.createNode(NItemNode);
                     node.createComponents();
                     node.setUrl(url, assetPath);
                     node.fromItemData(itemData);
@@ -144,10 +144,10 @@ export default class CPresentations extends CController<CPresentations>
 
             return this.openDefaultPresentation(modelPath, (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(ItemNode);
+                    const node = graph.createNode(NItemNode);
                     node.createComponents();
                     node.setUrl(itemUrl || `${modelPath}item.json`, modelPath);
-                    const model = node.components.get(Model);
+                    const model = node.components.get(CModel);
                     model.addWebModelDerivative(modelName, q);
                     return node;
                 }
@@ -175,10 +175,10 @@ export default class CPresentations extends CController<CPresentations>
 
             return this.openDefaultPresentation(geoPath, (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(ItemNode);
+                    const node = graph.createNode(NItemNode);
                     node.createComponents();
                     node.setUrl(itemUrl || `${assetPath}item.json`, geoPath);
-                    const model = node.components.get(Model);
+                    const model = node.components.get(CModel);
                     model.addGeometryAndTextureDerivative(geoName, texName, q);
                     return node;
                 }
@@ -212,7 +212,7 @@ export default class CPresentations extends CController<CPresentations>
 
         return this._loadingManager.validatePresentation(json).then(presentationData => {
 
-            const node = this.system.graph.createNode(Presentation);
+            const node = this.system.graph.createNode(NPresentation);
             node.createComponents();
             node.setUrl(url);
             node.fromData(presentationData, url, null, callback);

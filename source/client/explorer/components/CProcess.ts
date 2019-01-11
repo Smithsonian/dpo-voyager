@@ -15,24 +15,49 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
-
-import CTask from "../components/CTask";
+import { Dictionary } from "@ff/core/types";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TaskView extends CustomElement
+export default class CProcess extends Component
 {
-    protected task: CTask;
+    static readonly type: string = "CProcess";
 
-    constructor(task: CTask)
+    protected data: Dictionary<any> = {};
+
+    set(key: string, value: any)
     {
-        super();
-        this.task = task;
+        this.data[key] = value;
     }
 
-    protected firstConnected()
+    get(key: string)
     {
-        this.classList.add("sv-task-view");
+        return this.data[key];
+    }
+
+    remove(key: string)
+    {
+        delete this.data[key];
+    }
+
+    clear()
+    {
+        this.data = {};
+    }
+
+    fromData(data: Dictionary<any>)
+    {
+        this.data = Object.assign({}, data);
+    }
+
+    toData(): Dictionary<any>
+    {
+        return Object.assign({}, this.data);
+    }
+
+    hasData()
+    {
+        return Object.keys(this.data).length > 0;
     }
 }

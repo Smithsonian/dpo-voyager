@@ -20,7 +20,7 @@ import "@ff/ui/Layout";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import Model from "../../core/components/Model";
+import CModel from "../../core/components/CModel";
 
 import "./ItemList";
 import ItemProperties from "./ItemProperties";
@@ -49,7 +49,7 @@ export default class CaptureTaskView extends TaskView
 
         return html`
             <div class="sv-section" style="flex: 1 1 25%">
-                <sv-item-list .system=${system} .componentType=${Model}></sv-item-list>
+                <sv-item-list .system=${system} .componentType=${CModel}></sv-item-list>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-section" style="flex: 1 1 75%">
@@ -62,11 +62,11 @@ export default class CaptureTaskView extends TaskView
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-item-capture-properties")
-class ItemCaptureProperties extends ItemProperties<Model>
+class ItemCaptureProperties extends ItemProperties<CModel>
 {
     constructor()
     {
-        super(Model);
+        super(CModel);
     }
 
     protected render()
@@ -94,7 +94,7 @@ class ItemCaptureProperties extends ItemProperties<Model>
 
     }
 
-    protected setComponent(model: Model)
+    protected setComponent(model: CModel)
     {
         super.setComponent(model);
     }

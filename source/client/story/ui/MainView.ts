@@ -19,7 +19,7 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../StoryApplication";
-import Story from "../components/Story";
+import CStory from "../components/CStory";
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockView";
@@ -82,7 +82,7 @@ export default class MainView extends CustomElement
 
         const system = this.application.system;
 
-        const story = system.components.get(Story);
+        const story = system.components.get(CStory);
         story.ins.expertMode.on("value", this.onExpertMode, this);
 
         const registry = this.registry = new Map();

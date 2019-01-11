@@ -15,23 +15,37 @@
  * limitations under the License.
  */
 
-import CLoadingManager from "./CLoadingManager";
-import CModel from "./CModel";
-import CVoyagerScene from "./CVoyagerScene";
-import COrbitNavigation from "./COrbitNavigation";
+import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
+
+import { ISectionTool } from "common/types/voyager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-};
+export default class CSectionTool extends Component
+{
+    static readonly type: string = "CSectionTool";
 
-export const componentTypes = [
-    CLoadingManager,
-    CModel,
-    CVoyagerScene,
-    COrbitNavigation
-];
+    ins = this.ins.append({
+        active: types.Boolean("Active"),
+        plane: types.Vector4("Plane")
+    });
+
+    fromData(data: ISectionTool)
+    {
+        this.ins.copyValues({
+            active: data.active,
+            plane: data.plane
+        });
+    }
+
+    toData(): ISectionTool
+    {
+        const ins = this.ins;
+
+        return {
+            active: ins.active.value,
+            plane: ins.plane.cloneValue()
+        };
+    }
+}
