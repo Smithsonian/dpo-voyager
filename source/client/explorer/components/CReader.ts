@@ -25,15 +25,17 @@ import { IDocument } from "./CDocuments";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    visible: types.Boolean("Visible", false),
+    position: types.Enum("Position", EReaderPosition),
+    url: types.String("DocumentURL", "")
+};
+
 export default class CReader extends Component
 {
     static readonly type: string = "CReader";
 
-    ins = this.ins.append({
-        visible: types.Boolean("Visible", false),
-        position: types.Enum("Position", EReaderPosition),
-        url: types.String("DocumentURL", "")
-    });
+    ins = this.addInputs(ins);
 
     protected documents: Dictionary<IDocument> = {};
 

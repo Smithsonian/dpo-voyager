@@ -23,14 +23,16 @@ import CExplorer from "./CExplorer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    visible: types.Boolean("Interface.Visible", true),
+    logo: types.Boolean("Interface.Logo", true),
+};
+
 export default class CInterface extends Component
 {
     static readonly type: string = "CInterface";
 
-    ins = this.ins.append({
-        visible: types.Boolean_true("Interface.Visible"),
-        logo: types.Boolean_true("Interface.Logo"),
-    });
+    ins = this.addInputs(ins);
 
     protected explorer: CExplorer = null;
 
@@ -56,7 +58,7 @@ export default class CInterface extends Component
 
     fromData(data: IInterface)
     {
-        this.ins.setPropertyValues({
+        this.ins.setValues({
             visible: data.visible,
             logo: data.logo
         });

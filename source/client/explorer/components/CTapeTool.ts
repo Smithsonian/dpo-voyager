@@ -22,17 +22,19 @@ import { ITapeTool } from "common/types/voyager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    active: types.Boolean("Active"),
+    startPosition: types.Vector3("Start.Position"),
+    startDirection: types.Vector3("Start.Direction"),
+    endPosition: types.Vector3("End.Position"),
+    endDirection: types.Vector3("End.Direction")
+};
+
 export default class CTapeTool extends Component
 {
     static readonly type: string = "CTapeTool";
 
-    ins = this.ins.append({
-        active: types.Boolean("Active"),
-        startPosition: types.Vector3("Start.Position"),
-        startDirection: types.Vector3("Start.Direction"),
-        endPosition: types.Vector3("End.Position"),
-        endDirection: types.Vector3("End.Direction")
-    });
+    ins = this.addInputs(ins);
 
     fromData(data: ITapeTool)
     {

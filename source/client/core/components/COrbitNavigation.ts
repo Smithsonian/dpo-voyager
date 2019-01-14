@@ -25,7 +25,7 @@ import OrbitManipulator from "@ff/three/OrbitManipulator";
 import RenderComponent from "@ff/scene/RenderComponent";
 import { IActiveCameraEvent } from "@ff/scene/RenderSystem";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
-import CCamera, { EProjectionType } from "@ff/scene/components/CCamera";
+import CCamera, { EProjection } from "@ff/scene/components/CCamera";
 
 import { INavigation } from "common/types/voyager";
 import CVoyagerScene from "./CVoyagerScene";
@@ -46,9 +46,22 @@ const _orientationPreset = [
     [ 0, 180, 0 ], // back
 ];
 
-export { EProjectionType };
+export { EProjection };
 
 export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
+
+const ins = {
+    preset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
+    projection: types.Enum("View.Projection", EProjection, EProjection.Perspective),
+    enabled: types.Boolean("Manip.Enabled", true),
+    setup: types.Event("Manip.Setup"),
+    orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
+    offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
+    minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
+    minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
+    maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
+    maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ])
+};
 
 /**
  * Voyager explorer orbit navigation.
@@ -58,18 +71,7 @@ export default class COrbitNavigation extends RenderComponent
 {
     static readonly type: string = "COrbitNavigation";
 
-    ins = this.ins.append({
-        preset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
-        projection: types.Enum("View.Projection", EProjectionType, EProjectionType.Perspective),
-        enabled: types.Boolean_true("Manip.Enabled"),
-        setup: types.Event("Manip.Setup"),
-        orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
-        offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
-        minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
-        minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
-        maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
-        maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ])
-    });
+    ins = this.addInputs(ins);
 
     protected manip = new OrbitManipulator();
     protected activeCamera: CCamera = null;
@@ -107,11 +109,11 @@ export default class COrbitNavigation extends RenderComponent
 
         if (cameraComponent && projection.changed) {
             cameraComponent.camera.setProjection(projection.value);
-            manip.orthographicMode = projection.value === EProjectionType.Orthographic;
+            manip.orthographicMode = projection.value === EProjection.Orthographic;
         }
 
         if (preset.changed && preset.value !== EViewPreset.None) {
-            orbit.setValue(_orientationPreset[types.getEnumIndex(EViewPreset, preset.value)].slice());
+            orbit.setValue(_orientationPreset[preset.getValidatedValue()].slice());
         }
 
         if (setup.changed) {

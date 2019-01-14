@@ -23,7 +23,7 @@ import "@ff/ui/IndexButton";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import COrbitNavigation, { EProjectionType, EViewPreset } from "../../core/components/COrbitNavigation";
+import COrbitNavigation, { EProjection, EViewPreset } from "../../core/components/COrbitNavigation";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -37,7 +37,7 @@ export default class ViewMenu extends Popup
     system: System;
 
     protected viewPreset: EViewPreset;
-    protected propProjection: PropertyTracker<EProjectionType>;
+    protected propProjection: PropertyTracker<EProjection>;
     protected propPreset: PropertyTracker<EViewPreset>;
 
     constructor(system?: System)
@@ -83,9 +83,9 @@ export default class ViewMenu extends Popup
         return html`
             <label>Projection</label>
             <ff-flex-row @click=${this.onClickProjectionType}>
-                <ff-index-button .index=${EProjectionType.Perspective} .selectedIndex=${projection}
+                <ff-index-button .index=${EProjection.Perspective} .selectedIndex=${projection}
                   text="Perspective" title="Perspective Projection" icon="fas fa-video"></ff-index-button>    
-                <ff-index-button .index=${EProjectionType.Orthographic} .selectedIndex=${projection}
+                <ff-index-button .index=${EProjection.Orthographic} .selectedIndex=${projection}
                   text="Orthographic" title="Orthographic Projection" icon="fas fa-video"></ff-index-button>    
             </ff-flex-row>
             <label>View</label>

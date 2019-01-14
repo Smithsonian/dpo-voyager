@@ -16,7 +16,7 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
-import CCamera, { EProjectionType } from "@ff/scene/components/CCamera";
+import CCamera, { EProjection } from "@ff/scene/components/CCamera";
 
 import { ICamera } from "common/types/presentation";
 
@@ -41,7 +41,7 @@ export default class NCameraNode extends NPresentationNode
     {
         if (data.type === "perspective") {
             this.camera.ins.copyValues({
-                projection: EProjectionType.Perspective,
+                projection: EProjection.Perspective,
                 fov: data.perspective.yfov,
                 near: data.perspective.znear,
                 far: data.perspective.zfar
@@ -49,7 +49,7 @@ export default class NCameraNode extends NPresentationNode
         }
         else {
             this.camera.ins.copyValues({
-                projection: EProjectionType.Orthographic,
+                projection: EProjection.Orthographic,
                 size: data.orthographic.ymag,
                 near: data.orthographic.znear,
                 far: data.orthographic.zfar
@@ -62,7 +62,7 @@ export default class NCameraNode extends NPresentationNode
         const data: Partial<ICamera> = {};
         const ins = this.camera.ins;
 
-        if (types.isEnumIndex(EProjectionType.Perspective, ins.projection.value)) {
+        if (ins.projection.getValidatedValue() === EProjection.Perspective) {
             data.type = "perspective";
             data.perspective = {
                 yfov: ins.fov.value,

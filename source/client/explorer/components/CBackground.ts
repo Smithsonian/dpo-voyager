@@ -26,15 +26,17 @@ import { IBackground, EBackgroundType, TBackgroundType } from "common/types/voya
 
 export { EBackgroundType };
 
+const ins = {
+    type: types.Enum("Background.Type", EBackgroundType),
+    color0: types.ColorRGB("Background.Color0", [ 1, 0, 0 ]),
+    color1: types.ColorRGB("Background.Color1", [ 0, 1, 0 ])
+};
+
 export default class CBackground extends CObject3D
 {
     static readonly type: string = "CBackground";
 
-    ins = this.ins.append({
-        type: types.Enum("Background.Type", EBackgroundType),
-        color0: types.ColorRGB("Background.Color0", [ 1, 0, 0 ]),
-        color1: types.ColorRGB("Background.Color1", [ 0, 1, 0 ])
-    });
+    ins = this.addInputs(ins);
 
     fromData(data: IBackground)
     {

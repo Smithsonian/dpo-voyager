@@ -24,17 +24,19 @@ import { IGroundPlane } from "common/types/voyager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    visible: types.Boolean("Visible", true),
+    offset: types.Number("Offset"),
+    color: types.ColorRGB("Color", [ 0, 0, 1 ]),
+    shadowVisible: types.Boolean("Shadow.Visible"),
+    shadowColor: types.ColorRGBA("Shadow.Color")
+};
+
 export default class CGroundPlane extends CObject3D
 {
     static readonly type: string = "CGroundPlane";
 
-    ins = this.ins.append({
-        visible: types.Boolean_true("Visible"),
-        offset: types.Number("Offset"),
-        color: types.ColorRGB("Color", [ 0, 0, 1 ]),
-        shadowVisible: types.Boolean("Shadow.Visible"),
-        shadowColor: types.ColorRGBA("Shadow.Color")
-    });
+    ins = this.addInputs(ins);
 
     update()
     {

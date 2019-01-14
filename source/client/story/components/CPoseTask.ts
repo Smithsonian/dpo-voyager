@@ -36,8 +36,11 @@ const _mat4 = new THREE.Matrix4();
 const _quat0 = new THREE.Quaternion();
 const _quat1 = new THREE.Quaternion();
 
-
 export enum EPoseManipMode { Off, Translate, Rotate }
+
+const ins = {
+    mode: types.Enum("Mode", EPoseManipMode, EPoseManipMode.Off)
+};
 
 export default class CPoseTask extends CTask
 {
@@ -46,10 +49,7 @@ export default class CPoseTask extends CTask
     static readonly text: string = "Pose";
     static readonly icon: string = "fa fa-arrows-alt";
 
-
-    ins = this.ins.append({
-        mode: types.Enum("Mode", EPoseManipMode, EPoseManipMode.Off)
-    });
+    ins = this.addInputs<CTask, typeof ins>(ins);
 
     protected _interfaceVisible = false;
     protected _model: CModel = null;

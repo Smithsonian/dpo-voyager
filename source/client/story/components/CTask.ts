@@ -25,6 +25,10 @@ import NTasks from "../nodes/NTasks";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    activate: types.Event("Activate")
+};
+
 export default class CTask extends RenderComponent
 {
     static readonly type: string = "CTask";
@@ -32,9 +36,7 @@ export default class CTask extends RenderComponent
     static readonly text: string = "Task";
     static readonly icon: string = "fa fa-tasks";
 
-    ins = this.ins.append({
-        activate: types.Event("Activate")
-    });
+    ins = this.addInputs(ins);
 
     protected selection: CSelection = null;
 

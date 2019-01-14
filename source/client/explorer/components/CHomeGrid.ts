@@ -39,20 +39,23 @@ const _vec3a = new THREE.Vector3();
 const _matRotationOffset = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
 const _matIdentity = new THREE.Matrix4();
 
+const ins = {
+    visible: types.Boolean("Visible", true),
+    color: types.ColorRGB("Color", [ 0.5, 0.7, 0.8 ]),
+    update: types.Event("Update")
+};
+
+const outs = {
+    size: types.Number("Size"),
+    units: types.Enum("Units", EUnitType)
+};
+
 export default class CHomeGrid extends CObject3D
 {
     static readonly type: string = "CHomeGrid";
 
-    ins = this.ins.append({
-        visible: types.Boolean_true("Visible"),
-        color: types.ColorRGB("Color", [ 0.5, 0.7, 0.8 ]),
-        update: types.Event("Update")
-    });
-
-    outs = this.outs.append({
-        size: types.Number("Size"),
-        units: types.Enum("Units", EUnitType)
-    });
+    ins = this.addInputs(ins);
+    outs = this.addOutputs(outs);
 
     private _scene: CVoyagerScene = null;
     private _lastViewport: Viewport = null;

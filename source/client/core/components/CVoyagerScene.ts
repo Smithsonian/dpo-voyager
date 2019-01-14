@@ -36,16 +36,18 @@ const _vec3 = new THREE.Vector3();
 
 export { EUnitType, EShaderMode };
 
+const ins = {
+    units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
+    shader: types.Enum("Renderer.Shader", EShaderMode),
+    exposure: types.Number("Renderer.Exposure", 1),
+    gamma: types.Number("Renderer.Gamma", 1)
+};
+
 export default class CVoyagerScene extends CScene
 {
     static readonly type: string = "CVoyagerScene";
 
-    ins = this.ins.append({
-        units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
-        shader: types.Enum("Renderer.Shader", EShaderMode),
-        exposure: types.Number("Renderer.Exposure", 1),
-        gamma: types.Number("Renderer.Gamma", 1)
-    });
+    ins = this.addInputs<CScene, typeof ins>(ins);
 
     boundingBox = new THREE.Box3();
 
@@ -73,7 +75,7 @@ export default class CVoyagerScene extends CScene
             this.updateModels();
         }
         if (ins.shader.changed) {
-            const index = types.getEnumIndex(EShaderMode, ins.shader.value);
+            const index = ins.shader.getValidatedValue();
             this.graph.components.getArray(CModel).forEach(model => model.setShaderMode(index));
         }
 
@@ -141,7 +143,7 @@ export default class CVoyagerScene extends CScene
         // get bounding box of all models
         const box = this.boundingBox.makeEmpty();
         const models = this.transform.getChildren(CModel, true);
-        const units = types.getEnumIndex(EUnitType, this.ins.units.value);
+        const units = this.ins.units.getValidatedValue();
 
         models.forEach(model => {
             model.setGlobalUnits(units);

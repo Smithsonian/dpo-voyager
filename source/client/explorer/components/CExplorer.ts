@@ -20,12 +20,14 @@ import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    visible: types.Boolean("Interface.Visible", true),
+    logo: types.Boolean("Interface.Logo", true),
+};
+
 export default class CExplorer extends Component
 {
     static readonly type: string = "CExplorer";
 
-    ins = this.ins.append({
-        visible: types.Boolean_true("Interface.Visible"),
-        logo: types.Boolean_true("Interface.Logo"),
-    });
+    ins = this.addInputs(ins);
 }

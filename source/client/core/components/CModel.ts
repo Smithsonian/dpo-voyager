@@ -66,6 +66,21 @@ export interface IModelChangeEvent extends IComponentChangeEvent<CModel>
     what: "derivative" | "boundingBox"
 }
 
+const ins = {
+    visible: types.Boolean("Visible", true),
+    units: types.Enum("Units", EUnitType, EUnitType.cm),
+    quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
+    autoLoad: types.Boolean("Auto.Load", true),
+    position: types.Vector3("Pose.Position"),
+    rotation: types.Vector3("Pose.Rotation"),
+    center: types.Event("Pose.Center")
+};
+
+const outs = {
+    globalUnits: types.Enum("GlobalUnits", EUnitType, EUnitType.cm),
+    unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
+};
+
 /**
  * Renderable component representing a Voyager explorer model.
  */
@@ -73,20 +88,8 @@ export default class CModel extends CObject3D
 {
     static readonly type: string = "CModel";
 
-    ins = this.ins.append({
-        visible: types.Boolean_true("Visible"),
-        units: types.Enum("Units", EUnitType, EUnitType.cm),
-        quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
-        autoLoad: types.Boolean("Auto.Load", true),
-        position: types.Vector3("Pose.Position"),
-        rotation: types.Vector3("Pose.Rotation"),
-        center: types.Event("Pose.Center")
-    });
-
-    outs = this.outs.append({
-        globalUnits: types.Enum("GlobalUnits", EUnitType, EUnitType.cm),
-        unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
-    });
+    ins = this.addInputs(ins);
+    outs = this.addOutputs(outs);
 
     protected assetPath: string = "";
     protected boundingBox = new THREE.Box3();
@@ -294,7 +297,7 @@ export default class CModel extends CObject3D
 
     protected updateUnitScale()
     {
-        const fromUnits = EUnitType[types.getEnumIndex(EUnitType, this.ins.units.value)];
+        const fromUnits = EUnitType[this.ins.units.getValidatedValue()];
         const toUnits = EUnitType[this.outs.globalUnits.value];
         console.log("Model.updateUnitScale, from: %s, to: %s", fromUnits, toUnits);
         this.outs.unitScale.setValue(_unitConversionFactor[fromUnits][toUnits]);

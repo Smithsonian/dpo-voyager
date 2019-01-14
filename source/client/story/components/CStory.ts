@@ -27,17 +27,19 @@ import NPresentation from "../../explorer/nodes/NPresentation";
 
 export enum ETaskSet { Prep, Author }
 
+const ins = {
+    save: types.Event("Save"),
+    exit: types.Event("Exit"),
+    taskSet: types.Enum("TaskSet", ETaskSet),
+    expertMode: types.Boolean("ExpertMode"),
+    referrer: types.String("Referrer")
+};
+
 export default class CStory extends Component
 {
     static readonly type: string = "CStory";
 
-    ins = this.ins.append({
-        save: types.Event("Save"),
-        exit: types.Event("Exit"),
-        taskSet: types.Enum("TaskSet", ETaskSet),
-        expertMode: types.Boolean("ExpertMode"),
-        referrer: types.String("Referrer")
-    });
+    ins = this.addInputs(ins);
 
     update()
     {

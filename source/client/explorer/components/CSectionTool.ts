@@ -22,14 +22,16 @@ import { ISectionTool } from "common/types/voyager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const ins = {
+    active: types.Boolean("Active"),
+    plane: types.Vector4("Plane")
+};
+
 export default class CSectionTool extends Component
 {
     static readonly type: string = "CSectionTool";
 
-    ins = this.ins.append({
-        active: types.Boolean("Active"),
-        plane: types.Vector4("Plane")
-    });
+    ins = this.addInputs(ins);
 
     fromData(data: ISectionTool)
     {
