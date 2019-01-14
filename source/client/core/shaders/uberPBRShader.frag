@@ -1,4 +1,4 @@
-#define STANDARD
+//#define PHYSICAL
 
 uniform vec3 diffuse;
 uniform vec3 emissive;
@@ -21,13 +21,14 @@ varying vec3 vViewPosition;
 #include <packing>
 #include <dithering_pars_fragment>
 #include <color_pars_fragment>
+
 //#include <uv_pars_fragment>
+//#include <uv2_pars_fragment>
 // REPLACED WITH
 #if defined(USE_MAP) || defined(USE_BUMPMAP) || defined(USE_NORMALMAP) || defined(USE_SPECULARMAP) || defined(USE_ALPHAMAP) || defined(USE_EMISSIVEMAP) || defined(USE_ROUGHNESSMAP) || defined(USE_METALNESSMAP) || defined(USE_LIGHTMAP) || defined(USE_AOMAP)
 	varying vec2 vUv;
 #endif
 
-//#include <uv2_pars_fragment>
 #include <map_pars_fragment>
 #include <alphamap_pars_fragment>
 #include <aomap_pars_fragment>
@@ -39,7 +40,6 @@ varying vec3 vViewPosition;
 #include <envmap_physical_pars_fragment>
 #include <fog_pars_fragment>
 #include <lights_pars_begin>
-//#include <lights_pars_maps>
 #include <lights_physical_pars_fragment>
 #include <shadowmap_pars_fragment>
 #include <bumpmap_pars_fragment>
@@ -50,18 +50,25 @@ varying vec3 vViewPosition;
 #include <clipping_planes_pars_fragment>
 
 #ifdef USE_AOMAP
-uniform vec3 aoMapMix;
-#endif
-
-#if defined(USE_NORMALMAP) && defined(USE_OBJECTSPACE_NORMALMAP)
-uniform mat3 normalMatrix;
+    uniform vec3 aoMapMix;
 #endif
 
 #ifdef MODE_XRAY
-varying float vIntensity;
+    varying float vIntensity;
+#endif
+
+#ifdef CUT_PLANE
+    varying vec3 vWorldPosition;
+    uniform vec4 cutPlaneDirection;
+    uniform vec3 cutPlaneColor;
 #endif
 
 void main() {
+    #ifdef CUT_PLANE
+        if (dot(vWorldPosition, cutPlaneDirection.xyz) < cutPlaneDirection.w) {
+            discard;
+        }
+    #endif
 
 	#include <clipping_planes_fragment>
 
@@ -76,31 +83,16 @@ void main() {
 	#include <alphatest_fragment>
 	#include <roughnessmap_fragment>
 	#include <metalnessmap_fragment>
+	#include <normal_fragment_begin>
+    #include <normal_fragment_maps>
 
-	//#include <normal_fragment>
-	// REPLACED WITH
-	#ifdef FLAT_SHADED
-    	// Workaround for Adreno/Nexus5 not able able to do dFdx( vViewPosition ) ...
-    	vec3 fdx = vec3( dFdx( vViewPosition.x ), dFdx( vViewPosition.y ), dFdx( vViewPosition.z ) );
-    	vec3 fdy = vec3( dFdy( vViewPosition.x ), dFdy( vViewPosition.y ), dFdy( vViewPosition.z ) );
-    	vec3 normal = normalize( cross( fdx, fdy ) );
-    #else
-    	vec3 normal = normalize( vNormal );
-
-      #ifdef DOUBLE_SIDED
-    	normal = normal * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
-      #endif
-    #endif
-
-    #ifdef USE_NORMALMAP
-      #ifdef USE_OBJECTSPACE_NORMALMAP
-        normal = normalize(normalMatrix * (texture2D(normalMap, vUv).xyz * 2.0 - 1.0));
-      #else
-    	normal = perturbNormal2Arb( -vViewPosition, normal );
-      #endif
-    #elif defined( USE_BUMPMAP )
-    	normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );
-    #endif
+	#ifdef CUT_PLANE
+	    // on the cut surface (back facing fragments revealed), replace normal with cut plane direction
+        if (!gl_FrontFacing) {
+            normal = -cutPlaneDirection.xyz;
+            diffuseColor.rgb = cutPlaneColor.rgb;
+        }
+	#endif
 
 	#include <emissivemap_fragment>
 
@@ -118,6 +110,11 @@ void main() {
 	//#include <aomap_fragment>
 	// REPLACED WITH
 	#ifdef USE_AOMAP
+	    // if cut plane is enabled, disable ambient occlusion on back facing fragments
+	    #ifdef CUT_PLANE
+            if (gl_FrontFacing) {
+	    #endif
+
     	// reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
     	vec3 aoSample = texture2D(aoMap, vUv).rgb;
     	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
@@ -130,6 +127,10 @@ void main() {
     	#if defined(USE_ENVMAP) && defined(PHYSICAL)
     		float dotNV = saturate(dot(geometry.normal, geometry.viewDir));
     		reflectedLight.indirectSpecular *= computeSpecularOcclusion(dotNV, ambientOcclusion, material.specularRoughness);
+    	#endif
+
+    	#ifdef CUT_PLANE
+    	    }
     	#endif
     #endif
 

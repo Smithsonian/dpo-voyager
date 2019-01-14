@@ -17,25 +17,25 @@
 
 import * as THREE from "three";
 
+//import "three/examples/js/loaders/OBJLoader2";
+//import "three/examples/js/loaders/FBXLoader";
 import "three/examples/js/loaders/LoaderSupport";
 import "three/examples/js/loaders/OBJLoader";
-import "three/examples/js/loaders/OBJLoader2";
 import "three/examples/js/loaders/PLYLoader";
-import "three/examples/js/loaders/FBXLoader";
 import "three/examples/js/loaders/GLTFLoader";
 import "three/examples/js/loaders/DRACOLoader";
 
+//const OBJLoader2 = (THREE as any).OBJLoader2;
+//const FBXLoader = (THREE as any).FBXLoader;
 const OBJLoader = (THREE as any).OBJLoader;
-const OBJLoader2 = (THREE as any).OBJLoader2;
 const PLYLoader = (THREE as any).PLYLoader;
-const FBXLoader = (THREE as any).FBXLoader;
 const GLTFLoader = (THREE as any).GLTFLoader;
 
 const DRACOLoader = (THREE as any).DRACOLoader;
 DRACOLoader.setDecoderPath('/js/draco/');
 
 import OrbitControllerScene from "./OrbitControllerScene";
-import UberMaterial from "../core/shaders/UberMaterial";
+import UberPBRMaterial from "../core/shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,7 +70,7 @@ export default class InspectorScene extends OrbitControllerScene
 
     protected lights: THREE.DirectionalLight[];
     protected model: THREE.Mesh;
-    protected material: UberMaterial;
+    protected material: UberPBRMaterial;
     protected defaultGeometry: THREE.BufferGeometry;
     protected defaultTexture: THREE.Texture;
 
@@ -131,8 +131,8 @@ export default class InspectorScene extends OrbitControllerScene
 
             material.roughness = settings.roughness;
             material.metalness = settings.metalness;
-            material.setOcclusionMix(settings.occlusion);
-            material.setNormalMapObjectSpace(settings.objectNormals);
+            material.aoMapMix.fromArray(settings.occlusion);
+            material.enableObjectSpaceNormalMap(settings.objectNormals);
 
             if (material.wireframe !== settings.wireframe) {
                 material.wireframe = settings.wireframe;
@@ -233,7 +233,7 @@ export default class InspectorScene extends OrbitControllerScene
         };
 
         const geometry = new THREE.PlaneBufferGeometry(1e-10, 1e-10);
-        const material: any = this.material = new UberMaterial(params);
+        const material: any = this.material = new UberPBRMaterial(params);
         //const material: any = this.material = new THREE.MeshPhysicalMaterial(params);
 
         // initialize material settings
@@ -375,7 +375,7 @@ export default class InspectorScene extends OrbitControllerScene
 
     protected setTexture(texture: THREE.Texture, slot: string)
     {
-        const material = this.model.material as UberMaterial;
+        const material = this.model.material as UberPBRMaterial;
         material.needsUpdate = true;
         this.textures[slot] = texture;
 
@@ -407,7 +407,7 @@ export default class InspectorScene extends OrbitControllerScene
 
     protected setTextureFlipY()
     {
-        const material = this.model.material as UberMaterial;
+        const material = this.model.material as UberPBRMaterial;
         const flipY = this.textureFlipY;
 
         if (material.map) {

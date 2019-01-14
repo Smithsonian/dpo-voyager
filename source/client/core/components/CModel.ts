@@ -27,7 +27,7 @@ import { CObject3D } from "@ff/scene/components";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
 
-import UberMaterial, { EShaderMode } from "../shaders/UberMaterial";
+import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import { EAssetType, EMapType } from "../models/Asset";
 
@@ -229,8 +229,8 @@ export default class CModel extends CObject3D
     setShaderMode(shaderMode: EShaderMode)
     {
         this.object3D.traverse(object => {
-            const material = object["material"];
-            if (material && material instanceof UberMaterial) {
+            const material = object["material"] as UberPBRMaterial;
+            if (material && material.isUberPBRMaterial) {
                 material.setShaderMode(shaderMode);
             }
         });
@@ -299,8 +299,9 @@ export default class CModel extends CObject3D
     {
         const fromUnits = EUnitType[this.ins.units.getValidatedValue()];
         const toUnits = EUnitType[this.outs.globalUnits.value];
-        console.log("Model.updateUnitScale, from: %s, to: %s", fromUnits, toUnits);
         this.outs.unitScale.setValue(_unitConversionFactor[fromUnits][toUnits]);
+
+        //console.log("Model.updateUnitScale, from: %s, to: %s", fromUnits, toUnits);
 
         this.updateMatrix();
     }

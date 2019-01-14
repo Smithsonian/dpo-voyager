@@ -28,7 +28,7 @@ const dracoPath = resolvePathname("js/draco/", window.location.origin + window.l
 DRACOLoader.setDecoderPath(dracoPath);
 console.log("DRACOLoader.setDracoPath - %s", dracoPath);
 
-import UberMaterial from "../shaders/UberMaterial";
+import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -92,7 +92,7 @@ export default class ModelLoader
 
                 mesh.geometry.computeBoundingBox();
 
-                const uberMat = new UberMaterial();
+                const uberMat = new UberPBRMaterial();
                 if (material.type === "MeshStandardMaterial") {
                     uberMat.copyStandardMaterial(material);
                 }
@@ -100,7 +100,7 @@ export default class ModelLoader
                 // TODO: Temp to correct test assets
                 uberMat.roughness = 0.6;
                 uberMat.metalness = 0;
-                uberMat.setNormalMapObjectSpace(false);
+                uberMat.enableObjectSpaceNormalMap(false);
 
                 if (!uberMat.map) {
                     uberMat.color.set("#c0c0c0");

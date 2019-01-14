@@ -20,7 +20,7 @@ import * as THREE from "three";
 import { IDerivative, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
 
 import CLoadingManager from "../components/CLoadingManager";
-import UberMaterial from "../shaders/UberMaterial";
+import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
 
@@ -92,7 +92,7 @@ export default class Derivative
         if (geoAsset) {
             return loadingManager.loadGeometry(geoAsset, assetPath)
             .then(geometry => {
-                this.model = new THREE.Mesh(geometry, new UberMaterial());
+                this.model = new THREE.Mesh(geometry, new UberPBRMaterial());
                 this.boundingBox.makeEmpty().expandByObject(this.model);
 
                 return Promise.all(imageAssets.map(asset => loadingManager.loadTexture(asset, assetPath)))
@@ -102,7 +102,7 @@ export default class Derivative
                 });
             })
             .then(textures => {
-                const material = (this.model as THREE.Mesh).material as UberMaterial;
+                const material = (this.model as THREE.Mesh).material as UberPBRMaterial;
                 this.assignTextures(imageAssets, textures, material);
 
                 if (!material.map) {
@@ -156,7 +156,7 @@ export default class Derivative
         return this.assets.filter(asset => asset.type === type);
     }
 
-    protected assignTextures(assets: Asset[], textures: THREE.Texture[], material: UberMaterial)
+    protected assignTextures(assets: Asset[], textures: THREE.Texture[], material: UberPBRMaterial)
     {
         for (let i = 0; i < assets.length; ++i) {
             const asset = assets[i];
