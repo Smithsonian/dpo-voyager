@@ -17,7 +17,7 @@
 
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import Commander from "@ff/core/Commander";
-import RenderSystem from "@ff/scene/RenderSystem";
+import System from "@ff/graph/System";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 
@@ -50,7 +50,7 @@ export default class StoryApplication
 {
     readonly props: IStoryApplicationProps;
     readonly explorer: ExplorerApplication;
-    readonly system: RenderSystem;
+    readonly system: System;
     readonly commander: Commander;
 
 

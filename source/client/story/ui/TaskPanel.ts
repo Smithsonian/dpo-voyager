@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-import RenderSystem from "@ff/scene/RenderSystem";
+import System from "@ff/graph/System";
+
 import SystemElement, { customElement, html } from "./SystemElement";
 
 import NTasks, { ITaskChangeEvent } from "../nodes/NTasks";
@@ -27,7 +28,7 @@ export default class TaskPanel extends SystemElement
 {
     protected tasks: NTasks = null;
 
-    constructor(system?: RenderSystem)
+    constructor(system?: System)
     {
         super(system);
 

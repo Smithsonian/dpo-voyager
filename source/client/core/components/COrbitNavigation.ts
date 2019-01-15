@@ -19,12 +19,12 @@ import * as THREE from "three";
 
 import math from "@ff/core/math";
 import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
 
 import OrbitManipulator from "@ff/three/OrbitManipulator";
 
-import RenderComponent from "@ff/scene/RenderComponent";
-import { IActiveCameraEvent } from "@ff/scene/RenderSystem";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
+import CScene, { IActiveCameraEvent } from "@ff/scene/components/CScene";
 import CCamera, { EProjection } from "@ff/scene/components/CCamera";
 
 import { INavigation } from "common/types/voyager";
@@ -67,25 +67,29 @@ const ins = {
  * Voyager explorer orbit navigation.
  * Controls manipulation and parameters of the camera.
  */
-export default class COrbitNavigation extends RenderComponent
+export default class COrbitNavigation extends Component
 {
     static readonly type: string = "COrbitNavigation";
 
     ins = this.addInputs(ins);
 
     protected manip = new OrbitManipulator();
-    protected activeCamera: CCamera = null;
+    protected activeScene: CScene = null;
 
     create()
     {
         super.create();
 
         this.manip.cameraMode = true;
-        this.activeCamera = this.system.activeCameraComponent;
+
+        this.trackComponent(CScene, scene => {
+            this.activeScene = scene;
+        }, scene => {
+            this.activeScene = null;
+        });
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
-        this.system.on<IActiveCameraEvent>("active-camera", this.onActiveCamera, this);
     }
 
     dispose()
@@ -94,13 +98,14 @@ export default class COrbitNavigation extends RenderComponent
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
-        this.system.off<IActiveCameraEvent>("active-camera", this.onActiveCamera, this);
     }
 
     update()
     {
         const manip = this.manip;
-        const cameraComponent = this.activeCamera;
+
+        const sceneComponent = this.activeScene as CVoyagerScene;
+        const cameraComponent = sceneComponent.activeCameraComponent;
 
         const {
             projection, preset, setup,
@@ -117,28 +122,23 @@ export default class COrbitNavigation extends RenderComponent
         }
 
         if (setup.changed) {
-            const sceneComponent = this.system.activeSceneComponent as CVoyagerScene;
-            const cameraComponent = this.system.activeCameraComponent;
+            const camera = cameraComponent.camera;
+            camera.updateMatrixWorld(false);
+            _box.copy(sceneComponent.boundingBox);
+            _box.applyMatrix4(camera.matrixWorldInverse);
+            _box.getSize(_size);
+            _box.getCenter(_center);
 
-            if (sceneComponent && cameraComponent) {
-                const camera = cameraComponent.camera;
-                camera.updateMatrixWorld(false);
-                _box.copy(sceneComponent.boundingBox);
-                _box.applyMatrix4(camera.matrixWorldInverse);
-                _box.getSize(_size);
-                _box.getCenter(_center);
+            const sizeXY = Math.max(_size.x / camera.aspect, _size.y);
 
-                const sizeXY = Math.max(_size.x / camera.aspect, _size.y);
-
-                if (camera.isPerspectiveCamera) {
-                    offset.value[2] = _size.z + sizeXY * 0.5 + sizeXY / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
-                }
-                else {
-                    offset.value[2] = _size.z * 2;
-                }
-
-                offset.set();
+            if (camera.isPerspectiveCamera) {
+                offset.value[2] = _size.z + sizeXY * 0.5 + sizeXY / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
             }
+            else {
+                offset.value[2] = _size.z * 2;
+            }
+
+            offset.set();
         }
 
         if (orbit.changed || offset.changed) {
@@ -159,7 +159,7 @@ export default class COrbitNavigation extends RenderComponent
     tick()
     {
         const manip = this.manip;
-        const cameraComponent = this.activeCamera;
+        const cameraComponent = this.activeScene && this.activeScene.activeCameraComponent;
         const ins = this.ins;
 
 
@@ -234,7 +234,7 @@ export default class COrbitNavigation extends RenderComponent
             return;
         }
 
-        if (this.ins.enabled.value && this.activeCamera) {
+        if (this.ins.enabled.value && this.activeScene && this.activeScene.activeCameraComponent) {
             this.manip.setViewportSize(viewport.width, viewport.height);
             this.manip.onPointer(event);
             event.stopPropagation = true;
@@ -248,15 +248,10 @@ export default class COrbitNavigation extends RenderComponent
             return;
         }
 
-        if (this.ins.enabled.value && this.activeCamera) {
+        if (this.ins.enabled.value && this.activeScene && this.activeScene.activeCameraComponent) {
             this.manip.setViewportSize(viewport.width, viewport.height);
             this.manip.onTrigger(event);
             event.stopPropagation = true;
         }
-    }
-
-    protected onActiveCamera(event: IActiveCameraEvent)
-    {
-        this.activeCamera = event.next;
     }
 }

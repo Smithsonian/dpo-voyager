@@ -16,8 +16,8 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
 import CSelection from "@ff/graph/components/CSelection";
-import RenderComponent from "@ff/scene/RenderComponent";
 
 import TaskView from "../ui/TaskView";
 
@@ -29,7 +29,7 @@ const ins = {
     activate: types.Event("Activate")
 };
 
-export default class CTask extends RenderComponent
+export default class CTask extends Component
 {
     static readonly type: string = "CTask";
 

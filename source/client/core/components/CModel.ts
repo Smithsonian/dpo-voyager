@@ -258,7 +258,7 @@ export default class CModel extends CObject3D
             this.boundingBox.max.fromArray(modelData.boundingBox.max);
 
             this.boxFrame = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
-            this.addChild(this.boxFrame);
+            this.addObject3D(this.boxFrame);
 
             this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
         }
@@ -366,11 +366,11 @@ export default class CModel extends CObject3D
             }
 
             if (this.boxFrame) {
-                this.removeChild(this.boxFrame);
+                this.removeObject3D(this.boxFrame);
                 (this.boxFrame as any).geometry.dispose();
             }
             if (this.activeDerivative) {
-                this.removeChild(this.activeDerivative.model);
+                this.removeObject3D(this.activeDerivative.model);
                 this.activeDerivative.dispose();
             }
 
@@ -379,7 +379,7 @@ export default class CModel extends CObject3D
             }
 
             this.activeDerivative = derivative;
-            this.addChild(derivative.model);
+            this.addObject3D(derivative.model);
 
             this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
 

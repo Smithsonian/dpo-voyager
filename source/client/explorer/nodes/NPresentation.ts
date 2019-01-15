@@ -19,7 +19,7 @@ import resolvePathname from "resolve-pathname";
 
 import { Index } from "@ff/core/types";
 import Graph from "@ff/graph/Graph";
-import RenderNode from "@ff/scene/RenderNode";
+import Node from "@ff/graph/Node";
 
 import { IPresentation, INode } from "common/types/presentation";
 
@@ -56,7 +56,7 @@ import NSpotLightNode from "../nodes/NSpotLightNode";
 export type ReferenceCallback = (index: number, graph: Graph, assetPath: string) => NPresentationNode;
 
 
-export default class NPresentation extends RenderNode
+export default class NPresentation extends Node
 {
     static readonly type: string = "NPresentation";
 
@@ -64,9 +64,12 @@ export default class NPresentation extends RenderNode
     protected assetPath: string = "";
     protected loadingManager: CLoadingManager = null;
 
+    get transform() {
+        return this.components.get(CTransform);
+    }
+
     activate()
     {
-        this.components.get(CVoyagerScene).ins.activate.set();
     }
 
     deactivate()

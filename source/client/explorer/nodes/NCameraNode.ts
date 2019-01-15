@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
 import CCamera, { EProjection } from "@ff/scene/components/CCamera";
 
 import { ICamera } from "common/types/presentation";
-
 import NPresentationNode from "./NPresentationNode";
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
+import System from "@ff/graph/System";
+
 import "@ff/ui/Layout";
 import "@ff/ui/Button";
-
 import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
-
-import RenderSystem from "@ff/scene/RenderSystem";
 
 import NTasks, { ITaskChangeEvent } from "../nodes/NTasks";
 import CStory from "../components/CStory";
@@ -36,7 +35,7 @@ export default class TaskBar extends SystemElement
     protected story: CStory = null;
 
 
-    constructor(system?: RenderSystem)
+    constructor(system?: System)
     {
         super(system);
 

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
+import System from "@ff/graph/System";
 import CSelection from "@ff/graph/components/CSelection";
 import HierarchyTree from "@ff/ui/graph/HierarchyTree";
 
-import RenderSystem from "@ff/scene/RenderSystem";
 import SystemElement, { customElement } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ import SystemElement, { customElement } from "./SystemElement";
 @customElement("sv-hierarchy-panel")
 export default class HierarchyPanel extends SystemElement
 {
-    constructor(system?: RenderSystem)
+    constructor(system?: System)
     {
         super(system);
 

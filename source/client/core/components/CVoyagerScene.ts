@@ -20,10 +20,9 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
 import { IComponentEvent } from "@ff/graph/ComponentSet";
-import { IRenderContext } from "@ff/scene/RenderSystem";
 
 import CCamera from "@ff/scene/components/CCamera";
-import CScene from "@ff/scene/components/CScene";
+import CScene, { IRenderSceneContext } from "@ff/scene/components/CScene";
 
 import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/voyager";
 
@@ -56,8 +55,6 @@ export default class CVoyagerScene extends CScene
 
     create()
     {
-        this.ins.activate.path = "Scene.Activate";
-
         this.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
         this.graph.components.on(CModel, this.onModelComponent, this);
     }
@@ -68,9 +65,6 @@ export default class CVoyagerScene extends CScene
 
         const ins = this.ins;
 
-        if (ins.activate.changed) {
-            this.system.activeCameraComponent = this.transform.getChild(CCamera, true);
-        }
         if (ins.units.changed) {
             this.updateModels();
         }
@@ -82,17 +76,17 @@ export default class CVoyagerScene extends CScene
         return true;
     }
 
-    preRender(context: IRenderContext): void
+    beforeRender(context: IRenderSceneContext)
     {
         if (this.updated) {
-            context.view.renderer.toneMappingExposure = this.ins.exposure.value;
+            context.renderer.toneMappingExposure = this.ins.exposure.value;
         }
         if (this._zoomViews) {
             context.viewport.moveCameraToView(this.boundingBox);
         }
     }
 
-    lateUpdate()
+    finalize()
     {
         this._zoomViews = false;
     }

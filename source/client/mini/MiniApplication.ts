@@ -19,7 +19,7 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
-import RenderSystem from "@ff/scene/RenderSystem";
+import System from "@ff/graph/System";
 
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
@@ -28,6 +28,8 @@ import { componentTypes as coreComponents } from "../core/components";
 import CPresentations from "../explorer/components/CPresentations";
 
 import MainView from "./ui/MainView";
+import CPulse from "@ff/graph/components/CPulse";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +55,7 @@ export default class MiniApplication
     ].join("\n");
 
     readonly props: IMiniApplicationProps;
-    readonly system: RenderSystem;
+    readonly system: System;
     readonly commander: Commander;
 
 
@@ -67,9 +69,11 @@ export default class MiniApplication
         registry.registerComponentType(coreComponents);
 
         this.commander = new Commander();
-        const system = this.system = new RenderSystem(registry);
+        const system = this.system = new System(registry);
 
         const node = system.graph.createNode("Mini");
+        const pulse = node.createComponent(CPulse);
+        node.createComponent(CRenderer);
         node.createComponent(CPresentations).createActions(this.commander);
 
         // create main view if not given
@@ -78,7 +82,7 @@ export default class MiniApplication
         }
 
         // start rendering
-        this.system.start();
+        pulse.start();
 
         // start loading from properties
         this.props = this.initFromProps(props);

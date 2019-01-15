@@ -17,15 +17,15 @@
 
 import resolvePathname from "resolve-pathname";
 
-import { IItem } from "common/types/item";
-
-import RenderNode from "@ff/scene/RenderNode";
+import Node from "@ff/graph/Node";
 import CTransform from "@ff/scene/components/CTransform";
+
+import { IItem } from "common/types/item";
 import CModel from "../components/CModel";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NItem extends RenderNode
+export default class NItem extends Node
 {
     static readonly type: string = "NItem";
 

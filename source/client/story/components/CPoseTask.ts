@@ -27,6 +27,7 @@ import CInterface from "../../explorer/components/CInterface";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import CTask from "./CTask";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +81,9 @@ export default class CPoseTask extends CTask
 
     activate()
     {
-        this.system.views.forEach(view => {
+        const renderer = this.system.components.get(CRenderer);
+
+        renderer.views.forEach(view => {
             if (view instanceof RenderQuadView) {
                 view.layout = EQuadViewLayout.Quad;
             }
@@ -96,7 +99,9 @@ export default class CPoseTask extends CTask
 
     deactivate()
     {
-        this.system.views.forEach(view => {
+        const renderer = this.system.components.get(CRenderer);
+
+        renderer.views.forEach(view => {
             if (view instanceof RenderQuadView) {
                 view.layout = EQuadViewLayout.Single;
             }

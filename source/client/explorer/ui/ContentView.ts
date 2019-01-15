@@ -16,7 +16,7 @@
  */
 
 import ManipTarget from "@ff/browser/ManipTarget"
-import RenderSystem from "@ff/scene/RenderSystem";
+import System from "@ff/graph/System";
 import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
 
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
@@ -29,7 +29,7 @@ import { property } from "@polymer/lit-element";
 export default class ContentView extends CustomElement
 {
     @property({ attribute: false })
-    system: RenderSystem;
+    system: System;
 
     protected manipTarget: ManipTarget;
 
@@ -38,7 +38,7 @@ export default class ContentView extends CustomElement
     protected overlay: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
 
-    constructor(system?: RenderSystem)
+    constructor(system?: System)
     {
         super();
 

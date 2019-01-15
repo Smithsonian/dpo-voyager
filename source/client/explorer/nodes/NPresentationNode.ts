@@ -18,7 +18,7 @@
 import * as THREE from "three";
 import math from "@ff/core/math";
 
-import RenderNode from "@ff/scene/RenderNode";
+import Node from "@ff/graph/Node";
 import CTransform from "@ff/scene/components/CTransform";
 
 import { INode } from "common/types/presentation";
@@ -34,13 +34,19 @@ const _euler = new THREE.Euler();
 /**
  * Base class for presentation nodes (nodes within the scene tree of a presentation).
  */
-export default class PresentationNode extends RenderNode
+export default class PresentationNode extends Node
 {
     static readonly type: string = "PresentationNode";
 
+    private _transform: CTransform = null;
+
+    get transform() {
+        return this._transform;
+    }
+
     createComponents()
     {
-        this.createComponent(CTransform);
+        this._transform = this.createComponent(CTransform);
     }
 
     fromNodeData(data: INode)

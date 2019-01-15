@@ -19,16 +19,19 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 import Registry from "@ff/graph/Registry";
+import System from "@ff/graph/System";
 
-import RenderSystem from "@ff/scene/RenderSystem";
+import CPulse from "@ff/graph/components/CPulse";
 
+import CRenderer from "@ff/scene/components/CRenderer";
 import CPickSelection from "@ff/scene/components/CPickSelection";
 import CLoadingManager from "../core/components/CLoadingManager";
 import CExplorer from "./components/CExplorer";
 import CPresentations from "./components/CPresentations";
 
+import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
-import { componentTypes as coreComponents } from "../core/components";
+import { componentTypes as voyagerComponents } from "../core/components";
 import { componentTypes as explorerComponents } from "./components";
 
 import MainView from "./ui/MainView";
@@ -72,7 +75,7 @@ export default class ExplorerApplication
     ].join("\n");
 
     readonly props: IExplorerApplicationProps;
-    readonly system: RenderSystem;
+    readonly system: System;
     readonly commander: Commander;
 
 
@@ -82,14 +85,17 @@ export default class ExplorerApplication
 
         // register components
         const registry = new Registry();
+        registry.registerComponentType(graphComponents);
         registry.registerComponentType(sceneComponents);
-        registry.registerComponentType(coreComponents);
+        registry.registerComponentType(voyagerComponents);
         registry.registerComponentType(explorerComponents);
 
         this.commander = new Commander();
-        const system = this.system = new RenderSystem(registry);
+        const system = this.system = new System(registry);
 
         const node = system.graph.createNode("Explorer");
+        const pulse = node.createComponent(CPulse);
+        node.createComponent(CRenderer);
         node.createComponent(CExplorer);
         node.createComponent(CLoadingManager);
         node.createComponent(CPickSelection).createActions(this.commander);
@@ -101,7 +107,7 @@ export default class ExplorerApplication
         }
 
         // start rendering
-        this.system.start();
+        pulse.start();
 
         // start loading from properties
         this.props = this.initFromProps(props);

@@ -23,8 +23,7 @@ import Vector3 from "@ff/core/Vector3";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
 
-import { IRenderContext } from "@ff/scene/RenderSystem";
-import CObject3D from "@ff/scene/components/CObject3D";
+import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
 import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
@@ -135,17 +134,15 @@ export default class CHomeGrid extends CObject3D
         return true;
     }
 
-    preRender(context: IRenderContext)
+    beforeRender(context: IRenderContext)
     {
         const viewport = context.viewport;
         const gridObject = this.object3D;
-        gridObject.visible = true;
 
         if (viewport !== this._lastViewport) {
             this._lastViewport = viewport;
 
             const vpCamera = context.viewport.viewportCamera;
-            gridObject.matrixWorldNeedsUpdate = true;
 
             if (vpCamera) {
                 gridObject.matrix.extractRotation(vpCamera.matrixWorld).multiply(_matRotationOffset);
@@ -153,12 +150,14 @@ export default class CHomeGrid extends CObject3D
             else {
                 gridObject.matrix.extractRotation(_matIdentity);
             }
+
+            gridObject.updateMatrixWorld(true);
         }
     }
 
-    postRender(context: IRenderContext)
+    afterRender(context: IRenderContext)
     {
-        this.object3D.visible = false;
+        this.object3D.matrix.extractRotation(_matIdentity);
     }
 
     fromData(data: IGrid)
