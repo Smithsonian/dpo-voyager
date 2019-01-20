@@ -20,8 +20,7 @@ import System from "@ff/graph/System";
 import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
 
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
-import CustomElement, { customElement } from "@ff/ui/CustomElement";
-import { property } from "@polymer/lit-element";
+import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

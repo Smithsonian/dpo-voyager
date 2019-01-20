@@ -25,7 +25,7 @@ export default class CCaptureTask extends CTask
     static readonly type: string = "CCaptureTask";
 
     static readonly text: string = "Capture";
-    static readonly icon: string = "fa fa-camera";
+    static readonly icon: string = "camera";
 
     createView()
     {

@@ -23,7 +23,7 @@ import threeMath from "@ff/three/math";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
 import { computeLocalBoundingBox } from "@ff/three/helpers";
-import { CObject3D } from "@ff/scene/components";
+import CObject3D from "@ff/scene/components/CObject3D";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
 

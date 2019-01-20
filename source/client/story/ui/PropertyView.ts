@@ -17,7 +17,6 @@
 
 import Property from "@ff/graph/Property";
 
-import "@ff/ui/Layout";
 import "@ff/ui/graph/PropertyField";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
@@ -73,9 +72,9 @@ export default class PropertyView extends CustomElement
         const labels = property.schema.labels || _defaultLabels;
         const labelElement = html`<div class="sv-field-label">${index >= 0 ? labels[index] : ""}</div>`;
 
-        return html`<ff-flex-row class="sv-field-row">
+        return html`<div class="ff-flex-row sv-field-row">
             ${labelElement}
             <ff-property-field .property=${property} .index=${index}></ff-property-field>
-        </ff-flex-row>`;
+        </div>`;
     }
 }

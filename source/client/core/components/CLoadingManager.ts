@@ -47,9 +47,9 @@ export default class CLoadingManager extends Component
     private _loadingManager: PrivateLoadingManager;
 
 
-    constructor(node: Node, id?: string)
+    constructor(id?: string)
     {
-        super(node, id);
+        super(id);
 
         const loadingManager = this._loadingManager = new PrivateLoadingManager();
 

@@ -34,9 +34,9 @@ $menu-color-background-hover: transparentize(#404040, 0.4);
 // GLOBAL
 
 body {
-  @include font-ui-normal;
-  font-size: 0.9rem;
-  color: $color-text;
+  //@include font-ui-normal;
+  //font-size: 0.9rem;
+  //color: $color-text;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

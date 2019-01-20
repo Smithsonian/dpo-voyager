@@ -17,9 +17,8 @@
 
 import System from "@ff/graph/System";
 
-import "@ff/ui/Layout";
 import "@ff/ui/Button";
-import IndexButton, { IButtonClickEvent } from "@ff/ui/IndexButton";
+import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
 import NTasks, { ITaskChangeEvent } from "../nodes/NTasks";
 import CStory from "../components/CStory";
@@ -70,24 +69,24 @@ export default class TaskBar extends SystemElement
             <img class="sv-logo" src="images/voyager-75grey.svg" alt="Logo"/>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
-            <ff-flex-row @click=${this.onClickTask}>
-                ${taskList.map((task, index) => html`<ff-index-button text=${task.text} icon=${task.icon} index=${index} selectedIndex=${selectedIndex}></ff-index-button>`)}
-            </ff-flex-row>
+            <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
+                ${taskList.map((task, index) => html`<ff-button text=${task.text} icon=${task.icon} index=${index} selectedIndex=${selectedIndex}></ff-button>`)}
+            </div>
             <div class="sv-divider"></div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
-            <ff-flex-row @click=${this.onClickTask}>
-                <ff-button text="Save" icon="fa fa-save" @click=${this.onClickSave}></ff-button>
-                <ff-button text="Exit" icon="fa fa-sign-out-alt" @click=${this.onClickExit}></ff-button>
+            <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
+                <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
+                <ff-button text="Exit" icon="exit" @click=${this.onClickExit}></ff-button>
                 <div class="sv-divider"></div>
-                <ff-button text="Expert Mode" icon="fa fa-code" ?selected=${expertMode} @click=${this.onClickExpertMode}></ff-button>
-            </ff-flex-row>
+                <ff-button text="Expert Mode" icon="expert" ?selected=${expertMode} @click=${this.onClickExpertMode}></ff-button>
+            </div>
         `;
     }
 
     protected onClickTask(event: IButtonClickEvent)
     {
-        if (event.target instanceof IndexButton) {
+        if (event.target instanceof Button) {
             this.tasks.activeTaskIndex = event.target.index;
         }
     }

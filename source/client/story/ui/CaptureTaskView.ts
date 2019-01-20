@@ -16,7 +16,7 @@
  */
 
 import { customElement, html } from "@ff/ui/CustomElement";
-import "@ff/ui/Layout";
+
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 

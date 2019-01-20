@@ -82,14 +82,14 @@ export default class ChromeView extends CustomElement
         return html`
             <div class="sv-main-menu">
                 <ff-button-group mode="exclusive">
-                    <ff-popup-button class="ff-menu-button" icon="fa fas fa-eye" .content=${viewMenu}>
+                    <ff-popup-button class="ff-menu-button" icon="eye" .content=${viewMenu}>
                     </ff-popup-button>
-                    <ff-popup-button class="ff-menu-button" icon="fa fas fa-palette" .content=${renderMenu}>
+                    <ff-popup-button class="ff-menu-button" icon="palette" .content=${renderMenu}>
                     </ff-popup-button>
                 </ff-button-group>
-                <ff-button class="ff-menu-button" icon="fa fas fa-comment" selectable>
+                <ff-button class="ff-menu-button" icon="comment" selectable>
                 </ff-button>
-                <ff-button class="ff-menu-button" icon="fa fas fa-file-alt" selectable>
+                <ff-button class="ff-menu-button" icon="document" selectable>
                 </ff-button>
             </div>
             ${showLogo ? html`

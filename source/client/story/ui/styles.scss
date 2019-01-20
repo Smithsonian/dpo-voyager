@@ -62,10 +62,14 @@ ff-dock-view {
 ////////////////////////////////////////////////////////////////////////////////
 // TASK BAR
 
-sv-task-bar {
+.sv-task-bar {
   display: flex;
   background-color: $color-background-dark;
   border-bottom: 3px solid $color-background-darker;
+
+  .ff-group {
+    align-items: stretch;
+  }
 
   .sv-logo {
     height: 30px;
@@ -82,24 +86,22 @@ sv-task-bar {
   }
 
   .ff-button {
-    align-items: center;
     background-color: transparent;
     padding: 5px 12px;
     font-size: 16px;
 
     .ff-icon {
-      font-size: 24px;
-      color: $color-icon;
+      height: 24px;
+      fill: $color-icon;
     }
 
-    &:hover, &[selected] {
-      .ff-icon {
-        color: $color-text-light;
-      }
-    }
     &[selected] {
       background-color: $color-primary;
       color: $color-text-light;
+
+      .ff-icon {
+        fill: $color-text-light;
+      }
     }
   }
 }

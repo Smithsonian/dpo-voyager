@@ -57,9 +57,9 @@ export default class CPresentations extends CController<CPresentations>
     private _loadingManager: CLoadingManager = null;
 
 
-    constructor(node: Node, id?: string)
+    constructor(id?: string)
     {
-        super(node, id);
+        super(id);
         this.addEvent("presentation-change");
     }
 

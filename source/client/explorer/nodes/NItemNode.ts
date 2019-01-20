@@ -19,7 +19,7 @@ import resolvePathname from "resolve-pathname";
 
 import { IItem } from "common/types/item";
 
-import Model from "../../core/components/CModel";
+import CModel from "../../core/components/CModel";
 
 import CMeta from "../components/CMeta";
 import CProcess from "../components/CProcess";
@@ -39,7 +39,7 @@ export default class NItemNode extends NPresentationNode
 
     protected meta: CMeta;
     protected process: CProcess;
-    protected model: Model;
+    protected model: CModel;
     protected annotations: CAnnotations;
     protected documents: CDocuments;
     protected groups: CGroups;
@@ -63,7 +63,7 @@ export default class NItemNode extends NPresentationNode
 
         this.meta = this.createComponent(CMeta);
         this.process = this.createComponent(CProcess);
-        this.model = this.createComponent(Model);
+        this.model = this.createComponent(CModel);
         this.annotations = this.createComponent(CAnnotations);
         this.documents = this.createComponent(CDocuments);
         this.groups = this.createComponent(CGroups);

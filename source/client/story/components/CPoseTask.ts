@@ -48,7 +48,7 @@ export default class CPoseTask extends CTask
     static readonly type: string = "CPoseTask";
 
     static readonly text: string = "Pose";
-    static readonly icon: string = "fa fa-arrows-alt";
+    static readonly icon: string = "move";
 
     ins = this.addInputs<CTask, typeof ins>(ins);
 

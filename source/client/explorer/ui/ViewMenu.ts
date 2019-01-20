@@ -18,8 +18,7 @@
 import PropertyTracker from "@ff/graph/PropertyTracker";
 import System from "@ff/graph/System";
 
-import "@ff/ui/Layout";
-import "@ff/ui/IndexButton";
+import "@ff/ui/Grid";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
@@ -82,26 +81,26 @@ export default class ViewMenu extends Popup
 
         return html`
             <label>Projection</label>
-            <ff-flex-row @click=${this.onClickProjectionType}>
-                <ff-index-button .index=${EProjection.Perspective} .selectedIndex=${projection}
-                  text="Perspective" title="Perspective Projection" icon="fas fa-video"></ff-index-button>    
-                <ff-index-button .index=${EProjection.Orthographic} .selectedIndex=${projection}
-                  text="Orthographic" title="Orthographic Projection" icon="fas fa-video"></ff-index-button>    
-            </ff-flex-row>
+            <div class="ff-flex-row" @click=${this.onClickProjectionType}>
+                <ff-button .index=${EProjection.Perspective} .selectedIndex=${projection}
+                  text="Perspective" title="Perspective Projection" icon="video"></ff-button>    
+                <ff-button .index=${EProjection.Orthographic} .selectedIndex=${projection}
+                  text="Orthographic" title="Orthographic Projection" icon="video"></ff-button>    
+            </div>
             <label>View</label>
             <ff-grid class="sv-cube" justifyContent="center" @click=${this.onClickViewPreset}>
-                <ff-index-button .index=${EViewPreset.Top} .selectedIndex=${preset}
-                  text="T" title="Top View" style="grid-column-start: 2; grid-row-start: 1;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Left} .selectedIndex=${preset}
-                  text="L" title="Left View" style="grid-column-start: 1; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Front} .selectedIndex=${preset}
-                  text="F" title="Front View" style="grid-column-start: 2; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Right} .selectedIndex=${preset}
-                  text="R" title="Right View" style="grid-column-start: 3; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Back} .selectedIndex=${preset}
-                  text="B" title="Back View" style="grid-column-start: 4; grid-row-start: 2;"></ff-index-button>
-                <ff-index-button .index=${EViewPreset.Bottom} .selectedIndex=${preset}
-                  text="B" title="Bottom View" style="grid-column-start: 2; grid-row-start: 3;"></ff-index-button>
+                <ff-button .index=${EViewPreset.Top} .selectedIndex=${preset}
+                  text="T" title="Top View" style="grid-column-start: 2; grid-row-start: 1;"></ff-button>
+                <ff-button .index=${EViewPreset.Left} .selectedIndex=${preset}
+                  text="L" title="Left View" style="grid-column-start: 1; grid-row-start: 2;"></ff-button>
+                <ff-button .index=${EViewPreset.Front} .selectedIndex=${preset}
+                  text="F" title="Front View" style="grid-column-start: 2; grid-row-start: 2;"></ff-button>
+                <ff-button .index=${EViewPreset.Right} .selectedIndex=${preset}
+                  text="R" title="Right View" style="grid-column-start: 3; grid-row-start: 2;"></ff-button>
+                <ff-button .index=${EViewPreset.Back} .selectedIndex=${preset}
+                  text="B" title="Back View" style="grid-column-start: 4; grid-row-start: 2;"></ff-button>
+                <ff-button .index=${EViewPreset.Bottom} .selectedIndex=${preset}
+                  text="B" title="Bottom View" style="grid-column-start: 2; grid-row-start: 3;"></ff-button>
             </ff-grid>
         `;
     }

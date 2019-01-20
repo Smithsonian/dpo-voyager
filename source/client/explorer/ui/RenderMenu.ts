@@ -18,7 +18,6 @@
 import PropertyTracker from "@ff/graph/PropertyTracker";
 import System from "@ff/graph/System";
 
-import "@ff/ui/Layout";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
@@ -68,18 +67,18 @@ export default class RenderMenu extends Popup
 
         return html`
             <label>Shading</label>
-            <ff-flex-column @click=${this.onClickRenderMode}>
-                <ff-index-button .index=${EShaderMode.Default} .selectedIndex=${renderMode}
-                  text="Standard" title="Display model in standard mode"></ff-index-button>
-                <ff-index-button .index=${EShaderMode.Clay} .selectedIndex=${renderMode}
-                  text="Clay" title="Display model without colors"></ff-index-button>
-                <ff-index-button .index=${EShaderMode.XRay} .selectedIndex=${renderMode}
-                  text="X-Ray" title="Display model in X-Ray mode"></ff-index-button>
-                <ff-index-button .index=${EShaderMode.Normals} .selectedIndex=${renderMode}
-                  text="Normals" title="Display normals"></ff-index-button>
-                <ff-index-button .index=${EShaderMode.Wireframe} .selectedIndex=${renderMode}
-                  text="Wireframe" title="Display model as wireframe"></ff-index-button>
-            </ff-flex-column>
+            <div class="ff-flex-column" @click=${this.onClickRenderMode}>
+                <ff-button .index=${EShaderMode.Default} .selectedIndex=${renderMode}
+                  text="Standard" title="Display model in standard mode"></ff-button>
+                <ff-button .index=${EShaderMode.Clay} .selectedIndex=${renderMode}
+                  text="Clay" title="Display model without colors"></ff-button>
+                <ff-button .index=${EShaderMode.XRay} .selectedIndex=${renderMode}
+                  text="X-Ray" title="Display model in X-Ray mode"></ff-button>
+                <ff-button .index=${EShaderMode.Normals} .selectedIndex=${renderMode}
+                  text="Normals" title="Display normals"></ff-button>
+                <ff-button .index=${EShaderMode.Wireframe} .selectedIndex=${renderMode}
+                  text="Wireframe" title="Display model as wireframe"></ff-button>
+            </div>
         `;
     }
 

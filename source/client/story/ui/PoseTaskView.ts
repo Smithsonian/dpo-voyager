@@ -16,10 +16,9 @@
  */
 
 import { customElement, property, html } from "@ff/ui/CustomElement";
-import "@ff/ui/Layout";
+
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
-import "@ff/ui/IndexButton";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
 import CVoyagerScene from "../../core/components/CVoyagerScene";
@@ -109,8 +108,8 @@ class PoseTaskPropertyView extends ItemProperties<CModel>
 
         return html`
             <ff-flex-row wrap>
-                <ff-index-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
-                <ff-index-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-index-button>
+                <ff-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-button>
+                <ff-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-button>
                 <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
                 <ff-button text="Zoom Views" @click=${this.onClickZoomViews}></ff-button>
             </ff-flex-row>
