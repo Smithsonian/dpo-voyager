@@ -17,15 +17,13 @@
 
 import CAnnotations from "./CAnnotations";
 import CBackground from "./CBackground";
-import CCollection from "./CCollection";
 import CDocuments from "./CDocuments";
-import CExplorer from "./CExplorer";
 import CGroundPlane from "./CGroundPlane";
-import CGroups from "./CGroups";
 import CHomeGrid from "./CHomeGrid";
 import CInterface from "./CInterface";
 import CMeta from "./CMeta";
-import CPresentations from "./CPresentations";
+import CPresentation from "./CPresentation";
+import CPresentationManager from "./CPresentationManager";
 import CProcess from "./CProcess";
 import CReader from "./CReader";
 import CReference from "./CReference";
@@ -39,15 +37,13 @@ import CTours from "./CTours";
 export {
     CAnnotations,
     CBackground,
-    CCollection,
     CDocuments,
-    CExplorer,
     CGroundPlane,
-    CGroups,
     CHomeGrid,
     CInterface,
     CMeta,
-    CPresentations,
+    CPresentation,
+    CPresentationManager,
     CProcess,
     CReader,
     CReference,
@@ -61,13 +57,12 @@ export const componentTypes = [
     CAnnotations,
     CBackground,
     CDocuments,
-    CExplorer,
     CGroundPlane,
-    CGroups,
     CHomeGrid,
     CInterface,
     CMeta,
-    CPresentations,
+    CPresentation,
+    CPresentationManager,
     CProcess,
     CReader,
     CReference,

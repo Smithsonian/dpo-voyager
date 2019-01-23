@@ -24,10 +24,11 @@ import Component from "@ff/graph/Component";
 import OrbitManipulator from "@ff/three/OrbitManipulator";
 
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
-import CScene, { IActiveCameraEvent } from "@ff/scene/components/CScene";
-import CCamera, { EProjection } from "@ff/scene/components/CCamera";
+import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
+import { EProjection } from "@ff/scene/components/CCamera";
 
-import { INavigation } from "common/types/voyager";
+import { INavigation } from "common/types/setup";
+
 import CVoyagerScene from "./CVoyagerScene";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,23 +74,30 @@ export default class COrbitNavigation extends Component
 
     ins = this.addInputs(ins);
 
-    protected manip = new OrbitManipulator();
-    protected activeScene: CScene = null;
+    private _manip = new OrbitManipulator();
+    private _activeScene: CVoyagerScene = null;
+
+    get renderer() {
+        return this.system.graph.components.safeGet(CRenderer);
+    }
+    get scene() {
+        return this._activeScene;
+    }
+    get camera() {
+        return this._activeScene ? this._activeScene.activeCameraComponent : null;
+    }
 
     create()
     {
         super.create();
 
-        this.manip.cameraMode = true;
-
-        this.trackComponent(CScene, scene => {
-            this.activeScene = scene;
-        }, scene => {
-            this.activeScene = null;
-        });
+        this._manip.cameraMode = true;
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
+        this._activeScene = this.renderer.activeSceneComponent as CVoyagerScene;
     }
 
     dispose()
@@ -98,14 +106,15 @@ export default class COrbitNavigation extends Component
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        this.renderer.off<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
     }
 
     update()
     {
-        const manip = this.manip;
+        const manip = this._manip;
 
-        const sceneComponent = this.activeScene as CVoyagerScene;
-        const cameraComponent = sceneComponent.activeCameraComponent;
+        const cameraComponent = this.camera;
 
         const {
             projection, preset, setup,
@@ -121,10 +130,10 @@ export default class COrbitNavigation extends Component
             orbit.setValue(_orientationPreset[preset.getValidatedValue()].slice());
         }
 
-        if (setup.changed) {
+        if (setup.changed && this._activeScene) {
             const camera = cameraComponent.camera;
             camera.updateMatrixWorld(false);
-            _box.copy(sceneComponent.boundingBox);
+            _box.copy(this._activeScene.boundingBox);
             _box.applyMatrix4(camera.matrixWorldInverse);
             _box.getSize(_size);
             _box.getCenter(_center);
@@ -158,8 +167,8 @@ export default class COrbitNavigation extends Component
 
     tick()
     {
-        const manip = this.manip;
-        const cameraComponent = this.activeScene && this.activeScene.activeCameraComponent;
+        const manip = this._manip;
+        const cameraComponent = this._activeScene && this._activeScene.activeCameraComponent;
         const ins = this.ins;
 
 
@@ -180,14 +189,14 @@ export default class COrbitNavigation extends Component
                 const transformComponent = cameraComponent.transform;
 
                 if (transformComponent) {
-                    this.manip.toObject(transformComponent.object3D);
+                    this._manip.toObject(transformComponent.object3D);
                 }
                 else {
-                    this.manip.toObject(camera);
+                    this._manip.toObject(camera);
                 }
 
                 if (camera.isOrthographicCamera) {
-                    camera.size = this.manip.offset.z;
+                    camera.size = this._manip.offset.z;
                     camera.updateProjectionMatrix();
                 }
 
@@ -234,9 +243,9 @@ export default class COrbitNavigation extends Component
             return;
         }
 
-        if (this.ins.enabled.value && this.activeScene && this.activeScene.activeCameraComponent) {
-            this.manip.setViewportSize(viewport.width, viewport.height);
-            this.manip.onPointer(event);
+        if (this.ins.enabled.value && this._activeScene && this._activeScene.activeCameraComponent) {
+            this._manip.setViewportSize(viewport.width, viewport.height);
+            this._manip.onPointer(event);
             event.stopPropagation = true;
         }
     }
@@ -248,10 +257,17 @@ export default class COrbitNavigation extends Component
             return;
         }
 
-        if (this.ins.enabled.value && this.activeScene && this.activeScene.activeCameraComponent) {
-            this.manip.setViewportSize(viewport.width, viewport.height);
-            this.manip.onTrigger(event);
+        if (this.ins.enabled.value && this._activeScene && this._activeScene.activeCameraComponent) {
+            this._manip.setViewportSize(viewport.width, viewport.height);
+            this._manip.onTrigger(event);
             event.stopPropagation = true;
+        }
+    }
+
+    protected onActiveScene(event: IActiveSceneEvent)
+    {
+        if (event.next instanceof CVoyagerScene) {
+            this._activeScene = event.next;
         }
     }
 }

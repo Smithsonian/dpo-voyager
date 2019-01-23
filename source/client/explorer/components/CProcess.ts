@@ -46,18 +46,31 @@ export default class CProcess extends Component
         this.data = {};
     }
 
-    fromData(data: Dictionary<any>)
+    hasData()
     {
-        this.data = Object.assign({}, data);
+        return Object.keys(this.data).length > 0;
+    }
+
+    deflate()
+    {
+        const data = this.toData();
+        return data ? { data } : null;
+    }
+
+    inflate(json: any)
+    {
+        if (json.data) {
+            this.fromData(json);
+        }
     }
 
     toData(): Dictionary<any>
     {
-        return Object.assign({}, this.data);
+        return this.hasData() ? Object.assign({}, this.data) : null;
     }
 
-    hasData()
+    fromData(data: Dictionary<any>)
     {
-        return Object.keys(this.data).length > 0;
+        this.data = Object.assign({}, data);
     }
 }

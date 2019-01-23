@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 
-import { IInterface } from "common/types/voyager";
-import CExplorer from "./CExplorer";
+import { IInterface } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,27 +32,6 @@ export default class CInterface extends Component
 
     ins = this.addInputs(ins);
 
-    protected explorer: CExplorer = null;
-
-    create()
-    {
-        this.explorer = this.system.components.safeGet(CExplorer);
-    }
-
-    update()
-    {
-        const ins = this.ins;
-        const explorerIns = this.explorer.ins;
-
-        if (ins.visible.changed) {
-            explorerIns.visible.setValue(ins.visible.value);
-        }
-        if (ins.logo.changed) {
-            explorerIns.logo.setValue(ins.logo.value);
-        }
-
-        return false;
-    }
 
     fromData(data: IInterface)
     {

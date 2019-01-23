@@ -20,7 +20,7 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import CObject3D from "@ff/scene/components/CObject3D";
 
-import { IGroundPlane } from "common/types/voyager";
+import { IGroundPlane } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

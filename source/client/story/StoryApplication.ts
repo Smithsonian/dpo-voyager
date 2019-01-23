@@ -63,17 +63,18 @@ export default class StoryApplication
 
         // register components
         const registry = this.system.registry;
+
         registry.registerComponentType(storyComponents);
+        registry.registerNodeType(NTasks);
 
         //this.logController = new LogController(this.system, this.commander);
         //this.taskController = new StoryController(this.system, this.commander);
 
         // add story components
-        const storyNode = this.system.graph.createNode("Story");
+        const storyNode = this.system.graph.createPlainNode("Story");
         storyNode.createComponent(CStory);
 
-        const tasksNode = this.system.graph.createNode(NTasks);
-        tasksNode.createComponents();
+        this.system.graph.createNode(NTasks);
 
         this.props = this.initFromProps(props);
 

@@ -17,33 +17,37 @@
 
 import resolvePathname from "resolve-pathname";
 
-import Node from "@ff/graph/Node";
-import CTransform from "@ff/scene/components/CTransform";
+import NTransform from "@ff/scene/nodes/NTransform";
 
 import { IItem } from "common/types/item";
+
 import CModel from "../components/CModel";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NItem extends Node
+export default class NItem extends NTransform
 {
     static readonly type: string = "NItem";
 
-    protected model: CModel;
-
-    url: string;
+    get model() {
+        return this.components.get(CModel);
+    }
 
     setUrl(url: string, assetPath?: string)
     {
-        this.url = url;
-        const urlPath = resolvePathname(".", url);
-        this.model.setAssetPath(assetPath || urlPath);
+        this.model.setUrl(url, assetPath);
+
+        const urlName = url.substr(resolvePathname(".", url).length);
+        if (urlName) {
+            this.name = urlName;
+        }
     }
 
     createComponents()
     {
-        this.createComponent(CTransform);
-        this.model = this.createComponent(CModel);
+        super.createComponents();
+
+        this.createComponent(CModel);
 
         this.name = "Item";
     }
@@ -57,10 +61,8 @@ export default class NItem extends Node
 
     toData(): IItem
     {
-        const itemData: Partial<IItem> = {
+        return {
             model: this.model.toData()
         };
-
-        return itemData as IItem;
     }
 }

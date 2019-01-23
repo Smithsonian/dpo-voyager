@@ -17,139 +17,101 @@
 
 import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
-import Component, { IComponentChangeEvent } from "@ff/graph/Component";
 
-import { IDocuments, IDocument as IDocumentData } from "common/types/item";
+import Component, { ITypedEvent } from "@ff/graph/Component";
+
+import { IDocuments } from "common/types/item";
 
 import CReader from "./CReader";
 
+import Document from "../models/Document";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IDocumentChangeEvent extends IComponentChangeEvent<CDocuments>
+export interface IDocumentEvent extends ITypedEvent<"document">
 {
-    what: "add" | "remove";
-    document: IDocument
-}
-
-export interface IDocument
-{
-    id?: string;
-    title: string;
-    description: string;
-    mimeType: string;
-    uri: string;
-    thumbnailUri: string;
+    add: boolean;
+    remove: boolean;
+    document: Document
 }
 
 export default class CDocuments extends Component
 {
     static readonly type: string = "CDocuments";
 
-    protected mainDocument: IDocument;
-    protected documents: Dictionary<IDocument> = {};
-    protected documentList: IDocument[] = [];
-    protected reader: CReader = null;
+    protected mainDocument: Document = null;
+    protected documents: Dictionary<Document> = {};
 
-    create()
-    {
-        this.reader = this.system.components.get(CReader);
+    get reader() {
+        return this.system.components.get(CReader);
     }
 
-    createDocument(): string
+    createDocument(): Document
     {
-        const document: IDocument = {
-            title: "New Document",
-            description: "",
-            mimeType: "text/plain",
-            uri: "",
-            thumbnailUri: ""
-        };
+        const document = new Document(uniqueId(6, this.documents));
 
-        return this.addDocument(document);
-    }
-
-    addDocument(document: IDocument): string
-    {
-        if (!document.id) {
-            document.id = uniqueId();
-        }
-
-        this.documents[document.id] = document;
-        this.documentList.push(document);
-        this.reader.addDocument(document);
-
-        this.emit<IDocumentChangeEvent>({ type: "change", what: "add", document, component: this });
-
-        return document.id;
-    }
-
-    removeDocument(id: string): IDocument
-    {
-        const document = this.documents[id];
-        const index = this.documentList.indexOf(document);
-        this.documentList.splice(index, 1);
-        delete this.documents[id];
-        this.reader.removeDocument(id);
-
-        this.emit<IDocumentChangeEvent>({ type: "change", what: "remove", document, component: this });
-
+        this.addDocument(document);
         return document;
     }
 
-    getDocuments(): Readonly<IDocument[]>
+    getDocuments()
     {
-        return this.documentList;
+        return Object.keys(this.documents).map(key => this.documents[key]);
     }
 
-    fromData(data: IDocuments): string[]
+    getDocumentById(id: string)
     {
-        const ids = data.documents.map(docData =>
-            this.addDocument({
-                title: docData.title,
-                description: docData.description || "",
-                mimeType: docData.mimeType || "",
-                uri: docData.uri,
-                thumbnailUri: docData.thumbnailUri || ""
-            })
-        );
+        return this.documents[id];
+    }
 
-        if (data.mainDocument !== undefined) {
-            this.mainDocument = this.documentList[data.mainDocument];
+    addDocument(document: Document)
+    {
+        this.documents[document.id] = document;
+        this.emit<IDocumentEvent>({ type: "document",add: true, remove: false, document });
+    }
+
+    removeDocument(document: Document)
+    {
+        delete this.documents[document.id];
+        this.emit<IDocumentEvent>({ type: "document", add: false, remove: true, document });
+    }
+
+    deflate()
+    {
+        const data = this.toData();
+        return data ? { data } : null;
+    }
+
+    inflate(json: any)
+    {
+        if (json.data) {
+            this.fromData(json);
         }
-
-        return ids;
     }
 
-    toData(): { data: IDocuments, ids: Dictionary<number> }
+    toData(): IDocuments
     {
-        const result = { data: { documents: [] } as IDocuments, ids: {} };
-
-        Object.keys(this.documents).forEach((key, index) => {
-            const document = this.documents[key];
-            result.ids[document.id] = index;
-
-            const docData: IDocumentData = {
-                title: document.title,
-                uri: document.uri
-            };
-
-            if (document.description) {
-                docData.description = document.description;
-            }
-            if (document.mimeType) {
-                docData.mimeType = document.mimeType;
-            }
-            if (document.thumbnailUri) {
-                docData.thumbnailUri = document.thumbnailUri;
-            }
-
-            result.data.documents.push(docData);
-        });
+        const data: Partial<IDocuments> = {};
 
         if (this.mainDocument) {
-            result.data.mainDocument = result.ids[this.mainDocument.id];
+            data.mainDocumentId = this.mainDocument.id;
+        }
+        const documentIds = Object.keys(this.documents);
+        if (documentIds.length > 0) {
+            data.documents = documentIds.map(id => this.documents[id].deflate());
         }
 
-        return result;
+        return data as IDocuments;
+    }
+
+    fromData(data: IDocuments)
+    {
+        if (data.documents) {
+            data.documents.forEach(data => this.addDocument(new Document(data.id).inflate(data)));
+        }
+
+        if (data.mainDocumentId) {
+            this.mainDocument = this.documents[data.mainDocumentId];
+        }
     }
 }

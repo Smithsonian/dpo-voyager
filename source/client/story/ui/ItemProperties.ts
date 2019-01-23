@@ -21,7 +21,7 @@ import CSelection from "@ff/graph/components/CSelection";
 
 import CustomElement, { property } from "@ff/ui/CustomElement";
 
-import NItemNode from "../../explorer/nodes/NItemNode";
+import NItem from "../../explorer/nodes/NItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,10 +48,10 @@ export default class ItemProperties<T extends Component> extends CustomElement
 
     protected connected()
     {
-        this.selection.selectedNodes.on(NItemNode, this.onSelectItem, this);
+        this.selection.selectedNodes.on(NItem, this.onSelectItem, this);
         this.selection.selectedComponents.on(this.componentType, this.onSelectComponent, this);
 
-        const node = this.selection.selectedNodes.get(NItemNode);
+        const node = this.selection.selectedNodes.get(NItem);
         const component = node
             ? node.components.get(this.componentType)
             : this.selection.selectedComponents.get(this.componentType);
@@ -61,11 +61,11 @@ export default class ItemProperties<T extends Component> extends CustomElement
 
     protected disconnected()
     {
-        this.selection.selectedNodes.off(NItemNode, this.onSelectItem, this);
+        this.selection.selectedNodes.off(NItem, this.onSelectItem, this);
         this.selection.selectedComponents.off(this.componentType, this.onSelectComponent, this);
     }
 
-    protected onSelectItem(event: INodeEvent<NItemNode>)
+    protected onSelectItem(event: INodeEvent<NItem>)
     {
         const component = event.node.components.get<T>(this.componentType);
         if (!component) {

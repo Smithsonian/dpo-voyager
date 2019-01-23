@@ -24,7 +24,7 @@ import { IComponentEvent } from "@ff/graph/ComponentSet";
 import CCamera from "@ff/scene/components/CCamera";
 import CScene, { IRenderSceneContext } from "@ff/scene/components/CScene";
 
-import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/voyager";
+import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/setup";
 
 import CModel, { IModelChangeEvent } from "./CModel";
 import COrbitNavigation from "./COrbitNavigation";
@@ -95,7 +95,7 @@ export default class CVoyagerScene extends CScene
     {
         this._zoomViews = true;
 
-        const manip = this.components.get(COrbitNavigation);
+        const manip = this.system.components.get(COrbitNavigation);
         manip.ins.setup.set();
     }
 

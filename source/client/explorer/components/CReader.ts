@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-import { Dictionary } from "@ff/core/types";
-
 import { types } from "@ff/graph/propertyTypes";
 import Component from "@ff/graph/Component";
 
-import { IReader, EReaderPosition } from "common/types/voyager";
-import { IDocument } from "./CDocuments";
+import { IReader, EReaderPosition } from "common/types/setup";
+
+import Document from "../models/Document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,17 +36,10 @@ export default class CReader extends Component
 
     ins = this.addInputs(ins);
 
-    protected documents: Dictionary<IDocument> = {};
 
-
-    addDocument(document: IDocument)
+    setDocument(document: Document)
     {
-        this.documents[document.id] = document;
-    }
-
-    removeDocument(id: string)
-    {
-        delete this.documents[id];
+        this.ins.url.setValue(document.uri);
     }
 
     fromData(data: IReader)
@@ -64,9 +56,9 @@ export default class CReader extends Component
         const ins = this.ins;
 
         return {
-            visible: ins.visible.cloneValue(),
+            visible: ins.visible.value,
             position: EReaderPosition[ins.position.value] || "Overlay",
-            url: ins.url.cloneValue()
+            url: ins.url.value
         };
     }
 }

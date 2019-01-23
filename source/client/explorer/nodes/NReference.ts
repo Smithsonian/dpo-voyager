@@ -15,33 +15,35 @@
  * limitations under the License.
  */
 
+import NTransform from "@ff/scene/nodes/NTransform";
+
 import { IReference } from "common/types/presentation";
 
 import CReference from "../components/CReference";
 
-import NPresentationNode from "./NPresentationNode";
-
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NReferenceNode extends NPresentationNode
+export default class NReference extends NTransform
 {
-    static readonly type: string = "NReferenceNode";
+    static readonly type: string = "NReference";
 
-    protected reference: CReference = null;
+    get reference() {
+        return this.components.get(CReference);
+    }
 
     createComponents()
     {
         super.createComponents();
-        this.reference = this.createComponent(CReference);
+        this.createComponent(CReference);
         this.name = "Reference";
     }
 
-    fromReferenceData(data: IReference)
+    fromData(data: IReference)
     {
         this.reference.fromData(data);
     }
 
-    toReferenceData(): IReference
+    toData(): IReference
     {
         return this.reference.toData();
     }

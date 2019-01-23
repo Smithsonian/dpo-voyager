@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
-import NPresentationNode from "./NPresentationNode";
+import CMini from "./CMini";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NGroupNode extends NPresentationNode
-{
-    static readonly type: string = "NGroupNode";
+export {
+    CMini
+};
 
-    createComponents()
-    {
-        super.createComponents();
-        this.name = "Group";
-    }
-}
+export const componentTypes = [
+    CMini
+];

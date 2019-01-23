@@ -15,180 +15,144 @@
  * limitations under the License.
  */
 
+import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
-import { IComponentChangeEvent } from "@ff/graph/Component";
 
-import { IAnnotation as IAnnotationData, Vector3 } from "common/types/item";
+import Component, { ITypedEvent } from "@ff/graph/Component";
+
+import { IAnnotations } from "common/types/item";
 
 import CModel from "../../core/components/CModel";
-import CCollection from "./CCollection";
+
+import Annotation, { Vector3 } from "../models/Annotation";
+import Group from "../models/Group";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { Vector3 };
-
-export interface IAnnotationsChangeEvent extends IComponentChangeEvent<CAnnotations>
+export interface IAnnotationEvent extends ITypedEvent<"annotation">
 {
-    what: "add" | "remove" | "update",
-    annotation: IAnnotation;
+    add: boolean;
+    remove: boolean;
+    annotation: Annotation;
 }
 
-export interface IAnnotation
+export interface IGroupEvent extends ITypedEvent<"group">
 {
-    id?: string;
-    title: string;
-    description: string;
-    visible: boolean;
-    expanded: boolean;
-    snapshot: string;
-    documents: string[];
-    groups: string[];
-    position: Vector3;
-    direction: Vector3;
-    index: number;
+    add: boolean;
+    remove: boolean;
+    group: Group;
 }
 
-export default class CAnnotations extends CCollection<IAnnotation>
+export default class CAnnotations extends Component
 {
     static readonly type: string = "CAnnotations";
 
-    protected model: CModel = null;
+    protected annotations: Dictionary<Annotation> = {};
+    protected groups: Dictionary<Group> = {};
 
-    create()
-    {
-        super.create();
-        this.model = this.components.get(CModel);
+    get model() {
+        return this.node.components.get(CModel);
     }
 
-    createAnnotation(position: Vector3, direction: Vector3, index: number = -1): IAnnotation
+    createAnnotation(position?: Vector3, direction?: Vector3, zoneIndex: number = -1): Annotation
     {
-        const annotation = {
-            title: "New Annotation",
-            description: "",
-            visible: true,
-            expanded: true,
-            snapshot: "",
-            documents: [],
-            groups: [],
-            position,
-            direction,
-            index
-        };
+        const annotation = new Annotation(uniqueId(6, this.annotations));
+        annotation.position = position;
+        annotation.direction = direction;
+        annotation.zoneIndex = zoneIndex;
 
         this.addAnnotation(annotation);
         return annotation;
     }
 
-    setEnabled(enabled: boolean)
+    getAnnotations()
     {
-        this.getArray().forEach(annotation => annotation.visible = enabled);
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation: null, component: this });
+        return Object.keys(this.annotations).map(key => this.annotations[key]);
     }
 
-    setVisible(id: string, visible: boolean)
+    getAnnotationById(id: string)
     {
-        const annotation = this.get(id);
-        annotation.visible = visible;
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
+        return this.annotations[id];
     }
 
-    setExpanded(id: string, expanded: boolean)
+    addAnnotation(annotation: Annotation)
     {
-        const annotation = this.get(id);
-        annotation.expanded = expanded;
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
+        this.annotations[annotation.id] = annotation;
+        this.emit<IAnnotationEvent>({ type: "annotation", add: true, remove: false, annotation });
     }
 
-    setPosition(id: string, position: Vector3, direction: Vector3)
+    removeAnnotation(annotation: Annotation)
     {
-        const annotation = this.get(id);
-        annotation.position = position;
-        annotation.direction = direction;
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
+        delete this.annotations[annotation.id];
+        this.emit<IAnnotationEvent>({ type: "annotation", add: false, remove: true, annotation });
     }
 
-    setTitle(id: string, title: string)
+    createGroup(): Group
     {
-        const annotation = this.get(id);
-        annotation.title = title;
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
+        const group = new Group(uniqueId(6, this.groups));
+        this.addGroup(group);
+        return group;
     }
 
-    setDescription(id: string, description: string)
+    getGroups()
     {
-        const annotation = this.get(id);
-        annotation.description = description;
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "update", annotation, component: this });
+        return Object.keys(this.groups).map(key => this.groups[key]);
     }
 
-    addAnnotation(annotation: IAnnotation): string
+    getGroupById(id: string)
     {
-        const id = this.insert(annotation);
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "add", annotation, component: this });
-        return id;
+        return this.groups[id];
     }
 
-    removeAnnotation(id: string): IAnnotation
+    addGroup(group: Group)
     {
-        const annotation = this.remove(id);
-        this.emit<IAnnotationsChangeEvent>({ type: "change", what: "remove", annotation, component: this });
-        return annotation;
+        this.groups[group.id] = group;
+        this.emit<IGroupEvent>({ type: "group", add: true, remove: false, group });
     }
 
-    fromData(data: IAnnotationData[], groupIds: string[], docIds: string[], snapIds: string[])
+    removeGroup(group: Group)
     {
-        data.forEach(data => {
-            const annotation = {
-                title: data.title || "",
-                description: data.description || "",
-                visible: data.visible || false,
-                expanded: data.expanded || false,
-                snapshot: data.snapshot !== undefined ? snapIds[data.snapshot] : "",
-                documents: data.documents ? data.documents.map(index => docIds[index]) : [],
-                groups: data.groups ? data.groups.map(index => groupIds[index]) : [],
-                position: data.position,
-                direction: data.direction,
-                index: data.zoneIndex !== undefined ? data.zoneIndex : -1
-            };
-
-            this.addAnnotation(annotation);
-        });
+        delete this.groups[group.id];
+        this.emit<IGroupEvent>({ type: "group", add: false, remove: true, group });
     }
 
-    toData(groupIds: Dictionary<number>, docIds: Dictionary<number>, snapIds: Dictionary<number>): IAnnotationData[]
+    deflate()
     {
-        const annotations = this.getArray();
+        const data = this.toData();
+        return data ? { data } : null;
+    }
 
-        return annotations.map(annotation => {
-            const data: IAnnotationData = {
-                title: annotation.title,
-                position: annotation.position.slice(),
-                direction: annotation.direction.slice()
-            };
+    inflate(json: any)
+    {
+        if (json.data) {
+            this.fromData(json);
+        }
+    }
 
-            if (annotation.description) {
-                data.description = annotation.description;
-            }
-            if (annotation.visible) {
-                data.visible = annotation.visible;
-            }
-            if (annotation.expanded) {
-                data.expanded = annotation.expanded;
-            }
-            if (annotation.snapshot) {
-                data.snapshot = snapIds[annotation.snapshot];
-            }
-            if (annotation.documents.length > 0) {
-                data.documents = annotation.documents.map(id => docIds[id]);
-            }
-            if (annotation.groups.length > 0) {
-                data.groups = annotation.groups.map(id => groupIds[id]);
-            }
-            if (annotation.index > -1) {
-                data.zoneIndex = annotation.index;
-            }
+    toData(): IAnnotations
+    {
+        const data: Partial<IAnnotations> = {};
 
-            return data;
-        });
+        const annotationIds = Object.keys(this.annotations);
+        if (annotationIds.length > 0) {
+            data.annotations = annotationIds.map(id => this.annotations[id].deflate());
+        }
+
+        const groupIds = Object.keys(this.groups);
+        if (groupIds.length > 0) {
+            data.groups = groupIds.map(id => this.groups[id].deflate());
+        }
+
+        return data as IAnnotations;
+    }
+
+    fromData(data: IAnnotations)
+    {
+        if (data.annotations) {
+            data.annotations.forEach(data => this.addAnnotation(new Annotation(data.id).inflate(data)));
+        }
+        if (data.groups) {
+            data.groups.forEach(data => this.addGroup(new Group(data.id).inflate(data)));
+        }
     }
 }

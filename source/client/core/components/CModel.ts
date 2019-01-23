@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
 import math from "@ff/core/math";
@@ -91,12 +92,24 @@ export default class CModel extends CObject3D
     ins = this.addInputs(ins);
     outs = this.addOutputs(outs);
 
-    protected assetPath: string = "";
-    protected boundingBox = new THREE.Box3();
+    url: string = "";
+    assetPath: string = "";
+
     protected boxFrame: THREE.Object3D = null;
 
-    protected derivatives: Derivative[] = [];
-    protected activeDerivative: Derivative = null;
+    private _boundingBox = new THREE.Box3();
+    private _derivatives: Derivative[] = [];
+    private _activeDerivative: Derivative = null;
+
+    get boundingBox() {
+        return this._boundingBox;
+    }
+    get derivatives() {
+        return this._derivatives;
+    }
+    get activeDerivative() {
+        return this._activeDerivative;
+    }
 
     create()
     {
@@ -148,7 +161,7 @@ export default class CModel extends CObject3D
     dispose()
     {
         this.derivatives.forEach(derivative => derivative.dispose());
-        this.activeDerivative = null;
+        this._activeDerivative = null;
 
         super.dispose();
     }
@@ -165,11 +178,6 @@ export default class CModel extends CObject3D
         _box.getCenter(_vec3a);
         _vec3a.multiplyScalar(-1).toArray(position.value);
         position.set();
-    }
-
-    getBoundingBox()
-    {
-        return this.boundingBox;
     }
 
     setGlobalUnits(units: EUnitType)
@@ -193,9 +201,10 @@ export default class CModel extends CObject3D
         rotation.set();
     }
 
-    setAssetPath(assetPath: string)
+    setUrl(url: string, assetPath?: string)
     {
-        this.assetPath = assetPath;
+        this.url = url;
+        this.assetPath = assetPath || resolvePathname(".", url);
     }
 
     addDerivative(derivative: Derivative)
@@ -236,7 +245,45 @@ export default class CModel extends CObject3D
         });
     }
 
-    fromData(modelData: IModel): this
+    deflate()
+    {
+        const data = this.toData();
+        return data ? { data } : null;
+    }
+
+    inflate(json: any)
+    {
+        if (json.data) {
+            this.fromData(json);
+        }
+    }
+
+    toData()
+    {
+        const data: IModel = {
+            units: EUnitType[this.ins.units.value] as TUnitType,
+            derivatives: this.derivatives.map(derivative => derivative.toData())
+        };
+
+        if (this._boundingBox) {
+            data.boundingBox = {
+                min: this._boundingBox.min.toArray() as Vector3,
+                max: this._boundingBox.max.toArray() as Vector3
+            }
+        }
+
+        if (!threeMath.isMatrix4Identity(this.object3D.matrix)) {
+            data.transform = this.object3D.matrix.toArray();
+        }
+
+        //if (this.material) {
+        // TODO: Implement
+        //}
+
+        return data;
+    }
+
+    fromData(modelData: IModel)
     {
         this.ins.units.setValue(EUnitType[modelData.units] || 0);
 
@@ -254,10 +301,10 @@ export default class CModel extends CObject3D
         }
 
         if (modelData.boundingBox) {
-            this.boundingBox.min.fromArray(modelData.boundingBox.min);
-            this.boundingBox.max.fromArray(modelData.boundingBox.max);
+            this._boundingBox.min.fromArray(modelData.boundingBox.min);
+            this._boundingBox.max.fromArray(modelData.boundingBox.max);
 
-            this.boxFrame = new THREE["Box3Helper"](this.boundingBox, "#ffffff");
+            this.boxFrame = new THREE["Box3Helper"](this._boundingBox, "#ffffff");
             this.addObject3D(this.boxFrame);
 
             this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
@@ -266,33 +313,10 @@ export default class CModel extends CObject3D
         //if (modelData.material) {
         // TODO: Implement
         //}
-
-        return this;
     }
 
-    toData(): IModel
+    inflateReferences()
     {
-        const data: IModel = {
-            units: EUnitType[this.ins.units.value] as TUnitType,
-            derivatives: this.derivatives.map(derivative => derivative.toData())
-        };
-
-        if (this.boundingBox) {
-            data.boundingBox = {
-                min: this.boundingBox.min.toArray() as Vector3,
-                max: this.boundingBox.max.toArray() as Vector3
-            }
-        }
-
-        if (!threeMath.isMatrix4Identity(this.object3D.matrix)) {
-            data.transform = this.object3D.matrix.toArray();
-        }
-
-        //if (this.material) {
-        // TODO: Implement
-        //}
-
-        return data;
     }
 
     protected updateUnitScale()
@@ -369,16 +393,16 @@ export default class CModel extends CObject3D
                 this.removeObject3D(this.boxFrame);
                 (this.boxFrame as any).geometry.dispose();
             }
-            if (this.activeDerivative) {
-                this.removeObject3D(this.activeDerivative.model);
-                this.activeDerivative.dispose();
+            if (this._activeDerivative) {
+                this.removeObject3D(this._activeDerivative.model);
+                this._activeDerivative.dispose();
             }
 
-            if (!this.boundingBox && derivative.boundingBox) {
-                this.boundingBox = derivative.boundingBox.clone();
+            if (!this._boundingBox && derivative.boundingBox) {
+                this._boundingBox = derivative.boundingBox.clone();
             }
 
-            this.activeDerivative = derivative;
+            this._activeDerivative = derivative;
             this.addObject3D(derivative.model);
 
             this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });

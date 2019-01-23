@@ -19,7 +19,7 @@ import System from "@ff/graph/System";
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
-import CExplorer from "../components/CExplorer";
+import CInterface from "../components/CInterface";
 
 import ViewMenu from "./ViewMenu";
 import RenderMenu from "./RenderMenu";
@@ -34,13 +34,13 @@ export default class ChromeView extends CustomElement
     @property({ attribute: false })
     system: System;
 
-    protected explorer: CExplorer;
+    protected interface: CInterface;
 
     constructor(system?: System)
     {
         super();
         this.system = system;
-        this.explorer = system.components.safeGet(CExplorer);
+        this.interface = system.components.safeGet(CInterface);
     }
 
     protected firstConnected()
@@ -51,21 +51,21 @@ export default class ChromeView extends CustomElement
 
     protected connected()
     {
-        const { visible, logo } = this.explorer.ins;
+        const { visible, logo } = this.interface.ins;
         visible.on("value", this.onInterfaceUpdate, this);
         logo.on("value", this.onInterfaceUpdate, this);
     }
 
     protected disconnected()
     {
-        const { visible, logo } = this.explorer.ins;
+        const { visible, logo } = this.interface.ins;
         visible.off("value", this.onInterfaceUpdate, this);
         logo.off("value", this.onInterfaceUpdate, this);
     }
 
     protected render()
     {
-        const { visible, logo } = this.explorer.ins;
+        const { visible, logo } = this.interface.ins;
         const isVisible = visible.value;
         const showLogo = logo.value;
 

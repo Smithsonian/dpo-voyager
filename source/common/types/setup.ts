@@ -34,47 +34,17 @@ export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }
 
 
-export interface IVoyager
+export interface ISetup
 {
     scene: IScene;
-    grid: IGrid;
+    reader: IReader;
+    interface: IInterface;
+    navigation: INavigation;
     background: IBackground;
     groundPlane: IGroundPlane;
-    navigation: INavigation;
-    interface: IInterface;
-    reader: IReader;
+    grid: IGrid;
     tapeTool: ITapeTool;
     sectionTool: ISectionTool;
-}
-
-export interface IScene
-{
-    units: TUnitType;
-    shader: TShaderMode;
-    exposure: number;
-    gamma: number;
-}
-
-export interface IGrid
-{
-    visible: boolean;
-    color: number[];
-}
-
-export interface IBackground
-{
-    type: TBackgroundType;
-    color0: number[];
-    color1: number[];
-}
-
-export interface IGroundPlane
-{
-    visible: boolean;
-    offset: number;
-    color: number[];
-    shadowVisible: boolean;
-    shadowColor: number[];
 }
 
 export interface INavigation
@@ -110,6 +80,36 @@ export interface IReader
     visible: boolean;
     position: string;
     url: string;
+}
+
+export interface IScene
+{
+    units: TUnitType;
+    shader: TShaderMode;
+    exposure: number;
+    gamma: number;
+}
+
+export interface IGrid
+{
+    visible: boolean;
+    color: number[];
+}
+
+export interface IBackground
+{
+    type: TBackgroundType;
+    color0: number[];
+    color1: number[];
+}
+
+export interface IGroundPlane
+{
+    visible: boolean;
+    offset: number;
+    color: number[];
+    shadowVisible: boolean;
+    shadowColor: number[];
 }
 
 export interface ITapeTool

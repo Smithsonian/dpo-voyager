@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/graph/Component";
+import NItem from "./NItem";
+import NPresentationSetup from "./NPresentationSetup";
+import NPresentationScene from "./NPresentationScene";
+import NReference from "./NReference";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
-    visible: types.Boolean("Interface.Visible", true),
-    logo: types.Boolean("Interface.Logo", true),
+export {
+    NItem,
+    NPresentationSetup,
+    NPresentationScene,
+    NReference,
 };
 
-export default class CExplorer extends Component
-{
-    static readonly type: string = "CExplorer";
-
-    ins = this.addInputs(ins);
-}
+export const nodeTypes = [
+    NItem,
+    NPresentationSetup,
+    NPresentationScene,
+    NReference,
+];

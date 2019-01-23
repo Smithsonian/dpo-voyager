@@ -28,7 +28,7 @@ import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 
-import { EUnitType, IGrid } from "common/types/voyager";
+import { EUnitType, IGrid } from "common/types/setup";
 import CVoyagerScene from "../../core/components/CVoyagerScene";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,6 @@ export default class CHomeGrid extends CObject3D
     ins = this.addInputs(ins);
     outs = this.addOutputs(outs);
 
-    private _scene: CVoyagerScene = null;
     private _lastViewport: Viewport = null;
     private _gridProps: IGridProps = {
         size: 20,
@@ -69,16 +68,18 @@ export default class CHomeGrid extends CObject3D
     get grid() {
         return this.object3D as ThreeGrid;
     }
+    get scene() {
+        return this.graph.components.safeGet(CVoyagerScene);
+    }
 
     create()
     {
-        this._scene = this.components.safeGet(CVoyagerScene);
-        this._scene.on("change", this.onSceneChange, this);
+        this.scene.on("change", this.onSceneChange, this);
     }
 
     dispose()
     {
-        this._scene.off("change", this.onSceneChange, this);
+        this.scene.off("change", this.onSceneChange, this);
     }
 
     update(): boolean
@@ -98,8 +99,8 @@ export default class CHomeGrid extends CObject3D
             }
 
             if (ins.update.changed) {
-                const box = this._scene.boundingBox;
-                const units = this._scene.ins.units.value;
+                const box = this.scene.boundingBox;
+                const units = this.scene.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);

@@ -17,12 +17,10 @@
 
 import * as THREE from "three";
 
-import { Dictionary } from "@ff/core/types";
-
 import * as fragmentShader from "!raw-loader!./uberPBRShader.frag";
 import * as vertexShader from "!raw-loader!./uberPBRShader.vert";
 
-import { EShaderMode } from "common/types/voyager";
+import { EShaderMode } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

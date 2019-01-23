@@ -15,55 +15,56 @@
  * limitations under the License.
  */
 
-import Component, { IComponentChangeEvent } from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 
-import { IReference as IReferenceData } from "common/types/presentation";
+import { IReference } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IReferenceChangeEvent extends IComponentChangeEvent<CReference> { }
+const ins = {
+    uri: types.String("URI"),
+    mimeType: types.String("MIMEType")
+};
 
 export default class CReference extends Component
 {
     static readonly type: string = "CReference";
 
-    protected uri: string = "";
-    protected mimeType: string = "";
+    ins = this.addInputs(ins);
 
-    setReference(uri: string, mimeType?: string)
+    update(context)
     {
-        this.uri = uri;
-        this.mimeType = mimeType || "";
-
-        this.load();
-
-        this.emit<IReferenceChangeEvent>({ type: "change", what: "reference", component: this });
+        return false;
     }
 
-    fromData(data: IReferenceData)
+    deflate()
     {
-        this.uri = data.uri;
-        this.mimeType = data.mimeType || "";
+        const data = this.toData();
+        return data ? { data } : null;
     }
 
-    toData(): IReferenceData
+    inflate(json: any)
     {
-        const data: IReferenceData = {
-            uri: this.uri
-        };
-
-        if (this.mimeType) {
-            data.mimeType = this.mimeType;
+        if (json.data) {
+            this.fromData(json);
         }
-
-        return data;
     }
 
-    protected load()
+    toData(): IReference
     {
-        // TODO: Implement
-        // create loader
-        // load
-        // attach to mesh component in same entity
+        const ins = this.ins;
+
+        return {
+            uri: ins.uri.value,
+            mimeType: ins.mimeType.value
+        };
+    }
+
+    fromData(data: IReference)
+    {
+        this.ins.setValues({
+            uri: data.uri,
+            mimeType: data.mimeType
+        });
     }
 }

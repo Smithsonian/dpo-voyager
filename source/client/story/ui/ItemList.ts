@@ -22,12 +22,12 @@ import CSelection from "@ff/graph/components/CSelection";
 import { customElement, property } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
-import NItemNode from "../../explorer/nodes/NItemNode";
+import NItem from "../../explorer/nodes/NItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-item-list")
-class ItemList extends List<NItemNode>
+class ItemList extends List<NItem>
 {
     @property({ attribute: false })
     system: System = null;
@@ -56,7 +56,7 @@ class ItemList extends List<NItemNode>
         this.system.nodes.on<INodeEvent>("node", this.onUpdate, this);
         this.system.components.on<IComponentEvent>("component", this.onUpdate, this);
 
-        this.selection.selectedNodes.on(NItemNode, this.onSelectItemNode, this);
+        this.selection.selectedNodes.on(NItem, this.onSelectItemNode, this);
         if (this.componentType) {
             this.selection.selectedComponents.on(this.componentType, this.onSelectComponent, this);
         }
@@ -68,7 +68,7 @@ class ItemList extends List<NItemNode>
         this.system.nodes.off<INodeEvent>("node", this.onUpdate, this);
         this.system.components.off<IComponentEvent>("component", this.onUpdate, this);
 
-        this.selection.selectedNodes.off(NItemNode, this.onSelectItemNode, this);
+        this.selection.selectedNodes.off(NItem, this.onSelectItemNode, this);
         if (this.componentType) {
             this.selection.selectedComponents.off(this.componentType, this.onSelectComponent, this);
         }
@@ -76,16 +76,16 @@ class ItemList extends List<NItemNode>
 
     protected render()
     {
-        this.data = this.system.nodes.getArray(NItemNode);
+        this.data = this.system.nodes.getArray(NItem);
         return super.render();
     }
 
-    protected renderItem(node: NItemNode)
+    protected renderItem(node: NItem)
     {
         return node.name || node.type;
     }
 
-    protected isItemSelected(node: NItemNode): boolean
+    protected isItemSelected(node: NItem): boolean
     {
         const component = this.componentType ? node.components.get(this.componentType) : null;
 
@@ -95,7 +95,7 @@ class ItemList extends List<NItemNode>
 
     protected onSelectItemNode(event: INodeEvent)
     {
-        if (event.node instanceof NItemNode) {
+        if (event.node instanceof NItem) {
             this.setSelected(event.node, event.add);
         }
     }
@@ -105,7 +105,7 @@ class ItemList extends List<NItemNode>
         const component = event.component;
         const node = component.node;
 
-        if (node instanceof NItemNode && component.is(this.componentType)) {
+        if (node instanceof NItem && component.is(this.componentType)) {
             this.setSelected(node, event.add);
         }
     }
@@ -115,7 +115,7 @@ class ItemList extends List<NItemNode>
         this.requestUpdate();
     }
 
-    onClickItem(event: MouseEvent, node: NItemNode)
+    onClickItem(event: MouseEvent, node: NItem)
     {
         const component = this.componentType ? node.components.get(this.componentType) : null;
 
@@ -132,7 +132,7 @@ class ItemList extends List<NItemNode>
         if (this.componentType && this.selection.selectedComponents.has(this.componentType)) {
             this.selection.clearSelection();
         }
-        else if (this.selection.selectedNodes.has(NItemNode)) {
+        else if (this.selection.selectedNodes.has(NItem)) {
             this.selection.clearSelection();
         }
     }

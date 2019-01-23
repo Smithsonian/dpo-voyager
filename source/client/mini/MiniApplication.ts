@@ -18,18 +18,24 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
+
 import Registry from "@ff/graph/Registry";
 import System from "@ff/graph/System";
+import CPulse from "@ff/graph/components/CPulse";
 
+import CRenderer from "@ff/scene/components/CRenderer";
+
+import CLoadingManager from "../core/components/CLoadingManager";
+import COrbitNavigation from "../core/components/COrbitNavigation";
+
+import CMini from "./components/CMini";
+
+import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
-
-// TODO: Replace with simplified controller
-import CPresentations from "../explorer/components/CPresentations";
+import { componentTypes as miniComponents } from "./components";
 
 import MainView from "./ui/MainView";
-import CPulse from "@ff/graph/components/CPulse";
-import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,16 +71,23 @@ export default class MiniApplication
 
         // register components
         const registry = new Registry();
+        registry.registerComponentType(graphComponents);
         registry.registerComponentType(sceneComponents);
         registry.registerComponentType(coreComponents);
+        registry.registerComponentType(miniComponents);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
         const node = system.graph.createNode("Mini");
-        const pulse = node.createComponent(CPulse);
+
+        node.createComponent(CPulse);
         node.createComponent(CRenderer);
-        node.createComponent(CPresentations).createActions(this.commander);
+
+        node.createComponent(CLoadingManager);
+        node.createComponent(COrbitNavigation);
+
+        node.createComponent(CMini).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -82,7 +95,7 @@ export default class MiniApplication
         }
 
         // start rendering
-        pulse.start();
+        node.components.get(CPulse).start();
 
         // start loading from properties
         this.props = this.initFromProps(props);
@@ -90,7 +103,7 @@ export default class MiniApplication
 
     protected initFromProps(props: IMiniApplicationProps): IMiniApplicationProps
     {
-        const controller = this.system.components.get(CPresentations);
+        const miniController = this.system.components.get(CMini);
 
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
@@ -98,13 +111,13 @@ export default class MiniApplication
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
 
         if (props.item) {
-            controller.loadItem(props.item);
+            miniController.loadItem(props.item);
         }
         else if (props.model) {
-            controller.loadModel(props.model);
+            miniController.loadModel(props.model);
         }
         else if (props.geometry) {
-            controller.loadGeometryAndTexture(
+            miniController.loadGeometryAndTexture(
                 props.geometry, props.texture);
         }
 

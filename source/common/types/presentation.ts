@@ -18,11 +18,11 @@
 import { Index } from "@ff/core/types";
 
 import { IItem } from "./item";
-import { IVoyager } from "./voyager";
+import { ISetup } from "./setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IItem, IVoyager };
+export { IItem, ISetup };
 
 export type TMatrix4 = number[];
 export type TVector3 = number[];
@@ -46,7 +46,7 @@ export interface IPresentation
     references?: IReference[];
     cameras?: ICamera[];
     lights?: ILight[];
-    voyager?: IVoyager;
+    setup?: ISetup;
 }
 
 export interface IAsset

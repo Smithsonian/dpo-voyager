@@ -47,7 +47,7 @@ export default class CLoadingManager extends Component
     private _loadingManager: PrivateLoadingManager;
 
 
-    constructor(id?: string)
+    constructor(id: string)
     {
         super(id);
 

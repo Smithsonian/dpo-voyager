@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-import {
-    Index
-} from "@ff/core/types";
+import { Index, Identifier } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,12 +42,11 @@ export type ColorRGBA = Vector4;
  */
 export interface IItem
 {
-    meta: IMeta;
+    meta?: IMeta;
     process?: IProcess;
-    model?: IModel;
+    model: IModel;
     documents?: IDocuments;
     annotations?: IAnnotations;
-    story?: IStory;
 }
 
 /**
@@ -134,8 +131,8 @@ export interface IAsset
 
 export interface IDocuments
 {
-    mainDocument?: Index;
-    documents: IDocument[];
+    mainDocumentId?: Identifier;
+    documents?: IDocument[];
 }
 
 /**
@@ -143,10 +140,11 @@ export interface IDocuments
  */
 export interface IDocument
 {
-    title: string;
+    id: Identifier;
+    title?: string;
     description?: string;
+    uri?: string;
     mimeType?: string;
-    uri: string;
     thumbnailUri?: string;
 }
 
@@ -156,7 +154,7 @@ export interface IDocument
  */
 export interface IAnnotations
 {
-    annotations: IAnnotation[];
+    annotations?: IAnnotation[];
     groups?: IGroup[];
 }
 
@@ -166,15 +164,15 @@ export interface IAnnotations
  */
 export interface IAnnotation
 {
+    id: string;
     title?: string;
     description?: string;
-    visible?: boolean;
+    style?: string;
     expanded?: boolean;
-    snapshot?: Index;
-    documents?: Index[];
-    groups?: Index[];
-    position: Vector3;
-    direction: Vector3;
+    documents?: Identifier[];
+    groups?: Identifier[];
+    position?: Vector3;
+    direction?: Vector3;
     zoneIndex?: number;
 }
 
@@ -183,8 +181,10 @@ export interface IAnnotation
  */
 export interface IGroup
 {
+    id: Identifier;
     title: string;
     description?: string;
+    visible?: boolean;
 }
 
 /**

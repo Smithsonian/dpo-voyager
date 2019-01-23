@@ -18,7 +18,7 @@
 import { types } from "@ff/graph/propertyTypes";
 import Component from "@ff/graph/Component";
 
-import { ISectionTool } from "common/types/voyager";
+import { ISectionTool } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

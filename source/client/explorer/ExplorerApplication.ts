@@ -18,21 +18,29 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
+
 import Registry from "@ff/graph/Registry";
 import System from "@ff/graph/System";
-
 import CPulse from "@ff/graph/components/CPulse";
 
 import CRenderer from "@ff/scene/components/CRenderer";
 import CPickSelection from "@ff/scene/components/CPickSelection";
+
 import CLoadingManager from "../core/components/CLoadingManager";
-import CExplorer from "./components/CExplorer";
-import CPresentations from "./components/CPresentations";
+import COrbitNavigation from "../core/components/COrbitNavigation";
+
+import CInterface from "./components/CInterface";
+import CReader from "./components/CReader";
+import CPresentationManager from "./components/CPresentationManager";
 
 import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
-import { componentTypes as voyagerComponents } from "../core/components";
+import { componentTypes as coreComponents } from "../core/components";
 import { componentTypes as explorerComponents } from "./components";
+
+import { nodeTypes as graphNodes } from "@ff/graph/nodes";
+import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
+import { nodeTypes as explorerNodes } from "./nodes";
 
 import MainView from "./ui/MainView";
 
@@ -85,21 +93,31 @@ export default class ExplorerApplication
 
         // register components
         const registry = new Registry();
+
         registry.registerComponentType(graphComponents);
         registry.registerComponentType(sceneComponents);
-        registry.registerComponentType(voyagerComponents);
+        registry.registerComponentType(coreComponents);
         registry.registerComponentType(explorerComponents);
+
+        registry.registerNodeType(graphNodes);
+        registry.registerNodeType(sceneNodes);
+        registry.registerNodeType(explorerNodes);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const node = system.graph.createNode("Explorer");
-        const pulse = node.createComponent(CPulse);
+        const node = system.graph.createPlainNode("Explorer");
+
+        node.createComponent(CPulse);
         node.createComponent(CRenderer);
-        node.createComponent(CExplorer);
-        node.createComponent(CLoadingManager);
         node.createComponent(CPickSelection).createActions(this.commander);
-        node.createComponent(CPresentations).createActions(this.commander);
+
+        node.createComponent(CLoadingManager);
+        node.createComponent(COrbitNavigation);
+
+        node.createComponent(CInterface);
+        node.createComponent(CReader);
+        node.createComponent(CPresentationManager).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -107,7 +125,7 @@ export default class ExplorerApplication
         }
 
         // start rendering
-        pulse.start();
+        node.components.get(CPulse).start();
 
         // start loading from properties
         this.props = this.initFromProps(props);
@@ -115,7 +133,7 @@ export default class ExplorerApplication
 
     protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
     {
-        const presentationController = this.system.components.safeGet(CPresentations);
+        const presentationManager = this.system.components.safeGet(CPresentationManager);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
@@ -127,16 +145,16 @@ export default class ExplorerApplication
         props.name = props.name || parseUrlParameter("name") || parseUrlParameter("n");
 
         if (props.presentation) {
-            presentationController.loadPresentation(props.presentation);
+            presentationManager.loadPresentation(props.presentation);
         }
         else if (props.item) {
-            presentationController.loadItem(props.item, props.template);
+            presentationManager.loadItem(props.item, props.template);
         }
         else if (props.model) {
-            presentationController.loadModel(props.model, props.quality, props.name, props.template);
+            presentationManager.loadModel(props.model, props.quality, props.name, props.template);
         }
         else if (props.geometry) {
-            presentationController.loadGeometryAndTexture(
+            presentationManager.loadGeometryAndTexture(
                 props.geometry, props.texture, props.quality, props.name, props.template);
         }
 

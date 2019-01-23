@@ -17,15 +17,16 @@
 
 import fetch from "@ff/browser/fetch";
 
-import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/graph/Component";
+import CController, { Commander, Actions, types } from "@ff/graph/components/CController";
 
-import NItemNode from "../../explorer/nodes/NItemNode";
-import NPresentation from "../../explorer/nodes/NPresentation";
+import NItem from "../../explorer/nodes/NItem";
+import CPresentation from "../../explorer/components/CPresentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export enum ETaskSet { Prep, Author }
+
+export type StoryActions = Actions<CStory>;
 
 const ins = {
     save: types.Event("Save"),
@@ -35,11 +36,16 @@ const ins = {
     referrer: types.String("Referrer")
 };
 
-export default class CStory extends Component
+export default class CStory extends CController<CStory>
 {
     static readonly type: string = "CStory";
 
     ins = this.addInputs(ins);
+
+    createActions(commander: Commander)
+    {
+        return {};
+    }
 
     update()
     {
@@ -56,33 +62,21 @@ export default class CStory extends Component
         return false;
     }
 
+    saveItem()
+    {
+
+    }
+
+    savePresentation()
+    {
+
+    }
+
+
     protected save()
     {
         const system = this.system;
         const ins = this.ins;
-
-        if (ins.taskSet.value === ETaskSet.Prep) {
-            const item = system.nodes.get(NItemNode);
-            if (item) {
-                const data = item.toItemData();
-                const url = item.url;
-
-                console.log("StoryController.save - Item URL: %s", url);
-                console.log(data);
-                fetch.json(url, "PUT", data).then(response => {
-                    console.log(response);
-                }).catch(error => {
-                    console.error(error);
-                });
-            }
-        }
-        else {
-            const presentation = system.nodes.get(NPresentation);
-            if (presentation) {
-                console.log("StoryController.save - Presentation");
-                console.log(presentation.toData());
-            }
-        }
     }
 
     protected exit()
