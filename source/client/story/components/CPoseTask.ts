@@ -18,12 +18,15 @@
 import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
-import { IComponentEvent } from "@ff/graph/ComponentSet";
-import Viewport from "@ff/three/Viewport";
+import { IComponentEvent } from "@ff/graph/Node";
+
 import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
 
-import CModel from "../../core/components/CModel";
+import Viewport from "@ff/three/Viewport";
+
+import NItem from "../../explorer/nodes/NItem";
 import CInterface from "../../explorer/components/CInterface";
+import CModel from "../../core/components/CModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import CTask from "./CTask";
@@ -52,8 +55,8 @@ export default class CPoseTask extends CTask
 
     ins = this.addInputs<CTask, typeof ins>(ins);
 
+    protected activeModel: CModel = null;
     protected _interfaceVisible = false;
-    protected _model: CModel = null;
     protected _viewport: Viewport = null;
     protected _deltaX = 0;
     protected _deltaY = 0;
@@ -94,7 +97,6 @@ export default class CPoseTask extends CTask
             this._interfaceVisible = interfaceComponent.ins.visible.value;
             interfaceComponent.ins.visible.setValue(false);
         }
-
     }
 
     deactivate()
@@ -116,7 +118,7 @@ export default class CPoseTask extends CTask
     tick()
     {
         const mode = this.ins.mode.value;
-        if (mode === EPoseManipMode.Off || !this._model) {
+        if (mode === EPoseManipMode.Off || !this.activeModel) {
             return false;
         }
 
@@ -129,7 +131,7 @@ export default class CPoseTask extends CTask
 
         this._deltaX = this._deltaY = 0;
 
-        const object3D = this._model.object3D;
+        const object3D = this.activeModel.object3D;
         const camera = this._viewport.viewportCamera;
         if (!camera) {
             return false;
@@ -150,14 +152,25 @@ export default class CPoseTask extends CTask
         }
 
         _mat4.multiply(object3D.matrix);
-        this._model.setFromMatrix(_mat4);
+        this.activeModel.setFromMatrix(_mat4);
 
         return true;
     }
 
+    protected setActiveItem(item: NItem)
+    {
+        if (item) {
+            this.activeModel = item.model;
+            this.selection.selectComponent(this.activeModel);
+        }
+        else {
+            this.activeModel = null;
+        }
+    }
+
     protected onPointer(event: IPointerEvent)
     {
-        if (this.ins.mode.value === EPoseManipMode.Off || !this._model) {
+        if (this.ins.mode.value === EPoseManipMode.Off || !this.activeModel) {
             return;
         }
 
@@ -172,11 +185,8 @@ export default class CPoseTask extends CTask
 
     protected onSelectModel(event: IComponentEvent<CModel>)
     {
-        if (event.add) {
-            this._model = event.component;
-        }
-        else {
-            this._model = null;
+        if (event.add && event.component.node instanceof NItem) {
+            this.manager.activeItem = event.component.node;
         }
     }
 }

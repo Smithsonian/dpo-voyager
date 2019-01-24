@@ -64,11 +64,11 @@ export default class TaskPanel extends SystemElement
         const viewElement = task.createView();
 
         return html`
-            <div class="ff-header">
+            <div class="sv-panel-header">
                 <ff-icon name=${task.icon}></ff-icon>
                 <div class="ff-text">${task.text}</div>
             </div>
-            <div class="ff-content">
+            <div class="sv-panel-content">
                 ${viewElement}
             </div>
         `;

@@ -19,7 +19,6 @@ import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
 import Component from "@ff/graph/Component";
-import Node from "@ff/graph/Node";
 
 import { IPresentation, IItem } from "common/types/presentation";
 import Asset from "../models/Asset";

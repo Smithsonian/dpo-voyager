@@ -34,6 +34,7 @@ import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 
 import "./styles.scss";
+import NavigatorPanel from "./NavigatorPanel";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS
@@ -56,6 +57,8 @@ interface IUIState
 @customElement("voyager-story")
 export default class MainView extends CustomElement
 {
+    static readonly stateKey: string = "main-view-state2";
+
     protected application: StoryApplication;
     protected dockView: DockView;
 
@@ -101,11 +104,12 @@ export default class MainView extends CustomElement
         registry.set("task", () => new TaskPanel(system));
         registry.set("log", () => new LogPanel(system));
         registry.set("console", () => new ConsolePanel(system));
+        registry.set("navigator", () => new NavigatorPanel(system));
         registry.set("hierarchy", () => new HierarchyTreeView(system));
         registry.set("inspector", () => new InspectorPanel(system));
 
         const reset = parseUrlParameter("reset") !== undefined;
-        const state = reset ? null : localStorage.get("voyager-story", "main-view-state");
+        const state = reset ? null : localStorage.get("voyager-story", MainView.stateKey);
 
         this.state = state || {
             regularLayout: MainView.regularLayout,
@@ -134,13 +138,13 @@ export default class MainView extends CustomElement
     protected disconnected()
     {
         this.storeLayout();
-        localStorage.set("voyager-story", "main-view-state", this.state);
+        localStorage.set("voyager-story", MainView.stateKey, this.state);
     }
 
     protected onUnload()
     {
         this.storeLayout();
-        localStorage.set("voyager-story", "main-view-state", this.state);
+        localStorage.set("voyager-story", MainView.stateKey, this.state);
     }
 
     protected onExpertMode(expertMode: boolean)
@@ -182,7 +186,15 @@ export default class MainView extends CustomElement
             size: 0.25,
             elements: [{
                 type: "stack",
-                size: 0.65,
+                size: 0.3,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "navigator",
+                    text: "Navigator"
+                }]
+            }, {
+                type: "stack",
+                size: 0.5,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "task",
@@ -190,7 +202,7 @@ export default class MainView extends CustomElement
                 }]
             }, {
                 type: "stack",
-                size: 0.35,
+                size: 0.2,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "log",
@@ -213,12 +225,25 @@ export default class MainView extends CustomElement
         direction: "horizontal",
         size: 1,
         elements: [{
-            type: "stack",
+            type: "strip",
+            direction: "vertical",
             size: 0.22,
-            activePanelIndex: 0,
-            panels: [{
-                contentId: "task",
-                text: "Task"
+            elements: [{
+                type: "stack",
+                size: 0.3,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "navigator",
+                    text: "Navigator"
+                }]
+            }, {
+                type: "stack",
+                size: 0.7,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "task",
+                    text: "Task"
+                }]
             }]
         },{
             type: "strip",
@@ -226,7 +251,7 @@ export default class MainView extends CustomElement
             size: 0.56,
             elements: [{
                 type: "stack",
-                size: 0.8,
+                size: 0.5,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "explorer",

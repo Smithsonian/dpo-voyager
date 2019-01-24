@@ -20,31 +20,6 @@
 @import "../../explorer/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
-// PROPERTY VIEW
-
-sv-property-view {
-  padding: 0 6px;
-
-  .sv-property-name {
-    margin: 8px 0 4px 0;
-  }
-
-  .sv-field-row {
-    margin: 2px 0;
-  }
-  .sv-field-label {
-    flex: 0 0 auto;
-    margin: 0 8px 0 24px;
-    color: $color-icon;
-  }
-  ff-property-field {
-    flex: 1 1 auto;
-    height: 1.05em;
-    background-color: $color-background !important;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MAIN VIEW
 
 voyager-story {
@@ -107,70 +82,81 @@ ff-dock-view {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TASK PANEL
+// PANELS
 
-sv-task-panel {
+.sv-panel {
   display: flex;
   flex-direction: column;
+}
 
-  .ff-header {
-    align-items: center;
-    display: flex;
-    padding: 5px 12px;
-    background-color: $color-background-light;
-    font-size: 16px;
+.sv-panel-header {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+  background-color: $color-background;
+  color: $color-icon;
 
-    .ff-icon {
-      padding: 4px 3px;
-      font-size: 24px;
-      color: $color-text;
-    }
-    .ff-text {
-      padding: 4px 3px;
-    }
-  }
-
-  .ff-content {
-    position: relative;
-    flex: 1 1 auto;
+  .ff-icon {
+    height: 1.2em;
+    padding: 2px 4px;
   }
 }
 
+.sv-panel-content {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.sv-panel-section {
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+
+  &:first-child {
+    border-bottom: 2px solid $color-background-darker;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TASK VIEW
+
 .sv-task-view {
   @include full-size;
+  display: flex;
+  flex-direction: column;
+  padding: 2px;
 
-  .sv-section {
-    flex: 1 1 50%;
-    display: flex;
-    flex-direction: column;
-
-    &:first-child {
-      border-bottom: 2px solid $color-background-darker;
-    }
-  }
-
-  .sv-header {
-    padding: 4px 2px;
-    background-color: $color-background-darker;
-  }
-  .ff-list {
-    flex: 1 1 auto;
-  }
-
-  .ff-list-item {
-    padding: 2px;
-    cursor: pointer;
-
-    &[selected] {
-      background-color: $color-primary;
-    }
-  }
-
-  .ff-list-item + .ff-list-item {
-    border-bottom: 1px solid $color-background-light;
+  .sv-placeholder {
+    margin: 12px;
+    text-align: center;
   }
 
   .ff-button {
-    margin: 4px;
+    margin: 2px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PROPERTY VIEW
+
+sv-property-view {
+  padding: 0 6px;
+
+  .sv-property-name {
+    margin: 8px 0 4px 0;
+  }
+
+  .sv-field-row {
+    margin: 2px 0;
+  }
+  .sv-field-label {
+    flex: 0 0 auto;
+    margin: 0 8px 0 24px;
+    color: $color-icon;
+  }
+  ff-property-field {
+    flex: 1 1 auto;
+    height: 1.05em;
+    background-color: $color-background !important;
   }
 }

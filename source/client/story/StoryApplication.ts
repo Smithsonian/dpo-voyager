@@ -71,10 +71,10 @@ export default class StoryApplication
         //this.taskController = new StoryController(this.system, this.commander);
 
         // add story components
-        const storyNode = this.system.graph.createPlainNode("Story");
+        const storyNode = this.system.graph.createNode("Story");
         storyNode.createComponent(CStory);
 
-        this.system.graph.createNode(NTasks);
+        this.system.graph.createCustomNode(NTasks);
 
         this.props = this.initFromProps(props);
 

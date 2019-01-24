@@ -20,10 +20,10 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import CModel from "../../core/components/CModel";
+import NItem from "../../explorer/nodes/NItem";
+import CCaptureTask from "../components/CCaptureTask";
 
 import "./ItemList";
-import ItemProperties from "./ItemProperties";
 import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,57 +31,31 @@ import TaskView from "./TaskView";
 @customElement("sv-capture-task-view")
 export default class CaptureTaskView extends TaskView
 {
+    protected task: CCaptureTask;
+    protected activeItem: NItem = null;
+
+    protected setActiveItem(item: NItem)
+    {
+        this.activeItem = item;
+        this.requestUpdate();
+    }
+
     protected firstConnected()
     {
         super.firstConnected();
-
-        this.setStyle({
-            display: "flex",
-            flexDirection: "column"
-        });
-
         this.classList.add("sv-capture-task-view");
     }
 
     protected render()
     {
-        const system = this.task.system;
-
-        return html`
-            <div class="sv-section" style="flex: 1 1 25%">
-                <sv-item-list .system=${system} .componentType=${CModel}></sv-item-list>
-            </div>
-            <ff-splitter direction="vertical"></ff-splitter>
-            <div class="sv-section" style="flex: 1 1 75%">
-                <sv-item-capture-properties .system=${system}></sv-item-capture-properties>
-            </div>
-        `;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-@customElement("sv-item-capture-properties")
-class ItemCaptureProperties extends ItemProperties<CModel>
-{
-    constructor()
-    {
-        super(CModel);
-    }
-
-    protected render()
-    {
-        const model = this.component;
-        if (!model) {
-            return html``;
+        if (!this.activeItem) {
+            return html`<div class="sv-placeholder">Please select an item to take a picture</div>`;
         }
 
-        return html`
-            <ff-flex-row wrap>
-                <ff-button text="Capture" icon="fa fa-camera" @click=${this.onClickCapture}></ff-button>
-                <ff-button text="Save" icon="fa fa-save" @click=${this.onClickSave}></ff-button>
-            </ff-flex-row>
-        `;
+        return html`<div class="ff-flex-row ff-flex-wrap">
+            <ff-button text="Capture" icon="camera" @click=${this.onClickCapture}></ff-button>
+            <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
+        </div>`;
     }
 
     protected onClickCapture()
@@ -92,10 +66,5 @@ class ItemCaptureProperties extends ItemProperties<CModel>
     protected onClickSave()
     {
 
-    }
-
-    protected setComponent(model: CModel)
-    {
-        super.setComponent(model);
     }
 }

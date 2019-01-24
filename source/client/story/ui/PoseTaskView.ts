@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-import { customElement, property, html } from "@ff/ui/CustomElement";
+import { customElement, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import CVoyagerScene from "../../core/components/CVoyagerScene";
 import CModel from "../../core/components/CModel";
-
+import NItem from "../../explorer/nodes/NItem";
 import CPoseTask, { EPoseManipMode } from "../components/CPoseTask";
 
 import "./ItemList";
 import "./PropertyView";
-import ItemProperties from "./ItemProperties";
 import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,83 +34,59 @@ import TaskView from "./TaskView";
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView
 {
+    protected task: CPoseTask;
+    protected activeModel: CModel = null;
+
+    protected setActiveItem(item: NItem)
+    {
+        this.activeModel = item ? item.model : null;
+        this.requestUpdate();
+    }
+
     protected firstConnected()
     {
         super.firstConnected();
-
-        this.setStyle({
-            display: "flex",
-            flexDirection: "column"
-        });
-
         this.classList.add("sv-pose-task-view");
-    }
-
-    protected render()
-    {
-        const system = this.task.system;
-
-        return html`
-            <div class="sv-section" style="flex: 1 1 25%">
-                <sv-item-list .system=${system} .componentType=${CModel}></sv-item-list>
-            </div>
-            <ff-splitter direction="vertical"></ff-splitter>
-            <div class="sv-section" style="flex: 1 1 75%">
-                <sv-pose-task-property-view .system=${system} .task=${this.task}></sv-pose-task-property-view>
-            </div>
-        `;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-@customElement("sv-pose-task-property-view")
-class PoseTaskPropertyView extends ItemProperties<CModel>
-{
-    @property({ attribute: false })
-    task: CPoseTask = null;
-
-    protected scene: CVoyagerScene = null;
-
-    constructor()
-    {
-        super(CModel);
     }
 
     protected connected()
     {
         super.connected();
-        this.task.ins.mode.on("value", this.onModeChange, this);
+        this.task.ins.mode.on("value", this.onModeValue, this);
     }
 
     protected disconnected()
     {
+        this.task.ins.mode.off("value", this.onModeValue, this);
         super.disconnected();
-        this.task.ins.mode.off("value", this.onModeChange, this);
     }
 
     protected render()
     {
-        const model = this.component;
+        const presentation = this.manager.activePresentation;
+        const model = this.activeModel;
 
-        if (!model) {
-            return html``;
+        if (!presentation || !model) {
+            return html`<div class="sv-placeholder">Please select an item to edit its pose</div>`;
         }
 
-        const mode = this.task.ins.mode.value;
+        const modeProp = this.task.ins.mode;
+        if (modeProp.value === EPoseManipMode.Off) {
+            modeProp.setValue(EPoseManipMode.Rotate);
+        }
 
-        const globalUnits = this.scene.ins.units;
+        const globalUnits = presentation.scene.ins.units;
         const itemUnits = model.ins.units;
         const position = model.ins.position;
         const rotation = model.ins.rotation;
 
         return html`
-            <ff-flex-row wrap>
-                <ff-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${mode} @click=${this.onClickMode}></ff-button>
-                <ff-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${mode} @click=${this.onClickMode}></ff-button>
+            <div class="ff-flex-row ff-flex-wrap">
+                <ff-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
+                <ff-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
                 <ff-button text="Zoom Views" @click=${this.onClickZoomViews}></ff-button>
-            </ff-flex-row>
+            </div>
             <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
             <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
             <sv-property-view .property=${position}></sv-property-view>
@@ -127,32 +101,15 @@ class PoseTaskPropertyView extends ItemProperties<CModel>
 
     protected onClickCenter()
     {
-        this.component.ins.center.set();
+        this.manager.activeItem.model.ins.center.set();
     }
 
     protected onClickZoomViews()
     {
-        this.scene.zoomViews();
+        this.manager.activePresentation.scene.zoomViews();
     }
 
-    protected setComponent(model: CModel)
-    {
-        if (model) {
-            this.scene = model.transform.getParent(CVoyagerScene, true);
-
-            const prop = this.task.ins.mode;
-            if (prop.value === EPoseManipMode.Off) {
-                prop.setValue(EPoseManipMode.Rotate);
-            }
-        }
-        else {
-            this.scene = null;
-        }
-
-        super.setComponent(model);
-    }
-
-    protected onModeChange()
+    protected onModeValue()
     {
         this.requestUpdate();
     }

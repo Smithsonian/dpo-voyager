@@ -62,6 +62,16 @@ export default class CStory extends CController<CStory>
         return false;
     }
 
+    selectPresentation(presentation: CPresentation)
+    {
+
+    }
+
+    selectItem(item: NItem)
+    {
+
+    }
+
     saveItem()
     {
 

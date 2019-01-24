@@ -282,7 +282,7 @@ export default class NPresentationScene extends NScene
 
                     loadingManager.loadJSON(itemUrl).then(json =>
                         loadingManager.validateItem(json).then(itemData => {
-                            node = this.graph.createNode(NItem);
+                            node = this.graph.createCustomNode(NItem);
                             node.fromData(itemData);
                         })
                     ).catch(error => {
@@ -292,13 +292,13 @@ export default class NPresentationScene extends NScene
             }
 
             if (!node) {
-                node = this.graph.createNode(NReference);
+                node = this.graph.createCustomNode(NReference);
                 node.fromData(referenceData);
             }
         }
         else if (isFinite(nodeData.item)) {
             const itemData = presData.items[nodeData.item];
-            node = this.graph.createNode(NItem);
+            node = this.graph.createCustomNode(NItem);
             node.fromData(itemData);
         }
         else if (isFinite(nodeData.camera)) {
@@ -310,7 +310,7 @@ export default class NPresentationScene extends NScene
             node = this.lightFromData(lightData);
         }
         else {
-            node = this.graph.createNode(NTransform);
+            node = this.graph.createCustomNode(NTransform);
         }
 
         if (nodeData.name) {
@@ -368,7 +368,7 @@ export default class NPresentationScene extends NScene
 
     protected cameraFromData(cameraData: ICamera): NCamera
     {
-        const node = this.graph.createNode(NCamera);
+        const node = this.graph.createCustomNode(NCamera);
 
         if (cameraData.type === "perspective") {
             node.camera.ins.copyValues({
@@ -397,7 +397,7 @@ export default class NPresentationScene extends NScene
 
         switch(lightData.type) {
             case "directional":
-                node = this.graph.createNode(NDirectionalLight);
+                node = this.graph.createCustomNode(NDirectionalLight);
 
                 node.light.ins.copyValues({
                     position: [ 0, 0, 0 ],
@@ -406,7 +406,7 @@ export default class NPresentationScene extends NScene
                 break;
 
             case "point":
-                node = this.graph.createNode(NPointLight);
+                node = this.graph.createCustomNode(NPointLight);
 
                 node.light.ins.copyValues({
                     distance: lightData.point.distance || 0,
@@ -415,7 +415,7 @@ export default class NPresentationScene extends NScene
                 break;
 
             case "spot":
-                node = this.graph.createNode(NSpotLight);
+                node = this.graph.createCustomNode(NSpotLight);
 
                 node.light.ins.copyValues({
                     distance: lightData.point.distance || 0,

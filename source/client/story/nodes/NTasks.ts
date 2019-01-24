@@ -21,6 +21,7 @@ import CTask from "../components/CTask";
 
 import CPoseTask from "../components/CPoseTask";
 import CCaptureTask from "../components/CCaptureTask";
+import CAnnotationsTask from "../components/CAnnotationsTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,5 +77,6 @@ export default class NTasks extends Node
     {
         this.createComponent(CPoseTask);
         this.createComponent(CCaptureTask);
+        this.createComponent(CAnnotationsTask);
     }
 }

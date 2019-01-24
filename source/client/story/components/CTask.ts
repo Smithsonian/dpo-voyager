@@ -16,12 +16,15 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
+import { INodeEvent } from "@ff/graph/Graph";
 import Component from "@ff/graph/Component";
 import CSelection from "@ff/graph/components/CSelection";
 
-import TaskView from "../ui/TaskView";
-
+import CPresentationManager, { IActiveItemEvent } from "../../explorer/components/CPresentationManager";
 import NTasks from "../nodes/NTasks";
+import NItem from "../../explorer/nodes/NItem";
+
+import TaskView from "../ui/TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,11 +41,21 @@ export default class CTask extends Component
 
     ins = this.addInputs(ins);
 
+    protected manager: CPresentationManager = null;
     protected selection: CSelection = null;
 
     create()
     {
         this.selection = this.system.components.safeGet(CSelection);
+
+        this.manager = this.system.components.safeGet(CPresentationManager);
+        this.manager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+    }
+
+    dispose()
+    {
+        super.dispose();
+        this.manager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
     }
 
     update()
@@ -53,13 +66,6 @@ export default class CTask extends Component
         }
 
         return false;
-    }
-
-    get text() {
-        return (this.constructor as typeof CTask).text;
-    }
-    get icon() {
-        return (this.constructor as typeof CTask).icon
     }
 
     createView(): TaskView
@@ -73,5 +79,15 @@ export default class CTask extends Component
 
     deactivate()
     {
+    }
+
+    protected onActiveItem(event: IActiveItemEvent)
+    {
+        this.setActiveItem(event.next);
+    }
+
+    protected setActiveItem(item: NItem)
+    {
+
     }
 }

@@ -21,6 +21,7 @@ import CRenderGraph from "@ff/scene/components/CRenderGraph";
 
 import { IPresentation } from "common/types/presentation";
 
+import CVoyagerScene from "../../core/components/CVoyagerScene";
 import NPresentationScene, { ReferenceCallback } from "../nodes/NPresentationScene";
 import NPresentationSetup from "../nodes/NPresentationSetup";
 
@@ -30,7 +31,6 @@ const ins = {
     activate: types.Event("Activate")
 };
 
-
 /**
  * Graph containing a Voyager presentation.
  */
@@ -39,6 +39,10 @@ export default class CPresentation extends CRenderGraph
     static readonly type: string = "CPresentation";
 
     ins = this.addInputs(ins);
+
+    get scene() {
+        return this.innerGraph.components.get(CVoyagerScene);
+    }
 
     protected get setupNode() {
         return this.innerGraph.nodes.get(NPresentationSetup);
@@ -51,8 +55,8 @@ export default class CPresentation extends CRenderGraph
     {
         super.create();
 
-        const scene = this.innerGraph.createNode(NPresentationScene);
-        scene.addChild(this.innerGraph.createNode(NPresentationSetup));
+        const scene = this.innerGraph.createCustomNode(NPresentationScene);
+        scene.addChild(this.innerGraph.createCustomNode(NPresentationSetup));
     }
 
     update(context: IUpdateContext)

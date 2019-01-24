@@ -17,7 +17,11 @@
 
 import resolvePathname from "resolve-pathname";
 
+import { IComponentEvent } from "@ff/graph/Node";
+import { INodeEvent } from "@ff/graph/Graph";
+
 import CController, { Commander, Actions } from "@ff/graph/components/CController";
+import CSelection from "@ff/graph/components/CSelection";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import * as template from "../templates/presentation.json";
@@ -28,6 +32,7 @@ import CLoadingManager from "../../core/components/CLoadingManager";
 import CPresentation from "./CPresentation";
 import { ReferenceCallback } from "../nodes/NPresentationScene";
 import NItem from "../nodes/NItem";
+import { ITypedEvent } from "@ff/core/Publisher";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +45,25 @@ const _splitUrl = function(url: string): { path: string, name: string }
     return { path, name };
 };
 
+export interface IPresentationEvent extends ITypedEvent<"presentation">
+{
+    add: boolean;
+    remove: boolean;
+    presentation: CPresentation;
+}
+
+export interface IActivePresentationEvent extends ITypedEvent<"active-presentation">
+{
+    previous: CPresentation;
+    next: CPresentation;
+}
+
+export interface IActiveItemEvent extends ITypedEvent<"active-item">
+{
+    previous: NItem;
+    next: NItem;
+}
+
 export type ExplorerActions = Actions<CPresentationManager>;
 
 /**
@@ -49,11 +73,75 @@ export default class CPresentationManager extends CController<CPresentationManag
 {
     static readonly type: string = "CPresentationManager";
 
-    get activePresentationGraph() {
-        const renderer = this.system.components.safeGet(CRenderer);
-        return renderer.activeSceneGraph;
+    private _activePresentation: CPresentation = null;
+    private _activeItem: NItem = null;
+
+    constructor(id: string)
+    {
+        super(id);
+        this.addEvent("presentation");
     }
 
+    get activePresentation() {
+        return this._activePresentation;
+    }
+
+    set activePresentation(presentation: CPresentation) {
+        if (presentation !== this._activePresentation) {
+
+            const previous = this._activePresentation;
+            this._activePresentation = presentation;
+            this.activeItem = null;
+
+            // make the presentation's scene the currently displayed scene
+            if (this._activePresentation) {
+                this.renderer.activeSceneComponent = this._activePresentation.scene;
+            }
+
+            this.emit<IActivePresentationEvent>({
+                type: "active-presentation", previous, next: this._activePresentation
+            });
+        }
+    }
+
+    get presentations() {
+        return this.node.components.getArray(CPresentation);
+    }
+
+    get activeItem() {
+        return this._activeItem;
+    }
+
+    set activeItem(item: NItem) {
+        if (item !== this._activeItem) {
+
+            if (item && item.graph.parent !== this._activePresentation) {
+                this.activePresentation = item.graph.parent as CPresentation;
+            }
+
+            const previous = this._activeItem;
+            this._activeItem = item;
+
+            this.emit<IActiveItemEvent>({
+                type: "active-item", previous, next: this._activeItem
+            });
+        }
+    }
+
+    get items() {
+        if (!this._activePresentation) {
+            return [];
+        }
+
+        return this._activePresentation.innerGraph.nodes.getArray(NItem);
+    }
+
+    protected get selection() {
+        return this.system.components.safeGet(CSelection);
+    }
+    protected get renderer() {
+        return this.system.components.safeGet(CRenderer);
+    }
     protected get loadingManager() {
         return this.system.components.safeGet(CLoadingManager);
     }
@@ -61,6 +149,22 @@ export default class CPresentationManager extends CController<CPresentationManag
     createActions(commander: Commander)
     {
         return {};
+    }
+
+    create()
+    {
+        super.create();
+        this.node.components.on(CPresentation, this.onPresentation, this);
+        this.selection.selectedComponents.on(CPresentation, this.onSelectPresentation, this);
+        //this.selection.selectedNodes.on(NItem, this.onSelectItem, this);
+    }
+
+    dispose()
+    {
+        this.node.components.off(CPresentation, this.onPresentation, this);
+        this.selection.selectedComponents.off(CPresentation, this.onSelectPresentation, this);
+        //this.selection.selectedNodes.off(NItem, this.onSelectItem, this);
+        super.dispose();
     }
 
     loadItem(itemUrl: string, templateUrl?: string)
@@ -82,7 +186,7 @@ export default class CPresentationManager extends CController<CPresentationManag
 
             const itemCallback = (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(NItem);
+                    const node = graph.createCustomNode(NItem);
                     node.setUrl(url, assetPath);
                     node.fromData(itemData);
                     return node;
@@ -119,7 +223,7 @@ export default class CPresentationManager extends CController<CPresentationManag
 
             return this.openDefaultPresentation(modelPath, (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(NItem);
+                    const node = graph.createCustomNode(NItem);
                     node.setUrl(itemUrl || `${modelPath}item.json`, modelPath);
                     node.model.addWebModelDerivative(modelName, q);
                     return node;
@@ -148,7 +252,7 @@ export default class CPresentationManager extends CController<CPresentationManag
 
             return this.openDefaultPresentation(geoPath, (index, graph, assetPath) => {
                 if (index === 0) {
-                    const node = graph.createNode(NItem);
+                    const node = graph.createCustomNode(NItem);
                     node.setUrl(itemUrl || `${assetPath}item.json`, geoPath);
                     node.model.addGeometryAndTextureDerivative(geoName, texName, q);
                     return node;
@@ -194,4 +298,28 @@ export default class CPresentationManager extends CController<CPresentationManag
         const presentations = this.node.components.cloneArray(CPresentation);
         presentations.forEach(presentation => presentation.dispose());
     }
+
+    protected onPresentation(event: IComponentEvent<CPresentation>)
+    {
+        this.emit<IPresentationEvent>({
+            type: "presentation", add: event.add, remove: event.remove, presentation: event.component
+        });
+    }
+
+    protected onSelectPresentation(event: IComponentEvent<CPresentation>)
+    {
+        if (event.add) {
+            this.activePresentation = event.component;
+        }
+    }
+
+    // protected onSelectItem(event: INodeEvent<NItem>)
+    // {
+    //     if (event.add) {
+    //         this.activeItem = event.node;
+    //     }
+    //     else if (event.remove && event.node === this._activeItem) {
+    //         this.activeItem = null;
+    //     }
+    // }
 }

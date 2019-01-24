@@ -16,82 +16,87 @@
  */
 
 import System from "@ff/graph/System";
+import CSelection from "@ff/graph/components/CSelection";
 
 import { customElement, property, PropertyValues } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
-import NItem from "../../explorer/nodes/NItem";
+import CPresentation from "../../explorer/components/CPresentation";
+
 import CPresentationManager, {
-    IActiveItemEvent,
+    IPresentationEvent,
     IActivePresentationEvent
 } from "../../explorer/components/CPresentationManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-item-list")
-class ItemList extends List<NItem>
+@customElement("sv-presentation-list")
+class PresentationList extends List<CPresentation>
 {
     @property({ attribute: false })
     system: System = null;
 
     protected manager: CPresentationManager = null;
+    protected selection: CSelection = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-scrollable", "sv-item-list");
+        this.classList.add("sv-presentation-list");
 
         this.manager = this.system.components.safeGet(CPresentationManager);
+        this.selection = this.system.components.safeGet(CSelection);
     }
 
     protected connected()
     {
         super.connected();
 
+        this.manager.on<IPresentationEvent>("presentation", this.onPresentation, this);
         this.manager.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.manager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
     }
 
     protected disconnected()
     {
+        this.manager.off<IPresentationEvent>("presentation", this.onPresentation, this);
         this.manager.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.manager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
 
         super.disconnected();
     }
 
     protected update(props: PropertyValues)
     {
-        this.data = this.manager.items;
-        return super.update(props);
+        this.data = this.system.components.getArray(CPresentation);
+        super.update(props);
     }
 
-    protected renderItem(node: NItem)
+    protected renderItem(component: CPresentation)
     {
-        return node.displayName;
+        return component.displayName;
     }
 
-    protected isItemSelected(node: NItem): boolean
+    protected isItemSelected(component: CPresentation)
     {
-        return node === this.manager.activeItem;
+        return component === this.manager.activePresentation;
     }
 
-    protected onClickItem(event: MouseEvent, node: NItem)
+    protected onClickItem(event: MouseEvent, component: CPresentation)
     {
-        this.manager.activeItem = node;
+        this.manager.activePresentation = component;
+        this.selection.selectComponent(component);
     }
 
     protected onClickEmpty()
     {
-        this.manager.activeItem = null;
+        this.manager.activePresentation = null;
     }
 
-    protected onActivePresentation(event: IActivePresentationEvent)
+    protected onPresentation(event: IPresentationEvent)
     {
         this.requestUpdate();
     }
 
-    protected onActiveItem(event: IActiveItemEvent)
+    protected onActivePresentation(event: IActivePresentationEvent)
     {
         if (event.previous) {
             this.setSelected(event.previous, false);
@@ -100,5 +105,4 @@ class ItemList extends List<NItem>
             this.setSelected(event.next, true);
         }
     }
-
 }

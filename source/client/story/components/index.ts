@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import CAnnotationsTask from "./CAnnotationsTask";
 import CCaptureTask from "./CCaptureTask";
 import CPoseTask from "./CPoseTask";
 import CStory from "./CStory";
@@ -22,12 +23,14 @@ import CStory from "./CStory";
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
+    CAnnotationsTask,
     CCaptureTask,
     CPoseTask,
     CStory
 };
 
 export const componentTypes = [
+    CAnnotationsTask,
     CCaptureTask,
     CPoseTask,
     CStory

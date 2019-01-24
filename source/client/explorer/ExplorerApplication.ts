@@ -21,6 +21,7 @@ import Commander from "@ff/core/Commander";
 
 import Registry from "@ff/graph/Registry";
 import System from "@ff/graph/System";
+import Node from "@ff/graph/Node";
 import CPulse from "@ff/graph/components/CPulse";
 
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -106,18 +107,19 @@ export default class ExplorerApplication
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const node = system.graph.createPlainNode("Explorer");
+        const explorer = system.graph.createNode("Explorer");
 
-        node.createComponent(CPulse);
-        node.createComponent(CRenderer);
-        node.createComponent(CPickSelection).createActions(this.commander);
+        explorer.createComponent(CPulse);
+        explorer.createComponent(CRenderer);
+        explorer.createComponent(CPickSelection).createActions(this.commander);
 
-        node.createComponent(CLoadingManager);
-        node.createComponent(COrbitNavigation);
+        explorer.createComponent(CLoadingManager);
+        explorer.createComponent(COrbitNavigation);
+        explorer.createComponent(CInterface);
+        explorer.createComponent(CReader);
 
-        node.createComponent(CInterface);
-        node.createComponent(CReader);
-        node.createComponent(CPresentationManager).createActions(this.commander);
+        const presentations = system.graph.createNode("Presentations");
+        presentations.createComponent(CPresentationManager).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -125,7 +127,7 @@ export default class ExplorerApplication
         }
 
         // start rendering
-        node.components.get(CPulse).start();
+        explorer.components.get(CPulse).start();
 
         // start loading from properties
         this.props = this.initFromProps(props);

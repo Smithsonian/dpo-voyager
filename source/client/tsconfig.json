@@ -6,7 +6,6 @@
         "jsx": "react",
         "resolveJsonModule": true,
         "experimentalDecorators": true,
-        "traceResolution": true,
 
         "baseUrl": ".",
         "paths": {

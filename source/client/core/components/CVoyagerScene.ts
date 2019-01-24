@@ -21,7 +21,6 @@ import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
 import { IComponentEvent } from "@ff/graph/ComponentSet";
 
-import CCamera from "@ff/scene/components/CCamera";
 import CScene, { IRenderSceneContext } from "@ff/scene/components/CScene";
 
 import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/setup";
@@ -30,8 +29,6 @@ import CModel, { IModelChangeEvent } from "./CModel";
 import COrbitNavigation from "./COrbitNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const _vec3 = new THREE.Vector3();
 
 export { EUnitType, EShaderMode };
 
