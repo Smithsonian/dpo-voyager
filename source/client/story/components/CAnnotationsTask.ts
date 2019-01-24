@@ -48,26 +48,16 @@ export default class CAnnotationsTask extends CTask
         return new AnnotationsTaskView(this);
     }
 
-    create()
-    {
-        super.create();
-        this.selection.selectedComponents.on(CAnnotations, this.onSelectAnnotations, this);
-    }
-
     activate()
     {
-
+        super.activate();
+        this.selection.selectedComponents.on(CAnnotations, this.onSelectAnnotations, this);
     }
 
     deactivate()
     {
-
-    }
-
-    dispose()
-    {
+        super.deactivate();
         this.selection.selectedComponents.off(CAnnotations, this.onSelectAnnotations, this);
-        super.dispose();
     }
 
     protected setActiveItem(item: NItem)

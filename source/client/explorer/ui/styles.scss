@@ -43,14 +43,14 @@ body {
 // CONTENT LAYER
 
 sv-content-view {
-  @include full-size;
+  @include fullsize;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME LAYER
 
 sv-chrome-view {
-  @include full-size;
+  @include fullsize;
 
   .sv-main-menu {
     position: absolute;

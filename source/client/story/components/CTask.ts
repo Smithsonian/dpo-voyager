@@ -16,13 +16,18 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
-import { INodeEvent } from "@ff/graph/Graph";
 import Component from "@ff/graph/Component";
-import CSelection from "@ff/graph/components/CSelection";
 
-import CPresentationManager, { IActiveItemEvent } from "../../explorer/components/CPresentationManager";
+import CPickSelection from "@ff/scene/components/CPickSelection";
+
+import CPresentationManager, {
+    IActiveItemEvent,
+    IActivePresentationEvent
+} from "../../explorer/components/CPresentationManager";
+
 import NTasks from "../nodes/NTasks";
 import NItem from "../../explorer/nodes/NItem";
+import CPresentation from "../../explorer/components/CPresentation";
 
 import TaskView from "../ui/TaskView";
 
@@ -42,20 +47,15 @@ export default class CTask extends Component
     ins = this.addInputs(ins);
 
     protected manager: CPresentationManager = null;
-    protected selection: CSelection = null;
+    protected selection: CPickSelection = null;
+
+    protected activePresentation: CPresentation = null;
+    protected activeItem: NItem = null;
 
     create()
     {
-        this.selection = this.system.components.safeGet(CSelection);
-
+        this.selection = this.system.components.safeGet(CPickSelection);
         this.manager = this.system.components.safeGet(CPresentationManager);
-        this.manager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
-    }
-
-    dispose()
-    {
-        super.dispose();
-        this.manager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
     }
 
     update()
@@ -75,19 +75,45 @@ export default class CTask extends Component
 
     activate()
     {
+        this.manager.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.manager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+
+        this.setActivePresentation(this.manager.activePresentation);
+        this.activePresentation = this.manager.activePresentation;
+
+        this.setActiveItem(this.manager.activeItem);
+        this.activeItem = this.manager.activeItem;
     }
 
     deactivate()
     {
+        this.setActivePresentation(null);
+        this.activePresentation = null;
+
+        this.setActiveItem(null);
+        this.activeItem = null;
+
+        this.manager.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.manager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+    }
+
+    protected setActivePresentation(presentation: CPresentation)
+    {
+    }
+
+    protected setActiveItem(item: NItem)
+    {
+    }
+
+    protected onActivePresentation(event: IActivePresentationEvent)
+    {
+        this.setActivePresentation(event.next);
+        this.activePresentation = event.next;
     }
 
     protected onActiveItem(event: IActiveItemEvent)
     {
         this.setActiveItem(event.next);
-    }
-
-    protected setActiveItem(item: NItem)
-    {
-
+        this.activeItem = event.next;
     }
 }

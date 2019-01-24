@@ -43,10 +43,10 @@ export default class CPresentation extends CRenderGraph
     get scene() {
         return this.innerGraph.components.get(CVoyagerScene);
     }
-
-    protected get setupNode() {
+    get setup() {
         return this.innerGraph.nodes.get(NPresentationSetup);
     }
+
     protected get sceneNode() {
         return this.innerGraph.nodes.get(NPresentationScene);
     }
@@ -80,14 +80,14 @@ export default class CPresentation extends CRenderGraph
         this.sceneNode.fromData(data, callback);
 
         if (data.setup) {
-            this.setupNode.fromData(data.setup);
+            this.setup.fromData(data.setup);
         }
     }
 
     toData(writeReferences: boolean = false)
     {
         const data = this.sceneNode.toData(writeReferences);
-        data.setup = this.setupNode.toData();
+        data.setup = this.setup.toData();
 
         data.asset = {
             copyright: "Copyright Smithsonian Institution",

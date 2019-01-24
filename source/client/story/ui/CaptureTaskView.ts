@@ -46,25 +46,52 @@ export default class CaptureTaskView extends TaskView
         this.classList.add("sv-capture-task-view");
     }
 
+    protected connected()
+    {
+        super.connected();
+        this.task.outs.taken.on("value", this.onPictureTaken, this);
+    }
+
+    protected disconnected()
+    {
+        this.task.outs.taken.off("value", this.onPictureTaken, this);
+        super.disconnected();
+    }
+
     protected render()
     {
         if (!this.activeItem) {
             return html`<div class="sv-placeholder">Please select an item to take a picture</div>`;
         }
 
+        const ins = this.task.ins;
+        const dataURL = this.task.imageDataURL;
+        const image = dataURL ? html`<div class="sv-label">Preview</div>
+            <div class="sv-image"><img alt="Capture" src=${dataURL}></div>` : null;
+
         return html`<div class="ff-flex-row ff-flex-wrap">
-            <ff-button text="Capture" icon="camera" @click=${this.onClickCapture}></ff-button>
-            <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
-        </div>`;
+                <ff-button text="Take" icon="camera" @click=${this.onClickCapture}></ff-button>
+                <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
+            </div>
+            <sv-property-view .property=${ins.preset}></sv-property-view>
+            <sv-property-view .property=${ins.width}></sv-property-view>
+            <sv-property-view .property=${ins.height}></sv-property-view>
+            ${image}
+        `;
     }
 
     protected onClickCapture()
     {
-
+        this.task.ins.take.set();
     }
 
     protected onClickSave()
     {
+        this.task.ins.save.set();
+    }
 
+    protected onPictureTaken()
+    {
+        this.requestUpdate();
     }
 }

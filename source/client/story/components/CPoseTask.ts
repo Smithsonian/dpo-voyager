@@ -20,9 +20,9 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
 
-import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
-
 import Viewport from "@ff/three/Viewport";
+import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 import NItem from "../../explorer/nodes/NItem";
 import CInterface from "../../explorer/components/CInterface";
@@ -30,7 +30,6 @@ import CModel from "../../core/components/CModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import CTask from "./CTask";
-import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,34 +55,29 @@ export default class CPoseTask extends CTask
     ins = this.addInputs<CTask, typeof ins>(ins);
 
     protected activeModel: CModel = null;
-    protected _interfaceVisible = false;
-    protected _viewport: Viewport = null;
-    protected _deltaX = 0;
-    protected _deltaY = 0;
+
+    protected get interface() {
+        return this.system.components.get(CInterface);
+    }
+
+    private _interfaceVisible = false;
+    private _viewport: Viewport = null;
+    private _deltaX = 0;
+    private _deltaY = 0;
+
 
     createView()
     {
         return new PoseTaskView(this);
     }
 
-    create()
-    {
-        super.create();
-
-        this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        this.selection.selectedComponents.on(CModel, this.onSelectModel, this);
-    }
-
-    dispose()
-    {
-        super.dispose();
-
-        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        this.selection.selectedComponents.off(CModel, this.onSelectModel, this);
-    }
-
     activate()
     {
+        super.activate();
+
+        this.selection.selectedComponents.on(CModel, this.onSelectModel, this);
+        this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+
         const renderer = this.system.components.get(CRenderer);
 
         renderer.views.forEach(view => {
@@ -92,15 +86,20 @@ export default class CPoseTask extends CTask
             }
         });
 
-        const interfaceComponent = this.system.components.get(CInterface);
-        if (interfaceComponent) {
-            this._interfaceVisible = interfaceComponent.ins.visible.value;
-            interfaceComponent.ins.visible.setValue(false);
+        const interface_ = this.interface;
+        if (interface_) {
+            this._interfaceVisible = interface_.ins.visible.value;
+            interface_.ins.visible.setValue(false);
         }
     }
 
     deactivate()
     {
+        super.deactivate();
+
+        this.selection.selectedComponents.off(CModel, this.onSelectModel, this);
+        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+
         const renderer = this.system.components.get(CRenderer);
 
         renderer.views.forEach(view => {
@@ -109,9 +108,9 @@ export default class CPoseTask extends CTask
             }
         });
 
-        const interfaceComponent = this.system.components.get(CInterface);
-        if (interfaceComponent) {
-            interfaceComponent.ins.visible.setValue(this._interfaceVisible);
+        const interface_ = this.interface;
+        if (interface_) {
+            interface_.ins.visible.setValue(this._interfaceVisible);
         }
     }
 

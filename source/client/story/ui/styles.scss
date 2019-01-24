@@ -23,7 +23,7 @@
 // MAIN VIEW
 
 voyager-story {
-  @include full-size;
+  @include fullsize;
 }
 
 ff-dock-view {
@@ -121,7 +121,7 @@ ff-dock-view {
 // TASK VIEW
 
 .sv-task-view {
-  @include full-size;
+  @include fullsize;
   display: flex;
   flex-direction: column;
   padding: 2px;
@@ -134,13 +134,26 @@ ff-dock-view {
   .ff-button {
     margin: 2px;
   }
+
+  .sv-label {
+    margin: 2px;
+  }
+
+  .sv-image {
+    margin: 4px 2px;
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTY VIEW
 
 sv-property-view {
-  padding: 0 6px;
+  padding: 2px;
 
   .sv-property-name {
     margin: 8px 0 4px 0;
@@ -154,9 +167,14 @@ sv-property-view {
     margin: 0 8px 0 24px;
     color: $color-icon;
   }
-  ff-property-field {
+  .ff-property-field {
     flex: 1 1 auto;
-    height: 1.05em;
-    background-color: $color-background !important;
+    padding: 2px;
+    background-color: $color-background;
+
+    input {
+      padding: 2px;
+      background-color: $color-background-darker;
+    }
   }
 }
