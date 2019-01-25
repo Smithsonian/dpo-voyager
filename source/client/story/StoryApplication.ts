@@ -23,8 +23,13 @@ import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Expl
 
 import { componentTypes as storyComponents } from "./components";
 
-import CStory from"./components/CStory";
-import NTasks from "./nodes/NTasks";
+import CStoryController from"./components/CStoryController";
+import CTaskController from "./components/CTaskController";
+
+import CPoseTask from "./components/CPoseTask";
+import CCaptureTask from "./components/CCaptureTask";
+import CAnnotationsTask from "./components/CAnnotationsTask";
+import CDerivativesTask from "./components/CDerivativesTask";
 
 import MainView from "./ui/MainView";
 
@@ -65,16 +70,24 @@ export default class StoryApplication
         const registry = this.system.registry;
 
         registry.registerComponentType(storyComponents);
-        registry.registerNodeType(NTasks);
 
         //this.logController = new LogController(this.system, this.commander);
         //this.taskController = new StoryController(this.system, this.commander);
 
         // add story components
         const storyNode = this.system.graph.createNode("Story");
-        storyNode.createComponent(CStory);
+        storyNode.createComponent(CStoryController);
 
-        this.system.graph.createCustomNode(NTasks);
+        const tasksNode = this.system.graph.createNode("Tasks");
+        tasksNode.createComponent(CTaskController);
+
+        tasksNode.createComponent(CPoseTask);
+        tasksNode.createComponent(CDerivativesTask);
+        tasksNode.createComponent(CCaptureTask);
+        tasksNode.createComponent(CAnnotationsTask);
+
+        tasksNode.components.get(CTaskController).activeTask = tasksNode.components.get(CPoseTask);
+
 
         this.props = this.initFromProps(props);
 
@@ -89,7 +102,7 @@ export default class StoryApplication
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
 
-        const story = this.system.components.get(CStory);
+        const story = this.system.components.get(CStoryController);
         story.ins.referrer.setValue(props.referrer);
         story.ins.expertMode.setValue(!!props.expert);
 

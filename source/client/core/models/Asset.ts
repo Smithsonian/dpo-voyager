@@ -40,17 +40,16 @@ export default class Asset
     numVertices: number = 0;
     imageSize: number = 0;
 
-    constructor(uri: string, type: EAssetType, mapType?: EMapType)
+    constructor(type: EAssetType, uri: string)
     constructor(assetData: IAsset);
-    constructor(uriOrData, type?, mapType?)
+    constructor(typeOrData, uri?)
     {
-        if (type === undefined) {
-            this.fromData(uriOrData);
+        if (uri === undefined) {
+            this.fromData(typeOrData);
         }
         else {
-            this.uri = uriOrData;
-            this.type = type;
-            this.mapType = mapType;
+            this.type = typeOrData;
+            this.uri = uri;
         }
     }
 

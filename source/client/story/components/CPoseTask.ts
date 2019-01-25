@@ -158,7 +158,7 @@ export default class CPoseTask extends CTask
 
     protected setActiveItem(item: NItem)
     {
-        if (item) {
+        if (item && item.model) {
             this.activeModel = item.model;
             this.selection.selectComponent(this.activeModel);
         }
@@ -185,7 +185,7 @@ export default class CPoseTask extends CTask
     protected onSelectModel(event: IComponentEvent<CModel>)
     {
         if (event.add && event.component.node instanceof NItem) {
-            this.manager.activeItem = event.component.node;
+            this.presentations.activeItem = event.component.node;
         }
     }
 }

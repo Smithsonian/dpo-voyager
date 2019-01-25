@@ -207,6 +207,33 @@ export default class CModel extends CObject3D
         this.assetPath = assetPath || resolvePathname(".", url);
     }
 
+    createDerivative(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative
+    {
+        const derivative = new Derivative(usage, quality);
+        this.addDerivative(derivative);
+        return derivative;
+    }
+
+    createWebModelDerivative(uri: string, quality: EDerivativeQuality): Derivative
+    {
+        const derivative = this.createDerivative(EDerivativeUsage.Web, quality);
+        derivative.createAsset(EAssetType.Model, uri);
+        return derivative;
+    }
+
+    addGeometryAndTextureDerivative(geoUri: string, textureUri: string, quality: EDerivativeQuality): Derivative
+    {
+        const derivative = this.createDerivative(EDerivativeUsage.Web, quality);
+        derivative.createAsset(EAssetType.Geometry, geoUri);
+
+        if (textureUri) {
+            const asset = derivative.createAsset(EAssetType.Image, textureUri);
+            asset.mapType = EMapType.Color;
+        }
+
+        return derivative;
+    }
+
     addDerivative(derivative: Derivative)
     {
         this.derivatives.push(derivative);
@@ -216,23 +243,6 @@ export default class CModel extends CObject3D
     {
         const index = this.derivatives.indexOf(derivative);
         this.derivatives.splice(index, 1);
-    }
-
-    addWebModelDerivative(uri: string, quality: EDerivativeQuality)
-    {
-        const derivative = new Derivative(EDerivativeUsage.Web, quality);
-        derivative.addAsset(uri, EAssetType.Model);
-        this.addDerivative(derivative);
-    }
-
-    addGeometryAndTextureDerivative(geoUri: string, textureUri: string, quality: EDerivativeQuality)
-    {
-        const derivative = new Derivative(EDerivativeUsage.Web, quality);
-        derivative.addAsset(geoUri, EAssetType.Geometry);
-        if (textureUri) {
-            derivative.addAsset(textureUri, EAssetType.Image, EMapType.Color);
-        }
-        this.addDerivative(derivative);
     }
 
     setShaderMode(shaderMode: EShaderMode)
@@ -317,6 +327,75 @@ export default class CModel extends CObject3D
 
     inflateReferences()
     {
+    }
+
+    /**
+     * From all derivatives with the given usage (e.g. web), select a derivative as close as possible to
+     * the given quality. The selection strategy works as follows:
+     * 1. Look for a derivative matching the quality exactly. If found, return it.
+     * 2. Look for a derivative with higher quality. If found, return it.
+     * 3. Look for a derivative with lower quality. If found return it, otherwise report an error.
+     * @param quality
+     * @param usage
+     */
+    selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null
+    {
+        usage = usage !== undefined ? usage : EDerivativeUsage.Web;
+
+        const qualityIndex = _qualityLevels.indexOf(quality);
+
+        if (qualityIndex < 0) {
+            console.warn(`derivative quality not supported: '${EDerivativeQuality[quality]}'`);
+            return null;
+        }
+
+        const derivative = this.getDerivative(usage, quality);
+        if (derivative) {
+            return derivative;
+        }
+
+        for (let i = qualityIndex + 1; i < _qualityLevels.length; ++i) {
+            const derivative = this.getDerivative(usage, _qualityLevels[i]);
+            if (derivative) {
+                console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using higher quality`);
+                return derivative;
+            }
+        }
+
+        for (let i = qualityIndex - 1; i >= 0; --i) {
+            const derivative = this.getDerivative(usage, _qualityLevels[i]);
+            if (derivative) {
+                console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using lower quality`);
+                return derivative;
+            }
+        }
+
+        console.warn(`no suitable derivative found for quality '${EDerivativeQuality[quality]}'`
+            + ` and usage '${EDerivativeUsage[usage]}'`);
+
+        return null;
+    }
+
+    /**
+     * Returns the derivative with the given quality and usage. Returns null if not found.
+     * @param quality The quality level of the derivative.
+     * @param usage The usage of the derivative.
+     */
+    getDerivative(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative
+    {
+        for (let i = 0, n = this.derivatives.length; i < n; ++i) {
+            const derivative = this.derivatives[i];
+            if (derivative && derivative.usage === usage && derivative.quality === quality) {
+                return derivative;
+            }
+        }
+
+        return null;
+    }
+
+    dumpDerivatives()
+    {
+        this.derivatives.forEach(derivative => console.log(derivative.toString()));
     }
 
     protected updateUnitScale()
@@ -412,77 +491,6 @@ export default class CModel extends CObject3D
             //const box = { min: bb.min.toArray(), max: bb.max.toArray() };
             //console.log("derivative bounding box: ", box);
         });
-    }
-
-    /**
-     * From all derivatives with the given usage (e.g. web), select a derivative as close as possible to
-     * the given quality. The selection strategy works as follows:
-     * 1. Look for a derivative matching the quality exactly. If found, return it.
-     * 2. Look for a derivative with higher quality. If found, return it.
-     * 3. Look for a derivative with lower quality. If found return it, otherwise report an error.
-     * @param quality
-     * @param usage
-     */
-    protected selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null
-    {
-        usage = usage !== undefined ? usage : EDerivativeUsage.Web;
-
-        const qualityIndex = _qualityLevels.indexOf(quality);
-
-        if (qualityIndex < 0) {
-            console.warn(`derivative quality not supported: '${EDerivativeQuality[quality]}'`);
-            return null;
-        }
-
-        const derivative = this.getDerivative(quality, usage);
-        if (derivative) {
-            return derivative;
-        }
-
-        for (let i = qualityIndex + 1; i < _qualityLevels.length; ++i) {
-            const derivative = this.getDerivative(_qualityLevels[i], usage);
-            if (derivative) {
-                console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using higher quality`);
-                return derivative;
-            }
-        }
-
-        for (let i = qualityIndex - 1; i >= 0; --i) {
-            const derivative = this.getDerivative(_qualityLevels[i], usage);
-            if (derivative) {
-                console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using lower quality`);
-                return derivative;
-            }
-        }
-
-        console.warn(`no suitable derivative found for quality '${EDerivativeQuality[quality]}'`
-            + ` and usage '${EDerivativeUsage[usage]}'`);
-
-        return null;
-    }
-
-    /**
-     * Returns the derivative with the given quality and usage. Returns null if not found.
-     * @param quality The quality level of the derivative.
-     * @param usage The usage of the derivative.
-     */
-    protected getDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative
-    {
-        usage = usage !== undefined ? usage : EDerivativeUsage.Web;
-
-        for (let i = 0, n = this.derivatives.length; i < n; ++i) {
-            const derivative = this.derivatives[i];
-            if (derivative && derivative.usage === usage && derivative.quality === quality) {
-                return derivative;
-            }
-        }
-
-        return null;
-    }
-
-    protected dumpDerivatives()
-    {
-        this.derivatives.forEach(derivative => console.log(derivative.toString()));
     }
 }
 

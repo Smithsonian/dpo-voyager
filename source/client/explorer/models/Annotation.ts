@@ -49,7 +49,7 @@ export default class Annotation extends Publisher
         super();
         this.addEvent("change");
 
-        this.id = id;
+        this.id = id || uniqueId(6);
     }
 
     update()

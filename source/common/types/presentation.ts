@@ -39,7 +39,7 @@ export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisph
  */
 export interface IPresentation
 {
-    asset: IAsset;
+    info: IPresentationInfo;
     scene: IScene;
     nodes: INode[];
     items?: IItem[];
@@ -49,8 +49,9 @@ export interface IPresentation
     setup?: ISetup;
 }
 
-export interface IAsset
+export interface IPresentationInfo
 {
+    type: "application/si-dpo-3d.presentation+json";
     version: string;
     copyright?: string;
     generator?: string;

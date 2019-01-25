@@ -213,10 +213,12 @@ export default class COrbitNavigation extends Component
 
         this.ins.copyValues({
             enabled: data.enabled,
-            minOrbit: orbit.minOrbit,
-            maxOrbit: orbit.maxOrbit,
-            minOffset: orbit.minOffset,
-            maxOffset: orbit.maxOffset
+            orbit: orbit.orbit.slice(),
+            offset: orbit.offset.slice(),
+            minOrbit: orbit.minOrbit.slice(),
+            maxOrbit: orbit.maxOrbit.slice(),
+            minOffset: orbit.minOffset.slice(),
+            maxOffset: orbit.maxOffset.slice()
         });
     }
 
@@ -228,6 +230,8 @@ export default class COrbitNavigation extends Component
             type: "Orbit",
             enabled: ins.enabled.value,
             orbit: {
+                orbit: ins.orbit.cloneValue(),
+                offset: ins.offset.cloneValue(),
                 minOrbit: ins.minOrbit.cloneValue(),
                 maxOrbit: ins.maxOrbit.cloneValue(),
                 minOffset: ins.minOffset.cloneValue(),

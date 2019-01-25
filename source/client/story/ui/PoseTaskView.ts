@@ -63,7 +63,7 @@ export default class PoseTaskView extends TaskView
 
     protected render()
     {
-        const presentation = this.manager.activePresentation;
+        const presentation = this.presentations.activePresentation;
         const model = this.activeModel;
 
         if (!presentation || !model) {
@@ -81,17 +81,18 @@ export default class PoseTaskView extends TaskView
         const rotation = model.ins.rotation;
 
         return html`
-            <div class="ff-flex-row ff-flex-wrap">
+            <div class="sv-commands">
                 <ff-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
                 <ff-button text="Zoom Views" @click=${this.onClickZoomViews}></ff-button>
             </div>
-            <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
-            <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
-            <sv-property-view .property=${position}></sv-property-view>
-            <sv-property-view .property=${rotation}></sv-property-view>
-        `;
+            <div class="sv-scrollable">
+                <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
+                <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
+                <sv-property-view .property=${position}></sv-property-view>
+                <sv-property-view .property=${rotation}></sv-property-view>
+            </div>`;
     }
 
     protected onClickMode(event: IButtonClickEvent)
@@ -101,12 +102,12 @@ export default class PoseTaskView extends TaskView
 
     protected onClickCenter()
     {
-        this.manager.activeItem.model.ins.center.set();
+        this.presentations.activeItem.model.ins.center.set();
     }
 
     protected onClickZoomViews()
     {
-        this.manager.activePresentation.scene.zoomViews();
+        this.presentations.activePresentation.scene.zoomViews();
     }
 
     protected onModeValue()

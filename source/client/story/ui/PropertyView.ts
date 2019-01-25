@@ -36,6 +36,10 @@ export default class PropertyView extends CustomElement
 
     protected firstConnected()
     {
+        if (!this.property) {
+            throw new Error("property not set");
+        }
+
         this.setStyle({
             display: "flex",
             flexDirection: "column",

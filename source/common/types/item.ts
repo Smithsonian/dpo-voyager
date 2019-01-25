@@ -42,11 +42,20 @@ export type ColorRGBA = Vector4;
  */
 export interface IItem
 {
+    info: IItemInfo;
     meta?: IMeta;
     process?: IProcess;
     model: IModel;
     documents?: IDocuments;
     annotations?: IAnnotations;
+}
+
+export interface IItemInfo
+{
+    type: "application/si-dpo-3d.item+json";
+    version: string;
+    copyright?: string;
+    generator?: string;
 }
 
 /**

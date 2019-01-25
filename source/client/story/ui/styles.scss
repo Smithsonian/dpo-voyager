@@ -20,6 +20,17 @@
 @import "../../explorer/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
+// COMPONENTS
+
+.ff-list {
+  .ff-icon {
+    height: 1em;
+    width: 1.2em;
+    margin-right: 4px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MAIN VIEW
 
 voyager-story {
@@ -90,6 +101,7 @@ ff-dock-view {
 }
 
 .sv-panel-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   padding: 5px 0;
@@ -105,6 +117,16 @@ ff-dock-view {
 .sv-panel-content {
   position: relative;
   flex: 1 1 auto;
+
+  .sv-commands {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+  }
+
+  .sv-scrollable {
+    overflow-y: auto;
+  }
 }
 
 .sv-panel-section {
@@ -153,6 +175,7 @@ ff-dock-view {
 // PROPERTY VIEW
 
 sv-property-view {
+  flex: 0 0 auto;
   padding: 2px;
 
   .sv-property-name {

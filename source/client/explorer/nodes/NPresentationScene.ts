@@ -98,11 +98,15 @@ export default class NPresentationScene extends NScene
     {
         const refIndex = writeReferences ? 0 : undefined;
 
-        const data: Partial<IPresentation> = {};
+        const data: Partial<IPresentation> = {
+            scene: { nodes: [] }
+        };
+
         const children = this.scene.children;
 
         if (children.length > 0) {
             data.nodes = [];
+
             children.forEach(child => {
                 const node = child.node;
                 if (node instanceof NTransform) {
@@ -129,6 +133,11 @@ export default class NPresentationScene extends NScene
     protected nodeToData(node: NTransform, data: Partial<IPresentation>, refIndex: number): number
     {
         const nodeData = this.transformToData(node.transform);
+
+        if (node.name) {
+            nodeData.name = node.name;
+        }
+
         const index = data.nodes.length;
         data.nodes.push(nodeData);
 

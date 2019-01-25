@@ -37,6 +37,7 @@ const ins = {
 export default class CPresentation extends CRenderGraph
 {
     static readonly type: string = "CPresentation";
+    static readonly mimeType = "application/si-dpo-3d.presentation+json";
 
     ins = this.addInputs(ins);
 
@@ -45,6 +46,9 @@ export default class CPresentation extends CRenderGraph
     }
     get setup() {
         return this.innerGraph.nodes.get(NPresentationSetup);
+    }
+    get url() {
+        return this.sceneNode.url;
     }
 
     protected get sceneNode() {
@@ -89,10 +93,12 @@ export default class CPresentation extends CRenderGraph
         const data = this.sceneNode.toData(writeReferences);
         data.setup = this.setup.toData();
 
-        data.asset = {
+
+        data.info = {
+            type: CPresentation.mimeType,
             copyright: "Copyright Smithsonian Institution",
             generator: "Voyager Presentation Parser",
-            version: "1.1"
+            version: "1.2"
         };
 
         return data as IPresentation;

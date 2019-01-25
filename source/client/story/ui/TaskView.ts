@@ -19,10 +19,10 @@ import CSelection from "@ff/graph/components/CSelection";
 
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
-import CPresentationManager, {
+import CPresentationController, {
     IActiveItemEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationManager";
+} from "../../explorer/components/CPresentationController";
 
 import NItem from "../../explorer/nodes/NItem";
 import CTask from "../components/CTask";
@@ -32,7 +32,7 @@ import CTask from "../components/CTask";
 export default class TaskView extends CustomElement
 {
     protected task: CTask;
-    protected manager: CPresentationManager = null;
+    protected presentations: CPresentationController = null;
     protected selection: CSelection = null;
 
     constructor(task: CTask)
@@ -49,22 +49,22 @@ export default class TaskView extends CustomElement
     {
         this.classList.add("sv-task-view");
 
-        this.manager = this.system.components.safeGet(CPresentationManager);
+        this.presentations = this.system.components.safeGet(CPresentationController);
         this.selection = this.system.components.safeGet(CSelection);
     }
 
     protected connected()
     {
-        this.manager.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.manager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.presentations.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
 
-        this.setActiveItem(this.manager.activeItem);
+        this.setActiveItem(this.presentations.activeItem);
     }
 
     protected disconnected()
     {
-        this.manager.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.manager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.presentations.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
     }
 
     protected onActivePresentation(event: IActivePresentationEvent)

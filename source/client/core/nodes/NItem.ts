@@ -28,9 +28,14 @@ import CModel from "../components/CModel";
 export default class NItem extends NTransform
 {
     static readonly type: string = "NItem";
+    static readonly mimeType = "application/si-dpo-3d.item+json";
 
     get model() {
         return this.components.get(CModel);
+    }
+
+    get url() {
+        return this.model.url;
     }
 
     setUrl(url: string, assetPath?: string)
@@ -62,6 +67,12 @@ export default class NItem extends NTransform
     toData(): IItem
     {
         return {
+            info: {
+                type: NItem.mimeType,
+                copyright: "Copyright Smithsonian Institution",
+                generator: "Voyager Item Parser",
+                version: "1.2"
+            },
             model: this.model.toData()
         };
     }

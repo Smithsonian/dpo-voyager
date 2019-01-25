@@ -74,7 +74,7 @@ export default class CAnnotationsTask extends CTask
     protected onSelectAnnotations(event: IComponentEvent<CAnnotations>)
     {
         if (event.add && event.component.node instanceof NItem) {
-            this.manager.activeItem = event.component.node;
+            this.presentations.activeItem = event.component.node;
         }
     }
 }

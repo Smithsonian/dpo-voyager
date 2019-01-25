@@ -21,7 +21,6 @@ import Commander from "@ff/core/Commander";
 
 import Registry from "@ff/graph/Registry";
 import System from "@ff/graph/System";
-import Node from "@ff/graph/Node";
 import CPulse from "@ff/graph/components/CPulse";
 
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -32,7 +31,7 @@ import COrbitNavigation from "../core/components/COrbitNavigation";
 
 import CInterface from "./components/CInterface";
 import CReader from "./components/CReader";
-import CPresentationManager from "./components/CPresentationManager";
+import CPresentationController from "./components/CPresentationController";
 
 import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
@@ -119,7 +118,7 @@ export default class ExplorerApplication
         explorer.createComponent(CReader);
 
         const presentations = system.graph.createNode("Presentations");
-        presentations.createComponent(CPresentationManager).createActions(this.commander);
+        presentations.createComponent(CPresentationController).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -135,7 +134,7 @@ export default class ExplorerApplication
 
     protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
     {
-        const presentationManager = this.system.components.safeGet(CPresentationManager);
+        const controller = this.system.components.safeGet(CPresentationController);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
@@ -147,16 +146,16 @@ export default class ExplorerApplication
         props.name = props.name || parseUrlParameter("name") || parseUrlParameter("n");
 
         if (props.presentation) {
-            presentationManager.loadPresentation(props.presentation);
+            controller.loadPresentation(props.presentation);
         }
         else if (props.item) {
-            presentationManager.loadItem(props.item, props.template);
+            controller.loadItem(props.item, props.template);
         }
         else if (props.model) {
-            presentationManager.loadModel(props.model, props.quality, props.name, props.template);
+            controller.loadModel(props.model, props.quality, props.name, props.template);
         }
         else if (props.geometry) {
-            presentationManager.loadGeometryAndTexture(
+            controller.loadGeometryAndTexture(
                 props.geometry, props.texture, props.quality, props.name, props.template);
         }
 

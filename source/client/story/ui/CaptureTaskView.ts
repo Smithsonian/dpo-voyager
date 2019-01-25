@@ -49,12 +49,12 @@ export default class CaptureTaskView extends TaskView
     protected connected()
     {
         super.connected();
-        this.task.outs.taken.on("value", this.onPictureTaken, this);
+        this.task.outs.ready.on("value", this.onPictureTaken, this);
     }
 
     protected disconnected()
     {
-        this.task.outs.taken.off("value", this.onPictureTaken, this);
+        this.task.outs.ready.off("value", this.onPictureTaken, this);
         super.disconnected();
     }
 
@@ -65,29 +65,45 @@ export default class CaptureTaskView extends TaskView
         }
 
         const ins = this.task.ins;
-        const dataURL = this.task.imageDataURL;
-        const image = dataURL ? html`<div class="sv-label">Preview</div>
-            <div class="sv-image"><img alt="Capture" src=${dataURL}></div>` : null;
+        const ready = this.task.outs.ready.value;
 
-        return html`<div class="ff-flex-row ff-flex-wrap">
-                <ff-button text="Take" icon="camera" @click=${this.onClickCapture}></ff-button>
-                <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
+        const imageElement = this.task.getImageElement();
+        const image = imageElement ? html`<div class="sv-label">Preview</div>
+            <div class="sv-image">${imageElement}</div>` : null;
+
+        // TODO: button temporarily removed, functionality not yet implemented
+        // <ff-button text="Remove" icon="trash" @click=${this.onClickRemove}></ff-button>
+
+        return html`<div class="sv-commands">
+                <ff-button text="Take" icon="camera" @click=${this.onClickTake}></ff-button>
+                <ff-button text="Upload" icon="upload" ?disabled=${!ready} @click=${this.onClickUpload}></ff-button>
+                <ff-button text="Download" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
             </div>
-            <sv-property-view .property=${ins.preset}></sv-property-view>
-            <sv-property-view .property=${ins.width}></sv-property-view>
-            <sv-property-view .property=${ins.height}></sv-property-view>
-            ${image}
-        `;
+            <div class="sv-scrollable">
+                <sv-property-view .property=${ins.type}></sv-property-view>
+                <sv-property-view .property=${ins.quality}></sv-property-view>
+                ${image}
+            </div>`;
     }
 
-    protected onClickCapture()
+    protected onClickTake()
     {
         this.task.ins.take.set();
     }
 
-    protected onClickSave()
+    protected onClickUpload()
     {
-        this.task.ins.save.set();
+        this.task.ins.upload.set();
+    }
+
+    protected onClickDownload()
+    {
+        this.task.ins.download.set();
+    }
+
+    protected onClickRemove()
+    {
+        this.task.ins.remove.set();
     }
 
     protected onPictureTaken()

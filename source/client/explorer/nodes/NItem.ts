@@ -32,8 +32,7 @@ import CDocuments from "../components/CDocuments";
 export default class NItem extends NTransform
 {
     static readonly type: string = "NItem";
-
-    static readonly mimeType: string = "application/si-dpo-3d.item+json";
+    static readonly mimeType = "application/si-dpo-3d.item+json";
 
     get meta() {
         return this.components.get(CMeta);
@@ -49,6 +48,10 @@ export default class NItem extends NTransform
     }
     get annotations() {
         return this.components.get(CAnnotations);
+    }
+
+    get url() {
+        return this.model.url;
     }
 
     setUrl(url: string, assetPath?: string)
@@ -96,6 +99,12 @@ export default class NItem extends NTransform
     toData(): IItem
     {
         const data: Partial<IItem> = {
+            info: {
+                type: NItem.mimeType,
+                copyright: "Copyright Smithsonian Institution",
+                generator: "Voyager Item Parser",
+                version: "1.2"
+            },
             model: this.model.toData()
         };
 

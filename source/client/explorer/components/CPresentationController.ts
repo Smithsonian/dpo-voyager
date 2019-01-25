@@ -17,11 +17,8 @@
 
 import resolvePathname from "resolve-pathname";
 
-import { IComponentEvent } from "@ff/graph/Node";
-import { INodeEvent } from "@ff/graph/Graph";
-
 import CController, { Commander, Actions } from "@ff/graph/components/CController";
-import CSelection from "@ff/graph/components/CSelection";
+import CSelection, { IComponentEvent, INodeEvent } from "@ff/graph/components/CSelection";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import * as template from "../templates/presentation.json";
@@ -58,20 +55,28 @@ export interface IActivePresentationEvent extends ITypedEvent<"active-presentati
     next: CPresentation;
 }
 
+export interface IItemEvent extends ITypedEvent<"item">
+{
+    add: boolean;
+    remove: boolean;
+    item: NItem;
+}
+
 export interface IActiveItemEvent extends ITypedEvent<"active-item">
 {
     previous: NItem;
     next: NItem;
 }
 
-export type ExplorerActions = Actions<CPresentationManager>;
+export type ExplorerActions = Actions<CPresentationController>;
 
 /**
  * Voyager Explorer controller component. Manages presentations.
  */
-export default class CPresentationManager extends CController<CPresentationManager>
+export default class CPresentationController extends CController<CPresentationController>
 {
-    static readonly type: string = "CPresentationManager";
+    static readonly type: string = "CPresentationController";
+    static readonly isSystemSingleton = true;
 
     private _activePresentation: CPresentation = null;
     private _activeItem: NItem = null;
@@ -93,13 +98,18 @@ export default class CPresentationManager extends CController<CPresentationManag
             this._activePresentation = presentation;
             this.activeItem = null;
 
-            // make the presentation's scene the currently displayed scene
-            if (this._activePresentation) {
-                this.renderer.activeSceneComponent = this._activePresentation.scene;
+            if (previous) {
+                previous.innerGraph.nodes.off(NItem, this.onItem, this);
+            }
+            if (presentation) {
+                presentation.innerGraph.nodes.on(NItem, this.onItem, this);
             }
 
+            // make the presentation's scene the currently displayed scene
+            this.renderer.activeSceneComponent = presentation ? presentation.scene : null;
+
             this.emit<IActivePresentationEvent>({
-                type: "active-presentation", previous, next: this._activePresentation
+                type: "active-presentation", previous, next: presentation
             });
         }
     }
@@ -118,14 +128,14 @@ export default class CPresentationManager extends CController<CPresentationManag
             if (item && item.graph.parent !== this._activePresentation) {
                 this.activePresentation = item.graph.parent as CPresentation;
             }
-
-            const previous = this._activeItem;
-            this._activeItem = item;
-
-            this.emit<IActiveItemEvent>({
-                type: "active-item", previous, next: this._activeItem
-            });
         }
+
+        const previous = this._activeItem;
+        this._activeItem = item;
+
+        this.emit<IActiveItemEvent>({
+            type: "active-item", previous, next: this._activeItem
+        });
     }
 
     get items() {
@@ -154,16 +164,16 @@ export default class CPresentationManager extends CController<CPresentationManag
     create()
     {
         super.create();
+
         this.node.components.on(CPresentation, this.onPresentation, this);
         this.selection.selectedComponents.on(CPresentation, this.onSelectPresentation, this);
-        //this.selection.selectedNodes.on(NItem, this.onSelectItem, this);
     }
 
     dispose()
     {
         this.node.components.off(CPresentation, this.onPresentation, this);
         this.selection.selectedComponents.off(CPresentation, this.onSelectPresentation, this);
-        //this.selection.selectedNodes.off(NItem, this.onSelectItem, this);
+
         super.dispose();
     }
 
@@ -225,7 +235,7 @@ export default class CPresentationManager extends CController<CPresentationManag
                 if (index === 0) {
                     const node = graph.createCustomNode(NItem);
                     node.setUrl(itemUrl || `${modelPath}item.json`, modelPath);
-                    node.model.addWebModelDerivative(modelName, q);
+                    node.model.createWebModelDerivative(modelName, q);
                     return node;
                 }
 
@@ -304,6 +314,10 @@ export default class CPresentationManager extends CController<CPresentationManag
         this.emit<IPresentationEvent>({
             type: "presentation", add: event.add, remove: event.remove, presentation: event.component
         });
+
+        if (event.add) {
+            this.activePresentation = event.component;
+        }
     }
 
     protected onSelectPresentation(event: IComponentEvent<CPresentation>)
@@ -313,13 +327,14 @@ export default class CPresentationManager extends CController<CPresentationManag
         }
     }
 
-    // protected onSelectItem(event: INodeEvent<NItem>)
-    // {
-    //     if (event.add) {
-    //         this.activeItem = event.node;
-    //     }
-    //     else if (event.remove && event.node === this._activeItem) {
-    //         this.activeItem = null;
-    //     }
-    // }
+    protected onItem(event: INodeEvent<NItem>)
+    {
+        this.emit<IItemEvent>({
+            type: "item", add: event.add, remove: event.remove, item: event.node
+        });
+
+        if (event.add) {
+            this.activeItem = event.node;
+        }
+    }
 }

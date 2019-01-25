@@ -53,11 +53,6 @@ export default class NPresentationSetup extends NTransform
         reader: null
     };
 
-
-    get isActive() {
-        return this._isActive;
-    }
-
     // shortcuts to access system-global components
 
     get renderer() {
@@ -116,31 +111,11 @@ export default class NPresentationSetup extends NTransform
         super.dispose();
     }
 
-    activate()
-    {
-        if (this._data.navigation) {
-            this.navigation.fromData(this._data.navigation);
-        }
-        if (this._data.interface) {
-            this.interface.fromData(this._data.interface);
-        }
-        if (this._data.reader) {
-            this.reader.fromData(this._data.reader);
-        }
-    }
-
-    deactivate()
-    {
-        this._data.navigation = this.navigation.toData();
-        this._data.interface = this.interface.toData();
-        this._data.reader = this.reader.toData();
-    }
-
     toData(): ISetup
     {
         const data: Partial<ISetup> = {};
 
-        if (this.isActive) {
+        if (this._isActive) {
             this._data.navigation = this.navigation.toData();
             this._data.interface = this.interface.toData();
             this._data.reader = this.reader.toData();
@@ -220,12 +195,32 @@ export default class NPresentationSetup extends NTransform
     protected onActiveScene(event: IActiveSceneEvent)
     {
         if (event.previous && event.previous.graph === this.graph) {
-            this.deactivate();
+            this.sceneDeactivated();
             this._isActive = false;
         }
         if (event.next && event.next.graph === this.graph) {
-            this.activate();
+            this.sceneActivated();
             this._isActive = true;
         }
+    }
+
+    protected sceneActivated()
+    {
+        if (this._data.navigation) {
+            this.navigation.fromData(this._data.navigation);
+        }
+        if (this._data.interface) {
+            this.interface.fromData(this._data.interface);
+        }
+        if (this._data.reader) {
+            this.reader.fromData(this._data.reader);
+        }
+    }
+
+    protected sceneDeactivated()
+    {
+        this._data.navigation = this.navigation.toData();
+        this._data.interface = this.interface.toData();
+        this._data.reader = this.reader.toData();
     }
 }

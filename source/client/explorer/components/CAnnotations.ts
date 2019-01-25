@@ -129,17 +129,19 @@ export default class CAnnotations extends Component
         }
     }
 
-    toData(): IAnnotations
+    toData(): IAnnotations | null
     {
-        const data: Partial<IAnnotations> = {};
+        let data: Partial<IAnnotations> = null;
 
         const annotationIds = Object.keys(this.annotations);
         if (annotationIds.length > 0) {
+            data = data || {};
             data.annotations = annotationIds.map(id => this.annotations[id].deflate());
         }
 
         const groupIds = Object.keys(this.groups);
         if (groupIds.length > 0) {
+            data = data || {};
             data.groups = groupIds.map(id => this.groups[id].deflate());
         }
 

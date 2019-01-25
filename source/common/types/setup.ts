@@ -36,15 +36,15 @@ export enum EReaderPosition { Overlay, Left, Right }
 
 export interface ISetup
 {
-    scene: IScene;
-    reader: IReader;
-    interface: IInterface;
-    navigation: INavigation;
-    background: IBackground;
-    groundPlane: IGroundPlane;
-    grid: IGrid;
-    tapeTool: ITapeTool;
-    sectionTool: ISectionTool;
+    scene?: IScene;
+    reader?: IReader;
+    interface?: IInterface;
+    navigation?: INavigation;
+    background?: IBackground;
+    groundPlane?: IGroundPlane;
+    grid?: IGrid;
+    tapeTool?: ITapeTool;
+    sectionTool?: ISectionTool;
 }
 
 export interface INavigation
@@ -57,6 +57,8 @@ export interface INavigation
 
 export interface IOrbitNavigation
 {
+    orbit: number[];
+    offset: number[];
     minOrbit: number[];
     maxOrbit: number[];
     minOffset: number[];
@@ -65,6 +67,8 @@ export interface IOrbitNavigation
 
 export interface IWalkNavigation
 {
+    position: number[];
+    rotation: number[];
     minPosition: number[];
     maxPosition: number[];
 }

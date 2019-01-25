@@ -16,17 +16,18 @@
  */
 
 import System from "@ff/graph/System";
-import CSelection from "@ff/graph/components/CSelection";
+import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
 
-import { customElement, property, PropertyValues } from "@ff/ui/CustomElement";
+import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
+import Icon from "@ff/ui/Icon";
 import List from "@ff/ui/List";
 
 import CPresentation from "../../explorer/components/CPresentation";
 
-import CPresentationManager, {
+import CPresentationController, {
     IPresentationEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationManager";
+} from "../../explorer/components/CPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +37,7 @@ class PresentationList extends List<CPresentation>
     @property({ attribute: false })
     system: System = null;
 
-    protected manager: CPresentationManager = null;
+    protected presentations: CPresentationController = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
@@ -44,7 +45,7 @@ class PresentationList extends List<CPresentation>
         super.firstConnected();
         this.classList.add("sv-presentation-list");
 
-        this.manager = this.system.components.safeGet(CPresentationManager);
+        this.presentations = this.system.components.safeGet(CPresentationController);
         this.selection = this.system.components.safeGet(CSelection);
     }
 
@@ -52,14 +53,16 @@ class PresentationList extends List<CPresentation>
     {
         super.connected();
 
-        this.manager.on<IPresentationEvent>("presentation", this.onPresentation, this);
-        this.manager.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.selection.selectedComponents.on(CPresentation, this.onSelectPresentation, this);
+        this.presentations.on<IPresentationEvent>("presentation", this.onPresentation, this);
+        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
     }
 
     protected disconnected()
     {
-        this.manager.off<IPresentationEvent>("presentation", this.onPresentation, this);
-        this.manager.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.selection.selectedComponents.off(CPresentation, this.onSelectPresentation, this);
+        this.presentations.off<IPresentationEvent>("presentation", this.onPresentation, this);
+        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
 
         super.disconnected();
     }
@@ -72,23 +75,24 @@ class PresentationList extends List<CPresentation>
 
     protected renderItem(component: CPresentation)
     {
-        return component.displayName;
+        const isActive = component === this.presentations.activePresentation;
+        return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
+            <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
     }
 
     protected isItemSelected(component: CPresentation)
     {
-        return component === this.manager.activePresentation;
+        return this.selection.selectedComponents.contains(component);
     }
 
     protected onClickItem(event: MouseEvent, component: CPresentation)
     {
-        this.manager.activePresentation = component;
+        this.presentations.activePresentation = component;
         this.selection.selectComponent(component);
     }
 
     protected onClickEmpty()
     {
-        this.manager.activePresentation = null;
     }
 
     protected onPresentation(event: IPresentationEvent)
@@ -96,13 +100,13 @@ class PresentationList extends List<CPresentation>
         this.requestUpdate();
     }
 
+    protected onSelectPresentation(event: IComponentEvent<CPresentation>)
+    {
+        this.requestUpdate();
+    }
+
     protected onActivePresentation(event: IActivePresentationEvent)
     {
-        if (event.previous) {
-            this.setSelected(event.previous, false);
-        }
-        if (event.next) {
-            this.setSelected(event.next, true);
-        }
+        this.requestUpdate();
     }
 }

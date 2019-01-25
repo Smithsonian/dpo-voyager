@@ -20,15 +20,15 @@ import Component from "@ff/graph/Component";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import CPresentationManager, {
+import CPresentationController, {
     IActiveItemEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationManager";
+} from "../../explorer/components/CPresentationController";
 
-import NTasks from "../nodes/NTasks";
 import NItem from "../../explorer/nodes/NItem";
 import CPresentation from "../../explorer/components/CPresentation";
 
+import CTaskController from "./CTaskController";
 import TaskView from "../ui/TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,8 @@ export default class CTask extends Component
 
     ins = this.addInputs(ins);
 
-    protected manager: CPresentationManager = null;
+    protected tasks: CTaskController = null;
+    protected presentations: CPresentationController = null;
     protected selection: CPickSelection = null;
 
     protected activePresentation: CPresentation = null;
@@ -54,15 +55,15 @@ export default class CTask extends Component
 
     create()
     {
-        this.selection = this.system.components.safeGet(CPickSelection);
-        this.manager = this.system.components.safeGet(CPresentationManager);
+        this.tasks = this.system.graph.components.safeGet(CTaskController);
+        this.presentations = this.system.graph.components.safeGet(CPresentationController);
+        this.selection = this.system.graph.components.safeGet(CPickSelection);
     }
 
     update()
     {
         if (this.ins.activate.changed) {
-            const tasksNode = this.node as NTasks;
-            tasksNode.activeTask = this;
+            this.tasks.activeTask = this;
         }
 
         return false;
@@ -75,14 +76,14 @@ export default class CTask extends Component
 
     activate()
     {
-        this.manager.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.manager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.presentations.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
 
-        this.setActivePresentation(this.manager.activePresentation);
-        this.activePresentation = this.manager.activePresentation;
+        this.setActivePresentation(this.presentations.activePresentation);
+        this.activePresentation = this.presentations.activePresentation;
 
-        this.setActiveItem(this.manager.activeItem);
-        this.activeItem = this.manager.activeItem;
+        this.setActiveItem(this.presentations.activeItem);
+        this.activeItem = this.presentations.activeItem;
     }
 
     deactivate()
@@ -93,8 +94,8 @@ export default class CTask extends Component
         this.setActiveItem(null);
         this.activeItem = null;
 
-        this.manager.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.manager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.presentations.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
     }
 
     protected setActivePresentation(presentation: CPresentation)

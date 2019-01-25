@@ -18,6 +18,7 @@
 import Publisher, { ITypedEvent } from "@ff/core/Publisher";
 
 import { IDocument } from "common/types/item";
+import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +42,7 @@ export default class Document extends Publisher
         super();
         this.addEvent("change");
 
-        this.id = id;
+        this.id = id || uniqueId(6);
     }
 
     update()

@@ -116,13 +116,15 @@ export default class Derivative
         }
     }
 
-    addAsset(uri: string, type: EAssetType, mapType?: EMapType)
+    createAsset(type: EAssetType, uri: string): Asset
     {
         if (!uri) {
             throw new Error("uri must be specified");
         }
 
-        this.assets.push(new Asset(uri, type, mapType));
+        const asset = new Asset(type, uri);
+        this.assets.push(asset);
+        return asset;
     }
 
     fromData(data: IDerivative)
@@ -146,12 +148,12 @@ export default class Derivative
         return `Derivative - usage: ${EDerivativeUsage[this.usage]}, quality: ${EDerivativeQuality[this.quality]}, #assets: ${this.assets.length})`;
     }
 
-    protected findAsset(type: EAssetType): Asset | undefined
+    findAsset(type: EAssetType): Asset | undefined
     {
         return this.assets.find(asset => asset.type === type);
     }
 
-    protected findAssets(type: EAssetType): Asset[]
+    findAssets(type: EAssetType): Asset[]
     {
         return this.assets.filter(asset => asset.type === type);
     }

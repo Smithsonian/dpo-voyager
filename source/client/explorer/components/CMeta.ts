@@ -65,7 +65,7 @@ export default class CMeta extends Component
         }
     }
 
-    toData(): Dictionary<any>
+    toData(): Dictionary<any> | null
     {
         return this.hasData() ? Object.assign({}, this.data) : null;
     }

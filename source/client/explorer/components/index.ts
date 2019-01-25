@@ -23,7 +23,7 @@ import CHomeGrid from "./CHomeGrid";
 import CInterface from "./CInterface";
 import CMeta from "./CMeta";
 import CPresentation from "./CPresentation";
-import CPresentationManager from "./CPresentationManager";
+import CPresentationController from "./CPresentationController";
 import CProcess from "./CProcess";
 import CReader from "./CReader";
 import CReference from "./CReference";
@@ -43,7 +43,7 @@ export {
     CInterface,
     CMeta,
     CPresentation,
-    CPresentationManager,
+    CPresentationController,
     CProcess,
     CReader,
     CReference,
@@ -62,7 +62,7 @@ export const componentTypes = [
     CInterface,
     CMeta,
     CPresentation,
-    CPresentationManager,
+    CPresentationController,
     CProcess,
     CReader,
     CReference,

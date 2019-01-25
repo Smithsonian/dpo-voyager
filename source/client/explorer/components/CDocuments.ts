@@ -89,15 +89,18 @@ export default class CDocuments extends Component
         }
     }
 
-    toData(): IDocuments
+    toData(): IDocuments | null
     {
-        const data: Partial<IDocuments> = {};
+        let data: Partial<IDocuments> = null;
 
         if (this.mainDocument) {
+            data = data || {};
             data.mainDocumentId = this.mainDocument.id;
         }
         const documentIds = Object.keys(this.documents);
+
         if (documentIds.length > 0) {
+            data = data || {};
             data.documents = documentIds.map(id => this.documents[id].deflate());
         }
 

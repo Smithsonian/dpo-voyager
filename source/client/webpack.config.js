@@ -40,7 +40,7 @@ const dirs = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const version = "0.1.1";
+const version = "0.2.0";
 
 const apps = {
     "explorer": {
@@ -88,7 +88,7 @@ function createAppConfig(app, dirs, isDevMode)
 
     const appName = apps[app].name;
     const appEntryPoint = apps[app].entryPoint;
-    const appTitle = apps[app].title;
+    const appTitle = apps[app].title + (isDevMode ? " DEV" : " PROD");
 
     console.log("VOYAGER - WEBPACK BUILD SCRIPT");
     console.log("application = %s", appName);

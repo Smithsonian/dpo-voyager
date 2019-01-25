@@ -19,23 +19,23 @@ import System from "@ff/graph/System";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 
-import NTasks, { ITaskChangeEvent } from "../nodes/NTasks";
+import CTaskController, { IActiveTaskEvent } from "../components/CTaskController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-task-panel")
 export default class TaskPanel extends SystemElement
 {
-    protected tasks: NTasks = null;
+    protected taskController: CTaskController = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.tasks = system.nodes.get(NTasks);
+        this.taskController = system.graph.components.safeGet(CTaskController);
 
-        if (!this.tasks) {
-            throw new Error("missing 'Tasks' node");
+        if (!this.taskController) {
+            throw new Error("missing task manager");
         }
     }
 
@@ -46,17 +46,17 @@ export default class TaskPanel extends SystemElement
 
     protected connected()
     {
-        this.tasks.on<ITaskChangeEvent>("task", this.onTaskChange, this);
+        this.taskController.on<IActiveTaskEvent>("active-task", this.onActiveTask, this);
     }
 
     protected disconnected()
     {
-        this.tasks.off<ITaskChangeEvent>("task", this.onTaskChange, this);
+        this.taskController.off<IActiveTaskEvent>("active-task", this.onActiveTask, this);
     }
 
     protected render()
     {
-        const task = this.tasks.activeTask;
+        const task = this.taskController.activeTask;
         if (!task) {
             return html``;
         }
@@ -74,7 +74,7 @@ export default class TaskPanel extends SystemElement
         `;
     }
 
-    protected onTaskChange()
+    protected onActiveTask()
     {
         this.requestUpdate();
     }
