@@ -1,8 +1,9 @@
 {
-    "asset": {
+    "info": {
+        "type": "application/si-dpo-3d.presentation+json",
         "copyright": "Copyright Smithsonian Institution",
         "generator": "Voyager Presentation Parser",
-        "version": "1.0"
+        "version": "1.2"
     },
     "scene": {
         "nodes": [0, 1, 2]
@@ -61,15 +62,60 @@
         "color": [0.8, 0.85, 1],
         "intensity": 1
     }],
-    "explorer": {
-        "renderer": {
+    "setup": {
+        "navigation": {
+            "type": "Orbit",
+            "enabled": true,
+            "orbit": {
+                "orbit": [-24, -26, 0],
+                "offset": [0, 0, 199.64320696292842],
+                "minOrbit": [-90, null, null],
+                "maxOrbit": [90, null, null],
+                "minOffset": [null, null, 0.1],
+                "maxOffset": [null, null, null]
+            }
+        },
+        "interface": {
+            "visible": true,
+            "logo": true
+        },
+        "reader": {
+            "visible": false,
+            "position": "Overlay",
+            "url": ""
+        },
+        "scene": {
             "units": "cm",
-            "shader": "inherit",
+            "shader": "Default",
             "exposure": 1,
             "gamma": 1
         },
-        "reader": {
-            "enabled": false
+        "background": {
+            "type": "Solid",
+            "color0": [1, 0, 0],
+            "color1": [0, 1, 0]
+        },
+        "groundPlane": {
+            "visible": false,
+            "offset": 0,
+            "color": [0, 0, 1],
+            "shadowVisible": false,
+            "shadowColor": [1, 1, 1, 1]
+        },
+        "grid": {
+            "visible": false,
+            "color": [0.5, 0.7, 0.8]
+        },
+        "tapeTool": {
+            "active": false,
+            "startPosition": [0, 0, 0],
+            "startDirection": [0, 0, 0],
+            "endPosition": [0, 0, 0],
+            "endDirection": [0, 0, 0]
+        },
+        "sectionTool": {
+            "active": false,
+            "plane": [0, 0, 0, 0]
         }
     }
 }

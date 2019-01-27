@@ -18,26 +18,30 @@
 import resolvePathname from "resolve-pathname";
 
 import fetch from "@ff/browser/fetch";
+import download from "@ff/browser/download";
 
 import CController, { Commander, Actions, types } from "@ff/graph/components/CController";
 import CSelection from "@ff/graph/components/CSelection";
 
-import NItem from "../../explorer/nodes/NItem";
-import CPresentation from "../../explorer/components/CPresentation";
-import CPresentationController from "../../explorer/components/CPresentationController";
 import Notification from "@ff/ui/Notification";
+
+import CPresentationController from "../../explorer/components/CPresentationController";
+import CTaskController from "./CTaskController";
+
+import taskSets, { EStoryMode } from "./taskSets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum ETaskSet { Prep, Author }
+export { EStoryMode };
 
 export type StoryActions = Actions<CStoryController>;
 
+
 const ins = {
-    upload: types.Event("Upload"),
+    save: types.Event("Save"),
     download: types.Event("Download"),
     exit: types.Event("Exit"),
-    taskSet: types.Enum("TaskSet", ETaskSet),
+    mode: types.Enum("Mode", EStoryMode),
     expertMode: types.Boolean("ExpertMode"),
     referrer: types.String("Referrer")
 };
@@ -51,7 +55,7 @@ export default class CStoryController extends CController<CStoryController>
 
     protected selection: CSelection = null;
     protected presentations: CPresentationController = null;
-
+    protected tasks: CTaskController = null;
 
     createActions(commander: Commander)
     {
@@ -62,13 +66,20 @@ export default class CStoryController extends CController<CStoryController>
     {
         this.selection = this.graph.components.get(CSelection);
         this.presentations = this.graph.components.get(CPresentationController);
+        this.tasks = this.graph.components.get(CTaskController);
     }
 
     update()
     {
         const ins = this.ins;
 
-        if (ins.upload.changed) {
+        if (ins.mode.changed) {
+            const taskTypes = taskSets[EStoryMode[ins.mode.getValidatedValue()]];
+            if (taskTypes) {
+                this.tasks.setTaskTypes(taskTypes);
+            }
+        }
+        if (ins.save.changed) {
             const obj = this.getActiveObject();
             if (obj) {
                 const url = obj.url;
@@ -93,14 +104,7 @@ export default class CStoryController extends CController<CStoryController>
             if (obj) {
                 const url = obj.url;
                 const name = url.substr(resolvePathname(".", url).length);
-                const data = JSON.stringify(obj.toData());
-
-                const link = document.createElement("a");
-                link.download = name;
-                link.href = window.URL.createObjectURL(new Blob([data], { type: "text/json" }));
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                download.json(obj.toData(), name);
             }
         }
 

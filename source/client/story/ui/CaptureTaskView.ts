@@ -71,12 +71,9 @@ export default class CaptureTaskView extends TaskView
         const image = imageElement ? html`<div class="sv-label">Preview</div>
             <div class="sv-image">${imageElement}</div>` : null;
 
-        // TODO: button temporarily removed, functionality not yet implemented
-        // <ff-button text="Remove" icon="trash" @click=${this.onClickRemove}></ff-button>
-
         return html`<div class="sv-commands">
                 <ff-button text="Take" icon="camera" @click=${this.onClickTake}></ff-button>
-                <ff-button text="Upload" icon="upload" ?disabled=${!ready} @click=${this.onClickUpload}></ff-button>
+                <ff-button text="Save" icon="save" ?disabled=${!ready} @click=${this.onClickSave}></ff-button>
                 <ff-button text="Download" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
             </div>
             <div class="sv-scrollable">
@@ -91,19 +88,14 @@ export default class CaptureTaskView extends TaskView
         this.task.ins.take.set();
     }
 
-    protected onClickUpload()
+    protected onClickSave()
     {
-        this.task.ins.upload.set();
+        this.task.ins.save.set();
     }
 
     protected onClickDownload()
     {
         this.task.ins.download.set();
-    }
-
-    protected onClickRemove()
-    {
-        this.task.ins.remove.set();
     }
 
     protected onPictureTaken()

@@ -20,8 +20,12 @@ import System from "@ff/graph/System";
 import "@ff/ui/Button";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
-import CTaskController, { IActiveTaskEvent } from "../components/CTaskController";
 import CStoryController from "../components/CStoryController";
+import CTaskController, { IActiveTaskEvent } from "../components/CTaskController";
+import CPresentationController, {
+    IActiveItemEvent,
+    IActivePresentationEvent
+} from "../../explorer/components/CPresentationController";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 
@@ -30,15 +34,17 @@ import SystemElement, { customElement, html } from "./SystemElement";
 @customElement("sv-task-bar")
 export default class TaskBar extends SystemElement
 {
-    protected tasks: CTaskController = null;
     protected story: CStoryController = null;
+    protected tasks: CTaskController = null;
+    protected presentations: CPresentationController = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.tasks = system.graph.components.safeGet(CTaskController);
         this.story = system.graph.components.safeGet(CStoryController);
+        this.tasks = system.graph.components.safeGet(CTaskController);
+        this.presentations = system.graph.components.safeGet(CPresentationController);
     }
 
     protected firstConnected()
@@ -48,14 +54,18 @@ export default class TaskBar extends SystemElement
 
     protected connected()
     {
-        this.tasks.on<IActiveTaskEvent>("active-task", this.onChange, this);
-        this.story.ins.expertMode.on("value", this.onChange, this);
+        this.story.ins.expertMode.on("value", this.performUpdate, this);
+        this.tasks.on<IActiveTaskEvent>("active-task", this.performUpdate, this);
+        this.presentations.on<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
+        this.presentations.on<IActiveItemEvent>("active-item", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.tasks.off<IActiveTaskEvent>("active-task", this.onChange, this);
-        this.story.ins.expertMode.off("value", this.onChange, this);
+        this.story.ins.expertMode.off("value", this.performUpdate, this);
+        this.tasks.off<IActiveTaskEvent>("active-task", this.performUpdate, this);
+        this.presentations.off<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
+        this.presentations.off<IActiveItemEvent>("active-item", this.performUpdate, this);
     }
 
     protected render()
@@ -63,9 +73,11 @@ export default class TaskBar extends SystemElement
         const taskList = this.tasks.tasks;
         const activeTask = this.tasks.activeTask;
         const expertMode = this.story.ins.expertMode.value;
+        const taskMode = this.story.ins.mode.getOptionText();
 
         return html`
             <img class="sv-logo" src="images/voyager-75grey.svg" alt="Logo"/>
+            <div class="sv-mode ff-text">${taskMode}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
@@ -75,7 +87,7 @@ export default class TaskBar extends SystemElement
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group">
-                <ff-button text="Upload" icon="upload" @click=${this.onClickUpload}></ff-button>
+                <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
                 <ff-button text="Download" icon="download" @click=${this.onClickDownload}></ff-button>
                 <ff-button text="Exit" icon="exit" @click=${this.onClickExit}></ff-button>
                 <div class="sv-divider"></div>
@@ -93,9 +105,9 @@ export default class TaskBar extends SystemElement
         }
     }
 
-    protected onClickUpload()
+    protected onClickSave()
     {
-        this.story.ins.upload.set();
+        this.story.ins.save.set();
     }
 
     protected onClickDownload()
@@ -112,10 +124,5 @@ export default class TaskBar extends SystemElement
     {
         const prop = this.story.ins.expertMode;
         prop.setValue(!prop.value);
-    }
-
-    protected onChange()
-    {
-        this.requestUpdate();
     }
 }

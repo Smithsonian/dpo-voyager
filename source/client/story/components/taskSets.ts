@@ -15,32 +15,25 @@
  * limitations under the License.
  */
 
-import CAnnotationsTask from "./CAnnotationsTask";
-import CCaptureTask from "./CCaptureTask";
-import CDerivativesTask from "./CDerivativesTask";
 import CExploreTask from "./CExploreTask";
 import CPoseTask from "./CPoseTask";
-import CStoryController from "./CStoryController";
-import CTaskController from "./CTaskController";
+import CCaptureTask from "./CCaptureTask";
+import CAnnotationsTask from "./CAnnotationsTask";
+import CDerivativesTask from "./CDerivativesTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CAnnotationsTask,
-    CCaptureTask,
-    CDerivativesTask,
-    CExploreTask,
-    CPoseTask,
-    CStoryController,
-    CTaskController,
-};
+export enum EStoryMode { QC, Authoring }
 
-export const componentTypes = [
-    CAnnotationsTask,
-    CCaptureTask,
-    CDerivativesTask,
-    CExploreTask,
-    CPoseTask,
-    CStoryController,
-    CTaskController,
-];
+export default {
+    "QC": [
+        CExploreTask,
+        CPoseTask,
+        CCaptureTask,
+        CDerivativesTask,
+    ],
+    "Authoring": [
+        CExploreTask,
+        CAnnotationsTask,
+    ],
+}

@@ -20,6 +20,7 @@ import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 import "./PresentationList";
 import "./ItemList";
 
+import CStoryController, { EStoryMode } from "../components/CStoryController";
 import SystemElement, { customElement, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +28,9 @@ import SystemElement, { customElement, html } from "./SystemElement";
 @customElement("sv-navigator-panel")
 export default class NavigatorPanel extends SystemElement
 {
+    protected get story() {
+        return this.system.components.safeGet(CStoryController);
+    }
     protected get renderer() {
         return this.system.components.safeGet(CRenderer);
     }
@@ -38,31 +42,31 @@ export default class NavigatorPanel extends SystemElement
 
     protected connected()
     {
-        this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
+        this.story.ins.mode.on("value", this.performUpdate, this);
+        this.renderer.on<IActiveSceneEvent>("active-scene", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.renderer.off<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
+        this.story.ins.mode.off("value", this.performUpdate, this);
+        this.renderer.off<IActiveSceneEvent>("active-scene", this.performUpdate, this);
     }
 
     protected render()
     {
         const system = this.system;
+        const authMode = this.story.ins.mode.value === EStoryMode.Authoring;
 
-        return html`<div class="sv-panel-section">
+        const presentationsList = authMode ? html`<div class="sv-panel-section">
                 <div class="sv-panel-header">Presentations</div>
                 <sv-presentation-list .system=${system}></sv-presentation-list>
             </div>
-            <ff-splitter direction="vertical"></ff-splitter>
+            <ff-splitter direction="vertical"></ff-splitter>` : null;
+
+        return html`${presentationsList}
             <div class="sv-panel-section">
                 <div class="sv-panel-header">Items</div>
                 <sv-item-list .system=${system}></sv-item-list>
             </div>`;
-    }
-
-    protected onActiveScene(event: IActiveSceneEvent)
-    {
-        this.requestUpdate();
     }
 }

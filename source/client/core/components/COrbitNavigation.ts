@@ -18,6 +18,8 @@
 import * as THREE from "three";
 
 import math from "@ff/core/math";
+import Vector3 from "@ff/core/Vector3";
+
 import { types } from "@ff/graph/propertyTypes";
 import Component from "@ff/graph/Component";
 
@@ -47,6 +49,14 @@ const _orientationPreset = [
     [ 0, 180, 0 ], // back
 ];
 
+const _replaceNull = function(vector: number[], replacement: number)
+{
+    for (let i = 0, n = vector.length; i < n; ++i) {
+        vector[i] = vector[i] === null ? replacement : vector[i];
+    }
+    return vector;
+};
+
 export { EProjection };
 
 export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
@@ -55,7 +65,7 @@ const ins = {
     preset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
     projection: types.Enum("View.Projection", EProjection, EProjection.Perspective),
     enabled: types.Boolean("Manip.Enabled", true),
-    setup: types.Event("Manip.Setup"),
+    zoomExtents: types.Event("Manip.ZoomExtents"),
     orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
     offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
     minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
@@ -80,12 +90,6 @@ export default class COrbitNavigation extends Component
     get renderer() {
         return this.system.graph.components.safeGet(CRenderer);
     }
-    get scene() {
-        return this._activeScene;
-    }
-    get camera() {
-        return this._activeScene ? this._activeScene.activeCameraComponent : null;
-    }
 
     create()
     {
@@ -96,8 +100,8 @@ export default class COrbitNavigation extends Component
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
 
-        this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
         this._activeScene = this.renderer.activeSceneComponent as CVoyagerScene;
+        this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
     }
 
     dispose()
@@ -108,21 +112,23 @@ export default class COrbitNavigation extends Component
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
 
         this.renderer.off<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
+        this._activeScene = null;
     }
 
     update()
     {
         const manip = this._manip;
 
-        const cameraComponent = this.camera;
+        const component = this._activeScene ? this._activeScene.activeCameraComponent : null;
+        const camera = component ? component.camera : null;
 
         const {
-            projection, preset, setup,
+            projection, preset, zoomExtents,
             orbit, offset, minOrbit, minOffset, maxOrbit, maxOffset
         } = this.ins;
 
-        if (cameraComponent && projection.changed) {
-            cameraComponent.camera.setProjection(projection.value);
+        if (camera && projection.changed) {
+            camera.setProjection(projection.value);
             manip.orthographicMode = projection.value === EProjection.Orthographic;
         }
 
@@ -130,18 +136,17 @@ export default class COrbitNavigation extends Component
             orbit.setValue(_orientationPreset[preset.getValidatedValue()].slice());
         }
 
-        if (setup.changed && this._activeScene) {
-            const camera = cameraComponent.camera;
+        if (zoomExtents.changed && this._activeScene) {
             camera.updateMatrixWorld(false);
             _box.copy(this._activeScene.boundingBox);
             _box.applyMatrix4(camera.matrixWorldInverse);
             _box.getSize(_size);
             _box.getCenter(_center);
 
-            const sizeXY = Math.max(_size.x / camera.aspect, _size.y);
+            const sizeXY = 0.75 * Math.max(_size.x, _size.y, _size.z);
 
             if (camera.isPerspectiveCamera) {
-                offset.value[2] = _size.z + sizeXY * 0.5 + sizeXY / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
+                offset.value[2] = sizeXY + sizeXY / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
             }
             else {
                 offset.value[2] = _size.z * 2;
@@ -168,7 +173,7 @@ export default class COrbitNavigation extends Component
     tick()
     {
         const manip = this._manip;
-        const cameraComponent = this._activeScene && this._activeScene.activeCameraComponent;
+        const component = this._activeScene && this._activeScene.activeCameraComponent;
         const ins = this.ins;
 
 
@@ -184,9 +189,9 @@ export default class COrbitNavigation extends Component
                 ins.preset.setValue(EViewPreset.None, true);
             }
 
-            if (cameraComponent && (manipUpdated || this.updated)) {
-                const camera = cameraComponent.camera;
-                const transformComponent = cameraComponent.transform;
+            if (component && (manipUpdated || this.updated)) {
+                const camera = component.camera;
+                const transformComponent = component.transform;
 
                 if (transformComponent) {
                     this._manip.toObject(transformComponent.object3D);
@@ -211,14 +216,16 @@ export default class COrbitNavigation extends Component
     {
         const orbit = data.orbit;
 
+        console.log("COrbitNavigation.fromData", orbit.orbit, orbit.offset);
+
         this.ins.copyValues({
             enabled: data.enabled,
             orbit: orbit.orbit.slice(),
             offset: orbit.offset.slice(),
-            minOrbit: orbit.minOrbit.slice(),
-            maxOrbit: orbit.maxOrbit.slice(),
-            minOffset: orbit.minOffset.slice(),
-            maxOffset: orbit.maxOffset.slice()
+            minOrbit: _replaceNull(orbit.minOrbit.slice(), -Infinity),
+            maxOrbit: _replaceNull(orbit.maxOrbit.slice(), Infinity),
+            minOffset: _replaceNull(orbit.minOffset.slice(), -Infinity),
+            maxOffset: _replaceNull(orbit.maxOffset.slice(), Infinity),
         });
     }
 
@@ -235,7 +242,7 @@ export default class COrbitNavigation extends Component
                 minOrbit: ins.minOrbit.cloneValue(),
                 maxOrbit: ins.maxOrbit.cloneValue(),
                 minOffset: ins.minOffset.cloneValue(),
-                maxOffset: ins.maxOffset.cloneValue()
+                maxOffset: ins.maxOffset.cloneValue(),
             }
         };
     }
@@ -272,6 +279,7 @@ export default class COrbitNavigation extends Component
     {
         if (event.next instanceof CVoyagerScene) {
             this._activeScene = event.next;
+            this.ins.zoomExtents.set();
         }
     }
 }

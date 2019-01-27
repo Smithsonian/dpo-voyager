@@ -15,32 +15,21 @@
  * limitations under the License.
  */
 
-import CAnnotationsTask from "./CAnnotationsTask";
-import CCaptureTask from "./CCaptureTask";
-import CDerivativesTask from "./CDerivativesTask";
-import CExploreTask from "./CExploreTask";
-import CPoseTask from "./CPoseTask";
-import CStoryController from "./CStoryController";
-import CTaskController from "./CTaskController";
+import { customElement, html } from "@ff/ui/CustomElement";
+
+import "@ff/ui/Splitter";
+import "@ff/ui/Button";
+
+import NItem from "../../explorer/nodes/NItem";
+import CExploreTask from "../components/CExploreTask";
+
+import "./ItemList";
+import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CAnnotationsTask,
-    CCaptureTask,
-    CDerivativesTask,
-    CExploreTask,
-    CPoseTask,
-    CStoryController,
-    CTaskController,
-};
+@customElement("sv-explore-task-view")
+export default class ExploreTaskView extends TaskView
+{
 
-export const componentTypes = [
-    CAnnotationsTask,
-    CCaptureTask,
-    CDerivativesTask,
-    CExploreTask,
-    CPoseTask,
-    CStoryController,
-    CTaskController,
-];
+}

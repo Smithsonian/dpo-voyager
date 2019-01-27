@@ -94,6 +94,7 @@ export default class CModel extends CObject3D
 
     url: string = "";
     assetPath: string = "";
+    fileName: string = "";
 
     protected boxFrame: THREE.Object3D = null;
 
@@ -205,6 +206,7 @@ export default class CModel extends CObject3D
     {
         this.url = url;
         this.assetPath = assetPath || resolvePathname(".", url);
+        this.fileName = url.substr(resolvePathname(".", url).length);
     }
 
     createDerivative(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative

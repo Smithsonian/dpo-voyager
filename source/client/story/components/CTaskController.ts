@@ -17,6 +17,7 @@
 
 import { ITypedEvent } from "@ff/core/Publisher";
 
+import Node from "@ff/graph/Node";
 import CController, { Commander, Actions } from "@ff/graph/components/CController";
 import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
 
@@ -36,6 +37,8 @@ export default class CTaskController extends CController<CTaskController>
 {
     static readonly type: string = "CTaskController";
 
+    private _taskNode: Node = null;
+    private _tasks: CTask[] = [];
     private _activeTask: CTask = null;
 
     constructor(id: string)
@@ -66,8 +69,19 @@ export default class CTaskController extends CController<CTaskController>
         }
     }
 
+    setTaskTypes(taskTypes: Array<typeof CTask>) {
+        this.activeTask = null;
+
+        if (this._tasks) {
+            this._tasks.forEach(task => task.dispose());
+        }
+
+        this._tasks = taskTypes.map(Type => this._taskNode.createComponent(Type));
+        this.activeTask = this._tasks[0];
+    }
+
     get tasks() {
-        return this.node.components.getArray(CTask);
+        return this._tasks;
     }
 
     protected get selection() {
@@ -82,6 +96,7 @@ export default class CTaskController extends CController<CTaskController>
     create()
     {
         super.create();
+        this._taskNode = this.graph.createNode("Tasks");
         this.selection.selectedComponents.on(CTask, this.onSelectTask, this);
     }
 

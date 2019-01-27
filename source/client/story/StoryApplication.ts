@@ -26,11 +26,6 @@ import { componentTypes as storyComponents } from "./components";
 import CStoryController from"./components/CStoryController";
 import CTaskController from "./components/CTaskController";
 
-import CPoseTask from "./components/CPoseTask";
-import CCaptureTask from "./components/CCaptureTask";
-import CAnnotationsTask from "./components/CAnnotationsTask";
-import CDerivativesTask from "./components/CDerivativesTask";
-
 import MainView from "./ui/MainView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +41,9 @@ export interface IStoryApplicationProps extends IExplorerApplicationProps
     mode?: string;
     /** When set to true, application displays additional expert level tools. */
     expert?: boolean;
+    /** Base url to use for new items or assets. */
+    baseURL?: string;
+
 }
 
 /**
@@ -61,33 +59,22 @@ export default class StoryApplication
 
     constructor(element?: HTMLElement, props?: IStoryApplicationProps)
     {
+        // create the embedded explorer application, parse properties, start loading/presenting
         this.explorer = new ExplorerApplication(null, props);
 
         this.system = this.explorer.system;
         this.commander = this.explorer.commander;
 
-        // register components
+        // register additional story tool components
         const registry = this.system.registry;
-
         registry.registerComponentType(storyComponents);
 
         //this.logController = new LogController(this.system, this.commander);
-        //this.taskController = new StoryController(this.system, this.commander);
 
         // add story components
         const storyNode = this.system.graph.createNode("Story");
+        storyNode.createComponent(CTaskController);
         storyNode.createComponent(CStoryController);
-
-        const tasksNode = this.system.graph.createNode("Tasks");
-        tasksNode.createComponent(CTaskController);
-
-        tasksNode.createComponent(CPoseTask);
-        tasksNode.createComponent(CDerivativesTask);
-        tasksNode.createComponent(CCaptureTask);
-        tasksNode.createComponent(CAnnotationsTask);
-
-        tasksNode.components.get(CTaskController).activeTask = tasksNode.components.get(CPoseTask);
-
 
         this.props = this.initFromProps(props);
 
@@ -101,6 +88,7 @@ export default class StoryApplication
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
+        props.baseURL = props.baseURL || parseUrlParameter("baseURL");
 
         const story = this.system.components.get(CStoryController);
         story.ins.referrer.setValue(props.referrer);

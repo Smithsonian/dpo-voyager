@@ -190,21 +190,25 @@ export default class NPresentationSetup extends NTransform
         if (data.sectionTool) {
             this.sectionTool.fromData(data.sectionTool);
         }
+
+        if (this._isActive) {
+            this.pushToGlobal();
+        }
     }
 
     protected onActiveScene(event: IActiveSceneEvent)
     {
         if (event.previous && event.previous.graph === this.graph) {
-            this.sceneDeactivated();
+            this.pullFromGlobal();
             this._isActive = false;
         }
         if (event.next && event.next.graph === this.graph) {
-            this.sceneActivated();
+            this.pushToGlobal();
             this._isActive = true;
         }
     }
 
-    protected sceneActivated()
+    protected pushToGlobal()
     {
         if (this._data.navigation) {
             this.navigation.fromData(this._data.navigation);
@@ -217,7 +221,7 @@ export default class NPresentationSetup extends NTransform
         }
     }
 
-    protected sceneDeactivated()
+    protected pullFromGlobal()
     {
         this._data.navigation = this.navigation.toData();
         this._data.interface = this.interface.toData();

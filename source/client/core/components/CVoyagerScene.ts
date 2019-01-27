@@ -93,7 +93,7 @@ export default class CVoyagerScene extends CScene
         this._zoomViews = true;
 
         const manip = this.system.components.get(COrbitNavigation);
-        manip.ins.setup.set();
+        manip.ins.zoomExtents.set();
     }
 
     fromData(data: IScene)

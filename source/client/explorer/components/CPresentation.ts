@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import download from "@ff/browser/download";
+
 import { IUpdateContext, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
@@ -28,7 +30,9 @@ import NPresentationSetup from "../nodes/NPresentationSetup";
 ////////////////////////////////////////////////////////////////////////////////
 
 const ins = {
-    activate: types.Event("Activate")
+    activate: types.Event("Activate"),
+    dump: types.Event("Dump"),
+    download: types.Event("Download"),
 };
 
 /**
@@ -69,6 +73,13 @@ export default class CPresentation extends CRenderGraph
 
         if (ins.activate.changed) {
             this.sceneNode.scene.ins.activate.set();
+        }
+        if (ins.dump.changed) {
+            console.log("CPresentation - dump");
+            console.log(JSON.parse(JSON.stringify(this.toData())));
+        }
+        if (ins.download.changed) {
+            download.json(this.toData(), `${this.name || "presentation"}.json`);
         }
 
         return true;

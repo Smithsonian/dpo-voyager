@@ -16,6 +16,8 @@
  */
 
 import fetch from "@ff/browser/fetch";
+import download from "@ff/browser/download";
+
 import { types } from "@ff/graph/Component";
 import { IComponentEvent } from "@ff/graph/ComponentSet";
 
@@ -70,7 +72,7 @@ const _typeExtensions = {
 const ins = {
     preset: types.Enum("Derivative.Quality", ECaptureQuality, ECaptureQuality.Thumb),
     take: types.Event("Picture.Take"),
-    upload: types.Event("Picture.Upload"),
+    save: types.Event("Picture.Save"),
     download: types.Event("Picture.Download"),
     remove: types.Event("Picture.Remove"),
     size: types.IntVec2("Picture.Size", _sizePresets[ECaptureQuality.Thumb].slice()),
@@ -175,7 +177,7 @@ export default class CCaptureTask extends CTask
             this._extension = _typeExtensions[ins.type.getValidatedValue()];
             this.takePictures(ins.quality.value);
         }
-        if (ins.upload.changed) {
+        if (ins.save.changed) {
             this.uploadPictures();
         }
         if (ins.download.changed) {
@@ -238,13 +240,7 @@ export default class CCaptureTask extends CTask
 
         const dataURL = this._imageDataURLs[EDerivativeQuality.High];
         const fileName = this.getImageFileName(EDerivativeQuality.High, this._extension);
-
-        const link = document.createElement("a");
-        link.download = fileName;
-        link.href = dataURL;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        download.url(dataURL, fileName);
     }
 
     protected updateDerivative(quality: EDerivativeQuality, mimeType: string, url: string)

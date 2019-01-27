@@ -26,10 +26,12 @@ import CRenderer from "@ff/scene/components/CRenderer";
 
 import NItem from "../../explorer/nodes/NItem";
 import CInterface from "../../explorer/components/CInterface";
+import CHomeGrid from "../../explorer/components/CHomeGrid";
 import CModel from "../../core/components/CModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import CTask from "./CTask";
+import CPresentation from "../../explorer/components/CPresentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,11 +58,15 @@ export default class CPoseTask extends CTask
 
     protected activeModel: CModel = null;
 
+    protected get renderer() {
+        return this.system.graph.components.get(CRenderer);
+    }
     protected get interface() {
-        return this.system.components.get(CInterface);
+        return this.system.graph.components.get(CInterface);
     }
 
     private _interfaceVisible = false;
+    private _gridVisible = false;
     private _viewport: Viewport = null;
     private _deltaX = 0;
     private _deltaY = 0;
@@ -78,9 +84,7 @@ export default class CPoseTask extends CTask
         this.selection.selectedComponents.on(CModel, this.onSelectModel, this);
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
-        const renderer = this.system.components.get(CRenderer);
-
-        renderer.views.forEach(view => {
+        this.renderer.views.forEach(view => {
             if (view instanceof RenderQuadView) {
                 view.layout = EQuadViewLayout.Quad;
             }
@@ -154,6 +158,19 @@ export default class CPoseTask extends CTask
         this.activeModel.setFromMatrix(_mat4);
 
         return true;
+    }
+
+    protected setActivePresentation(presentation: CPresentation)
+    {
+        const previous = this.activePresentation;
+
+        if (previous) {
+            previous.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+        }
+        if (presentation) {
+            this._gridVisible = presentation.setup.homeGrid.ins.visible.value;
+            presentation.setup.homeGrid.ins.visible.setValue(true);
+        }
     }
 
     protected setActiveItem(item: NItem)
