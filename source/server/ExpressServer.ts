@@ -21,6 +21,7 @@ import * as express from "express";
 import { Router } from "express";
 
 import * as morgan from "morgan";
+import { v2 as webdav } from "webdav-server";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +34,7 @@ export interface IExpressServerConfiguration
     staticRoute?: string;
     staticDir?: string;
     docDir?: string;
+    fileDir?: string;
     viewsDir?: string;
     defaultLayout?: string;
 }
@@ -50,6 +52,8 @@ export default class ExpressServer
     readonly app: express.Application;
     readonly server: http.Server;
 
+    protected webDAVServer: webdav.WebDAVServer;
+
     constructor(config?: IExpressServerConfiguration)
     {
         this.config = Object.assign({}, ExpressServer.defaultConfiguration, config);
@@ -63,13 +67,31 @@ export default class ExpressServer
             this.app.use(morgan("tiny"));
         }
 
-        // documentation server
-        this.app.use("/doc", express.static(this.config.docDir));
-
         // static file server
         if (this.config.staticDir) {
             this.app.use(this.config.staticRoute, express.static(this.config.staticDir));
         }
+
+        // documentation server
+        this.app.use("/doc", express.static(this.config.docDir));
+
+        // WebDAV file server
+        this.webDAVServer = new webdav.WebDAVServer(/* { port: webDAVPort } */);
+        this.webDAVServer.setFileSystem("/", new webdav.PhysicalFileSystem(config.fileDir), success => {
+            if (!success) {
+                console.error(`failed to mount WebDAV file system at '${config.fileDir}'`);
+            }
+            else {
+                this.webDAVServer.afterRequest((req, next) => {
+                    // Display the method, the URI, the returned status code and the returned message
+                    console.log(`WebDAV ${req.request.method} ${req.request.url} ` +
+                        `${req.response.statusCode} ${req.response.statusMessage}`);
+                    next();
+                });
+
+                this.app.use(webdav.extensions.express("/", this.webDAVServer));
+            }
+        });
     }
 
     use(baseRoute: string, router: { router: Router })

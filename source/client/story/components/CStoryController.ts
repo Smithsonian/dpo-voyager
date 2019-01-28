@@ -28,7 +28,7 @@ import Notification from "@ff/ui/Notification";
 import CPresentationController from "../../explorer/components/CPresentationController";
 import CTaskController from "./CTaskController";
 
-import taskSets, { EStoryMode } from "./taskSets";
+import taskSets, { EStoryMode } from "../taskSets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,13 +80,23 @@ export default class CStoryController extends CController<CStoryController>
             }
         }
         if (ins.save.changed) {
-            const obj = this.getActiveObject();
-            if (obj) {
-                const url = obj.url;
-                const name = url.substr(resolvePathname(".", url).length);
-                const data = JSON.stringify(obj.toData());
-                const file = new File([data], name, { type: "text/json" });
+            let url, file;
 
+            const itemNode = this.getSelectedActiveItem();
+            const presentation = this.getSelectedActivePresentation();
+
+            if (itemNode) {
+                url = itemNode.item.url;
+                const name = itemNode.item.urlName;
+                file = new File([JSON.stringify(itemNode.item.toData())], name, { type: "text/json" });
+            }
+            else if (presentation) {
+                url = presentation.presentation.url;
+                const name = url.substr(resolvePathname(".", url).length);
+                file = new File([JSON.stringify(presentation.toData())], name, { type: "text/json" });
+            }
+
+            if (url) {
                 console.log(`uploading file to '${url}'`);
 
                 fetch.file(url, "PUT", file)
@@ -100,11 +110,16 @@ export default class CStoryController extends CController<CStoryController>
         }
 
         if (ins.download.changed) {
-            const obj = this.getActiveObject();
-            if (obj) {
-                const url = obj.url;
+            const itemNode = this.getSelectedActiveItem();
+            const presentation = this.getSelectedActivePresentation();
+
+            if (itemNode) {
+                download.json(itemNode.item.toData(), itemNode.item.urlName);
+            }
+            else if (presentation) {
+                const url = presentation.presentation.url;
                 const name = url.substr(resolvePathname(".", url).length);
-                download.json(obj.toData(), name);
+                download.json(presentation.toData(), name);
             }
         }
 
@@ -115,20 +130,16 @@ export default class CStoryController extends CController<CStoryController>
         return false;
     }
 
-    protected getActiveObject()
+    protected getSelectedActivePresentation()
     {
         const activePresentation = this.presentations.activePresentation;
-        const isPresentationSelected = activePresentation && this.selection.selectedComponents.contains(activePresentation);
+        return this.selection.selectedComponents.contains(activePresentation) ? activePresentation : null;
+    }
 
+    protected getSelectedActiveItem()
+    {
         const activeItem = this.presentations.activeItem;
-        const isItemSelected = activeItem && this.selection.nodeContainsSelectedComponent(activeItem);
-
-        if (isItemSelected) {
-            return activeItem;
-        }
-        else if (isPresentationSelected) {
-            return activePresentation;
-        }
+        return this.selection.nodeContainsSelectedComponent(activeItem) ? activeItem : null;
     }
 
     protected exit()

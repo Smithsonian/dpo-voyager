@@ -17,6 +17,8 @@
 
 import * as THREE from "three";
 
+import { disposeObject } from "@ff/three/helpers";
+
 import { IDerivative, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
 
 import CLoadingManager from "../components/CLoadingManager";
@@ -39,7 +41,6 @@ export default class Derivative
     assets: Asset[];
 
     model: THREE.Object3D;
-    boundingBox: THREE.Box3;
 
     constructor(usage: EDerivativeUsage, quality: EDerivativeQuality);
     constructor(data: IDerivative);
@@ -57,17 +58,12 @@ export default class Derivative
         }
 
         this.model = null;
-        this.boundingBox = new THREE.Box3();
     }
 
     dispose()
     {
         if (this.model) {
-            this.model.traverse((object: THREE.Mesh) => {
-                if (object.isMesh) {
-                    this.disposeMesh(object);
-                }
-            })
+            disposeObject(this.model);
         }
     }
 
@@ -80,8 +76,10 @@ export default class Derivative
         if (modelAsset) {
             return loadingManager.loadModel(modelAsset, assetPath)
             .then(object => {
+                if (this.model) {
+                    disposeObject(this.model);
+                }
                 this.model = object;
-                this.boundingBox.makeEmpty().expandByObject(object);
                 return this;
             });
         }
@@ -93,7 +91,6 @@ export default class Derivative
             return loadingManager.loadGeometry(geoAsset, assetPath)
             .then(geometry => {
                 this.model = new THREE.Mesh(geometry, new UberPBRMaterial());
-                this.boundingBox.makeEmpty().expandByObject(this.model);
 
                 return Promise.all(imageAssets.map(asset => loadingManager.loadTexture(asset, assetPath)))
                 .catch(error => {

@@ -24,6 +24,7 @@ import CRenderGraph from "@ff/scene/components/CRenderGraph";
 import { IPresentation } from "common/types/presentation";
 
 import CVoyagerScene from "../../core/components/CVoyagerScene";
+import CPresentationData from "./CPresentationData";
 import NPresentationScene, { ReferenceCallback } from "../nodes/NPresentationScene";
 import NPresentationSetup from "../nodes/NPresentationSetup";
 
@@ -45,25 +46,39 @@ export default class CPresentation extends CRenderGraph
 
     ins = this.addInputs(ins);
 
+    get presentation() {
+        return this.innerGraph.components.get(CPresentationData);
+    }
     get scene() {
         return this.innerGraph.components.get(CVoyagerScene);
     }
     get setup() {
         return this.innerGraph.nodes.get(NPresentationSetup);
     }
-    get url() {
-        return this.sceneNode.url;
+
+    setUrl(url: string, assetPath?: string, assetBaseName?: string)
+    {
+        this.presentation.setUrl(url, assetPath, assetBaseName);
     }
 
-    protected get sceneNode() {
-        return this.innerGraph.nodes.get(NPresentationScene);
-    }
+    // get url() {
+    //     return this.sceneNode.url;
+    // }
+    //
+    // protected get sceneNode() {
+    //     return this.innerGraph.nodes.get(NPresentationScene);
+    // }
 
     create()
     {
         super.create();
 
-        const scene = this.innerGraph.createCustomNode(NPresentationScene);
+        const graph = this.innerGraph;
+
+        const main = graph.createNode("Main");
+        main.createComponent(CPresentationData);
+
+        const scene = graph.createCustomNode(NPresentationScene);
         scene.addChild(this.innerGraph.createCustomNode(NPresentationSetup));
     }
 
@@ -72,46 +87,25 @@ export default class CPresentation extends CRenderGraph
         const ins = this.ins;
 
         if (ins.activate.changed) {
-            this.sceneNode.scene.ins.activate.set();
+            this.scene.ins.activate.set();
         }
         if (ins.dump.changed) {
-            console.log("CPresentation - dump");
-            console.log(JSON.parse(JSON.stringify(this.toData())));
+            this.presentation.ins.dump.set(true);
         }
         if (ins.download.changed) {
-            download.json(this.toData(), `${this.name || "presentation"}.json`);
+            this.presentation.ins.download.set(true);
         }
 
         return true;
     }
 
-    setUrl(url: string, assetPath?: string)
-    {
-        this.sceneNode.setUrl(url, assetPath);
-    }
-
     fromData(data: IPresentation, callback?: ReferenceCallback)
     {
-        this.sceneNode.fromData(data, callback);
-
-        if (data.setup) {
-            this.setup.fromData(data.setup);
-        }
+        this.presentation.fromData(data, callback);
     }
 
-    toData(writeReferences: boolean = false)
+    toData(writeReferences: boolean = false): IPresentation
     {
-        const data = this.sceneNode.toData(writeReferences);
-        data.setup = this.setup.toData();
-
-
-        data.info = {
-            type: CPresentation.mimeType,
-            copyright: "Copyright Smithsonian Institution",
-            generator: "Voyager Presentation Parser",
-            version: "1.2"
-        };
-
-        return data as IPresentation;
+        return this.presentation.toData(writeReferences);
     }
 }

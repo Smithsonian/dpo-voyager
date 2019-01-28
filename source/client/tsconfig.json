@@ -18,5 +18,5 @@
             "@ff/three/*": [ "../../libs/ff-three/source/*" ],
             "@ff/scene/*": [ "../../libs/ff-scene/source/*" ]
         }
-    }
+    },
 }

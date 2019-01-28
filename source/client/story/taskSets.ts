@@ -15,27 +15,25 @@
  * limitations under the License.
  */
 
-// import AnnotationsTask from "./AnnotationsTask";
-// import CaptureTask from "./CaptureTask";
-// import DocumentsTask from "./DocumentsTask";
-// import InspectionTask from "./InspectionTask";
-// import MigrationTask from "./MigrationTask";
-// import PoseTask from "./PoseTask";
-// import SettingsTask from "./SettingsTask";
-// import ToursTask from "./ToursTask";
-//
-// export default {
-//     prep: [
-//         SettingsTask,
-//         InspectionTask,
-//         PoseTask,
-//         CaptureTask,
-//         MigrationTask
-//     ],
-//     author: [
-//         SettingsTask,
-//         AnnotationsTask,
-//         ToursTask,
-//         DocumentsTask
-//     ]
-// };
+import CExploreTask from "./components/CExploreTask";
+import CPoseTask from "./components/CPoseTask";
+import CCaptureTask from "./components/CCaptureTask";
+import CAnnotationsTask from "./components/CAnnotationsTask";
+import CDerivativesTask from "./components/CDerivativesTask";
+
+////////////////////////////////////////////////////////////////////////////////
+
+export enum EStoryMode { QC, Authoring }
+
+export default {
+    "QC": [
+        CExploreTask,
+        CPoseTask,
+        CCaptureTask,
+        //CDerivativesTask,
+    ],
+    "Authoring": [
+        CExploreTask,
+        CAnnotationsTask,
+    ],
+}

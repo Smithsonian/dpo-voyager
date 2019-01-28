@@ -216,8 +216,6 @@ export default class COrbitNavigation extends Component
     {
         const orbit = data.orbit;
 
-        console.log("COrbitNavigation.fromData", orbit.orbit, orbit.offset);
-
         this.ins.copyValues({
             enabled: data.enabled,
             orbit: orbit.orbit.slice(),

@@ -17,19 +17,19 @@
 
 import resolvePathname from "resolve-pathname";
 
+import { ITypedEvent } from "@ff/core/Publisher";
 import CController, { Commander, Actions } from "@ff/graph/components/CController";
 import CSelection, { IComponentEvent, INodeEvent } from "@ff/graph/components/CSelection";
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import * as template from "../templates/presentation.json";
+import * as template from "common/templates/presentation.json";
 
 import { EDerivativeQuality } from "../../core/models/Derivative";
 import CLoadingManager from "../../core/components/CLoadingManager";
 
-import CPresentation from "./CPresentation";
 import { ReferenceCallback } from "../nodes/NPresentationScene";
 import NItem from "../nodes/NItem";
-import { ITypedEvent } from "@ff/core/Publisher";
+import CPresentation from "./CPresentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -177,17 +177,17 @@ export default class CPresentationController extends CController<CPresentationCo
         super.dispose();
     }
 
-    loadItem(itemUrl: string, templateUrl?: string)
+    loadItem(itemUrl: string, templateUrl?: string, assetBaseName?: string)
     {
         console.log("CExplorer.loadItem - URL: %s", itemUrl);
 
         return this.loadingManager.loadJSON(itemUrl).then(json => {
             const assetPath = resolvePathname(".", itemUrl);
-            this.openItem(json, itemUrl, assetPath, templateUrl);
+            this.openItem(json, itemUrl, templateUrl, assetPath, assetBaseName);
         });
     }
 
-    openItem(json: any, url: string, assetPath: string, templateUrl?: string): Promise<void>
+    openItem(json: any, url: string, templateUrl?: string, assetPath?: string, assetBaseName?: string): Promise<void>
     {
         // get last part from template url
         const templateFileName = templateUrl ? templateUrl.substr(resolvePathname(".", templateUrl).length) : "";
@@ -197,8 +197,8 @@ export default class CPresentationController extends CController<CPresentationCo
             const itemCallback = (index, graph, assetPath) => {
                 if (index === 0) {
                     const node = graph.createCustomNode(NItem);
-                    node.setUrl(url, assetPath);
-                    node.fromData(itemData);
+                    node.item.setUrl(url, assetPath, assetBaseName);
+                    node.item.fromData(itemData);
                     return node;
                 }
 
@@ -210,87 +210,82 @@ export default class CPresentationController extends CController<CPresentationCo
                 templateUrl =  resolvePathname(templateFileName, templateUri, templateUrl || assetPath);
                 console.log(`Loading presentation template: ${templateUrl}`);
 
-                return this.loadPresentation(templateUrl, itemCallback);
+                return this.loadPresentation(templateUrl, itemCallback, assetBaseName);
             }
 
-            return this.openDefaultPresentation(assetPath, itemCallback);
+            return this.openDefaultPresentation(itemCallback, assetPath, assetBaseName);
         });
     }
 
-    loadModel(modelUrl: string, quality?: string, itemUrl?: string, templateUrl?: string): Promise<void>
+    loadModel(modelUrl: string, quality?: string, templateUrl?: string, assetBaseName?: string): Promise<void>
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
         const { path: modelPath, name: modelName } = _splitUrl(modelUrl);
-
-        if (itemUrl) {
-            itemUrl = resolvePathname(itemUrl, modelPath);
-        }
+        const itemUrl = resolvePathname(assetBaseName ? assetBaseName + "-item.json" : "item.json", modelPath);
 
         return Promise.resolve().then(() => {
             console.log(`CExplorer.loadModel - Creating new 3D item with a web derivative, quality: ${EDerivativeQuality[q]}`,
                 `\nmodel url: ${modelUrl}`, `\nitem url: ${itemUrl}`);
 
-            return this.openDefaultPresentation(modelPath, (index, graph, assetPath) => {
+            return this.openDefaultPresentation((index, graph, assetPath) => {
                 if (index === 0) {
                     const node = graph.createCustomNode(NItem);
-                    node.setUrl(itemUrl || `${modelPath}item.json`, modelPath);
+                    node.item.setUrl(itemUrl, modelPath, assetBaseName);
                     node.model.createWebModelDerivative(modelName, q);
                     return node;
                 }
 
                 return null;
-            });
+            }, modelPath, assetBaseName);
         });
     }
 
-    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, itemUrl?: string, templateUrl?: string)
+    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, templateUrl?: string, assetBaseName?: string)
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
         const { path: geoPath, name: geoName } = _splitUrl(geometryUrl);
-
         const texName = textureUrl ? _splitUrl(textureUrl).name : "";
-
-        if (itemUrl) {
-            itemUrl = resolvePathname(itemUrl, geoPath);
-        }
+        const itemUrl = resolvePathname(assetBaseName ? assetBaseName + "-item.json" : "item.json", geoPath);
 
         return Promise.resolve().then(() => {
             console.log(`CExplorer.loadGeometryAndTexture - Creating a new 3D item with a web derivative of quality: ${EDerivativeQuality[quality]}`,
                 `\ngeometry url: ${geometryUrl}`, `\ntexture url: ${texName ? geoPath + texName : "(none)"}`, `\nitem url: ${itemUrl}`);
 
-            return this.openDefaultPresentation(geoPath, (index, graph, assetPath) => {
+            return this.openDefaultPresentation((index, graph, assetPath) => {
                 if (index === 0) {
                     const node = graph.createCustomNode(NItem);
-                    node.setUrl(itemUrl || `${assetPath}item.json`, geoPath);
+                    node.item.setUrl(itemUrl, geoPath, assetBaseName);
                     node.model.addGeometryAndTextureDerivative(geoName, texName, q);
                     return node;
                 }
 
                 return null;
-            });
+            }, geoPath, assetBaseName);
         });
     }
 
-    loadPresentation(presentationUrl: string, callback?: ReferenceCallback)
+    loadPresentation(presentationUrl: string, callback?: ReferenceCallback, assetBaseName?: string)
     {
         console.log("CExplorer.loadPresentation - URL: %s", presentationUrl);
 
+        const assetPath = resolvePathname(".", presentationUrl);
+
         return this.loadingManager.loadJSON(presentationUrl).then(json => {
             const assetPath = resolvePathname(".", presentationUrl);
-            this.openPresentation(json, presentationUrl, assetPath, callback);
+            this.openPresentation(json, presentationUrl, callback, assetPath, assetBaseName);
         });
     }
 
-    openDefaultPresentation(assetPath: string, callback: ReferenceCallback): Promise<void>
+    openDefaultPresentation(callback: ReferenceCallback, assetPath?: string, assetBaseName?: string): Promise<void>
     {
         console.log("CExplorer.openDefaultPresentation - Opening presentation from default template");
         const url = assetPath + "template.json";
-        return this.openPresentation(template, url, assetPath, callback);
+        return this.openPresentation(template, url, callback, assetPath, assetBaseName);
     }
 
-    openPresentation(json: any, url: string, assetPath: string, callback?: ReferenceCallback): Promise<void>
+    openPresentation(json: any, url: string, callback?: ReferenceCallback, assetPath?: string, assetBaseName?: string): Promise<void>
     {
         // currently opening multiple presentations is not supported
         this.closeAll();
@@ -298,7 +293,7 @@ export default class CPresentationController extends CController<CPresentationCo
         return this.loadingManager.validatePresentation(json).then(presentationData => {
 
             const presentation = this.node.createComponent(CPresentation);
-            presentation.setUrl(url, assetPath);
+            presentation.setUrl(url, assetPath, assetBaseName);
             presentation.fromData(presentationData, callback);
         });
     }

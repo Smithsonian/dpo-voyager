@@ -41,9 +41,6 @@ export interface IStoryApplicationProps extends IExplorerApplicationProps
     mode?: string;
     /** When set to true, application displays additional expert level tools. */
     expert?: boolean;
-    /** Base url to use for new items or assets. */
-    baseURL?: string;
-
 }
 
 /**
@@ -88,7 +85,6 @@ export default class StoryApplication
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
-        props.baseURL = props.baseURL || parseUrlParameter("baseURL");
 
         const story = this.system.components.get(CStoryController);
         story.ins.referrer.setValue(props.referrer);

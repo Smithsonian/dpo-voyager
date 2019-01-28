@@ -14,21 +14,21 @@ properties object as an argument to the application constructor.
 
 ### Properties
 
-| Property     | Type/Values                      | Description                                                                                               |
-|--------------|----------------------------------|-----------------------------------------------------------------------------------------------------------|
-| presentation | String/URL                       | URL of the presentation to load and display at startup.                                                   |
-| template     | String/URL                       | If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. |
-| item         | String/URL                       | URL of the item to load and display at startup.                                                           |
-| model        | String/URL                       | URL of a model (supported formats: gltf, glb) to load and display at startup.                             |
-| geometry     | String/URL                       | URL of a geometry (supported formats: obj, ply) to load and display at startup.                           |
-| texture      | String/URL                       | If a geometry URL is given, optional URL of a color texture to use with the geometry.                     |
-| quality      | "thumb", "low", "medium", "high" | When loading a model or geometry, the quality level to set for the asset.                                 |
-| name         | String/URL                       | When loading a model or geometry, the name of the created item. It will later be used when writing the item back to the server. |
-| referrer     | String/URL                       | The page URL to navigate to when the user exits the story tool. |
-| mode         | "prep", "author"                 | Launch in "prep" mode to edit/QC an item. Launch in "author" mode to author items and presentations. |
-| expert       | boolean                          | In expert mode, additional developer tools are available. |
+| Property     | Type/Values       | Description                                                                                               |
+|--------------|-------------------|-----------------------------------------------------------------------------------------------------------|
+| presentation | String/URL        | URL of the presentation to load and display at startup.                                                   |
+| item         | String/URL        | URL of the item to load and display at startup.                                                           |
+| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup.                             |
+| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup.                           |
+| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry.                     |
+| quality      | "Thumb", "Low", "Medium", "High", "Highest" | For a model/geometry/texture: The quality level of the generated derivative.                              |
+| template     | String/URL        | If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. |
+| base         | String            | Base name to use when generating new items or assets.                                                     |
+| referrer     | String/URL        | The page URL to navigate to when the user exits the story tool. |
+| mode         | "QC", "Author"    | Launch in "qc" mode to edit/QC an item. Launch in "author" mode to author items and presentations. |
+| expert       | boolean           | In expert mode, additional developer tools are available. |
 
-### Example 1: launching the Explorer via custom HTML element
+### Example 1: launching the Story tool via custom HTML element
 ```html
 <!DOCTYPE html>
 <html>
@@ -36,26 +36,23 @@ properties object as an argument to the application constructor.
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Voyager Explorer</title>
+        <title>Voyager Story</title>
 
         <link rel="shortcut icon" type="image/png" href="favicon.png"/>
-
-        <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/fontawesome.min.css">
-        <link rel="stylesheet" href="css/fontawesome-solid.min.css">
-        <link rel="stylesheet" href="css/voyager-explorer.dev.css">
         
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/99/three.js"></script>
+
+        <link rel="stylesheet" href="css/voyager-story.dev.css">
     </head>
     <body>
-        <voyager-explorer presentation="my_presentation.json"></voyager-explorer>
-        <script type="text/javascript" src="js/voyager-explorer.dev.js"></script>
+        <voyager-story presentation="my_presentation.json"></voyager-story>
+        <script type="text/javascript" src="js/voyager-story.dev.js"></script>
     </body>
 </html>
 ```
 
-### Example 2: launching the Explorer via application class
+### Example 2: launching the Story tool via application class
 ```html
 <!DOCTYPE html>
 <html>
@@ -63,12 +60,12 @@ properties object as an argument to the application constructor.
         ...see above...
     </head>
     <body>
+        <script type="text/javascript" src="js/voyager-story.dev.js"></script>
         <script>
-           new VoyagerExplorer(document.body, {
+           new VoyagerStory(document.body, {
                presentation: "my_presentation.json"
            }); 
         </script>
-        <script type="text/javascript" src="js/voyager-explorer.dev.js"></script>
     </body>
 </html>
 ```

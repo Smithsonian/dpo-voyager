@@ -15,12 +15,9 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
-
 import NTransform from "@ff/scene/nodes/NTransform";
 
-import { IItem } from "common/types/item";
-
+import CItemData from "../components/CItemData";
 import CModel from "../../core/components/CModel";
 import CMeta from "../components/CMeta";
 import CProcess from "../components/CProcess";
@@ -32,8 +29,10 @@ import CDocuments from "../components/CDocuments";
 export default class NItem extends NTransform
 {
     static readonly type: string = "NItem";
-    static readonly mimeType = "application/si-dpo-3d.item+json";
 
+    get item() {
+        return this.components.get(CItemData);
+    }
     get meta() {
         return this.components.get(CMeta);
     }
@@ -50,24 +49,11 @@ export default class NItem extends NTransform
         return this.components.get(CAnnotations);
     }
 
-    get url() {
-        return this.model.url;
-    }
-
-    setUrl(url: string, assetPath?: string)
-    {
-        this.model.setUrl(url, assetPath);
-
-        const urlName = url.substr(resolvePathname(".", url).length);
-        if (urlName) {
-            this.name = urlName;
-        }
-    }
-
     createComponents()
     {
         super.createComponents();
 
+        this.createComponent(CItemData);
         this.createComponent(CMeta);
         this.createComponent(CProcess);
         this.createComponent(CModel);
@@ -75,59 +61,5 @@ export default class NItem extends NTransform
         this.createComponent(CDocuments);
 
         this.name = "Item";
-    }
-
-    fromData(data: IItem)
-    {
-        if (data.meta) {
-            this.meta.fromData(data.meta);
-        }
-        if (data.process) {
-            this.process.fromData(data.process);
-        }
-        if (data.model) {
-            this.model.fromData(data.model);
-        }
-        if (data.documents) {
-            this.documents.fromData(data.documents);
-        }
-        if (data.annotations) {
-            this.annotations.fromData(data.annotations);
-        }
-    }
-
-    toData(): IItem
-    {
-        const data: Partial<IItem> = {
-            info: {
-                type: NItem.mimeType,
-                copyright: "Copyright Smithsonian Institution",
-                generator: "Voyager Item Parser",
-                version: "1.2"
-            },
-            model: this.model.toData()
-        };
-
-        const metaData = this.meta.toData();
-        if (metaData) {
-            data.meta = metaData;
-        }
-
-        const processData = this.process.toData();
-        if (processData) {
-            data.process = processData;
-        }
-
-        const documentsData = this.documents.toData();
-        if (documentsData) {
-            data.documents = documentsData;
-        }
-
-        const annotationsData = this.annotations.toData();
-        if (annotationsData) {
-            data.annotations = annotationsData;
-        }
-
-        return data as IItem;
     }
 }

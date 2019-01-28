@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
 import math from "@ff/core/math";
 import threeMath from "@ff/three/math";
+import { computeLocalBoundingBox } from "@ff/three/helpers";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
-import { computeLocalBoundingBox } from "@ff/three/helpers";
+
 import CObject3D from "@ff/scene/components/CObject3D";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
@@ -92,9 +92,8 @@ export default class CModel extends CObject3D
     ins = this.addInputs(ins);
     outs = this.addOutputs(outs);
 
-    url: string = "";
     assetPath: string = "";
-    fileName: string = "";
+    assetBaseName: string = "";
 
     protected boxFrame: THREE.Object3D = null;
 
@@ -202,13 +201,6 @@ export default class CModel extends CObject3D
         rotation.set();
     }
 
-    setUrl(url: string, assetPath?: string)
-    {
-        this.url = url;
-        this.assetPath = assetPath || resolvePathname(".", url);
-        this.fileName = url.substr(resolvePathname(".", url).length);
-    }
-
     createDerivative(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative
     {
         const derivative = new Derivative(usage, quality);
@@ -277,12 +269,10 @@ export default class CModel extends CObject3D
             derivatives: this.derivatives.map(derivative => derivative.toData())
         };
 
-        if (this._boundingBox) {
-            data.boundingBox = {
-                min: this._boundingBox.min.toArray() as Vector3,
-                max: this._boundingBox.max.toArray() as Vector3
-            }
-        }
+        data.boundingBox = {
+            min: this._boundingBox.min.toArray() as Vector3,
+            max: this._boundingBox.max.toArray() as Vector3
+        };
 
         if (!threeMath.isMatrix4Identity(this.object3D.matrix)) {
             data.transform = this.object3D.matrix.toArray();
@@ -471,17 +461,14 @@ export default class CModel extends CObject3D
             }
 
             if (this.boxFrame) {
-                this.removeObject3D(this.boxFrame);
-                (this.boxFrame as any).geometry.dispose();
+                //this.removeObject3D(this.boxFrame);
+                //(this.boxFrame as any).geometry.dispose();
             }
             if (this._activeDerivative) {
                 this.removeObject3D(this._activeDerivative.model);
                 this._activeDerivative.dispose();
             }
-
-            if (!this._boundingBox && derivative.boundingBox) {
-                this._boundingBox = derivative.boundingBox.clone();
-            }
+            computeLocalBoundingBox(derivative.model, this._boundingBox);
 
             this._activeDerivative = derivative;
             this.addObject3D(derivative.model);

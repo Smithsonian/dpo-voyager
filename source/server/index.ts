@@ -31,7 +31,8 @@ const devMode = process.env.NODE_ENV !== "production";
 const localMode = process.env.NODE_SERVER_LOCAL === "true";
 const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
 const staticDir = path.resolve(rootDir, "../../dist/");
-const docDir = path.resolve(rootDir, "../../doc/code");
+const fileDir = path.resolve(rootDir, "../../files/");
+const docDir = path.resolve(rootDir, "../../doc/code/");
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURE, START SERVER
@@ -44,9 +45,11 @@ console.log([
     "Port: " + port,
     "Root Directory: " + rootDir,
     "Static File Directory: " + staticDir,
+    "WebDAV File Directory: " + fileDir,
     "Development Mode: " + devMode,
     "Local Mode: " + localMode
 ].join("\n"));
+
 
 const expressServerConfig: IExpressServerConfiguration = {
     port,
@@ -54,6 +57,7 @@ const expressServerConfig: IExpressServerConfiguration = {
     enableLogging: devMode,
     staticRoute: "/",
     staticDir,
+    fileDir,
     docDir
 };
 

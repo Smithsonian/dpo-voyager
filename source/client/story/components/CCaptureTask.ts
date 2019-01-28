@@ -17,6 +17,7 @@
 
 import fetch from "@ff/browser/fetch";
 import download from "@ff/browser/download";
+import convert from "@ff/browser/convert";
 
 import { types } from "@ff/graph/Component";
 import { IComponentEvent } from "@ff/graph/ComponentSet";
@@ -219,7 +220,8 @@ export default class CCaptureTask extends CTask
             const dataURL = this._imageDataURLs[quality];
             const fileName = this.getImageFileName(quality, this._extension);
             const fileURL = model.assetPath + fileName;
-            const file = new File([ dataURL ], fileName, { type: this._mimeType });
+            const blob = convert.dataURItoBlob(dataURL);
+            const file = new File([blob], fileName);
 
             fetch.file(fileURL, "PUT", file)
                 .then(() => {
@@ -261,13 +263,13 @@ export default class CCaptureTask extends CTask
         asset.imageSize = Math.max(_sizePresets[quality][0], _sizePresets[quality][1]);
         asset.mimeType = mimeType;
         asset.byteSize = Math.ceil(this._imageDataURLs[quality].length / 4 * 3);
-
-        console.log("derivative", derivative);
     }
 
     protected getImageFileName(quality: EDerivativeQuality, extension: string)
     {
-        return `image-${_qualityTags[quality]}.${extension}`;
+        const assetBaseName = this.activeModel.assetBaseName;
+        const imageName = `image-${_qualityTags[quality]}.${extension}`;
+        return assetBaseName ? assetBaseName + "-" + imageName : imageName;
     }
 
     protected removePictures()

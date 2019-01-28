@@ -21,9 +21,11 @@ import CDocuments from "./CDocuments";
 import CGroundPlane from "./CGroundPlane";
 import CHomeGrid from "./CHomeGrid";
 import CInterface from "./CInterface";
+import CItemData from "./CItemData";
 import CMeta from "./CMeta";
 import CPresentation from "./CPresentation";
 import CPresentationController from "./CPresentationController";
+import CPresentationData from "./CPresentationData";
 import CProcess from "./CProcess";
 import CReader from "./CReader";
 import CReference from "./CReference";
@@ -41,16 +43,18 @@ export {
     CGroundPlane,
     CHomeGrid,
     CInterface,
+    CItemData,
     CMeta,
     CPresentation,
     CPresentationController,
+    CPresentationData,
     CProcess,
     CReader,
     CReference,
     CSectionTool,
     CSnapshots,
     CTapeTool,
-    CTours
+    CTours,
 };
 
 export const componentTypes = [
@@ -60,14 +64,16 @@ export const componentTypes = [
     CGroundPlane,
     CHomeGrid,
     CInterface,
+    CItemData,
     CMeta,
     CPresentation,
     CPresentationController,
+    CPresentationData,
     CProcess,
     CReader,
     CReference,
     CSectionTool,
     CSnapshots,
     CTapeTool,
-    CTours
+    CTours,
 ];

@@ -66,6 +66,8 @@ export interface IExplorerApplicationProps
     /** When loading a model or geometry, the quality level to set for the asset.
         Valid options: "thumb", "low", "medium", "high". */
     quality?: string;
+    /** Base url to use for new items or assets. */
+    base?: string;
 }
 
 /**
@@ -141,19 +143,21 @@ export default class ExplorerApplication
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
+        props.base = props.base || parseUrlParameter("base") || parseUrlParameter("b");
+
 
         if (props.presentation) {
-            controller.loadPresentation(props.presentation);
+            controller.loadPresentation(props.presentation, null, props.base);
         }
         else if (props.item) {
-            controller.loadItem(props.item, props.template);
+            controller.loadItem(props.item, props.template, props.base);
         }
         else if (props.model) {
-            controller.loadModel(props.model, props.quality, "item.json", props.template);
+            controller.loadModel(props.model, props.quality, props.template, props.base);
         }
         else if (props.geometry) {
             controller.loadGeometryAndTexture(
-                props.geometry, props.texture, props.quality, "item.json", props.template);
+                props.geometry, props.texture, props.quality, props.template, props.base);
         }
 
         return props;

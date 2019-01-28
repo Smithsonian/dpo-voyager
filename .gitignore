@@ -5,6 +5,7 @@ node_modules/
 
 dist/
 test/
+files/
 doc/code
 services/server/bin
 services/server/static/app

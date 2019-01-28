@@ -41,7 +41,9 @@ import {
 
 import CLoadingManager from "../../core/components/CLoadingManager";
 import CVoyagerScene from "../../core/components/CVoyagerScene";
+import CItemData from "../components/CItemData";
 
+import NPresentationSetup from "../nodes/NPresentationSetup";
 import NReference from "../nodes/NReference";
 import NItem from "../nodes/NItem";
 
@@ -79,6 +81,7 @@ export default class NPresentationScene extends NScene
     createComponents()
     {
         this.createComponent(CVoyagerScene);
+        this.name = "Scene";
     }
 
     deflate()
@@ -145,7 +148,7 @@ export default class NPresentationScene extends NScene
             if (refIndex === undefined) {
                 data.items = data.items || [];
                 nodeData.item = data.items.length;
-                data.items.push(node.toData());
+                data.items.push(node.item.toData());
             }
             else {
                 data.references = data.references || [];
@@ -176,7 +179,7 @@ export default class NPresentationScene extends NScene
             nodeData.children = [];
             transforms.forEach(transform => {
                 const node = transform.node;
-                if (node instanceof NTransform) {
+                if (node instanceof NTransform && !node.is(NPresentationSetup)) {
                     const index = this.nodeToData(node, data, refIndex);
                     nodeData.children.push(index);
                 }
@@ -278,7 +281,7 @@ export default class NPresentationScene extends NScene
         if (isFinite(nodeData.reference)) {
             const referenceData = presData.references[nodeData.reference];
 
-            if (referenceData.mimeType === NItem.mimeType) {
+            if (referenceData.mimeType === CItemData.mimeType) {
 
                 const index = Number(referenceData.uri);
                 if (isFinite(index)) {
@@ -308,7 +311,7 @@ export default class NPresentationScene extends NScene
         else if (isFinite(nodeData.item)) {
             const itemData = presData.items[nodeData.item];
             node = this.graph.createCustomNode(NItem);
-            node.fromData(itemData);
+            node.item.fromData(itemData);
         }
         else if (isFinite(nodeData.camera)) {
             const cameraData = presData.cameras[nodeData.camera];

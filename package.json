@@ -64,7 +64,9 @@
         "react": "^16.7.0",
         "react-dom": "^16.7.0",
         "resolve-pathname": "^3.0.0",
-        "three": "^0.100.0"
+        "three": "^0.100.0",
+        "webdav": "^2.5.0",
+        "webdav-server": "^2.4.6"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",

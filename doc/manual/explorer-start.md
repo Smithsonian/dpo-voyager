@@ -14,14 +14,16 @@ properties object as an argument to the application constructor.
 
 ### Properties
 
-| Property     | Type/Values                      | Description                                                                                               |
-|--------------|----------------------------------|-----------------------------------------------------------------------------------------------------------|
-| presentation | String/URL                       | URL of the presentation to load and display at startup.                                                   |
-| template     | String/URL                       | If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. |
-| item         | String/URL                       | URL of the item to load and display at startup.                                                           |
-| model        | String/URL                       | URL of a model (supported formats: gltf, glb) to load and display at startup.                             |
-| geometry     | String/URL                       | URL of a geometry (supported formats: obj, ply) to load and display at startup.                           |
-| texture      | String/URL                       | If a geometry URL is given, optional URL of a color texture to use with the geometry.                     |
+| Property     | Type/Values       | Description                                                                                               |
+|--------------|-------------------|-----------------------------------------------------------------------------------------------------------|
+| presentation | String/URL        | URL of the presentation to load and display at startup.                                                   |
+| item         | String/URL        | URL of the item to load and display at startup.                                                           |
+| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup.                             |
+| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup.                           |
+| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry.                     |
+| quality      | "Thumb", "Low", "Medium", "High", "Highest" | For a model/geometry/texture: The quality level of the generated derivative.                              |
+| template     | String/URL        | If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. |
+| base         | String            | Base name to use when generating new items or assets.                                                     |
 
 ### Example 1: launching the Explorer via custom HTML element
 ```html
@@ -34,14 +36,11 @@ properties object as an argument to the application constructor.
         <title>Voyager Explorer</title>
 
         <link rel="shortcut icon" type="image/png" href="favicon.png"/>
-
-        <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/fontawesome.min.css">
-        <link rel="stylesheet" href="css/fontawesome-solid.min.css">
-        <link rel="stylesheet" href="css/voyager-explorer.dev.css">
         
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/99/three.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/100/three.js"></script>
+
+        <link rel="stylesheet" href="css/voyager-explorer.dev.css">
     </head>
     <body>
         <voyager-explorer presentation="my_presentation.json"></voyager-explorer>
@@ -58,12 +57,12 @@ properties object as an argument to the application constructor.
         ...see above...
     </head>
     <body>
+        <script type="text/javascript" src="js/voyager-explorer.dev.js"></script>
         <script>
            new VoyagerExplorer(document.body, {
                presentation: "my_presentation.json"
            }); 
         </script>
-        <script type="text/javascript" src="js/voyager-explorer.dev.js"></script>
     </body>
 </html>
 ```
