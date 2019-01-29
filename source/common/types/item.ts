@@ -24,7 +24,7 @@ export enum EUnitType { mm, cm, m, in, ft, yd }
 
 export type TNormalSpaceType = "Tangent" | "Object";
 
-export type TDerivativeUsage = "Web" | "Print" | "Editorial";
+export type TDerivativeUsage = "Web2D" | "Web3D" | "Print" | "Editorial";
 export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
 export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";
 export type TMapType = "Color" | "Normal" | "Occlusion" | "Emissive" | "MetallicRoughness" | "Zone";
@@ -75,7 +75,8 @@ export interface IModel
     units: TUnitType;
     derivatives: IDerivative[];
     boundingBox?: IBoundingBox;
-    transform?: Matrix4;
+    translation?: Vector3;
+    rotation?: Vector4;
     material?: IMaterial;
 }
 

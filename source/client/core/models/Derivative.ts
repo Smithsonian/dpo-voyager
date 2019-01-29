@@ -30,7 +30,7 @@ import Asset, { EAssetType, EMapType } from "./Asset";
 
 export { Asset, EAssetType };
 
-export enum EDerivativeUsage { Web, Print, Editorial }
+export enum EDerivativeUsage { Web2D, Web3D, Print, Editorial }
 export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
 
 export default class Derivative
@@ -67,20 +67,24 @@ export default class Derivative
         }
     }
 
-    load(loadingManager: CVLoaders, assetPath?: string): Promise<this>
+    load(loaders: CVLoaders, assetPath?: string): Promise<THREE.Object3D>
     {
-        console.log("Derivative.load - path: %s", assetPath);
+        if (this.usage !== EDerivativeUsage.Web3D) {
+            throw new Error("can't load, not a Web3D derivative");
+        }
+
+        console.log("Derivative.load - asset path: %s", assetPath);
 
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return loadingManager.loadModel(modelAsset, assetPath)
+            return loaders.loadModel(modelAsset, assetPath)
             .then(object => {
                 if (this.model) {
                     disposeObject(this.model);
                 }
                 this.model = object;
-                return this;
+                return object;
             });
         }
 
@@ -88,11 +92,11 @@ export default class Derivative
         const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
-            return loadingManager.loadGeometry(geoAsset, assetPath)
+            return loaders.loadGeometry(geoAsset, assetPath)
             .then(geometry => {
                 this.model = new THREE.Mesh(geometry, new UberPBRMaterial());
 
-                return Promise.all(imageAssets.map(asset => loadingManager.loadTexture(asset, assetPath)))
+                return Promise.all(imageAssets.map(asset => loaders.loadTexture(asset, assetPath)))
                 .catch(error => {
                     console.warn("failed to load texture files");
                     return [];
@@ -108,7 +112,7 @@ export default class Derivative
                     material.metalness = 0;
                 }
 
-                return this;
+                return this.model;
             });
         }
     }
@@ -127,7 +131,15 @@ export default class Derivative
     fromData(data: IDerivative)
     {
         this.usage = EDerivativeUsage[data.usage];
+        if (this.usage === undefined) {
+            throw new Error(`unknown derivative usage: ${data.usage}`);
+        }
+
         this.quality = EDerivativeQuality[data.quality];
+        if (this.quality === undefined) {
+            throw new Error(`unknown derivative quality: ${data.quality}`);
+        }
+
         this.assets = data.assets.map(assetData => new Asset(assetData));
     }
 

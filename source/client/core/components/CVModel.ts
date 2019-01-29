@@ -17,9 +17,7 @@
 
 import * as THREE from "three";
 
-import math from "@ff/core/math";
-import threeMath from "@ff/three/math";
-import { computeLocalBoundingBox } from "@ff/three/helpers";
+import * as helpers from "@ff/three/helpers";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
@@ -30,7 +28,7 @@ import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
 
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
-import { EAssetType, EMapType } from "../models/Asset";
+import DerivativeList from "../models/DerivativeList";
 
 import CVLoaders from "./CVLoaders";
 
@@ -39,17 +37,7 @@ import CVLoaders from "./CVLoaders";
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
-const _euler = new THREE.Euler();
-const _mat4 = new THREE.Matrix4();
 const _box = new THREE.Box3();
-
-const _qualityLevels = [
-    EDerivativeQuality.Thumb,
-    EDerivativeQuality.Low,
-    EDerivativeQuality.Medium,
-    EDerivativeQuality.High,
-    EDerivativeQuality.Highest
-];
 
 const _unitConversionFactor = {
     "mm": { "mm": 1, "cm": 0.1, "m": 0.001, "in": 0.0393701, "ft": 0.00328084, "yd": 0.00109361 },
@@ -89,23 +77,25 @@ export default class CVModel extends CObject3D
 {
     static readonly type: string = "CVModel";
 
+    protected static readonly rotationOrder = "ZYX";
+
     ins = this.addInputs(ins);
     outs = this.addOutputs(outs);
 
     assetPath: string = "";
     assetBaseName: string = "";
 
-    protected boxFrame: THREE.Object3D = null;
-
-    private _boundingBox = new THREE.Box3();
-    private _derivatives: Derivative[] = [];
+    private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
-    get boundingBox() {
-        return this._boundingBox;
-    }
+    private _boundingBox = new THREE.Box3();
+    private _boxFrame: THREE.Mesh = null;
+
     get derivatives() {
         return this._derivatives;
+    }
+    get boundingBox() {
+        return this._boundingBox;
     }
     get activeDerivative() {
         return this._activeDerivative;
@@ -122,14 +112,10 @@ export default class CVModel extends CObject3D
         const { visible, units, quality, autoLoad, position, rotation, center } = this.ins;
 
         if (!this.activeDerivative && autoLoad.changed && autoLoad.value) {
-            this.autoLoad(quality.value)
-            .catch(error => {
-                console.warn("Model.update - failed to load derivative");
-                console.warn(error);
-            });
+            this.autoLoad(quality.value);
         }
         else if (quality.changed) {
-            const derivative = this.selectDerivative(quality.value);
+            const derivative = this.derivatives.select(EDerivativeUsage.Web3D, quality.value);
             if (derivative && derivative !== this.activeDerivative) {
                 this.loadDerivative(derivative)
                 .catch(error => {
@@ -152,7 +138,7 @@ export default class CVModel extends CObject3D
             this.center();
         }
         if (position.changed || rotation.changed) {
-            this.updateMatrix();
+            this.updateMatrixFromProps();
         }
 
         return true;
@@ -160,7 +146,7 @@ export default class CVModel extends CObject3D
 
     dispose()
     {
-        this.derivatives.forEach(derivative => derivative.dispose());
+        this.derivatives.clear();
         this._activeDerivative = null;
 
         super.dispose();
@@ -174,7 +160,7 @@ export default class CVModel extends CObject3D
         object3D.matrix.decompose(_vec3a, _quat, _vec3b);
         object3D.matrix.makeRotationFromQuaternion(_quat);
         _box.makeEmpty();
-        computeLocalBoundingBox(object3D, _box, object3D.parent);
+        helpers.computeLocalBoundingBox(object3D, _box, object3D.parent);
         _box.getCenter(_vec3a);
         _vec3a.multiplyScalar(-1).toArray(position.value);
         position.set();
@@ -193,50 +179,10 @@ export default class CVModel extends CObject3D
         matrix.decompose(_vec3a, _quat, _vec3b);
         _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(position.value);
 
-        _euler.setFromQuaternion(_quat, "ZYX");
-        _euler.toVector3(_vec3a);
-        _vec3a.multiplyScalar(math.RAD2DEG).toArray(rotation.value);
+        helpers.quaternionToDegrees(_quat, CVModel.rotationOrder, rotation.value);
 
         position.set();
         rotation.set();
-    }
-
-    createDerivative(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative
-    {
-        const derivative = new Derivative(usage, quality);
-        this.addDerivative(derivative);
-        return derivative;
-    }
-
-    createWebModelDerivative(uri: string, quality: EDerivativeQuality): Derivative
-    {
-        const derivative = this.createDerivative(EDerivativeUsage.Web, quality);
-        derivative.createAsset(EAssetType.Model, uri);
-        return derivative;
-    }
-
-    addGeometryAndTextureDerivative(geoUri: string, textureUri: string, quality: EDerivativeQuality): Derivative
-    {
-        const derivative = this.createDerivative(EDerivativeUsage.Web, quality);
-        derivative.createAsset(EAssetType.Geometry, geoUri);
-
-        if (textureUri) {
-            const asset = derivative.createAsset(EAssetType.Image, textureUri);
-            asset.mapType = EMapType.Color;
-        }
-
-        return derivative;
-    }
-
-    addDerivative(derivative: Derivative)
-    {
-        this.derivatives.push(derivative);
-    }
-
-    removeDerivative(derivative: Derivative)
-    {
-        const index = this.derivatives.indexOf(derivative);
-        this.derivatives.splice(index, 1);
     }
 
     setShaderMode(shaderMode: EShaderMode)
@@ -264,9 +210,11 @@ export default class CVModel extends CObject3D
 
     toData()
     {
+        const ins = this.ins;
+
         const data: IModel = {
-            units: EUnitType[this.ins.units.value] as TUnitType,
-            derivatives: this.derivatives.map(derivative => derivative.toData())
+            units: EUnitType[ins.units.value] as TUnitType,
+            derivatives: this.derivatives.toData()
         };
 
         data.boundingBox = {
@@ -274,8 +222,15 @@ export default class CVModel extends CObject3D
             max: this._boundingBox.max.toArray() as Vector3
         };
 
-        if (!threeMath.isMatrix4Identity(this.object3D.matrix)) {
-            data.transform = this.object3D.matrix.toArray();
+        const position = ins.position.value;
+        if (position[0] !== 0 || position[1] !== 0 || position[2] !== 0) {
+            data.translation = _vec3a.toArray();
+        }
+
+        const rotation = ins.rotation.value;
+        if (rotation[0] !== 0 || rotation[1] !== 0 || rotation[2] !== 0) {
+            helpers.degreesToQuaternion(rotation, CVModel.rotationOrder, _quat);
+            data.rotation = _quat.toArray();
         }
 
         //if (this.material) {
@@ -285,109 +240,50 @@ export default class CVModel extends CObject3D
         return data;
     }
 
-    fromData(modelData: IModel)
+    fromData(data: IModel)
     {
-        this.ins.units.setValue(EUnitType[modelData.units] || 0);
+        const { units, position, rotation } = this.ins;
 
-        if (this.derivatives.length > 0) {
-            throw new Error("existing derivatives; failed to inflate from modelData");
+        units.setValue(EUnitType[data.units] || 0);
+
+        if (data.derivatives) {
+            this.derivatives.fromData(data.derivatives);
         }
 
-        modelData.derivatives.forEach(derivativeData => {
-            this.addDerivative(new Derivative(derivativeData));
-        });
+        if (data.translation || data.rotation) {
+            position.setValue(data.translation ? data.translation.slice() : [ 0, 0, 0 ]);
 
-        if (modelData.transform) {
-            _mat4.fromArray(modelData.transform);
-            this.setFromMatrix(_mat4);
+            if (data.rotation) {
+                _quat.fromArray(data.rotation);
+                rotation.setValue(helpers.quaternionToDegrees(_quat, CVModel.rotationOrder));
+            }
+            else {
+                rotation.setValue([ 0, 0, 0 ]);
+            }
+
+            this.updateMatrixFromProps();
         }
 
-        if (modelData.boundingBox) {
-            this._boundingBox.min.fromArray(modelData.boundingBox.min);
-            this._boundingBox.max.fromArray(modelData.boundingBox.max);
+        if (data.boundingBox) {
+            this._boundingBox.min.fromArray(data.boundingBox.min);
+            this._boundingBox.max.fromArray(data.boundingBox.max);
 
-            this.boxFrame = new THREE["Box3Helper"](this._boundingBox, "#ffffff");
-            this.addObject3D(this.boxFrame);
+            this._boxFrame = new THREE["Box3Helper"](this._boundingBox, "#ffffff");
+            this.addObject3D(this._boxFrame);
 
             this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
         }
 
-        //if (modelData.material) {
+        //if (data.material) {
         // TODO: Implement
         //}
+
+        // automatically display new derivatives if available
+        this.ins.autoLoad.set();
     }
 
     inflateReferences()
     {
-    }
-
-    /**
-     * From all derivatives with the given usage (e.g. web), select a derivative as close as possible to
-     * the given quality. The selection strategy works as follows:
-     * 1. Look for a derivative matching the quality exactly. If found, return it.
-     * 2. Look for a derivative with higher quality. If found, return it.
-     * 3. Look for a derivative with lower quality. If found return it, otherwise report an error.
-     * @param quality
-     * @param usage
-     */
-    selectDerivative(quality: EDerivativeQuality, usage?: EDerivativeUsage): Derivative | null
-    {
-        usage = usage !== undefined ? usage : EDerivativeUsage.Web;
-
-        const qualityIndex = _qualityLevels.indexOf(quality);
-
-        if (qualityIndex < 0) {
-            console.warn(`derivative quality not supported: '${EDerivativeQuality[quality]}'`);
-            return null;
-        }
-
-        const derivative = this.getDerivative(usage, quality);
-        if (derivative) {
-            return derivative;
-        }
-
-        for (let i = qualityIndex + 1; i < _qualityLevels.length; ++i) {
-            const derivative = this.getDerivative(usage, _qualityLevels[i]);
-            if (derivative) {
-                console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using higher quality`);
-                return derivative;
-            }
-        }
-
-        for (let i = qualityIndex - 1; i >= 0; --i) {
-            const derivative = this.getDerivative(usage, _qualityLevels[i]);
-            if (derivative) {
-                console.warn(`derivative quality '${EDerivativeQuality[quality]}' not available, using lower quality`);
-                return derivative;
-            }
-        }
-
-        console.warn(`no suitable derivative found for quality '${EDerivativeQuality[quality]}'`
-            + ` and usage '${EDerivativeUsage[usage]}'`);
-
-        return null;
-    }
-
-    /**
-     * Returns the derivative with the given quality and usage. Returns null if not found.
-     * @param quality The quality level of the derivative.
-     * @param usage The usage of the derivative.
-     */
-    getDerivative(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative
-    {
-        for (let i = 0, n = this.derivatives.length; i < n; ++i) {
-            const derivative = this.derivatives[i];
-            if (derivative && derivative.usage === usage && derivative.quality === quality) {
-                return derivative;
-            }
-        }
-
-        return null;
-    }
-
-    dumpDerivatives()
-    {
-        this.derivatives.forEach(derivative => console.log(derivative.toString()));
     }
 
     protected updateUnitScale()
@@ -398,17 +294,16 @@ export default class CVModel extends CObject3D
 
         //console.log("Model.updateUnitScale, from: %s, to: %s", fromUnits, toUnits);
 
-        this.updateMatrix();
+        this.updateMatrixFromProps();
     }
 
-    protected updateMatrix()
+    protected updateMatrixFromProps()
     {
         const ins = this.ins;
         const unitScale = this.outs.unitScale.value;
 
-        _vec3a.fromArray(ins.rotation.value).multiplyScalar(math.DEG2RAD);
-        _euler.setFromVector3(_vec3a, "ZYX");
         _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);
+        helpers.degreesToQuaternion(ins.rotation.value, CVModel.rotationOrder, _quat);
         _vec3b.setScalar(unitScale);
 
         const object3D = this.object3D;
@@ -426,18 +321,18 @@ export default class CVModel extends CObject3D
     {
         const sequence = [];
 
-        const lowestQualityDerivative = this.selectDerivative(EDerivativeQuality.Thumb);
+        const lowestQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.Thumb);
         if (lowestQualityDerivative) {
             sequence.push(lowestQualityDerivative);
         }
 
-        const targetQualityDerivative = this.selectDerivative(quality);
+        const targetQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, quality);
         if (targetQualityDerivative && targetQualityDerivative !== lowestQualityDerivative) {
             sequence.push(targetQualityDerivative);
         }
 
         if (sequence.length === 0) {
-            return Promise.reject(new Error("no suitable web-derivatives available"));
+            return Promise.resolve();
         }
 
         // load sequence of derivatives one by one
@@ -452,23 +347,24 @@ export default class CVModel extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        const loadingManager = this.system.components.safeGet(CVLoaders);
+        const loaders = this.system.components.safeGet(CVLoaders);
 
-        return derivative.load(loadingManager, this.assetPath)
+        return derivative.load(loaders, this.assetPath)
         .then(() => {
             if (!derivative.model) {
                 return;
             }
 
-            if (this.boxFrame) {
-                //this.removeObject3D(this.boxFrame);
-                //(this.boxFrame as any).geometry.dispose();
+            if (this._boxFrame) {
+                this.removeObject3D(this._boxFrame);
+                this._boxFrame.geometry.dispose();
             }
             if (this._activeDerivative) {
                 this.removeObject3D(this._activeDerivative.model);
                 this._activeDerivative.dispose();
             }
-            computeLocalBoundingBox(derivative.model, this._boundingBox);
+
+            helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
 
             this._activeDerivative = derivative;
             this.addObject3D(derivative.model);

@@ -291,14 +291,15 @@ export default class NVPresentationScene extends NScene
                     // node is reference, try to load external reference
                     const itemUrl = resolvePathname(referenceData.uri, this.assetPath);
                     const loadingManager = this.loadingManager;
+                    node = this.graph.createCustomNode(NVItem);
+                    node.item.setUrl(itemUrl);
 
                     loadingManager.loadJSON(itemUrl).then(json =>
                         loadingManager.validateItem(json).then(itemData => {
-                            node = this.graph.createCustomNode(NVItem);
-                            node.fromData(itemData);
+                            node.item.fromData(itemData);
                         })
                     ).catch(error => {
-                        console.log(`failed to create item from reference uri: ${error}`);
+                        console.warn(`failed to create item from reference uri: ${error}`);
                     });
                 }
             }

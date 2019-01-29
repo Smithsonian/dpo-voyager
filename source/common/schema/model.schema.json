@@ -75,12 +75,17 @@
                 "cm",
                 "m",
                 "in",
-                "ft"
+                "ft",
+                "yd"
             ]
         },
-        "transform": {
-            "description": "Local transformation matrix, defines the 'neutral pose' of this model.",
-            "$ref": "math.schema.json#/definitions/matrix4"
+        "translation": {
+            "description": "Translation vector. Apply to bring model into a 'neutral' pose.",
+            "$ref": "math.schema.json#/definitions/vector3"
+        },
+        "rotation": {
+            "description": "Rotation quaternion. Apply to bring model into a 'neutral' pose.",
+            "$ref": "math.schema.json#/definitions/vector4"
         },
         "boundingBox": {
             "description": "Bounding box for this model, shared by all derivatives.",
@@ -100,7 +105,8 @@
                         "description": "usage categories for a derivative.",
                         "type": "string",
                         "enum": [
-                            "Web",
+                            "Web2D",
+                            "Web3D",
                             "Print",
                             "Editorial"
                         ]
@@ -131,5 +137,6 @@
     "required": [
         "units",
         "derivatives"
-    ]
+    ],
+    "additionalProperties": false
 }

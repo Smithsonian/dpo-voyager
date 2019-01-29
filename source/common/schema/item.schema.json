@@ -5,8 +5,38 @@
     "title": "3D Item",
     "description": "Describes a Smithsonian DPO 3D repository item.",
 
+    "definitions": {
+        "info": {
+            "$id": "#info",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "copyright": {
+                    "type": "string"
+                },
+                "generator": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type",
+                "version"
+            ],
+            "additionalProperties": false
+        }
+    },
+
     "type": "object",
     "properties": {
+        "info": {
+            "description": "Information about the type, generator, and version of this data structure.",
+            "$ref": "#info"
+        },
         "meta": {
             "description": "Meta data about this item, including title, record info, collection, etc.",
             "$ref": "meta.schema.json"
@@ -26,13 +56,10 @@
         "annotations": {
             "description": "Spatial annotations (hot spots, hot zones). Annotations can reference documents.",
             "$ref": "annotations.schema.json"
-        },
-        "story": {
-            "description": "Animated tours and snapshots.",
-            "$ref": "story.schema.json"
         }
     },
     "required": [
-        "meta"
-    ]
+        "info"
+    ],
+    "additionalProperties": false
 }

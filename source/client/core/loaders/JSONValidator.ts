@@ -76,6 +76,7 @@ export default class JSONValidator
             return false;
         }
 
+        console.log("JSONValidator.validatePresentation - OK");
         return true;
     }
 
@@ -87,6 +88,7 @@ export default class JSONValidator
             return false;
         }
 
+        console.log("JSONValidator.validateItem - OK");
         return true;
     }
 }

@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-import fetch from "@ff/browser/fetch";
+import resolvePathname from "resolve-pathname";
+
+import { Dictionary } from "@ff/core/types";
+
 import download from "@ff/browser/download";
+import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
 import { types } from "@ff/graph/Component";
@@ -25,7 +29,7 @@ import { IComponentEvent } from "@ff/graph/ComponentSet";
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import Derivative, { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/models/Derivative";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/models/Derivative";
 
 import CVModel from "../../core/components/CVModel";
 import CVInterface from "../../explorer/components/CVInterface";
@@ -37,21 +41,14 @@ import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum ECaptureQuality {
-    Thumb = EDerivativeQuality.Thumb,
-    Low = EDerivativeQuality.Low,
-    Medium = EDerivativeQuality.Medium,
-    High = EDerivativeQuality.High
-}
+const _qualityLevels: EDerivativeQuality[] = [
+    EDerivativeQuality.Thumb,
+    EDerivativeQuality.Low,
+    EDerivativeQuality.Medium,
+    EDerivativeQuality.High
+];
 
-const _qualityTags = {
-    [EDerivativeQuality.Thumb]:  "thumb",
-    [EDerivativeQuality.Low]:    "low",
-    [EDerivativeQuality.Medium]: "medium",
-    [EDerivativeQuality.High]:   "high",
-};
-
-const _sizePresets = {
+const _sizePresets: Dictionary<number[]> = {
     [EDerivativeQuality.Thumb]:  [320, 320],   // Thumb
     [EDerivativeQuality.Low]:    [640, 640],   // Low
     [EDerivativeQuality.Medium]: [1280, 1280], // Medium
@@ -71,12 +68,10 @@ const _typeExtensions = {
 };
 
 const ins = {
-    preset: types.Enum("Derivative.Quality", ECaptureQuality, ECaptureQuality.Thumb),
     take: types.Event("Picture.Take"),
     save: types.Event("Picture.Save"),
     download: types.Event("Picture.Download"),
     remove: types.Event("Picture.Remove"),
-    size: types.IntVec2("Picture.Size", _sizePresets[ECaptureQuality.Thumb].slice()),
     type: types.Enum("Picture.Type", EFileType),
     quality: types.Number("Picture.Quality", { min: 0, max: 1, preset: 0.85 }),
 };
@@ -109,13 +104,13 @@ export default class CVCaptureTask extends CVTask
     private _gridVisible = false;
     private _bracketsVisible = false;
 
-    private _imageDataURLs: string[] = [];
-    private _imageElements: HTMLImageElement[] = [];
+    private _imageDataURIs: Dictionary<string> = {};
+    private _imageElements: Dictionary<HTMLImageElement> = {};
     private _mimeType: string = "";
     private _extension: string = "";
 
 
-    getImageElement(quality: ECaptureQuality = ECaptureQuality.Thumb)
+    getImageElement(quality: EDerivativeQuality = EDerivativeQuality.Low)
     {
         return this._imageElements[quality];
     }
@@ -136,9 +131,11 @@ export default class CVCaptureTask extends CVTask
 
         this.selection.selectedComponents.on(CVModel, this.onSelectModel, this);
 
+        // disable selection brackets
         this._bracketsVisible = this.selection.ins.bracketsVisible.value;
         this.selection.ins.bracketsVisible.setValue(false);
 
+        // disable interface overlay
         const interface_ = this.interface;
         if (interface_) {
             this._interfaceVisible = interface_.ins.visible.value;
@@ -152,8 +149,10 @@ export default class CVCaptureTask extends CVTask
 
         this.selection.selectedComponents.off(CVModel, this.onSelectModel, this);
 
+        // restore selection brackets visibility
         this.selection.ins.bracketsVisible.setValue(this._bracketsVisible);
 
+        // restore interface visibility
         const interface_ = this.interface;
         if (interface_) {
             interface_.ins.visible.setValue(this._interfaceVisible);
@@ -164,19 +163,9 @@ export default class CVCaptureTask extends CVTask
     {
         const ins = this.ins;
 
-        const index = ins.preset.getValidatedValue();
-
-        if (ins.size.changed) {
-            _sizePresets[index] = ins.size.cloneValue();
-        }
-        else if (ins.preset.changed) {
-            ins.size.copyValue(_sizePresets[index]);
-        }
-
         if (ins.take.changed) {
-            this._mimeType = _mimeTypes[ins.type.getValidatedValue()];
-            this._extension = _typeExtensions[ins.type.getValidatedValue()];
-            this.takePictures(ins.quality.value);
+            const typeIndex = ins.type.getValidatedValue();
+            this.takePictures(ins.quality.value, _mimeTypes[typeIndex], _typeExtensions[typeIndex]);
         }
         if (ins.save.changed) {
             this.uploadPictures();
@@ -191,19 +180,25 @@ export default class CVCaptureTask extends CVTask
         return true;
     }
 
-    protected takePictures(quality: number)
+    protected takePictures(quality: number, type: string, extension: string)
     {
+        this._mimeType = type;
+        this._extension = extension;
+
         const view = this.renderer.views[0];
         if (!view) {
             console.warn("can't render to image, no view attached");
             return;
         }
 
-        for (let i = 0; i < 4; ++i) {
-            this._imageDataURLs[i] = view.renderImage(_sizePresets[i][0], _sizePresets[i][1], this._mimeType, quality);
-            this._imageElements[i] = document.createElement("img");
-            this._imageElements[i].src = this._imageDataURLs[i];
-        }
+        _qualityLevels.forEach(quality => {
+            const dataURI = view.renderImage(_sizePresets[quality][0], _sizePresets[quality][1], type, quality);
+            this._imageDataURIs[quality] = dataURI;
+
+            const imageElement = this._imageElements[quality] || document.createElement("img");
+            imageElement.src = dataURI;
+            this._imageElements[quality] = imageElement;
+        });
 
         this.outs.ready.setValue(true);
     }
@@ -215,23 +210,23 @@ export default class CVCaptureTask extends CVTask
             return;
         }
 
-        for (let quality = 0; quality < 4; ++quality) {
-
-            const dataURL = this._imageDataURLs[quality];
+        _qualityLevels.forEach(quality => {
+            const dataURI = this._imageDataURIs[quality];
             const fileName = this.getImageFileName(quality, this._extension);
             const fileURL = model.assetPath + fileName;
-            const blob = convert.dataURItoBlob(dataURL);
+            const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
             fetch.file(fileURL, "PUT", file)
-                .then(() => {
-                    this.updateDerivative(quality, this._mimeType, fileName);
-                    new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
-                })
-                .catch(e => {
-                    new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
-                });
-        }
+            .then(() => {
+                this.updateDerivative(quality, this._mimeType, fileName);
+                new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
+            })
+            .catch(e => {
+                new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
+            });
+
+        });
     }
 
     protected downloadPicture()
@@ -240,9 +235,9 @@ export default class CVCaptureTask extends CVTask
             return;
         }
 
-        const dataURL = this._imageDataURLs[EDerivativeQuality.High];
+        const dataURI = this._imageDataURIs[EDerivativeQuality.High];
         const fileName = this.getImageFileName(EDerivativeQuality.High, this._extension);
-        download.url(dataURL, fileName);
+        download.url(dataURI, fileName);
     }
 
     protected updateDerivative(quality: EDerivativeQuality, mimeType: string, url: string)
@@ -253,8 +248,7 @@ export default class CVCaptureTask extends CVTask
 
         const model = this.activeModel;
 
-        const derivative = model.getDerivative(EDerivativeUsage.Web, quality)
-            || model.createDerivative(EDerivativeUsage.Web, quality);
+        const derivative = model.derivatives.getOrCreate(EDerivativeUsage.Web2D, quality);
 
         const asset = derivative.findAsset(EAssetType.Image)
             || derivative.createAsset(EAssetType.Image, url);
@@ -262,13 +256,14 @@ export default class CVCaptureTask extends CVTask
         asset.uri = url;
         asset.imageSize = Math.max(_sizePresets[quality][0], _sizePresets[quality][1]);
         asset.mimeType = mimeType;
-        asset.byteSize = Math.ceil(this._imageDataURLs[quality].length / 4 * 3);
+        asset.byteSize = Math.ceil(this._imageDataURIs[quality].length / 4 * 3);
     }
 
     protected getImageFileName(quality: EDerivativeQuality, extension: string)
     {
         const assetBaseName = this.activeModel.assetBaseName;
-        const imageName = `image-${_qualityTags[quality]}.${extension}`;
+        const qualityName = EDerivativeQuality[quality].toLowerCase();
+        const imageName = `image-${qualityName}.${extension}`;
         return assetBaseName ? assetBaseName + "-" + imageName : imageName;
     }
 
@@ -295,12 +290,25 @@ export default class CVCaptureTask extends CVTask
         if (item && item.model) {
             this.activeModel = item.model;
             this.selection.selectComponent(this.activeModel);
+
+            // load existing captures
+            _qualityLevels.forEach(quality => {
+                const derivative = item.model.derivatives.get(EDerivativeUsage.Web2D, quality);
+                if (derivative) {
+                    const image = derivative.findAsset(EAssetType.Image);
+                    if (image) {
+                        const imageElement = document.createElement("img");
+                        imageElement.src = resolvePathname(image.uri, item.model.assetPath);
+                        this._imageElements[quality] = imageElement;
+                    }
+                }
+            })
         }
         else {
             this.outs.ready.setValue(false);
             this.activeModel = null;
-            this._imageElements = [];
-            this._imageDataURLs = [];
+            this._imageElements = {};
+            this._imageDataURIs = {};
         }
     }
 

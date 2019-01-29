@@ -89,6 +89,7 @@ export default class ExplorerApplication
 
     constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
     {
+        this.props = props;
         console.log(ExplorerApplication.splashMessage);
 
         // register components
@@ -129,11 +130,14 @@ export default class ExplorerApplication
         explorer.components.get(CPulse).start();
 
         // start loading from properties
-        this.props = this.initFromProps(props);
+        this.startup().catch((error: Error) => {
+            console.warn("application startup failed: " + error.message);
+        });
     }
 
-    protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
+    protected startup(): Promise<void>
     {
+        const props = this.props;
         const controller = this.system.components.safeGet(CVPresentationController);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
@@ -147,20 +151,20 @@ export default class ExplorerApplication
 
 
         if (props.presentation) {
-            controller.loadPresentation(props.presentation, null, props.base);
+            return controller.loadPresentation(props.presentation, null, props.base);
         }
-        else if (props.item) {
-            controller.loadItem(props.item, props.template, props.base);
+        if (props.item) {
+            return controller.loadItem(props.item, props.template, props.base);
         }
-        else if (props.model) {
-            controller.loadModel(props.model, props.quality, props.template, props.base);
+        if (props.model) {
+            return controller.loadModel(props.model, props.quality, props.template, props.base);
         }
-        else if (props.geometry) {
-            controller.loadGeometryAndTexture(
+        if (props.geometry) {
+            return controller.loadGeometryAndTexture(
                 props.geometry, props.texture, props.quality, props.template, props.base);
         }
 
-        return props;
+        return Promise.resolve();
     }
 }
 

@@ -152,7 +152,7 @@ export default class CVPresentationController extends CController<CVPresentation
     protected get renderer() {
         return this.system.components.safeGet(CRenderer);
     }
-    protected get loadingManager() {
+    protected get loaders() {
         return this.system.components.safeGet(CVLoaders);
     }
 
@@ -177,13 +177,13 @@ export default class CVPresentationController extends CController<CVPresentation
         super.dispose();
     }
 
-    loadItem(itemUrl: string, templateUrl?: string, assetBaseName?: string)
+    loadItem(itemUrl: string, templateUrl?: string, assetBaseName?: string): Promise<void>
     {
         console.log("CExplorer.loadItem - URL: %s", itemUrl);
 
-        return this.loadingManager.loadJSON(itemUrl).then(json => {
+        return this.loaders.loadJSON(itemUrl).then(json => {
             const assetPath = resolvePathname(".", itemUrl);
-            this.openItem(json, itemUrl, templateUrl, assetPath, assetBaseName);
+            return this.openItem(json, itemUrl, templateUrl, assetPath, assetBaseName);
         });
     }
 
@@ -192,7 +192,7 @@ export default class CVPresentationController extends CController<CVPresentation
         // get last part from template url
         const templateFileName = templateUrl ? templateUrl.substr(resolvePathname(".", templateUrl).length) : "";
 
-        return this.loadingManager.validateItem(json).then(itemData => {
+        return this.loaders.validateItem(json).then(itemData => {
 
             const itemCallback = (index, graph, assetPath) => {
                 if (index === 0) {
@@ -232,7 +232,7 @@ export default class CVPresentationController extends CController<CVPresentation
                 if (index === 0) {
                     const node = graph.createCustomNode(NVItem);
                     node.item.setUrl(itemUrl, modelPath, assetBaseName);
-                    node.model.createWebModelDerivative(modelName, q);
+                    node.model.derivatives.createModelAsset(modelName, q);
                     return node;
                 }
 
@@ -241,7 +241,7 @@ export default class CVPresentationController extends CController<CVPresentation
         });
     }
 
-    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, templateUrl?: string, assetBaseName?: string)
+    loadGeometryAndTexture(geometryUrl: string, textureUrl?: string, quality?: string, templateUrl?: string, assetBaseName?: string): Promise<void>
     {
         const q = EDerivativeQuality[quality] || EDerivativeQuality.Medium;
 
@@ -257,7 +257,7 @@ export default class CVPresentationController extends CController<CVPresentation
                 if (index === 0) {
                     const node = graph.createCustomNode(NVItem);
                     node.item.setUrl(itemUrl, geoPath, assetBaseName);
-                    node.model.addGeometryAndTextureDerivative(geoName, texName, q);
+                    node.model.derivatives.createMeshAsset(geoName, texName, q);
                     return node;
                 }
 
@@ -266,13 +266,13 @@ export default class CVPresentationController extends CController<CVPresentation
         });
     }
 
-    loadPresentation(presentationUrl: string, callback?: ReferenceCallback, assetBaseName?: string)
+    loadPresentation(presentationUrl: string, callback?: ReferenceCallback, assetBaseName?: string): Promise<void>
     {
         console.log("CExplorer.loadPresentation - URL: %s", presentationUrl);
 
         const assetPath = resolvePathname(".", presentationUrl);
 
-        return this.loadingManager.loadJSON(presentationUrl).then(json => {
+        return this.loaders.loadJSON(presentationUrl).then(json => {
             const assetPath = resolvePathname(".", presentationUrl);
             this.openPresentation(json, presentationUrl, callback, assetPath, assetBaseName);
         });
@@ -290,7 +290,7 @@ export default class CVPresentationController extends CController<CVPresentation
         // currently opening multiple presentations is not supported
         this.closeAll();
 
-        return this.loadingManager.validatePresentation(json).then(presentationData => {
+        return this.loaders.validatePresentation(json).then(presentationData => {
 
             const presentation = this.node.createComponent(CVPresentation);
             presentation.setUrl(url, assetPath, assetBaseName);

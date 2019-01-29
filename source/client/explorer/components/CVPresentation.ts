@@ -59,6 +59,7 @@ export default class CVPresentation extends CRenderGraph
     setUrl(url: string, assetPath?: string, assetBaseName?: string)
     {
         this.presentation.setUrl(url, assetPath, assetBaseName);
+        this.innerGraph.nodes.get(NVPresentationScene).setUrl(url, assetPath);
     }
 
     // get url() {

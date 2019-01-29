@@ -171,7 +171,7 @@ ff-dock-view {
   }
 
   .sv-image {
-    margin: 4px 2px;
+    margin: 8px 0;
 
     img {
       width: 100%;
@@ -183,7 +183,7 @@ ff-dock-view {
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTY VIEW
 
-sv-property-view {
+.sv-property-view {
   flex: 0 0 auto;
   padding: 2px;
 

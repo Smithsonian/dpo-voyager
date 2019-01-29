@@ -136,7 +136,7 @@ export default class CVOrbitNavigation extends Component
             orbit.setValue(_orientationPreset[preset.getValidatedValue()].slice());
         }
 
-        if (zoomExtents.changed && this._activeScene) {
+        if (camera && zoomExtents.changed) {
             camera.updateMatrixWorld(false);
             _box.copy(this._activeScene.boundingBox);
             _box.applyMatrix4(camera.matrixWorldInverse);
