@@ -27,6 +27,7 @@ import CVStoryController from "./components/CVStoryController";
 import CVTaskController from "./components/CVTaskController";
 
 import MainView from "./ui/MainView";
+import { IItem } from "common/types/item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +79,30 @@ export default class StoryApplication
         if (element) {
             new MainView(this).appendTo(element);
         }
+    }
+
+    addItemFromURL(itemURL: string, assetBaseName: string)
+    {
+        // // try to get active presentation
+        // let presentation = this.presentations.activePresentation;
+        //
+        // // if no success, try to get first available presentation and set it active
+        // if (!presentation) {
+        //     presentation = this.presentations.presentations[0];
+        //     if (presentation) {
+        //         this.presentations.activePresentation = presentation;
+        //     }
+        // }
+        // // if still no success, create a default presentation
+        // if (presentation) {
+        //     presentation.addItemFromUrl(itemUrl, assetBaseName)
+        // }
+        // if (!presentation) {
+        //     this.presentations.openDefaultPresentation()
+        //     .then(() => {
+        //
+        //     })
+        // }
     }
 
     protected initFromProps(props: IStoryApplicationProps): IStoryApplicationProps

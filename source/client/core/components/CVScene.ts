@@ -36,7 +36,8 @@ const ins = {
     units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
     shader: types.Enum("Renderer.Shader", EShaderMode),
     exposure: types.Number("Renderer.Exposure", 1),
-    gamma: types.Number("Renderer.Gamma", 1)
+    gamma: types.Number("Renderer.Gamma", 1),
+    zoomExtents: types.Event("ZoomExtents")
 };
 
 export default class CVScene extends CScene
@@ -69,6 +70,13 @@ export default class CVScene extends CScene
             const index = ins.shader.getValidatedValue();
             this.graph.components.getArray(CVModel).forEach(model => model.setShaderMode(index));
         }
+        if (ins.zoomExtents.changed) {
+            this._zoomViews = true;
+            const manip = this.system.components.get(CVOrbitNavigation);
+            if (manip) {
+                manip.ins.zoomExtents.set();
+            }
+        }
 
         return true;
     }
@@ -86,14 +94,6 @@ export default class CVScene extends CScene
     finalize()
     {
         this._zoomViews = false;
-    }
-
-    zoomViews()
-    {
-        this._zoomViews = true;
-
-        const manip = this.system.components.get(CVOrbitNavigation);
-        manip.ins.zoomExtents.set();
     }
 
     fromData(data: IScene)

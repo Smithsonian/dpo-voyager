@@ -112,6 +112,11 @@ export default class Asset
         return data;
     }
 
+    toString()
+    {
+        return `Asset - type: '${EAssetType[this.type]}', uri: '${this.uri}', mime type: '${this.mimeType || "(not set)"}'`;
+    }
+
     protected guessAssetType(): EAssetType
     {
         if (this.type !== undefined && EAssetType[this.type]) {

@@ -62,7 +62,8 @@ const ins = {
     autoLoad: types.Boolean("Auto.Load", true),
     position: types.Vector3("Pose.Position"),
     rotation: types.Vector3("Pose.Rotation"),
-    center: types.Event("Pose.Center")
+    center: types.Event("Pose.Center"),
+    dumpDerivatives: types.Event("Derivatives.Dump"),
 };
 
 const outs = {
@@ -109,13 +110,13 @@ export default class CVModel extends CObject3D
 
     update()
     {
-        const { visible, units, quality, autoLoad, position, rotation, center } = this.ins;
+        const ins = this.ins;
 
-        if (!this.activeDerivative && autoLoad.changed && autoLoad.value) {
-            this.autoLoad(quality.value);
+        if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
+            this.autoLoad(ins.quality.value);
         }
-        else if (quality.changed) {
-            const derivative = this.derivatives.select(EDerivativeUsage.Web3D, quality.value);
+        else if (ins.quality.changed) {
+            const derivative = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
             if (derivative && derivative !== this.activeDerivative) {
                 this.loadDerivative(derivative)
                 .catch(error => {
@@ -126,19 +127,22 @@ export default class CVModel extends CObject3D
         }
 
 
-        if (visible.changed) {
-            this.object3D.visible = visible.value;
+        if (ins.visible.changed) {
+            this.object3D.visible = ins.visible.value;
         }
 
-        if (units.changed) {
+        if (ins.units.changed) {
             this.updateUnitScale();
             this.emit<IModelChangeEvent>({ type: "change", what: "boundingBox", component: this });
         }
-        if (center.changed) {
+        if (ins.center.changed) {
             this.center();
         }
-        if (position.changed || rotation.changed) {
+        if (ins.position.changed || ins.rotation.changed) {
             this.updateMatrixFromProps();
+        }
+        if (ins.dumpDerivatives.changed) {
+            console.log(this.derivatives.toString(true));
         }
 
         return true;

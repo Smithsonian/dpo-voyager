@@ -117,6 +117,9 @@ export default class CVPresentationController extends CController<CVPresentation
     get presentations() {
         return this.node.components.getArray(CVPresentation);
     }
+    get presentationCount() {
+        return this.node.components.getArray(CVPresentation).length;
+    }
 
     get activeItem() {
         return this._activeItem;
@@ -278,7 +281,7 @@ export default class CVPresentationController extends CController<CVPresentation
         });
     }
 
-    openDefaultPresentation(callback: ReferenceCallback, assetPath?: string, assetBaseName?: string): Promise<void>
+    openDefaultPresentation(callback?: ReferenceCallback, assetPath?: string, assetBaseName?: string): Promise<void>
     {
         console.log("CExplorer.openDefaultPresentation - Opening presentation from default template");
         const url = assetPath + "template.json";

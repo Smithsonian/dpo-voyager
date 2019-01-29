@@ -152,9 +152,15 @@ export default class Derivative
         };
     }
 
-    toString()
+    toString(verbose: boolean = false)
     {
-        return `Derivative - usage: ${EDerivativeUsage[this.usage]}, quality: ${EDerivativeQuality[this.quality]}, #assets: ${this.assets.length})`;
+        if (verbose) {
+            return `Derivative - usage: '${EDerivativeUsage[this.usage]}', quality: '${EDerivativeQuality[this.quality]}'\n   `
+                + this.assets.map(asset => asset.toString()).join("\n   ");
+        }
+        else {
+            return `Derivative - usage: '${EDerivativeUsage[this.usage]}', quality: '${EDerivativeQuality[this.quality]}', #assets: ${this.assets.length})`;
+        }
     }
 
     findAsset(type: EAssetType): Asset | undefined

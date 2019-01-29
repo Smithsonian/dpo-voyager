@@ -172,10 +172,17 @@ export default class DerivativeList
         });
     }
 
-    toString()
+    toString(verbose: boolean = false)
     {
         const derivatives = this.derivatives;
-        return "Derivatives: " + Object.keys(derivatives).map((key, index) => `${key} (${derivatives[key].length})`).join(", ");
+        const keys = Object.keys(derivatives);
+
+        if (verbose) {
+            return `Derivatives (${keys.length}) \n ` + keys.map(key => derivatives[key].map(derivative => derivative.toString(true)).join("\n ")).join("\n ");
+        }
+        else {
+            return `Derivatives (${keys.length}) ` + keys.map(key => `${key} (${derivatives[key].length})`).join(", ");
+        }
     }
 
     protected getOrCreateBin(usage: EDerivativeUsage)
