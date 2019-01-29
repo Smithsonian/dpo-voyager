@@ -26,12 +26,12 @@ import CPulse from "@ff/graph/components/CPulse";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import CLoadingManager from "../core/components/CLoadingManager";
-import COrbitNavigation from "../core/components/COrbitNavigation";
+import CVLoaders from "../core/components/CVLoaders";
+import CVOrbitNavigation from "../core/components/CVOrbitNavigation";
 
-import CInterface from "./components/CInterface";
-import CReader from "./components/CReader";
-import CPresentationController from "./components/CPresentationController";
+import CVInterface from "./components/CVInterface";
+import CVReader from "./components/CVReader";
+import CVPresentationController from "./components/CVPresentationController";
 
 import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
@@ -112,13 +112,13 @@ export default class ExplorerApplication
         explorer.createComponent(CRenderer);
         explorer.createComponent(CPickSelection).createActions(this.commander);
 
-        explorer.createComponent(CLoadingManager);
-        explorer.createComponent(COrbitNavigation);
-        explorer.createComponent(CInterface);
-        explorer.createComponent(CReader);
+        explorer.createComponent(CVLoaders);
+        explorer.createComponent(CVOrbitNavigation);
+        explorer.createComponent(CVInterface);
+        explorer.createComponent(CVReader);
 
         const presentations = system.graph.createNode("Presentations");
-        presentations.createComponent(CPresentationController).createActions(this.commander);
+        presentations.createComponent(CVPresentationController).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -134,7 +134,7 @@ export default class ExplorerApplication
 
     protected initFromProps(props: IExplorerApplicationProps): IExplorerApplicationProps
     {
-        const controller = this.system.components.safeGet(CPresentationController);
+        const controller = this.system.components.safeGet(CVPresentationController);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");

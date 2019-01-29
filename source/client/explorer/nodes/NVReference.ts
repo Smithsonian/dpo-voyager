@@ -15,23 +15,36 @@
  * limitations under the License.
  */
 
-import CVLoaders from "./CVLoaders";
-import CVModel from "./CVModel";
-import CVScene from "./CVScene";
-import CVOrbitNavigation from "./CVOrbitNavigation";
+import NTransform from "@ff/scene/nodes/NTransform";
+
+import { IReference } from "common/types/presentation";
+
+import CVReference from "../components/CVReference";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVLoaders,
-    CVModel,
-    CVScene,
-    CVOrbitNavigation
-};
+export default class NVReference extends NTransform
+{
+    static readonly type: string = "NVReference";
 
-export const componentTypes = [
-    CVLoaders,
-    CVModel,
-    CVScene,
-    CVOrbitNavigation
-];
+    get reference() {
+        return this.components.get(CVReference);
+    }
+
+    createComponents()
+    {
+        super.createComponents();
+        this.createComponent(CVReference);
+        this.name = "Reference";
+    }
+
+    fromData(data: IReference)
+    {
+        this.reference.fromData(data);
+    }
+
+    toData(): IReference
+    {
+        return this.reference.toData();
+    }
+}

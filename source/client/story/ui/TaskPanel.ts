@@ -19,20 +19,20 @@ import System from "@ff/graph/System";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 
-import CTaskController, { IActiveTaskEvent } from "../components/CTaskController";
+import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-task-panel")
 export default class TaskPanel extends SystemElement
 {
-    protected taskController: CTaskController = null;
+    protected taskController: CVTaskController = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.taskController = system.graph.components.safeGet(CTaskController);
+        this.taskController = system.graph.components.safeGet(CVTaskController);
 
         if (!this.taskController) {
             throw new Error("missing task manager");

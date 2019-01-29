@@ -23,8 +23,8 @@ import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Expl
 
 import { componentTypes as storyComponents } from "./components";
 
-import CStoryController from"./components/CStoryController";
-import CTaskController from "./components/CTaskController";
+import CVStoryController from "./components/CVStoryController";
+import CVTaskController from "./components/CVTaskController";
 
 import MainView from "./ui/MainView";
 
@@ -70,8 +70,8 @@ export default class StoryApplication
 
         // add story components
         const storyNode = this.system.graph.createNode("Story");
-        storyNode.createComponent(CTaskController);
-        storyNode.createComponent(CStoryController);
+        storyNode.createComponent(CVTaskController);
+        storyNode.createComponent(CVStoryController);
 
         this.props = this.initFromProps(props);
 
@@ -86,7 +86,7 @@ export default class StoryApplication
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
 
-        const story = this.system.components.get(CStoryController);
+        const story = this.system.components.get(CVStoryController);
         story.ins.referrer.setValue(props.referrer);
         story.ins.expertMode.setValue(!!props.expert);
 

@@ -15,32 +15,32 @@
  * limitations under the License.
  */
 
-import CAnnotationsTask from "./CAnnotationsTask";
-import CCaptureTask from "./CCaptureTask";
-import CDerivativesTask from "./CDerivativesTask";
-import CExploreTask from "./CExploreTask";
-import CPoseTask from "./CPoseTask";
-import CStoryController from "./CStoryController";
-import CTaskController from "./CTaskController";
+import CVAnnotationsTask from "./CVAnnotationsTask";
+import CVCaptureTask from "./CVCaptureTask";
+import CVDerivativesTask from "./CVDerivativesTask";
+import CVExploreTask from "./CVExploreTask";
+import CVPoseTask from "./CVPoseTask";
+import CVStoryController from "./CVStoryController";
+import CVTaskController from "./CVTaskController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    CAnnotationsTask,
-    CCaptureTask,
-    CDerivativesTask,
-    CExploreTask,
-    CPoseTask,
-    CStoryController,
-    CTaskController,
+    CVAnnotationsTask,
+    CVCaptureTask,
+    CVDerivativesTask,
+    CVExploreTask,
+    CVPoseTask,
+    CVStoryController,
+    CVTaskController,
 };
 
 export const componentTypes = [
-    CAnnotationsTask,
-    CCaptureTask,
-    CDerivativesTask,
-    CExploreTask,
-    CPoseTask,
-    CStoryController,
-    CTaskController,
+    CVAnnotationsTask,
+    CVCaptureTask,
+    CVDerivativesTask,
+    CVExploreTask,
+    CVPoseTask,
+    CVStoryController,
+    CVTaskController,
 ];

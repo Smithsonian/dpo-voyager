@@ -20,8 +20,8 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import NItem from "../../explorer/nodes/NItem";
-import CExploreTask from "../components/CExploreTask";
+import NVItem from "../../explorer/nodes/NVItem";
+import CVExploreTask from "../components/CVExploreTask";
 
 import "./ItemList";
 import TaskView from "./TaskView";

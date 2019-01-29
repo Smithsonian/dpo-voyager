@@ -20,8 +20,8 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import NItem from "../../explorer/nodes/NItem";
-import CCaptureTask from "../components/CCaptureTask";
+import NVItem from "../../explorer/nodes/NVItem";
+import CVCaptureTask from "../components/CVCaptureTask";
 
 import "./ItemList";
 import TaskView from "./TaskView";
@@ -31,10 +31,10 @@ import TaskView from "./TaskView";
 @customElement("sv-capture-task-view")
 export default class CaptureTaskView extends TaskView
 {
-    protected task: CCaptureTask;
-    protected activeItem: NItem = null;
+    protected task: CVCaptureTask;
+    protected activeItem: NVItem = null;
 
-    protected setActiveItem(item: NItem)
+    protected setActiveItem(item: NVItem)
     {
         this.activeItem = item;
         this.requestUpdate();

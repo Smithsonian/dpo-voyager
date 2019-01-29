@@ -15,23 +15,39 @@
  * limitations under the License.
  */
 
-import CVLoaders from "./CVLoaders";
-import CVModel from "./CVModel";
-import CVScene from "./CVScene";
-import CVOrbitNavigation from "./CVOrbitNavigation";
+import { types } from "@ff/graph/propertyTypes";
+import Component from "@ff/graph/Component";
+
+import { ISectionTool } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVLoaders,
-    CVModel,
-    CVScene,
-    CVOrbitNavigation
+const ins = {
+    active: types.Boolean("Active"),
+    plane: types.Vector4("Plane")
 };
 
-export const componentTypes = [
-    CVLoaders,
-    CVModel,
-    CVScene,
-    CVOrbitNavigation
-];
+export default class CVSectionTool extends Component
+{
+    static readonly type: string = "CVSectionTool";
+
+    ins = this.addInputs(ins);
+
+    fromData(data: ISectionTool)
+    {
+        this.ins.copyValues({
+            active: data.active,
+            plane: data.plane
+        });
+    }
+
+    toData(): ISectionTool
+    {
+        const ins = this.ins;
+
+        return {
+            active: ins.active.value,
+            plane: ins.plane.cloneValue()
+        };
+    }
+}

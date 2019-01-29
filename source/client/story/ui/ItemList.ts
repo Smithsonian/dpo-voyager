@@ -23,22 +23,22 @@ import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElem
 import Icon from "@ff/ui/Icon";
 import List from "@ff/ui/List";
 
-import NItem from "../../explorer/nodes/NItem";
+import NVItem from "../../explorer/nodes/NVItem";
 
-import CPresentationController, {
+import CVPresentationController, {
     IActiveItemEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationController";
+} from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-item-list")
-class ItemList extends List<NItem>
+class ItemList extends List<NVItem>
 {
     @property({ attribute: false })
     system: System = null;
 
-    protected presentations: CPresentationController = null;
+    protected presentations: CVPresentationController = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
@@ -46,7 +46,7 @@ class ItemList extends List<NItem>
         super.firstConnected();
         this.classList.add("sv-scrollable", "sv-item-list");
 
-        this.presentations = this.system.components.safeGet(CPresentationController);
+        this.presentations = this.system.components.safeGet(CVPresentationController);
         this.selection = this.system.components.safeGet(CSelection);
     }
 
@@ -54,7 +54,7 @@ class ItemList extends List<NItem>
     {
         super.connected();
 
-        this.selection.selectedNodes.on(NItem, this.onSelectItem, this);
+        this.selection.selectedNodes.on(NVItem, this.onSelectItem, this);
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
         this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
         this.presentations.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
@@ -62,7 +62,7 @@ class ItemList extends List<NItem>
 
     protected disconnected()
     {
-        this.selection.selectedNodes.off(NItem, this.onSelectItem, this);
+        this.selection.selectedNodes.off(NVItem, this.onSelectItem, this);
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
         this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
         this.presentations.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
@@ -76,20 +76,20 @@ class ItemList extends List<NItem>
         return super.update(props);
     }
 
-    protected renderItem(node: NItem)
+    protected renderItem(node: NVItem)
     {
         const isActive = node === this.presentations.activeItem;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${node.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(node: NItem): boolean
+    protected isItemSelected(node: NVItem): boolean
     {
         return this.selection.selectedNodes.contains(node)
             || this.selection.nodeContainsSelectedComponent(node);
     }
 
-    protected onClickItem(event: MouseEvent, node: NItem)
+    protected onClickItem(event: MouseEvent, node: NVItem)
     {
         this.presentations.activeItem = node;
     }
@@ -108,14 +108,14 @@ class ItemList extends List<NItem>
         this.requestUpdate();
     }
 
-    protected onSelectItem(event: INodeEvent<NItem>)
+    protected onSelectItem(event: INodeEvent<NVItem>)
     {
         this.requestUpdate();
     }
 
     protected onSelectComponent(event: IComponentEvent)
     {
-        if (event.component.node.type === NItem.type) {
+        if (event.component.node.type === NVItem.type) {
             this.requestUpdate();
         }
     }

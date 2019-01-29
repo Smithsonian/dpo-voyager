@@ -22,22 +22,22 @@ import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElem
 import Icon from "@ff/ui/Icon";
 import List from "@ff/ui/List";
 
-import CPresentation from "../../explorer/components/CPresentation";
+import CVPresentation from "../../explorer/components/CVPresentation";
 
-import CPresentationController, {
+import CVPresentationController, {
     IPresentationEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationController";
+} from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-presentation-list")
-class PresentationList extends List<CPresentation>
+class PresentationList extends List<CVPresentation>
 {
     @property({ attribute: false })
     system: System = null;
 
-    protected presentations: CPresentationController = null;
+    protected presentations: CVPresentationController = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
@@ -45,7 +45,7 @@ class PresentationList extends List<CPresentation>
         super.firstConnected();
         this.classList.add("sv-presentation-list");
 
-        this.presentations = this.system.components.safeGet(CPresentationController);
+        this.presentations = this.system.components.safeGet(CVPresentationController);
         this.selection = this.system.components.safeGet(CSelection);
     }
 
@@ -53,14 +53,14 @@ class PresentationList extends List<CPresentation>
     {
         super.connected();
 
-        this.selection.selectedComponents.on(CPresentation, this.onSelectPresentation, this);
+        this.selection.selectedComponents.on(CVPresentation, this.onSelectPresentation, this);
         this.presentations.on<IPresentationEvent>("presentation", this.onPresentation, this);
         this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedComponents.off(CPresentation, this.onSelectPresentation, this);
+        this.selection.selectedComponents.off(CVPresentation, this.onSelectPresentation, this);
         this.presentations.off<IPresentationEvent>("presentation", this.onPresentation, this);
         this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
 
@@ -69,23 +69,23 @@ class PresentationList extends List<CPresentation>
 
     protected update(props: PropertyValues)
     {
-        this.data = this.system.components.getArray(CPresentation);
+        this.data = this.system.components.getArray(CVPresentation);
         super.update(props);
     }
 
-    protected renderItem(component: CPresentation)
+    protected renderItem(component: CVPresentation)
     {
         const isActive = component === this.presentations.activePresentation;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(component: CPresentation)
+    protected isItemSelected(component: CVPresentation)
     {
         return this.selection.selectedComponents.contains(component);
     }
 
-    protected onClickItem(event: MouseEvent, component: CPresentation)
+    protected onClickItem(event: MouseEvent, component: CVPresentation)
     {
         this.presentations.activePresentation = component;
         this.selection.selectComponent(component);
@@ -100,7 +100,7 @@ class PresentationList extends List<CPresentation>
         this.requestUpdate();
     }
 
-    protected onSelectPresentation(event: IComponentEvent<CPresentation>)
+    protected onSelectPresentation(event: IComponentEvent<CVPresentation>)
     {
         this.requestUpdate();
     }

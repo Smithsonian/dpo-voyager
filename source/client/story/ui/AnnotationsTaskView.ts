@@ -18,9 +18,9 @@
 import { customElement, html } from "@ff/ui/CustomElement";
 
 import TaskView from "./TaskView";
-import CAnnotationsTask, { EAnnotationsTaskMode } from "../components/CAnnotationsTask";
-import CAnnotations from "../../explorer/components/CAnnotations";
-import NItem from "../../explorer/nodes/NItem";
+import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
+import CVAnnotations from "../../explorer/components/CVAnnotations";
+import NVItem from "../../explorer/nodes/NVItem";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,10 +28,10 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 @customElement("sv-annotations-task-view")
 export default class AnnotationsTaskView extends TaskView
 {
-    protected task: CAnnotationsTask;
-    protected activeAnnotations: CAnnotations = null;
+    protected task: CVAnnotationsTask;
+    protected activeAnnotations: CVAnnotations = null;
 
-    protected setActiveItem(item: NItem)
+    protected setActiveItem(item: NVItem)
     {
         this.activeAnnotations = item ? item.annotations : null;
         this.requestUpdate();

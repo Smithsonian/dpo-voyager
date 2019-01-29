@@ -19,7 +19,7 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../StoryApplication";
-import CStoryController from "../components/CStoryController";
+import CVStoryController from "../components/CVStoryController";
 
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 import Icon from "@ff/ui/Icon";
@@ -96,7 +96,7 @@ export default class MainView extends CustomElement
 
         const system = this.application.system;
 
-        const story = system.components.get(CStoryController);
+        const story = system.components.get(CVStoryController);
         story.ins.expertMode.on("value", this.onExpertMode, this);
 
         const registry = this.registry = new Map();

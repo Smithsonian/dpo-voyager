@@ -20,7 +20,7 @@ import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 import "./PresentationList";
 import "./ItemList";
 
-import CStoryController, { EStoryMode } from "../components/CStoryController";
+import CVStoryController, { EStoryMode } from "../components/CVStoryController";
 import SystemElement, { customElement, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ import SystemElement, { customElement, html } from "./SystemElement";
 export default class NavigatorPanel extends SystemElement
 {
     protected get story() {
-        return this.system.components.safeGet(CStoryController);
+        return this.system.components.safeGet(CVStoryController);
     }
     protected get renderer() {
         return this.system.components.safeGet(CRenderer);

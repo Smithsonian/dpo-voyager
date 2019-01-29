@@ -21,9 +21,9 @@ import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import CModel from "../../core/components/CModel";
-import NItem from "../../explorer/nodes/NItem";
-import CPoseTask, { EPoseManipMode } from "../components/CPoseTask";
+import CVModel from "../../core/components/CVModel";
+import NVItem from "../../explorer/nodes/NVItem";
+import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 
 import "./ItemList";
 import "./PropertyView";
@@ -34,10 +34,10 @@ import TaskView from "./TaskView";
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView
 {
-    protected task: CPoseTask;
-    protected activeModel: CModel = null;
+    protected task: CVPoseTask;
+    protected activeModel: CVModel = null;
 
-    protected setActiveItem(item: NItem)
+    protected setActiveItem(item: NVItem)
     {
         this.activeModel = item ? item.model : null;
         this.requestUpdate();

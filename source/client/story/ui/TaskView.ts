@@ -19,23 +19,23 @@ import CSelection from "@ff/graph/components/CSelection";
 
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
-import CPresentationController, {
+import CVPresentationController, {
     IActiveItemEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationController";
+} from "../../explorer/components/CVPresentationController";
 
-import NItem from "../../explorer/nodes/NItem";
-import CTask from "../components/CTask";
+import NVItem from "../../explorer/nodes/NVItem";
+import CVTask from "../components/CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class TaskView extends CustomElement
 {
-    protected task: CTask;
-    protected presentations: CPresentationController = null;
+    protected task: CVTask;
+    protected presentations: CVPresentationController = null;
     protected selection: CSelection = null;
 
-    constructor(task: CTask)
+    constructor(task: CVTask)
     {
         super();
         this.task = task;
@@ -49,7 +49,7 @@ export default class TaskView extends CustomElement
     {
         this.classList.add("sv-task-view");
 
-        this.presentations = this.system.components.safeGet(CPresentationController);
+        this.presentations = this.system.components.safeGet(CVPresentationController);
         this.selection = this.system.components.safeGet(CSelection);
     }
 
@@ -76,7 +76,7 @@ export default class TaskView extends CustomElement
         this.setActiveItem(event.next);
     }
 
-    protected setActiveItem(item: NItem)
+    protected setActiveItem(item: NVItem)
     {
     }
 }

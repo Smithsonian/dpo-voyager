@@ -22,7 +22,7 @@ import "@ff/ui/Grid";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import COrbitNavigation, { EProjection, EViewPreset } from "../../core/components/COrbitNavigation";
+import CVOrbitNavigation, { EProjection, EViewPreset } from "../../core/components/CVOrbitNavigation";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -60,8 +60,8 @@ export default class ViewMenu extends Popup
     {
         super.connected();
 
-        this.propProjection.property = this.system.components.get(COrbitNavigation).ins.projection;
-        this.propPreset.property = this.system.components.get(COrbitNavigation).ins.preset;
+        this.propProjection.property = this.system.components.get(CVOrbitNavigation).ins.projection;
+        this.propPreset.property = this.system.components.get(CVOrbitNavigation).ins.preset;
         this.requestUpdate();
 
     }

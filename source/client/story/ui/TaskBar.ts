@@ -20,12 +20,12 @@ import System from "@ff/graph/System";
 import "@ff/ui/Button";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
-import CStoryController from "../components/CStoryController";
-import CTaskController, { IActiveTaskEvent } from "../components/CTaskController";
-import CPresentationController, {
+import CVStoryController from "../components/CVStoryController";
+import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskController";
+import CVPresentationController, {
     IActiveItemEvent,
     IActivePresentationEvent
-} from "../../explorer/components/CPresentationController";
+} from "../../explorer/components/CVPresentationController";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 
@@ -34,17 +34,17 @@ import SystemElement, { customElement, html } from "./SystemElement";
 @customElement("sv-task-bar")
 export default class TaskBar extends SystemElement
 {
-    protected story: CStoryController = null;
-    protected tasks: CTaskController = null;
-    protected presentations: CPresentationController = null;
+    protected story: CVStoryController = null;
+    protected tasks: CVTaskController = null;
+    protected presentations: CVPresentationController = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.story = system.graph.components.safeGet(CStoryController);
-        this.tasks = system.graph.components.safeGet(CTaskController);
-        this.presentations = system.graph.components.safeGet(CPresentationController);
+        this.story = system.graph.components.safeGet(CVStoryController);
+        this.tasks = system.graph.components.safeGet(CVTaskController);
+        this.presentations = system.graph.components.safeGet(CVPresentationController);
     }
 
     protected firstConnected()

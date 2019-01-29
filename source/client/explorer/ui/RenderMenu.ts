@@ -21,7 +21,7 @@ import System from "@ff/graph/System";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import CVoyagerScene, { EShaderMode } from "../../core/components/CVoyagerScene";
+import CVScene, { EShaderMode } from "../../core/components/CVScene";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -52,7 +52,7 @@ export default class RenderMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.propShader.property = this.system.components.get(CVoyagerScene).ins.shader;
+        this.propShader.property = this.system.components.get(CVScene).ins.shader;
     }
 
     protected disconnected()

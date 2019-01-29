@@ -15,23 +15,39 @@
  * limitations under the License.
  */
 
-import CVLoaders from "./CVLoaders";
-import CVModel from "./CVModel";
-import CVScene from "./CVScene";
-import CVOrbitNavigation from "./CVOrbitNavigation";
+import Component, { types } from "@ff/graph/Component";
+
+import { IInterface } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVLoaders,
-    CVModel,
-    CVScene,
-    CVOrbitNavigation
+const ins = {
+    visible: types.Boolean("Interface.Visible", true),
+    logo: types.Boolean("Interface.Logo", true),
 };
 
-export const componentTypes = [
-    CVLoaders,
-    CVModel,
-    CVScene,
-    CVOrbitNavigation
-];
+export default class CVInterface extends Component
+{
+    static readonly type: string = "CVInterface";
+
+    ins = this.addInputs(ins);
+
+
+    fromData(data: IInterface)
+    {
+        this.ins.setValues({
+            visible: data.visible,
+            logo: data.logo
+        });
+    }
+
+    toData(): IInterface
+    {
+        const ins = this.ins;
+
+        return {
+            visible: ins.visible.value,
+            logo: ins.logo.value
+        };
+    }
+}

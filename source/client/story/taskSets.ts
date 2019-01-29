@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import CExploreTask from "./components/CExploreTask";
-import CPoseTask from "./components/CPoseTask";
-import CCaptureTask from "./components/CCaptureTask";
-import CAnnotationsTask from "./components/CAnnotationsTask";
-import CDerivativesTask from "./components/CDerivativesTask";
+import CVExploreTask from "./components/CVExploreTask";
+import CVPoseTask from "./components/CVPoseTask";
+import CVCaptureTask from "./components/CVCaptureTask";
+import CVAnnotationsTask from "./components/CVAnnotationsTask";
+import CVDerivativesTask from "./components/CVDerivativesTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,13 +27,13 @@ export enum EStoryMode { QC, Authoring }
 
 export default {
     "QC": [
-        CExploreTask,
-        CPoseTask,
-        CCaptureTask,
-        //CDerivativesTask,
+        CVExploreTask,
+        CVPoseTask,
+        CVCaptureTask,
+        //CVDerivativesTask,
     ],
     "Authoring": [
-        CExploreTask,
-        CAnnotationsTask,
+        CVExploreTask,
+        CVAnnotationsTask,
     ],
 }

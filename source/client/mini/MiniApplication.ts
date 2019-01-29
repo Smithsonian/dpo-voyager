@@ -25,8 +25,8 @@ import CPulse from "@ff/graph/components/CPulse";
 
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import CLoadingManager from "../core/components/CLoadingManager";
-import COrbitNavigation from "../core/components/COrbitNavigation";
+import CVLoaders from "../core/components/CVLoaders";
+import CVOrbitNavigation from "../core/components/CVOrbitNavigation";
 
 import CMini from "./components/CMini";
 
@@ -84,8 +84,8 @@ export default class MiniApplication
         node.createComponent(CPulse);
         node.createComponent(CRenderer);
 
-        node.createComponent(CLoadingManager);
-        node.createComponent(COrbitNavigation);
+        node.createComponent(CVLoaders);
+        node.createComponent(CVOrbitNavigation);
 
         node.createComponent(CMini).createActions(this.commander);
 

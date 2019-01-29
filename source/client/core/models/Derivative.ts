@@ -21,7 +21,7 @@ import { disposeObject } from "@ff/three/helpers";
 
 import { IDerivative, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
 
-import CLoadingManager from "../components/CLoadingManager";
+import CVLoaders from "../components/CVLoaders";
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
@@ -67,7 +67,7 @@ export default class Derivative
         }
     }
 
-    load(loadingManager: CLoadingManager, assetPath?: string): Promise<this>
+    load(loadingManager: CVLoaders, assetPath?: string): Promise<this>
     {
         console.log("Derivative.load - path: %s", assetPath);
 

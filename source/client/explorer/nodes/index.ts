@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-import NItem from "./NItem";
-import NPresentationSetup from "./NPresentationSetup";
-import NPresentationScene from "./NPresentationScene";
-import NReference from "./NReference";
+import NVItem from "./NVItem";
+import NVPresentationSetup from "./NVPresentationSetup";
+import NVPresentationScene from "./NVPresentationScene";
+import NVReference from "./NVReference";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    NItem,
-    NPresentationSetup,
-    NPresentationScene,
-    NReference,
+    NVItem,
+    NVPresentationSetup,
+    NVPresentationScene,
+    NVReference,
 };
 
 export const nodeTypes = [
-    NItem,
-    NPresentationSetup,
-    NPresentationScene,
-    NReference,
+    NVItem,
+    NVPresentationSetup,
+    NVPresentationScene,
+    NVReference,
 ];

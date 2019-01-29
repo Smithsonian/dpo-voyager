@@ -19,7 +19,7 @@ import System from "@ff/graph/System";
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
-import CInterface from "../components/CInterface";
+import CVInterface from "../components/CVInterface";
 
 import ViewMenu from "./ViewMenu";
 import RenderMenu from "./RenderMenu";
@@ -34,13 +34,13 @@ export default class ChromeView extends CustomElement
     @property({ attribute: false })
     system: System;
 
-    protected interface: CInterface;
+    protected interface: CVInterface;
 
     constructor(system?: System)
     {
         super();
         this.system = system;
-        this.interface = system.components.safeGet(CInterface);
+        this.interface = system.components.safeGet(CVInterface);
     }
 
     protected firstConnected()
