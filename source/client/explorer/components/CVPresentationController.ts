@@ -208,7 +208,7 @@ export default class CVPresentationController extends CController<CVPresentation
                 return null;
             };
 
-            const templateUri = itemData.meta.presentationTemplateUri;
+            const templateUri = itemData.meta && itemData.meta.presentationTemplateUri;
             if (templateUri) {
                 templateUrl =  resolvePathname(templateFileName, templateUri, templateUrl || assetPath);
                 console.log(`Loading presentation template: ${templateUrl}`);

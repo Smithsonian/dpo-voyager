@@ -6,10 +6,5 @@
         "sourceMap": true,
 
         "outDir": "../../services/server/bin/node_modules/common",
-
-        "baseUrl": ".",
-        "paths": {
-            "@ff/core/*": [ "../../libs/ff-core/source/*" ]
-        }
     }
 }

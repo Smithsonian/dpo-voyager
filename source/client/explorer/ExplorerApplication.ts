@@ -131,7 +131,7 @@ export default class ExplorerApplication
 
         // start loading from properties
         this.startup().catch((error: Error) => {
-            console.warn("application startup failed: " + error.message);
+            console.warn("application startup failed", error);
         });
     }
 
