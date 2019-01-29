@@ -23,7 +23,7 @@ import { IComponentEvent } from "@ff/graph/ComponentSet";
 
 import CScene, { IRenderSceneContext } from "@ff/scene/components/CScene";
 
-import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/setup";
+import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/config";
 
 import CVModel, { IModelChangeEvent } from "./CVModel";
 import CVOrbitNavigation from "./CVOrbitNavigation";

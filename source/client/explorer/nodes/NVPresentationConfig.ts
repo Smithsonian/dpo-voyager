@@ -18,7 +18,7 @@
 import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 import NTransform from "@ff/scene/nodes/NTransform";
 
-import { ISetup, INavigation, IInterface, IReader } from "common/types/setup";
+import { IConfig, INavigation, IInterface, IReader } from "common/types/config";
 
 import CVHomeGrid from "../components/CVHomeGrid";
 import CVBackground from "../components/CVBackground";
@@ -40,9 +40,9 @@ interface IGlobalExplorerData
     reader: IReader;
 }
 
-export default class NVPresentationSetup extends NTransform
+export default class NVPresentationConfig extends NTransform
 {
-    static readonly type: string = "NVPresentationSetup";
+    static readonly type: string = "NVPresentationConfig";
 
 
     private _isActive = false;
@@ -111,9 +111,9 @@ export default class NVPresentationSetup extends NTransform
         super.dispose();
     }
 
-    toData(): ISetup
+    toData(): IConfig
     {
-        const data: Partial<ISetup> = {};
+        const data: Partial<IConfig> = {};
 
         if (this._isActive) {
             this._data.navigation = this.navigation.toData();
@@ -163,10 +163,10 @@ export default class NVPresentationSetup extends NTransform
             data.sectionTool = sectionToolData;
         }
 
-        return data as ISetup;
+        return data as IConfig;
     }
 
-    fromData(data: ISetup)
+    fromData(data: IConfig)
     {
         this._data.navigation = data.navigation ? Object.assign({}, data.navigation) : null;
         this._data.interface = data.interface ? Object.assign({}, data.interface) : null;

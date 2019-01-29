@@ -17,7 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import { IInterface } from "common/types/setup";
+import { IInterface } from "common/types/config";
 
 ////////////////////////////////////////////////////////////////////////////////
 

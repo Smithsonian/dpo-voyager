@@ -18,7 +18,7 @@
 import { types } from "@ff/graph/propertyTypes";
 import Component from "@ff/graph/Component";
 
-import { IReader, EReaderPosition } from "common/types/setup";
+import { IReader, EReaderPosition } from "common/types/config";
 
 import Document from "../models/Document";
 

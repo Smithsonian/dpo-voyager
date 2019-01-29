@@ -18,7 +18,7 @@
 import { types } from "@ff/graph/propertyTypes";
 import Component from "@ff/graph/Component";
 
-import { ITapeTool } from "common/types/setup";
+import { ITapeTool } from "common/types/config";
 
 ////////////////////////////////////////////////////////////////////////////////
 

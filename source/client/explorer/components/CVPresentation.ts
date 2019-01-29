@@ -26,7 +26,7 @@ import { IPresentation } from "common/types/presentation";
 import CVScene from "../../core/components/CVScene";
 import CVPresentationData from "./CVPresentationData";
 import NVPresentationScene, { ReferenceCallback } from "../nodes/NVPresentationScene";
-import NVPresentationSetup from "../nodes/NVPresentationSetup";
+import NVPresentationConfig from "../nodes/NVPresentationConfig";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +53,7 @@ export default class CVPresentation extends CRenderGraph
         return this.innerGraph.components.get(CVScene);
     }
     get setup() {
-        return this.innerGraph.nodes.get(NVPresentationSetup);
+        return this.innerGraph.nodes.get(NVPresentationConfig);
     }
 
     setUrl(url: string, assetPath?: string, assetBaseName?: string)
@@ -80,7 +80,7 @@ export default class CVPresentation extends CRenderGraph
         main.createComponent(CVPresentationData);
 
         const scene = graph.createCustomNode(NVPresentationScene);
-        scene.addChild(this.innerGraph.createCustomNode(NVPresentationSetup));
+        scene.addChild(this.innerGraph.createCustomNode(NVPresentationConfig));
     }
 
     update(context: IUpdateContext)

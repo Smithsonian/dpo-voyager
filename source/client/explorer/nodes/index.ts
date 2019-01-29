@@ -16,7 +16,7 @@
  */
 
 import NVItem from "./NVItem";
-import NVPresentationSetup from "./NVPresentationSetup";
+import NVPresentationConfig from "./NVPresentationConfig";
 import NVPresentationScene from "./NVPresentationScene";
 import NVReference from "./NVReference";
 
@@ -24,14 +24,14 @@ import NVReference from "./NVReference";
 
 export {
     NVItem,
-    NVPresentationSetup,
+    NVPresentationConfig,
     NVPresentationScene,
     NVReference,
 };
 
 export const nodeTypes = [
     NVItem,
-    NVPresentationSetup,
+    NVPresentationConfig,
     NVPresentationScene,
     NVReference,
 ];

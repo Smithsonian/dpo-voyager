@@ -34,7 +34,7 @@ export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }
 
 
-export interface ISetup
+export interface IConfig
 {
     scene?: IScene;
     reader?: IReader;
@@ -45,6 +45,27 @@ export interface ISetup
     grid?: IGrid;
     tapeTool?: ITapeTool;
     sectionTool?: ISectionTool;
+}
+
+export interface IScene
+{
+    units: TUnitType;
+    shader: TShaderMode;
+    exposure: number;
+    gamma: number;
+}
+
+export interface IReader
+{
+    visible: boolean;
+    position: string;
+    url: string;
+}
+
+export interface IInterface
+{
+    visible: boolean;
+    logo: boolean;
 }
 
 export interface INavigation
@@ -73,33 +94,6 @@ export interface IWalkNavigation
     maxPosition: number[];
 }
 
-export interface IInterface
-{
-    visible: boolean;
-    logo: boolean;
-}
-
-export interface IReader
-{
-    visible: boolean;
-    position: string;
-    url: string;
-}
-
-export interface IScene
-{
-    units: TUnitType;
-    shader: TShaderMode;
-    exposure: number;
-    gamma: number;
-}
-
-export interface IGrid
-{
-    visible: boolean;
-    color: number[];
-}
-
 export interface IBackground
 {
     type: TBackgroundType;
@@ -114,6 +108,12 @@ export interface IGroundPlane
     color: number[];
     shadowVisible: boolean;
     shadowColor: number[];
+}
+
+export interface IGrid
+{
+    visible: boolean;
+    color: number[];
 }
 
 export interface ITapeTool

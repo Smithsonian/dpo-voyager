@@ -192,7 +192,7 @@ export interface IAnnotation
 export interface IGroup
 {
     id: Identifier;
-    title: string;
+    title?: string;
     description?: string;
     visible?: boolean;
 }

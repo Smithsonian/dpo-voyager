@@ -29,7 +29,7 @@ import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 import { EProjection } from "@ff/scene/components/CCamera";
 
-import { INavigation } from "common/types/setup";
+import { INavigation } from "common/types/config";
 
 import CVScene from "./CVScene";
 

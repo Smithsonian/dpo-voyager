@@ -20,7 +20,7 @@ import * as Ajv from "ajv";
 import * as mathSchema from "common/schema/math.schema.json";
 
 import * as presentationSchema from "common/schema/presentation.schema.json";
-import * as voyagerSchema from "common/schema/voyager.schema.json";
+import * as configSchema from "common/schema/config.schema.json";
 
 import * as itemSchema from "common/schema/item.schema.json";
 import * as metaSchema from "common/schema/meta.schema.json";
@@ -47,7 +47,7 @@ export default class JSONValidator
             schemas: [
                 mathSchema,
                 presentationSchema,
-                voyagerSchema,
+                configSchema,
                 itemSchema,
                 metaSchema,
                 processSchema,

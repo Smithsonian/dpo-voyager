@@ -23,7 +23,7 @@ import Component, { types } from "@ff/graph/Component";
 import { IPresentation } from "common/types/presentation";
 
 import NVPresentationScene, { ReferenceCallback } from "../nodes/NVPresentationScene";
-import NVPresentationSetup from "../nodes/NVPresentationSetup";
+import NVPresentationConfig from "../nodes/NVPresentationConfig";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ export default class CVPresentationData extends Component
     }
 
     protected get setupNode() {
-        return this.graph.nodes.get(NVPresentationSetup);
+        return this.graph.nodes.get(NVPresentationConfig);
     }
     protected get sceneNode() {
         return this.graph.nodes.get(NVPresentationScene);
@@ -91,15 +91,15 @@ export default class CVPresentationData extends Component
     {
         this.sceneNode.fromData(data, callback);
 
-        if (data.setup && this.setupNode) {
-            this.setupNode.fromData(data.setup);
+        if (data.config && this.setupNode) {
+            this.setupNode.fromData(data.config);
         }
     }
 
     toData(writeReferences: boolean = false): IPresentation
     {
         const data = this.sceneNode.toData(writeReferences);
-        data.setup = this.setupNode.toData();
+        data.config = this.setupNode.toData();
 
         data.info = {
             type: CVPresentationData.mimeType,

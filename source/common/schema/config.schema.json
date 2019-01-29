@@ -1,0 +1,172 @@
+{
+    "$id": "https://schemas.3d.si.edu/public_api/config.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Smithsonian 3D Presentation - Voyager Explorer Configuration",
+    "description": "contains information about Voyager explorer configuration (scene environment, UI, tools, etc.)",
+
+    "type": "object",
+    "properties": {
+        "scene": {
+            "type": "object",
+            "properties": {
+                "units": {
+                    "type": "string",
+                    "enum": [
+                        "mm", "cm", "m", "in", "ft", "yd"
+                    ]
+                },
+                "shader": {
+                    "type": "string"
+                },
+                "exposure": {
+                    "type": "number"
+                },
+                "gamma": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "units",
+                "shader",
+                "exposure",
+                "gamma"
+            ]
+        },
+        "reader": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "documentUri": {
+                    "description": "URI of the document currently displayed in the reader",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "interface": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "logo": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "navigation": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "orbit", "walk"
+                    ]
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "orbit": {
+                    "$comment": "TODO: Implement",
+
+                    "type": "object",
+                    "properties": {
+
+                    }
+                },
+                "walk": {
+                    "$comment": "TODO: Implement",
+
+                    "type": "object",
+                    "properties": {
+                    }
+                }
+            }
+        },
+        "background": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Solid", "LinearGradient", "RadialGradient"
+                    ]
+                },
+                "color0": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "color1": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "groundPlane": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "offset": {
+                    "type": "number"
+                },
+                "color": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "shadowVisible": {
+                    "type": "boolean"
+                },
+                "shadowColor": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "grid": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "color": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "tapeTool": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "startPosition": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "startDirection": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "endPosition": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "endDirection": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "sectionTool": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "plane": {
+                    "$ref": "math.schema.json#/definitions/vector4"
+                }
+            }
+        }
+    }
+}

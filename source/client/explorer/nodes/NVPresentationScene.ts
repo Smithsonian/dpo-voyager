@@ -43,7 +43,7 @@ import CVLoaders from "../../core/components/CVLoaders";
 import CVScene from "../../core/components/CVScene";
 import CVItemData from "../components/CVItemData";
 
-import NVPresentationSetup from "./NVPresentationSetup";
+import NVPresentationConfig from "./NVPresentationConfig";
 import NVReference from "./NVReference";
 import NVItem from "./NVItem";
 
@@ -179,7 +179,7 @@ export default class NVPresentationScene extends NScene
             nodeData.children = [];
             transforms.forEach(transform => {
                 const node = transform.node;
-                if (node instanceof NTransform && !node.is(NVPresentationSetup)) {
+                if (node instanceof NTransform && !node.is(NVPresentationConfig)) {
                     const index = this.nodeToData(node, data, refIndex);
                     nodeData.children.push(index);
                 }

@@ -10,34 +10,23 @@
             "$id": "#annotation",
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "title": {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
-                "position": {
-                    "description": "Position where the annotation is anchored, in local item coordinates.",
-                    "$ref": "math.schema.json#/definitions/vector3"
-                },
-                "direction": {
-                    "description": "Direction of the stem of this annotation, usually corresponds to the surface normal.",
-                    "$ref": "math.schema.json#/definitions/vector3"
-                },
-                "index": {
-                    "description": "Index of the zone on the zone texture.",
-                    "type": "integer",
-                    "minimum": 0
+                "style": {
+                    "type": "string"
                 },
                 "expanded": {
                     "description": "Flag indicating whether this annotation is displayed in expanded state.",
                     "type": "boolean",
                     "default": false
-                },
-                "snapshot": {
-                    "description": "The animation state to recall when this annotation is activated.",
-                    "type": "integer",
-                    "minimum": 0
                 },
                 "documents": {
                     "description": "Array of document indices, listing documents related to this annotation.",
@@ -54,28 +43,47 @@
                         "type": "integer",
                         "minimum": 0
                     }
+                },
+                "position": {
+                    "description": "Position where the annotation is anchored, in local item coordinates.",
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "direction": {
+                    "description": "Direction of the stem of this annotation, usually corresponds to the surface normal.",
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "zoneIndex": {
+                    "description": "Index of the zone on the zone texture.",
+                    "type": "integer",
+                    "minimum": 0
                 }
             },
             "required": [
-                "title",
-                "position",
-                "direction"
-            ]
+                "id"
+            ],
+            "additionalProperties": false
         },
         "group": {
             "$id": "#group",
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
+                },
+                "visible": {
+                    "type": "boolean"
                 }
             },
             "required": [
-                "title"
-            ]
+                "id"
+            ],
+            "additionalProperties": false
         }
     },
 
@@ -94,8 +102,5 @@
             }
         }
     },
-    "required": [
-        "annotations"
-    ],
     "additionalProperties": false
 }

@@ -28,7 +28,7 @@ import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 
-import { EUnitType, IGrid } from "common/types/setup";
+import { EUnitType, IGrid } from "common/types/config";
 import CVScene from "../../core/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
