@@ -17,11 +17,11 @@
 
 import System from "@ff/graph/System";
 import CComponent from "@ff/graph/Component";
-import CSelection, { INodeEvent, IComponentEvent } from "@ff/graph/components/CSelection";
+import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
-import Icon from "@ff/ui/Icon";
 import List from "@ff/ui/List";
+import "@ff/ui/Icon";
 
 import NVItem from "../../explorer/nodes/NVItem";
 
@@ -54,18 +54,18 @@ class ItemList extends List<NVItem>
     {
         super.connected();
 
-        this.selection.selectedNodes.on(NVItem, this.onSelectItem, this);
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
-        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.presentations.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.selection.selectedNodes.on(NVItem, this.performUpdate, this);
+        this.presentations.on<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
+        this.presentations.on<IActiveItemEvent>("active-item", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedNodes.off(NVItem, this.onSelectItem, this);
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
-        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.presentations.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.selection.selectedNodes.off(NVItem, this.performUpdate, this);
+        this.presentations.off<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
+        this.presentations.off<IActiveItemEvent>("active-item", this.performUpdate, this);
 
         super.disconnected();
     }
@@ -92,25 +92,6 @@ class ItemList extends List<NVItem>
     protected onClickItem(event: MouseEvent, node: NVItem)
     {
         this.presentations.activeItem = node;
-    }
-
-    protected onClickEmpty()
-    {
-    }
-
-    protected onActivePresentation(event: IActivePresentationEvent)
-    {
-        this.requestUpdate();
-    }
-
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        this.requestUpdate();
-    }
-
-    protected onSelectItem(event: INodeEvent<NVItem>)
-    {
-        this.requestUpdate();
     }
 
     protected onSelectComponent(event: IComponentEvent)

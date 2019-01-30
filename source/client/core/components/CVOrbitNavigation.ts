@@ -191,10 +191,10 @@ export default class CVOrbitNavigation extends Component
 
             if (component && (manipUpdated || this.updated)) {
                 const camera = component.camera;
-                const transformComponent = component.transform;
+                const parentComponent = component.parentComponent;
 
-                if (transformComponent) {
-                    this._manip.toObject(transformComponent.object3D);
+                if (parentComponent) {
+                    this._manip.toObject(parentComponent.object3D);
                 }
                 else {
                     this._manip.toObject(camera);

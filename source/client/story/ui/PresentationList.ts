@@ -16,11 +16,11 @@
  */
 
 import System from "@ff/graph/System";
-import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
+import CSelection from "@ff/graph/components/CSelection";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
-import Icon from "@ff/ui/Icon";
 import List from "@ff/ui/List";
+import "@ff/ui/Icon";
 
 import CVPresentation from "../../explorer/components/CVPresentation";
 
@@ -53,16 +53,16 @@ class PresentationList extends List<CVPresentation>
     {
         super.connected();
 
-        this.selection.selectedComponents.on(CVPresentation, this.onSelectPresentation, this);
-        this.presentations.on<IPresentationEvent>("presentation", this.onPresentation, this);
-        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.selection.selectedComponents.on(CVPresentation, this.performUpdate, this);
+        this.presentations.on<IPresentationEvent>("presentation", this.performUpdate, this);
+        this.presentations.on<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedComponents.off(CVPresentation, this.onSelectPresentation, this);
-        this.presentations.off<IPresentationEvent>("presentation", this.onPresentation, this);
-        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        this.selection.selectedComponents.off(CVPresentation, this.performUpdate, this);
+        this.presentations.off<IPresentationEvent>("presentation", this.performUpdate, this);
+        this.presentations.off<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
 
         super.disconnected();
     }
@@ -89,24 +89,5 @@ class PresentationList extends List<CVPresentation>
     {
         this.presentations.activePresentation = component;
         this.selection.selectComponent(component);
-    }
-
-    protected onClickEmpty()
-    {
-    }
-
-    protected onPresentation(event: IPresentationEvent)
-    {
-        this.requestUpdate();
-    }
-
-    protected onSelectPresentation(event: IComponentEvent<CVPresentation>)
-    {
-        this.requestUpdate();
-    }
-
-    protected onActivePresentation(event: IActivePresentationEvent)
-    {
-        this.requestUpdate();
     }
 }

@@ -21,6 +21,9 @@ import Publisher, { ITypedEvent } from "@ff/core/Publisher";
 
 import { IAnnotation } from "common/types/item";
 
+import AnnotationSprite from "../annotations/AnnotationSprite";
+import CVAnnotations from "../components/CVAnnotations";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export type Vector3 = number[];
@@ -33,10 +36,10 @@ export interface IAnnotationUpdateEvent extends ITypedEvent<"update">
 export default class Annotation extends Publisher
 {
     readonly id: string;
+    readonly component: CVAnnotations;
 
     title: string = "New Annotation";
     description: string = "";
-    style: string = "";
     expanded: boolean = false;
     documents: Identifier[] = [];
     groups: Identifier[] = [];
@@ -44,17 +47,37 @@ export default class Annotation extends Publisher
     direction: Vector3 = null;
     zoneIndex: number = -1;
 
-    constructor(id: string)
+    private _style: string = "";
+    private _sprite = new AnnotationSprite(this);
+
+    constructor(id: string, component: CVAnnotations)
     {
         super();
-        this.addEvent("change");
+        this.addEvent("update");
 
         this.id = id || uniqueId(6);
+        this.component = component;
+    }
+
+    get style() {
+        return this._style;
+    }
+    set style(style: string) {
+        if (style !== this._style) {
+            this._style = style;
+            this.createSprite(style);
+        }
     }
 
     update()
     {
         this.emit<IAnnotationUpdateEvent>({ type: "update", annotation: this });
+    }
+
+    dispose()
+    {
+        this.component.sprites.remove(this._sprite);
+        this._sprite = null;
     }
 
     deflate(): IAnnotation
@@ -106,5 +129,15 @@ export default class Annotation extends Publisher
         this.zoneIndex = data.zoneIndex !== undefined ? data.zoneIndex : -1;
 
         return this;
+    }
+
+    protected createSprite(style: string)
+    {
+        if (this._sprite) {
+            this.component.sprites.remove(this._sprite);
+        }
+
+        this._sprite = new AnnotationSprite(this);
+        this.component.sprites.add(this._sprite);
     }
 }

@@ -81,30 +81,6 @@ export default class StoryApplication
         }
     }
 
-    addItemFromURL(itemURL: string, assetBaseName: string)
-    {
-        // // try to get active presentation
-        // let presentation = this.presentations.activePresentation;
-        //
-        // // if no success, try to get first available presentation and set it active
-        // if (!presentation) {
-        //     presentation = this.presentations.presentations[0];
-        //     if (presentation) {
-        //         this.presentations.activePresentation = presentation;
-        //     }
-        // }
-        // // if still no success, create a default presentation
-        // if (presentation) {
-        //     presentation.addItemFromUrl(itemUrl, assetBaseName)
-        // }
-        // if (!presentation) {
-        //     this.presentations.openDefaultPresentation()
-        //     .then(() => {
-        //
-        //     })
-        // }
-    }
-
     protected initFromProps(props: IStoryApplicationProps): IStoryApplicationProps
     {
         props.referrer = props.referrer || parseUrlParameter("referrer");

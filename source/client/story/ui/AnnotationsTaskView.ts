@@ -16,12 +16,18 @@
  */
 
 import { customElement, html } from "@ff/ui/CustomElement";
+import { IButtonClickEvent } from "@ff/ui/Button";
+
+import NVItem from "../../explorer/nodes/NVItem";
+import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
+import CVAnnotations, { Annotation } from "../../explorer/components/CVAnnotations";
+
+import "./AnnotationList";
+import { ISelectAnnotationEvent } from "./AnnotationList";
+import "@ff/ui/LineEdit";
+import "@ff/ui/TextEdit";
 
 import TaskView from "./TaskView";
-import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
-import CVAnnotations from "../../explorer/components/CVAnnotations";
-import NVItem from "../../explorer/nodes/NVItem";
-import { IButtonClickEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,11 +36,14 @@ export default class AnnotationsTaskView extends TaskView
 {
     protected task: CVAnnotationsTask;
     protected activeAnnotations: CVAnnotations = null;
+    protected selectedAnnotation: Annotation = null;
 
     protected setActiveItem(item: NVItem)
     {
         this.activeAnnotations = item ? item.annotations : null;
-        this.requestUpdate();
+        this.selectedAnnotation = null;
+
+        this.performUpdate();
     }
 
     protected firstConnected()
@@ -46,12 +55,12 @@ export default class AnnotationsTaskView extends TaskView
     protected connected()
     {
         super.connected();
-        this.task.ins.mode.on("value", this.onModeValue, this);
+        this.task.ins.mode.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.task.ins.mode.off("value", this.onModeValue, this);
+        this.task.ins.mode.off("value", this.performUpdate, this);
         super.disconnected();
     }
 
@@ -62,13 +71,25 @@ export default class AnnotationsTaskView extends TaskView
         }
 
         const modeProp = this.task.ins.mode;
+        const annotations = this.activeAnnotations.getAnnotations();
+        const annotation = this.selectedAnnotation;
+
+        const detailView = annotation ? html`<div>
+            <div class="sv-label">Title</div>
+            <ff-line-edit text=${annotation.title}></ff-line-edit>
+            <div class="sv-label">Description</div>
+            <ff-text-edit text=${annotation.description}></ff-text-edit>
+            <div class="sv-label">Groups</div>
+        </div>` : null;
 
         return html`<div class="ff-flex-row ff-flex-wrap">
             <ff-button text="Off" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
             <ff-button text="Move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
             <ff-button text="Create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Delete" @click=${this.onClickDelete}></ff-button>       
-        </div>`;
+            <ff-button text="Delete" @click=${this.onClickDelete}></ff-button>  
+        </div>
+        <sv-annotation-list .data=${annotations} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+        ${detailView}`;
     }
 
     protected onClickMode(event: IButtonClickEvent)
@@ -81,8 +102,9 @@ export default class AnnotationsTaskView extends TaskView
 
     }
 
-    protected onModeValue()
+    protected onSelectAnnotation(event: ISelectAnnotationEvent)
     {
-        this.requestUpdate();
+        this.selectedAnnotation = event.detail.annotation;
+        this.performUpdate();
     }
 }

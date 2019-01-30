@@ -15,26 +15,18 @@
  * limitations under the License.
  */
 
-import CVExploreTask from "./components/CVExploreTask";
-import CVPoseTask from "./components/CVPoseTask";
-import CVCaptureTask from "./components/CVCaptureTask";
-import CVAnnotationsTask from "./components/CVAnnotationsTask";
-import CVDerivativesTask from "./components/CVDerivativesTask";
+import HTMLSprite from "@ff/three/HTMLSprite";
+import Annotation from "../models/Annotation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EStoryMode { QC, Authoring }
+export default class AnnotationSprite extends HTMLSprite
+{
+    readonly annotation: Annotation;
 
-export default {
-    "QC": [
-        CVExploreTask,
-        CVPoseTask,
-        CVCaptureTask,
-        CVAnnotationsTask,
-        //CVDerivativesTask,
-    ],
-    "Authoring": [
-        CVExploreTask,
-        CVAnnotationsTask,
-    ],
+    constructor(annotation: Annotation)
+    {
+        super();
+        this.annotation = annotation;
+    }
 }
