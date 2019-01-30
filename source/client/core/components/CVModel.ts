@@ -351,7 +351,7 @@ export default class CVModel extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        const loaders = this.system.components.safeGet(CVLoaders);
+        const loaders = this.system.getMainComponent(CVLoaders, true);
 
         return derivative.load(loaders, this.assetPath)
         .then(() => {

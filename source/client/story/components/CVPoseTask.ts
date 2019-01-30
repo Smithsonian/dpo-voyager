@@ -201,8 +201,8 @@ export default class CVPoseTask extends CVTask
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        if (event.add && event.component.node instanceof NVItem) {
-            this.presentations.activeItem = event.component.node;
+        if (event.add && event.object.node instanceof NVItem) {
+            this.presentations.activeItem = event.object.node;
         }
     }
 }

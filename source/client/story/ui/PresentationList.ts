@@ -45,8 +45,8 @@ class PresentationList extends List<CVPresentation>
         super.firstConnected();
         this.classList.add("sv-presentation-list");
 
-        this.presentations = this.system.components.safeGet(CVPresentationController);
-        this.selection = this.system.components.safeGet(CSelection);
+        this.presentations = this.system.getMainComponent(CVPresentationController, true);
+        this.selection = this.system.getMainComponent(CSelection, true);
     }
 
     protected connected()

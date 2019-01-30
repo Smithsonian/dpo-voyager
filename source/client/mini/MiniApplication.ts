@@ -18,8 +18,8 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
+import ClassRegistry from "@ff/core/ClassRegistry";
 
-import Registry from "@ff/graph/Registry";
 import System from "@ff/graph/System";
 import CPulse from "@ff/graph/components/CPulse";
 
@@ -70,11 +70,11 @@ export default class MiniApplication
         console.log(MiniApplication.splashMessage);
 
         // register components
-        const registry = new Registry();
-        registry.registerComponentType(graphComponents);
-        registry.registerComponentType(sceneComponents);
-        registry.registerComponentType(coreComponents);
-        registry.registerComponentType(miniComponents);
+        const registry = new ClassRegistry();
+        registry.add(graphComponents);
+        registry.add(sceneComponents);
+        registry.add(coreComponents);
+        registry.add(miniComponents);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);

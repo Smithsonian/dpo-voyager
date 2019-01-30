@@ -18,8 +18,7 @@
 import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
-import { IComponentChangeEvent } from "@ff/graph/Component";
-import { IComponentEvent } from "@ff/graph/ComponentSet";
+import { IComponentChangeEvent, IComponentEvent } from "@ff/graph/Component";
 
 import CScene, { IRenderSceneContext } from "@ff/scene/components/CScene";
 
@@ -121,11 +120,11 @@ export default class CVScene extends CScene
     protected onModelComponent(event: IComponentEvent<CVModel>)
     {
         if (event.add) {
-            event.component.setGlobalUnits(this.ins.units.value);
-            event.component.on<IModelChangeEvent>("change", this.updateModels, this);
+            event.object.setGlobalUnits(this.ins.units.value);
+            event.object.on<IModelChangeEvent>("change", this.updateModels, this);
         }
         else if (event.remove) {
-            event.component.off<IModelChangeEvent>("change", this.updateModels, this);
+            event.object.off<IModelChangeEvent>("change", this.updateModels, this);
         }
     }
 

@@ -18,8 +18,8 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
+import ClassRegistry from "@ff/core/ClassRegistry";
 
-import Registry from "@ff/graph/Registry";
 import System from "@ff/graph/System";
 import CPulse from "@ff/graph/components/CPulse";
 
@@ -93,16 +93,16 @@ export default class ExplorerApplication
         console.log(ExplorerApplication.splashMessage);
 
         // register components
-        const registry = new Registry();
+        const registry = new ClassRegistry();
 
-        registry.registerComponentType(graphComponents);
-        registry.registerComponentType(sceneComponents);
-        registry.registerComponentType(coreComponents);
-        registry.registerComponentType(explorerComponents);
+        registry.add(graphComponents);
+        registry.add(sceneComponents);
+        registry.add(coreComponents);
+        registry.add(explorerComponents);
 
-        registry.registerNodeType(graphNodes);
-        registry.registerNodeType(sceneNodes);
-        registry.registerNodeType(explorerNodes);
+        registry.add(graphNodes);
+        registry.add(sceneNodes);
+        registry.add(explorerNodes);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);
@@ -138,7 +138,7 @@ export default class ExplorerApplication
     protected startup(): Promise<void>
     {
         const props = this.props;
-        const controller = this.system.components.safeGet(CVPresentationController);
+        const controller = this.system.getMainComponent(CVPresentationController);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");

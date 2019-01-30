@@ -55,9 +55,9 @@ export default class CVTask extends Component
 
     create()
     {
-        this.tasks = this.system.graph.components.safeGet(CVTaskController);
-        this.presentations = this.system.graph.components.safeGet(CVPresentationController);
-        this.selection = this.system.graph.components.safeGet(CPickSelection);
+        this.tasks = this.system.getMainComponent(CVTaskController, true);
+        this.presentations = this.system.getMainComponent(CVPresentationController, true);
+        this.selection = this.system.getMainComponent(CPickSelection, true);
     }
 
     update()

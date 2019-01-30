@@ -65,7 +65,7 @@ export default class StoryApplication
 
         // register additional story tool components
         const registry = this.system.registry;
-        registry.registerComponentType(storyComponents);
+        registry.add(storyComponents);
 
         //this.logController = new LogController(this.system, this.commander);
 

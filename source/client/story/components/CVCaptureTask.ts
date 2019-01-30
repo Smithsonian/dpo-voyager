@@ -23,8 +23,7 @@ import download from "@ff/browser/download";
 import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
-import { types } from "@ff/graph/Component";
-import { IComponentEvent } from "@ff/graph/ComponentSet";
+import { types, IComponentEvent } from "@ff/graph/Component";
 
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -314,8 +313,8 @@ export default class CVCaptureTask extends CVTask
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        if (event.add && event.component.node instanceof NVItem) {
-            this.presentations.activeItem = event.component.node;
+        if (event.add && event.object.node instanceof NVItem) {
+            this.presentations.activeItem = event.object.node;
         }
     }
 }

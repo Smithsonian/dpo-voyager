@@ -42,9 +42,9 @@ export default class TaskBar extends SystemElement
     {
         super(system);
 
-        this.story = system.graph.components.safeGet(CVStoryController);
-        this.tasks = system.graph.components.safeGet(CVTaskController);
-        this.presentations = system.graph.components.safeGet(CVPresentationController);
+        this.story = system.getMainComponent(CVStoryController, true);
+        this.tasks = system.getMainComponent(CVTaskController, true);
+        this.presentations = system.getMainComponent(CVPresentationController, true);
     }
 
     protected firstConnected()

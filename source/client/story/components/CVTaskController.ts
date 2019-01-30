@@ -85,7 +85,7 @@ export default class CVTaskController extends CController<CVTaskController>
     }
 
     protected get selection() {
-        return this.system.components.safeGet(CSelection);
+        return this.system.getMainComponent(CSelection, true);
     }
 
     createActions(commander: Commander)
@@ -109,7 +109,7 @@ export default class CVTaskController extends CController<CVTaskController>
     protected onSelectTask(event: IComponentEvent<CVTask>)
     {
         if (event.add) {
-            this.activeTask = event.component;
+            this.activeTask = event.object;
         }
     }
 }

@@ -49,8 +49,8 @@ export default class TaskView extends CustomElement
     {
         this.classList.add("sv-task-view");
 
-        this.presentations = this.system.components.safeGet(CVPresentationController);
-        this.selection = this.system.components.safeGet(CSelection);
+        this.presentations = this.system.getMainComponent(CVPresentationController, true);
+        this.selection = this.system.getMainComponent(CSelection, true);
     }
 
     protected connected()

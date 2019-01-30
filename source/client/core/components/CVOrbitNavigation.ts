@@ -88,7 +88,7 @@ export default class CVOrbitNavigation extends Component
     private _activeScene: CVScene = null;
 
     get renderer() {
-        return this.system.graph.components.safeGet(CRenderer);
+        return this.system.getMainComponent(CRenderer, true);
     }
 
     create()

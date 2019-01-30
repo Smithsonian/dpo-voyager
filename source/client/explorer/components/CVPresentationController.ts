@@ -150,13 +150,13 @@ export default class CVPresentationController extends CController<CVPresentation
     }
 
     protected get selection() {
-        return this.system.components.safeGet(CSelection);
+        return this.system.getMainComponent(CSelection, true);
     }
     protected get renderer() {
-        return this.system.components.safeGet(CRenderer);
+        return this.system.getMainComponent(CRenderer, true);
     }
     protected get loaders() {
-        return this.system.components.safeGet(CVLoaders);
+        return this.system.getMainComponent(CVLoaders, true);
     }
 
     createActions(commander: Commander)
@@ -310,29 +310,29 @@ export default class CVPresentationController extends CController<CVPresentation
     protected onPresentation(event: IComponentEvent<CVPresentation>)
     {
         this.emit<IPresentationEvent>({
-            type: "presentation", add: event.add, remove: event.remove, presentation: event.component
+            type: "presentation", add: event.add, remove: event.remove, presentation: event.object
         });
 
         if (event.add) {
-            this.activePresentation = event.component;
+            this.activePresentation = event.object;
         }
     }
 
     protected onSelectPresentation(event: IComponentEvent<CVPresentation>)
     {
         if (event.add) {
-            this.activePresentation = event.component;
+            this.activePresentation = event.object;
         }
     }
 
     protected onItem(event: INodeEvent<NVItem>)
     {
         this.emit<IItemEvent>({
-            type: "item", add: event.add, remove: event.remove, item: event.node
+            type: "item", add: event.add, remove: event.remove, item: event.object
         });
 
         if (event.add) {
-            this.activeItem = event.node;
+            this.activeItem = event.object;
         }
     }
 }

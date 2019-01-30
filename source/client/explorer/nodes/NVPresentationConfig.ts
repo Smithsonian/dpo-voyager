@@ -56,37 +56,37 @@ export default class NVPresentationConfig extends NTransform
     // shortcuts to access system-global components
 
     get renderer() {
-        return this.system.graph.components.safeGet(CRenderer);
+        return this.getMainComponent(CRenderer, true);
     }
     get interface() {
-        return this.system.graph.components.safeGet(CVInterface);
+        return this.getMainComponent(CVInterface, true);
     }
     get reader() {
-        return this.system.graph.components.safeGet(CVReader);
+        return this.getMainComponent(CVReader, true);
     }
     get navigation() {
-        return this.system.graph.components.safeGet(CVOrbitNavigation);
+        return this.getMainComponent(CVOrbitNavigation, true);
     }
 
     // shortcuts to access project-local components
 
     get scene() {
-        return this.graph.components.safeGet(CVScene);
+        return this.getGraphComponent(CVScene, true);
     }
     get background() {
-        return this.components.safeGet(CVBackground);
+        return this.getComponent(CVBackground, true);
     }
     get groundPlane() {
-        return this.components.safeGet(CVGroundPlane);
+        return this.getComponent(CVGroundPlane, true);
     }
     get homeGrid() {
-        return this.components.safeGet(CVHomeGrid);
+        return this.getComponent(CVHomeGrid, true);
     }
     get tapeTool() {
-        return this.components.safeGet(CVTapeTool);
+        return this.getComponent(CVTapeTool, true);
     }
     get sectionTool() {
-        return this.components.safeGet(CVSectionTool);
+        return this.getComponent(CVSectionTool, true);
     }
 
 

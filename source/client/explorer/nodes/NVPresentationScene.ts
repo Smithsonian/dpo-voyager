@@ -66,10 +66,10 @@ export default class NVPresentationScene extends NScene
     assetPath: string;
 
     get scene() {
-        return this.components.safeGet(CVScene);
+        return this.getComponent(CVScene, true);
     }
     get loadingManager() {
-        return this.system.components.safeGet(CVLoaders);
+        return this.getMainComponent(CVLoaders, true);
     }
 
     setUrl(url: string, assetPath?: string)
@@ -242,12 +242,12 @@ export default class NVPresentationScene extends NScene
             intensity: ins.intensity.value
         };
 
-        switch(node.type) {
-            case NDirectionalLight.type:
+        switch(node.constructor) {
+            case NDirectionalLight:
                 data.type = "directional";
                 break;
 
-            case NPointLight.type:
+            case NPointLight:
                 data.type = "point";
                 data.point = {
                     distance: ins.distance.value,
@@ -255,7 +255,7 @@ export default class NVPresentationScene extends NScene
                 };
                 break;
 
-            case NSpotLight.type:
+            case NSpotLight:
                 data.type = "spot";
                 data.spot = {
                     distance: ins.distance.value,
@@ -266,7 +266,7 @@ export default class NVPresentationScene extends NScene
                 break;
 
             default:
-                throw new Error(`unsupported light type: '${node.type}'`);
+                throw new Error(`unsupported light type: '${node.className}'`);
         }
 
         return data as ILight;

@@ -73,8 +73,8 @@ export default class CVAnnotationsTask extends CVTask
 
     protected onSelectAnnotations(event: IComponentEvent<CVAnnotations>)
     {
-        if (event.add && event.component.node instanceof NVItem) {
-            this.presentations.activeItem = event.component.node;
+        if (event.add && event.object.node instanceof NVItem) {
+            this.presentations.activeItem = event.object.node;
         }
     }
 }

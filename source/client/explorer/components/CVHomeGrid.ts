@@ -69,7 +69,7 @@ export default class CVHomeGrid extends CObject3D
         return this.object3D as ThreeGrid;
     }
     get scene() {
-        return this.graph.components.safeGet(CVScene);
+        return this.getGraphComponent(CVScene, true);
     }
 
     create()
