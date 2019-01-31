@@ -37,8 +37,6 @@ export interface IDocumentEvent extends ITypedEvent<"document">
 
 export default class CVDocuments extends Component
 {
-    static readonly type: string = "CVDocuments";
-
     protected mainDocument: Document = null;
     protected documents: Dictionary<Document> = {};
 

@@ -46,8 +46,8 @@ class ItemList extends List<NVItem>
         super.firstConnected();
         this.classList.add("sv-scrollable", "sv-item-list");
 
-        this.presentations = this.system.getMainComponent(CVPresentationController, true);
-        this.selection = this.system.getMainComponent(CSelection, true);
+        this.presentations = this.system.getMainComponent(CVPresentationController);
+        this.selection = this.system.getMainComponent(CSelection);
     }
 
     protected connected()

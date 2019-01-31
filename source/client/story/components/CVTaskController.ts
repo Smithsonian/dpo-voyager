@@ -35,8 +35,6 @@ export type TaskActions = Actions<CVTaskController>;
 
 export default class CVTaskController extends CController<CVTaskController>
 {
-    static readonly type: string = "CVTaskController";
-
     private _taskNode: Node = null;
     private _tasks: CVTask[] = [];
     private _activeTask: CVTask = null;
@@ -85,7 +83,7 @@ export default class CVTaskController extends CController<CVTaskController>
     }
 
     protected get selection() {
-        return this.system.getMainComponent(CSelection, true);
+        return this.getMainComponent(CSelection);
     }
 
     createActions(commander: Commander)

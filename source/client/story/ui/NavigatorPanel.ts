@@ -29,10 +29,10 @@ import SystemElement, { customElement, html } from "./SystemElement";
 export default class NavigatorPanel extends SystemElement
 {
     protected get story() {
-        return this.system.getMainComponent(CVStoryController, true);
+        return this.system.getMainComponent(CVStoryController);
     }
     protected get renderer() {
-        return this.system.getMainComponent(CRenderer, true);
+        return this.system.getMainComponent(CRenderer);
     }
 
     protected firstConnected()

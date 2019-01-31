@@ -55,18 +55,17 @@ export interface IModelChangeEvent extends IComponentChangeEvent<CVModel>
     what: "derivative" | "boundingBox"
 }
 
-const ins = {
-    visible: types.Boolean("Visible", true),
-    units: types.Enum("Units", EUnitType, EUnitType.cm),
-    quality: types.Enum("Quality", EDerivativeQuality, EDerivativeQuality.High),
-    autoLoad: types.Boolean("Auto.Load", true),
-    position: types.Vector3("Pose.Position"),
-    rotation: types.Vector3("Pose.Rotation"),
-    center: types.Event("Pose.Center"),
+const _inputs = {
+    units: types.Enum("Model.Units", EUnitType, EUnitType.cm),
+    quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
+    autoLoad: types.Boolean("Model.AutoLoad", true),
+    position: types.Vector3("Model.Position"),
+    rotation: types.Vector3("Model.Rotation"),
+    center: types.Event("Model.Center"),
     dumpDerivatives: types.Event("Derivatives.Dump"),
 };
 
-const outs = {
+const _outputs = {
     globalUnits: types.Enum("GlobalUnits", EUnitType, EUnitType.cm),
     unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
 };
@@ -76,12 +75,10 @@ const outs = {
  */
 export default class CVModel extends CObject3D
 {
-    static readonly type: string = "CVModel";
-
     protected static readonly rotationOrder = "ZYX";
 
-    ins = this.addInputs(ins);
-    outs = this.addOutputs(outs);
+    ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
+    outs = this.addOutputs<CObject3D, typeof _outputs>(_outputs);
 
     assetPath: string = "";
     assetBaseName: string = "";
@@ -351,7 +348,7 @@ export default class CVModel extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        const loaders = this.system.getMainComponent(CVLoaders, true);
+        const loaders = this.system.getMainComponent(CVLoaders);
 
         return derivative.load(loaders, this.assetPath)
         .then(() => {

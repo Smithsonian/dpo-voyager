@@ -26,7 +26,6 @@ import CRenderer from "@ff/scene/components/CRenderer";
 
 import NVItem from "../../explorer/nodes/NVItem";
 import CVInterface from "../../explorer/components/CVInterface";
-import CVHomeGrid from "../../explorer/components/CVHomeGrid";
 import CVModel from "../../core/components/CVModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
@@ -49,8 +48,6 @@ const ins = {
 
 export default class CVPoseTask extends CVTask
 {
-    static readonly type: string = "CVPoseTask";
-
     static readonly text: string = "Pose";
     static readonly icon: string = "move";
 
@@ -59,10 +56,10 @@ export default class CVPoseTask extends CVTask
     protected activeModel: CVModel = null;
 
     protected get renderer() {
-        return this.system.graph.components.get(CRenderer);
+        return this.getMainComponent(CRenderer);
     }
     protected get interface() {
-        return this.system.graph.components.get(CVInterface);
+        return this.getMainComponent(CVInterface);
     }
 
     private _interfaceVisible = false;

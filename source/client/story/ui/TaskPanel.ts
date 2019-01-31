@@ -32,7 +32,7 @@ export default class TaskPanel extends SystemElement
     {
         super(system);
 
-        this.taskController = system.getMainComponent(CVTaskController, true);
+        this.taskController = system.getMainComponent(CVTaskController);
 
         if (!this.taskController) {
             throw new Error("missing task manager");

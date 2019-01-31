@@ -25,8 +25,6 @@ import CVTask from "./CVTask";
 
 export default class CVExploreTask extends CVTask
 {
-    static readonly type: string = "CVExploreTask";
-
     static readonly text: string = "Explore";
     static readonly icon: string = "eye";
 
@@ -49,8 +47,8 @@ export default class CVExploreTask extends CVTask
 
     protected setActiveItem(item: NVItem)
     {
-        if (item && item.model) {
-            this.activeModel = item.model;
+        if (item && item.hasComponent(CVModel)) {
+            this.activeModel = item.getComponent(CVModel);
             this.selection.selectComponent(this.activeModel);
         }
         else {

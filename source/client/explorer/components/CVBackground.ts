@@ -26,7 +26,7 @@ import { IBackground, EBackgroundType, TBackgroundType } from "common/types/conf
 
 export { EBackgroundType };
 
-const ins = {
+const _inputs = {
     type: types.Enum("Background.Type", EBackgroundType),
     color0: types.ColorRGB("Background.Color0", [ 1, 0, 0 ]),
     color1: types.ColorRGB("Background.Color1", [ 0, 1, 0 ])
@@ -34,9 +34,7 @@ const ins = {
 
 export default class CVBackground extends CObject3D
 {
-    static readonly type: string = "CVBackground";
-
-    ins = this.addInputs(ins);
+    ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
 
     fromData(data: IBackground)
     {

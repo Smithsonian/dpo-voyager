@@ -22,8 +22,6 @@ import Component from "@ff/graph/Component";
 
 export default class CVProcess extends Component
 {
-    static readonly type: string = "CVProcess";
-
     protected data: Dictionary<any> = {};
 
     set(key: string, value: any)

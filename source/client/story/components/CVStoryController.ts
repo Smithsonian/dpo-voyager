@@ -37,7 +37,7 @@ export { EStoryMode };
 export type StoryActions = Actions<CVStoryController>;
 
 
-const ins = {
+const _inputs = {
     save: types.Event("Save"),
     download: types.Event("Download"),
     exit: types.Event("Exit"),
@@ -48,10 +48,9 @@ const ins = {
 
 export default class CVStoryController extends CController<CVStoryController>
 {
-    static readonly type: string = "CVStoryController";
     static readonly isSystemSingleton = true;
 
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
     protected selection: CSelection = null;
     protected presentations: CVPresentationController = null;
@@ -64,9 +63,9 @@ export default class CVStoryController extends CController<CVStoryController>
 
     create()
     {
-        this.selection = this.graph.components.get(CSelection);
-        this.presentations = this.graph.components.get(CVPresentationController);
-        this.tasks = this.graph.components.get(CVTaskController);
+        this.selection = this.getMainComponent(CSelection);
+        this.presentations = this.getMainComponent(CVPresentationController);
+        this.tasks = this.getMainComponent(CVTaskController);
     }
 
     update()

@@ -22,7 +22,7 @@ import { ITapeTool } from "common/types/config";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
+const _inputs = {
     active: types.Boolean("Active"),
     startPosition: types.Vector3("Start.Position"),
     startDirection: types.Vector3("Start.Direction"),
@@ -32,9 +32,7 @@ const ins = {
 
 export default class CVTapeTool extends Component
 {
-    static readonly type: string = "CVTapeTool";
-
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
     fromData(data: ITapeTool)
     {

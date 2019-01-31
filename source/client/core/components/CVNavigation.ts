@@ -17,35 +17,30 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import { IInterface } from "common/types/config";
+import { INavigation } from "common/types/config";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { types };
+
 const _inputs = {
-    visible: types.Boolean("Interface.Visible", true),
-    logo: types.Boolean("Interface.Logo", true),
+    enabled: types.Boolean("Manip.Enabled", true),
 };
 
-export default class CVInterface extends Component
+export default class CVNavigation extends Component
 {
     ins = this.addInputs(_inputs);
 
 
-    fromData(data: IInterface)
+    fromData(data: INavigation)
     {
-        this.ins.setValues({
-            visible: data.visible,
-            logo: data.logo
-        });
+        this.ins.enabled.setValue(data.enabled);
     }
 
-    toData(): IInterface
+    toData(): Partial<INavigation>
     {
-        const ins = this.ins;
-
         return {
-            visible: ins.visible.value,
-            logo: ins.logo.value
+            enabled: this.ins.enabled.value,
         };
     }
 }

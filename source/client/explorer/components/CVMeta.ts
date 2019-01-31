@@ -22,9 +22,6 @@ import Component from "@ff/graph/Component";
 
 export default class CVMeta extends Component
 {
-    static readonly type: string = "CVMeta";
-
-
     protected data: Dictionary<any> = {};
 
     set(key: string, value: any)

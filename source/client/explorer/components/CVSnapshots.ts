@@ -41,8 +41,6 @@ export interface ISnapshotProperty
 
 export default class CVSnapshots extends CVCollection<ISnapshot>
 {
-    static readonly type: string = "CVSnapshots";
-
     addSnapshot(snapshot: ISnapshot)
     {
         const id = this.insert(snapshot);

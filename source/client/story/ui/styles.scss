@@ -46,7 +46,7 @@ ff-dock-view {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TASK BAR
+// MENU/TASK BAR
 
 .sv-task-bar {
   display: flex;
@@ -67,7 +67,7 @@ ff-dock-view {
     font-weight: bold;
     align-self: center;
     padding: 1px 3px 3px 3px;
-    background-color: $color-secondary-dark;
+    background-color: darken($color-secondary, 5%);
     color: $color-background-dark;
   }
 

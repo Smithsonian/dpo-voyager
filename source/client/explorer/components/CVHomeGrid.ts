@@ -38,13 +38,12 @@ const _vec3a = new THREE.Vector3();
 const _matRotationOffset = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
 const _matIdentity = new THREE.Matrix4();
 
-const ins = {
-    visible: types.Boolean("Visible", true),
-    color: types.ColorRGB("Color", [ 0.5, 0.7, 0.8 ]),
-    update: types.Event("Update")
+const _inputs = {
+    color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
+    update: types.Event("Grid.Update")
 };
 
-const outs = {
+const _outputs = {
     size: types.Number("Size"),
     units: types.Enum("Units", EUnitType)
 };
@@ -53,8 +52,8 @@ export default class CVHomeGrid extends CObject3D
 {
     static readonly type: string = "CVHomeGrid";
 
-    ins = this.addInputs(ins);
-    outs = this.addOutputs(outs);
+    ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
+    outs = this.addOutputs<CObject3D, typeof _outputs>(_outputs);
 
     private _lastViewport: Viewport = null;
     private _gridProps: IGridProps = {
@@ -69,12 +68,13 @@ export default class CVHomeGrid extends CObject3D
         return this.object3D as ThreeGrid;
     }
     get scene() {
-        return this.getGraphComponent(CVScene, true);
+        return this.getGraphComponent(CVScene);
     }
 
     create()
     {
         this.scene.on("change", this.onSceneChange, this);
+        this.ins.pickable.setValue(false);
     }
 
     dispose()

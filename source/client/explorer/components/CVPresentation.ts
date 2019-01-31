@@ -41,7 +41,6 @@ const ins = {
  */
 export default class CVPresentation extends CRenderGraph
 {
-    static readonly type: string = "CVPresentation";
     static readonly mimeType = "application/si-dpo-3d.presentation+json";
 
     ins = this.addInputs(ins);

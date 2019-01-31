@@ -42,9 +42,6 @@ interface IGlobalExplorerData
 
 export default class NVPresentationConfig extends NTransform
 {
-    static readonly type: string = "NVPresentationConfig";
-
-
     private _isActive = false;
 
     private _data: IGlobalExplorerData = {
@@ -56,37 +53,37 @@ export default class NVPresentationConfig extends NTransform
     // shortcuts to access system-global components
 
     get renderer() {
-        return this.getMainComponent(CRenderer, true);
+        return this.getMainComponent(CRenderer);
     }
     get interface() {
-        return this.getMainComponent(CVInterface, true);
+        return this.getMainComponent(CVInterface);
     }
     get reader() {
-        return this.getMainComponent(CVReader, true);
+        return this.getMainComponent(CVReader);
     }
     get navigation() {
-        return this.getMainComponent(CVOrbitNavigation, true);
+        return this.getMainComponent(CVOrbitNavigation);
     }
 
     // shortcuts to access project-local components
 
     get scene() {
-        return this.getGraphComponent(CVScene, true);
+        return this.getGraphComponent(CVScene);
     }
     get background() {
-        return this.getComponent(CVBackground, true);
+        return this.getComponent(CVBackground);
     }
     get groundPlane() {
-        return this.getComponent(CVGroundPlane, true);
+        return this.getComponent(CVGroundPlane);
     }
     get homeGrid() {
-        return this.getComponent(CVHomeGrid, true);
+        return this.getComponent(CVHomeGrid);
     }
     get tapeTool() {
-        return this.getComponent(CVTapeTool, true);
+        return this.getComponent(CVTapeTool);
     }
     get sectionTool() {
-        return this.getComponent(CVSectionTool, true);
+        return this.getComponent(CVSectionTool);
     }
 
 

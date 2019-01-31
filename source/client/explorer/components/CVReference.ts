@@ -21,16 +21,14 @@ import { IReference } from "common/types/presentation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
+const _inputs = {
     uri: types.String("URI"),
     mimeType: types.String("MIMEType")
 };
 
 export default class CVReference extends Component
 {
-    static readonly type: string = "CVReference";
-
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
     update(context)
     {

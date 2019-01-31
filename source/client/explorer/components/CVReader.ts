@@ -24,7 +24,7 @@ import Document from "../models/Document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
+const _inputs = {
     visible: types.Boolean("Visible", false),
     position: types.Enum("Position", EReaderPosition),
     url: types.String("DocumentURL", "")
@@ -32,9 +32,7 @@ const ins = {
 
 export default class CVReader extends Component
 {
-    static readonly type: string = "CVReader";
-
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
 
     setDocument(document: Document)

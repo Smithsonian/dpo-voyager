@@ -22,16 +22,14 @@ import { ISectionTool } from "common/types/config";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
+const _inputs = {
     active: types.Boolean("Active"),
     plane: types.Vector4("Plane")
 };
 
 export default class CVSectionTool extends Component
 {
-    static readonly type: string = "CVSectionTool";
-
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
     fromData(data: ISectionTool)
     {

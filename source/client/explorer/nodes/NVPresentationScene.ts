@@ -60,16 +60,14 @@ export type ReferenceCallback = (index: number, graph: Graph, assetPath: string)
 
 export default class NVPresentationScene extends NScene
 {
-    static readonly type: string = "NVPresentationScene";
-
     url: string;
     assetPath: string;
 
     get scene() {
-        return this.getComponent(CVScene, true);
+        return this.getComponent(CVScene);
     }
     get loadingManager() {
-        return this.getMainComponent(CVLoaders, true);
+        return this.getMainComponent(CVLoaders);
     }
 
     setUrl(url: string, assetPath?: string)

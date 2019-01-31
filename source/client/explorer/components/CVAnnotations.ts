@@ -51,8 +51,6 @@ export interface IGroupEvent extends ITypedEvent<"group">
 
 export default class CVAnnotations extends CObject3D
 {
-    static readonly type: string = "CVAnnotations";
-
     private _annotations: Dictionary<Annotation> = {};
     private _groups: Dictionary<Group> = {};
 
@@ -61,7 +59,7 @@ export default class CVAnnotations extends CObject3D
     }
 
     protected get model() {
-        return this.node.components.get(CVModel);
+        return this.getComponent(CVModel);
     }
 
     create()

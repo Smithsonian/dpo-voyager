@@ -33,18 +33,16 @@ import TaskView from "../ui/TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
+const _inputs = {
     activate: types.Event("Activate")
 };
 
 export default class CVTask extends Component
 {
-    static readonly type: string = "CVTask";
-
     static readonly text: string = "Task";
     static readonly icon: string = "fa fa-tasks";
 
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
     protected tasks: CVTaskController = null;
     protected presentations: CVPresentationController = null;
@@ -55,9 +53,9 @@ export default class CVTask extends Component
 
     create()
     {
-        this.tasks = this.system.getMainComponent(CVTaskController, true);
-        this.presentations = this.system.getMainComponent(CVPresentationController, true);
-        this.selection = this.system.getMainComponent(CPickSelection, true);
+        this.tasks = this.getMainComponent(CVTaskController);
+        this.presentations = this.getMainComponent(CVPresentationController);
+        this.selection = this.getMainComponent(CPickSelection);
     }
 
     update()

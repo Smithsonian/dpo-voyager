@@ -28,18 +28,16 @@ import CVTask from "./CVTask";
 
 export enum EAnnotationsTaskMode { Off, Move, Create }
 
-const ins = {
+const _inputs = {
     mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off)
 };
 
 export default class CVAnnotationsTask extends CVTask
 {
-    static readonly type: string = "CVAnnotationsTask";
-
     static readonly text: string = "Annotations";
     static readonly icon: string = "comment";
 
-    ins = this.addInputs<CVTask, typeof ins>(ins);
+    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
     protected activeAnnotations: CVAnnotations = null;
 

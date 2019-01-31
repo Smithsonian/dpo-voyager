@@ -82,10 +82,10 @@ export default class PoseTaskView extends TaskView
 
         return html`
             <div class="sv-commands">
-                <ff-button text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
-                <ff-button text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
-                <ff-button text="Center" @click=${this.onClickCenter}></ff-button>
-                <ff-button text="Zoom Views" @click=${this.onClickZoomViews}></ff-button>
+                <ff-button icon="rotate" text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
+                <ff-button icon="move" text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
+                <ff-button icon="compress" text="Center" @click=${this.onClickCenter}></ff-button>
+                <ff-button icon="expand" text="Zoom Extent" @click=${this.onClickZoomViews}></ff-button>
             </div>
             <div class="sv-scrollable">
                 <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    

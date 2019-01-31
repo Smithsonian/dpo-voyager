@@ -35,8 +35,6 @@ const _VERBOSE = false;
 
 export default class CVLoaders extends Component
 {
-    static readonly type: string = "CVLoaders";
-
     readonly jsonLoader: JSONLoader;
     readonly validator: JSONValidator;
     readonly modelLoader: ModelLoader;

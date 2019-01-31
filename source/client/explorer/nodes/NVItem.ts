@@ -28,25 +28,23 @@ import CVDocuments from "../components/CVDocuments";
 
 export default class NVItem extends NTransform
 {
-    static readonly type: string = "NVItem";
-
     get item() {
-        return this.components.get(CVItemData);
+        return this.getComponent(CVItemData);
     }
     get meta() {
-        return this.components.get(CVMeta);
+        return this.getComponent(CVMeta);
     }
     get process() {
-        return this.components.get(CVProcess);
+        return this.getComponent(CVProcess);
     }
     get model() {
-        return this.components.get(CVModel);
+        return this.getComponent(CVModel);
     }
     get documents() {
-        return this.components.get(CVDocuments);
+        return this.getComponent(CVDocuments);
     }
     get annotations() {
-        return this.components.get(CVAnnotations);
+        return this.getComponent(CVAnnotations);
     }
 
     createComponents()

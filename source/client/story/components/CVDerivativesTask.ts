@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import { IComponentEvent } from "@ff/graph/Node";
-
 import NVItem from "../../explorer/nodes/NVItem";
 import CVModel from "../../core/components/CVModel";
 
@@ -28,8 +25,6 @@ import CVTask from "./CVTask";
 
 export default class CVDerivativesTask extends CVTask
 {
-    static readonly type: string = "CVDerivativesTask";
-
     static readonly text: string = "Derivatives";
     static readonly icon: string = "hierarchy";
 

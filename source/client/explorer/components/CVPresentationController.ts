@@ -75,7 +75,6 @@ export type ExplorerActions = Actions<CVPresentationController>;
  */
 export default class CVPresentationController extends CController<CVPresentationController>
 {
-    static readonly type: string = "CVPresentationController";
     static readonly isSystemSingleton = true;
 
     private _activePresentation: CVPresentation = null;
@@ -150,13 +149,13 @@ export default class CVPresentationController extends CController<CVPresentation
     }
 
     protected get selection() {
-        return this.system.getMainComponent(CSelection, true);
+        return this.system.getMainComponent(CSelection);
     }
     protected get renderer() {
-        return this.system.getMainComponent(CRenderer, true);
+        return this.system.getMainComponent(CRenderer);
     }
     protected get loaders() {
-        return this.system.getMainComponent(CVLoaders, true);
+        return this.system.getMainComponent(CVLoaders);
     }
 
     createActions(commander: Commander)

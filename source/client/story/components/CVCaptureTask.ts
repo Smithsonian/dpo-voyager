@@ -66,7 +66,7 @@ const _typeExtensions = {
     [EFileType.PNG]: "png"
 };
 
-const ins = {
+const _inputs = {
     take: types.Event("Picture.Take"),
     save: types.Event("Picture.Save"),
     download: types.Event("Picture.Download"),
@@ -75,26 +75,24 @@ const ins = {
     quality: types.Number("Picture.Quality", { min: 0, max: 1, preset: 0.85 }),
 };
 
-const outs = {
+const _outputs = {
     ready: types.Boolean("Picture.Ready")
 };
 
 export default class CVCaptureTask extends CVTask
 {
-    static readonly type: string = "CVCaptureTask";
-
     static readonly text: string = "Capture";
     static readonly icon: string = "camera";
 
-    ins = this.addInputs<CVTask, typeof ins>(ins);
-    outs = this.addOutputs(outs);
+    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
+    outs = this.addOutputs<CVTask, typeof _outputs>(_outputs);
 
 
-    protected get interface() {
-        return this.system.components.get(CVInterface);
-    }
     protected get renderer() {
-        return this.system.components.get(CRenderer);
+        return this.getMainComponent(CRenderer);
+    }
+    protected get interface() {
+        return this.getMainComponent(CVInterface);
     }
 
     protected activeModel: CVModel = null;

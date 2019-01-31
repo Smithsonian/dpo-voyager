@@ -41,8 +41,6 @@ export interface ITourStep
 
 export default class CVTours extends CVCollection<ITour>
 {
-    static readonly type: string = "CVTours";
-
     protected rootCollection: CVTours = null;
 
     create()

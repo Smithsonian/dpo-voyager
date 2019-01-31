@@ -18,10 +18,8 @@
 import * as THREE from "three";
 
 import math from "@ff/core/math";
-import Vector3 from "@ff/core/Vector3";
 
-import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/graph/Component";
+import CVNavigation, { types } from "./CVNavigation";
 
 import OrbitManipulator from "@ff/three/OrbitManipulator";
 
@@ -61,10 +59,9 @@ export { EProjection };
 
 export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
 
-const ins = {
+const _inputs = {
     preset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
     projection: types.Enum("View.Projection", EProjection, EProjection.Perspective),
-    enabled: types.Boolean("Manip.Enabled", true),
     zoomExtents: types.Event("Manip.ZoomExtents"),
     orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
     offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
@@ -78,17 +75,15 @@ const ins = {
  * Voyager explorer orbit navigation.
  * Controls manipulation and parameters of the camera.
  */
-export default class CVOrbitNavigation extends Component
+export default class CVOrbitNavigation extends CVNavigation
 {
-    static readonly type: string = "CVOrbitNavigation";
-
-    ins = this.addInputs(ins);
+    ins = this.addInputs<CVNavigation, typeof _inputs>(_inputs);
 
     private _manip = new OrbitManipulator();
     private _activeScene: CVScene = null;
 
     get renderer() {
-        return this.system.getMainComponent(CRenderer, true);
+        return this.system.getMainComponent(CRenderer);
     }
 
     create()
@@ -214,10 +209,11 @@ export default class CVOrbitNavigation extends Component
 
     fromData(data: INavigation)
     {
+        super.fromData(data);
+
         const orbit = data.orbit;
 
         this.ins.copyValues({
-            enabled: data.enabled,
             orbit: orbit.orbit.slice(),
             offset: orbit.offset.slice(),
             minOrbit: _replaceNull(orbit.minOrbit.slice(), -Infinity),
@@ -230,19 +226,19 @@ export default class CVOrbitNavigation extends Component
     toData(): INavigation
     {
         const ins = this.ins;
+        const data = super.toData();
 
-        return {
-            type: "Orbit",
-            enabled: ins.enabled.value,
-            orbit: {
-                orbit: ins.orbit.cloneValue(),
-                offset: ins.offset.cloneValue(),
-                minOrbit: ins.minOrbit.cloneValue(),
-                maxOrbit: ins.maxOrbit.cloneValue(),
-                minOffset: ins.minOffset.cloneValue(),
-                maxOffset: ins.maxOffset.cloneValue(),
-            }
+        data.type = "Orbit";
+        data.orbit = {
+            orbit: ins.orbit.cloneValue(),
+            offset: ins.offset.cloneValue(),
+            minOrbit: ins.minOrbit.cloneValue(),
+            maxOrbit: ins.maxOrbit.cloneValue(),
+            minOffset: ins.minOffset.cloneValue(),
+            maxOffset: ins.maxOffset.cloneValue(),
         };
+
+        return data as INavigation;
     }
 
     protected onPointer(event: IPointerEvent)

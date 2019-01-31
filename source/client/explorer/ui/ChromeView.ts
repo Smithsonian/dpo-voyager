@@ -40,7 +40,7 @@ export default class ChromeView extends CustomElement
     {
         super();
         this.system = system;
-        this.interface = system.getComponent(CVInterface, true);
+        this.interface = system.getComponent(CVInterface);
     }
 
     protected firstConnected()
