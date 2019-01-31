@@ -19,12 +19,15 @@ import System from "@ff/graph/System";
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
+import CVPresentationController from "../components/CVPresentationController";
 import CVInterface from "../components/CVInterface";
+import CVReader from "../components/CVReader";
 
 import ViewMenu from "./ViewMenu";
 import RenderMenu from "./RenderMenu";
 
 import CustomElement, { customElement, html, property } from "@ff/ui/CustomElement";
+import CVAnnotations from "../components/CVAnnotations";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,74 +37,114 @@ export default class ChromeView extends CustomElement
     @property({ attribute: false })
     system: System;
 
-    protected interface: CVInterface;
+    private _viewMenu: ViewMenu = null;
+    private _renderMenu: RenderMenu = null;
 
     constructor(system?: System)
     {
         super();
         this.system = system;
-        this.interface = system.getComponent(CVInterface);
+    }
+
+    protected get activePresentation() {
+        return this.system.getMainComponent(CVPresentationController).activePresentation;
+    }
+    protected get interface() {
+        return this.system.getMainComponent(CVInterface);
+    }
+    protected get reader() {
+        return this.system.getMainComponent(CVReader);
     }
 
     protected firstConnected()
     {
         this.style.pointerEvents = "none";
         this.setAttribute("pointer-events", "none");
+
+        this._viewMenu = new ViewMenu(this.system);
+        this._viewMenu.portal = this;
+
+        this._renderMenu = new RenderMenu(this.system);
+        this._renderMenu.portal = this;
     }
 
     protected connected()
     {
-        const { visible, logo } = this.interface.ins;
-        visible.on("value", this.onInterfaceUpdate, this);
-        logo.on("value", this.onInterfaceUpdate, this);
+        const iface = this.interface;
+        iface.ins.visible.on("value", this.performUpdate, this);
+        iface.ins.logo.on("value", this.performUpdate, this);
+        iface.outs.fullscreenEnabled.on("value", this.performUpdate, this);
+
+        this.reader.ins.visible.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        const { visible, logo } = this.interface.ins;
-        visible.off("value", this.onInterfaceUpdate, this);
-        logo.off("value", this.onInterfaceUpdate, this);
+        const iface = this.interface;
+        iface.ins.visible.off("value", this.performUpdate, this);
+        iface.ins.logo.off("value", this.performUpdate, this);
+        iface.outs.fullscreenEnabled.off("value", this.performUpdate, this);
+
+        this.reader.ins.visible.off("value", this.performUpdate, this);
     }
 
     protected render()
     {
-        const { visible, logo } = this.interface.ins;
-        const isVisible = visible.value;
-        const showLogo = logo.value;
+        const iface = this.interface;
+        const interfaceVisible = iface.ins.visible.value;
+        const logoVisible = iface.ins.logo.value;
+        const fullscreenEnabled = iface.outs.fullscreenEnabled.value;
+        const fullscreenAvailable = iface.outs.fullscreenAvailable.value;
+        const readerVisible = this.reader.ins.visible.value;
 
-        if (!isVisible) {
+        const activePresentation = this.activePresentation;
+        const annotationsVisible = activePresentation
+            ? activePresentation.getInnerComponent(CVAnnotations).ins.visible.value : false;
+
+        if (!interfaceVisible) {
             return html``;
         }
-
-        const viewMenu = new ViewMenu(this.system);
-        viewMenu.portal = this;
-
-        const renderMenu = new RenderMenu(this.system);
-        renderMenu.portal = this;
 
         return html`
             <div class="sv-main-menu">
                 <ff-button-group mode="exclusive">
-                    <ff-popup-button class="ff-menu-button" icon="eye" .content=${viewMenu}>
+                    <ff-popup-button class="ff-menu-button" icon="eye" .content=${this._viewMenu}>
                     </ff-popup-button>
-                    <ff-popup-button class="ff-menu-button" icon="palette" .content=${renderMenu}>
+                    <ff-popup-button class="ff-menu-button" icon="palette" .content=${this._renderMenu}>
                     </ff-popup-button>
                 </ff-button-group>
-                <ff-button class="ff-menu-button" icon="comment" selectable>
+                <ff-button class="ff-menu-button" icon="comment" title="show/hide annotations"
+                    ?selected=${annotationsVisible} @click=${this.onClickAnnotations}>
                 </ff-button>
-                <ff-button class="ff-menu-button" icon="document" selectable>
+                <ff-button class="ff-menu-button" icon="document" title="show/hide document reader"
+                    ?selected=${readerVisible} @click=${this.onClickReader}>
                 </ff-button>
+                ${fullscreenAvailable ? html`<ff-button class="ff-menu-button" icon="expand" title="enable/disable fullscreen mode"
+                    ?selected=${fullscreenEnabled} @click=${this.onClickFullscreen}></ff-button>` : null}
             </div>
-            ${showLogo ? html`
-                <div class="sv-logo">
-                    <img src="images/si-dpo3d-logo-neg.svg" alt="Smithsonian DPO 3D Logo">
-                </div>
-            ` : null}
+            ${logoVisible ? html`<div class="sv-logo">
+                <img src="images/si-dpo3d-logo-neg.svg" alt="Smithsonian DPO 3D Logo">
+            </div>` : null}
         `;
     }
 
-    protected onInterfaceUpdate()
+    protected onClickAnnotations()
     {
-        this.requestUpdate();
+        const activePresentation = this.activePresentation;
+        if (activePresentation) {
+            const visible = activePresentation.getInnerComponent(CVAnnotations).ins.visible.value;
+            activePresentation.getInnerComponents(CVAnnotations).forEach(comp => comp.ins.visible.setValue(!visible));
+        }
+    }
+
+    protected onClickReader()
+    {
+        const prop = this.reader.ins.visible;
+        prop.setValue(!prop.value);
+    }
+
+    protected onClickFullscreen()
+    {
+        this.interface.toggleFullscreen();
     }
 }

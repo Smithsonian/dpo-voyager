@@ -26,10 +26,63 @@ const _inputs = {
     logo: types.Boolean("Interface.Logo", true),
 };
 
+const _outputs = {
+    fullscreenAvailable: types.Boolean("Fullscreen.Available", false),
+    fullscreenEnabled: types.Boolean("Fullscreen.Enabled", false),
+};
+
 export default class CVInterface extends Component
 {
     ins = this.addInputs(_inputs);
+    outs = this.addOutputs(_outputs);
 
+    private _fullscreenElement: HTMLElement = null;
+
+    constructor(id: string)
+    {
+        super(id);
+        this.onFullscreenChange = this.onFullscreenChange.bind(this);
+    }
+
+
+    get fullscreenElement() {
+        return this._fullscreenElement;
+    }
+    set fullscreenElement(element: HTMLElement) {
+
+        if (element !== this._fullscreenElement) {
+            if (this._fullscreenElement) {
+                this._fullscreenElement.removeEventListener("fullscreenchange", this.onFullscreenChange);
+            }
+
+            this._fullscreenElement = element;
+
+            if (element) {
+                element.addEventListener("fullscreenchange", this.onFullscreenChange);
+            }
+        }
+    }
+
+    toggleFullscreen()
+    {
+        const outs = this.outs;
+        const fullscreenElement = this._fullscreenElement;
+
+        if (fullscreenElement) {
+            const state = outs.fullscreenEnabled.value;
+            if (!state && outs.fullscreenAvailable.value) {
+                fullscreenElement.requestFullscreen();
+            }
+            else if (state) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    create()
+    {
+        this.outs.fullscreenAvailable.setValue(!!document.body.requestFullscreen);
+    }
 
     fromData(data: IInterface)
     {
@@ -47,5 +100,11 @@ export default class CVInterface extends Component
             visible: ins.visible.value,
             logo: ins.logo.value
         };
+    }
+
+    protected onFullscreenChange(event: Event)
+    {
+        const fullscreenEnabled = !!document["fullscreenElement"];
+        this.outs.fullscreenEnabled.setValue(fullscreenEnabled);
     }
 }

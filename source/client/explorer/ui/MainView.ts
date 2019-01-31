@@ -21,6 +21,7 @@ import Icon from "@ff/ui/Icon";
 import Notification from "@ff/ui/Notification";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../ExplorerApplication";
+import CVInterface from "../components/CVInterface";
 
 import ContentView from "./ContentView";
 import ChromeView from "./ChromeView";
@@ -73,6 +74,10 @@ export default class MainView extends CustomElement
         }
     }
 
+    protected get interface() {
+        return this.application.system.getMainComponent(CVInterface);
+    }
+
     protected firstConnected()
     {
         const system = this.application.system;
@@ -83,5 +88,15 @@ export default class MainView extends CustomElement
         const notifications = document.createElement("div");
         notifications.setAttribute("id", Notification.stackId);
         this.appendChild(notifications);
+    }
+
+    protected connected()
+    {
+        this.interface.fullscreenElement = this;
+    }
+
+    protected disconnected()
+    {
+        this.interface.fullscreenElement = null;
     }
 }

@@ -58,8 +58,11 @@ export default class ContentView extends CustomElement
     {
         this.setStyle({
             position: "absolute",
-            top: "0", bottom: "0", left: "0", right: "0"
+            top: "0", bottom: "0", left: "0", right: "0",
+            touchAction: "none",
         });
+
+        this.setAttribute("touch-action", "none");
 
         this.canvas = this.createElement("canvas", {
             display: "block",
