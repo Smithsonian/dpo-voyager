@@ -62,6 +62,7 @@ export default class ContentView extends CustomElement
             touchAction: "none",
         });
 
+        this.classList.add("sv-content-view");
         this.setAttribute("touch-action", "none");
 
         this.canvas = this.createElement("canvas", {
@@ -75,6 +76,8 @@ export default class ContentView extends CustomElement
             top: "0", bottom: "0", left: "0", right: "0",
             overflow: "hidden"
         }, this);
+
+        this.overlay.classList.add("sv-content-overlay");
 
         this.splitter = this.createElement(QuadSplitter, {
             position: "absolute",

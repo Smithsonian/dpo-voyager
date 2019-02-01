@@ -75,6 +75,7 @@ export default class CVHomeGrid extends CObject3D
     {
         this.scene.on("change", this.onSceneChange, this);
         this.ins.pickable.setValue(false);
+        this.ins.visible.setValue(false);
     }
 
     dispose()
@@ -135,7 +136,7 @@ export default class CVHomeGrid extends CObject3D
         return true;
     }
 
-    beforeRender(context: IRenderContext)
+    preRender(context: IRenderContext)
     {
         const viewport = context.viewport;
         const gridObject = this.object3D;
@@ -143,7 +144,7 @@ export default class CVHomeGrid extends CObject3D
         if (viewport !== this._lastViewport) {
             this._lastViewport = viewport;
 
-            const vpCamera = context.viewport.viewportCamera;
+            const vpCamera = context.viewport.camera;
 
             if (vpCamera) {
                 gridObject.matrix.extractRotation(vpCamera.matrixWorld).multiply(_matRotationOffset);
@@ -156,7 +157,7 @@ export default class CVHomeGrid extends CObject3D
         }
     }
 
-    afterRender(context: IRenderContext)
+    postRender(context: IRenderContext)
     {
         this.object3D.matrix.extractRotation(_matIdentity);
     }

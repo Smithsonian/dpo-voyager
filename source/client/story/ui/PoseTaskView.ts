@@ -107,7 +107,7 @@ export default class PoseTaskView extends TaskView
 
     protected onClickZoomViews()
     {
-        this.presentations.activePresentation.scene.ins.zoomExtents.set();
+        this.presentations.activePresentation.scene.ins.zoomExtent.set();
     }
 
     protected onModeValue()

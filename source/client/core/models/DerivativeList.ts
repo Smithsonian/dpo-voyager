@@ -92,6 +92,11 @@ export default class DerivativeList
         return this.derivatives[key] || _EMPTY_ARRAY;
     }
 
+    getArray(): Derivative[]
+    {
+        return Object.keys(this.derivatives).reduce((arr, key) => arr.concat(this.derivatives[key]), []);
+    }
+
     get(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative | null
     {
         const key = EDerivativeUsage[usage];

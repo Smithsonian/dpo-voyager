@@ -30,8 +30,8 @@ export default {
         CVExploreTask,
         CVPoseTask,
         CVCaptureTask,
-        //CVAnnotationsTask,
-        //CVDerivativesTask,
+        CVAnnotationsTask,
+        CVDerivativesTask,
     ],
     "Authoring": [
         CVExploreTask,

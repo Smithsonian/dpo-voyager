@@ -18,51 +18,51 @@
 import { customElement, property } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
-import Annotation from "../../explorer/models/Annotation";
+import Derivative, { EDerivativeUsage, EDerivativeQuality } from "../../core/models/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface ISelectAnnotationEvent extends CustomEvent
+export interface ISelectDerivativeEvent extends CustomEvent
 {
-    target: AnnotationList;
+    target: DerivativeList;
     detail: {
-        annotation: Annotation;
+        derivative: Derivative;
     }
 }
 
-@customElement("sv-annotation-list")
-class AnnotationList extends List<Annotation>
+@customElement("sv-derivative-list")
+class DerivativeList extends List<Derivative>
 {
     @property({ attribute: false })
-    selectedItem: Annotation = null;
+    selectedItem: Derivative = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-annotation-list");
+        this.classList.add("sv-derivative-list");
     }
 
-    protected renderItem(item: Annotation)
+    protected renderItem(item: Derivative)
     {
-        return item.title;
+        return `${EDerivativeUsage[item.usage]} / ${EDerivativeQuality[item.quality]}`;
     }
 
-    protected isItemSelected(item: Annotation)
+    protected isItemSelected(item: Derivative)
     {
         return item === this.selectedItem;
     }
 
-    protected onClickItem(event: MouseEvent, item: Annotation)
+    protected onClickItem(event: MouseEvent, item: Derivative)
     {
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { annotation: item }
+            detail: { derivative: item }
         }));
     }
 
     protected onClickEmpty(event: MouseEvent)
     {
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { annotation: null }
+            detail: { derivative: null }
         }));
     }
 }

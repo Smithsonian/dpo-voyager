@@ -16,20 +16,60 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
+import { EProjection } from "@ff/three/UniversalCamera";
+
+import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
+import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 
 import { INavigation } from "common/types/config";
 
+import CVScene from "./CVScene";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-export { types };
+export { EProjection };
+export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
 
 const _inputs = {
+    preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
+    projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
+    zoomExtent: types.Event("Camera.ZoomExtent"),
     enabled: types.Boolean("Manip.Enabled", true),
 };
 
 export default class CVNavigation extends Component
 {
     ins = this.addInputs(_inputs);
+
+    protected activeScene: CVScene = null;
+
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
+    }
+    protected get activeCamera() {
+        return this.activeScene ? this.activeScene.activeCameraComponent : null;
+    }
+
+    create()
+    {
+        super.create();
+
+        this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
+        this.activeScene = this.renderer.activeSceneComponent as CVScene;
+    }
+
+    dispose()
+    {
+        this.renderer.off<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
+
+        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        super.dispose();
+    }
 
 
     fromData(data: INavigation)
@@ -42,5 +82,21 @@ export default class CVNavigation extends Component
         return {
             enabled: this.ins.enabled.value,
         };
+    }
+
+    protected onPointer(event: IPointerEvent)
+    {
+    }
+
+    protected onTrigger(event: ITriggerEvent)
+    {
+    }
+
+    protected onActiveScene(event: IActiveSceneEvent)
+    {
+        if (event.next instanceof CVScene) {
+            this.activeScene = event.next;
+            this.changed = true;
+        }
     }
 }

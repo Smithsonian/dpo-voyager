@@ -132,7 +132,7 @@ export default class CVPoseTask extends CVTask
         this._deltaX = this._deltaY = 0;
 
         const object3D = this.activeModel.object3D;
-        const camera = this._viewport.viewportCamera;
+        const camera = this._viewport.camera;
         if (!camera) {
             return false;
         }
@@ -172,8 +172,8 @@ export default class CVPoseTask extends CVTask
 
     protected setActiveItem(item: NVItem)
     {
-        if (item && item.model) {
-            this.activeModel = item.model;
+        if (item && item.hasComponent(CVModel)) {
+            this.activeModel = item.getComponent(CVModel);
             this.selection.selectComponent(this.activeModel);
         }
         else {

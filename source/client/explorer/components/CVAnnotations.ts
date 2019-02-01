@@ -20,13 +20,16 @@ import * as THREE from "three";
 import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
 
-import HTMLSpriteGroup from "@ff/three/HTMLSpriteGroup";
+import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
 import { ITypedEvent } from "@ff/graph/Component";
-import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
+import CObject3D, { IRenderContext, IPointerEvent } from "@ff/scene/components/CObject3D";
 
 import { IAnnotations } from "common/types/item";
 
 import CVModel from "../../core/components/CVModel";
+
+import PinSprite from "../annotations/PinSprite";
+import LabelSprite from "../annotations/LabelSprite";
 
 import Annotation, { Vector3 } from "../models/Annotation";
 import Group from "../models/Group";
@@ -51,31 +54,45 @@ export interface IGroupEvent extends ITypedEvent<"group">
 
 export default class CVAnnotations extends CObject3D
 {
+    private _activeAnnotation: Annotation = null;
     private _annotations: Dictionary<Annotation> = {};
+    private _sprites: Dictionary<HTMLSprite> = {};
     private _groups: Dictionary<Group> = {};
-
-    get sprites() {
-        return this.object3D as HTMLSpriteGroup;
-    }
 
     protected get model() {
         return this.getComponent(CVModel);
     }
 
+    get activeAnnotation() {
+        return this._activeAnnotation;
+    }
+    set activeAnnotation(annotation: Annotation) {
+        if (annotation !== this._activeAnnotation) {
+            this._activeAnnotation = annotation;
+        }
+    }
+
     create()
     {
         this.object3D = new HTMLSpriteGroup();
+        this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
-    afterRender(context: IRenderContext)
+    postRender(context: IRenderContext)
     {
         const spriteGroup = this.object3D as HTMLSpriteGroup;
-        spriteGroup.renderHTML(context.viewport, context.view.overlay);
+        spriteGroup.render(context.viewport, context.camera);
     }
 
-    createAnnotation(position?: Vector3, direction?: Vector3, zoneIndex: number = -1): Annotation
+    dispose()
     {
-        const annotation = new Annotation(uniqueId(6, this._annotations), this);
+        (this.object3D as HTMLSpriteGroup).dispose();
+        this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+    }
+
+    createAnnotation(position: Vector3, direction: Vector3, zoneIndex: number = -1): Annotation
+    {
+        const annotation = new Annotation(uniqueId(6, this._annotations));
         annotation.position = position;
         annotation.direction = direction;
         annotation.zoneIndex = zoneIndex;
@@ -97,12 +114,14 @@ export default class CVAnnotations extends CObject3D
     addAnnotation(annotation: Annotation)
     {
         this._annotations[annotation.id] = annotation;
+        this.createSprite(annotation);
         this.emit<IAnnotationEvent>({ type: "annotation", add: true, remove: false, annotation });
     }
 
     removeAnnotation(annotation: Annotation)
     {
         delete this._annotations[annotation.id];
+        this.removeSprite(annotation);
         this.emit<IAnnotationEvent>({ type: "annotation", add: false, remove: true, annotation });
     }
 
@@ -170,10 +189,48 @@ export default class CVAnnotations extends CObject3D
     fromData(data: IAnnotations)
     {
         if (data.annotations) {
-            data.annotations.forEach(data => this.addAnnotation(new Annotation(data.id, this).inflate(data)));
+            data.annotations.forEach(data => this.addAnnotation(new Annotation(data.id).inflate(data)));
         }
         if (data.groups) {
             data.groups.forEach(data => this.addGroup(new Group(data.id).inflate(data)));
+        }
+    }
+
+    protected onPointerUp(event: IPointerEvent)
+    {
+        if (event.isDragging) {
+            return;
+        }
+
+        console.log("Pick Annotation!");
+    }
+
+    protected createSprite(annotation: Annotation)
+    {
+        this.removeSprite(annotation);
+
+        let sprite;
+        switch(annotation.style) {
+            case "pin":
+                sprite = new PinSprite(annotation);
+                break;
+            default:
+                sprite = new LabelSprite(annotation);
+                break;
+        }
+
+        this._sprites[annotation.id] = sprite;
+        (this.object3D as HTMLSpriteGroup).add(sprite);
+        this.registerPickableObject3D(sprite, true);
+    }
+
+    protected removeSprite(annotation: Annotation)
+    {
+        const sprite = this._sprites[annotation.id];
+        if (sprite) {
+            this._sprites[annotation.id] = undefined;
+            (this.object3D as HTMLSpriteGroup).remove(sprite);
+            this.unregisterPickableObject3D(sprite, true);
         }
     }
 }

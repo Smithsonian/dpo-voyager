@@ -129,8 +129,8 @@ export default class CVCaptureTask extends CVTask
         this.selection.selectedComponents.on(CVModel, this.onSelectModel, this);
 
         // disable selection brackets
-        this._bracketsVisible = this.selection.ins.bracketsVisible.value;
-        this.selection.ins.bracketsVisible.setValue(false);
+        this._bracketsVisible = this.selection.ins.viewportBrackets.value;
+        this.selection.ins.viewportBrackets.setValue(false);
 
         // disable interface overlay
         const interface_ = this.interface;
@@ -147,7 +147,7 @@ export default class CVCaptureTask extends CVTask
         this.selection.selectedComponents.off(CVModel, this.onSelectModel, this);
 
         // restore selection brackets visibility
-        this.selection.ins.bracketsVisible.setValue(this._bracketsVisible);
+        this.selection.ins.viewportBrackets.setValue(this._bracketsVisible);
 
         // restore interface visibility
         const interface_ = this.interface;

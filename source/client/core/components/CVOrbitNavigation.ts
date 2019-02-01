@@ -18,18 +18,13 @@
 import * as THREE from "three";
 
 import math from "@ff/core/math";
-
-import CVNavigation, { types } from "./CVNavigation";
-
+import { types } from "@ff/graph/propertyTypes";
 import OrbitManipulator from "@ff/three/OrbitManipulator";
-
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
-import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
-import { EProjection } from "@ff/scene/components/CCamera";
 
 import { INavigation } from "common/types/config";
 
-import CVScene from "./CVScene";
+import CVNavigation, { EViewPreset, EProjection } from "./CVNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,20 +50,17 @@ const _replaceNull = function(vector: number[], replacement: number)
     return vector;
 };
 
-export { EProjection };
-
-export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
 
 const _inputs = {
-    preset: types.Enum("View.Preset", EViewPreset, EViewPreset.None),
-    projection: types.Enum("View.Projection", EProjection, EProjection.Perspective),
-    zoomExtents: types.Event("Manip.ZoomExtents"),
     orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
     offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
     minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
     minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
     maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
-    maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ])
+    maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ]),
+};
+
+const _outputs = {
 };
 
 /**
@@ -78,78 +70,52 @@ const _inputs = {
 export default class CVOrbitNavigation extends CVNavigation
 {
     ins = this.addInputs<CVNavigation, typeof _inputs>(_inputs);
+    outs = this.addOutputs<CVNavigation, typeof _outputs>(_outputs);
 
     private _manip = new OrbitManipulator();
-    private _activeScene: CVScene = null;
 
-    get renderer() {
-        return this.system.getMainComponent(CRenderer);
-    }
 
     create()
     {
         super.create();
 
         this._manip.cameraMode = true;
-
-        this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
-
-        this._activeScene = this.renderer.activeSceneComponent as CVScene;
-        this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
     }
 
     dispose()
     {
         super.dispose();
-
-        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
-
-        this.renderer.off<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
-        this._activeScene = null;
     }
 
     update()
     {
+        const ins = this.ins;
         const manip = this._manip;
 
-        const component = this._activeScene ? this._activeScene.activeCameraComponent : null;
-        const camera = component ? component.camera : null;
+        const cameraComponent = this.activeCamera;
+        const camera = cameraComponent ? cameraComponent.camera : null;
 
-        const {
-            projection, preset, zoomExtents,
-            orbit, offset, minOrbit, minOffset, maxOrbit, maxOffset
-        } = this.ins;
+        const { projection, preset, orbit, offset } = ins;
 
+        // camera projection
         if (camera && projection.changed) {
             camera.setProjection(projection.value);
             manip.orthographicMode = projection.value === EProjection.Orthographic;
         }
 
+        // camera preset
         if (preset.changed && preset.value !== EViewPreset.None) {
             orbit.setValue(_orientationPreset[preset.getValidatedValue()].slice());
         }
 
-        if (camera && zoomExtents.changed) {
-            camera.updateMatrixWorld(false);
-            _box.copy(this._activeScene.boundingBox);
-            _box.applyMatrix4(camera.matrixWorldInverse);
-            _box.getSize(_size);
-            _box.getCenter(_center);
-
-            const sizeXY = 0.75 * Math.max(_size.x, _size.y, _size.z);
-
-            if (camera.isPerspectiveCamera) {
-                offset.value[2] = sizeXY + sizeXY / (2 * Math.tan(camera.fov * math.DEG2RAD * 0.5));
-            }
-            else {
-                offset.value[2] = _size.z * 2;
-            }
-
-            offset.set();
+        // zoom extent
+        if (camera && ins.zoomExtent.changed) {
+            manip.zoomExtent(this.activeScene.boundingBox, camera.fov);
         }
 
+        const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
+
+        // orbit, offset and limits
         if (orbit.changed || offset.changed) {
             manip.orbit.fromArray(orbit.value);
             manip.offset.fromArray(offset.value);
@@ -168,7 +134,7 @@ export default class CVOrbitNavigation extends CVNavigation
     tick()
     {
         const manip = this._manip;
-        const component = this._activeScene && this._activeScene.activeCameraComponent;
+        const cameraComponent = this.activeCamera;
         const ins = this.ins;
 
 
@@ -184,9 +150,9 @@ export default class CVOrbitNavigation extends CVNavigation
                 ins.preset.setValue(EViewPreset.None, true);
             }
 
-            if (component && (manipUpdated || this.updated)) {
-                const camera = component.camera;
-                const parentComponent = component.parentComponent;
+            if (cameraComponent && (manipUpdated || this.updated)) {
+                const camera = cameraComponent.camera;
+                const parentComponent = cameraComponent.parentComponent;
 
                 if (parentComponent) {
                     this._manip.toObject(parentComponent.object3D);
@@ -244,11 +210,11 @@ export default class CVOrbitNavigation extends CVNavigation
     protected onPointer(event: IPointerEvent)
     {
         const viewport = event.viewport;
-        if (viewport.viewportCamera) {
+        if (viewport.camera) {
             return;
         }
 
-        if (this.ins.enabled.value && this._activeScene && this._activeScene.activeCameraComponent) {
+        if (this.ins.enabled.value && this.activeCamera) {
             this._manip.setViewportSize(viewport.width, viewport.height);
             this._manip.onPointer(event);
             event.stopPropagation = true;
@@ -258,22 +224,16 @@ export default class CVOrbitNavigation extends CVNavigation
     protected onTrigger(event: ITriggerEvent)
     {
         const viewport = event.viewport;
-        if (viewport.viewportCamera) {
+        if (viewport.camera) {
             return;
         }
 
-        if (this.ins.enabled.value && this._activeScene && this._activeScene.activeCameraComponent) {
+        if (this.ins.enabled.value && this.activeCamera) {
             this._manip.setViewportSize(viewport.width, viewport.height);
             this._manip.onTrigger(event);
             event.stopPropagation = true;
         }
     }
 
-    protected onActiveScene(event: IActiveSceneEvent)
-    {
-        if (event.next instanceof CVScene) {
-            this._activeScene = event.next;
-            this.ins.zoomExtents.set();
-        }
-    }
+
 }

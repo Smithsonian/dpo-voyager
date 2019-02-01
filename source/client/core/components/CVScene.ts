@@ -20,7 +20,7 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent, IComponentEvent } from "@ff/graph/Component";
 
-import CScene, { IRenderSceneContext } from "@ff/scene/components/CScene";
+import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 
 import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/config";
 
@@ -36,7 +36,7 @@ const ins = {
     shader: types.Enum("Renderer.Shader", EShaderMode),
     exposure: types.Number("Renderer.Exposure", 1),
     gamma: types.Number("Renderer.Gamma", 1),
-    zoomExtents: types.Event("ZoomExtents")
+    zoomExtent: types.Event("ZoomExtent")
 };
 
 export default class CVScene extends CScene
@@ -52,6 +52,8 @@ export default class CVScene extends CScene
 
     create()
     {
+        super.create();
+
         this.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
         this.graph.components.on(CVModel, this.onModelComponent, this);
     }
@@ -69,19 +71,21 @@ export default class CVScene extends CScene
             const index = ins.shader.getValidatedValue();
             this.graph.components.getArray(CVModel).forEach(model => model.setShaderMode(index));
         }
-        if (ins.zoomExtents.changed) {
+        if (ins.zoomExtent.changed) {
             this._zoomViews = true;
             const manip = this.system.components.get(CVOrbitNavigation);
             if (manip) {
-                manip.ins.zoomExtents.set();
+                manip.ins.zoomExtent.set();
             }
         }
 
         return true;
     }
 
-    beforeRender(context: IRenderSceneContext)
+    preRender(context: IRenderContext)
     {
+        super.preRender(context);
+
         if (this.updated) {
             context.renderer.toneMappingExposure = this.ins.exposure.value;
         }

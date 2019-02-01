@@ -22,7 +22,7 @@ import "@ff/ui/Grid";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import CVOrbitNavigation, { EProjection, EViewPreset } from "../../core/components/CVOrbitNavigation";
+import CVNavigation, { EProjection, EViewPreset } from "../../core/components/CVNavigation";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
@@ -36,8 +36,6 @@ export default class ViewMenu extends Popup
     system: System;
 
     protected viewPreset: EViewPreset;
-    protected propProjection: PropertyTracker<EProjection>;
-    protected propPreset: PropertyTracker<EViewPreset>;
 
     constructor(system?: System)
     {
@@ -45,8 +43,6 @@ export default class ViewMenu extends Popup
 
         this.system = system;
         this.viewPreset = EViewPreset.None;
-        this.propProjection = new PropertyTracker(this.onPropertyChange, this);
-        this.propPreset = new PropertyTracker(this.onPropertyChange, this);
 
         this.position = "anchor";
         this.align = "center";
@@ -56,28 +52,30 @@ export default class ViewMenu extends Popup
         this.keepVisible = true;
     }
 
+    protected get navigation() {
+        return this.system.getMainComponent(CVNavigation);
+    }
+
     protected connected()
     {
         super.connected();
 
-        this.propProjection.property = this.system.components.get(CVOrbitNavigation).ins.projection;
-        this.propPreset.property = this.system.components.get(CVOrbitNavigation).ins.preset;
-        this.requestUpdate();
-
+        this.navigation.ins.projection.on("value", this.performUpdate, this);
+        this.navigation.ins.preset.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        super.disconnected();
+        this.navigation.ins.projection.off("value", this.performUpdate, this);
+        this.navigation.ins.preset.off("value", this.performUpdate, this);
 
-        this.propProjection.detach();
-        this.propPreset.detach();
+        super.disconnected();
     }
 
     protected render()
     {
-        const projection = this.propProjection.getValue();
-        const preset = this.propPreset.getValue();
+        const projection = this.navigation.ins.projection.getValidatedValue();
+        const preset = this.navigation.ins.preset.getValidatedValue();
 
         return html`
             <label>Projection</label>
@@ -119,18 +117,13 @@ export default class ViewMenu extends Popup
 
     protected onClickProjectionType(event: IButtonClickEvent)
     {
-        this.propProjection.setValue(event.target.index);
+        this.navigation.ins.projection.setValue(event.target.index);
         event.stopPropagation();
     }
 
     protected onClickViewPreset(event: IButtonClickEvent)
     {
-        this.propPreset.setValue(event.target.index);
+        this.navigation.ins.preset.setValue(event.target.index);
         event.stopPropagation();
-    }
-
-    protected onPropertyChange()
-    {
-        this.requestUpdate();
     }
 }

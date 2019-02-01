@@ -72,7 +72,7 @@
                 "minOrbit": [-90, null, null],
                 "maxOrbit": [90, null, null],
                 "minOffset": [null, null, 0.1],
-                "maxOffset": [null, null, null]
+                "maxOffset": [null, null, 10000]
             }
         },
         "interface": {

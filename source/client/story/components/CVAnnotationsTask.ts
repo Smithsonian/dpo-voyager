@@ -29,7 +29,7 @@ import CVTask from "./CVTask";
 export enum EAnnotationsTaskMode { Off, Move, Create }
 
 const _inputs = {
-    mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off)
+    mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
 };
 
 export default class CVAnnotationsTask extends CVTask
@@ -54,14 +54,14 @@ export default class CVAnnotationsTask extends CVTask
 
     deactivate()
     {
-        super.deactivate();
         this.selection.selectedComponents.off(CVAnnotations, this.onSelectAnnotations, this);
+        super.deactivate();
     }
 
     protected setActiveItem(item: NVItem)
     {
-        if (item) {
-            this.activeAnnotations = item.annotations;
+        if (item && item.hasComponent(CVAnnotations)) {
+            this.activeAnnotations = item.getComponent(CVAnnotations);
             this.selection.selectComponent(this.activeAnnotations);
         }
         else {

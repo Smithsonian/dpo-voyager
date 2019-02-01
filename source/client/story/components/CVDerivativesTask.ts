@@ -15,18 +15,29 @@
  * limitations under the License.
  */
 
+import { types } from "@ff/graph/propertyTypes";
+
 import NVItem from "../../explorer/nodes/NVItem";
 import CVModel from "../../core/components/CVModel";
 
 import DerivativesTaskView from "../ui/DerivativesTaskView";
 import CVTask from "./CVTask";
+import { IComponentEvent } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export enum EDerivativesTaskMode { Off }
+
+const _inputs = {
+    mode: types.Enum("Mode", EDerivativesTaskMode, EDerivativesTaskMode.Off),
+};
 
 export default class CVDerivativesTask extends CVTask
 {
     static readonly text: string = "Derivatives";
     static readonly icon: string = "hierarchy";
+
+    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
     protected activeModel: CVModel = null;
 
@@ -38,21 +49,30 @@ export default class CVDerivativesTask extends CVTask
     activate()
     {
         super.activate();
+        this.selection.selectedComponents.on(CVModel, this.onSelectModel, this);
     }
 
     deactivate()
     {
+        this.selection.selectedComponents.off(CVModel, this.onSelectModel, this);
         super.deactivate();
     }
 
     protected setActiveItem(item: NVItem)
     {
-        if (item && item.model) {
-            this.activeModel = item.model;
+        if (item && item.hasComponent(CVModel)) {
+            this.activeModel = item.getComponent(CVModel);
             this.selection.selectComponent(this.activeModel);
         }
         else {
             this.activeModel = null;
+        }
+    }
+
+    protected onSelectModel(event: IComponentEvent<CVModel>)
+    {
+        if (event.add && event.object.node instanceof NVItem) {
+            this.presentations.activeItem = event.object.node;
         }
     }
 }

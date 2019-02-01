@@ -15,11 +15,50 @@
  * limitations under the License.
  */
 
-import HTMLSprite from "@ff/three/HTMLSprite";
+import * as THREE from "three";
+
+import { ITypedEvent } from "@ff/core/Publisher";
+import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
+import HTMLSprite, { Viewport } from "@ff/three/HTMLSprite";
+
 import Annotation from "../models/Annotation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _vec3up = new THREE.Vector3(0, 1, 0);
+const _vec3dir = new THREE.Vector3();
+
+export { Annotation, Viewport };
+
+/**
+ * Emitted by [[AnnotationSprite]] if the user clicks on the annotation.
+ * @event
+ */
+export interface IAnnotationClickEvent extends ITypedEvent<"click">
+{
+    annotation: Annotation;
+    sprite: AnnotationSprite;
+}
+
+/**
+ * Emitted by [[AnnotationSprite]] if the user activates a link on the annotation.
+ * @event
+ */
+export interface IAnnotationLinkEvent extends ITypedEvent<"link">
+{
+    annotation: Annotation;
+    sprite: AnnotationSprite;
+    link: string;
+}
+
+/**
+ * Defines the visual appearance of an annotation.
+ * A sprite consists of a 3D (WebGL) part and a 2D (HTML) part.
+ *
+ * ### Events
+ * - *"click"* Emitted if the user clicks on the annotation.
+ * - *"link"* Emitted if the user activates a link on the annotation.
+ */
 export default class AnnotationSprite extends HTMLSprite
 {
     readonly annotation: Annotation;
@@ -28,5 +67,51 @@ export default class AnnotationSprite extends HTMLSprite
     {
         super();
         this.annotation = annotation;
+
+        this.matrixAutoUpdate = false;
+        this.update();
+    }
+
+    update()
+    {
+        const annotation = this.annotation;
+        this.position.fromArray(annotation.position);
+        _vec3dir.fromArray(annotation.direction).normalize();
+        this.quaternion.setFromUnitVectors(_vec3up, _vec3dir);
+
+        this.updateMatrix();
+    }
+
+    protected emitClickEvent()
+    {
+        const event: IAnnotationClickEvent = { type: "click", annotation: this.annotation, sprite: this };
+        this.dispatchEvent(event);
+    }
+
+    protected emitLinkEvent(link: string)
+    {
+        const event: IAnnotationLinkEvent = { type: "link", annotation: this.annotation, sprite: this, link };
+        this.dispatchEvent(event);
+    }
+}
+
+export class AnnotationElement extends CustomElement
+{
+    protected sprite: AnnotationSprite;
+
+    constructor(sprite: AnnotationSprite)
+    {
+        super();
+        this.sprite = sprite;
+    }
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-annotation");
+
+        this.setStyle({
+            position: "absolute",
+            top: "0", left: "0", right: "0", bottom: "0"
+        });
     }
 }

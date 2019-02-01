@@ -22,7 +22,7 @@ import * as helpers from "@ff/three/helpers";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent } from "@ff/graph/Component";
 
-import CObject3D from "@ff/scene/components/CObject3D";
+import CObject3D, { IPointerEvent } from "@ff/scene/components/CObject3D";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
 
@@ -98,6 +98,8 @@ export default class CVModel extends CObject3D
     get activeDerivative() {
         return this._activeDerivative;
     }
+
+    private _marker: THREE.Mesh;
 
     create()
     {
@@ -378,5 +380,24 @@ export default class CVModel extends CObject3D
             //console.log("derivative bounding box: ", box);
         });
     }
+
+    // TODO: Test
+    // protected onPointerUp(event: IPointerEvent)
+    // {
+    //     if (event.isDragging) {
+    //         return;
+    //     }
+    //
+    //     const position = event.view.pickPosition(event);
+    //     const normal = event.view.pickNormal(event);
+    //
+    //     console.log("position", position);
+    //     console.log("normal", normal);
+    //
+    //     const marker = this._marker;
+    //     marker.position.copy(position);
+    //     marker.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+    //     marker.updateMatrix();
+    // }
 }
 
