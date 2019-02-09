@@ -21,8 +21,6 @@ import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import CVModel from "../../core/components/CVModel";
-import NVItem from "../../explorer/nodes/NVItem";
 import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 
 import "./ItemList";
@@ -35,13 +33,7 @@ import TaskView from "./TaskView";
 export default class PoseTaskView extends TaskView
 {
     protected task: CVPoseTask;
-    protected activeModel: CVModel = null;
 
-    protected setActiveItem(item: NVItem)
-    {
-        this.activeModel = item ? item.model : null;
-        this.requestUpdate();
-    }
 
     protected firstConnected()
     {
@@ -63,10 +55,10 @@ export default class PoseTaskView extends TaskView
 
     protected render()
     {
-        const presentation = this.presentations.activePresentation;
-        const model = this.activeModel;
+        const activePresentation = this.task.presentationController.activePresentation;
+        const activeModel = this.task.activeModel;
 
-        if (!presentation || !model) {
+        if (!activePresentation || !activeModel) {
             return html`<div class="sv-placeholder">Please select an item to edit its pose</div>`;
         }
 
@@ -75,13 +67,14 @@ export default class PoseTaskView extends TaskView
             modeProp.setValue(EPoseManipMode.Rotate);
         }
 
-        const globalUnits = presentation.scene.ins.units;
-        const itemUnits = model.ins.units;
-        const position = model.ins.position;
-        const rotation = model.ins.rotation;
+        const globalUnits = activePresentation.scene.ins.units;
+        const itemUnits = activeModel.ins.units;
+        const position = activeModel.ins.position;
+        const rotation = activeModel.ins.rotation;
 
         return html`
             <div class="sv-commands">
+                <ff-button icon="select" text="Select" index=${EPoseManipMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button icon="rotate" text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button icon="move" text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button icon="compress" text="Center" @click=${this.onClickCenter}></ff-button>
@@ -102,12 +95,14 @@ export default class PoseTaskView extends TaskView
 
     protected onClickCenter()
     {
-        this.presentations.activeItem.model.ins.center.set();
+        const activeItem = this.task.presentationController.activeItem;
+        activeItem.model.ins.center.set();
     }
 
     protected onClickZoomViews()
     {
-        this.presentations.activePresentation.scene.ins.zoomExtent.set();
+        const activePresentation = this.task.presentationController.activePresentation;
+        activePresentation.scene.ins.zoomExtent.set();
     }
 
     protected onModeValue()

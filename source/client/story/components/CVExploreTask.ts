@@ -49,7 +49,7 @@ export default class CVExploreTask extends CVTask
     {
         if (item && item.hasComponent(CVModel)) {
             this.activeModel = item.getComponent(CVModel);
-            this.selection.selectComponent(this.activeModel);
+            this.selectionController.selectComponent(this.activeModel);
         }
         else {
             this.activeModel = null;

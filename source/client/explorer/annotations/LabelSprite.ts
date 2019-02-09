@@ -31,17 +31,13 @@ export default class LabelSprite extends AnnotationSprite
         super(annotation);
 
         this.geometry = new THREE.CylinderBufferGeometry(0.3, 0.02, 4);
-        this.material = new THREE.MeshPhongMaterial({ color: "red" });
+        this.material = new THREE.MeshPhongMaterial({ color: "green" });
         this.geometry.translate(0, 2, 0);
     }
 
     update()
     {
         super.update();
-    }
-
-    updateHTMLElement(element: LabelAnnotation, viewport: Viewport)
-    {
     }
 
     renderHTMLElement(element: HTMLElement, viewport: Viewport, camera: THREE.Camera)

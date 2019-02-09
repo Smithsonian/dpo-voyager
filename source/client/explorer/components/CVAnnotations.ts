@@ -33,16 +33,16 @@ import LabelSprite from "../annotations/LabelSprite";
 
 import Annotation, { Vector3 } from "../models/Annotation";
 import Group from "../models/Group";
+import AnnotationSprite from "../annotations/AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { Annotation, Group };
 
-export interface IAnnotationEvent extends ITypedEvent<"annotation">
+export interface IActiveAnnotationEvent extends ITypedEvent<"active-annotation">
 {
-    add: boolean;
-    remove: boolean;
-    annotation: Annotation;
+    previous: Annotation;
+    next: Annotation;
 }
 
 export interface IGroupEvent extends ITypedEvent<"group">
@@ -68,12 +68,23 @@ export default class CVAnnotations extends CObject3D
     }
     set activeAnnotation(annotation: Annotation) {
         if (annotation !== this._activeAnnotation) {
+            const previous = this._activeAnnotation;
             this._activeAnnotation = annotation;
+            this.emit<IActiveAnnotationEvent>({ type: "active-annotation", previous, next: annotation });
+
         }
+    }
+
+    constructor(id: string)
+    {
+        super(id);
+        this.addEvents("active-annotation", "group");
     }
 
     create()
     {
+        super.create();
+
         this.object3D = new HTMLSpriteGroup();
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
@@ -88,17 +99,8 @@ export default class CVAnnotations extends CObject3D
     {
         (this.object3D as HTMLSpriteGroup).dispose();
         this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-    }
 
-    createAnnotation(position: Vector3, direction: Vector3, zoneIndex: number = -1): Annotation
-    {
-        const annotation = new Annotation(uniqueId(6, this._annotations));
-        annotation.position = position;
-        annotation.direction = direction;
-        annotation.zoneIndex = zoneIndex;
-
-        this.addAnnotation(annotation);
-        return annotation;
+        super.dispose();
     }
 
     getAnnotations()
@@ -113,16 +115,25 @@ export default class CVAnnotations extends CObject3D
 
     addAnnotation(annotation: Annotation)
     {
+        if (!annotation.id) {
+            annotation.id = uniqueId(6, this._annotations);
+        }
+
         this._annotations[annotation.id] = annotation;
         this.createSprite(annotation);
-        this.emit<IAnnotationEvent>({ type: "annotation", add: true, remove: false, annotation });
     }
 
     removeAnnotation(annotation: Annotation)
     {
+        const keys = Object.keys(this._annotations);
         delete this._annotations[annotation.id];
         this.removeSprite(annotation);
-        this.emit<IAnnotationEvent>({ type: "annotation", add: false, remove: true, annotation });
+
+        if (annotation === this.activeAnnotation) {
+            // select next annotation as active annotation
+            const index = Math.min(keys.indexOf(annotation.id) + 1, keys.length - 1);
+            this.activeAnnotation = index < 0 ? null : this._annotations[keys[index]];
+        }
     }
 
     createGroup(): Group
@@ -152,6 +163,11 @@ export default class CVAnnotations extends CObject3D
     {
         delete this._groups[group.id];
         this.emit<IGroupEvent>({ type: "group", add: false, remove: true, group });
+    }
+
+    annotationUpdated(annotation: Annotation)
+    {
+        this.updateSprite(annotation);
     }
 
     deflate()
@@ -202,7 +218,15 @@ export default class CVAnnotations extends CObject3D
             return;
         }
 
-        console.log("Pick Annotation!");
+        let target = event.object3D as AnnotationSprite;
+
+        while(target && !target.isHTMLSprite) {
+            target = target.parent as AnnotationSprite;
+        }
+
+        if (target) {
+            this.activeAnnotation = target.annotation;
+        }
     }
 
     protected createSprite(annotation: Annotation)
@@ -231,6 +255,14 @@ export default class CVAnnotations extends CObject3D
             this._sprites[annotation.id] = undefined;
             (this.object3D as HTMLSpriteGroup).remove(sprite);
             this.unregisterPickableObject3D(sprite, true);
+        }
+    }
+
+    protected updateSprite(annotation: Annotation)
+    {
+        const sprite = this._sprites[annotation.id];
+        if (sprite) {
+            (this.object3D as HTMLSpriteGroup).update(sprite);
         }
     }
 }

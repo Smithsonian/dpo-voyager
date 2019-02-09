@@ -15,25 +15,14 @@
  * limitations under the License.
  */
 
-import CSelection from "@ff/graph/components/CSelection";
-
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
-
-import CVPresentationController, {
-    IActiveItemEvent,
-    IActivePresentationEvent
-} from "../../explorer/components/CVPresentationController";
-
-import NVItem from "../../explorer/nodes/NVItem";
-import CVTask from "../components/CVTask";
+import CustomElement from "@ff/ui/CustomElement";
+import CVTask, { ITaskUpdateEvent } from "../components/CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class TaskView extends CustomElement
 {
     protected task: CVTask;
-    protected presentations: CVPresentationController = null;
-    protected selection: CSelection = null;
 
     constructor(task: CVTask)
     {
@@ -48,35 +37,20 @@ export default class TaskView extends CustomElement
     protected firstConnected()
     {
         this.classList.add("sv-task-view");
-
-        this.presentations = this.system.getMainComponent(CVPresentationController);
-        this.selection = this.system.getMainComponent(CSelection);
     }
 
     protected connected()
     {
-        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.presentations.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
-
-        this.setActiveItem(this.presentations.activeItem);
+        this.task.on<ITaskUpdateEvent>("update", this.onTaskUpdate, this);
     }
 
     protected disconnected()
     {
-        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.presentations.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.task.on<ITaskUpdateEvent>("update", this.onTaskUpdate, this);
     }
 
-    protected onActivePresentation(event: IActivePresentationEvent)
+    protected onTaskUpdate(event: ITaskUpdateEvent)
     {
-    }
-
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        this.setActiveItem(event.next);
-    }
-
-    protected setActiveItem(item: NVItem)
-    {
+        this.performUpdate();
     }
 }

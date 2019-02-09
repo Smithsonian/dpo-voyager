@@ -16,7 +16,7 @@
  */
 
 import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/graph/Component";
+import Component, { ITypedEvent } from "@ff/graph/Component";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
@@ -24,9 +24,6 @@ import CVPresentationController, {
     IActiveItemEvent,
     IActivePresentationEvent
 } from "../../explorer/components/CVPresentationController";
-
-import NVItem from "../../explorer/nodes/NVItem";
-import CVPresentation from "../../explorer/components/CVPresentation";
 
 import CVTaskController from "./CVTaskController";
 import TaskView from "../ui/TaskView";
@@ -37,6 +34,10 @@ const _inputs = {
     activate: types.Event("Activate")
 };
 
+export interface ITaskUpdateEvent extends ITypedEvent<"update">
+{
+}
+
 export default class CVTask extends Component
 {
     static readonly text: string = "Task";
@@ -44,24 +45,20 @@ export default class CVTask extends Component
 
     ins = this.addInputs(_inputs);
 
-    protected tasks: CVTaskController = null;
-    protected presentations: CVPresentationController = null;
-    protected selection: CPickSelection = null;
-
-    protected activePresentation: CVPresentation = null;
-    protected activeItem: NVItem = null;
-
-    create()
-    {
-        this.tasks = this.getMainComponent(CVTaskController);
-        this.presentations = this.getMainComponent(CVPresentationController);
-        this.selection = this.getMainComponent(CPickSelection);
+    get presentationController() {
+        return this.getMainComponent(CVPresentationController);
+    }
+    get taskController() {
+        return this.getMainComponent(CVTaskController);
+    }
+    get selectionController() {
+        return this.getMainComponent(CPickSelection);
     }
 
     update()
     {
         if (this.ins.activate.changed) {
-            this.tasks.activeTask = this;
+            this.taskController.activeTask = this;
         }
 
         return false;
@@ -74,45 +71,36 @@ export default class CVTask extends Component
 
     activate()
     {
-        this.presentations.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.presentations.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        const controller = this.presentationController;
 
-        this.setActivePresentation(this.presentations.activePresentation);
-        this.activePresentation = this.presentations.activePresentation;
+        controller.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        controller.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
 
-        this.setActiveItem(this.presentations.activeItem);
-        this.activeItem = this.presentations.activeItem;
+        this.onActivePresentation({ type: "active-presentation", previous: null, next: controller.activePresentation });
+        this.onActiveItem({ type: "active-item", previous: null, next: controller.activeItem });
     }
 
     deactivate()
     {
-        this.setActivePresentation(null);
-        this.activePresentation = null;
+        const controller = this.presentationController;
 
-        this.setActiveItem(null);
-        this.activeItem = null;
+        this.onActivePresentation({ type: "active-presentation", previous: controller.activePresentation, next: null });
+        this.onActiveItem({ type: "active-item", previous: controller.activeItem, next: null });
 
-        this.presentations.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        this.presentations.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
-    }
-
-    protected setActivePresentation(presentation: CVPresentation)
-    {
-    }
-
-    protected setActiveItem(item: NVItem)
-    {
+        controller.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+        controller.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
     }
 
     protected onActivePresentation(event: IActivePresentationEvent)
     {
-        this.setActivePresentation(event.next);
-        this.activePresentation = event.next;
     }
 
     protected onActiveItem(event: IActiveItemEvent)
     {
-        this.setActiveItem(event.next);
-        this.activeItem = event.next;
+    }
+
+    protected emitUpdateEvent()
+    {
+        this.emit<ITaskUpdateEvent>({ type: "update" });
     }
 }

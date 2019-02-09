@@ -29,8 +29,12 @@ import CVInterface from "../../explorer/components/CVInterface";
 import CVModel from "../../core/components/CVModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
-import CVTask from "./CVTask";
-import CVPresentation from "../../explorer/components/CVPresentation";
+import CVTask, { ITaskUpdateEvent } from "./CVTask";
+
+import {
+    IActiveItemEvent,
+    IActivePresentationEvent
+} from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +57,15 @@ export default class CVPoseTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof ins>(ins);
 
-    protected activeModel: CVModel = null;
+    get activeModel() {
+        return this._activeModel;
+    }
+    set activeModel(model: CVModel) {
+        if (model !== this._activeModel) {
+            this._activeModel = model;
+            this.emitUpdateEvent();
+        }
+    }
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -62,6 +74,7 @@ export default class CVPoseTask extends CVTask
         return this.getMainComponent(CVInterface);
     }
 
+    private _activeModel: CVModel = null;
     private _interfaceVisible = false;
     private _gridVisible = false;
     private _viewport: Viewport = null;
@@ -76,9 +89,7 @@ export default class CVPoseTask extends CVTask
 
     activate()
     {
-        super.activate();
-
-        this.selection.selectedComponents.on(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         this.renderer.views.forEach(view => {
@@ -92,13 +103,15 @@ export default class CVPoseTask extends CVTask
             this._interfaceVisible = interface_.ins.visible.value;
             interface_.ins.visible.setValue(false);
         }
+
+        super.activate();
     }
 
     deactivate()
     {
         super.deactivate();
 
-        this.selection.selectedComponents.off(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         const renderer = this.system.components.get(CRenderer);
@@ -157,24 +170,27 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
-    protected setActivePresentation(presentation: CVPresentation)
+    protected onActivePresentation(event: IActivePresentationEvent)
     {
-        const previous = this.activePresentation;
+        const prevPresentation = event.previous;
+        const nextPresentation = event.next;
 
-        if (previous) {
-            previous.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+        if (prevPresentation) {
+            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
         }
-        if (presentation) {
-            this._gridVisible = presentation.setup.homeGrid.ins.visible.value;
-            presentation.setup.homeGrid.ins.visible.setValue(true);
+        if (nextPresentation) {
+            this._gridVisible = nextPresentation.setup.homeGrid.ins.visible.value;
+            nextPresentation.setup.homeGrid.ins.visible.setValue(true);
         }
     }
 
-    protected setActiveItem(item: NVItem)
+    protected onActiveItem(event: IActiveItemEvent)
     {
-        if (item && item.hasComponent(CVModel)) {
-            this.activeModel = item.getComponent(CVModel);
-            this.selection.selectComponent(this.activeModel);
+        const nextItem = event.next;
+
+        if (nextItem && nextItem.hasComponent(CVModel)) {
+            this.activeModel = nextItem.model;
+            this.selectionController.selectComponent(this.activeModel);
         }
         else {
             this.activeModel = null;
@@ -198,8 +214,10 @@ export default class CVPoseTask extends CVTask
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        if (event.add && event.object.node instanceof NVItem) {
-            this.presentations.activeItem = event.object.node;
+        const item = event.object.node;
+
+        if (event.add && item instanceof NVItem) {
+            this.presentationController.activeItem = item;
         }
     }
 }

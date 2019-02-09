@@ -17,15 +17,15 @@
 
 import { customElement, html } from "@ff/ui/CustomElement";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import "@ff/ui/LineEdit";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+import "@ff/ui/TextEdit";
+import "@ff/ui/Splitter";
 
-import NVItem from "../../explorer/nodes/NVItem";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
-import CVAnnotations, { Annotation } from "../../explorer/components/CVAnnotations";
 
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
-import "@ff/ui/LineEdit";
-import "@ff/ui/TextEdit";
 
 import TaskView from "./TaskView";
 
@@ -35,16 +35,7 @@ import TaskView from "./TaskView";
 export default class AnnotationsTaskView extends TaskView
 {
     protected task: CVAnnotationsTask;
-    protected activeAnnotations: CVAnnotations = null;
-    protected selectedAnnotation: Annotation = null;
 
-    protected setActiveItem(item: NVItem)
-    {
-        this.activeAnnotations = item ? item.annotations : null;
-        this.selectedAnnotation = null;
-
-        this.performUpdate();
-    }
 
     protected firstConnected()
     {
@@ -55,56 +46,100 @@ export default class AnnotationsTaskView extends TaskView
     protected connected()
     {
         super.connected();
+
         this.task.ins.mode.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.task.ins.mode.off("value", this.performUpdate, this);
+
         super.disconnected();
     }
 
     protected render()
     {
-        if (!this.activeAnnotations) {
+        const annotations = this.task.activeAnnotations;
+
+        if (!annotations) {
             return html`<div class="sv-placeholder">Please select an item to edit its annotations</div>`;
         }
 
         const modeProp = this.task.ins.mode;
-        const annotations = this.activeAnnotations.getAnnotations();
-        const annotation = this.selectedAnnotation;
+        const annotationList = annotations.getAnnotations();
+        const annotation = annotations.activeAnnotation;
 
-        const detailView = annotation ? html`<div>
+        const detailView = annotation ? html`<div class="sv-scrollable">
             <div class="sv-label">Title</div>
-            <ff-line-edit text=${annotation.title}></ff-line-edit>
+            <ff-line-edit name="title" text=${annotation.title} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Description</div>
-            <ff-text-edit text=${annotation.description}></ff-text-edit>
+            <ff-text-edit name="description" text=${annotation.description} @change=${this.onTextEdit}></ff-text-edit>
             <div class="sv-label">Groups</div>
         </div>` : null;
 
-        return html`<div class="ff-flex-row ff-flex-wrap">
-            <ff-button text="Off" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Delete" @click=${this.onClickDelete}></ff-button>  
+        return html`<div class="sv-commands">
+            <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="Move" icon="move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="Create" icon="create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="Delete" icon="trash" ?disabled=${!annotation} @click=${this.onClickDelete}></ff-button>  
         </div>
-        <sv-annotation-list .data=${annotations} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
-        ${detailView}`;
+        <div class="ff-flex-column" style="flex: 1 1 auto;">
+            <sv-annotation-list class="sv-panel-section" .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+            <ff-splitter direction="vertical"></ff-splitter>
+            <div class="sv-panel-section">${detailView}</div>
+        </div>`;
     }
 
+    protected onTextEdit(event: ILineEditChangeEvent)
+    {
+        const annotations = this.task.activeAnnotations;
+        const annotation = annotations ? annotations.activeAnnotation : null;
+
+        if (annotation) {
+            const target = event.target;
+            if (target.name === "title") {
+                annotation.title = event.detail.text;
+            }
+            else if (target.name === "description") {
+                annotation.description = event.detail.text;
+            }
+
+            this.performUpdate();
+            annotations.annotationUpdated(annotation);
+        }
+    }
+
+    /**
+     * User clicked a mode button.
+     */
     protected onClickMode(event: IButtonClickEvent)
     {
         this.task.ins.mode.setValue(event.target.index);
     }
 
+    /**
+     * User clicked the delete button.
+     */
     protected onClickDelete()
     {
+        const annotations = this.task.activeAnnotations;
 
+        if (annotations) {
+            const annotation = annotations.activeAnnotation;
+            if (annotation) {
+                annotations.removeAnnotation(annotation);
+
+            }
+        }
     }
 
+    /**
+     * User clicked an entry in the annotation list.
+     */
     protected onSelectAnnotation(event: ISelectAnnotationEvent)
     {
-        this.selectedAnnotation = event.detail.annotation;
-        this.performUpdate();
+        if (this.task.activeAnnotations) {
+            this.task.activeAnnotations.activeAnnotation = event.detail.annotation;
+        }
     }
 }

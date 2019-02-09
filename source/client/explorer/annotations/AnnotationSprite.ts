@@ -18,7 +18,7 @@
 import * as THREE from "three";
 
 import { ITypedEvent } from "@ff/core/Publisher";
-import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
+import CustomElement, { PropertyValues } from "@ff/ui/CustomElement";
 import HTMLSprite, { Viewport } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
@@ -74,12 +74,19 @@ export default class AnnotationSprite extends HTMLSprite
 
     update()
     {
+        super.update();
+
         const annotation = this.annotation;
         this.position.fromArray(annotation.position);
         _vec3dir.fromArray(annotation.direction).normalize();
         this.quaternion.setFromUnitVectors(_vec3up, _vec3dir);
 
         this.updateMatrix();
+    }
+
+    updateHTMLElement(element: AnnotationElement, viewport: Viewport)
+    {
+        element.performUpdate();
     }
 
     protected emitClickEvent()
@@ -103,6 +110,11 @@ export class AnnotationElement extends CustomElement
     {
         super();
         this.sprite = sprite;
+    }
+
+    performUpdate()
+    {
+        super.performUpdate();
     }
 
     protected firstConnected()

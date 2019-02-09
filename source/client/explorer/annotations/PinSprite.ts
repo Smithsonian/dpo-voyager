@@ -40,10 +40,6 @@ export default class PinSprite extends AnnotationSprite
     {
     }
 
-    updateHTMLElement(element: PinAnnotation, viewport: Viewport)
-    {
-    }
-
     renderHTMLElement(element: HTMLElement, viewport: Viewport, camera: THREE.Camera)
     {
         super.renderHTMLElement(element, viewport, camera);

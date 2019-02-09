@@ -90,10 +90,10 @@ export default class CVPresentation extends CRenderGraph
             this.scene.ins.activate.set();
         }
         if (ins.dump.changed) {
-            this.presentation.ins.dump.set(true);
+            this.presentation.ins.dump.set();
         }
         if (ins.download.changed) {
-            this.presentation.ins.download.set(true);
+            this.presentation.ins.download.set();
         }
 
         return true;

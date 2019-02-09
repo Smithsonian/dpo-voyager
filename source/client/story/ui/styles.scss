@@ -162,6 +162,11 @@ ff-dock-view {
     text-align: center;
   }
 
+  .ff-list {
+    box-sizing: border-box;
+    border-bottom: 2px solid $color-background-darker;
+  }
+
   .ff-button {
     margin: 2px;
   }

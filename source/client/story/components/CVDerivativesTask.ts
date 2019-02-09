@@ -23,6 +23,7 @@ import CVModel from "../../core/components/CVModel";
 import DerivativesTaskView from "../ui/DerivativesTaskView";
 import CVTask from "./CVTask";
 import { IComponentEvent } from "@ff/graph/Component";
+import { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,30 +50,34 @@ export default class CVDerivativesTask extends CVTask
     activate()
     {
         super.activate();
-        this.selection.selectedComponents.on(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
     }
 
     deactivate()
     {
-        this.selection.selectedComponents.off(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
         super.deactivate();
     }
 
-    protected setActiveItem(item: NVItem)
+    protected onActiveItem(event: IActiveItemEvent)
     {
-        if (item && item.hasComponent(CVModel)) {
-            this.activeModel = item.getComponent(CVModel);
-            this.selection.selectComponent(this.activeModel);
+        const nextItem = event.next;
+
+        if (nextItem && nextItem.hasComponent(CVModel)) {
+            this.activeModel = nextItem.getComponent(CVModel);
+            this.selectionController.selectComponent(this.activeModel);
         }
         else {
             this.activeModel = null;
         }
+
+        super.onActiveItem(event);
     }
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
         if (event.add && event.object.node instanceof NVItem) {
-            this.presentations.activeItem = event.object.node;
+            this.presentationController.activeItem = event.object.node;
         }
     }
 }

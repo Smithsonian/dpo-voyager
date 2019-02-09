@@ -15,16 +15,25 @@
  * limitations under the License.
  */
 
+import * as THREE from "three";
+
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
 
 import NVItem from "../../explorer/nodes/NVItem";
-import CVAnnotations from "../../explorer/components/CVAnnotations";
+import CVAnnotations, { IActiveAnnotationEvent } from "../../explorer/components/CVAnnotations";
 
 import AnnotationsTaskView from "../ui/AnnotationsTaskView";
-import CVTask from "./CVTask";
+import CVTask, { ITaskUpdateEvent } from "./CVTask";
+import { IPointerEvent } from "@ff/scene/RenderView";
+import CVModel from "../../core/components/CVModel";
+import { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
+import Annotation from "../../explorer/models/Annotation";
+import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _mat4 = new THREE.Matrix4();
 
 export enum EAnnotationsTaskMode { Off, Move, Create }
 
@@ -39,7 +48,17 @@ export default class CVAnnotationsTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
-    protected activeAnnotations: CVAnnotations = null;
+    private _activeAnnotations: CVAnnotations = null;
+
+    get activeAnnotations() {
+        return this._activeAnnotations;
+    }
+    set activeAnnotations(component: CVAnnotations) {
+        if (component !== this._activeAnnotations) {
+            this._activeAnnotations = component;
+            this.emitUpdateEvent();
+        }
+    }
 
     createView()
     {
@@ -49,30 +68,109 @@ export default class CVAnnotationsTask extends CVTask
     activate()
     {
         super.activate();
-        this.selection.selectedComponents.on(CVAnnotations, this.onSelectAnnotations, this);
+
+        this.selectionController.selectedComponents.on(CVAnnotations, this.onSelectAnnotations, this);
+        this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     deactivate()
     {
-        this.selection.selectedComponents.off(CVAnnotations, this.onSelectAnnotations, this);
+        this.selectionController.selectedComponents.off(CVAnnotations, this.onSelectAnnotations, this);
+        this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+
         super.deactivate();
     }
 
-    protected setActiveItem(item: NVItem)
+    createAnnotation(position: number[], direction: number[])
     {
-        if (item && item.hasComponent(CVAnnotations)) {
-            this.activeAnnotations = item.getComponent(CVAnnotations);
-            this.selection.selectComponent(this.activeAnnotations);
+        const annotations = this.activeAnnotations;
+
+        if (annotations) {
+            const annotation = new Annotation();
+            annotation.position = position;
+            annotation.direction = direction;
+            annotations.addAnnotation(annotation);
+            annotations.activeAnnotation = annotation;
+            //this.emitUpdateEvent();
         }
-        else {
-            this.activeAnnotations = null;
+    }
+
+    moveAnnotation(position: number[], direction: number[])
+    {
+        const annotations = this.activeAnnotations;
+
+        if (annotations) {
+            const annotation = annotations.activeAnnotation;
+            annotation.position = position;
+            annotation.direction = direction;
+
+            annotations.annotationUpdated(annotation);
+            this.emitUpdateEvent();
         }
+    }
+
+    removeAnnotation()
+    {
+        const annotations = this.activeAnnotations;
+
+        if (annotations) {
+            const annotation = annotations.activeAnnotation;
+            if (annotation) {
+                annotations.removeAnnotation(annotation);
+                //this.emitUpdateEvent();
+            }
+        }
+    }
+
+    protected onPointerUp(event: IPointerEvent)
+    {
+        if (event.isDragging) {
+            return;
+        }
+
+        const model = this.activeAnnotations.getComponent(CVModel);
+
+        // user clicked on model
+        if (event.component === model) {
+
+            // get click position and normal in annotation space = pose transform * model space
+            const matrix = model.object3D.matrix;
+            _mat4.getInverse(matrix).transpose();
+            const position = event.view.pickPosition(event).applyMatrix4(matrix).toArray();
+            const normal = event.view.pickNormal(event).applyMatrix4(_mat4).toArray();
+
+            const mode = this.ins.mode.getValidatedValue();
+
+            if (mode === EAnnotationsTaskMode.Create) {
+                this.createAnnotation(position, normal);
+            }
+            else if (mode === EAnnotationsTaskMode.Move) {
+                this.moveAnnotation(position, normal);
+
+            }
+        }
+    }
+
+    protected onActiveItem(event: IActiveItemEvent)
+    {
+        const prevAnnotations = event.previous ? event.previous.annotations : null;
+        const nextAnnotations = event.next ? event.next.annotations : null;
+
+        if (prevAnnotations) {
+            prevAnnotations.off<IActiveAnnotationEvent>("active-annotation", this.emitUpdateEvent, this);
+        }
+        if (nextAnnotations) {
+            nextAnnotations.on<IActiveAnnotationEvent>("active-annotation", this.emitUpdateEvent, this);
+            this.selectionController.selectComponent(nextAnnotations);
+        }
+
+        this.activeAnnotations = nextAnnotations;
     }
 
     protected onSelectAnnotations(event: IComponentEvent<CVAnnotations>)
     {
         if (event.add && event.object.node instanceof NVItem) {
-            this.presentations.activeItem = event.object.node;
+            this.presentationController.activeItem = event.object.node;
         }
     }
 }

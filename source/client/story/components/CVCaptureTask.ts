@@ -37,6 +37,7 @@ import NVItem from "../../explorer/nodes/NVItem";
 
 import CaptureTaskView from "../ui/CaptureTaskView";
 import CVTask from "./CVTask";
+import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +88,37 @@ export default class CVCaptureTask extends CVTask
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
     outs = this.addOutputs<CVTask, typeof _outputs>(_outputs);
 
+    get activeModel() {
+        return this._activeModel;
+    }
+    set activeModel(model: CVModel) {
+        if (model !== this._activeModel) {
+
+            if (this._activeModel) {
+                this.outs.ready.setValue(false);
+                this._imageElements = {};
+                this._imageDataURIs = {};
+
+            }
+            if (model) {
+                // load existing captures
+                _qualityLevels.forEach(quality => {
+                    const derivative = model.derivatives.get(EDerivativeUsage.Web2D, quality);
+                    if (derivative) {
+                        const image = derivative.findAsset(EAssetType.Image);
+                        if (image) {
+                            const imageElement = document.createElement("img");
+                            imageElement.src = resolvePathname(image.uri, model.assetPath);
+                            this._imageElements[quality] = imageElement;
+                        }
+                    }
+                });
+            }
+
+            this._activeModel = model;
+            this.emitUpdateEvent();
+        }
+    }
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -95,8 +127,7 @@ export default class CVCaptureTask extends CVTask
         return this.getMainComponent(CVInterface);
     }
 
-    protected activeModel: CVModel = null;
-
+    private _activeModel: CVModel = null;
     private _interfaceVisible = false;
     private _gridVisible = false;
     private _bracketsVisible = false;
@@ -124,13 +155,11 @@ export default class CVCaptureTask extends CVTask
 
     activate()
     {
-        super.activate();
-
-        this.selection.selectedComponents.on(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
 
         // disable selection brackets
-        this._bracketsVisible = this.selection.ins.viewportBrackets.value;
-        this.selection.ins.viewportBrackets.setValue(false);
+        this._bracketsVisible = this.selectionController.ins.viewportBrackets.value;
+        this.selectionController.ins.viewportBrackets.setValue(false);
 
         // disable interface overlay
         const interface_ = this.interface;
@@ -138,16 +167,18 @@ export default class CVCaptureTask extends CVTask
             this._interfaceVisible = interface_.ins.visible.value;
             interface_.ins.visible.setValue(false);
         }
+
+        super.activate();
     }
 
     deactivate()
     {
         super.deactivate();
 
-        this.selection.selectedComponents.off(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
 
         // restore selection brackets visibility
-        this.selection.ins.viewportBrackets.setValue(this._bracketsVisible);
+        this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
 
         // restore interface visibility
         const interface_ = this.interface;
@@ -269,50 +300,41 @@ export default class CVCaptureTask extends CVTask
         console.warn("CCaptureTask.removePictures - not implemented yet");
     }
 
-    protected setActivePresentation(presentation: CVPresentation)
+    protected onActivePresentation(event: IActivePresentationEvent)
     {
-        const previous = this.activePresentation;
+        const prevPresentation = event.previous;
+        const nextPresentation = event.next;
 
-        if (previous) {
-            previous.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+        if (prevPresentation) {
+            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
         }
-        if (presentation) {
-            this._gridVisible = presentation.setup.homeGrid.ins.visible.value;
-            presentation.setup.homeGrid.ins.visible.setValue(false);
+        if (nextPresentation) {
+            this._gridVisible = nextPresentation.setup.homeGrid.ins.visible.value;
+            nextPresentation.setup.homeGrid.ins.visible.setValue(false);
         }
+
+        super.onActivePresentation(event);
     }
 
-    protected setActiveItem(item: NVItem)
+    protected onActiveItem(event: IActiveItemEvent)
     {
-        if (item && item.model) {
-            this.activeModel = item.model;
-            this.selection.selectComponent(this.activeModel);
+        const nextItem = event.next;
 
-            // load existing captures
-            _qualityLevels.forEach(quality => {
-                const derivative = item.model.derivatives.get(EDerivativeUsage.Web2D, quality);
-                if (derivative) {
-                    const image = derivative.findAsset(EAssetType.Image);
-                    if (image) {
-                        const imageElement = document.createElement("img");
-                        imageElement.src = resolvePathname(image.uri, item.model.assetPath);
-                        this._imageElements[quality] = imageElement;
-                    }
-                }
-            })
+        if (nextItem && nextItem.hasComponent(CVModel)) {
+            this.activeModel = nextItem.model;
+            this.selectionController.selectComponent(this.activeModel);
         }
         else {
-            this.outs.ready.setValue(false);
             this.activeModel = null;
-            this._imageElements = {};
-            this._imageDataURIs = {};
         }
     }
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        if (event.add && event.object.node instanceof NVItem) {
-            this.presentations.activeItem = event.object.node;
+        const item = event.object.node;
+
+        if (event.add && item instanceof NVItem) {
+            this.presentationController.activeItem = item;
         }
     }
 }

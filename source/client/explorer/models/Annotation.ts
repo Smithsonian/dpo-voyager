@@ -16,8 +16,6 @@
  */
 
 import { Identifier } from "@ff/core/types";
-import uniqueId from "@ff/core/uniqueId";
-
 import { IAnnotation } from "common/types/item";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,8 +25,7 @@ export type Vector3 = number[];
 
 export default class Annotation
 {
-    readonly id: string;
-
+    id: string;
     title: string = "New Annotation";
     description: string = "";
     style: string = "";
@@ -40,9 +37,9 @@ export default class Annotation
     zoneIndex: number = -1;
 
 
-    constructor(id: string)
+    constructor(id?: string)
     {
-        this.id = id || uniqueId(6);
+        this.id = id || "";
     }
 
     deflate(): IAnnotation

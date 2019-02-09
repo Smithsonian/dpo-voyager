@@ -20,7 +20,6 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import NVItem from "../../explorer/nodes/NVItem";
 import CVCaptureTask from "../components/CVCaptureTask";
 
 import "./ItemList";
@@ -32,13 +31,7 @@ import TaskView from "./TaskView";
 export default class CaptureTaskView extends TaskView
 {
     protected task: CVCaptureTask;
-    protected activeItem: NVItem = null;
 
-    protected setActiveItem(item: NVItem)
-    {
-        this.activeItem = item;
-        this.requestUpdate();
-    }
 
     protected firstConnected()
     {
@@ -60,7 +53,9 @@ export default class CaptureTaskView extends TaskView
 
     protected render()
     {
-        if (!this.activeItem) {
+        const activeModel = this.task.activeModel;
+
+        if (!activeModel) {
             return html`<div class="sv-placeholder">Please select an item to take a picture</div>`;
         }
 
