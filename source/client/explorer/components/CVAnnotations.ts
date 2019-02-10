@@ -89,6 +89,17 @@ export default class CVAnnotations extends CObject3D
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
+    update(context)
+    {
+        const ins = this.ins;
+
+        if (ins.visible.changed) {
+
+        }
+
+        return super.update(context);
+    }
+
     postRender(context: IRenderContext)
     {
         const spriteGroup = this.object3D as HTMLSpriteGroup;
