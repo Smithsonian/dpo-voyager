@@ -178,7 +178,11 @@ export interface IAnnotation
     title?: string;
     description?: string;
     style?: string;
+    visible?: boolean;
     expanded?: boolean;
+    scale?: number;
+    tilt?: number;
+    azimuth?: number;
     documents?: Identifier[];
     groups?: Identifier[];
     position?: Vector3;

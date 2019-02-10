@@ -46,13 +46,66 @@ body {
   @include fullsize;
 }
 
+.sv-content-overlay {
+}
+
 .ff-viewport-overlay {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ANNOTATIONS
+
+.sv-annotation {
+  max-width: 20%;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  background: transparentize(black, 0.4);
+  cursor: pointer;
+  z-index: 1;
+
+  &.sv-expanded {
+    min-width: 120px;
+  }
+
+  &.sv-q0 {
+    transform: translate(0, -100%);
+    border-bottom: 1px solid $color-primary;
+    text-align: left;
+  }
+  &.sv-q1 {
+    transform: translate(-100%, -100%);
+    border-bottom: 1px solid $color-primary;
+    text-align: right;
+  }
+  &.sv-q2 {
+    transform: translate(-100%, 0);
+    border-top: 1px solid $color-primary;
+    text-align: right;
+  }
+  &.sv-q3 {
+    transform: translate(0, 0);
+    border-top: 1px solid $color-primary;
+    text-align: left;
+  }
+
+  .sv-title {
+    padding: 0 0 3px 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .sv-description {
+    font-size: 0.85rem;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME LAYER
 
-sv-chrome-view {
+.sv-chrome-view {
   @include fullsize;
 
   .sv-main-menu {

@@ -216,3 +216,44 @@ ff-dock-view {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// QUILL RICH TEXT EDITOR
+
+.ql-toolbar.ql-snow, .ql-container.ql-snow, .ql-editor.ql-snow {
+  border: none;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.ql-toolbar.ql-snow {
+  background: $color-background;
+
+  .ql-picker-label {
+    color: $color-icon;
+  }
+
+  .ql-stroke {
+    stroke: $color-icon;
+  }
+  .ql-fill {
+    fill: $color-icon;
+  }
+
+
+  .ql-active, *:hover {
+    color: $color-text !important;
+
+    .ql-stroke {
+      stroke: $color-text !important;
+    }
+    .ql-fill {
+      fill: $color-text !important;
+    }
+  }
+}
+
+.ql-container.ql-snow {
+}

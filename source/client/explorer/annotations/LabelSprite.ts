@@ -18,21 +18,25 @@
 import * as THREE from "three";
 
 import { customElement, html } from "@ff/ui/CustomElement";
-import AnnotationSprite, { Annotation, AnnotationElement, Viewport } from "./AnnotationSprite";
+import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-
 export default class LabelSprite extends AnnotationSprite
 {
+    protected cone: THREE.Mesh;
+
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        this.geometry = new THREE.CylinderBufferGeometry(0.3, 0.02, 4);
-        this.material = new THREE.MeshPhongMaterial({ color: "green" });
-        this.geometry.translate(0, 2, 0);
+        this.cone = new THREE.Mesh(
+            new THREE.CylinderBufferGeometry(0.3, 0.02, 4),
+            new THREE.MeshPhongMaterial({ color: "green" })
+        );
+
+        this.cone.geometry.translate(0, 2, 0);
+        this.add(this.cone);
     }
 
     update()
@@ -40,9 +44,9 @@ export default class LabelSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(element: HTMLElement, viewport: Viewport, camera: THREE.Camera)
+    renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
     {
-        super.renderHTMLElement(element, viewport, camera);
+        return super.renderHTMLElement(container, camera, this.cone);
     }
 
     createHTMLElement(): LabelAnnotation

@@ -18,7 +18,7 @@
 import * as THREE from "three";
 
 import { customElement, html } from "@ff/ui/CustomElement";
-import AnnotationSprite, { Annotation, AnnotationElement, Viewport } from "./AnnotationSprite";
+import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,9 +40,9 @@ export default class PinSprite extends AnnotationSprite
     {
     }
 
-    renderHTMLElement(element: HTMLElement, viewport: Viewport, camera: THREE.Camera)
+    renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
     {
-        super.renderHTMLElement(element, viewport, camera);
+        return super.renderHTMLElement(container, camera);
     }
 
     createHTMLElement(): PinAnnotation

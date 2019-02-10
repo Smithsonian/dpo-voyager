@@ -29,7 +29,11 @@ export default class Annotation
     title: string = "New Annotation";
     description: string = "";
     style: string = "";
+    visible: boolean = true;
     expanded: boolean = false;
+    scale: number = 1;
+    tilt: number = 0;
+    azimuth: number = 0;
     documents: Identifier[] = [];
     groups: Identifier[] = [];
     position: Vector3 = null;
@@ -55,8 +59,20 @@ export default class Annotation
         if (this.style) {
             data.style = this.style;
         }
+        if (this.visible === false) {
+            data.visible = this.visible;
+        }
         if (this.expanded) {
             data.expanded = this.expanded;
+        }
+        if (this.scale !== 1) {
+            data.scale = this.scale;
+        }
+        if (this.tilt !== 0) {
+            data.tilt = this.tilt;
+        }
+        if (this.azimuth !== 0) {
+            data.azimuth = this.azimuth;
         }
         if (this.documents.length > 0) {
             data.documents = this.documents.slice();
@@ -82,7 +98,11 @@ export default class Annotation
         this.title = data.title || "";
         this.description = data.description || "";
         this.style = data.style || "";
+        this.visible = data.visible !== undefined ? data.visible : true;
         this.expanded = data.expanded || false;
+        this.scale = data.scale !== undefined ? data.scale : 1;
+        this.tilt = data.tilt || 0;
+        this.azimuth = data.azimuth || 0;
         this.documents = data.documents ? data.documents.slice() : [];
         this.groups = data.groups ? data.groups.slice() : [];
 

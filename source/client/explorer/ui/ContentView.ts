@@ -56,34 +56,27 @@ export default class ContentView extends CustomElement
 
     protected firstConnected()
     {
-        this.setStyle({
-            position: "absolute",
-            top: "0", bottom: "0", left: "0", right: "0",
-            touchAction: "none",
-        });
-
         this.classList.add("sv-content-view");
-        this.setAttribute("touch-action", "none");
 
-        this.canvas = this.createElement("canvas", {
+        this.canvas = this.appendElement("canvas", {
             display: "block",
             width: "100%",
             height: "100%"
-        }, this);
+        });
 
-        this.overlay = this.createElement("div", {
+        this.overlay = this.appendElement("div", {
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0",
             overflow: "hidden"
-        }, this);
+        });
 
         this.overlay.classList.add("sv-content-overlay");
 
-        this.splitter = this.createElement(QuadSplitter, {
+        this.splitter = this.appendElement(QuadSplitter, {
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0",
             overflow: "hidden"
-        }, this);
+        });
 
         this.splitter.onChange = (message: IQuadSplitterChangeMessage) => {
             this.view.horizontalSplit = message.horizontalSplit;
@@ -95,10 +88,6 @@ export default class ContentView extends CustomElement
 
         this.view.layout = EQuadViewLayout.Single;
         this.splitter.layout = EQuadViewLayout.Single;
-
-        //this.view.viewports[0].enableCameraManip(true);
-        //this.view.addViewport().setSize(0, 0, 0.5, 1);
-        //this.view.addViewport().setSize(0.5, 0, 0.5, 1);
 
         this.manipTarget.next = this.view;
     }

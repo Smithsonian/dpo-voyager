@@ -61,6 +61,8 @@ export default class ChromeView extends CustomElement
         this.style.pointerEvents = "none";
         this.setAttribute("pointer-events", "none");
 
+        this.classList.add("sv-chrome-view");
+
         this._viewMenu = new ViewMenu(this.system);
         this._viewMenu.portal = this;
 

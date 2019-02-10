@@ -23,13 +23,33 @@
                 "style": {
                     "type": "string"
                 },
+                "visible": {
+                    "description": "Flag indicating whether the annotation is visible.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "expanded": {
-                    "description": "Flag indicating whether this annotation is displayed in expanded state.",
+                    "description": "Flag indicating whether the annotation is displayed in expanded state.",
                     "type": "boolean",
                     "default": false
                 },
+                "scale": {
+                    "description": "Scales the annotation relative to its default size.",
+                    "type": "number",
+                    "default": 1
+                },
+                "tilt": {
+                    "description": "Tilt angle of the annotation relative to the direction vector in degrees.",
+                    "type": "number",
+                    "default": 0
+                },
+                "azimuth": {
+                    "description": "Azimuth angle of a tilted annotation.",
+                    "type": "number",
+                    "default": 0
+                },
                 "documents": {
-                    "description": "Array of document indices, listing documents related to this annotation.",
+                    "description": "Array of document indices, listing documents related to the annotation.",
                     "type": "array",
                     "items": {
                         "type": "integer",
@@ -37,7 +57,7 @@
                     }
                 },
                 "groups": {
-                    "description": "Array of group indices, listing all groups this annotation belongs to.",
+                    "description": "Array of group indices, listing all groups the annotation belongs to.",
                     "type": "array",
                     "items": {
                         "type": "integer",

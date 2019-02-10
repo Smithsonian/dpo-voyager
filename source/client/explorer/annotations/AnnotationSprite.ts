@@ -18,8 +18,8 @@
 import * as THREE from "three";
 
 import { ITypedEvent } from "@ff/core/Publisher";
-import CustomElement, { PropertyValues } from "@ff/ui/CustomElement";
-import HTMLSprite, { Viewport } from "@ff/three/HTMLSprite";
+import CustomElement from "@ff/ui/CustomElement";
+import HTMLSprite from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
 
@@ -28,7 +28,7 @@ import Annotation from "../models/Annotation";
 const _vec3up = new THREE.Vector3(0, 1, 0);
 const _vec3dir = new THREE.Vector3();
 
-export { Annotation, Viewport };
+export { Annotation };
 
 /**
  * Emitted by [[AnnotationSprite]] if the user clicks on the annotation.
@@ -84,23 +84,25 @@ export default class AnnotationSprite extends HTMLSprite
         this.updateMatrix();
     }
 
-    updateHTMLElement(element: AnnotationElement, viewport: Viewport)
+    updateHTMLElement(element: AnnotationElement)
     {
         element.performUpdate();
     }
 
-    protected emitClickEvent()
+    emitClickEvent()
     {
         const event: IAnnotationClickEvent = { type: "click", annotation: this.annotation, sprite: this };
         this.dispatchEvent(event);
     }
 
-    protected emitLinkEvent(link: string)
+    emitLinkEvent(link: string)
     {
         const event: IAnnotationLinkEvent = { type: "link", annotation: this.annotation, sprite: this, link };
         this.dispatchEvent(event);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 export class AnnotationElement extends CustomElement
 {
@@ -110,6 +112,8 @@ export class AnnotationElement extends CustomElement
     {
         super();
         this.sprite = sprite;
+
+        this.addEventListener("click", this.onClick.bind(this));
     }
 
     performUpdate()
@@ -119,11 +123,21 @@ export class AnnotationElement extends CustomElement
 
     protected firstConnected()
     {
-        this.classList.add("sv-annotation");
+        super.firstConnected();
 
         this.setStyle({
             position: "absolute",
-            top: "0", left: "0", right: "0", bottom: "0"
+            pointerEvents: "auto"
         });
+
+        this.setAttribute("pointer-events", "auto");
+
+        this.classList.add("sv-annotation");
+    }
+
+    protected onClick(event: PointerEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitClickEvent();
     }
 }

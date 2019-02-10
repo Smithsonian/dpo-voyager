@@ -28,6 +28,7 @@ import HierarchyTreeView from "@ff/ui/graph/HierarchyTreeView";
 
 import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
+import EditorPanel from "./EditorPanel";
 import TaskPanel from "./TaskPanel";
 import LogPanel from "./LogPanel";
 import ConsolePanel from "./ConsolePanel";
@@ -107,6 +108,7 @@ export default class MainView extends CustomElement
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
+        registry.set("editor", () => new EditorPanel(system));
         registry.set("task", () => new TaskPanel(system));
         registry.set("log", () => new LogPanel(system));
         registry.set("console", () => new ConsolePanel(system));
@@ -218,6 +220,9 @@ export default class MainView extends CustomElement
                 panels: [{
                     contentId: "explorer",
                     text: "Explorer"
+                }, {
+                    contentId: "editor",
+                    text: "Editor"
                 }]
             }, {
                 type: "stack",
@@ -267,6 +272,9 @@ export default class MainView extends CustomElement
                 panels: [{
                     contentId: "explorer",
                     text: "Explorer"
+                }, {
+                    contentId: "editor",
+                    text: "Editor"
                 }]
             }, {
                 type: "stack",

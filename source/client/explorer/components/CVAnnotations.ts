@@ -20,20 +20,28 @@ import * as THREE from "three";
 import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
 
-import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
 import { ITypedEvent } from "@ff/graph/Component";
+
+import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
+import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
+
 import CObject3D, { IRenderContext, IPointerEvent } from "@ff/scene/components/CObject3D";
 
 import { IAnnotations } from "common/types/item";
 
 import CVModel from "../../core/components/CVModel";
 
+import Annotation from "../models/Annotation";
+import Group from "../models/Group";
+
+import AnnotationSprite, {
+    IAnnotationClickEvent,
+    IAnnotationLinkEvent
+} from "../annotations/AnnotationSprite";
+
 import PinSprite from "../annotations/PinSprite";
 import LabelSprite from "../annotations/LabelSprite";
-
-import Annotation, { Vector3 } from "../models/Annotation";
-import Group from "../models/Group";
-import AnnotationSprite from "../annotations/AnnotationSprite";
+import BeamSprite from "../annotations/BeamSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,8 +64,10 @@ export default class CVAnnotations extends CObject3D
 {
     private _activeAnnotation: Annotation = null;
     private _annotations: Dictionary<Annotation> = {};
-    private _sprites: Dictionary<HTMLSprite> = {};
     private _groups: Dictionary<Group> = {};
+
+    private _viewports = new Set<Viewport>();
+    private _sprites: Dictionary<HTMLSprite> = {};
 
     protected get model() {
         return this.getComponent(CVModel);
@@ -68,10 +78,21 @@ export default class CVAnnotations extends CObject3D
     }
     set activeAnnotation(annotation: Annotation) {
         if (annotation !== this._activeAnnotation) {
-            const previous = this._activeAnnotation;
-            this._activeAnnotation = annotation;
-            this.emit<IActiveAnnotationEvent>({ type: "active-annotation", previous, next: annotation });
 
+            const previous = this._activeAnnotation;
+            if (previous) {
+                previous.expanded = false;
+                this.updateSprite(previous);
+            }
+
+            this._activeAnnotation = annotation;
+
+            if (annotation) {
+                annotation.expanded = true;
+                this.updateSprite(annotation);
+            }
+
+            this.emit<IActiveAnnotationEvent>({ type: "active-annotation", previous, next: annotation });
         }
     }
 
@@ -79,6 +100,9 @@ export default class CVAnnotations extends CObject3D
     {
         super(id);
         this.addEvents("active-annotation", "group");
+
+        this.onSpriteClick = this.onSpriteClick.bind(this);
+        this.onSpriteLink = this.onSpriteLink.bind(this);
     }
 
     create()
@@ -102,14 +126,23 @@ export default class CVAnnotations extends CObject3D
 
     postRender(context: IRenderContext)
     {
+        const viewport = context.viewport;
+        if (!this._viewports.has(viewport)) {
+            viewport.on<IViewportDisposeEvent>("dispose", this.onViewportDispose, this);
+            this._viewports.add(viewport);
+        }
+
         const spriteGroup = this.object3D as HTMLSpriteGroup;
-        spriteGroup.render(context.viewport, context.camera);
+        spriteGroup.render(viewport.overlay, context.camera);
     }
 
     dispose()
     {
         (this.object3D as HTMLSpriteGroup).dispose();
         this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+
+        this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
+        this._viewports.clear();
 
         super.dispose();
     }
@@ -240,6 +273,22 @@ export default class CVAnnotations extends CObject3D
         }
     }
 
+    protected onViewportDispose(event: IViewportDisposeEvent)
+    {
+        const group = this.object3D as HTMLSpriteGroup;
+        group.disposeHTMLContainer(event.viewport.overlay);
+    }
+
+    protected onSpriteClick(event: IAnnotationClickEvent)
+    {
+        this.activeAnnotation = event.annotation;
+    }
+
+    protected onSpriteLink(event: IAnnotationLinkEvent)
+    {
+
+    }
+
     protected createSprite(annotation: Annotation)
     {
         this.removeSprite(annotation);
@@ -250,21 +299,28 @@ export default class CVAnnotations extends CObject3D
                 sprite = new PinSprite(annotation);
                 break;
             default:
-                sprite = new LabelSprite(annotation);
+                sprite = new BeamSprite(annotation);
                 break;
         }
 
+        sprite.addEventListener("click", this.onSpriteClick);
+        sprite.addEventListener("link", this.onSpriteLink);
+
         this._sprites[annotation.id] = sprite;
-        (this.object3D as HTMLSpriteGroup).add(sprite);
+        this.object3D.add(sprite);
         this.registerPickableObject3D(sprite, true);
     }
 
     protected removeSprite(annotation: Annotation)
     {
         const sprite = this._sprites[annotation.id];
+
         if (sprite) {
+            sprite.removeEventListener("click", this.onSpriteClick);
+            sprite.removeEventListener("link", this.onSpriteLink);
+
             this._sprites[annotation.id] = undefined;
-            (this.object3D as HTMLSpriteGroup).remove(sprite);
+            this.object3D.remove(sprite);
             this.unregisterPickableObject3D(sprite, true);
         }
     }
@@ -273,7 +329,7 @@ export default class CVAnnotations extends CObject3D
     {
         const sprite = this._sprites[annotation.id];
         if (sprite) {
-            (this.object3D as HTMLSpriteGroup).update(sprite);
+            sprite.update();
         }
     }
 }
