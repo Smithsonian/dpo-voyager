@@ -23,7 +23,8 @@ import CVModel from "../../core/components/CVModel";
 import DerivativesTaskView from "../ui/DerivativesTaskView";
 import CVTask from "./CVTask";
 import { IComponentEvent } from "@ff/graph/Component";
-import { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
+import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
+import CVInterface from "../../explorer/components/CVInterface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +41,24 @@ export default class CVDerivativesTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
-    protected activeModel: CVModel = null;
+    private _activeModel: CVModel = null;
+    private _interfaceVisible = false;
+    private _gridVisible = false;
+    private _annotationsVisible = false;
+
+    get activeModel() {
+        return this._activeModel;
+    }
+    set activeModel(model: CVModel) {
+        if (model !== this._activeModel) {
+            this._activeModel = model;
+            this.emitUpdateEvent();
+        }
+    }
+
+    protected get interface() {
+        return this.getMainComponent(CVInterface);
+    }
 
     createView()
     {
@@ -50,28 +68,62 @@ export default class CVDerivativesTask extends CVTask
     activate()
     {
         super.activate();
+
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
+
+        // disable interface overlay
+        const interface_ = this.interface;
+        if (interface_) {
+            this._interfaceVisible = interface_.ins.visible.value;
+            interface_.ins.visible.setValue(false);
+        }
     }
 
     deactivate()
     {
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
+
+        // restore interface visibility
+        const interface_ = this.interface;
+        if (interface_) {
+            interface_.ins.visible.setValue(this._interfaceVisible);
+        }
+
         super.deactivate();
+    }
+
+    protected onActivePresentation(event: IActivePresentationEvent)
+    {
+        const prevPresentation = event.previous;
+        const nextPresentation = event.next;
+
+        if (prevPresentation) {
+            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
+        }
+        if (nextPresentation) {
+            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            this._gridVisible = prop.value;
+            prop.setValue(false);
+
+            prop = nextPresentation.scene.ins.annotations;
+            this._annotationsVisible = prop.value;
+            prop.setValue(false);
+        }
+
+        super.onActivePresentation(event);
     }
 
     protected onActiveItem(event: IActiveItemEvent)
     {
-        const nextItem = event.next;
+        const prevModel = event.previous ? event.previous.model : null;
+        const nextModel = event.next ? event.next.model : null;
 
-        if (nextItem && nextItem.hasComponent(CVModel)) {
-            this.activeModel = nextItem.getComponent(CVModel);
-            this.selectionController.selectComponent(this.activeModel);
-        }
-        else {
-            this.activeModel = null;
+        if (nextModel) {
+            this.selectionController.selectComponent(nextModel);
         }
 
-        super.onActiveItem(event);
+        this.activeModel = nextModel;
     }
 
     protected onSelectModel(event: IComponentEvent<CVModel>)

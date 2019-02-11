@@ -209,7 +209,7 @@ export default class CVAnnotations extends CObject3D
         this.emit<IGroupEvent>({ type: "group", add: false, remove: true, group });
     }
 
-    annotationUpdated(annotation: Annotation)
+    updateAnnotation(annotation: Annotation)
     {
         this.updateSprite(annotation);
     }

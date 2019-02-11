@@ -37,7 +37,7 @@ export default class NavigatorPanel extends SystemElement
 
     protected firstConnected()
     {
-        this.classList.add("sv-scrollable", "sv-panel", "sv-navigator-panel");
+        this.classList.add("sv-panel", "sv-navigator-panel");
     }
 
     protected connected()

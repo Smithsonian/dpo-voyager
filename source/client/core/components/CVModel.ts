@@ -57,6 +57,7 @@ export interface IModelChangeEvent extends IComponentChangeEvent<CVModel>
 
 const _inputs = {
     units: types.Enum("Model.Units", EUnitType, EUnitType.cm),
+    shader: types.Enum("Model.Shader", EShaderMode, EShaderMode.Default),
     quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
     autoLoad: types.Boolean("Model.AutoLoad", true),
     position: types.Vector3("Model.Position"),
@@ -134,6 +135,15 @@ export default class CVModel extends CObject3D
             this.updateUnitScale();
             this.emit<IModelChangeEvent>({ type: "change", what: "boundingBox", component: this });
         }
+        if (ins.shader.changed) {
+            const shader = ins.shader.getValidatedValue();
+            this.object3D.traverse(object => {
+                const material = object["material"] as UberPBRMaterial;
+                if (material && material.isUberPBRMaterial) {
+                    material.setShaderMode(shader);
+                }
+            });
+        }
         if (ins.center.changed) {
             this.center();
         }
@@ -186,16 +196,6 @@ export default class CVModel extends CObject3D
 
         position.set();
         rotation.set();
-    }
-
-    setShaderMode(shaderMode: EShaderMode)
-    {
-        this.object3D.traverse(object => {
-            const material = object["material"] as UberPBRMaterial;
-            if (material && material.isUberPBRMaterial) {
-                material.setShaderMode(shaderMode);
-            }
-        });
     }
 
     deflate()

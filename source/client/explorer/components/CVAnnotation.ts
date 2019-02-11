@@ -15,38 +15,31 @@
  * limitations under the License.
  */
 
-import ExploreTaskView from "../ui/ExploreTaskView";
-import CVTask from "./CVTask";
+import CRenderGraph from "@ff/scene/components/CRenderGraph";
+
+import { IAnnotation } from "common/types/item";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVExploreTask extends CVTask
+const _inputs = {
+
+};
+
+export default class CVAnnotation extends CRenderGraph
 {
-    static readonly text: string = "Explore";
-    static readonly icon: string = "eye";
+    ins = this.addInputs(_inputs);
 
-    private _bracketsVisible = false;
-
-    createView()
+    fromData(data: IAnnotation)
     {
-        return new ExploreTaskView(this);
+
     }
 
-    activate()
+    toData(): IAnnotation
     {
-        // disable selection brackets
-        const prop = this.selectionController.ins.viewportBrackets;
-        this._bracketsVisible = prop.value;
-        prop.setValue(false);
+        const data: Partial<IAnnotation> = {
 
-        super.activate();
-    }
+        };
 
-    deactivate()
-    {
-        super.deactivate();
-
-        // restore selection brackets visibility
-        this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
+        return data as IAnnotation;
     }
 }

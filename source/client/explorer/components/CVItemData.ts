@@ -31,8 +31,8 @@ import CVAnnotations from "./CVAnnotations";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _inputs = {
-    dump: types.Event("Dump"),
-    download: types.Event("Download")
+    dump: types.Event("Data.Dump"),
+    download: types.Event("Data.Download"),
 };
 
 /**

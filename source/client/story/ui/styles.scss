@@ -124,13 +124,14 @@ ff-dock-view {
 }
 
 .sv-panel-content {
-  position: relative;
   flex: 1 1 auto;
+  position: relative;
 
   .sv-commands {
+    flex: 0 0 auto;
     display: flex;
     flex-wrap: wrap;
-    flex: 0 0 auto;
+    padding: 2px;
   }
 
   .sv-scrollable {
@@ -148,6 +149,10 @@ ff-dock-view {
   }
 }
 
+.sv-dialog {
+  padding: 4px;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TASK VIEW
 
@@ -155,7 +160,6 @@ ff-dock-view {
   @include fullsize;
   display: flex;
   flex-direction: column;
-  padding: 2px;
 
   .sv-placeholder {
     margin: 12px;
@@ -164,7 +168,6 @@ ff-dock-view {
 
   .ff-list {
     box-sizing: border-box;
-    border-bottom: 2px solid $color-background-darker;
   }
 
   .ff-button {

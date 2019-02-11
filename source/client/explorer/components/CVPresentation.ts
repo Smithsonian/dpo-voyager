@@ -30,7 +30,7 @@ import NVPresentationConfig from "../nodes/NVPresentationConfig";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const ins = {
+const _inputs = {
     activate: types.Event("Activate"),
     dump: types.Event("Dump"),
     download: types.Event("Download"),
@@ -43,7 +43,7 @@ export default class CVPresentation extends CRenderGraph
 {
     static readonly mimeType = "application/si-dpo-3d.presentation+json";
 
-    ins = this.addInputs(ins);
+    ins = this.addInputs(_inputs);
 
     get presentation() {
         return this.innerGraph.components.get(CVPresentationData);

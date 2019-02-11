@@ -32,7 +32,6 @@ import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/mod
 
 import CVModel from "../../core/components/CVModel";
 import CVInterface from "../../explorer/components/CVInterface";
-import CVPresentation from "../../explorer/components/CVPresentation";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import CaptureTaskView from "../ui/CaptureTaskView";
@@ -130,6 +129,7 @@ export default class CVCaptureTask extends CVTask
     private _activeModel: CVModel = null;
     private _interfaceVisible = false;
     private _gridVisible = false;
+    private _annotationsVisible = false;
     private _bracketsVisible = false;
 
     private _imageDataURIs: Dictionary<string> = {};
@@ -158,8 +158,9 @@ export default class CVCaptureTask extends CVTask
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
 
         // disable selection brackets
-        this._bracketsVisible = this.selectionController.ins.viewportBrackets.value;
-        this.selectionController.ins.viewportBrackets.setValue(false);
+        const prop = this.selectionController.ins.viewportBrackets;
+        this._bracketsVisible = prop.value;
+        prop.setValue(false);
 
         // disable interface overlay
         const interface_ = this.interface;
@@ -307,10 +308,16 @@ export default class CVCaptureTask extends CVTask
 
         if (prevPresentation) {
             prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
-            this._gridVisible = nextPresentation.setup.homeGrid.ins.visible.value;
-            nextPresentation.setup.homeGrid.ins.visible.setValue(false);
+            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            this._gridVisible = prop.value;
+            prop.setValue(false);
+
+            prop = nextPresentation.scene.ins.annotations;
+            this._annotationsVisible = prop.value;
+            prop.setValue(false);
         }
 
         super.onActivePresentation(event);

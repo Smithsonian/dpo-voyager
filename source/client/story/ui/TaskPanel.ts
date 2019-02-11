@@ -23,6 +23,9 @@ import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskControll
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Panel displaying the user interface for the currently active task.
+ */
 @customElement("sv-task-panel")
 export default class TaskPanel extends SystemElement
 {
@@ -46,12 +49,12 @@ export default class TaskPanel extends SystemElement
 
     protected connected()
     {
-        this.taskController.on<IActiveTaskEvent>("active-task", this.onActiveTask, this);
+        this.taskController.on<IActiveTaskEvent>("active-task", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.taskController.off<IActiveTaskEvent>("active-task", this.onActiveTask, this);
+        this.taskController.off<IActiveTaskEvent>("active-task", this.performUpdate, this);
     }
 
     protected render()
@@ -72,10 +75,5 @@ export default class TaskPanel extends SystemElement
                 ${viewElement}
             </div>
         `;
-    }
-
-    protected onActiveTask()
-    {
-        this.requestUpdate();
     }
 }

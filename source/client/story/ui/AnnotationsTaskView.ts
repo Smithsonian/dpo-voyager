@@ -37,26 +37,6 @@ export default class AnnotationsTaskView extends TaskView
     protected task: CVAnnotationsTask;
 
 
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-annotations-task-view");
-    }
-
-    protected connected()
-    {
-        super.connected();
-
-        this.task.ins.mode.on("value", this.performUpdate, this);
-    }
-
-    protected disconnected()
-    {
-        this.task.ins.mode.off("value", this.performUpdate, this);
-
-        super.disconnected();
-    }
-
     protected render()
     {
         const annotations = this.task.activeAnnotations;
@@ -69,13 +49,11 @@ export default class AnnotationsTaskView extends TaskView
         const annotationList = annotations.getAnnotations();
         const annotation = annotations.activeAnnotation;
 
-        const detailView = annotation ? html`<div class="sv-scrollable">
-            <div class="sv-label">Title</div>
+        const detailView = annotation ? html`<div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${annotation.title} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Description</div>
             <ff-text-edit name="description" text=${annotation.description} @change=${this.onTextEdit}></ff-text-edit>
-            <div class="sv-label">Groups</div>
-        </div>` : null;
+            <div class="sv-label">Groups</div>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
@@ -83,10 +61,16 @@ export default class AnnotationsTaskView extends TaskView
             <ff-button text="Create" icon="create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
             <ff-button text="Delete" icon="trash" ?disabled=${!annotation} @click=${this.onClickDelete}></ff-button>  
         </div>
-        <div class="ff-flex-column" style="flex: 1 1 auto;">
-            <sv-annotation-list class="sv-panel-section" .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
-            <ff-splitter direction="vertical"></ff-splitter>
-            <div class="sv-panel-section">${detailView}</div>
+        <div class="ff-flex-item-stretch">
+            <div class="ff-flex-column ff-fullsize">
+                <div class="sv-panel-section sv-scrollable">
+                    <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                </div>
+                <ff-splitter direction="vertical"></ff-splitter>
+                <div class="sv-panel-section sv-dialog sv-scrollable">
+                    ${detailView}
+                </div>
+            </div>
         </div>`;
     }
 
@@ -105,7 +89,7 @@ export default class AnnotationsTaskView extends TaskView
             }
 
             this.performUpdate();
-            annotations.annotationUpdated(annotation);
+            annotations.updateAnnotation(annotation);
         }
     }
 
@@ -122,15 +106,7 @@ export default class AnnotationsTaskView extends TaskView
      */
     protected onClickDelete()
     {
-        const annotations = this.task.activeAnnotations;
-
-        if (annotations) {
-            const annotation = annotations.activeAnnotation;
-            if (annotation) {
-                annotations.removeAnnotation(annotation);
-
-            }
-        }
+        this.task.removeAnnotation();
     }
 
     /**

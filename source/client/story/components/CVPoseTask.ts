@@ -76,6 +76,7 @@ export default class CVPoseTask extends CVTask
 
     private _activeModel: CVModel = null;
     private _interfaceVisible = false;
+    private _annotationsVisible = false;
     private _gridVisible = false;
     private _viewport: Viewport = null;
     private _deltaX = 0;
@@ -92,17 +93,17 @@ export default class CVPoseTask extends CVTask
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
+        // switch to quad view layout
         this.renderer.views.forEach(view => {
             if (view instanceof RenderQuadView) {
                 view.layout = EQuadViewLayout.Quad;
             }
         });
 
-        const interface_ = this.interface;
-        if (interface_) {
-            this._interfaceVisible = interface_.ins.visible.value;
-            interface_.ins.visible.setValue(false);
-        }
+        // switch off user interface
+        const prop = this.interface.ins.visible;
+        this._interfaceVisible = prop.value;
+        prop.setValue(false);
 
         super.activate();
     }
@@ -114,18 +115,15 @@ export default class CVPoseTask extends CVTask
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
-        const renderer = this.system.components.get(CRenderer);
-
-        renderer.views.forEach(view => {
+        // switch back to single view layout
+        this.renderer.views.forEach(view => {
             if (view instanceof RenderQuadView) {
                 view.layout = EQuadViewLayout.Single;
             }
         });
 
-        const interface_ = this.interface;
-        if (interface_) {
-            interface_.ins.visible.setValue(this._interfaceVisible);
-        }
+        // restore user interface
+        this.interface.ins.visible.setValue(this._interfaceVisible);
     }
 
     tick()
@@ -177,10 +175,16 @@ export default class CVPoseTask extends CVTask
 
         if (prevPresentation) {
             prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
-            this._gridVisible = nextPresentation.setup.homeGrid.ins.visible.value;
-            nextPresentation.setup.homeGrid.ins.visible.setValue(true);
+            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            this._gridVisible = prop.value;
+            prop.setValue(true);
+
+            prop = nextPresentation.scene.ins.annotations;
+            this._annotationsVisible = prop.value;
+            prop.setValue(false);
         }
     }
 

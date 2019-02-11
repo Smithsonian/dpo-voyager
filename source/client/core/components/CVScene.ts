@@ -26,6 +26,7 @@ import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/t
 
 import CVModel, { IModelChangeEvent } from "./CVModel";
 import CVOrbitNavigation from "./CVOrbitNavigation";
+import CVAnnotations from "../../explorer/components/CVAnnotations";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +34,7 @@ export { EUnitType, EShaderMode };
 
 const ins = {
     units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
+    annotations: types.Boolean("Annotations.Visible", true),
     shader: types.Enum("Renderer.Shader", EShaderMode),
     exposure: types.Number("Renderer.Exposure", 1),
     gamma: types.Number("Renderer.Gamma", 1),
@@ -67,9 +69,13 @@ export default class CVScene extends CScene
         if (ins.units.changed) {
             this.updateModels();
         }
+        if (ins.annotations.changed) {
+            const visible = ins.annotations.value;
+            this.getGraphComponents(CVAnnotations).forEach(comp => comp.ins.visible.setValue(visible));
+        }
         if (ins.shader.changed) {
-            const index = ins.shader.getValidatedValue();
-            this.graph.components.getArray(CVModel).forEach(model => model.setShaderMode(index));
+            const shader = ins.shader.getValidatedValue();
+            this.getGraphComponents(CVModel).forEach(model => model.ins.shader.setValue(shader));
         }
         if (ins.zoomExtent.changed) {
             this._zoomViews = true;

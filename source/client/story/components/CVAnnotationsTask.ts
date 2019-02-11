@@ -19,17 +19,16 @@ import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
+import { IPointerEvent } from "@ff/scene/RenderView";
 
+import CVModel from "../../core/components/CVModel";
+import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
 import NVItem from "../../explorer/nodes/NVItem";
 import CVAnnotations, { IActiveAnnotationEvent } from "../../explorer/components/CVAnnotations";
+import Annotation from "../../explorer/models/Annotation";
 
 import AnnotationsTaskView from "../ui/AnnotationsTaskView";
-import CVTask, { ITaskUpdateEvent } from "./CVTask";
-import { IPointerEvent } from "@ff/scene/RenderView";
-import CVModel from "../../core/components/CVModel";
-import { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
-import Annotation from "../../explorer/models/Annotation";
-import uniqueId from "@ff/core/uniqueId";
+import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,13 +48,17 @@ export default class CVAnnotationsTask extends CVTask
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
     private _activeAnnotations: CVAnnotations = null;
+    private _bracketsVisible = false;
+    private _annotationsVisible = false;
+    private _gridVisible = false;
+
 
     get activeAnnotations() {
         return this._activeAnnotations;
     }
-    set activeAnnotations(component: CVAnnotations) {
-        if (component !== this._activeAnnotations) {
-            this._activeAnnotations = component;
+    set activeAnnotations(annotations: CVAnnotations) {
+        if (annotations !== this._activeAnnotations) {
+            this._activeAnnotations = annotations;
             this.emitUpdateEvent();
         }
     }
@@ -71,10 +74,18 @@ export default class CVAnnotationsTask extends CVTask
 
         this.selectionController.selectedComponents.on(CVAnnotations, this.onSelectAnnotations, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+
+        // disable selection brackets
+        const prop = this.selectionController.ins.viewportBrackets;
+        this._bracketsVisible = prop.value;
+        prop.setValue(false);
     }
 
     deactivate()
     {
+        // restore selection brackets visibility
+        this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
+
         this.selectionController.selectedComponents.off(CVAnnotations, this.onSelectAnnotations, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
@@ -91,21 +102,22 @@ export default class CVAnnotationsTask extends CVTask
             annotation.direction = direction;
             annotations.addAnnotation(annotation);
             annotations.activeAnnotation = annotation;
-            //this.emitUpdateEvent();
         }
     }
 
     moveAnnotation(position: number[], direction: number[])
     {
         const annotations = this.activeAnnotations;
-
         if (annotations) {
             const annotation = annotations.activeAnnotation;
-            annotation.position = position;
-            annotation.direction = direction;
 
-            annotations.annotationUpdated(annotation);
-            this.emitUpdateEvent();
+            if (annotation) {
+                annotation.position = position;
+                annotation.direction = direction;
+
+                annotations.updateAnnotation(annotation);
+                this.emitUpdateEvent();
+            }
         }
     }
 
@@ -117,7 +129,6 @@ export default class CVAnnotationsTask extends CVTask
             const annotation = annotations.activeAnnotation;
             if (annotation) {
                 annotations.removeAnnotation(annotation);
-                //this.emitUpdateEvent();
             }
         }
     }
@@ -146,8 +157,27 @@ export default class CVAnnotationsTask extends CVTask
             }
             else if (mode === EAnnotationsTaskMode.Move) {
                 this.moveAnnotation(position, normal);
-
             }
+        }
+    }
+
+    protected onActivePresentation(event: IActivePresentationEvent)
+    {
+        const prevPresentation = event.previous;
+        const nextPresentation = event.next;
+
+        if (prevPresentation) {
+            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
+        }
+        if (nextPresentation) {
+            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            this._gridVisible = prop.value;
+            prop.setValue(false);
+
+            prop = nextPresentation.scene.ins.annotations;
+            this._annotationsVisible = prop.value;
+            prop.setValue(true);
         }
     }
 

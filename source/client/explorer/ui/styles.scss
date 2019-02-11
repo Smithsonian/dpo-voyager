@@ -110,6 +110,7 @@ body {
 
   .sv-main-menu {
     position: absolute;
+    z-index: 1;
     margin: 4px;
     display: flex;
 
@@ -124,9 +125,8 @@ body {
     width: 44px;
     height: 44px;
     margin: 4px;
-    padding: 6px 0 0 0;
-    border-radius: 50% !important;
-    font-size: 19px;
+    border-radius: 50%;
+    font-size: 18px;
     background: $menu-color-background;
     color: transparentize($menu-color-text, 0.4);
     transition: color $tx-short, background-color $tx-short;
@@ -153,9 +153,11 @@ body {
 
   .sv-logo {
     position: absolute;
+    z-index: 1;
     top: 8px;
     right: 8px;
     width: 190px;
+    user-select: none;
   }
 }
 

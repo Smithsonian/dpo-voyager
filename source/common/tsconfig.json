@@ -5,6 +5,6 @@
         "module": "commonjs",
         "sourceMap": true,
 
-        "outDir": "../../services/server/bin/node_modules/common",
+        "outDir": "../../services/server/bin/node_modules/common"
     }
 }

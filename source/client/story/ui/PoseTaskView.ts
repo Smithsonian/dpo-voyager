@@ -35,24 +35,6 @@ export default class PoseTaskView extends TaskView
     protected task: CVPoseTask;
 
 
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-pose-task-view");
-    }
-
-    protected connected()
-    {
-        super.connected();
-        this.task.ins.mode.on("value", this.onModeValue, this);
-    }
-
-    protected disconnected()
-    {
-        this.task.ins.mode.off("value", this.onModeValue, this);
-        super.disconnected();
-    }
-
     protected render()
     {
         const activePresentation = this.task.presentationController.activePresentation;
@@ -80,7 +62,7 @@ export default class PoseTaskView extends TaskView
                 <ff-button icon="compress" text="Center" @click=${this.onClickCenter}></ff-button>
                 <ff-button icon="expand" text="Zoom Extent" @click=${this.onClickZoomViews}></ff-button>
             </div>
-            <div class="sv-scrollable">
+            <div class="sv-panel-section sv-dialog sv-scrollable">
                 <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
                 <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
                 <sv-property-view .property=${position}></sv-property-view>
@@ -103,10 +85,5 @@ export default class PoseTaskView extends TaskView
     {
         const activePresentation = this.task.presentationController.activePresentation;
         activePresentation.scene.ins.zoomExtent.set();
-    }
-
-    protected onModeValue()
-    {
-        this.requestUpdate();
     }
 }

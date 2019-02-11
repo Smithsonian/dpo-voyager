@@ -33,12 +33,6 @@ export default class CaptureTaskView extends TaskView
     protected task: CVCaptureTask;
 
 
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("sv-capture-task-view");
-    }
-
     protected connected()
     {
         super.connected();
@@ -71,7 +65,7 @@ export default class CaptureTaskView extends TaskView
                 <ff-button text="Save" icon="save" ?disabled=${!ready} @click=${this.onClickSave}></ff-button>
                 <ff-button text="Download" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
             </div>
-            <div class="sv-scrollable">
+            <div class="sv-panel-section sv-dialog sv-scrollable">
                 <sv-property-view .property=${ins.type}></sv-property-view>
                 <sv-property-view .property=${ins.quality}></sv-property-view>
                 ${image}

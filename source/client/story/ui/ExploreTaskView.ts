@@ -17,13 +17,6 @@
 
 import { customElement, html } from "@ff/ui/CustomElement";
 
-import "@ff/ui/Splitter";
-import "@ff/ui/Button";
-
-import NVItem from "../../explorer/nodes/NVItem";
-import CVExploreTask from "../components/CVExploreTask";
-
-import "./ItemList";
 import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,5 +24,8 @@ import TaskView from "./TaskView";
 @customElement("sv-explore-task-view")
 export default class ExploreTaskView extends TaskView
 {
-
+    protected render()
+    {
+        return html`<div class="sv-placeholder">Preview mode.</div>`;
+    }
 }

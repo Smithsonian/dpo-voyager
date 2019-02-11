@@ -19,7 +19,7 @@ import System from "@ff/graph/System";
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
-import CVPresentationController from "../components/CVPresentationController";
+import CVPresentationController, { IActivePresentationEvent } from "../components/CVPresentationController";
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
 
@@ -46,8 +46,8 @@ export default class ChromeView extends CustomElement
         this.system = system;
     }
 
-    protected get activePresentation() {
-        return this.system.getMainComponent(CVPresentationController).activePresentation;
+    protected get presentationController() {
+        return this.system.getMainComponent(CVPresentationController);
     }
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
@@ -72,6 +72,13 @@ export default class ChromeView extends CustomElement
 
     protected connected()
     {
+        const controller = this.presentationController;
+        controller.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+
+        const presentation = controller.activePresentation;
+        if (presentation) {
+            presentation.scene.ins.annotations.on("value", this.performUpdate, this);
+        }
         const iface = this.interface;
         iface.ins.visible.on("value", this.performUpdate, this);
         iface.ins.logo.on("value", this.performUpdate, this);
@@ -82,6 +89,14 @@ export default class ChromeView extends CustomElement
 
     protected disconnected()
     {
+        const controller = this.presentationController;
+        controller.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
+
+        const presentation = controller.activePresentation;
+        if (presentation) {
+            presentation.scene.ins.annotations.off("value", this.performUpdate, this);
+        }
+
         const iface = this.interface;
         iface.ins.visible.off("value", this.performUpdate, this);
         iface.ins.logo.off("value", this.performUpdate, this);
@@ -99,9 +114,9 @@ export default class ChromeView extends CustomElement
         const fullscreenAvailable = iface.outs.fullscreenAvailable.value;
         const readerVisible = this.reader.ins.visible.value;
 
-        const activePresentation = this.activePresentation;
+        const activePresentation = this.presentationController.activePresentation;
         const annotationsVisible = activePresentation
-            ? activePresentation.getInnerComponent(CVAnnotations).ins.visible.value : false;
+            ? activePresentation.scene.ins.annotations.value : false;
 
         if (!interfaceVisible) {
             return html``;
@@ -132,10 +147,11 @@ export default class ChromeView extends CustomElement
 
     protected onClickAnnotations()
     {
-        const activePresentation = this.activePresentation;
+        const activePresentation = this.presentationController.activePresentation;
+
         if (activePresentation) {
-            const visible = activePresentation.getInnerComponent(CVAnnotations).ins.visible.value;
-            activePresentation.getInnerComponents(CVAnnotations).forEach(comp => comp.ins.visible.setValue(!visible));
+            const prop = activePresentation.scene.ins.annotations;
+            prop.setValue(!prop.value);
         }
     }
 
@@ -148,5 +164,17 @@ export default class ChromeView extends CustomElement
     protected onClickFullscreen()
     {
         this.interface.toggleFullscreen();
+    }
+
+    protected onActivePresentation(event: IActivePresentationEvent)
+    {
+        if (event.previous) {
+            event.previous.scene.ins.annotations.off("value", this.performUpdate, this);
+        }
+        if (event.next) {
+            event.next.scene.ins.annotations.on("value", this.performUpdate, this);
+        }
+
+        this.performUpdate();
     }
 }
