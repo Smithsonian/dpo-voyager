@@ -28,6 +28,8 @@ import Document from "../models/Document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { Document };
+
 export interface IDocumentEvent extends ITypedEvent<"document">
 {
     add: boolean;

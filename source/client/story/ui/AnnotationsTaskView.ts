@@ -22,11 +22,10 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import "@ff/ui/TextEdit";
 import "@ff/ui/Splitter";
 
-import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
-
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
+import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
 import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
