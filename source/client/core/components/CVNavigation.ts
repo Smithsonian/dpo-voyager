@@ -39,6 +39,8 @@ const _inputs = {
 
 export default class CVNavigation extends Component
 {
+    static readonly typeName: string = "CVNavigation";
+
     ins = this.addInputs(_inputs);
 
     protected activeScene: CVScene = null;

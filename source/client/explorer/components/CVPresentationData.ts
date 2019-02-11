@@ -39,6 +39,7 @@ const _inputs = {
 
 export default class CVPresentationData extends Component
 {
+    static readonly typeName: string = "CVPresentationData";
     static readonly mimeType = "application/si-dpo-3d.presentation+json";
 
     ins = this.addInputs(_inputs);

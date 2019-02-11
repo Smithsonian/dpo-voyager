@@ -75,6 +75,7 @@ export type ExplorerActions = Actions<CVPresentationController>;
  */
 export default class CVPresentationController extends CController<CVPresentationController>
 {
+    static readonly typeName: string = "CVPresentationController";
     static readonly isSystemSingleton = true;
 
     private _activePresentation: CVPresentation = null;

@@ -32,6 +32,8 @@ const _inputs = {
 
 export default class CVTapeTool extends Component
 {
+    static readonly typeName: string = "CVTapeTool";
+
     ins = this.addInputs(_inputs);
 
     fromData(data: ITapeTool)

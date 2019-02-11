@@ -22,6 +22,8 @@ import CVTask from "./CVTask";
 
 export default class CVExploreTask extends CVTask
 {
+    static readonly typeName: string = "CVExploreTask";
+
     static readonly text: string = "Explore";
     static readonly icon: string = "eye";
 

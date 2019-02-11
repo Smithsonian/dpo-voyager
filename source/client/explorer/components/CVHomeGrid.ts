@@ -50,7 +50,7 @@ const _outputs = {
 
 export default class CVHomeGrid extends CObject3D
 {
-    static readonly type: string = "CVHomeGrid";
+    static readonly typeName: string = "CVHomeGrid";
 
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
     outs = this.addOutputs<CObject3D, typeof _outputs>(_outputs);

@@ -62,6 +62,8 @@ export interface IGroupEvent extends ITypedEvent<"group">
 
 export default class CVAnnotations extends CObject3D
 {
+    static readonly typeName: string = "CVAnnotations";
+
     private _activeAnnotation: Annotation = null;
     private _annotations: Dictionary<Annotation> = {};
     private _groups: Dictionary<Group> = {};

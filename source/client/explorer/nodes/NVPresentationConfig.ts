@@ -42,6 +42,8 @@ interface IGlobalExplorerData
 
 export default class NVPresentationConfig extends NTransform
 {
+    static readonly typeName: string = "NVPresentationConfig";
+
     private _isActive = false;
 
     private _data: IGlobalExplorerData = {

@@ -33,6 +33,8 @@ const _inputs = {
 
 export default class CVGroundPlane extends CObject3D
 {
+    static readonly typeName: string = "CVGroundPlane";
+
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
 
     update()

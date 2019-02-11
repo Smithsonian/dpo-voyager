@@ -29,6 +29,8 @@ const _inputs = {
 
 export default class CVSectionTool extends Component
 {
+    static readonly typeName: string = "CVSectionTool";
+
     ins = this.addInputs(_inputs);
 
     fromData(data: ISectionTool)

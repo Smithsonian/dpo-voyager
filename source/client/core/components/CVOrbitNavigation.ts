@@ -69,6 +69,8 @@ const _outputs = {
  */
 export default class CVOrbitNavigation extends CVNavigation
 {
+    static readonly typeName: string = "CVOrbitNavigation";
+
     ins = this.addInputs<CVNavigation, typeof _inputs>(_inputs);
     outs = this.addOutputs<CVNavigation, typeof _outputs>(_outputs);
 

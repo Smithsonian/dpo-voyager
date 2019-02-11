@@ -33,6 +33,8 @@ const _outputs = {
 
 export default class CVInterface extends Component
 {
+    static readonly typeName: string = "CVInterface";
+
     ins = this.addInputs(_inputs);
     outs = this.addOutputs(_outputs);
 

@@ -35,6 +35,8 @@ export type TaskActions = Actions<CVTaskController>;
 
 export default class CVTaskController extends CController<CVTaskController>
 {
+    static readonly typeName: string = "CVTaskController";
+
     private _taskNode: Node = null;
     private _tasks: CVTask[] = [];
     private _activeTask: CVTask = null;

@@ -32,6 +32,8 @@ const _inputs = {
 
 export default class CVReader extends Component
 {
+    static readonly typeName: string = "CVReader";
+
     ins = this.addInputs(_inputs);
 
 

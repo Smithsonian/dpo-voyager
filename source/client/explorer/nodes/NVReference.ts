@@ -25,6 +25,8 @@ import CVReference from "../components/CVReference";
 
 export default class NVReference extends NTransform
 {
+    static readonly typeName: string = "NVReference";
+
     get reference() {
         return this.getComponent(CVReference);
     }

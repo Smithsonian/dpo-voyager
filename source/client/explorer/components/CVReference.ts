@@ -28,6 +28,8 @@ const _inputs = {
 
 export default class CVReference extends Component
 {
+    static readonly typeName: string = "CVReference";
+
     ins = this.addInputs(_inputs);
 
     update(context)

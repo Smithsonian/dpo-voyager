@@ -81,6 +81,8 @@ const _outputs = {
 
 export default class CVCaptureTask extends CVTask
 {
+    static readonly typeName: string = "CVCaptureTask";
+
     static readonly text: string = "Capture";
     static readonly icon: string = "camera";
 

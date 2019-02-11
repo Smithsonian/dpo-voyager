@@ -28,6 +28,8 @@ import CVDocuments from "../components/CVDocuments";
 
 export default class NVItem extends NTransform
 {
+    static readonly typeName: string = "NVItem";
+
     get item() {
         return this.getComponent(CVItemData);
     }

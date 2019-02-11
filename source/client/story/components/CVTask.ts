@@ -40,6 +40,8 @@ export interface ITaskUpdateEvent extends ITypedEvent<"update">
 
 export default class CVTask extends Component
 {
+    static readonly typeName: string = "CVTask";
+
     static readonly text: string = "Task";
     static readonly icon: string = "fa fa-tasks";
 

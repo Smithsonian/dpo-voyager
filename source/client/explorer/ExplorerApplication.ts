@@ -18,7 +18,7 @@
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
-import ClassRegistry from "@ff/core/ClassRegistry";
+import TypeRegistry from "@ff/core/TypeRegistry";
 
 import System from "@ff/graph/System";
 import CPulse from "@ff/graph/components/CPulse";
@@ -93,7 +93,7 @@ export default class ExplorerApplication
         console.log(ExplorerApplication.splashMessage);
 
         // register components
-        const registry = new ClassRegistry();
+        const registry = new TypeRegistry();
 
         registry.add(graphComponents);
         registry.add(sceneComponents);

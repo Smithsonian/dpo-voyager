@@ -33,6 +33,8 @@ const _inputs = {
 
 export default class CVDocumentsTask extends CVTask
 {
+    static readonly typeName: string = "CVDocumentsTask";
+
     static readonly text: string = "Documents";
     static readonly icon: string = "document";
 

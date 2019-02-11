@@ -42,6 +42,8 @@ const _inputs = {
 
 export default class CVAnnotationsTask extends CVTask
 {
+    static readonly typeName: string = "CVAnnotationsTask";
+
     static readonly text: string = "Annotations";
     static readonly icon: string = "comment";
 

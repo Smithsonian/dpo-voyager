@@ -48,6 +48,7 @@ const _inputs = {
 
 export default class CVStoryController extends CController<CVStoryController>
 {
+    static readonly typeName: string = "CVStoryController";
     static readonly isSystemSingleton = true;
 
     ins = this.addInputs(_inputs);

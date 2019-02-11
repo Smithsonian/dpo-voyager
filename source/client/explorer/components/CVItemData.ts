@@ -41,6 +41,7 @@ const _inputs = {
  */
 export default class CVItemData extends Component
 {
+    static readonly typeName: string = "CVItemData";
     static readonly mimeType = "application/si-dpo-3d.item+json";
 
     ins = this.addInputs(_inputs);

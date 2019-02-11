@@ -28,7 +28,7 @@ export type MiniActions = Actions<CMini>;
  */
 export default class CMini extends CController<CMini>
 {
-    static readonly type: string = "CMini";
+    static readonly typeName: string = "CMini";
 
     loadItem(itemUrl: string, templateUrl?: string)
     {

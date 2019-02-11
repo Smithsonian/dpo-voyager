@@ -27,6 +27,8 @@ const _inputs = {
 
 export default class CVAnnotation extends CRenderGraph
 {
+    static readonly typeName: string = "CVAnnotation";
+
     ins = this.addInputs(_inputs);
 
     fromData(data: IAnnotation)

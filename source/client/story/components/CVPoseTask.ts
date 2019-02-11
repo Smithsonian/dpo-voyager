@@ -52,6 +52,8 @@ const ins = {
 
 export default class CVPoseTask extends CVTask
 {
+    static readonly typeName: string = "CVPoseTask";
+
     static readonly text: string = "Pose";
     static readonly icon: string = "move";
 

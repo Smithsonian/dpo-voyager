@@ -60,6 +60,8 @@ export type ReferenceCallback = (index: number, graph: Graph, assetPath: string)
 
 export default class NVPresentationScene extends NScene
 {
+    static readonly typeName: string = "NVPresentationScene";
+
     url: string;
     assetPath: string;
 
@@ -264,7 +266,7 @@ export default class NVPresentationScene extends NScene
                 break;
 
             default:
-                throw new Error(`unsupported light type: '${node.className}'`);
+                throw new Error(`unsupported light type: '${node.typeName}'`);
         }
 
         return data as ILight;

@@ -28,6 +28,8 @@ import Component from "@ff/graph/Component";
  */
 export default class CVCollection<T extends { id?: string }> extends Component
 {
+    static readonly typeName: string = "CVCollection";
+
     protected items: Dictionary<T> = {};
 
     /**

@@ -43,7 +43,7 @@ const ins = {
 
 export default class CVScene extends CScene
 {
-    static readonly type: string = "CVScene";
+    static readonly typeName: string = "CVScene";
 
     ins = this.addInputs<CScene, typeof ins>(ins);
 

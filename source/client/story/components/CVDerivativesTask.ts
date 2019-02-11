@@ -36,6 +36,8 @@ const _inputs = {
 
 export default class CVDerivativesTask extends CVTask
 {
+    static readonly typeName: string = "CVDerivativesTask";
+
     static readonly text: string = "Derivatives";
     static readonly icon: string = "hierarchy";
 

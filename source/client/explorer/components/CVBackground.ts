@@ -34,6 +34,8 @@ const _inputs = {
 
 export default class CVBackground extends CObject3D
 {
+    static readonly typeName: string = "CVBackground";
+
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
 
     fromData(data: IBackground)

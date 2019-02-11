@@ -76,6 +76,8 @@ const _outputs = {
  */
 export default class CVModel extends CObject3D
 {
+    static readonly typeName: string = "CVModel";
+
     protected static readonly rotationOrder = "ZYX";
 
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
