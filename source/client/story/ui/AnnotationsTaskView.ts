@@ -44,15 +44,20 @@ export default class AnnotationsTaskView extends TaskView
             return html`<div class="sv-placeholder">Please select an item to edit its annotations</div>`;
         }
 
+        const inProps = annotations.ins;
         const modeProp = this.task.ins.mode;
         const annotationList = annotations.getAnnotations();
         const annotation = annotations.activeAnnotation;
 
-        const detailView = annotation ? html`<div class="sv-label">Title</div>
-            <ff-line-edit name="title" text=${annotation.title} @change=${this.onTextEdit}></ff-line-edit>
+
+        const detailView = annotation ? html`
+            <sv-property-view .property=${inProps.style}></sv-property-view>
+            <sv-property-view .property=${inProps.scale}></sv-property-view>
+            <sv-property-view .property=${inProps.offset}></sv-property-view>
+            <div class="sv-label">Title</div>
+            <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Description</div>
-            <ff-text-edit name="description" text=${annotation.description} @change=${this.onTextEdit}></ff-text-edit>
-            <div class="sv-label">Groups</div>` : null;
+            <ff-text-edit name="description" text=${inProps.description.value} @change=${this.onTextEdit}></ff-text-edit>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
@@ -62,11 +67,11 @@ export default class AnnotationsTaskView extends TaskView
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="sv-panel-section sv-scrollable">
+                <div class="sv-panel-section sv-scrollable" style="flex-basis: 30%">
                     <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
-                <div class="sv-panel-section sv-dialog sv-scrollable">
+                <div class="sv-panel-section sv-dialog sv-scrollable" style="flex-basis: 70%">
                     ${detailView}
                 </div>
             </div>
@@ -76,19 +81,13 @@ export default class AnnotationsTaskView extends TaskView
     protected onTextEdit(event: ILineEditChangeEvent)
     {
         const annotations = this.task.activeAnnotations;
-        const annotation = annotations ? annotations.activeAnnotation : null;
 
-        if (annotation) {
-            const target = event.target;
-            if (target.name === "title") {
-                annotation.title = event.detail.text;
-            }
-            else if (target.name === "description") {
-                annotation.description = event.detail.text;
-            }
-
-            this.performUpdate();
-            annotations.updateAnnotation(annotation);
+        const target = event.target;
+        if (target.name === "title") {
+            annotations.ins.title.setValue(event.detail.text);
+        }
+        else if (target.name === "description") {
+            annotations.ins.description.setValue(event.detail.text);
         }
     }
 

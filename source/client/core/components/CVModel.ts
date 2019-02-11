@@ -19,10 +19,9 @@ import * as THREE from "three";
 
 import * as helpers from "@ff/three/helpers";
 
-import { types } from "@ff/graph/propertyTypes";
-import { IComponentChangeEvent } from "@ff/graph/Component";
+import { types, IComponentChangeEvent } from "@ff/graph/Component";
 
-import CObject3D, { IPointerEvent } from "@ff/scene/components/CObject3D";
+import CObject3D from "@ff/scene/components/CObject3D";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
 

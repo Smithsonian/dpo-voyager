@@ -15,42 +15,35 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
 import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
 
-import { ITypedEvent } from "@ff/graph/Component";
+import { ITypedEvent, types } from "@ff/graph/Component";
 
 import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
 import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
 
-import CObject3D, { IRenderContext, IPointerEvent } from "@ff/scene/components/CObject3D";
+import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/CObject3D";
 
 import { IAnnotations } from "common/types/item";
 
 import CVModel from "../../core/components/CVModel";
 
-import Annotation from "../models/Annotation";
+import Annotation, { EAnnotationStyle } from "../models/Annotation";
 import Group from "../models/Group";
 
-import AnnotationSprite, {
-    IAnnotationClickEvent,
-    IAnnotationLinkEvent
-} from "../annotations/AnnotationSprite";
+import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
 
 import PinSprite from "../annotations/PinSprite";
-import LabelSprite from "../annotations/LabelSprite";
 import BeamSprite from "../annotations/BeamSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { Annotation, Group };
 
-export interface IActiveAnnotationEvent extends ITypedEvent<"active-annotation">
+export interface IAnnotationsUpdateEvent extends ITypedEvent<"update">
 {
-    previous: Annotation;
-    next: Annotation;
+    annotation: Annotation;
 }
 
 export interface IGroupEvent extends ITypedEvent<"group">
@@ -60,9 +53,23 @@ export interface IGroupEvent extends ITypedEvent<"group">
     group: Group;
 }
 
+
+const _inputs = {
+    unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 }),
+    title: types.String("Annotation.Title"),
+    description: types.String("Annotation.Description"),
+    style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Default),
+    scale: types.Scale("Annotation.Scale", 1),
+    offset: types.Number("Annotation.Offset"),
+    tilt: types.Number("Annotation.Tilt"),
+    azimuth: types.Number("Annotation.Azimuth"),
+};
+
 export default class CVAnnotations extends CObject3D
 {
     static readonly typeName: string = "CVAnnotations";
+
+    ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
 
     private _activeAnnotation: Annotation = null;
     private _annotations: Dictionary<Annotation> = {};
@@ -94,7 +101,14 @@ export default class CVAnnotations extends CObject3D
                 this.updateSprite(annotation);
             }
 
-            this.emit<IActiveAnnotationEvent>({ type: "active-annotation", previous, next: annotation });
+            const ins = this.ins;
+            ins.title.setValue(annotation ? annotation.title : "", true);
+            ins.description.setValue(annotation ? annotation.description : "", true);
+            ins.style.setValue(annotation ? annotation.style : EAnnotationStyle.Default, true);
+            ins.scale.setValue(annotation ? annotation.scale : 1, true);
+            ins.offset.setValue(annotation ? annotation.offset : 0, true);
+
+            this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
         }
     }
 
@@ -113,14 +127,51 @@ export default class CVAnnotations extends CObject3D
 
         this.object3D = new HTMLSpriteGroup();
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+
+        this.model.outs.unitScale.linkTo(this.ins.unitScale);
     }
 
     update(context)
     {
         const ins = this.ins;
+        const object3D = this.object3D;
+        const annotation = this.activeAnnotation;
 
-        if (ins.visible.changed) {
+        if (ins.unitScale.changed) {
+            object3D.scale.setScalar(ins.unitScale.value);
+            object3D.updateMatrix();
+        }
 
+        if (ins.title.changed) {
+            if (annotation) {
+                annotation.title = ins.title.value;
+            }
+        }
+        if (ins.description.changed) {
+            if (annotation) {
+                annotation.description = ins.description.value;
+            }
+        }
+        if (ins.style.changed) {
+            if (annotation) {
+                annotation.style = ins.style.getValidatedValue();
+                this.createSprite(annotation);
+            }
+        }
+        if (ins.scale.changed) {
+            if (annotation) {
+                annotation.scale = ins.scale.value;
+            }
+        }
+        if (ins.offset.changed) {
+            if (annotation) {
+                annotation.offset = ins.offset.value;
+            }
+        }
+
+        if (annotation) {
+            this.updateSprite(annotation);
+            this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
         }
 
         return super.update(context);
@@ -297,9 +348,10 @@ export default class CVAnnotations extends CObject3D
 
         let sprite;
         switch(annotation.style) {
-            case "pin":
+            case EAnnotationStyle.Balloon:
                 sprite = new PinSprite(annotation);
                 break;
+            case EAnnotationStyle.Line:
             default:
                 sprite = new BeamSprite(annotation);
                 break;
@@ -320,6 +372,7 @@ export default class CVAnnotations extends CObject3D
         if (sprite) {
             sprite.removeEventListener("click", this.onSpriteClick);
             sprite.removeEventListener("link", this.onSpriteLink);
+            sprite.dispose();
 
             this._sprites[annotation.id] = undefined;
             this.object3D.remove(sprite);

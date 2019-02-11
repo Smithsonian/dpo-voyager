@@ -40,16 +40,23 @@ export default class BeamSprite extends AnnotationSprite
         geo.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
         const mat = new THREE.LineBasicMaterial({ color: "#009cde" });
         mat.transparent = true;
-        this.beam = new THREE.Line(geo, mat);
-        this.beam.scale.setScalar(10);
-        //this.line.matrixAutoUpdate = false;
 
+        this.beam = new THREE.Line(geo, mat);
         this.beam.frustumCulled = false;
+        this.beam.matrixAutoUpdate = false;
         this.add(this.beam);
+
+        this.update();
     }
 
     update()
     {
+        const annotation = this.annotation;
+
+        this.beam.scale.setScalar(5 * annotation.scale);
+        this.beam.position.y = annotation.offset;
+        this.beam.updateMatrix();
+
         super.update();
     }
 

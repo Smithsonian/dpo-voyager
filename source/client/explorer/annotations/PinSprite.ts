@@ -24,30 +24,48 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 
 export default class PinSprite extends AnnotationSprite
 {
+    protected pin: THREE.Mesh;
+
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        const pin = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.3, 0.02, 4),
-            new THREE.MeshPhongMaterial({ color: "red" })
+        this.pin = new THREE.Mesh(
+            new THREE.CylinderBufferGeometry(0.5, 0.02, 3, 16, 1),
+            new THREE.MeshPhongMaterial({ color: "#f21818" })
         );
-        pin.geometry.translate(0, 2, 0);
-        this.add(pin);
+        this.pin.geometry.translate(0, 1.5, 0);
+        this.pin.frustumCulled = false;
+        this.pin.matrixAutoUpdate = false;
+        this.add(this.pin);
+
+        this.update();
     }
 
     update()
     {
+        const annotation = this.annotation;
+
+        this.pin.scale.setScalar(annotation.scale);
+        this.pin.position.y = annotation.offset;
+        this.pin.updateMatrix();
+
+        super.update();
     }
 
     renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
     {
-        return super.renderHTMLElement(container, camera);
+        return null; //super.renderHTMLElement(container, camera, this.pin);
     }
 
-    createHTMLElement(): PinAnnotation
+    updateHTMLElement(element: PinAnnotation)
     {
-        return new PinAnnotation(this);
+        //element.performUpdate();
+    }
+
+    protected createHTMLElement(): PinAnnotation
+    {
+        return null; //new PinAnnotation(this);
     }
 }
 

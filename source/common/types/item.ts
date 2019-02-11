@@ -181,6 +181,7 @@ export interface IAnnotation
     visible?: boolean;
     expanded?: boolean;
     scale?: number;
+    offset?: number;
     tilt?: number;
     azimuth?: number;
     documents?: Identifier[];

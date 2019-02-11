@@ -22,16 +22,18 @@ import { IAnnotation } from "common/types/item";
 
 export type Vector3 = number[];
 
+export enum EAnnotationStyle { Default, Line, Balloon }
 
 export default class Annotation
 {
     id: string;
     title: string = "New Annotation";
     description: string = "";
-    style: string = "";
+    style: EAnnotationStyle = EAnnotationStyle.Default;
     visible: boolean = true;
     expanded: boolean = false;
     scale: number = 1;
+    offset: number = 0;
     tilt: number = 0;
     azimuth: number = 0;
     documents: Identifier[] = [];
@@ -56,17 +58,21 @@ export default class Annotation
         if (this.description) {
             data.description = this.description;
         }
-        if (this.style) {
-            data.style = this.style;
+        if (this.style !== EAnnotationStyle.Default) {
+            data.style = EAnnotationStyle[this.style];
         }
         if (this.visible === false) {
             data.visible = this.visible;
         }
-        if (this.expanded) {
-            data.expanded = this.expanded;
-        }
+        // TODO: Decide whether to serialize
+        // if (this.expanded) {
+        //     data.expanded = this.expanded;
+        // }
         if (this.scale !== 1) {
             data.scale = this.scale;
+        }
+        if (this.offset !== 0) {
+            data.offset = this.offset;
         }
         if (this.tilt !== 0) {
             data.tilt = this.tilt;
@@ -97,10 +103,11 @@ export default class Annotation
     {
         this.title = data.title || "";
         this.description = data.description || "";
-        this.style = data.style || "";
+        this.style = EAnnotationStyle[data.style] || EAnnotationStyle.Default;
         this.visible = data.visible !== undefined ? data.visible : true;
         this.expanded = data.expanded || false;
         this.scale = data.scale !== undefined ? data.scale : 1;
+        this.offset = data.offset || 0;
         this.tilt = data.tilt || 0;
         this.azimuth = data.azimuth || 0;
         this.documents = data.documents ? data.documents.slice() : [];

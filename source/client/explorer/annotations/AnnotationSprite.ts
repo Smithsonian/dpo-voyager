@@ -66,10 +66,9 @@ export default class AnnotationSprite extends HTMLSprite
     constructor(annotation: Annotation)
     {
         super();
-        this.annotation = annotation;
 
+        this.annotation = annotation;
         this.matrixAutoUpdate = false;
-        this.update();
     }
 
     update()

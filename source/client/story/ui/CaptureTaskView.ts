@@ -57,8 +57,8 @@ export default class CaptureTaskView extends TaskView
         const ready = this.task.outs.ready.value;
 
         const imageElement = this.task.getImageElement();
-        const image = imageElement ? html`<div class="sv-property-view"><div class="sv-property-name">Preview</div>
-            <div class="sv-image">${imageElement}</div></div>` : null;
+        const image = imageElement ? html`<div class="sv-label">Preview</div>
+            <div class="sv-image">${imageElement}</div>` : null;
 
         return html`<div class="sv-commands">
                 <ff-button text="Take" icon="camera" @click=${this.onClickTake}></ff-button>

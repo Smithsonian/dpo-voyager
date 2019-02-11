@@ -40,12 +40,6 @@ export default class PropertyView extends CustomElement
             throw new Error("property not set");
         }
 
-        this.setStyle({
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden"
-        });
-
         this.classList.add("sv-property-view");
     }
 
@@ -64,17 +58,17 @@ export default class PropertyView extends CustomElement
             for (let i = 0; i < property.elementCount; ++i) {
                 fields.push(this.renderField(i));
             }
-            return html`${headerElement}${fields}`;
+            return html`${headerElement}<div class="sv-property-value">${fields}</div>`;
         }
 
-        return html`${headerElement}${this.renderField(-1)}`;
+        return html`${headerElement}<div class="sv-property-value">${this.renderField(-1)}</div>`;
     }
 
     protected renderField(index: number)
     {
         const property = this.property;
         const labels = property.schema.labels || _defaultLabels;
-        const labelElement = html`<div class="sv-field-label">${index >= 0 ? labels[index] : ""}</div>`;
+        const labelElement = index >= 0 ? html`<div class="sv-field-label">${labels[index]}</div>` : null;
 
         return html`<div class="ff-flex-row sv-field-row">
             ${labelElement}

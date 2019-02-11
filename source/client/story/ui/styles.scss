@@ -178,11 +178,11 @@ ff-dock-view {
 
   .sv-label {
     color: $color-text-dark;
-    margin: 4px 2px;
+    margin: 8px 0 4px 0;
   }
 
   .sv-image {
-    margin: 8px 0;
+    margin: 4px 0;
 
     img {
       width: 100%;
@@ -196,18 +196,25 @@ ff-dock-view {
 
 .sv-property-view {
   flex: 0 0 auto;
-  padding: 2px;
+  display: flex;
+  margin: 2px 0;
 
   .sv-property-name {
-    margin: 8px 0 4px 0;
+    flex: 1 1 25%;
+    padding-top: 4px;
+    color: $color-text-dark;
+  }
+
+  .sv-property-value {
+    flex: 1 1 75%;
   }
 
   .sv-field-row {
-    margin: 2px 0;
+    margin: 4px 0;
   }
   .sv-field-label {
     flex: 0 0 auto;
-    margin: 0 8px 0 24px;
+    margin: 0 8px 0 0;
     color: $color-icon;
   }
   .ff-property-field {

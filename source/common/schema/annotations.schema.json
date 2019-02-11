@@ -38,6 +38,11 @@
                     "type": "number",
                     "default": 1
                 },
+                "offset": {
+                    "description": "Offsets the annotation along its direction.",
+                    "type": "number",
+                    "default": 0
+                },
                 "tilt": {
                     "description": "Tilt angle of the annotation relative to the direction vector in degrees.",
                     "type": "number",

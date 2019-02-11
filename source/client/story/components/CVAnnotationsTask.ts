@@ -24,7 +24,7 @@ import { IPointerEvent } from "@ff/scene/RenderView";
 import CVModel from "../../core/components/CVModel";
 import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
 import NVItem from "../../explorer/nodes/NVItem";
-import CVAnnotations, { IActiveAnnotationEvent } from "../../explorer/components/CVAnnotations";
+import CVAnnotations, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotations";
 import Annotation from "../../explorer/models/Annotation";
 
 import AnnotationsTaskView from "../ui/AnnotationsTaskView";
@@ -32,7 +32,9 @@ import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _vec3 = new THREE.Vector3();
 const _mat4 = new THREE.Matrix4();
+const _mat3 = new THREE.Matrix3();
 
 export enum EAnnotationsTaskMode { Off, Move, Create }
 
@@ -94,6 +96,17 @@ export default class CVAnnotationsTask extends CVTask
         super.deactivate();
     }
 
+    update()
+    {
+        super.update();
+
+        if (this.ins.mode.changed) {
+            this.emitUpdateEvent();
+        }
+
+        return false;
+    }
+
     createAnnotation(position: number[], direction: number[])
     {
         const annotations = this.activeAnnotations;
@@ -147,10 +160,11 @@ export default class CVAnnotationsTask extends CVTask
         if (event.component === model) {
 
             // get click position and normal in annotation space = pose transform * model space
-            const matrix = model.object3D.matrix;
-            _mat4.getInverse(matrix).transpose();
-            const position = event.view.pickPosition(event).applyMatrix4(matrix).toArray();
-            const normal = event.view.pickNormal(event).applyMatrix4(_mat4).toArray();
+            _vec3.setScalar(1 / model.outs.unitScale.value);
+            _mat4.copy(model.object3D.matrix).scale(_vec3);
+            _mat3.getNormalMatrix(_mat4);
+            const position = event.view.pickPosition(event).applyMatrix4(_mat4).toArray();
+            const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
 
             const mode = this.ins.mode.getValidatedValue();
 
@@ -189,10 +203,10 @@ export default class CVAnnotationsTask extends CVTask
         const nextAnnotations = event.next ? event.next.annotations : null;
 
         if (prevAnnotations) {
-            prevAnnotations.off<IActiveAnnotationEvent>("active-annotation", this.emitUpdateEvent, this);
+            prevAnnotations.off<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
         }
         if (nextAnnotations) {
-            nextAnnotations.on<IActiveAnnotationEvent>("active-annotation", this.emitUpdateEvent, this);
+            nextAnnotations.on<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
             this.selectionController.selectComponent(nextAnnotations);
         }
 
