@@ -18,9 +18,9 @@
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
 
-import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
 import NVItem from "../../explorer/nodes/NVItem";
 import CVDocuments, { Document } from "../../explorer/components/CVDocuments";
+import { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
 
 import DocumentsTaskView from "../ui/DocumentsTaskView";
 import CVTask from "./CVTask";
@@ -94,7 +94,7 @@ export default class CVDocumentsTask extends CVTask
         this.activeDocuments = nextDocuments;
     }
 
-    protected onSelectDocuments(event: IComponentEvent)
+    protected onSelectDocuments(event: IComponentEvent<CVDocuments>)
     {
         if (event.add && event.object.node instanceof NVItem) {
             this.presentationController.activeItem = event.object.node;

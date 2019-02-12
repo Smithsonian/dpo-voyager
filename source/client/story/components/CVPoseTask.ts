@@ -128,6 +128,17 @@ export default class CVPoseTask extends CVTask
         this.interface.ins.visible.setValue(this._interfaceVisible);
     }
 
+    update()
+    {
+        const changed = super.update();
+
+        if (this.ins.mode.changed) {
+            this.emitUpdateEvent();
+        }
+
+        return changed;
+    }
+
     tick()
     {
         const mode = this.ins.mode.value;

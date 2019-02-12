@@ -190,7 +190,7 @@ export default class MainView extends CustomElement
         elements: [{
             type: "strip",
             direction: "vertical",
-            size: 0.25,
+            size: 0.22,
             elements: [{
                 type: "stack",
                 size: 0.2,
@@ -211,10 +211,10 @@ export default class MainView extends CustomElement
         }, {
             type: "strip",
             direction: "vertical",
-            size: 0.75,
+            size: 0.78,
             elements: [{
                 type: "stack",
-                size: 0.75,
+                size: 0.85,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "explorer",
@@ -225,7 +225,7 @@ export default class MainView extends CustomElement
                 }]
             }, {
                 type: "stack",
-                size: 0.2,
+                size: 0.15,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "log",
@@ -242,7 +242,7 @@ export default class MainView extends CustomElement
         elements: [{
             type: "strip",
             direction: "vertical",
-            size: 0.22,
+            size: 0.2,
             elements: [{
                 type: "stack",
                 size: 0.3,
@@ -263,10 +263,10 @@ export default class MainView extends CustomElement
         },{
             type: "strip",
             direction: "vertical",
-            size: 0.56,
+            size: 0.6,
             elements: [{
                 type: "stack",
-                size: 0.5,
+                size: 0.8,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "explorer",
@@ -290,10 +290,10 @@ export default class MainView extends CustomElement
         }, {
             type: "strip",
             direction: "vertical",
-            size: 0.22,
+            size: 0.2,
             elements: [{
                 type: "stack",
-                size: 0.5,
+                size: 0.6,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "hierarchy",
@@ -301,7 +301,7 @@ export default class MainView extends CustomElement
                 }]
             }, {
                 type: "stack",
-                size: 0.5,
+                size: 0.4,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "inspector",

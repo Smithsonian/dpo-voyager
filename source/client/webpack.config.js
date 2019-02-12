@@ -40,7 +40,7 @@ const dirs = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const version = "0.2.0";
+const version = "0.3.1";
 
 const apps = {
     "explorer": {
@@ -140,7 +140,7 @@ function createAppConfig(app, dirs, isDevMode)
             }),
             new HTMLWebpackPlugin({
                 filename: isDevMode ? `${appName}-dev.html` : `${appName}.html`,
-                template: "index.hbs",
+                template: "index-demo.hbs",
                 title: appTitle,
                 isDevelopment: isDevMode,
                 element: `<${appName}></${appName}>`,

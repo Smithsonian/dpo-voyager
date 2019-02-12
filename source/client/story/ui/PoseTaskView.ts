@@ -45,9 +45,6 @@ export default class PoseTaskView extends TaskView
         }
 
         const modeProp = this.task.ins.mode;
-        if (modeProp.value === EPoseManipMode.Off) {
-            modeProp.setValue(EPoseManipMode.Rotate);
-        }
 
         const globalUnits = activePresentation.scene.ins.units;
         const itemUnits = activeModel.ins.units;
