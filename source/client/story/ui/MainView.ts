@@ -30,7 +30,7 @@ import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
 import TaskPanel from "./TaskPanel";
-import LogPanel from "./LogPanel";
+import NotesPanel from "./NotesPanel";
 import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 
@@ -109,7 +109,7 @@ export default class MainView extends CustomElement
         registry.set("explorer", () => new ExplorerPanel(explorer));
         registry.set("editor", () => new EditorPanel(system));
         registry.set("task", () => new TaskPanel(system));
-        registry.set("log", () => new LogPanel(system));
+        registry.set("notes", () => new NotesPanel(system));
         registry.set("console", () => new ConsolePanel(system));
         registry.set("navigator", () => new NavigatorPanel(system));
         registry.set("hierarchy", () => new HierarchyTreeView(system));
@@ -228,8 +228,8 @@ export default class MainView extends CustomElement
                 size: 0.15,
                 activePanelIndex: 0,
                 panels: [{
-                    contentId: "log",
-                    text: "Log"
+                    contentId: "notes",
+                    text: "Notes"
                 }]
             }]
         }]
@@ -280,8 +280,8 @@ export default class MainView extends CustomElement
                 size: 0.2,
                 activePanelIndex: 0,
                 panels: [{
-                    contentId: "log",
-                    text: "Log"
+                    contentId: "notes",
+                    text: "Notes"
                 }, {
                     contentId: "console",
                     text: "Console"
