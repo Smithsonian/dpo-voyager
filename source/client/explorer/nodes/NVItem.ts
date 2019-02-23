@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
+
 import NTransform from "@ff/scene/nodes/NTransform";
 
-import CVItemData from "../components/CVItemData";
+import { IItem } from "common/types/item";
+
 import CVModel from "../../core/components/CVModel";
 import CVMeta from "../components/CVMeta";
 import CVProcess from "../components/CVProcess";
 import CVAnnotations from "../components/CVAnnotations";
-import CVDocuments from "../components/CVDocuments";
+import CVArticles from "../components/CVArticles";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class NVItem extends NTransform
 {
     static readonly typeName: string = "NVItem";
+    static readonly mimeType = "application/si-dpo-3d.item+json";
 
-    get item() {
-        return this.getComponent(CVItemData);
-    }
+    private _url = "";
+    private _assetBaseUrl = "";
+
     get meta() {
         return this.getComponent(CVMeta);
     }
@@ -42,24 +46,102 @@ export default class NVItem extends NTransform
     get model() {
         return this.getComponent(CVModel);
     }
-    get documents() {
-        return this.getComponent(CVDocuments);
+    get articles() {
+        return this.getComponent(CVArticles);
     }
     get annotations() {
         return this.getComponent(CVAnnotations);
+    }
+
+    set url(url: string) {
+        this._url = url;
+
+        if (url.endsWith("-item.json")) {
+            this._assetBaseUrl = url.substr(0, url.length - 10);
+        }
+        else {
+            const parts = url.split(".");
+            parts.pop();
+            this._assetBaseUrl = parts.join(".");
+        }
+    }
+    get url() {
+        return this._url;
+    }
+    get urlPath() {
+        return resolvePathname(".", this.url);
+    }
+    get urlName() {
+        return this.url.substr(this.urlPath.length);
+    }
+    get assetBaseUrl() {
+        return this._assetBaseUrl;
     }
 
     createComponents()
     {
         super.createComponents();
 
-        this.createComponent(CVItemData);
         this.createComponent(CVMeta);
         this.createComponent(CVProcess);
         this.createComponent(CVModel);
         this.createComponent(CVAnnotations);
-        this.createComponent(CVDocuments);
+        this.createComponent(CVArticles);
 
         this.name = "Item";
+    }
+
+    fromData(data: IItem)
+    {
+        if (data.meta && this.meta) {
+            this.meta.fromData(data.meta);
+        }
+        if (data.process && this.process) {
+            this.process.fromData(data.process);
+        }
+        if (data.model && this.model) {
+            this.model.fromData(data.model);
+        }
+        if (data.articles && this.articles) {
+            this.articles.fromData(data.articles);
+        }
+        if (data.annotations && this.annotations) {
+            this.annotations.fromData(data.annotations);
+        }
+    }
+
+    toData(): IItem
+    {
+        const data: Partial<IItem> = {
+            info: {
+                type: NVItem.mimeType,
+                copyright: "Copyright Smithsonian Institution",
+                generator: "Voyager Item Parser",
+                version: "1.2"
+            },
+            model: this.model.toData()
+        };
+
+        const metaData = this.meta.toData();
+        if (metaData) {
+            data.meta = metaData;
+        }
+
+        const processData = this.process.toData();
+        if (processData) {
+            data.process = processData;
+        }
+
+        const articlesData = this.articles.toData();
+        if (articlesData) {
+            data.articles = articlesData;
+        }
+
+        const annotationsData = this.annotations.toData();
+        if (annotationsData) {
+            data.annotations = annotationsData;
+        }
+
+        return data as IItem;
     }
 }

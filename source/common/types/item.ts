@@ -46,7 +46,7 @@ export interface IItem
     meta?: IMeta;
     process?: IProcess;
     model: IModel;
-    documents?: IDocuments;
+    articles?: IArticles;
     annotations?: IAnnotations;
 }
 
@@ -139,16 +139,16 @@ export interface IAsset
     mapType?: TMapType;
 }
 
-export interface IDocuments
+export interface IArticles
 {
-    mainDocumentId?: Identifier;
-    documents?: IDocument[];
+    mainArticleId?: Identifier;
+    articles?: IArticle[];
 }
 
 /**
- * Refers to an external document: an article or a media file (audio, video, image).
+ * Refers to an external document or a media file (audio, video, image).
  */
-export interface IDocument
+export interface IArticle
 {
     id: Identifier;
     title?: string;
@@ -159,8 +159,7 @@ export interface IDocument
 }
 
 /**
- * Describes the annotation elements of an item: anchors, documents and groups.
- * The top level document index points to the item's main document.
+ * Describes the annotations of an item, organized in groups.
  */
 export interface IAnnotations
 {
@@ -184,7 +183,7 @@ export interface IAnnotation
     offset?: number;
     tilt?: number;
     azimuth?: number;
-    documents?: Identifier[];
+    articles?: Identifier[];
     groups?: Identifier[];
     position?: Vector3;
     direction?: Vector3;

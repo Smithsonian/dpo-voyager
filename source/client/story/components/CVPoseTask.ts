@@ -19,22 +19,20 @@ import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
+import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import Viewport from "@ff/three/Viewport";
 import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
 import CRenderer from "@ff/scene/components/CRenderer";
 
+import CVDocument from "../../explorer/components/CVDocument";
+import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 import CVInterface from "../../explorer/components/CVInterface";
 import CVModel from "../../core/components/CVModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import CVTask, { ITaskUpdateEvent } from "./CVTask";
-
-import {
-    IActiveItemEvent,
-    IActivePresentationEvent
-} from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -90,7 +88,7 @@ export default class CVPoseTask extends CVTask
         return new PoseTaskView(this);
     }
 
-    activate()
+    activateTask()
     {
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
@@ -107,12 +105,12 @@ export default class CVPoseTask extends CVTask
         this._interfaceVisible = prop.value;
         prop.setValue(false);
 
-        super.activate();
+        super.activateTask();
     }
 
-    deactivate()
+    deactivateTask()
     {
-        super.deactivate();
+        super.deactivateTask();
 
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
@@ -181,17 +179,17 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
-    protected onActivePresentation(event: IActivePresentationEvent)
+    protected onActiveDocument(event: IActiveDocumentEvent)
     {
-        const prevPresentation = event.previous;
-        const nextPresentation = event.next;
+        const prevPresentation = event.previous as CVDocument;
+        const nextPresentation = event.next as CVDocument;
 
         if (prevPresentation) {
-            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.featuresNode.homeGrid.ins.visible.setValue(this._gridVisible);
             prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
-            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            let prop = nextPresentation.featuresNode.homeGrid.ins.visible;
             this._gridVisible = prop.value;
             prop.setValue(true);
 
@@ -231,10 +229,10 @@ export default class CVPoseTask extends CVTask
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        const item = event.object.node;
+        const node = event.object.node;
 
-        if (event.add && item instanceof NVItem) {
-            this.presentationController.activeItem = item;
+        if (event.add && node instanceof NVItem) {
+            this.itemManager.activeItem = node;
         }
     }
 }

@@ -15,54 +15,75 @@
  * limitations under the License.
  */
 
-import { customElement, property } from "@ff/ui/CustomElement";
-import List from "@ff/ui/List";
+import System from "@ff/graph/System";
+import CSelection from "@ff/graph/components/CSelection";
+import CDocument from "@ff/graph/components/CDocument";
+import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
-import Document from "../../explorer/models/Document";
+import List from "@ff/ui/List";
+import "@ff/ui/Icon";
+
+import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface ISelectDocumentEvent extends CustomEvent
-{
-    target: DocumentList;
-    detail: {
-        document: Document;
-    }
-}
-
 @customElement("sv-document-list")
-class DocumentList extends List<Document>
+class DocumentList extends List<CDocument>
 {
     @property({ attribute: false })
-    selectedItem: Document = null;
+    system: System = null;
+
+    protected documentManager: CDocumentManager = null;
+    protected selection: CSelection = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-document-list");
+        this.classList.add("sv-presentation-list");
+
+        this.documentManager = this.system.getMainComponent(CDocumentManager);
+        this.selection = this.system.getMainComponent(CSelection);
     }
 
-    protected renderItem(item: Document)
+    protected connected()
     {
-        return item.title;
+        super.connected();
+
+        this.system.components.on(CDocument, this.performUpdate, this);
+        this.selection.selectedComponents.on(CDocument, this.performUpdate, this);
+        this.documentManager.on<IActiveDocumentEvent>("active-document", this.performUpdate, this);
     }
 
-    protected isItemSelected(item: Document)
+    protected disconnected()
     {
-        return item === this.selectedItem;
+        this.system.components.off(CDocument, this.performUpdate, this);
+        this.selection.selectedComponents.off(CDocument, this.performUpdate, this);
+        this.documentManager.off<IActiveDocumentEvent>("active-document", this.performUpdate, this);
+
+        super.disconnected();
     }
 
-    protected onClickItem(event: MouseEvent, item: Document)
+    protected update(props: PropertyValues)
     {
-        this.dispatchEvent(new CustomEvent("select", {
-            detail: { document: item }
-        }));
+        this.data = this.system.components.getArray(CDocument);
+        super.update(props);
     }
 
-    protected onClickEmpty(event: MouseEvent)
+    protected renderItem(component: CDocument)
     {
-        this.dispatchEvent(new CustomEvent("select", {
-            detail: { document: null }
-        }));
+        const isActive = component === this.documentManager.activeDocument;
+        return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
+            <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
+    }
+
+    protected isItemSelected(component: CDocument)
+    {
+        return this.selection.selectedComponents.contains(component);
+    }
+
+    protected onClickItem(event: MouseEvent, component: CDocument)
+    {
+        this.documentManager.activeDocument = component;
+        this.selection.selectComponent(component);
     }
 }

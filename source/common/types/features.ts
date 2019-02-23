@@ -34,7 +34,7 @@ export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }
 
 
-export interface IConfig
+export interface IFeatures
 {
     scene?: IScene;
     reader?: IReader;

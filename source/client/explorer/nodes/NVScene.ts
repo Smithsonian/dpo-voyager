@@ -41,9 +41,8 @@ import {
 
 import CVLoaders from "../../core/components/CVLoaders";
 import CVScene from "../../core/components/CVScene";
-import CVItemData from "../components/CVItemData";
 
-import NVPresentationConfig from "./NVPresentationConfig";
+import NVFeatures from "./NVFeatures";
 import NVReference from "./NVReference";
 import NVItem from "./NVItem";
 
@@ -58,9 +57,9 @@ const _euler = new THREE.Euler();
 export type ReferenceCallback = (index: number, graph: Graph, assetPath: string) => NTransform;
 
 
-export default class NVPresentationScene extends NScene
+export default class NVScene extends NScene
 {
-    static readonly typeName: string = "NVPresentationScene";
+    static readonly typeName: string = "NVScene";
 
     url: string;
     assetPath: string;
@@ -84,18 +83,18 @@ export default class NVPresentationScene extends NScene
         this.name = "Scene";
     }
 
-    deflate()
-    {
-        const data = this.toData();
-        return data ? { data } : null;
-    }
-
-    inflate(json: any)
-    {
-        if (json.data) {
-            this.fromData(json);
-        }
-    }
+    // deflate()
+    // {
+    //     const data = this.toData();
+    //     return data ? { data } : null;
+    // }
+    //
+    // inflate(json: any)
+    // {
+    //     if (json.data) {
+    //         this.fromData(json);
+    //     }
+    // }
 
     toData(writeReferences?: boolean): IPresentation
     {
@@ -122,12 +121,12 @@ export default class NVPresentationScene extends NScene
         return data as IPresentation;
     }
 
-    fromData(data: IPresentation, callback?: ReferenceCallback)
+    fromData(data: IPresentation)
     {
         const nodes = data.scene.nodes;
         nodes.forEach(nodeIndex => {
             const nodeData = data.nodes[nodeIndex];
-            this.nodeFromData(this, nodeData, data, callback);
+            this.nodeFromData(this, nodeData, data);
         });
     }
 
@@ -148,7 +147,7 @@ export default class NVPresentationScene extends NScene
             if (refIndex === undefined) {
                 data.items = data.items || [];
                 nodeData.item = data.items.length;
-                data.items.push(node.item.toData());
+                data.items.push(node.toData());
             }
             else {
                 data.references = data.references || [];
@@ -179,7 +178,7 @@ export default class NVPresentationScene extends NScene
             nodeData.children = [];
             transforms.forEach(transform => {
                 const node = transform.node;
-                if (node instanceof NTransform && !node.is(NVPresentationConfig)) {
+                if (node instanceof NTransform && !node.is(NVFeatures)) {
                     const index = this.nodeToData(node, data, refIndex);
                     nodeData.children.push(index);
                 }
@@ -274,40 +273,14 @@ export default class NVPresentationScene extends NScene
 
     // INFLATE PRESENTATION SCENE NODES
 
-    protected nodeFromData(parent: NTransform, nodeData: INode, presData: IPresentation, callback: ReferenceCallback)
+    protected nodeFromData(parent: NTransform, nodeData: INode, presData: IPresentation)
     {
         let node = null;
 
         if (isFinite(nodeData.reference)) {
             const referenceData = presData.references[nodeData.reference];
-
-            if (referenceData.mimeType === CVItemData.mimeType) {
-
-                const index = Number(referenceData.uri);
-                if (isFinite(index)) {
-                    node = callback && callback(index, this.graph, this.assetPath);
-                }
-                else {
-                    // node is reference, try to load external reference
-                    const itemUrl = resolvePathname(referenceData.uri, this.assetPath);
-                    const loadingManager = this.loadingManager;
-                    node = this.graph.createCustomNode(NVItem);
-                    node.item.setUrl(itemUrl);
-
-                    loadingManager.loadJSON(itemUrl).then(json =>
-                        loadingManager.validateItem(json).then(itemData => {
-                            node.item.fromData(itemData);
-                        })
-                    ).catch(error => {
-                        console.warn(`failed to create item from reference uri: ${error}`);
-                    });
-                }
-            }
-
-            if (!node) {
-                node = this.graph.createCustomNode(NVReference);
-                node.fromData(referenceData);
-            }
+            node = this.graph.createCustomNode(NVReference);
+            node.fromData(referenceData);
         }
         else if (isFinite(nodeData.item)) {
             const itemData = presData.items[nodeData.item];
@@ -337,7 +310,7 @@ export default class NVPresentationScene extends NScene
         if (nodeData.children) {
             nodeData.children.forEach(childIndex => {
                 const childData = presData.nodes[childIndex];
-                this.nodeFromData(node, childData, presData, callback);
+                this.nodeFromData(node, childData, presData);
             })
         }
     }

@@ -28,7 +28,7 @@ import * as processSchema from "common/schema/process.schema.json";
 import * as modelSchema from "common/schema/model.schema.json";
 import * as annotationsSchema from "common/schema/annotations.schema.json";
 import * as storySchema from "common/schema/story.schema.json";
-import * as documentsSchema from "common/schema/documents.schema.json";
+import * as articlesSchema from "common/schema/articles.schema.json";
 
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
@@ -52,7 +52,7 @@ export default class JSONValidator
                 metaSchema,
                 processSchema,
                 modelSchema,
-                documentsSchema,
+                articlesSchema,
                 annotationsSchema,
                 storySchema
             ],

@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 
-import CVLoaders from "./CVLoaders";
-import CVModel from "./CVModel";
-import CVOrbitNavigation from "./CVOrbitNavigation";
-import CVScene from "./CVScene";
+import Node from "@ff/graph/Node";
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
+
+import CVItemManager from "../components/CVItemManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVLoaders,
-    CVModel,
-    CVOrbitNavigation,
-    CVScene,
-};
+export default class NVDocuments extends Node
+{
+    static readonly typeName: string = "NVDocuments";
 
-export const componentTypes = [
-    CVLoaders,
-    CVModel,
-    CVOrbitNavigation,
-    CVScene,
-];
+    get documentManager() {
+        return this.getComponent(CDocumentManager);
+    }
+    get itemManager() {
+        return this.getComponent(CVItemManager);
+    }
+
+    createComponents()
+    {
+        this.createComponent(CDocumentManager);
+        this.createComponent(CVItemManager);
+    }
+}

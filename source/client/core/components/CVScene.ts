@@ -22,7 +22,7 @@ import { IComponentChangeEvent, IComponentEvent } from "@ff/graph/Component";
 
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 
-import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/config";
+import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/features";
 
 import CVModel, { IModelChangeEvent } from "./CVModel";
 import CVOrbitNavigation from "./CVOrbitNavigation";
@@ -100,7 +100,7 @@ export default class CVScene extends CScene
         }
     }
 
-    finalize()
+    complete()
     {
         this._zoomViews = false;
     }

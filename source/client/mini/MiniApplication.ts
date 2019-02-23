@@ -67,10 +67,12 @@ export default class MiniApplication
 
     constructor(element?: HTMLElement, props?: IMiniApplicationProps)
     {
+        this.props = props;
         console.log(MiniApplication.splashMessage);
 
         // register components
         const registry = new TypeRegistry();
+
         registry.add(graphComponents);
         registry.add(sceneComponents);
         registry.add(coreComponents);
@@ -79,15 +81,15 @@ export default class MiniApplication
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const node = system.graph.createNode("Mini");
+        const main = system.graph.createNode("Main");
 
-        node.createComponent(CPulse);
-        node.createComponent(CRenderer);
+        main.createComponent(CPulse);
+        main.createComponent(CRenderer);
 
-        node.createComponent(CVLoaders);
-        node.createComponent(CVOrbitNavigation);
+        main.createComponent(CVLoaders);
+        main.createComponent(CVOrbitNavigation);
 
-        node.createComponent(CMini).createActions(this.commander);
+        main.createComponent(CMini).createActions(this.commander);
 
         // create main view if not given
         if (element) {
@@ -95,14 +97,15 @@ export default class MiniApplication
         }
 
         // start rendering
-        node.components.get(CPulse).start();
+        main.components.get(CPulse).start();
 
         // start loading from properties
-        this.props = this.initFromProps(props);
+        this.initFromProps();
     }
 
-    protected initFromProps(props: IMiniApplicationProps): IMiniApplicationProps
+    protected initFromProps()
     {
+        const props = this.props;
         const miniController = this.system.components.get(CMini);
 
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
@@ -120,8 +123,6 @@ export default class MiniApplication
             miniController.loadGeometryAndTexture(
                 props.geometry, props.texture);
         }
-
-        return props;
     }
 }
 

@@ -15,23 +15,32 @@
  * limitations under the License.
  */
 
+import NVDocument from "./NVDocument";
+import NVDocuments from "./NVDocuments";
+import NVExplorer from "./NVExplorer";
+import NVFeatures from "./NVFeatures";
 import NVItem from "./NVItem";
-import NVPresentationConfig from "./NVPresentationConfig";
-import NVPresentationScene from "./NVPresentationScene";
 import NVReference from "./NVReference";
+import NVScene from "./NVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
+    NVDocument,
+    NVDocuments,
+    NVExplorer,
+    NVFeatures,
     NVItem,
-    NVPresentationConfig,
-    NVPresentationScene,
     NVReference,
+    NVScene,
 };
 
 export const nodeTypes = [
+    NVDocument,
+    NVDocuments,
+    NVExplorer,
+    NVFeatures,
     NVItem,
-    NVPresentationConfig,
-    NVPresentationScene,
     NVReference,
+    NVScene,
 ];

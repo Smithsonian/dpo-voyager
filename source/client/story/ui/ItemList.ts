@@ -18,17 +18,15 @@
 import System from "@ff/graph/System";
 import CComponent from "@ff/graph/Component";
 import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
+import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
 
+import CVItemManager, { IActiveItemEvent, IItemManagerChangeEvent } from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
-import CVPresentationController, {
-    IActiveItemEvent,
-    IActivePresentationEvent
-} from "../../explorer/components/CVPresentationController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +36,8 @@ class ItemList extends List<NVItem>
     @property({ attribute: false })
     system: System = null;
 
-    protected presentations: CVPresentationController = null;
+    protected documentManager: CDocumentManager = null;
+    protected itemManager: CVItemManager = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
@@ -46,7 +45,8 @@ class ItemList extends List<NVItem>
         super.firstConnected();
         this.classList.add("sv-scrollable", "sv-item-list");
 
-        this.presentations = this.system.getMainComponent(CVPresentationController);
+        this.documentManager = this.system.getMainComponent(CDocumentManager);
+        this.itemManager = this.system.getMainComponent(CVItemManager);
         this.selection = this.system.getMainComponent(CSelection);
     }
 
@@ -55,43 +55,50 @@ class ItemList extends List<NVItem>
         super.connected();
 
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.on(NVItem, this.performUpdate, this);
-        this.presentations.on<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
-        this.presentations.on<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.selection.selectedNodes.on(NVItem, this.onChange, this);
+
+        this.itemManager.on<IItemManagerChangeEvent>("change", this.onChange, this);
+        this.itemManager.on<IActiveItemEvent>("active-item", this.onChange, this);
     }
 
     protected disconnected()
     {
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.off(NVItem, this.performUpdate, this);
-        this.presentations.off<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
-        this.presentations.off<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.selection.selectedNodes.off(NVItem, this.onChange, this);
+
+        this.itemManager.off<IActiveItemEvent>("active-item", this.onChange, this);
+        this.itemManager.off<IItemManagerChangeEvent>("change", this.onChange, this);
 
         super.disconnected();
     }
 
     protected update(props: PropertyValues)
     {
-        this.data = this.presentations.items;
+        this.data = this.itemManager.items;
         return super.update(props);
     }
 
-    protected renderItem(node: NVItem)
+    protected renderItem(item: NVItem)
     {
-        const isActive = node === this.presentations.activeItem;
+        const isActive = item === this.itemManager.activeItem;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
-            <ff-text class="ff-ellipsis">${node.displayName}</ff-text></div>`;
+            <ff-text class="ff-ellipsis">${item.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(node: NVItem): boolean
+    protected isItemSelected(item: NVItem): boolean
     {
-        return this.selection.selectedNodes.contains(node)
-            || this.selection.nodeContainsSelectedComponent(node);
+        return this.selection.selectedNodes.contains(item)
+            || this.selection.nodeContainsSelectedComponent(item);
     }
 
-    protected onClickItem(event: MouseEvent, node: NVItem)
+    protected onClickItem(event: MouseEvent, item: NVItem)
     {
-        this.presentations.activeItem = node;
+        this.itemManager.activeItem = item;
+    }
+
+    protected onChange()
+    {
+        this.requestUpdate();
     }
 
     protected onSelectComponent(event: IComponentEvent)

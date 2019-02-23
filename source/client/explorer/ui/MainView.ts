@@ -73,6 +73,8 @@ export default class MainView extends CustomElement
 
             this.application = new ExplorerApplication(null, props);
         }
+
+        window["voyagerExplorer"] = this.application;
     }
 
     protected get interface() {

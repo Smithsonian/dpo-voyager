@@ -19,6 +19,11 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import Commander from "@ff/core/Commander";
 import System from "@ff/graph/System";
 
+import { IPresentation } from "common/types/presentation";
+import { IItem } from "common/types/item";
+
+import CVDocument from "../explorer/components/CVDocument";
+
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 
 import { componentTypes as storyComponents } from "./components";
@@ -27,7 +32,7 @@ import CVStoryController from "./components/CVStoryController";
 import CVTaskController from "./components/CVTaskController";
 
 import MainView from "./ui/MainView";
-import { IItem } from "common/types/item";
+import NVItem from "../explorer/nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -59,6 +64,7 @@ export default class StoryApplication
     {
         // create the embedded explorer application, parse properties, start loading/presenting
         this.explorer = new ExplorerApplication(null, props);
+        this.props = props || {};
 
         this.system = this.explorer.system;
         this.commander = this.explorer.commander;
@@ -74,15 +80,37 @@ export default class StoryApplication
         storyNode.createComponent(CVTaskController);
         storyNode.createComponent(CVStoryController);
 
-        this.props = this.initFromProps(props);
+        this.initFromProps();
 
         if (element) {
             new MainView(this).appendTo(element);
         }
     }
 
-    protected initFromProps(props: IStoryApplicationProps): IStoryApplicationProps
+    openDocument(documentOrUrl: string | object): Promise<CVDocument | null>
     {
+        return this.explorer.openDocument(documentOrUrl);
+    }
+
+    openPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    {
+        return this.explorer.openPresentation(presentationOrUrl);
+    }
+
+    openDefaultPresentation(): Promise<CVDocument>
+    {
+        return this.explorer.openDefaultPresentation();
+    }
+
+    openItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    {
+        return this.explorer.openItem(itemOrUrl);
+    }
+
+    protected initFromProps()
+    {
+        const props = this.props;
+
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
@@ -90,8 +118,6 @@ export default class StoryApplication
         const story = this.system.components.get(CVStoryController);
         story.ins.referrer.setValue(props.referrer);
         story.ins.expertMode.setValue(!!props.expert);
-
-        return props;
     }
 }
 

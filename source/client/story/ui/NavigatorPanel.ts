@@ -17,7 +17,7 @@
 
 import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 
-import "./PresentationList";
+import "./DocumentList";
 import "./ItemList";
 
 import CVStoryController, { EStoryMode } from "../components/CVStoryController";
@@ -55,15 +55,15 @@ export default class NavigatorPanel extends SystemElement
     protected render()
     {
         const system = this.system;
-        const authMode = this.story.ins.mode.value === EStoryMode.Authoring;
+        const authMode = true; // this.story.ins.mode.value === EStoryMode.Authoring;
 
-        const presentationsList = authMode ? html`<div class="sv-panel-section">
+        const documentList = authMode ? html`<div class="sv-panel-section">
                 <div class="sv-panel-header">Presentations</div>
-                <sv-presentation-list .system=${system}></sv-presentation-list>
+                <sv-document-list .system=${system}></sv-document-list>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>` : null;
 
-        return html`${presentationsList}
+        return html`${documentList}
             <div class="sv-panel-section">
                 <div class="sv-panel-header">Items</div>
                 <sv-item-list .system=${system}></sv-item-list>

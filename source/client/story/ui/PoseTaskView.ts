@@ -26,6 +26,7 @@ import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 import "./ItemList";
 import "./PropertyView";
 import TaskView from "./TaskView";
+import CVScene from "../../core/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,16 +38,16 @@ export default class PoseTaskView extends TaskView
 
     protected render()
     {
-        const activePresentation = this.task.presentationController.activePresentation;
+        const activeDocument = this.task.documentManager.activeDocument;
         const activeModel = this.task.activeModel;
 
-        if (!activePresentation || !activeModel) {
+        if (!activeDocument || !activeModel) {
             return html`<div class="sv-placeholder">Please select an item to edit its pose</div>`;
         }
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = activePresentation.scene.ins.units;
+        const globalUnits = activeDocument.getInnerComponent(CVScene).ins.units;
         const itemUnits = activeModel.ins.units;
         const position = activeModel.ins.position;
         const rotation = activeModel.ins.rotation;
@@ -74,13 +75,13 @@ export default class PoseTaskView extends TaskView
 
     protected onClickCenter()
     {
-        const activeItem = this.task.presentationController.activeItem;
+        const activeItem = this.task.itemManager.activeItem;
         activeItem.model.ins.center.set();
     }
 
     protected onClickZoomViews()
     {
-        const activePresentation = this.task.presentationController.activePresentation;
-        activePresentation.scene.ins.zoomExtent.set();
+        const activeDocument = this.task.documentManager.activeDocument;
+        activeDocument.getInnerComponent(CVScene).ins.zoomExtent.set();
     }
 }

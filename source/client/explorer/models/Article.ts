@@ -17,17 +17,17 @@
 
 import Publisher, { ITypedEvent } from "@ff/core/Publisher";
 
-import { IDocument } from "common/types/item";
+import { IArticle } from "common/types/item";
 import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IDocumentUpdateEvent extends ITypedEvent<"update">
+export interface IArticleUpdateEvent extends ITypedEvent<"update">
 {
-    document: Document;
+    article: Article;
 }
 
-export default class Document extends Publisher
+export default class Article extends Publisher
 {
     readonly id: string;
 
@@ -47,12 +47,12 @@ export default class Document extends Publisher
 
     update()
     {
-        this.emit<IDocumentUpdateEvent>({ type: "update", document: this });
+        this.emit<IArticleUpdateEvent>({ type: "update", article: this });
     }
 
-    deflate(): IDocument
+    deflate(): IArticle
     {
-        const data: Partial<IDocument> = { id: this.id };
+        const data: Partial<IArticle> = { id: this.id };
 
         if (this.title) {
             data.title = this.title;
@@ -70,10 +70,10 @@ export default class Document extends Publisher
             data.thumbnailUri = this.thumbnailUri;
         }
 
-        return data as IDocument;
+        return data as IArticle;
     }
 
-    inflate(data: IDocument): Document
+    inflate(data: IArticle): Article
     {
         this.title = data.title || "";
         this.description = data.description || "";

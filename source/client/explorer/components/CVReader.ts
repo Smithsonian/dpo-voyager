@@ -18,9 +18,9 @@
 import { types } from "@ff/graph/propertyTypes";
 import Component from "@ff/graph/Component";
 
-import { IReader, EReaderPosition } from "common/types/config";
+import { IReader, EReaderPosition } from "common/types/features";
 
-import Document from "../models/Document";
+import Article from "../models/Article";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +37,7 @@ export default class CVReader extends Component
     ins = this.addInputs(_inputs);
 
 
-    setDocument(document: Document)
+    setDocument(document: Article)
     {
         this.ins.url.setValue(document.uri);
     }

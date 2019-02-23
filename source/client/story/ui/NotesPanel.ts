@@ -24,7 +24,7 @@ import "@ff/ui/TextEdit";
 
 import { INote } from "common/types/item";
 
-import CVPresentationController, { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
+import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 import CVProcess from "../../explorer/components/CVProcess";
@@ -49,11 +49,11 @@ export default class NotesPanel extends SystemElement
 
     protected selectedNote: INote = null;
 
-    protected get presentationController() {
-        return this.system.getComponent(CVPresentationController);
+    protected get itemManager() {
+        return this.system.getComponent(CVItemManager);
     }
     protected get process() {
-        const activeItem = this.presentationController.activeItem;
+        const activeItem = this.itemManager.activeItem;
         return activeItem ? activeItem.getComponent(CVProcess, true) : null;
     }
 
@@ -65,12 +65,12 @@ export default class NotesPanel extends SystemElement
     protected connected()
     {
         super.connected();
-        this.presentationController.on<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.itemManager.on<IActiveItemEvent>("active-item", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.presentationController.off<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.itemManager.off<IActiveItemEvent>("active-item", this.performUpdate, this);
         super.disconnected();
     }
 

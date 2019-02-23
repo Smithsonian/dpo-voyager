@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { IActiveItemEvent } from "../../explorer/components/CVPresentationController";
+import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 
 import ExploreTaskView from "../ui/ExploreTaskView";
 import CVTask from "./CVTask";
@@ -36,9 +36,9 @@ export default class CVExploreTask extends CVTask
         return new ExploreTaskView(this);
     }
 
-    activate()
+    activateTask()
     {
-        super.activate();
+        super.activateTask();
 
         // disable selection brackets
         const prop = this.selectionController.ins.viewportBrackets;
@@ -46,12 +46,12 @@ export default class CVExploreTask extends CVTask
         prop.setValue(false);
     }
 
-    deactivate()
+    deactivateTask()
     {
         // restore selection brackets visibility
         this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
 
-        super.deactivate();
+        super.deactivateTask();
     }
 
     protected onActiveItem(event: IActiveItemEvent)

@@ -20,7 +20,7 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import CObject3D from "@ff/scene/components/CObject3D";
 
-import { IBackground, EBackgroundType, TBackgroundType } from "common/types/config";
+import { IBackground, EBackgroundType, TBackgroundType } from "common/types/features";
 
 ////////////////////////////////////////////////////////////////////////////////
 

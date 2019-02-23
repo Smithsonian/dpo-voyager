@@ -17,15 +17,13 @@
 
 import CVAnnotations from "./CVAnnotations";
 import CVBackground from "./CVBackground";
-import CVDocuments from "./CVDocuments";
+import CVArticles from "./CVArticles";
 import CVGroundPlane from "./CVGroundPlane";
 import CVHomeGrid from "./CVHomeGrid";
 import CVInterface from "./CVInterface";
-import CVItemData from "./CVItemData";
+import CVItemManager from "./CVItemManager";
 import CVMeta from "./CVMeta";
-import CVPresentation from "./CVPresentation";
-import CVPresentationController from "./CVPresentationController";
-import CVPresentationData from "./CVPresentationData";
+import CVDocument from "./CVDocument";
 import CVProcess from "./CVProcess";
 import CVReader from "./CVReader";
 import CVReference from "./CVReference";
@@ -39,15 +37,13 @@ import CVTours from "./CVTours";
 export {
     CVAnnotations,
     CVBackground,
-    CVDocuments,
+    CVArticles,
     CVGroundPlane,
     CVHomeGrid,
     CVInterface,
-    CVItemData,
+    CVItemManager,
     CVMeta,
-    CVPresentation,
-    CVPresentationController,
-    CVPresentationData,
+    CVDocument,
     CVProcess,
     CVReader,
     CVReference,
@@ -60,15 +56,13 @@ export {
 export const componentTypes = [
     CVAnnotations,
     CVBackground,
-    CVDocuments,
+    CVArticles,
     CVGroundPlane,
     CVHomeGrid,
     CVInterface,
-    CVItemData,
+    CVItemManager,
     CVMeta,
-    CVPresentation,
-    CVPresentationController,
-    CVPresentationData,
+    CVDocument,
     CVProcess,
     CVReader,
     CVReference,

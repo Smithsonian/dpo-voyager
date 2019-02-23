@@ -49,12 +49,12 @@
             "description": "Describes the visual representations (models, derivatives).",
             "$ref": "model.schema.json"
         },
-        "documents": {
-            "description": "References to external documents (articles, media files) containing additional information.",
-            "$ref": "documents.schema.json"
+        "articles": {
+            "description": "References to external articles (documents, media files) containing additional information.",
+            "$ref": "articles.schema.json"
         },
         "annotations": {
-            "description": "Spatial annotations (hot spots, hot zones). Annotations can reference documents.",
+            "description": "Spatial annotations (hot spots, hot zones). Annotations can reference articles.",
             "$ref": "annotations.schema.json"
         }
     },

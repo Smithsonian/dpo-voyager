@@ -3,7 +3,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "title": "Annotations",
-    "description": "Spatial annotations (hot spots, hot zones) on a 3D item. Annotations can reference documents.",
+    "description": "Spatial annotations (hot spots, hot zones) on a 3D item. Annotations can reference articles.",
 
     "definitions": {
         "annotation": {
@@ -53,8 +53,8 @@
                     "type": "number",
                     "default": 0
                 },
-                "documents": {
-                    "description": "Array of document indices, listing documents related to the annotation.",
+                "articles": {
+                    "description": "Array of article indices, listing articles related to the annotation.",
                     "type": "array",
                     "items": {
                         "type": "integer",

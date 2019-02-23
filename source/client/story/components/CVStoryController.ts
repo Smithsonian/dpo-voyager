@@ -22,10 +22,10 @@ import download from "@ff/browser/download";
 
 import CController, { Commander, Actions, types } from "@ff/graph/components/CController";
 import CSelection from "@ff/graph/components/CSelection";
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import Notification from "@ff/ui/Notification";
 
-import CVPresentationController from "../../explorer/components/CVPresentationController";
 import CVTaskController from "./CVTaskController";
 
 import taskSets, { EStoryMode } from "../taskSets";
@@ -54,7 +54,7 @@ export default class CVStoryController extends CController<CVStoryController>
     ins = this.addInputs(_inputs);
 
     protected selection: CSelection = null;
-    protected presentations: CVPresentationController = null;
+    protected documentManager: CDocumentManager = null;
     protected tasks: CVTaskController = null;
 
     createActions(commander: Commander)
@@ -65,7 +65,7 @@ export default class CVStoryController extends CController<CVStoryController>
     create()
     {
         this.selection = this.getMainComponent(CSelection);
-        this.presentations = this.getMainComponent(CVPresentationController);
+        this.documentManager = this.getMainComponent(CDocumentManager);
         this.tasks = this.getMainComponent(CVTaskController);
     }
 
@@ -79,49 +79,49 @@ export default class CVStoryController extends CController<CVStoryController>
                 this.tasks.setTaskTypes(taskTypes);
             }
         }
-        if (ins.save.changed) {
-            let url, file;
-
-            const itemNode = this.getSelectedActiveItem();
-            const presentation = this.getSelectedActivePresentation();
-
-            if (itemNode) {
-                url = itemNode.item.url;
-                const name = itemNode.item.urlName;
-                file = new File([JSON.stringify(itemNode.item.toData())], name, { type: "text/json" });
-            }
-            else if (presentation) {
-                url = presentation.presentation.url;
-                const name = url.substr(resolvePathname(".", url).length);
-                file = new File([JSON.stringify(presentation.toData())], name, { type: "text/json" });
-            }
-
-            if (url) {
-                console.log(`uploading file to '${url}'`);
-
-                fetch.file(url, "PUT", file)
-                .then(() => {
-                    new Notification(`Successfully uploaded file to '${url}'`, "info", 4000);
-                })
-                .catch(e => {
-                    new Notification(`Failed to upload file to '${url}'`, "error", 8000);
-                });
-            }
-        }
-
-        if (ins.download.changed) {
-            const itemNode = this.getSelectedActiveItem();
-            const presentation = this.getSelectedActivePresentation();
-
-            if (itemNode) {
-                download.json(itemNode.item.toData(), itemNode.item.urlName);
-            }
-            else if (presentation) {
-                const url = presentation.presentation.url;
-                const name = url.substr(resolvePathname(".", url).length);
-                download.json(presentation.toData(), name);
-            }
-        }
+        // if (ins.save.changed) {
+        //     let url, file;
+        //
+        //     const itemNode = this.getSelectedActiveItem();
+        //     const presentation = this.getSelectedActivePresentation();
+        //
+        //     if (itemNode) {
+        //         url = itemNode.item.url;
+        //         const name = itemNode.item.urlName;
+        //         file = new File([JSON.stringify(itemNode.item.toData())], name, { type: "text/json" });
+        //     }
+        //     else if (presentation) {
+        //         url = presentation.presentation.url;
+        //         const name = url.substr(resolvePathname(".", url).length);
+        //         file = new File([JSON.stringify(presentation.toData())], name, { type: "text/json" });
+        //     }
+        //
+        //     if (url) {
+        //         console.log(`uploading file to '${url}'`);
+        //
+        //         fetch.file(url, "PUT", file)
+        //         .then(() => {
+        //             new Notification(`Successfully uploaded file to '${url}'`, "info", 4000);
+        //         })
+        //         .catch(e => {
+        //             new Notification(`Failed to upload file to '${url}'`, "error", 8000);
+        //         });
+        //     }
+        // }
+        //
+        // if (ins.download.changed) {
+        //     const itemNode = this.getSelectedActiveItem();
+        //     const presentation = this.getSelectedActivePresentation();
+        //
+        //     if (itemNode) {
+        //         download.json(itemNode.item.toData(), itemNode.item.urlName);
+        //     }
+        //     else if (presentation) {
+        //         const url = presentation.presentation.url;
+        //         const name = url.substr(resolvePathname(".", url).length);
+        //         download.json(presentation.toData(), name);
+        //     }
+        // }
 
         if (ins.exit.changed) {
             this.exit();
@@ -132,14 +132,14 @@ export default class CVStoryController extends CController<CVStoryController>
 
     protected getSelectedActivePresentation()
     {
-        const activePresentation = this.presentations.activePresentation;
-        return this.selection.selectedComponents.contains(activePresentation) ? activePresentation : null;
+        const activeDocument = this.documentManager.activeDocument;
+        return this.selection.selectedComponents.contains(activeDocument) ? activeDocument : null;
     }
 
     protected getSelectedActiveItem()
     {
-        const activeItem = this.presentations.activeItem;
-        return this.selection.nodeContainsSelectedComponent(activeItem) ? activeItem : null;
+        //const activeItem = this.documentManager.activeItem;
+        //return this.selection.nodeContainsSelectedComponent(activeItem) ? activeItem : null;
     }
 
     protected exit()

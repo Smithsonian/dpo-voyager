@@ -18,11 +18,11 @@
 import { Index } from "@ff/core/types";
 
 import { IItem } from "./item";
-import { IConfig } from "./config";
+import { IFeatures } from "./features";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IItem, IConfig };
+export { IItem, IFeatures };
 
 export type TMatrix4 = number[];
 export type TVector3 = number[];
@@ -46,7 +46,7 @@ export interface IPresentation
     references?: IReference[];
     cameras?: ICamera[];
     lights?: ILight[];
-    config?: IConfig;
+    features?: IFeatures;
 }
 
 export interface IPresentationInfo

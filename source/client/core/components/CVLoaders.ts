@@ -83,6 +83,11 @@ export default class CVLoaders extends Component
         return this.textureLoader.load(url);
     }
 
+    loadPresentation(url: string): Promise<IPresentation>
+    {
+        return this.loadJSON(url).then(json => this.validatePresentation(json));
+    }
+
     validatePresentation(json: any): Promise<IPresentation>
     {
         return new Promise((resolve, reject) => {
@@ -92,6 +97,11 @@ export default class CVLoaders extends Component
 
             return resolve(json as IPresentation);
         });
+    }
+
+    loadItem(url: string): Promise<IItem>
+    {
+        return this.loadJSON(url).then(json => this.validateItem(json));
     }
 
     validateItem(json: any): Promise<IItem>

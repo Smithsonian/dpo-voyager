@@ -17,39 +17,39 @@
 
 import { customElement, html } from "@ff/ui/CustomElement";
 
-import "./DocumentList";
-import { ISelectDocumentEvent } from "./DocumentList";
+import "./ArticleList";
+import { ISelectArticleEvent } from "./ArticleList";
 
-import CVDocumentsTask from "../components/CVDocumentsTask";
+import CVArticlesTask from "../components/CVArticlesTask";
 import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-documents-task-view")
-export default class DocumentsTaskView extends TaskView
+@customElement("sv-articles-task-view")
+export default class ArticlesTaskView extends TaskView
 {
-    protected task: CVDocumentsTask;
+    protected task: CVArticlesTask;
 
     protected render()
     {
-        const documents = this.task.activeDocuments;
+        const articles = this.task.activeArticles;
 
-        if (!documents) {
-            return html`<div class="sv-placeholder">Please select an item to edit its documents</div>`;
+        if (!articles) {
+            return html`<div class="sv-placeholder">Please select an item to edit its articles</div>`;
         }
 
-        const documentList = documents.getDocuments();
-        const document = this.task.activeDocument;
+        const articleList = articles.getArticles();
+        const article = this.task.activeArticle;
 
-        const detailView = document ? html`` : null;
+        const detailView = article ? html`` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!document} @click=${this.onClickDelete}></ff-button>  
+            <ff-button text="Delete" icon="trash" ?disabled=${!article} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <sv-document-list .data=${documentList} .selectedItem=${document} @select=${this.onSelectDocument}></sv-document-list>
+                <sv-article-list .data=${articleList} .selectedItem=${article} @select=${this.onSelectDocument}></sv-article-list>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-panel-section sv-dialog sv-scrollable">
@@ -68,10 +68,10 @@ export default class DocumentsTaskView extends TaskView
 
     }
 
-    protected onSelectDocument(event: ISelectDocumentEvent)
+    protected onSelectDocument(event: ISelectArticleEvent)
     {
-        if (this.task.activeDocuments) {
-            this.task.activeDocument = event.detail.document;
+        if (this.task.activeArticles) {
+            this.task.activeArticle = event.detail.article;
         }
     }
 }

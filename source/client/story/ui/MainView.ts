@@ -97,6 +97,8 @@ export default class MainView extends CustomElement
             this.application = new StoryApplication(null, props);
         }
 
+        window["voyagerStory"] = this.application;
+
         this.dockView = null;
 
         const system = this.application.system;

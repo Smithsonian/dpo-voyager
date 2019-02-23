@@ -21,6 +21,7 @@ import * as helpers from "@ff/three/helpers";
 
 import { types, IComponentChangeEvent } from "@ff/graph/Component";
 
+import CAssetManager from "@ff/scene/components/CAssetManager";
 import CObject3D from "@ff/scene/components/CObject3D";
 
 import { EUnitType, IModel, TUnitType, Vector3 } from "common/types/item";
@@ -30,6 +31,7 @@ import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Deri
 import DerivativeList from "../models/DerivativeList";
 
 import CVLoaders from "./CVLoaders";
+import NVItem from "../../explorer/nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,9 +84,6 @@ export default class CVModel extends CObject3D
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
     outs = this.addOutputs<CObject3D, typeof _outputs>(_outputs);
 
-    assetPath: string = "";
-    assetBaseName: string = "";
-
     private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
@@ -99,6 +98,13 @@ export default class CVModel extends CObject3D
     }
     get activeDerivative() {
         return this._activeDerivative;
+    }
+
+    protected get loaders() {
+        return this.system.getMainComponent(CVLoaders);
+    }
+    protected get item() {
+        return this.node as NVItem;
     }
 
     private _marker: THREE.Mesh;
@@ -351,9 +357,7 @@ export default class CVModel extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        const loaders = this.system.getMainComponent(CVLoaders);
-
-        return derivative.load(loaders, this.assetPath)
+        return derivative.load(this.loaders, this.item.urlPath)
         .then(() => {
             if (!derivative.model) {
                 return;

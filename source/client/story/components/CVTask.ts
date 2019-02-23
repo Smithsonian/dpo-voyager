@@ -17,13 +17,11 @@
 
 import { types } from "@ff/graph/propertyTypes";
 import Component, { ITypedEvent } from "@ff/graph/Component";
+import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import CVPresentationController, {
-    IActiveItemEvent,
-    IActivePresentationEvent
-} from "../../explorer/components/CVPresentationController";
+import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 
 import CVTaskController from "./CVTaskController";
 import TaskView from "../ui/TaskView";
@@ -47,14 +45,17 @@ export default class CVTask extends Component
 
     ins = this.addInputs(_inputs);
 
-    get presentationController() {
-        return this.getMainComponent(CVPresentationController);
-    }
     get taskController() {
         return this.getMainComponent(CVTaskController);
     }
     get selectionController() {
         return this.getMainComponent(CPickSelection);
+    }
+    get documentManager() {
+        return this.getMainComponent(CDocumentManager);
+    }
+    get itemManager() {
+        return this.getMainComponent(CVItemManager);
     }
 
     update()
@@ -71,32 +72,40 @@ export default class CVTask extends Component
         throw new Error("must override");
     }
 
-    activate()
+    activateTask()
     {
-        const controller = this.presentationController;
+        const documentManager = this.documentManager;
+        documentManager.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+        this.onActiveDocument({ type: "active-document", previous: null, next: documentManager.activeDocument });
 
-        controller.on<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        controller.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
-
-        this.onActivePresentation({ type: "active-presentation", previous: null, next: controller.activePresentation });
-        this.onActiveItem({ type: "active-item", previous: null, next: controller.activeItem });
+        const itemManager = this.itemManager;
+        itemManager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.onActiveItem({ type: "active-item", previous: null, next: itemManager.activeItem });
     }
 
-    deactivate()
+    deactivateTask()
     {
-        const controller = this.presentationController;
+        const itemManager = this.itemManager;
+        itemManager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.onActiveItem({ type: "active-item", previous: itemManager.activeItem, next: null });
 
-        this.onActivePresentation({ type: "active-presentation", previous: controller.activePresentation, next: null });
-        this.onActiveItem({ type: "active-item", previous: controller.activeItem, next: null });
-
-        controller.off<IActivePresentationEvent>("active-presentation", this.onActivePresentation, this);
-        controller.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        const documentManager = this.documentManager;
+        documentManager.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+        this.onActiveDocument({ type: "active-document", previous: documentManager.activeDocument, next: null });
     }
 
-    protected onActivePresentation(event: IActivePresentationEvent)
+    /**
+     * Called when the currently active document changes.
+     * @param event
+     */
+    protected onActiveDocument(event: IActiveDocumentEvent)
     {
     }
 
+    /**
+     * Called when the currently active item changes.
+     * @param event
+     */
     protected onActiveItem(event: IActiveItemEvent)
     {
     }

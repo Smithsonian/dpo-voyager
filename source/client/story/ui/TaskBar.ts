@@ -16,16 +16,14 @@
  */
 
 import System from "@ff/graph/System";
+import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import "@ff/ui/Button";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
+import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import CVStoryController from "../components/CVStoryController";
 import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskController";
-import CVPresentationController, {
-    IActiveItemEvent,
-    IActivePresentationEvent
-} from "../../explorer/components/CVPresentationController";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 
@@ -36,7 +34,8 @@ export default class TaskBar extends SystemElement
 {
     protected story: CVStoryController = null;
     protected tasks: CVTaskController = null;
-    protected presentations: CVPresentationController = null;
+    protected documentManager: CDocumentManager = null;
+    protected itemManager: CVItemManager = null;
 
     constructor(system?: System)
     {
@@ -44,7 +43,8 @@ export default class TaskBar extends SystemElement
 
         this.story = system.getMainComponent(CVStoryController);
         this.tasks = system.getMainComponent(CVTaskController);
-        this.presentations = system.getMainComponent(CVPresentationController);
+        this.documentManager = system.getMainComponent(CDocumentManager);
+        this.itemManager = system.getMainComponent(CVItemManager);
     }
 
     protected firstConnected()
@@ -56,16 +56,16 @@ export default class TaskBar extends SystemElement
     {
         this.story.ins.expertMode.on("value", this.performUpdate, this);
         this.tasks.on<IActiveTaskEvent>("active-task", this.performUpdate, this);
-        this.presentations.on<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
-        this.presentations.on<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.documentManager.on<IActiveDocumentEvent>("active-document", this.performUpdate, this);
+        this.itemManager.on<IActiveItemEvent>("active-item", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.story.ins.expertMode.off("value", this.performUpdate, this);
         this.tasks.off<IActiveTaskEvent>("active-task", this.performUpdate, this);
-        this.presentations.off<IActivePresentationEvent>("active-presentation", this.performUpdate, this);
-        this.presentations.off<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.documentManager.off<IActiveDocumentEvent>("active-document", this.performUpdate, this);
+        this.itemManager.off<IActiveItemEvent>("active-item", this.performUpdate, this);
     }
 
     protected render()

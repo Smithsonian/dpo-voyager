@@ -21,7 +21,7 @@ import { EProjection } from "@ff/three/UniversalCamera";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 
-import { INavigation } from "common/types/config";
+import { INavigation } from "common/types/features";
 
 import CVScene from "./CVScene";
 

@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
+import { IComponentEvent, types } from "@ff/graph/Component";
+import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import NVItem from "../../explorer/nodes/NVItem";
 import CVModel from "../../core/components/CVModel";
-
-import DerivativesTaskView from "../ui/DerivativesTaskView";
-import CVTask from "./CVTask";
-import { IComponentEvent } from "@ff/graph/Component";
-import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
+import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import CVInterface from "../../explorer/components/CVInterface";
+import CVDocument from "../../explorer/components/CVDocument";
+
+import CVTask from "./CVTask";
+import DerivativesTaskView from "../ui/DerivativesTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,9 +68,9 @@ export default class CVDerivativesTask extends CVTask
         return new DerivativesTaskView(this);
     }
 
-    activate()
+    activateTask()
     {
-        super.activate();
+        super.activateTask();
 
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
 
@@ -81,7 +82,7 @@ export default class CVDerivativesTask extends CVTask
         }
     }
 
-    deactivate()
+    deactivateTask()
     {
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
 
@@ -91,20 +92,20 @@ export default class CVDerivativesTask extends CVTask
             interface_.ins.visible.setValue(this._interfaceVisible);
         }
 
-        super.deactivate();
+        super.deactivateTask();
     }
 
-    protected onActivePresentation(event: IActivePresentationEvent)
+    protected onActiveDocument(event: IActiveDocumentEvent)
     {
-        const prevPresentation = event.previous;
-        const nextPresentation = event.next;
+        const prevPresentation = event.previous as CVDocument;
+        const nextPresentation = event.next as CVDocument;
 
         if (prevPresentation) {
-            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.featuresNode.homeGrid.ins.visible.setValue(this._gridVisible);
             prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
-            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            let prop = nextPresentation.featuresNode.homeGrid.ins.visible;
             this._gridVisible = prop.value;
             prop.setValue(false);
 
@@ -113,7 +114,7 @@ export default class CVDerivativesTask extends CVTask
             prop.setValue(false);
         }
 
-        super.onActivePresentation(event);
+        super.onActiveDocument(event);
     }
 
     protected onActiveItem(event: IActiveItemEvent)
@@ -130,8 +131,10 @@ export default class CVDerivativesTask extends CVTask
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        if (event.add && event.object.node instanceof NVItem) {
-            this.presentationController.activeItem = event.object.node;
+        const node = event.object.node;
+
+        if (event.add && node instanceof NVItem) {
+            this.itemManager.activeItem = node;
         }
     }
 }

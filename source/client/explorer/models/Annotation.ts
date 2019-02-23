@@ -36,7 +36,7 @@ export default class Annotation
     offset: number = 0;
     tilt: number = 0;
     azimuth: number = 0;
-    documents: Identifier[] = [];
+    articles: Identifier[] = [];
     groups: Identifier[] = [];
     position: Vector3 = null;
     direction: Vector3 = null;
@@ -80,8 +80,8 @@ export default class Annotation
         if (this.azimuth !== 0) {
             data.azimuth = this.azimuth;
         }
-        if (this.documents.length > 0) {
-            data.documents = this.documents.slice();
+        if (this.articles.length > 0) {
+            data.articles = this.articles.slice();
         }
         if (this.groups.length > 0) {
             data.groups = this.groups.slice();
@@ -110,7 +110,7 @@ export default class Annotation
         this.offset = data.offset || 0;
         this.tilt = data.tilt || 0;
         this.azimuth = data.azimuth || 0;
-        this.documents = data.documents ? data.documents.slice() : [];
+        this.articles = data.articles ? data.articles.slice() : [];
         this.groups = data.groups ? data.groups.slice() : [];
 
         this.position = data.position.slice();

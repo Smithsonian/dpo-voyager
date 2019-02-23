@@ -33,6 +33,10 @@ export interface IActiveTaskEvent extends ITypedEvent<"active-task">
 
 export type TaskActions = Actions<CVTaskController>;
 
+/**
+ * Maintains a list of available tasks. Keeps track of the currently active task.
+ * Follows selection: if a task component is selected, it becomes the active task.
+ */
 export default class CVTaskController extends CController<CVTaskController>
 {
     static readonly typeName: string = "CVTaskController";
@@ -58,13 +62,13 @@ export default class CVTaskController extends CController<CVTaskController>
             this._activeTask = task;
 
             if (previous) {
-                previous.deactivate();
+                previous.deactivateTask();
             }
 
             this.emit<IActiveTaskEvent>({ type: "active-task", previous, next: task });
 
             if (task) {
-                task.activate();
+                task.activateTask();
             }
         }
     }

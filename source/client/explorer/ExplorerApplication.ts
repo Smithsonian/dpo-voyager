@@ -23,16 +23,6 @@ import TypeRegistry from "@ff/core/TypeRegistry";
 import System from "@ff/graph/System";
 import CPulse from "@ff/graph/components/CPulse";
 
-import CRenderer from "@ff/scene/components/CRenderer";
-import CPickSelection from "@ff/scene/components/CPickSelection";
-
-import CVLoaders from "../core/components/CVLoaders";
-import CVOrbitNavigation from "../core/components/CVOrbitNavigation";
-
-import CVInterface from "./components/CVInterface";
-import CVReader from "./components/CVReader";
-import CVPresentationController from "./components/CVPresentationController";
-
 import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
@@ -41,6 +31,17 @@ import { componentTypes as explorerComponents } from "./components";
 import { nodeTypes as graphNodes } from "@ff/graph/nodes";
 import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
 import { nodeTypes as explorerNodes } from "./nodes";
+
+import { IPresentation } from "common/types/presentation";
+import { IItem } from "common/types/item";
+
+import * as presentationTemplate from "common/templates/presentation.json";
+
+import CVLoaders from "../core/components/CVLoaders";
+import NVExplorer from "./nodes/NVExplorer";
+import NVDocuments from "./nodes/NVDocuments";
+import CVDocument from "./components/CVDocument";
+import NVItem from "./nodes/NVItem";
 
 import MainView from "./ui/MainView";
 
@@ -107,19 +108,8 @@ export default class ExplorerApplication
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const explorer = system.graph.createNode("Explorer");
-
-        explorer.createComponent(CPulse);
-        explorer.createComponent(CRenderer);
-        explorer.createComponent(CPickSelection).createActions(this.commander);
-
-        explorer.createComponent(CVLoaders);
-        explorer.createComponent(CVOrbitNavigation);
-        explorer.createComponent(CVInterface);
-        explorer.createComponent(CVReader);
-
-        const presentations = system.graph.createNode("Presentations");
-        presentations.createComponent(CVPresentationController).createActions(this.commander);
+        const main = system.graph.createCustomNode(NVExplorer, "Main");
+        system.graph.createCustomNode(NVDocuments, "Documents");
 
         // create main view if not given
         if (element) {
@@ -127,18 +117,83 @@ export default class ExplorerApplication
         }
 
         // start rendering
-        explorer.components.get(CPulse).start();
+        main.getComponent(CPulse).start();
 
         // start loading from properties
-        this.startup().catch((error: Error) => {
-            console.warn("application startup failed", error);
+        this.startup();
+    }
+
+    openDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    {
+        const loaders = this.system.getMainComponent(CVLoaders);
+        const documents = this.system.getMainNode(NVDocuments);
+
+        const getDocument = typeof documentOrUrl === "string" ?
+            loaders.loadJSON(documentOrUrl) : Promise.resolve(documentOrUrl);
+
+        return getDocument.then(jsonData => {
+            const document = documents.createComponent(CVDocument);
+            document.inflate(jsonData);
+            document.inflateReferences(jsonData);
+            return document;
+        }).catch(error => {
+            console.warn("Failed to open document", error);
+            return null;
         });
     }
 
-    protected startup(): Promise<void>
+    openPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    {
+        const loaders = this.system.getMainComponent(CVLoaders);
+        const documents = this.system.getMainNode(NVDocuments);
+
+        const url = typeof presentationOrUrl === "string" ? presentationOrUrl : "";
+        const getPresentation = url ? loaders.loadPresentation(url) : Promise.resolve(presentationOrUrl as IPresentation);
+
+        return getPresentation.then(presentationData => {
+            const document = documents.createComponent(CVDocument);
+            document.url = url;
+            document.fromPresentation(presentationData);
+            return document;
+        }).catch(error => {
+            console.warn("Failed to open presentation", error);
+            return null;
+        });
+    }
+
+    openDefaultPresentation(): Promise<CVDocument>
+    {
+        return this.openPresentation(presentationTemplate as IPresentation);
+    }
+
+    openItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    {
+        const loaders = this.system.getMainComponent(CVLoaders);
+        const documents = this.system.getMainNode(NVDocuments);
+
+        const url = typeof itemOrUrl === "string" ? itemOrUrl : "";
+        const getItem = url ? loaders.loadItem(url) : Promise.resolve(itemOrUrl as IItem);
+
+        let itemData;
+
+        return getItem.then(data => {
+            itemData = data;
+            return documents.documentManager.activeDocument as CVDocument ||
+                this.openPresentation(presentationTemplate as IPresentation);
+        }).then(document => {
+            const item = document.createItem();
+            item.url = url;
+            item.fromData(itemData);
+            return item;
+        }).catch(error => {
+            console.warn("Failed to open item", error);
+            return null;
+        });
+    }
+
+    protected startup()
     {
         const props = this.props;
-        const controller = this.system.getMainComponent(CVPresentationController);
 
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
@@ -151,18 +206,18 @@ export default class ExplorerApplication
 
 
         if (props.presentation) {
-            return controller.loadPresentation(props.presentation, null, props.base);
+            this.openPresentation(props.presentation);
         }
         if (props.item) {
-            return controller.loadItem(props.item, props.template, props.base);
+            this.openItem(props.item);
         }
-        if (props.model) {
-            return controller.loadModel(props.model, props.quality, props.template, props.base);
-        }
-        if (props.geometry) {
-            return controller.loadGeometryAndTexture(
-                props.geometry, props.texture, props.quality, props.template, props.base);
-        }
+        // if (props.model) {
+        //     return controller.loadModel(props.model, props.quality, props.template, props.base);
+        // }
+        // if (props.geometry) {
+        //     return controller.loadGeometryAndTexture(
+        //         props.geometry, props.texture, props.quality, props.template, props.base);
+        // }
 
         return Promise.resolve();
     }

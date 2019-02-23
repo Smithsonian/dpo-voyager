@@ -6,16 +6,14 @@
         "version": "1.2"
     },
     "scene": {
-        "nodes": [0, 1, 2]
+        "nodes": [0, 1]
     },
     "nodes": [{
-        "reference": 0
-    }, {
         "translation": [0, 0, 15],
         "camera": 0
     }, {
         "name": "Lights",
-        "children": [3, 4, 5, 6]
+        "children": [2, 3, 4, 5]
     }, {
         "translation": [-3, 1, 2],
         "name": "Light",
@@ -32,10 +30,6 @@
         "translation": [0, -2, -1.2],
         "name": "Light",
         "light": 3
-    }],
-    "references": [{
-        "mimeType": "application/si-dpo-3d.item+json",
-        "uri": "0"
     }],
     "cameras": [{
         "type": "perspective",
@@ -62,7 +56,7 @@
         "color": [0.8, 0.85, 1],
         "intensity": 1
     }],
-    "setup": {
+    "features": {
         "navigation": {
             "type": "Orbit",
             "enabled": true,

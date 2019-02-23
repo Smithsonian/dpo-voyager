@@ -22,7 +22,7 @@ import { types } from "@ff/graph/propertyTypes";
 import OrbitManipulator from "@ff/three/OrbitManipulator";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
-import { INavigation } from "common/types/config";
+import { INavigation } from "common/types/features";
 
 import CVNavigation, { EViewPreset, EProjection } from "./CVNavigation";
 

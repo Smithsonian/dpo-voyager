@@ -20,7 +20,7 @@ import CVPoseTask from "./components/CVPoseTask";
 import CVCaptureTask from "./components/CVCaptureTask";
 import CVAnnotationsTask from "./components/CVAnnotationsTask";
 import CVDerivativesTask from "./components/CVDerivativesTask";
-import CVDocumentsTask from "./components/CVDocumentsTask";
+import CVArticlesTask from "./components/CVArticlesTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,12 +32,12 @@ export default {
         CVPoseTask,
         CVCaptureTask,
         CVAnnotationsTask,
-        CVDocumentsTask,
+        CVArticlesTask,
         CVDerivativesTask,
     ],
     "Authoring": [
         CVExploreTask,
         CVAnnotationsTask,
-        CVDocumentsTask
+        CVArticlesTask
     ],
 }

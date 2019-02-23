@@ -24,6 +24,7 @@ import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
 import { types, IComponentEvent } from "@ff/graph/Component";
+import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -32,11 +33,12 @@ import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/mod
 
 import CVModel from "../../core/components/CVModel";
 import CVInterface from "../../explorer/components/CVInterface";
+import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
-import CaptureTaskView from "../ui/CaptureTaskView";
 import CVTask from "./CVTask";
-import { IActiveItemEvent, IActivePresentationEvent } from "../../explorer/components/CVPresentationController";
+import CaptureTaskView from "../ui/CaptureTaskView";
+import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -103,13 +105,14 @@ export default class CVCaptureTask extends CVTask
             }
             if (model) {
                 // load existing captures
+                const basePath = (model.node as NVItem).assetBaseUrl;
                 _qualityLevels.forEach(quality => {
                     const derivative = model.derivatives.get(EDerivativeUsage.Web2D, quality);
                     if (derivative) {
                         const image = derivative.findAsset(EAssetType.Image);
                         if (image) {
                             const imageElement = document.createElement("img");
-                            imageElement.src = resolvePathname(image.uri, model.assetPath);
+                            imageElement.src = resolvePathname(image.uri, basePath);
                             this._imageElements[quality] = imageElement;
                         }
                     }
@@ -155,7 +158,7 @@ export default class CVCaptureTask extends CVTask
         return new CaptureTaskView(this);
     }
 
-    activate()
+    activateTask()
     {
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
 
@@ -171,12 +174,12 @@ export default class CVCaptureTask extends CVTask
             interface_.ins.visible.setValue(false);
         }
 
-        super.activate();
+        super.activateTask();
     }
 
-    deactivate()
+    deactivateTask()
     {
-        super.deactivate();
+        super.deactivateTask();
 
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
 
@@ -244,7 +247,7 @@ export default class CVCaptureTask extends CVTask
         _qualityLevels.forEach(quality => {
             const dataURI = this._imageDataURIs[quality];
             const fileName = this.getImageFileName(quality, this._extension);
-            const fileURL = model.assetPath + fileName;
+            const fileURL = fileName;
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
@@ -292,7 +295,7 @@ export default class CVCaptureTask extends CVTask
 
     protected getImageFileName(quality: EDerivativeQuality, extension: string)
     {
-        const assetBaseName = this.activeModel.assetBaseName;
+        const assetBaseName = (this.activeModel.node as NVItem).assetBaseUrl;
         const qualityName = EDerivativeQuality[quality].toLowerCase();
         const imageName = `image-${qualityName}.${extension}`;
         return assetBaseName ? assetBaseName + "-" + imageName : imageName;
@@ -303,17 +306,17 @@ export default class CVCaptureTask extends CVTask
         console.warn("CCaptureTask.removePictures - not implemented yet");
     }
 
-    protected onActivePresentation(event: IActivePresentationEvent)
+    protected onActiveDocument(event: IActiveDocumentEvent)
     {
-        const prevPresentation = event.previous;
-        const nextPresentation = event.next;
+        const prevPresentation = event.previous as CVDocument;
+        const nextPresentation = event.next as CVDocument;
 
         if (prevPresentation) {
-            prevPresentation.setup.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.featuresNode.homeGrid.ins.visible.setValue(this._gridVisible);
             prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
-            let prop = nextPresentation.setup.homeGrid.ins.visible;
+            let prop = nextPresentation.featuresNode.homeGrid.ins.visible;
             this._gridVisible = prop.value;
             prop.setValue(false);
 
@@ -322,7 +325,7 @@ export default class CVCaptureTask extends CVTask
             prop.setValue(false);
         }
 
-        super.onActivePresentation(event);
+        super.onActiveDocument(event);
     }
 
     protected onActiveItem(event: IActiveItemEvent)
@@ -340,10 +343,10 @@ export default class CVCaptureTask extends CVTask
 
     protected onSelectModel(event: IComponentEvent<CVModel>)
     {
-        const item = event.object.node;
+        const node = event.object.node;
 
-        if (event.add && item instanceof NVItem) {
-            this.presentationController.activeItem = item;
+        if (event.add && node instanceof NVItem) {
+            this.itemManager.activeItem = node;
         }
     }
 }
