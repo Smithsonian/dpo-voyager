@@ -23,19 +23,23 @@ import TypeRegistry from "@ff/core/TypeRegistry";
 import System from "@ff/graph/System";
 import CPulse from "@ff/graph/components/CPulse";
 
-import CRenderer from "@ff/scene/components/CRenderer";
-
-import CVLoaders from "../core/components/CVLoaders";
-import CVOrbitNavigation from "../core/components/CVOrbitNavigation";
-
-import CMini from "./components/CMini";
-
 import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
 import { componentTypes as coreComponents } from "../core/components";
-import { componentTypes as miniComponents } from "./components";
+
+import { nodeTypes as graphNodes } from "@ff/graph/nodes";
+import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
+import { nodeTypes as miniNodes } from "./nodes";
+
+import { IItem } from "common/types/item";
+
+import CVAssetLoader from "../core/components/CVAssetLoader";
+
+import NVMiniExplorer from "./nodes/NVMiniExplorer";
 
 import MainView from "./ui/MainView";
+import NVMiniItem from "./nodes/NVMiniItem";
+import { EDerivativeQuality } from "../core/models/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +68,9 @@ export default class MiniApplication
     readonly system: System;
     readonly commander: Commander;
 
+    protected get item() {
+        return this.system.getMainNode(NVMiniItem);
+    }
 
     constructor(element?: HTMLElement, props?: IMiniApplicationProps)
     {
@@ -76,20 +83,15 @@ export default class MiniApplication
         registry.add(graphComponents);
         registry.add(sceneComponents);
         registry.add(coreComponents);
-        registry.add(miniComponents);
+
+        registry.add(graphNodes);
+        registry.add(sceneNodes);
+        registry.add(miniNodes);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const main = system.graph.createNode("Main");
-
-        main.createComponent(CPulse);
-        main.createComponent(CRenderer);
-
-        main.createComponent(CVLoaders);
-        main.createComponent(CVOrbitNavigation);
-
-        main.createComponent(CMini).createActions(this.commander);
+        system.graph.createCustomNode(NVMiniExplorer, "Main");
 
         // create main view if not given
         if (element) {
@@ -97,32 +99,49 @@ export default class MiniApplication
         }
 
         // start rendering
-        main.components.get(CPulse).start();
+        system.getComponent(CPulse).start();
 
         // start loading from properties
-        this.initFromProps();
+        this.startup();
     }
 
-    protected initFromProps()
+    loadItem(itemOrUrl: string | IItem)
+    {
+        //return this.loaders.loadItem(itemOrUrl);
+    }
+
+    loadModel(modelUrl: string)
+    {
+        this.item.createModelAsset(EDerivativeQuality.Medium, modelUrl);
+    }
+
+    loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string)
+    {
+        this.item.createMeshAsset(EDerivativeQuality.Medium, geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
+    }
+
+
+    protected startup()
     {
         const props = this.props;
-        const miniController = this.system.components.get(CMini);
 
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
 
-        if (props.item) {
-            miniController.loadItem(props.item);
-        }
-        else if (props.model) {
-            miniController.loadModel(props.model);
+        const loaders = this.system.getMainComponent(CVAssetLoader);
+
+        if (props.model) {
+            this.loadModel(props.model);
         }
         else if (props.geometry) {
-            miniController.loadGeometryAndTexture(
-                props.geometry, props.texture);
+            this.loadMesh(props.geometry, props.texture);
         }
+        else if (props.item) {
+            this.loadItem(props.item);
+        }
+
     }
 }
 

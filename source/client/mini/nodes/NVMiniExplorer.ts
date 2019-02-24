@@ -17,32 +17,40 @@
 
 import Node from "@ff/graph/Node";
 import CPulse from "@ff/graph/components/CPulse";
+
 import CRenderer from "@ff/scene/components/CRenderer";
-import CPickSelection from "@ff/scene/components/CPickSelection";
+import NCamera from "@ff/scene/nodes/NCamera";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
 import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
+import CVScene from "../../core/components/CVScene";
 
-import CVDocumentLoader from "../components/CVDocumentLoader";
-import CVInterface from "../components/CVInterface";
-import CVReader from "../components/CVReader";
+import NVMiniItem from "./NVMiniItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVExplorer extends Node
+export default class NVMiniExplorer extends Node
 {
-    static readonly typeName: string = "NVExplorer";
+    static readonly typeName: string = "NVMiniExplorer";
 
     createComponents()
     {
         this.createComponent(CPulse);
         this.createComponent(CRenderer);
-        this.createComponent(CPickSelection);
 
         this.createComponent(CVAssetLoader);
-        this.createComponent(CVDocumentLoader);
-        this.createComponent(CVInterface);
-        this.createComponent(CVReader);
         this.createComponent(CVOrbitNavigation);
+
+        const scene = this.createComponent(CVScene);
+        this.createScene(scene);
+    }
+
+    protected createScene(scene: CVScene)
+    {
+        const item = scene.graph.createCustomNode(NVMiniItem);
+        scene.addChild(item.transform);
+
+        const camera = scene.graph.createCustomNode(NCamera);
+        scene.addChild(camera.transform);
     }
 }

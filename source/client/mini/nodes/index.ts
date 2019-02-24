@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-import CMini from "./CMini";
+import NVMiniExplorer from "./NVMiniExplorer";
+import NVMiniItem from "./NVMiniItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    CMini
+    NVMiniExplorer,
+    NVMiniItem,
 };
 
-export const componentTypes = [
-    CMini
+export const nodeTypes = [
+    NVMiniExplorer,
+    NVMiniItem,
 ];

@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
+
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
@@ -35,12 +37,11 @@ import { nodeTypes as explorerNodes } from "./nodes";
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
-import * as presentationTemplate from "common/templates/presentation.json";
+import CVDocument from "./components/CVDocument";
+import CVDocumentLoader from "./components/CVDocumentLoader";
 
-import CVLoaders from "../core/components/CVLoaders";
 import NVExplorer from "./nodes/NVExplorer";
 import NVDocuments from "./nodes/NVDocuments";
-import CVDocument from "./components/CVDocument";
 import NVItem from "./nodes/NVItem";
 
 import MainView from "./ui/MainView";
@@ -52,10 +53,10 @@ import MainView from "./ui/MainView";
  */
 export interface IExplorerApplicationProps
 {
+    /** URL of the document to load and display at startup. */
+    document?: string;
     /** URL of the presentation to load and display at startup. */
     presentation?: string;
-    /** If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. */
-    template?: string;
     /** URL of the item to load and display at startup. */
     item?: string;
     /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
@@ -67,8 +68,6 @@ export interface IExplorerApplicationProps
     /** When loading a model or geometry, the quality level to set for the asset.
         Valid options: "thumb", "low", "medium", "high". */
     quality?: string;
-    /** Base url to use for new items or assets. */
-    base?: string;
 }
 
 /**
@@ -87,6 +86,9 @@ export default class ExplorerApplication
     readonly system: System;
     readonly commander: Commander;
 
+    protected get loader() {
+        return this.system.getMainComponent(CVDocumentLoader);
+    }
 
     constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
     {
@@ -123,101 +125,63 @@ export default class ExplorerApplication
         this.startup();
     }
 
-    openDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
     {
-        const loaders = this.system.getMainComponent(CVLoaders);
-        const documents = this.system.getMainNode(NVDocuments);
-
-        const getDocument = typeof documentOrUrl === "string" ?
-            loaders.loadJSON(documentOrUrl) : Promise.resolve(documentOrUrl);
-
-        return getDocument.then(jsonData => {
-            const document = documents.createComponent(CVDocument);
-            document.inflate(jsonData);
-            document.inflateReferences(jsonData);
-            return document;
-        }).catch(error => {
-            console.warn("Failed to open document", error);
-            return null;
-        });
+        return this.loader.loadDocument(documentOrUrl);
     }
 
-    openPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
     {
-        const loaders = this.system.getMainComponent(CVLoaders);
-        const documents = this.system.getMainNode(NVDocuments);
-
-        const url = typeof presentationOrUrl === "string" ? presentationOrUrl : "";
-        const getPresentation = url ? loaders.loadPresentation(url) : Promise.resolve(presentationOrUrl as IPresentation);
-
-        return getPresentation.then(presentationData => {
-            const document = documents.createComponent(CVDocument);
-            document.url = url;
-            document.fromPresentation(presentationData);
-            return document;
-        }).catch(error => {
-            console.warn("Failed to open presentation", error);
-            return null;
-        });
+        return this.loader.loadPresentation(presentationOrUrl);
     }
 
-    openDefaultPresentation(): Promise<CVDocument>
+    loadDefaultPresentation(): Promise<CVDocument>
     {
-        return this.openPresentation(presentationTemplate as IPresentation);
+        return this.loader.loadDefaultPresentation();
     }
 
-    openItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    loadItem(itemOrUrl: string | IItem): Promise<NVItem | null>
     {
-        const loaders = this.system.getMainComponent(CVLoaders);
-        const documents = this.system.getMainNode(NVDocuments);
+        return this.loader.loadItem(itemOrUrl);
+    }
 
-        const url = typeof itemOrUrl === "string" ? itemOrUrl : "";
-        const getItem = url ? loaders.loadItem(url) : Promise.resolve(itemOrUrl as IItem);
+    loadModel(modelUrl: string): Promise<NVItem | null>
+    {
+        return this.loader.createItemWithModelAsset(modelUrl);
+    }
 
-        let itemData;
-
-        return getItem.then(data => {
-            itemData = data;
-            return documents.documentManager.activeDocument as CVDocument ||
-                this.openPresentation(presentationTemplate as IPresentation);
-        }).then(document => {
-            const item = document.createItem();
-            item.url = url;
-            item.fromData(itemData);
-            return item;
-        }).catch(error => {
-            console.warn("Failed to open item", error);
-            return null;
-        });
+    loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string): Promise<NVItem | null>
+    {
+        return this.loader.createItemFromGeometryAndMaps(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
     }
 
     protected startup()
     {
         const props = this.props;
 
+        props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
         props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
         props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
-        props.template = props.template || parseUrlParameter("template") || parseUrlParameter("t");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
-        props.base = props.base || parseUrlParameter("base") || parseUrlParameter("b");
 
-
+        if (props.document) {
+            this.loader.loadDocument(props.document);
+        }
         if (props.presentation) {
-            this.openPresentation(props.presentation);
+            this.loader.loadPresentation(props.presentation);
         }
-        if (props.item) {
-            this.openItem(props.item);
+        if (props.model) {
+            this.loader.createItemWithModelAsset(props.model, props.item, props.quality);
         }
-        // if (props.model) {
-        //     return controller.loadModel(props.model, props.quality, props.template, props.base);
-        // }
-        // if (props.geometry) {
-        //     return controller.loadGeometryAndTexture(
-        //         props.geometry, props.texture, props.quality, props.template, props.base);
-        // }
+        else if (props.geometry) {
+            this.loader.createItemFromGeometryAndMaps(props.geometry, props.texture, null, null, props.item, props.quality);
+        }
+        else if (props.item) {
+            this.loader.loadItem(props.item);
+        }
 
         return Promise.resolve();
     }

@@ -81,9 +81,9 @@ export default class MainView extends CustomElement
         }
         else {
             const props: IStoryApplicationProps = {
-                item: this.getAttribute("item"),
+                document: this.getAttribute("document"),
                 presentation: this.getAttribute("presentation"),
-                template: this.getAttribute("template"),
+                item: this.getAttribute("item"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),

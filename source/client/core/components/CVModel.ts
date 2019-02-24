@@ -30,7 +30,7 @@ import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Derivative";
 import DerivativeList from "../models/DerivativeList";
 
-import CVLoaders from "./CVLoaders";
+import CVAssetLoader from "./CVAssetLoader";
 import NVItem from "../../explorer/nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ export default class CVModel extends CObject3D
     }
 
     protected get loaders() {
-        return this.system.getMainComponent(CVLoaders);
+        return this.system.getMainComponent(CVAssetLoader);
     }
     protected get item() {
         return this.node as NVItem;

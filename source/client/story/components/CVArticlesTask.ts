@@ -18,8 +18,8 @@
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
 
-import CVArticles, { Article } from "../../explorer/components/CVArticles";
 import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
+import CVArticles, { Article } from "../../explorer/components/CVArticles";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import ArticlesTaskView from "../ui/ArticlesTaskView";

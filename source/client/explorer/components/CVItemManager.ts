@@ -16,7 +16,6 @@
  */
 
 import Component, { types, ITypedEvent } from "@ff/graph/Component";
-import { INodeEvent } from "@ff/graph/Node";
 import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import NVItem from "../nodes/NVItem";

@@ -61,14 +61,13 @@ export default class MainView extends CustomElement
         }
         else {
             const props: IExplorerApplicationProps = {
+                document: this.getAttribute("document"),
                 presentation: this.getAttribute("presentation"),
                 item: this.getAttribute("item"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
                 quality: this.getAttribute("quality"),
-                template: this.getAttribute("template"),
-                base: this.getAttribute("base"),
             };
 
             this.application = new ExplorerApplication(null, props);

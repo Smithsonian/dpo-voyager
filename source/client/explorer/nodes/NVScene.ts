@@ -39,7 +39,7 @@ import {
     TVector3
 } from "common/types/presentation";
 
-import CVLoaders from "../../core/components/CVLoaders";
+import CVAssetLoader from "../../core/components/CVAssetLoader";
 import CVScene from "../../core/components/CVScene";
 
 import NVFeatures from "./NVFeatures";
@@ -68,7 +68,7 @@ export default class NVScene extends NScene
         return this.getComponent(CVScene);
     }
     get loadingManager() {
-        return this.getMainComponent(CVLoaders);
+        return this.getMainComponent(CVAssetLoader);
     }
 
     setUrl(url: string, assetPath?: string)

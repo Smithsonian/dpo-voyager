@@ -28,12 +28,14 @@ import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Expl
 
 import { componentTypes as storyComponents } from "./components";
 
+import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
+import NVItem from "../explorer/nodes/NVItem";
+
 import CVStoryController from "./components/CVStoryController";
 import CVTaskController from "./components/CVTaskController";
 import CVNotePad from "./components/CVNotePad";
 
 import MainView from "./ui/MainView";
-import NVItem from "../explorer/nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +62,9 @@ export default class StoryApplication
     readonly system: System;
     readonly commander: Commander;
 
+    protected get loader() {
+        return this.system.getMainComponent(CVDocumentLoader);
+    }
 
     constructor(element?: HTMLElement, props?: IStoryApplicationProps)
     {
@@ -89,24 +94,35 @@ export default class StoryApplication
         }
     }
 
-    openDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
     {
-        return this.explorer.openDocument(documentOrUrl);
+        return this.loader.loadDocument(documentOrUrl);
     }
 
-    openPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
     {
-        return this.explorer.openPresentation(presentationOrUrl);
+        return this.loader.loadPresentation(presentationOrUrl);
     }
 
-    openDefaultPresentation(): Promise<CVDocument>
+    loadDefaultPresentation(): Promise<CVDocument>
     {
-        return this.explorer.openDefaultPresentation();
+        return this.loader.loadDefaultPresentation();
     }
 
-    openItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    loadItem(itemOrUrl: string | IItem): Promise<NVItem | null>
     {
-        return this.explorer.openItem(itemOrUrl);
+        return this.loader.loadItem(itemOrUrl);
+    }
+
+    createItemWithModelAsset(modelUrl: string, itemUrl: string, quality: string): Promise<NVItem | null>
+    {
+        return this.loader.createItemWithModelAsset(modelUrl, itemUrl, quality);
+    }
+
+    createItemFromGeometryAndMaps(geoUrl: string, colorMapUrl?: string,
+        occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
+    {
+        return this.loader.createItemFromGeometryAndMaps(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, itemUrl, quality);
     }
 
     protected initFromProps()

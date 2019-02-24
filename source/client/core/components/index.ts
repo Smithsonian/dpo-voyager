@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CVLoaders from "./CVLoaders";
+import CVAssetLoader from "./CVAssetLoader";
 import CVModel from "./CVModel";
 import CVOrbitNavigation from "./CVOrbitNavigation";
 import CVScene from "./CVScene";
@@ -23,14 +23,14 @@ import CVScene from "./CVScene";
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    CVLoaders,
+    CVAssetLoader,
     CVModel,
     CVOrbitNavigation,
     CVScene,
 };
 
 export const componentTypes = [
-    CVLoaders,
+    CVAssetLoader,
     CVModel,
     CVOrbitNavigation,
     CVScene,

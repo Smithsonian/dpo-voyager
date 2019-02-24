@@ -22,36 +22,20 @@ import NTransform from "@ff/scene/nodes/NTransform";
 import { IItem } from "common/types/item";
 
 import CVModel from "../../core/components/CVModel";
-import CVMeta from "../components/CVMeta";
-import CVProcess from "../components/CVProcess";
-import CVAnnotations from "../components/CVAnnotations";
-import CVArticles from "../components/CVArticles";
 import { EDerivativeQuality } from "../../core/models/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVItem extends NTransform
+export default class NVMiniItem extends NTransform
 {
-    static readonly typeName: string = "NVItem";
+    static readonly typeName: string = "NVMiniItem";
     static readonly mimeType = "application/si-dpo-3d.item+json";
 
     private _url = "";
     private _assetBaseUrl = "";
 
-    get meta() {
-        return this.getComponent(CVMeta);
-    }
-    get process() {
-        return this.getComponent(CVProcess);
-    }
     get model() {
         return this.getComponent(CVModel);
-    }
-    get articles() {
-        return this.getComponent(CVArticles);
-    }
-    get annotations() {
-        return this.getComponent(CVAnnotations);
     }
 
     set url(url: string) {
@@ -93,11 +77,7 @@ export default class NVItem extends NTransform
     {
         super.createComponents();
 
-        this.createComponent(CVMeta);
-        this.createComponent(CVProcess);
         this.createComponent(CVModel);
-        this.createComponent(CVAnnotations);
-        this.createComponent(CVArticles);
 
         this.name = "Item";
     }
@@ -117,55 +97,13 @@ export default class NVItem extends NTransform
 
     fromData(data: IItem)
     {
-        if (data.meta && this.meta) {
-            this.meta.fromData(data.meta);
-        }
-        if (data.process && this.process) {
-            this.process.fromData(data.process);
-        }
         if (data.model && this.model) {
             this.model.fromData(data.model);
-        }
-        if (data.articles && this.articles) {
-            this.articles.fromData(data.articles);
-        }
-        if (data.annotations && this.annotations) {
-            this.annotations.fromData(data.annotations);
         }
     }
 
     toData(): IItem
     {
-        const data: Partial<IItem> = {
-            info: {
-                type: NVItem.mimeType,
-                copyright: "Copyright Smithsonian Institution",
-                generator: "Voyager Item Parser",
-                version: "1.2"
-            },
-            model: this.model.toData()
-        };
-
-        const metaData = this.meta.toData();
-        if (metaData) {
-            data.meta = metaData;
-        }
-
-        const processData = this.process.toData();
-        if (processData) {
-            data.process = processData;
-        }
-
-        const articlesData = this.articles.toData();
-        if (articlesData) {
-            data.articles = articlesData;
-        }
-
-        const annotationsData = this.annotations.toData();
-        if (annotationsData) {
-            data.annotations = annotationsData;
-        }
-
-        return data as IItem;
+        throw new Error("base NVItem can't serialize to data");
     }
 }

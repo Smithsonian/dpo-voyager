@@ -127,14 +127,14 @@ export default class DerivativeList
         return derivative;
     }
 
-    createModelAsset(uri: string, quality: EDerivativeQuality): Derivative
+    createModelAsset(quality: EDerivativeQuality, uri: string): Derivative
     {
         const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
         derivative.createAsset(EAssetType.Model, uri);
         return derivative;
     }
 
-    createMeshAsset(geoUri: string, textureUri: string, quality: EDerivativeQuality): Derivative
+    createMeshAsset(quality: EDerivativeQuality, geoUri: string, textureUri: string): Derivative
     {
         const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
         derivative.createAsset(EAssetType.Geometry, geoUri);

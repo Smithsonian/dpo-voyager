@@ -20,8 +20,8 @@ import * as THREE from "three";
 
 import Component from "@ff/graph/Component";
 
-import { IPresentation, IItem } from "common/types/presentation";
-import Asset from "../models/Asset";
+import { IPresentation } from "common/types/presentation";
+import { IItem } from "common/types/item";
 
 import JSONLoader from "../loaders/JSONLoader";
 import JSONValidator from "../loaders/JSONValidator";
@@ -29,13 +29,15 @@ import ModelLoader from "../loaders/ModelLoader";
 import GeometryLoader from "../loaders/GeometryLoader";
 import TextureLoader from "../loaders/TextureLoader";
 
+import Asset from "../models/Asset";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const _VERBOSE = false;
 
-export default class CVLoaders extends Component
+export default class CVAssetLoader extends Component
 {
-    static readonly typeName: string = "CVLoaders";
+    static readonly typeName: string = "CVAssetLoader";
 
     readonly jsonLoader: JSONLoader;
     readonly validator: JSONValidator;
@@ -65,25 +67,25 @@ export default class CVLoaders extends Component
         return this.jsonLoader.load(url);
     }
 
-    loadModel(asset: Asset, path?: string): Promise<THREE.Object3D>
+    loadModelAsset(asset: Asset, path?: string): Promise<THREE.Object3D>
     {
         const url = resolvePathname(asset.uri, path);
         return this.modelLoader.load(url);
     }
 
-    loadGeometry(asset: Asset, path?: string): Promise<THREE.Geometry>
+    loadGeometryAsset(asset: Asset, path?: string): Promise<THREE.Geometry>
     {
         const url = resolvePathname(asset.uri, path);
         return this.geometryLoader.load(url);
     }
 
-    loadTexture(asset: Asset, path?: string): Promise<THREE.Texture>
+    loadTextureAsset(asset: Asset, path?: string): Promise<THREE.Texture>
     {
         const url = resolvePathname(asset.uri, path);
         return this.textureLoader.load(url);
     }
 
-    loadPresentation(url: string): Promise<IPresentation>
+    loadPresentationData(url: string): Promise<IPresentation>
     {
         return this.loadJSON(url).then(json => this.validatePresentation(json));
     }
@@ -99,7 +101,7 @@ export default class CVLoaders extends Component
         });
     }
 
-    loadItem(url: string): Promise<IItem>
+    loadItemData(url: string): Promise<IItem>
     {
         return this.loadJSON(url).then(json => this.validateItem(json));
     }
@@ -114,6 +116,8 @@ export default class CVLoaders extends Component
             return resolve(json as IItem);
         });
     }
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
