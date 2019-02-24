@@ -18,13 +18,17 @@
 import System from "@ff/graph/System";
 import CComponent from "@ff/graph/Component";
 import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
-import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
 
-import CVItemManager, { IActiveItemEvent, IItemManagerChangeEvent } from "../../explorer/components/CVItemManager";
+import CVItemManager, {
+    IActiveItemEvent,
+    IItemEvent
+} from "../../explorer/components/CVItemManager";
+
 import NVItem from "../../explorer/nodes/NVItem";
 
 
@@ -57,7 +61,7 @@ class ItemList extends List<NVItem>
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
         this.selection.selectedNodes.on(NVItem, this.onChange, this);
 
-        this.itemManager.on<IItemManagerChangeEvent>("change", this.onChange, this);
+        this.itemManager.on<IItemEvent>("item", this.onChange, this);
         this.itemManager.on<IActiveItemEvent>("active-item", this.onChange, this);
     }
 
@@ -67,7 +71,7 @@ class ItemList extends List<NVItem>
         this.selection.selectedNodes.off(NVItem, this.onChange, this);
 
         this.itemManager.off<IActiveItemEvent>("active-item", this.onChange, this);
-        this.itemManager.off<IItemManagerChangeEvent>("change", this.onChange, this);
+        this.itemManager.off<IItemEvent>("item", this.onChange, this);
 
         super.disconnected();
     }
@@ -91,11 +95,6 @@ class ItemList extends List<NVItem>
             || this.selection.nodeContainsSelectedComponent(item);
     }
 
-    protected onClickItem(event: MouseEvent, item: NVItem)
-    {
-        this.itemManager.activeItem = item;
-    }
-
     protected onChange()
     {
         this.requestUpdate();
@@ -106,5 +105,10 @@ class ItemList extends List<NVItem>
         if (event.object.node.is(NVItem)) {
             this.requestUpdate();
         }
+    }
+
+    protected onClickItem(event: MouseEvent, item: NVItem)
+    {
+        this.itemManager.activeItem = item;
     }
 }

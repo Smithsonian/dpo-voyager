@@ -30,6 +30,7 @@ import { componentTypes as storyComponents } from "./components";
 
 import CVStoryController from "./components/CVStoryController";
 import CVTaskController from "./components/CVTaskController";
+import CVNotePad from "./components/CVNotePad";
 
 import MainView from "./ui/MainView";
 import NVItem from "../explorer/nodes/NVItem";
@@ -79,6 +80,7 @@ export default class StoryApplication
         const storyNode = this.system.graph.createNode("Story");
         storyNode.createComponent(CVTaskController);
         storyNode.createComponent(CVStoryController);
+        storyNode.createComponent(CVNotePad);
 
         this.initFromProps();
 

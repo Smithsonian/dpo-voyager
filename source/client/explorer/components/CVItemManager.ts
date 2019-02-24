@@ -16,16 +16,25 @@
  */
 
 import Component, { types, ITypedEvent } from "@ff/graph/Component";
+import { INodeEvent } from "@ff/graph/Node";
 import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import NVItem from "../nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IItemManagerChangeEvent extends ITypedEvent<"change">
+/**
+ * Emitted after the set of items has changed.
+ * @event
+ */
+export interface IItemEvent extends ITypedEvent<"item">
 {
 }
 
+/**
+ * Emitted after the active item has changed.
+ * @event
+ */
 export interface IActiveItemEvent extends ITypedEvent<"active-item">
 {
     previous: NVItem;
@@ -71,6 +80,9 @@ export default class CVItemManager extends Component
                 next: item
             });
         }
+
+        const index = this.items.indexOf(item);
+        this.ins.activeItem.setValue(index + 1, true);
     }
 
     protected get documentManger() {
@@ -79,9 +91,7 @@ export default class CVItemManager extends Component
 
     create()
     {
-        this.system.nodes.on(NVItem, this.updateItems, this);
-        this.documentManger.on<IActiveDocumentEvent>("active-document", this.updateItems, this);
-
+        this.documentManger.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
         this.updateItems();
     }
 
@@ -99,8 +109,17 @@ export default class CVItemManager extends Component
 
     dispose()
     {
-        this.system.nodes.off(NVItem, this.updateItems, this);
-        this.documentManger.off<IActiveDocumentEvent>("active-document", this.updateItems, this);
+        this.documentManger.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+    }
+
+    protected onActiveDocument(event: IActiveDocumentEvent)
+    {
+        if (event.previous) {
+            event.previous.innerNodes.off(NVItem, this.updateItems, this);
+        }
+        if (event.next) {
+            event.next.innerNodes.on(NVItem, this.updateItems, this);
+        }
     }
 
     protected updateItems()
@@ -112,15 +131,12 @@ export default class CVItemManager extends Component
         this.ins.activeItem.setOptions(names);
 
         // if the current active item is invalid, set the first item in the list active
-        const activeItem = this._activeItem;
-        let index = activeItem ? items.indexOf(activeItem) : -1;
-        if (index < 0) {
-            console.log(items);
-            this.activeItem = items[0];
-            index = 0;
+        let activeItem = this._activeItem;
+        if (!activeItem || items.indexOf(activeItem) < 0) {
+            activeItem = items[0];
         }
 
-        this.ins.activeItem.setValue(index);
-        this.emit<IItemManagerChangeEvent>({ type: "change" });
+        this.activeItem = activeItem;
+        this.emit<IItemEvent>({ type: "item" });
     }
 }

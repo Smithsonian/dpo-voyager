@@ -30,7 +30,7 @@ import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
 import TaskPanel from "./TaskPanel";
-import NotesPanel from "./NotesPanel";
+import NotePadPanel from "./NotePadPanel";
 import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 
@@ -111,7 +111,7 @@ export default class MainView extends CustomElement
         registry.set("explorer", () => new ExplorerPanel(explorer));
         registry.set("editor", () => new EditorPanel(system));
         registry.set("task", () => new TaskPanel(system));
-        registry.set("notes", () => new NotesPanel(system));
+        registry.set("notes", () => new NotePadPanel(system));
         registry.set("console", () => new ConsolePanel(system));
         registry.set("navigator", () => new NavigatorPanel(system));
         registry.set("hierarchy", () => new HierarchyTreeView(system));

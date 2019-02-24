@@ -18,7 +18,10 @@
 import System from "@ff/graph/System";
 import CSelection from "@ff/graph/components/CSelection";
 import CDocument from "@ff/graph/components/CDocument";
-import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+import CDocumentManager, {
+    IActiveDocumentEvent,
+    IDocumentEvent
+} from "@ff/graph/components/CDocumentManager";
 
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
@@ -49,16 +52,18 @@ class DocumentList extends List<CDocument>
     {
         super.connected();
 
-        this.system.components.on(CDocument, this.performUpdate, this);
         this.selection.selectedComponents.on(CDocument, this.performUpdate, this);
+
         this.documentManager.on<IActiveDocumentEvent>("active-document", this.performUpdate, this);
+        this.documentManager.on<IDocumentEvent>("document", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.system.components.off(CDocument, this.performUpdate, this);
         this.selection.selectedComponents.off(CDocument, this.performUpdate, this);
+
         this.documentManager.off<IActiveDocumentEvent>("active-document", this.performUpdate, this);
+        this.documentManager.off<IDocumentEvent>("document", this.performUpdate, this);
 
         super.disconnected();
     }

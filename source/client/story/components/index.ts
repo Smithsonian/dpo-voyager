@@ -20,6 +20,7 @@ import CVCaptureTask from "./CVCaptureTask";
 import CVDerivativesTask from "./CVDerivativesTask";
 import CVArticlesTask from "./CVArticlesTask";
 import CVExploreTask from "./CVExploreTask";
+import CVNotePad from "./CVNotePad";
 import CVPoseTask from "./CVPoseTask";
 import CVStoryController from "./CVStoryController";
 import CVTaskController from "./CVTaskController";
@@ -32,6 +33,7 @@ export {
     CVDerivativesTask,
     CVArticlesTask,
     CVExploreTask,
+    CVNotePad,
     CVPoseTask,
     CVStoryController,
     CVTaskController,
@@ -43,6 +45,7 @@ export const componentTypes = [
     CVDerivativesTask,
     CVArticlesTask,
     CVExploreTask,
+    CVNotePad,
     CVPoseTask,
     CVStoryController,
     CVTaskController,

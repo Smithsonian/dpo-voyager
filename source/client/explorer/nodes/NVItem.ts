@@ -64,6 +64,14 @@ export default class NVItem extends NTransform
             parts.pop();
             this._assetBaseUrl = parts.join(".");
         }
+
+        this.name = this.urlName;
+
+        console.log("NVItem.url");
+        console.log("   url:          %s", this.url);
+        console.log("   urlPath:      %s", this.urlPath);
+        console.log("   urlName:      %s", this.urlName);
+        console.log("   assetBaseUrl: %s", this.assetBaseUrl);
     }
     get url() {
         return this._url;

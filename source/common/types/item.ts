@@ -258,13 +258,5 @@ export interface ITourStep
  */
 export interface IProcess
 {
-    notes?: INote[];
     [key: string]: any;
-}
-
-export interface INote
-{
-    date: string;
-    user: string;
-    text: string;
 }
