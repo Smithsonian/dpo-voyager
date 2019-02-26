@@ -38,25 +38,21 @@ const dirs = {
     libs: path.resolve(project, "libs")
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-const version = "0.3.1";
-
 const apps = {
     "explorer": {
         name: "voyager-explorer",
         entryPoint: "client/explorer/ui/MainView.ts",
-        title: "Voyager Explorer " + version
+        title: "Voyager Explorer"
     },
     "mini": {
         name: "voyager-mini",
         entryPoint: "client/mini/ui/MainView.ts",
-        title: "Voyager Mini " + version
+        title: "Voyager Mini"
     },
     "story": {
         name: "voyager-story",
         entryPoint: "client/story/ui/MainView.ts",
-        title: "Voyager Story " + version
+        title: "Voyager Story"
     }
 };
 
@@ -65,34 +61,36 @@ const apps = {
 module.exports = function(env, argv) {
 
     const isDevMode = argv.mode !== "production";
-    const app = argv.app || "explorer";
+    const appKey = argv.app || "explorer";
+    const version = argv.vers || "x.x.x";
 
     // copy static assets
     fs.copy(dirs.assets, dirs.output, { overwrite: true });
 
-    if (app === "all") {
+    if (appKey === "all") {
         return [
-            createAppConfig("explorer", dirs, isDevMode),
-            createAppConfig("mini", dirs, isDevMode),
-            createAppConfig("story", dirs, isDevMode),
+            createAppConfig(apps.explorer, version, dirs, isDevMode),
+            createAppConfig(apps.mini, version, dirs, isDevMode),
+            createAppConfig(apps.story, version, dirs, isDevMode),
         ];
     }
     else {
-        return createAppConfig(app, dirs, isDevMode);
+        return createAppConfig(apps[appKey], version, dirs, isDevMode);
     }
 };
 
-function createAppConfig(app, dirs, isDevMode)
+function createAppConfig(app, version, dirs, isDevMode)
 {
     const devMode = isDevMode ? "development" : "production";
 
-    const appName = apps[app].name;
-    const appEntryPoint = apps[app].entryPoint;
-    const appTitle = apps[app].title + (isDevMode ? " DEV" : " PROD");
+    const appName = app.name;
+    const appEntryPoint = app.entryPoint;
+    const appTitle = `${app.title} ${version} ${isDevMode ? " DEV" : " PROD"}`;
 
     console.log("VOYAGER - WEBPACK BUILD SCRIPT");
     console.log("application = %s", appName);
     console.log("mode = %s", devMode);
+    console.log("version = %s", version);
     console.log("output directory = %s", dirs.output);
 
     const config = {
