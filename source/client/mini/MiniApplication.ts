@@ -17,7 +17,6 @@
 
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
-import Commander from "@ff/core/Commander";
 import TypeRegistry from "@ff/core/TypeRegistry";
 
 import System from "@ff/graph/System";
@@ -66,7 +65,6 @@ export default class MiniApplication
 
     readonly props: IMiniApplicationProps;
     readonly system: System;
-    readonly commander: Commander;
 
     protected get item() {
         return this.system.getMainNode(NVMiniItem);
@@ -88,7 +86,6 @@ export default class MiniApplication
         registry.add(sceneNodes);
         registry.add(miniNodes);
 
-        this.commander = new Commander();
         const system = this.system = new System(registry);
 
         system.graph.createCustomNode(NVMiniExplorer, "Main");
@@ -105,19 +102,19 @@ export default class MiniApplication
         this.startup();
     }
 
-    loadItem(itemOrUrl: string | IItem)
+    loadItem(itemUrl: string)
     {
-        //return this.loaders.loadItem(itemOrUrl);
+        this.item.loadItem(itemUrl);
     }
 
     loadModel(modelUrl: string)
     {
-        this.item.createModelAsset(EDerivativeQuality.Medium, modelUrl);
+        this.item.loadModelAsset(EDerivativeQuality.Medium, modelUrl);
     }
 
     loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string)
     {
-        this.item.createMeshAsset(EDerivativeQuality.Medium, geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
+        this.item.loadMeshAsset(EDerivativeQuality.Medium, geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
     }
 
 

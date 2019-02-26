@@ -16,41 +16,8 @@
  */
 
 ////////////////////////////////////////////////////////////////////////////////
-// BASE COLORS
 
-$color-primary: #0089bf; // Smithsonian primary blue
-$color-secondary: #ffcd00; // Smithsonian secondary yellow
-
-$menu-color-text: #f0f0f0;
-$menu-color-text-dim: #a0a0a0;
-$menu-color-background: transparentize(#202020, 0.3);
-$menu-color-background-hover: transparentize(#404040, 0.4);
-
-////////////////////////////////////////////////////////////////////////////////
-
-@import "../../../../libs/ff-ui/source/themes/dark";
-
-////////////////////////////////////////////////////////////////////////////////
-// GLOBAL
-
-body {
-  //@include font-ui-normal;
-  //font-size: 0.9rem;
-  //color: $color-text;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CONTENT LAYER
-
-.sv-content-view {
-  @include fullsize;
-}
-
-.sv-content-overlay {
-}
-
-.ff-viewport-overlay {
-}
+@import "../../core/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
 // ANNOTATIONS

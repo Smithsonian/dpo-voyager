@@ -82,8 +82,9 @@ export default class MainView extends CustomElement
 
     protected firstConnected()
     {
-        const system = this.application.system;
+        super.firstConnected();
 
+        const system = this.application.system;
         new ContentView(system).appendTo(this);
         new ChromeView(system).appendTo(this);
 

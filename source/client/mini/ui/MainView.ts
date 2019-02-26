@@ -17,13 +17,14 @@
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
-import MiniApplication, { IMiniApplicationProps } from "../MiniApplication";
-
 import ContentView from "../../explorer/ui/ContentView";
+
+import MiniApplication, { IMiniApplicationProps } from "../MiniApplication";
 
 import "./styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
+
 
 /**
  * Main UI view for the Voyager Mini application.
@@ -50,10 +51,14 @@ export default class MainView extends CustomElement
 
             this.application = new MiniApplication(null, props);
         }
+
+        window["voyagerMini"] = this.application;
     }
 
     protected firstConnected()
     {
+        super.firstConnected();
+
         const system = this.application.system;
         new ContentView(system).appendTo(this);
     }

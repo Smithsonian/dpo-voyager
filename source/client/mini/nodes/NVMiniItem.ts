@@ -23,6 +23,7 @@ import { IItem } from "common/types/item";
 
 import CVModel from "../../core/components/CVModel";
 import { EDerivativeQuality } from "../../core/models/Derivative";
+import CVAssetLoader from "../../core/components/CVAssetLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +33,6 @@ export default class NVMiniItem extends NTransform
     static readonly mimeType = "application/si-dpo-3d.item+json";
 
     private _url = "";
-    private _assetBaseUrl = "";
 
     get model() {
         return this.getComponent(CVModel);
@@ -40,23 +40,7 @@ export default class NVMiniItem extends NTransform
 
     set url(url: string) {
         this._url = url;
-
-        if (url.endsWith("item.json")) {
-            this._assetBaseUrl = url.substr(0, url.length - 9);
-        }
-        else {
-            const parts = url.split(".");
-            parts.pop();
-            this._assetBaseUrl = parts.join(".");
-        }
-
         this.name = this.urlName;
-
-        console.log("NVItem.url");
-        console.log("   url:          %s", this.url);
-        console.log("   urlPath:      %s", this.urlPath);
-        console.log("   urlName:      %s", this.urlName);
-        console.log("   assetBaseUrl: %s", this.assetBaseUrl);
     }
     get url() {
         return this._url;
@@ -69,26 +53,27 @@ export default class NVMiniItem extends NTransform
         const nameIndex = this.url.startsWith(path) ? path.length : 0;
         return this.url.substr(nameIndex);
     }
-    get assetBaseUrl() {
-        return this._assetBaseUrl;
-    }
 
     createComponents()
     {
         super.createComponents();
-
         this.createComponent(CVModel);
-
-        this.name = "Item";
     }
 
-    createModelAsset(quality: EDerivativeQuality, modelUrl: string)
+    loadItem(itemUrl: string)
+    {
+        this.url = itemUrl;
+        const loader = this.getMainComponent(CVAssetLoader);
+        loader.loadJSON(itemUrl).then(json => this.fromData(json));
+    }
+
+    loadModelAsset(quality: EDerivativeQuality, modelUrl: string)
     {
         const model = this.model;
         model.derivatives.createModelAsset(quality, modelUrl);
     }
 
-    createMeshAsset(quality: EDerivativeQuality, geoUrl: string, colorMapUrl?: string,
+    loadMeshAsset(quality: EDerivativeQuality, geoUrl: string, colorMapUrl?: string,
         occlusionMapUrl?: string, normalMapUrl?: string)
     {
         const model = this.model;

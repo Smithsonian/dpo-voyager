@@ -18,7 +18,7 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
-import Component from "@ff/graph/Component";
+import Component, { ITypedEvent } from "@ff/graph/Component";
 
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
@@ -33,7 +33,12 @@ import Asset from "../models/Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _VERBOSE = false;
+const _VERBOSE = true;
+
+export interface ILoaderUpdateEvent extends ITypedEvent<"update">
+{
+    isLoading: boolean;
+}
 
 export default class CVAssetLoader extends Component
 {
@@ -51,8 +56,9 @@ export default class CVAssetLoader extends Component
     constructor(id: string)
     {
         super(id);
+        this.addEvent("update");
 
-        const loadingManager = this._loadingManager = new PrivateLoadingManager();
+        const loadingManager = this._loadingManager = new PrivateLoadingManager(this);
 
         this.jsonLoader = new JSONLoader(loadingManager);
         this.validator = new JSONValidator();
@@ -116,17 +122,37 @@ export default class CVAssetLoader extends Component
             return resolve(json as IItem);
         });
     }
+
+    emitUpdateEvent(isLoading: boolean)
+    {
+        this.emit<ILoaderUpdateEvent>({ type: "update", isLoading });
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class PrivateLoadingManager extends THREE.LoadingManager
 {
+    protected assetLoader: CVAssetLoader;
+
+    constructor(assetLoader: CVAssetLoader)
+    {
+        super();
+        this.assetLoader = assetLoader;
+
+        this.onStart = this.onLoadingStart.bind(this);
+        this.onProgress = this.onLoadingProgress.bind(this);
+        this.onLoad = this.onLoadingCompleted.bind(this);
+        this.onError = this.onLoadingError.bind(this);
+    }
+
     protected onLoadingStart()
     {
         if (_VERBOSE) {
             console.log("Loading files...");
         }
+
+        this.assetLoader.emitUpdateEvent(true);
     }
 
     protected onLoadingProgress(url, itemsLoaded, itemsTotal)
@@ -141,6 +167,8 @@ class PrivateLoadingManager extends THREE.LoadingManager
         if (_VERBOSE) {
             console.log("Loading completed");
         }
+
+        this.assetLoader.emitUpdateEvent(false);
     }
 
     protected onLoadingError()
@@ -148,5 +176,7 @@ class PrivateLoadingManager extends THREE.LoadingManager
         if (_VERBOSE) {
             console.error(`Loading error`);
         }
+
+        this.assetLoader.emitUpdateEvent(false);
     }
 }

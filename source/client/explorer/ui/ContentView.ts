@@ -22,6 +22,9 @@ import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 
+import CVAssetLoader, { ILoaderUpdateEvent } from "../../core/components/CVAssetLoader";
+import Spinner from "../../core/ui/Spinner";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-content-view")
@@ -36,6 +39,7 @@ export default class ContentView extends CustomElement
     protected canvas: HTMLCanvasElement = null;
     protected overlay: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
+    protected spinner: Spinner = null;
 
     constructor(system?: System)
     {
@@ -52,6 +56,10 @@ export default class ContentView extends CustomElement
         this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
+    }
+
+    protected get assetLoader() {
+        return this.system.getMainComponent(CVAssetLoader);
     }
 
     protected firstConnected()
@@ -83,6 +91,10 @@ export default class ContentView extends CustomElement
             this.view.verticalSplit = message.verticalSplit;
         };
 
+        this.spinner = this.appendElement(Spinner, {
+            visibility: "hidden"
+        });
+
         this.view = new RenderQuadView(this.system, this.canvas, this.overlay);
         this.view.on<ILayoutChange>("layout", event => this.splitter.layout = event.layout);
 
@@ -98,6 +110,8 @@ export default class ContentView extends CustomElement
 
         window.addEventListener("resize", this.onResize);
         window.dispatchEvent(new CustomEvent("resize"));
+
+        this.assetLoader.on<ILoaderUpdateEvent>("update", this.onLoaderUpdate, this);
     }
 
     protected disconnected()
@@ -105,10 +119,17 @@ export default class ContentView extends CustomElement
         this.view.detach();
 
         window.removeEventListener("resize", this.onResize);
+
+        this.assetLoader.off<ILoaderUpdateEvent>("update", this.onLoaderUpdate, this);
     }
 
     protected onResize()
     {
         this.view.resize();
+    }
+
+    protected onLoaderUpdate(event: ILoaderUpdateEvent)
+    {
+        this.spinner.style.visibility = event.isLoading ? "visible" : "hidden";
     }
 }
