@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
+import * as moment from "moment";
+
+import System from "@ff/graph/System";
+
 import "@ff/ui/Table";
-import { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
+import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
+import "@ff/ui/LineEdit";
 import "@ff/ui/TextEdit";
 
 import CVNotePad, { INote, INotesUpdateEvent } from "../components/CVNotePad";
 
 import SystemElement, { customElement, html } from "./SystemElement";
 import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,16 +39,25 @@ import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
 export default class NotePadPanel extends SystemElement
 {
     protected static tableColumns: ITableColumn<INote>[] = [
-        { header: "Date", width: 0.33,
-            cell: row => new Date(row.date).toLocaleString(),
-            sortable: (row0, row1) => {
-                const d0 = new Date(row0.date);
-                const d1 = new Date(row1.date);
-                return d0 < d1 ? -1 : (d0 > d1 ? 1 : 0);
-            } },
-        { header: "User", width: 0.33, cell: "user", sortable: true },
-        { header: "Text", width: 0.34, cell: "text", sortable: true },
+        { header: "Date", width: 0.3,
+            cell: row => moment(row.date).format("YYYY-MM-DD HH:mm:ss"),
+            sortable: true
+        },
+        { header: "User", width: 0.25, cell: "user", sortable: true },
+        { header: "Text", width: 0.45, cell: "text", sortable: true },
     ];
+
+    protected noteTable: Table<INote>;
+
+    constructor(system?: System)
+    {
+        super(system);
+
+        this.noteTable = new Table<INote>();
+        this.noteTable.columns = NotePadPanel.tableColumns;
+        this.noteTable.placeholder = "No notes available.";
+        this.noteTable.addEventListener("rowclick", this.onClickTableRow.bind(this));
+    }
 
     protected get notePad() {
         return this.system.getMainComponent(CVNotePad);
@@ -65,15 +80,6 @@ export default class NotePadPanel extends SystemElement
         super.disconnected();
     }
 
-    protected renderList(notes: INote[])
-    {
-        const activeNote = this.notePad.activeNote;
-
-        return html`<ff-table
-            .columns=${NotePadPanel.tableColumns} .rows=${notes} .selectedRows=${activeNote} @rowclick=${this.onClickTableRow}
-            placeholder="No notes available."></ff-table>`;
-    }
-
     protected renderNote(note: INote)
     {
         if (!note) {
@@ -82,12 +88,12 @@ export default class NotePadPanel extends SystemElement
             </div>`;
         }
 
-        const dateText = new Date(note.date).toLocaleString();
+        const date = moment(note.date).format("YYYY-MM-DD HH:mm:ss");
 
         return html`<div class="ff-flex-column sv-note">
-            <div class="sv-note-field">Date: ${dateText}</div>
-            <div class="sv-note-field">User: ${note.user}</div>
-            <ff-text-edit text=${note.text} @change=${this.onEditText}></ff-text-edit>
+            <div class="sv-note-field">Created on ${date}</div>
+            <ff-line-edit text=${note.user} placeholder="User" @change=${this.onEditUser}></ff-line-edit>
+            <ff-text-edit text=${note.text} placeholder="Comment" @change=${this.onEditText}></ff-text-edit>
             </div>
         </div>`;
     }
@@ -104,8 +110,13 @@ export default class NotePadPanel extends SystemElement
         const notes = this.notePad.notes;
         const activeNote = this.notePad.activeNote;
 
+        const table = this.noteTable;
+        table.rows = notes;
+        table.selectedRows = activeNote;
+        table.requestUpdate();
+
         return html`<div class="sv-panel-content">
-                <div class="sv-list">${this.renderList(notes)}</div>
+                <div class="sv-list">${table}</div>
                 <ff-splitter></ff-splitter>
                 <div class="ff-flex-column sv-details">
                     <div class="sv-commands">
@@ -117,20 +128,28 @@ export default class NotePadPanel extends SystemElement
             </div>`;
     }
 
+    protected onEditUser(event: ILineEditChangeEvent)
+    {
+        this.notePad.setNote(event.detail.text, this.notePad.activeNote.text);
+    }
+
     protected onEditText(event: ITextEditChangeEvent)
     {
-        this.notePad.setText(event.detail.text);
+        this.notePad.setNote(this.notePad.activeNote.user, event.detail.text);
     }
 
     protected onClickTableRow(event: ITableRowClickEvent<INote>)
     {
         this.notePad.activeNote = event.detail.row;
+        setTimeout(() => (this.getElementsByTagName("ff-text-edit").item(0) as HTMLElement).focus(), 0);
     }
 
     protected onClickCreate()
     {
-        const note: INote = { date: new Date().toISOString(), user: "User", text: "New Note" };
+        const note: INote = { date: new Date().toISOString(), user: "", text: "" };
         this.notePad.addNote(note);
+
+        setTimeout(() => (this.getElementsByTagName("ff-line-edit").item(0) as HTMLElement).focus(), 0);
     }
 
     protected onClickDelete()

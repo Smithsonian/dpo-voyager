@@ -30,6 +30,13 @@ import { EDerivativeQuality } from "../../core/models/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export interface INote
+{
+    date: string;
+    user: string;
+    text: string;
+}
+
 export default class NVItem extends NTransform
 {
     static readonly typeName: string = "NVItem";
@@ -37,6 +44,8 @@ export default class NVItem extends NTransform
 
     private _url = "";
     private _assetBaseUrl = "";
+
+    notes: INote[] = [];
 
     get meta() {
         return this.getComponent(CVMeta);
@@ -139,9 +148,9 @@ export default class NVItem extends NTransform
         const data: Partial<IItem> = {
             info: {
                 type: NVItem.mimeType,
-                copyright: "Copyright Smithsonian Institution",
+                copyright: "(c) Smithsonian Institution, all rights reserved",
                 generator: "Voyager Item Parser",
-                version: "1.2"
+                version: "1.3"
             },
             model: this.model.toData()
         };

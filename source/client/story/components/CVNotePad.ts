@@ -17,17 +17,12 @@
 
 import Component, { ITypedEvent, types } from "@ff/graph/Component";
 
-import NVItem from "../../explorer/nodes/NVItem";
+import { INote } from "../../explorer/nodes/NVItem";
 import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface INote
-{
-    date: string;
-    user: string;
-    text: string;
-}
+export { INote };
 
 /**
  * Emitted after the set of notes has changed.
@@ -66,9 +61,10 @@ export default class CVNotePad extends Component
         this.activeNote = note;
     }
 
-    setText(text: string)
+    setNote(user: string, text: string)
     {
         if (this.activeNote) {
+            this.activeNote.user = user;
             this.activeNote.text = text;
             this.emitUpdateEvent();
         }
@@ -98,52 +94,14 @@ export default class CVNotePad extends Component
     protected onActiveItem(event: IActiveItemEvent)
     {
         if (event.previous) {
-            this.saveNotes(event.previous);
+            event.previous.process.set("notes", this._notes.slice());
         }
         else if (event.next) {
             setTimeout(() => {
-                this.loadNotes(event.next);
+                this._notes = event.next.process.get("notes") || [];
                 this.activeNote = this._notes[this._notes.length - 1];
             }, 0);
         }
-    }
-
-    protected loadNotes(item: NVItem)
-    {
-        const url = this.getNoteFileUrl(item);
-
-        fetch(url, { method: "GET" }).then(result => {
-            if (result.ok) {
-                return result.json();
-            }
-            else {
-                throw new Error(`GET ${url} returned status ${result.status} ${result.statusText}`);
-            }
-        }).then(json => {
-            this._notes = json.notes;
-        }).catch(error => {
-            console.warn("failed to load notes: %s", error.message);
-            this._notes = [];
-        });
-    }
-
-    protected saveNotes(item: NVItem)
-    {
-        const json = JSON.stringify({ notes: this._notes });
-        const url = this.getNoteFileUrl(item);
-
-        fetch(url, { method: "PUT", body: json }).then(result => {
-            if (!result.ok) {
-                throw new Error(`PUT ${url} returned status ${result.status} ${result.statusText}`)
-            }
-        }).catch(error => {
-            console.warn("failed to save notes: %s", error.message);
-        });
-    }
-
-    protected getNoteFileUrl(item: NVItem)
-    {
-        return item.assetBaseUrl + "-item-notes.json";
     }
 
     protected emitUpdateEvent()
