@@ -32,7 +32,8 @@ import NVItem from "../nodes/NVItem";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _inputs = {
-    download: types.Event("Data.Download"),
+    presentationDump: types.Event("Presentation.Dump"),
+    presentationDownload: types.Event("Presentation.Download"),
 };
 
 /**
@@ -52,6 +53,11 @@ export default class CVDocument extends CDocument
         this._url = url;
         this.name = this.urlName;
         this.getInnerComponent(CAssetManager).assetBaseUrl = url;
+
+        console.log("CVDocument.url");
+        console.log("   url:           %s", this.url);
+        console.log("   urlPath:       %s", this.urlPath);
+        console.log("   urlName:       %s", this.urlName);
     }
     get url() {
         return this._url;
@@ -60,7 +66,9 @@ export default class CVDocument extends CDocument
         return resolvePathname(".", this.url);
     }
     get urlName() {
-        return this.url.substr(this.urlPath.length);
+        const path = this.urlPath;
+        const nameIndex = this.url.startsWith(path) ? path.length : 0;
+        return this.url.substr(nameIndex);
     }
 
     get scene() {
@@ -90,15 +98,23 @@ export default class CVDocument extends CDocument
         scene.addChild(this.innerGraph.createCustomNode(NVFeatures));
     }
 
-    update()
+    update(context)
     {
+        super.update(context);
+
         const ins = this.ins;
 
-        if (ins.download.changed) {
+        if (ins.presentationDump.changed) {
+            const json = this.toPresentation();
+            console.log("-------------------- PRESENTATION --------------------");
+            console.log(JSON.stringify(json, null, 2));
+        }
+
+        if (ins.presentationDownload.changed) {
             download.json(this.toPresentation(), this.urlName || "presentation.json");
         }
 
-        return false;
+        return true;
     }
 
     fromPresentation(data: IPresentation)
@@ -112,15 +128,18 @@ export default class CVDocument extends CDocument
 
     toPresentation(writeReferences: boolean = false): IPresentation
     {
-        const data = this.sceneNode.toData(writeReferences);
+        let data = this.sceneNode.toData(writeReferences);
         data.features = this.featuresNode.toData();
 
-        data.info = {
+        const info = {
             type: CVDocument.mimeType,
             copyright: "Copyright Smithsonian Institution",
             generator: "Voyager Presentation Parser",
             version: "1.3"
         };
+
+        // ensure info is first key in data
+        data = Object.assign({ info }, data);
 
         return data as IPresentation;
     }

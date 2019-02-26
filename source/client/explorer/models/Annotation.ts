@@ -48,7 +48,7 @@ export default class Annotation
         this.id = id || "";
     }
 
-    deflate(): IAnnotation
+    toData(): IAnnotation
     {
         const data: Partial<IAnnotation> = { id: this.id };
 
@@ -99,7 +99,7 @@ export default class Annotation
         return data as IAnnotation;
     }
 
-    inflate(data: IAnnotation): Annotation
+    fromData(data: IAnnotation): Annotation
     {
         this.title = data.title || "";
         this.description = data.description || "";

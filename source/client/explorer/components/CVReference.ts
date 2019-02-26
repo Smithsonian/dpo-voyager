@@ -39,15 +39,12 @@ export default class CVReference extends Component
 
     deflate()
     {
-        const data = this.toData();
-        return data ? { data } : null;
+        return super.deflate();
     }
 
     inflate(json: any)
     {
-        if (json.data) {
-            this.fromData(json);
-        }
+        super.inflate(json);
     }
 
     toData(): IReference

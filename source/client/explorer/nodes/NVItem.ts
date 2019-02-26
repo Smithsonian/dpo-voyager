@@ -43,7 +43,7 @@ export default class NVItem extends NTransform
     static readonly mimeType = "application/si-dpo-3d.item+json";
 
     private _url = "";
-    private _assetBaseUrl = "";
+    private _assetBaseName = "";
 
     notes: INote[] = [];
 
@@ -66,22 +66,23 @@ export default class NVItem extends NTransform
     set url(url: string) {
         this._url = url;
 
-        if (url.endsWith("item.json")) {
-            this._assetBaseUrl = url.substr(0, url.length - 9);
+        const urlName = this.urlName;
+        if (urlName.endsWith("item.json")) {
+            this._assetBaseName = urlName.substr(0, urlName.length - 9);
         }
         else {
-            const parts = url.split(".");
+            const parts = urlName.split(".");
             parts.pop();
-            this._assetBaseUrl = parts.join(".");
+            this._assetBaseName = parts.join(".");
         }
 
         this.name = this.urlName;
 
         console.log("NVItem.url");
-        console.log("   url:          %s", this.url);
-        console.log("   urlPath:      %s", this.urlPath);
-        console.log("   urlName:      %s", this.urlName);
-        console.log("   assetBaseUrl: %s", this.assetBaseUrl);
+        console.log("   url:           %s", this.url);
+        console.log("   urlPath:       %s", this.urlPath);
+        console.log("   urlName:       %s", this.urlName);
+        console.log("   assetBaseName: %s", this.assetBaseName);
     }
     get url() {
         return this._url;
@@ -94,8 +95,12 @@ export default class NVItem extends NTransform
         const nameIndex = this.url.startsWith(path) ? path.length : 0;
         return this.url.substr(nameIndex);
     }
-    get assetBaseUrl() {
-        return this._assetBaseUrl;
+    get assetBaseName() {
+        return this._assetBaseName;
+    }
+
+    getAssetUrl(fileName: string) {
+        return resolvePathname(fileName, this.url);
     }
 
     createComponents()

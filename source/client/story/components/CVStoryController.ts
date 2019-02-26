@@ -29,6 +29,8 @@ import Notification from "@ff/ui/Notification";
 import CVTaskController from "./CVTaskController";
 
 import taskSets, { EStoryMode } from "../taskSets";
+import CVItemManager from "../../explorer/components/CVItemManager";
+import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,7 +57,33 @@ export default class CVStoryController extends CController<CVStoryController>
 
     protected selection: CSelection = null;
     protected documentManager: CDocumentManager = null;
+    protected itemManager: CVItemManager = null;
     protected tasks: CVTaskController = null;
+
+    constructor(id: string)
+    {
+        super(id);
+        this.beforeUnload = this.beforeUnload.bind(this);
+    }
+
+    protected get activeSelectedItem() {
+
+        const item = this.itemManager.activeItem;
+        if (item && (this.selection.selectedNodes.contains(item) || this.selection.nodeContainsSelectedComponent(item))) {
+            return item;
+        }
+
+        return null;
+    }
+    protected get activeSelectedDocument() {
+
+        const document = this.documentManager.activeDocument;
+        if (document && this.selection.selectedComponents.contains(document)) {
+            return document;
+        }
+
+        return null;
+    }
 
     createActions(commander: Commander)
     {
@@ -66,7 +94,16 @@ export default class CVStoryController extends CController<CVStoryController>
     {
         this.selection = this.getMainComponent(CSelection);
         this.documentManager = this.getMainComponent(CDocumentManager);
+        this.itemManager = this.getMainComponent(CVItemManager);
         this.tasks = this.getMainComponent(CVTaskController);
+
+        window.addEventListener("beforeunload", this.beforeUnload);
+    }
+
+    dispose()
+    {
+        window.removeEventListener("beforeunload", this.beforeUnload);
+        super.dispose();
     }
 
     update()
@@ -79,49 +116,50 @@ export default class CVStoryController extends CController<CVStoryController>
                 this.tasks.setTaskTypes(taskTypes);
             }
         }
-        // if (ins.save.changed) {
-        //     let url, file;
-        //
-        //     const itemNode = this.getSelectedActiveItem();
-        //     const presentation = this.getSelectedActivePresentation();
-        //
-        //     if (itemNode) {
-        //         url = itemNode.item.url;
-        //         const name = itemNode.item.urlName;
-        //         file = new File([JSON.stringify(itemNode.item.toData())], name, { type: "text/json" });
-        //     }
-        //     else if (presentation) {
-        //         url = presentation.presentation.url;
-        //         const name = url.substr(resolvePathname(".", url).length);
-        //         file = new File([JSON.stringify(presentation.toData())], name, { type: "text/json" });
-        //     }
-        //
-        //     if (url) {
-        //         console.log(`uploading file to '${url}'`);
-        //
-        //         fetch.file(url, "PUT", file)
-        //         .then(() => {
-        //             new Notification(`Successfully uploaded file to '${url}'`, "info", 4000);
-        //         })
-        //         .catch(e => {
-        //             new Notification(`Failed to upload file to '${url}'`, "error", 8000);
-        //         });
-        //     }
-        // }
-        //
-        // if (ins.download.changed) {
-        //     const itemNode = this.getSelectedActiveItem();
-        //     const presentation = this.getSelectedActivePresentation();
-        //
-        //     if (itemNode) {
-        //         download.json(itemNode.item.toData(), itemNode.item.urlName);
-        //     }
-        //     else if (presentation) {
-        //         const url = presentation.presentation.url;
-        //         const name = url.substr(resolvePathname(".", url).length);
-        //         download.json(presentation.toData(), name);
-        //     }
-        // }
+
+        // save active item/document
+        if (ins.save.changed) {
+
+            let url, file;
+
+            const item = this.activeSelectedItem;
+            const document = this.activeSelectedDocument as CVDocument;
+
+            if (item) {
+                url = item.url;
+                file = new File([JSON.stringify(item.toData())], item.urlName, { type: "text/json" });
+            }
+            else if (document) {
+                url = document.url;
+                file = new File([JSON.stringify(document.toPresentation())], document.urlName, { type: "text/json" });
+            }
+
+            if (url && file) {
+                console.log(`uploading file to '${url}'`);
+
+                fetch.file(url, "PUT", file)
+                .then(() => {
+                    new Notification(`Successfully uploaded file to '${url}'`, "info", 4000);
+                })
+                .catch(e => {
+                    new Notification(`Failed to upload file to '${url}'`, "error", 8000);
+                });
+            }
+        }
+
+        // download active item/document
+        if (ins.download.changed) {
+
+            const item = this.activeSelectedItem;
+            const document = this.activeSelectedDocument as CVDocument;
+
+            if (item) {
+                download.json(item.toData(), item.urlName);
+            }
+            else if (document) {
+                download.json(document.toPresentation(), document.urlName);
+            }
+        }
 
         if (ins.exit.changed) {
             this.exit();
@@ -130,23 +168,17 @@ export default class CVStoryController extends CController<CVStoryController>
         return false;
     }
 
-    protected getSelectedActivePresentation()
-    {
-        const activeDocument = this.documentManager.activeDocument;
-        return this.selection.selectedComponents.contains(activeDocument) ? activeDocument : null;
-    }
-
-    protected getSelectedActiveItem()
-    {
-        //const activeItem = this.documentManager.activeItem;
-        //return this.selection.nodeContainsSelectedComponent(activeItem) ? activeItem : null;
-    }
-
     protected exit()
     {
         const referrer = this.ins.referrer.value;
         if (referrer) {
             location.assign(referrer);
         }
+    }
+
+    protected beforeUnload(event)
+    {
+        event.returnValue = "x";
+        //return "x";
     }
 }

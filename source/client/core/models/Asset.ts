@@ -66,7 +66,6 @@ export default class Asset
         this.mapType = EMapType[assetData.mapType];
         this.byteSize = assetData.byteSize || 0;
         this.numFaces = assetData.numFaces || 0;
-        this.numVertices = assetData.numVertices || 0;
         this.imageSize = assetData.imageSize || 0;
 
         if (this.type === undefined) {
@@ -94,16 +93,15 @@ export default class Asset
             data.byteSize = this.byteSize;
         }
 
+        // for model and geometry assets, save number of faces
         if (this.type === EAssetType.Model || this.type === EAssetType.Geometry) {
             if (this.numFaces > 0) {
                 data.numFaces = this.numFaces;
             }
-            if (this.numVertices > 0) {
-                data.numVertices = this.numVertices;
-            }
         }
 
-        if (this.type === EAssetType.Image || this.type === EAssetType.Texture) {
+        // for model, image, and texture assets, save image/map size
+        if (this.type === EAssetType.Model || this.type === EAssetType.Image || this.type === EAssetType.Texture) {
             if (this.imageSize > 0) {
                 data.imageSize = this.imageSize;
             }

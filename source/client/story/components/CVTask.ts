@@ -57,6 +57,9 @@ export default class CVTask extends Component
     get itemManager() {
         return this.getMainComponent(CVItemManager);
     }
+    get activeItem() {
+        return this.itemManager.activeItem;
+    }
 
     update()
     {

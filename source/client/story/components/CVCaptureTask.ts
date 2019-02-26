@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
-
 import { Dictionary } from "@ff/core/types";
 
 import download from "@ff/browser/download";
@@ -105,14 +103,13 @@ export default class CVCaptureTask extends CVTask
             }
             if (model) {
                 // load existing captures
-                const basePath = (model.node as NVItem).assetBaseUrl;
                 _qualityLevels.forEach(quality => {
                     const derivative = model.derivatives.get(EDerivativeUsage.Web2D, quality);
                     if (derivative) {
                         const image = derivative.findAsset(EAssetType.Image);
                         if (image) {
                             const imageElement = document.createElement("img");
-                            imageElement.src = resolvePathname(image.uri, basePath);
+                            imageElement.src = this.activeItem.getAssetUrl(image.uri);
                             this._imageElements[quality] = imageElement;
                         }
                     }
@@ -214,7 +211,7 @@ export default class CVCaptureTask extends CVTask
         return true;
     }
 
-    protected takePictures(quality: number, type: string, extension: string)
+    protected takePictures(compressionQuality: number, type: string, extension: string)
     {
         this._mimeType = type;
         this._extension = extension;
@@ -226,7 +223,7 @@ export default class CVCaptureTask extends CVTask
         }
 
         _qualityLevels.forEach(quality => {
-            const dataURI = view.renderImage(_sizePresets[quality][0], _sizePresets[quality][1], type, quality);
+            const dataURI = view.renderImage(_sizePresets[quality][0], _sizePresets[quality][1], type, compressionQuality);
             this._imageDataURIs[quality] = dataURI;
 
             const imageElement = this._imageElements[quality] || document.createElement("img");
@@ -247,7 +244,7 @@ export default class CVCaptureTask extends CVTask
         _qualityLevels.forEach(quality => {
             const dataURI = this._imageDataURIs[quality];
             const fileName = this.getImageFileName(quality, this._extension);
-            const fileURL = fileName;
+            const fileURL = this.activeItem.getAssetUrl(fileName);
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
@@ -295,10 +292,10 @@ export default class CVCaptureTask extends CVTask
 
     protected getImageFileName(quality: EDerivativeQuality, extension: string)
     {
-        const assetBaseName = (this.activeModel.node as NVItem).assetBaseUrl;
+        const assetBaseName = (this.activeModel.node as NVItem).assetBaseName;
         const qualityName = EDerivativeQuality[quality].toLowerCase();
         const imageName = `image-${qualityName}.${extension}`;
-        return assetBaseName ? assetBaseName + "-" + imageName : imageName;
+        return assetBaseName + imageName;
     }
 
     protected removePictures()

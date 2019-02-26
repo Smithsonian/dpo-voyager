@@ -116,8 +116,6 @@ export default class CVAssetLoader extends Component
             return resolve(json as IItem);
         });
     }
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////

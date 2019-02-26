@@ -134,7 +134,6 @@ export interface IAsset
     mimeType?: string;
     byteSize?: number;
     numFaces?: number;
-    numVertices?: number;
     imageSize?: number;
     mapType?: TMapType;
 }

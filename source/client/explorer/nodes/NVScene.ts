@@ -80,7 +80,6 @@ export default class NVScene extends NScene
     createComponents()
     {
         this.createComponent(CVScene);
-        this.name = "Scene";
     }
 
     // deflate()

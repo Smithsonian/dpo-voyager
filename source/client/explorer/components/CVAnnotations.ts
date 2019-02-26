@@ -287,7 +287,7 @@ export default class CVAnnotations extends CObject3D
         const annotationIds = Object.keys(this._annotations);
         if (annotationIds.length > 0) {
             data = data || {};
-            data.annotations = annotationIds.map(id => this._annotations[id].deflate());
+            data.annotations = annotationIds.map(id => this._annotations[id].toData());
         }
 
         const groupIds = Object.keys(this._groups);
@@ -302,7 +302,7 @@ export default class CVAnnotations extends CObject3D
     fromData(data: IAnnotations)
     {
         if (data.annotations) {
-            data.annotations.forEach(data => this.addAnnotation(new Annotation(data.id).inflate(data)));
+            data.annotations.forEach(data => this.addAnnotation(new Annotation(data.id).fromData(data)));
         }
         if (data.groups) {
             data.groups.forEach(data => this.addGroup(new Group(data.id).inflate(data)));

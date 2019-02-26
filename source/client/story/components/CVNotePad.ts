@@ -93,14 +93,20 @@ export default class CVNotePad extends Component
 
     protected onActiveItem(event: IActiveItemEvent)
     {
-        if (event.previous) {
-            event.previous.process.set("notes", this._notes.slice());
-        }
-        else if (event.next) {
+        if (event.next) {
             setTimeout(() => {
-                this._notes = event.next.process.get("notes") || [];
+                this._notes = event.next.process.get("notes");
+                if (!this._notes) {
+                    this._notes = [];
+                    event.next.process.set("notes", this._notes);
+                }
+
                 this.activeNote = this._notes[this._notes.length - 1];
             }, 0);
+        }
+        else {
+            this._notes = [];
+            this.activeNote = null;
         }
     }
 

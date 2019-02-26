@@ -55,7 +55,7 @@ export default class NavigatorPanel extends SystemElement
     protected render()
     {
         const system = this.system;
-        const authMode = true; // this.story.ins.mode.value === EStoryMode.Authoring;
+        const authMode = this.story.ins.mode.value === EStoryMode.Authoring;
 
         const documentList = authMode ? html`<div class="sv-panel-section">
                 <div class="sv-panel-header">Presentations</div>

@@ -99,8 +99,6 @@ export default class NVFeatures extends NTransform
         this.createComponent(CVTapeTool);
         this.createComponent(CVSectionTool);
 
-        this.name = "Setup";
-
         this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
     }
 
