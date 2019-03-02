@@ -24,8 +24,8 @@ export { TUnitType, EUnitType };
 export type TShaderMode = "Default" | "Clay" | "XRay" | "Normals" | "Wireframe";
 export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe }
 
-export type TBackgroundType = "Solid" | "LinearGradient" | "RadialGradient";
-export enum EBackgroundType { Solid, LinearGradient, RadialGradient }
+export type TBackgroundStyle = "Solid" | "LinearGradient" | "RadialGradient";
+export enum EBackgroundStyle { Solid, LinearGradient, RadialGradient }
 
 export type TNavigationType = "Orbit" | "Walk";
 export enum ENavigationType { Orbit, Walk }
@@ -41,7 +41,7 @@ export interface IFeatures
     interface?: IInterface;
     navigation?: INavigation;
     background?: IBackground;
-    groundPlane?: IGroundPlane;
+    floor?: IFloor;
     grid?: IGrid;
     tapeTool?: ITapeTool;
     sectionTool?: ISectionTool;
@@ -96,18 +96,19 @@ export interface IWalkNavigation
 
 export interface IBackground
 {
-    type: TBackgroundType;
+    style: TBackgroundStyle;
     color0: number[];
     color1: number[];
 }
 
-export interface IGroundPlane
+export interface IFloor
 {
     visible: boolean;
-    offset: number;
+    position: number[];
+    size: number;
     color: number[];
-    shadowVisible: boolean;
-    shadowColor: number[];
+    opacity: number;
+    receiveShadow: boolean;
 }
 
 export interface IGrid

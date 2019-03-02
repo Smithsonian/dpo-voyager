@@ -67,8 +67,8 @@ ff-dock-view {
     font-size: 16px;
     font-weight: bold;
     align-self: center;
-    padding: 1px 3px 3px 3px;
-    margin: 8px;
+    padding: 0 4px 2px 4px;
+    margin: 4px;
     background-color: darken($color-secondary, 5%);
     color: $color-background-dark;
   }
@@ -84,11 +84,11 @@ ff-dock-view {
 
   .ff-button {
     background-color: transparent;
-    padding: 5px 12px;
-    font-size: 14px;
+    padding: 4px 10px;
+    font-size: 13px;
 
     .ff-icon {
-      height: 22px;
+      height: 20px;
       fill: $color-icon;
     }
 
@@ -256,6 +256,7 @@ ff-dock-view {
     color: $color-icon;
   }
   .ff-property-field {
+    height: 1em;
     flex: 1 1 auto;
     padding: 2px;
     background-color: $color-background;

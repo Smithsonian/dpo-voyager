@@ -1,9 +1,9 @@
 {
-    "$id": "https://schemas.3d.si.edu/public_api/config.schema.json",
+    "$id": "https://schemas.3d.si.edu/public_api/features.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
-    "title": "Smithsonian 3D Presentation - Voyager Explorer Configuration",
-    "description": "contains information about Voyager explorer configuration (scene environment, UI, tools, etc.)",
+    "title": "Smithsonian 3D Presentation - Voyager Explorer Features",
+    "description": "contains information about Voyager explorer feature configuration (scene environment, UI, tools, etc.)",
 
     "type": "object",
     "properties": {
@@ -92,7 +92,7 @@
         "background": {
             "type": "object",
             "properties": {
-                "type": {
+                "style": {
                     "type": "string",
                     "enum": [
                         "Solid", "LinearGradient", "RadialGradient"
@@ -106,23 +106,26 @@
                 }
             }
         },
-        "groundPlane": {
+        "floor": {
             "type": "object",
             "properties": {
                 "visible": {
                     "type": "boolean"
                 },
-                "offset": {
+                "position": {
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "size": {
                     "type": "number"
                 },
                 "color": {
                     "$ref": "math.schema.json#/definitions/vector3"
                 },
-                "shadowVisible": {
-                    "type": "boolean"
+                "opacity": {
+                    "type": "number"
                 },
-                "shadowColor": {
-                    "$ref": "math.schema.json#/definitions/vector3"
+                "receiveShadow": {
+                    "type": "boolean"
                 }
             }
         },

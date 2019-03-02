@@ -359,9 +359,9 @@
             "description": "Presentation-level tours and snapshots",
             "$ref": "story.schema.json"
         },
-        "config": {
-            "description": "Voyager explorer global settings.",
-            "$ref": "config.schema.json"
+        "features": {
+            "description": "Voyager explorer global features.",
+            "$ref": "features.schema.json"
         }
     },
     "required": [

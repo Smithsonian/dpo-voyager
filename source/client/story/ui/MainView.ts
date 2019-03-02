@@ -24,7 +24,8 @@ import CVStoryController from "../components/CVStoryController";
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 import Icon from "@ff/ui/Icon";
 import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockView";
-import HierarchyTreeView from "@ff/ui/graph/HierarchyTreeView";
+
+import HierarchyTreeView from "@ff/scene/ui/HierarchyTreeView";
 
 import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";

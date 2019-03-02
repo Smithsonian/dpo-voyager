@@ -56,7 +56,6 @@ export default class CVScene extends CScene
     {
         super.create();
 
-        this.scene.background = new THREE.TextureLoader().load("images/bg-gradient-blue.jpg");
         this.graph.components.on(CVModel, this.onModelComponent, this);
     }
 

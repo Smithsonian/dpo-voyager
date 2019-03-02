@@ -85,16 +85,17 @@
             "gamma": 1
         },
         "background": {
-            "type": "Solid",
-            "color0": [1, 0, 0],
-            "color1": [0, 1, 0]
+            "style": "RadialGradient",
+            "color0": [ 0.2, 0.25, 0.3 ],
+            "color1": [ 0.01, 0.03, 0.05 ]
         },
-        "groundPlane": {
+        "floor": {
             "visible": false,
-            "offset": 0,
-            "color": [0, 0, 1],
-            "shadowVisible": false,
-            "shadowColor": [1, 1, 1, 1]
+            "position": [0, -25, 0],
+            "size": 50,
+            "color": [ 0.6, 0.75, 0.8 ],
+            "opacity": 0.5,
+            "receiveShadow": false
         },
         "grid": {
             "visible": false,

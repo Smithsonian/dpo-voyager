@@ -22,7 +22,7 @@ import { IFeatures, INavigation, IInterface, IReader } from "common/types/featur
 
 import CVHomeGrid from "../components/CVHomeGrid";
 import CVBackground from "../components/CVBackground";
-import CVGroundPlane from "../components/CVGroundPlane";
+import CVFloor from "../components/CVFloor";
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
 import CVTapeTool from "../components/CVTapeTool";
@@ -75,8 +75,8 @@ export default class NVFeatures extends NTransform
     get background() {
         return this.getComponent(CVBackground);
     }
-    get groundPlane() {
-        return this.getComponent(CVGroundPlane);
+    get floor() {
+        return this.getComponent(CVFloor);
     }
     get homeGrid() {
         return this.getComponent(CVHomeGrid);
@@ -94,7 +94,7 @@ export default class NVFeatures extends NTransform
         super.createComponents();
 
         this.createComponent(CVBackground);
-        this.createComponent(CVGroundPlane);
+        this.createComponent(CVFloor);
         this.createComponent(CVHomeGrid);
         this.createComponent(CVTapeTool);
         this.createComponent(CVSectionTool);
@@ -143,9 +143,9 @@ export default class NVFeatures extends NTransform
         if (backgroundData) {
             data.background = backgroundData;
         }
-        const planeData = this.groundPlane.toData();
-        if (planeData) {
-            data.groundPlane = planeData;
+        const floorData = this.floor.toData();
+        if (floorData) {
+            data.floor = floorData;
         }
         const gridData = this.homeGrid.toData();
         if (gridData) {
@@ -175,8 +175,8 @@ export default class NVFeatures extends NTransform
         if (data.background) {
             this.background.fromData(data.background);
         }
-        if (data.groundPlane) {
-            this.groundPlane.fromData(data.groundPlane);
+        if (data.floor) {
+            this.floor.fromData(data.floor);
         }
         if (data.grid) {
             this.homeGrid.fromData(data.grid);

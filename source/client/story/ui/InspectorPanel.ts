@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import PropertyTree from "@ff/ui/graph/PropertyTree";
+import PropertyTree from "@ff/scene/ui/PropertyTree";
 
 import SystemElement, { customElement } from "./SystemElement";
 

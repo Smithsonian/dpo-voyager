@@ -17,7 +17,7 @@
 
 import Property from "@ff/graph/Property";
 
-import "@ff/ui/graph/PropertyField";
+import "@ff/scene/ui/PropertyField";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 

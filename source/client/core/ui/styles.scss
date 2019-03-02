@@ -28,7 +28,8 @@ $menu-color-background-hover: transparentize(#404040, 0.4);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../../../../libs/ff-ui/source/themes/dark";
+@import "../../../../libs/ff-ui/source/styles/dark";
+@import "../../../../libs/ff-scene/source/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
 // GLOBAL

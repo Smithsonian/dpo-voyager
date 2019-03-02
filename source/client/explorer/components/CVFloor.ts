@@ -15,35 +15,40 @@
  * limitations under the License.
  */
 
-import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
+import CFloor from "@ff/scene/components/CFloor";
 
-import { IBackground, TBackgroundStyle } from "common/types/features";
+import { IFloor } from "common/types/features";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-export default class CVBackground extends CBackground
+export default class CVFloor extends CFloor
 {
-    static readonly typeName: string = "CVBackground";
+    static readonly typeName: string = "CVFloor";
 
 
-    fromData(data: IBackground)
+    fromData(data: IFloor)
     {
         this.ins.copyValues({
-            style: EBackgroundStyle[data.style] || EBackgroundStyle.Solid,
-            color0: data.color0,
-            color1: data.color1
-        })
+            visible: data.visible,
+            position: data.position,
+            radius: data.size,
+            color: data.color,
+            opacity: data.opacity,
+            receiveShadow: data.receiveShadow,
+        });
     }
 
-    toData(): IBackground
+    toData(): IFloor
     {
         const ins = this.ins;
 
         return {
-            style: EBackgroundStyle[ins.style.value] as TBackgroundStyle,
-            color0: ins.color0.cloneValue(),
-            color1: ins.color1.cloneValue()
+            visible: ins.visible.value,
+            position: ins.position.cloneValue(),
+            size: ins.radius.value,
+            color: ins.color.cloneValue(),
+            opacity: ins.opacity.value,
+            receiveShadow: ins.receiveShadow.value,
         };
     }
 }
