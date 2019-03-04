@@ -17,11 +17,12 @@
 
 import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
+
 import "./DocumentList";
 import "./ItemList";
 
 import CVStoryController, { EStoryMode } from "../components/CVStoryController";
-import SystemElement, { customElement, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

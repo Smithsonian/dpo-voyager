@@ -72,7 +72,7 @@ const _inputs = {
     download: types.Event("Picture.Download"),
     remove: types.Event("Picture.Remove"),
     type: types.Enum("Picture.Type", EFileType),
-    quality: types.Number("Picture.Quality", { min: 0, max: 1, preset: 0.85 }),
+    quality: types.Percent("Picture.Quality", 0.85),
 };
 
 const _outputs = {

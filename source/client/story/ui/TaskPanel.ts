@@ -17,7 +17,7 @@
 
 import System from "@ff/graph/System";
 
-import SystemElement, { customElement, html } from "./SystemElement";
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
 import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskController";
 

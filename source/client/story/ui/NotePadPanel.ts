@@ -24,14 +24,16 @@ import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
+
 import "@ff/ui/LineEdit";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+
 import "@ff/ui/TextEdit";
+import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
+
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
 import CVNotePad, { INote, INotesUpdateEvent } from "../components/CVNotePad";
-
-import SystemElement, { customElement, html } from "./SystemElement";
-import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
-import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -119,7 +121,7 @@ export default class NotePadPanel extends SystemElement
                 <div class="sv-list">${table}</div>
                 <ff-splitter></ff-splitter>
                 <div class="ff-flex-column sv-details">
-                    <div class="sv-commands">
+                    <div class="sv-panel-header">
                         <ff-button text="Add Note" icon="create" @click=${this.onClickCreate}></ff-button>
                         <ff-button text="Delete Note" icon="trash" ?disabled=${!activeNote} @click=${this.onClickDelete}></ff-button>
                     </div>

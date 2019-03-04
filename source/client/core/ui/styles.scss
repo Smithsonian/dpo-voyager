@@ -43,11 +43,7 @@ body {
 @keyframes spin { 100% { transform:rotate(360deg); } }
 
 .sv-spinner {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  @include fullsize;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -66,6 +62,55 @@ body {
 .sv-content-view {
   @include fullsize;
 }
+
+.sv-scene-view {
+  &.sv-blur {
+    filter: brightness(80%) blur(5px);
+    transition: filter 0.5s;
+  }
+}
+
+.sv-content-reader-split {
+  @include fullsize;
+  display: flex;
+
+  .sv-scene-view {
+    flex: 1 1 60%;
+  }
+  .sv-reader-view {
+    flex: 1 1 40%;
+  }
+}
+
+.sv-content-reader-overlay {
+  @include fullsize;
+
+  .sv-scene-view {
+    @include fullsize;
+  }
+
+  .sv-reader-view {
+    @include fullsize;
+    margin-top: 60px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    //z-index: 2;
+  }
+}
+
+.sv-content-reader-off {
+  .sv-scene-view {
+    @include fullsize;
+  }
+}
+
+.sv-reader-view {
+  overflow-y: auto;
+
+  .sv-article {
+    margin: 0 20px;
+  }
+}
+
 
 .sv-content-overlay {
 }

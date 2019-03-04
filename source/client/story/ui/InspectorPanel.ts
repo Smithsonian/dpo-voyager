@@ -17,7 +17,7 @@
 
 import PropertyTree from "@ff/scene/ui/PropertyTree";
 
-import SystemElement, { customElement } from "./SystemElement";
+import SystemElement, { customElement } from "../../core/ui/SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

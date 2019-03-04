@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import SystemElement, { customElement, property, html } from "./SystemElement";
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

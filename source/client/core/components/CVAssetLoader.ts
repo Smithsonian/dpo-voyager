@@ -18,7 +18,7 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
-import Component, { ITypedEvent } from "@ff/graph/Component";
+import Component, { ITypedEvent, types } from "@ff/graph/Component";
 
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
@@ -35,14 +35,16 @@ import Asset from "../models/Asset";
 
 const _VERBOSE = true;
 
-export interface ILoaderUpdateEvent extends ITypedEvent<"update">
-{
-    isLoading: boolean;
-}
 
 export default class CVAssetLoader extends Component
 {
     static readonly typeName: string = "CVAssetLoader";
+
+    protected static readonly loaderOuts = {
+        loading: types.Boolean("Loader.IsLoading"),
+    };
+
+    outs = this.addOutputs(CVAssetLoader.loaderOuts);
 
     readonly jsonLoader: JSONLoader;
     readonly validator: JSONValidator;
@@ -122,11 +124,6 @@ export default class CVAssetLoader extends Component
             return resolve(json as IItem);
         });
     }
-
-    emitUpdateEvent(isLoading: boolean)
-    {
-        this.emit<ILoaderUpdateEvent>({ type: "update", isLoading });
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,7 +149,7 @@ class PrivateLoadingManager extends THREE.LoadingManager
             console.log("Loading files...");
         }
 
-        this.assetLoader.emitUpdateEvent(true);
+        this.assetLoader.outs.loading.setValue(true);
     }
 
     protected onLoadingProgress(url, itemsLoaded, itemsTotal)
@@ -168,7 +165,7 @@ class PrivateLoadingManager extends THREE.LoadingManager
             console.log("Loading completed");
         }
 
-        this.assetLoader.emitUpdateEvent(false);
+        this.assetLoader.outs.loading.setValue(false);
     }
 
     protected onLoadingError()
@@ -177,6 +174,6 @@ class PrivateLoadingManager extends THREE.LoadingManager
             console.error(`Loading error`);
         }
 
-        this.assetLoader.emitUpdateEvent(false);
+        this.assetLoader.outs.loading.setValue(false);
     }
 }

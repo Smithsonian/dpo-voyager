@@ -114,14 +114,22 @@ ff-dock-view {
 .sv-panel-header {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 5px 0;
+  padding: 3px 1px;
   background-color: $color-background;
   color: $color-icon;
 
+  .ff-button {
+    flex: 0 0 auto;
+    margin: 0 4px 0 0;
+    padding: 2px 6px;
+    background-color: transparent;
+  }
+
   & > .ff-icon {
     height: 1.2em;
-    padding: 2px 4px;
+    padding: 4px 4px;
   }
 }
 
@@ -188,7 +196,6 @@ ff-dock-view {
     .sv-note-field {
       margin-bottom: 4px;
       padding: 2px;
-      background-color: $color-background;
       color: $color-text-dark;
     }
     .ff-line-edit {

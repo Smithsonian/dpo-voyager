@@ -18,7 +18,7 @@
 import Property from "@ff/graph/Property";
 import "@ff/ui/graph/PropertyView";
 
-import SystemElement, { customElement, html, TemplateResult } from "./SystemElement";
+import SystemElement, { customElement, html, TemplateResult } from "../../core/ui/SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

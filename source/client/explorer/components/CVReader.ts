@@ -24,18 +24,19 @@ import Article from "../models/Article";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _inputs = {
-    visible: types.Boolean("Visible", false),
-    position: types.Enum("Position", EReaderPosition),
-    url: types.String("DocumentURL", "")
-};
+export { EReaderPosition };
 
 export default class CVReader extends Component
 {
     static readonly typeName: string = "CVReader";
 
-    ins = this.addInputs(_inputs);
+    protected static readonly readerIns = {
+        visible: types.Boolean("Visible", false),
+        position: types.Enum("Position", EReaderPosition),
+        url: types.String("DocumentURL", ""),
+    };
 
+    ins = this.addInputs(CVReader.readerIns);
 
     setDocument(document: Article)
     {

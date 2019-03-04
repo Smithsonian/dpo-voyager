@@ -20,24 +20,62 @@ import Component from "@ff/graph/Component";
 
 import { ISectionTool } from "common/types/features";
 
-////////////////////////////////////////////////////////////////////////////////
+import UberPBRMaterial from "../../core/shaders/UberPBRMaterial";
+import CVModel from "../../core/components/CVModel";
 
-const _inputs = {
-    active: types.Boolean("Active"),
-    plane: types.Vector4("Plane")
-};
+////////////////////////////////////////////////////////////////////////////////
 
 export default class CVSectionTool extends Component
 {
     static readonly typeName: string = "CVSectionTool";
 
-    ins = this.addInputs(_inputs);
+    protected static readonly sectionIns = {
+        visible: types.Boolean("Section.Visible"),
+        plane: types.Vector4("Section.Plane", [ 0, 0, 1, 0 ]),
+        color: types.ColorRGB("Section.Color", [ 0, 0.61, 0.87 ]), // SI blue
+    };
+
+    ins = this.addInputs(CVSectionTool.sectionIns);
+
+
+    update(context)
+    {
+        const models = this.getGraphComponents(CVModel);
+
+        models.forEach(model => {
+            const object = model.object3D;
+            object.traverse((mesh: THREE.Mesh) => {
+                if (mesh.isMesh) {
+                    const material = mesh.material as UberPBRMaterial;
+                    if (material.isUberPBRMaterial) {
+                        console.log(mesh.name);
+                        this.updateMaterial(material);
+                    }
+                }
+            });
+        });
+
+        return true;
+    }
+
+    protected updateMaterial(material: UberPBRMaterial)
+    {
+        const ins = this.ins;
+
+        if (ins.visible.changed) {
+            material.enableCutPlane(ins.visible.value);
+            material.needsUpdate = true;
+        }
+
+        material.cutPlaneDirection.fromArray(ins.plane.value);
+        material.cutPlaneColor.fromArray(ins.color.value);
+    }
 
     fromData(data: ISectionTool)
     {
         this.ins.copyValues({
-            active: data.active,
-            plane: data.plane
+            visible: data.active,
+            plane: data.plane || [ 0, 1, 0 ],
         });
     }
 
@@ -46,8 +84,8 @@ export default class CVSectionTool extends Component
         const ins = this.ins;
 
         return {
-            active: ins.active.value,
-            plane: ins.plane.cloneValue()
+            active: ins.visible.value,
+            plane: ins.plane.cloneValue(),
         };
     }
 }

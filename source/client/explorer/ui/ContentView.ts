@@ -15,121 +15,81 @@
  * limitations under the License.
  */
 
-import ManipTarget from "@ff/browser/ManipTarget"
-import System from "@ff/graph/System";
-import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
+import CVAssetLoader from "../../core/components/CVAssetLoader";
+import CVReader, { EReaderPosition } from "../components/CVReader";
 
-import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
-import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVAssetLoader, { ILoaderUpdateEvent } from "../../core/components/CVAssetLoader";
-import Spinner from "../../core/ui/Spinner";
+import SceneView from "../../core/ui/SceneView";
+import "../../core/ui/Spinner";
+import "./ReaderView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-content-view")
-export default class ContentView extends CustomElement
+export default class ContentView extends SystemElement
 {
-    @property({ attribute: false })
-    system: System;
-
-    protected manipTarget: ManipTarget;
-
-    protected view: RenderQuadView = null;
-    protected canvas: HTMLCanvasElement = null;
-    protected overlay: HTMLDivElement = null;
-    protected splitter: QuadSplitter = null;
-    protected spinner: Spinner = null;
-
-    constructor(system?: System)
-    {
-        super();
-
-        this.onResize = this.onResize.bind(this);
-
-        this.system = system;
-        this.manipTarget = new ManipTarget();
-
-        this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
-        this.addEventListener("pointermove", this.manipTarget.onPointerMove);
-        this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-        this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
-        this.addEventListener("wheel", this.manipTarget.onWheel);
-        this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
-    }
+    protected sceneView: SceneView = null;
 
     protected get assetLoader() {
         return this.system.getMainComponent(CVAssetLoader);
+    }
+    protected get reader() {
+        return this.system.getMainComponent(CVReader);
     }
 
     protected firstConnected()
     {
         this.classList.add("sv-content-view");
-
-        this.canvas = this.appendElement("canvas", {
-            display: "block",
-            width: "100%",
-            height: "100%"
-        });
-
-        this.overlay = this.appendElement("div", {
-            position: "absolute",
-            top: "0", bottom: "0", left: "0", right: "0",
-            overflow: "hidden"
-        });
-
-        this.overlay.classList.add("sv-content-overlay");
-
-        this.splitter = this.appendElement(QuadSplitter, {
-            position: "absolute",
-            top: "0", bottom: "0", left: "0", right: "0",
-            overflow: "hidden"
-        });
-
-        this.splitter.onChange = (message: IQuadSplitterChangeMessage) => {
-            this.view.horizontalSplit = message.horizontalSplit;
-            this.view.verticalSplit = message.verticalSplit;
-        };
-
-        this.spinner = this.appendElement(Spinner, {
-            visibility: "hidden"
-        });
-
-        this.view = new RenderQuadView(this.system, this.canvas, this.overlay);
-        this.view.on<ILayoutChange>("layout", event => this.splitter.layout = event.layout);
-
-        this.view.layout = EQuadViewLayout.Single;
-        this.splitter.layout = EQuadViewLayout.Single;
-
-        this.manipTarget.next = this.view;
+        this.sceneView = new SceneView(this.system);
     }
 
     protected connected()
     {
-        this.view.attach();
-
-        window.addEventListener("resize", this.onResize);
-        window.dispatchEvent(new CustomEvent("resize"));
-
-        this.assetLoader.on<ILoaderUpdateEvent>("update", this.onLoaderUpdate, this);
+        this.assetLoader.outs.loading.on("value", this.performUpdate, this);
+        this.reader.ins.visible.on("value", this.performUpdate, this);
+        this.reader.ins.position.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.view.detach();
-
-        window.removeEventListener("resize", this.onResize);
-
-        this.assetLoader.off<ILoaderUpdateEvent>("update", this.onLoaderUpdate, this);
+        this.assetLoader.outs.loading.off("value", this.performUpdate, this);
+        this.reader.ins.visible.off("value", this.performUpdate, this);
+        this.reader.ins.position.off("value", this.performUpdate, this);
     }
 
-    protected onResize()
+    protected render()
     {
-        this.view.resize();
-    }
+        const system = this.system;
 
-    protected onLoaderUpdate(event: ILoaderUpdateEvent)
-    {
-        this.spinner.style.visibility = event.isLoading ? "visible" : "hidden";
+        const isLoading = this.assetLoader.outs.loading.value;
+        const readerVisible = this.reader.ins.visible.value;
+        const readerPosition = this.reader.ins.position.value;
+
+        const sceneView = this.sceneView;
+        sceneView.classList.remove("sv-blur");
+
+        if (readerVisible) {
+            if (readerPosition === EReaderPosition.Right) {
+
+                return html`<div class="sv-content-reader-split">${sceneView}
+                    <ff-splitter direction="horizontal"></ff-splitter>
+                    <sv-reader-view .system=${system} class="sv-reader-split"></sv-reader-view></div>
+                    <sv-spinner ?visible=${isLoading}></sv-spinner>`;
+
+            }
+            if (readerPosition === EReaderPosition.Overlay) {
+
+                setTimeout(() => sceneView.classList.add("sv-blur"), 1);
+
+                return html`<div class="sv-content-reader-overlay">${sceneView}
+                    <sv-reader-view .system=${system}></sv-reader-view>
+                    <sv-spinner ?visible=${isLoading}></sv-spinner></div>`;
+            }
+        }
+
+        return html`<div class="sv-content-reader-off">${sceneView}</div>
+            <sv-spinner ?visible=${isLoading}></sv-spinner>`;
     }
 }
+

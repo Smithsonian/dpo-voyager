@@ -21,11 +21,12 @@ import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDo
 import "@ff/ui/Button";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
+
 import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import CVStoryController from "../components/CVStoryController";
 import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskController";
 
-import SystemElement, { customElement, html } from "./SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -69,7 +69,8 @@
         "resolve-pathname": "^3.0.0",
         "three": "^0.100.0",
         "webdav": "^2.5.0",
-        "webdav-server": "^2.4.6"
+        "webdav-server": "^2.4.6",
+        "xml-js": "^1.6.11"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",

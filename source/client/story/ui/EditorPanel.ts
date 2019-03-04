@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-import SystemElement, { customElement, html } from "./SystemElement";
 import { Quill, QuillOptionsStatic } from "quill";
 import * as QuillEditor from "quill";
+
+import SystemElement, { customElement } from "../../core/ui/SystemElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
