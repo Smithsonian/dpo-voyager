@@ -71,26 +71,50 @@ export default class CVInterface extends Component
     toggleFullscreen()
     {
         const outs = this.outs;
-        const fullscreenElement = this._fullscreenElement;
+        const e: any = this._fullscreenElement;
 
-        if (fullscreenElement) {
+        if (e) {
             const state = outs.fullscreenEnabled.value;
             if (!state && outs.fullscreenAvailable.value) {
-                fullscreenElement.requestFullscreen();
+                if (e.requestFullscreen) {
+                    e.requestFullscreen();
+                }
+                else if (e.mozRequestFullScreen) {
+                    e.mozRequestFullScreen();
+                }
+                else if (e.webkitRequestFullscreen) {
+                    e.webkitRequestFullscreen((Element as any).ALLOW_KEYBOARD_INPUT);
+                }
             }
             else if (state) {
-                document.exitFullscreen();
+                const d: any = document;
+                if (d.exitFullscreen) {
+                    d.exitFullscreen();
+                }
+                else if (d.cancelFullScreen) {
+                    d.cancelFullScreen();
+                }
+                else if (d.mozCancelFullScreen) {
+                    d.mozCancelFullScreen();
+                }
+                else if (d.webkitCancelFullScreen) {
+                    d.webkitCancelFullScreen();
+                }
             }
         }
     }
 
     create()
     {
-        this.outs.fullscreenAvailable.setValue(!!document.body.requestFullscreen);
+        const e: any = document.documentElement;
+        const fullscreenAvailable = e.requestFullscreen || e.mozRequestFullScreen || e.webkitRequestFullscreen;
+        this.outs.fullscreenAvailable.setValue(!!fullscreenAvailable);
     }
 
     fromData(data: IInterface)
     {
+        data = data || {} as IInterface;
+
         this.ins.setValues({
             visible: data.visible !== undefined ? data.visible : true,
             logo: data.logo !== undefined ? data.logo : true,
@@ -113,7 +137,8 @@ export default class CVInterface extends Component
 
     protected onFullscreenChange(event: Event)
     {
-        const fullscreenEnabled = !!document["fullscreenElement"];
-        this.outs.fullscreenEnabled.setValue(fullscreenEnabled);
+        const d: any = document;
+        const element = d.fullscreenElement || d.mozFullScreenElement || d.webkitFullscreenElement;
+        this.outs.fullscreenEnabled.setValue(!!element);
     }
 }

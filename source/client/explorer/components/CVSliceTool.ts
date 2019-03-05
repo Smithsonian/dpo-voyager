@@ -17,13 +17,27 @@
 
 import { types } from "@ff/graph/Component";
 
+import { ESliceAxis, ISliceTool, TSliceAxis } from "common/types/features";
+
 import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
 
-import CVTool, { ToolView, customElement, html } from "./CVTool";
+import UberPBRMaterial from "../../core/shaders/UberPBRMaterial";
+import CVModel from "../../core/components/CVModel";
+
+import CVTool, { customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _planes = [
+    [-1, 0, 0, 0 ],
+    [ 0,-1, 0, 0 ],
+    [ 0, 0,-1, 0 ],
+    [ 1, 0, 0, 0 ],
+    [ 0, 1, 0, 0 ],
+    [ 0, 0, 1, 0 ],
+];
 
 export default class CVSliceTool extends CVTool
 {
@@ -34,20 +48,96 @@ export default class CVSliceTool extends CVTool
 
     protected static readonly sliceIns = {
         enabled: types.Boolean("Slice.Enabled"),
-        axis: types.Option("Slice.Axis", [ "X", "Y", "Z" ]),
+        axis: types.Enum("Slice.Axis", ESliceAxis),
         position: types.Number("Slice.Position", { min: -1, max: 1, preset: 0 }),
+        inverted: types.Boolean("Slice.Inverted"),
+        color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
     };
 
     ins = this.addInputs(CVSliceTool.sliceIns);
 
+    protected plane: number[] = null;
+    protected axisIndex = -1;
+
     update()
     {
+        const ins = this.ins;
+
+        if (ins.axis.changed) {
+            const axisIndex = ins.axis.getValidatedValue();
+
+            if (axisIndex === this.axisIndex) {
+                ins.inverted.setValue(!ins.inverted.value, true);
+            }
+            else {
+                ins.inverted.setValue(false, true);
+                this.axisIndex = axisIndex;
+            }
+        }
+
+        const index = ins.axis.getValidatedValue() + (ins.inverted.value ? 3 : 0);
+        this.plane = _planes[index];
+        this.plane[3] = ins.position.value;
+
+        const document = this.activeDocument;
+        if (document) {
+            const models = document.getInnerComponents(CVModel);
+
+            models.forEach(model => {
+                const object = model.object3D;
+                object.traverse((mesh: THREE.Mesh) => {
+                    if (mesh.isMesh) {
+                        const material = mesh.material as UberPBRMaterial;
+                        if (material.isUberPBRMaterial) {
+                            this.updateMaterial(material);
+                        }
+                    }
+                });
+            });
+        }
         return true;
+    }
+
+    protected updateMaterial(material: UberPBRMaterial)
+    {
+        const ins = this.ins;
+
+        if (ins.enabled.changed) {
+            material.enableCutPlane(ins.enabled.value);
+            material.needsUpdate = true;
+        }
+
+        material.cutPlaneDirection.fromArray(this.plane);
+        material.cutPlaneColor.fromArray(ins.color.value);
     }
 
     createView()
     {
         return new SliceToolView(this);
+    }
+
+    fromData(data: ISliceTool)
+    {
+        data = data || {} as ISliceTool;
+
+        this.ins.setValues({
+            enabled: data.enabled || false,
+            axis: ESliceAxis[data.axis] || ESliceAxis.X,
+            position: data.position || 0,
+            inverted: data.inverted || false
+        });
+    }
+
+    toData(): ISliceTool
+    {
+        const ins = this.ins;
+
+        return {
+            enabled: ins.enabled.value,
+            axis: ESliceAxis[ins.axis.getValidatedValue()] as TSliceAxis,
+            position: ins.position.value,
+            inverted: ins.inverted.value,
+        };
     }
 }
 

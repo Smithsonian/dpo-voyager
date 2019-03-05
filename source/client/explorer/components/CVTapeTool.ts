@@ -16,10 +16,12 @@
  */
 
 import { types } from "@ff/graph/Component";
+import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import "../ui/PropertyBoolean";
 import "../ui/PropertyString";
 
+import CVTape, { ETapeState } from "./CVTape";
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,20 +38,74 @@ export default class CVTapeTool extends CVTool
     };
 
     protected static readonly tapeOuts = {
-        state: types.String("Tape.Measurement", "Tap on model to set start of tape.")
+        text: types.String("Tape.Text"),
     };
 
     ins = this.addInputs(CVTapeTool.tapeIns);
     outs = this.addOutputs(CVTapeTool.tapeOuts);
 
+    protected get tape() {
+        const document = this.activeDocument;
+        return document ? document.getInnerComponent(CVTape) : null;
+    }
+
     update(context)
     {
+        const ins = this.ins;
+
+        if (ins.enabled.changed) {
+            const tape = this.tape;
+            if (tape) {
+                tape.ins.visible.setValue(ins.enabled.value);
+            }
+        }
+
         return true;
     }
 
     createView()
     {
         return new TapeToolView(this);
+    }
+
+    protected onActiveDocument(event: IActiveDocumentEvent)
+    {
+        if (event.previous) {
+            const tape = event.previous.getInnerComponent(CVTape);
+            tape.outs.state.off("value", this.updateTapeState, this);
+            tape.outs.distance.off("value", this.updateTapeState, this);
+        }
+
+
+        if (event.next) {
+            const tape = event.next.getInnerComponent(CVTape);
+            tape.outs.state.on("value", this.updateTapeState, this);
+            tape.outs.distance.on("value", this.updateTapeState, this);
+        }
+    }
+
+    protected updateTapeState()
+    {
+        const tape = this.tape;
+
+        if (tape) {
+            const state = tape.outs.state.value;
+            const distance = tape.outs.distance.value;
+            const text = this.outs.text;
+
+            if (!this.ins.enabled.value) {
+                text.setValue("Switch on to take measurements.");
+            }
+            else if (distance === 0) {
+                text.setValue("Tap on model to set start of tape.");
+            }
+            else if (state === ETapeState.SetStart) {
+                text.setValue(`${distance.toFixed(2)} units.`);
+            }
+            else {
+                text.setValue("Tap on model to set end of tape.");
+            }
+        }
     }
 }
 
@@ -67,9 +123,10 @@ export class TapeToolView extends ToolView<CVTapeTool>
     protected render()
     {
         const enabled = this.tool.ins.enabled;
-        const state = this.tool.outs.state;
+        const text = this.tool.outs.text;
+
 
         return html`<sv-property-boolean .property=${enabled} name="Tape Tool"></sv-property-boolean>
-            <sv-property-string .property=${state} name="Measured Distance"></sv-property-string>`;
+            <sv-property-string .property=${text} name="Measured Distance"></sv-property-string>`;
     }
 }

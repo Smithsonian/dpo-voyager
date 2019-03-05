@@ -38,22 +38,23 @@ const _vec3a = new THREE.Vector3();
 const _matRotationOffset = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
 const _matIdentity = new THREE.Matrix4();
 
-const _inputs = {
-    color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
-    update: types.Event("Grid.Update")
-};
 
-const _outputs = {
-    size: types.Number("Size"),
-    units: types.Enum("Units", EUnitType)
-};
-
-export default class CVHomeGrid extends CObject3D
+export default class CVGrid extends CObject3D
 {
-    static readonly typeName: string = "CVHomeGrid";
+    static readonly typeName: string = "CVGrid";
 
-    ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
-    outs = this.addOutputs<CObject3D, typeof _outputs>(_outputs);
+    protected static readonly gridIns = {
+        color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
+        update: types.Event("Grid.Update"),
+    };
+
+    protected static readonly gridOuts = {
+        size: types.Number("Size"),
+        units: types.Enum("Units", EUnitType),
+    };
+
+    ins = this.addInputs<CObject3D, typeof CVGrid.gridIns>(CVGrid.gridIns);
+    outs = this.addOutputs<CObject3D, typeof CVGrid.gridOuts>(CVGrid.gridOuts);
 
     private _lastViewport: Viewport = null;
     private _gridProps: IGridProps = {
@@ -164,9 +165,11 @@ export default class CVHomeGrid extends CObject3D
 
     fromData(data: IGrid)
     {
+        data = data || {} as IGrid;
+
         this.ins.copyValues({
-            visible: data.visible,
-            color: data.color
+            visible: !!data.visible,
+            color: data.color || [ 0.5, 0.7, 0.8 ],
         });
     }
 
@@ -176,7 +179,7 @@ export default class CVHomeGrid extends CObject3D
 
         return {
             visible: ins.visible.cloneValue(),
-            color: ins.color.cloneValue()
+            color: ins.color.cloneValue(),
         };
     }
 

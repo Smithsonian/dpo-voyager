@@ -76,7 +76,7 @@ export default class CVNavigation extends Component
 
     fromData(data: INavigation)
     {
-        this.ins.enabled.setValue(data.enabled);
+        this.ins.enabled.setValue(!!data.enabled);
     }
 
     toData(): Partial<INavigation>

@@ -52,6 +52,7 @@ export default class MainMenu extends SystemElement
     protected connected()
     {
         this.interface.on("update", this.performUpdate, this);
+        this.interface.outs.fullscreenEnabled.on("value", this.performUpdate, this);
         this.reader.ins.visible.on("value", this.onReaderVisible, this);
         this.tourPlayer.ins.state.on("value", this.performUpdate, this);
         this.tools.ins.visible.on("value", this.performUpdate, this);
@@ -60,6 +61,7 @@ export default class MainMenu extends SystemElement
     protected disconnected()
     {
         this.interface.off("update", this.performUpdate, this);
+        this.interface.outs.fullscreenEnabled.off("value", this.performUpdate, this);
         this.reader.ins.visible.off("value", this.onReaderVisible, this);
         this.tourPlayer.ins.state.off("value", this.performUpdate, this);
         this.tools.ins.visible.off("value", this.performUpdate, this);

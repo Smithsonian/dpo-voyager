@@ -106,6 +106,8 @@ export default class CVScene extends CScene
 
     fromData(data: IScene)
     {
+        data = data || {} as IScene;
+
         this.ins.copyValues({
             units: EUnitType[data.units] || EUnitType.mm,
             shader: EShaderMode[data.shader] || EShaderMode.Default,

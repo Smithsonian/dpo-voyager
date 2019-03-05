@@ -42,11 +42,8 @@ export default class CVRenderTool extends CVTool
 @customElement("sv-render-tool-view")
 export class RenderToolView extends ToolView<CVRenderTool>
 {
-    protected get activeDocument() {
-        return this.tool.system.getMainComponent(CDocumentManager).activeDocument;
-    }
     protected get activeScene() {
-        const document = this.activeDocument;
+        const document = this.tool.activeDocument;
         return document ? document.getInnerComponent(CVScene) : null;
     }
 

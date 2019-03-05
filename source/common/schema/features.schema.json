@@ -57,6 +57,12 @@
                 },
                 "logo": {
                     "type": "boolean"
+                },
+                "menu": {
+                    "type": "boolean"
+                },
+                "tools": {
+                    "type": "boolean"
                 }
             }
         },
@@ -143,7 +149,7 @@
         "tapeTool": {
             "type": "object",
             "properties": {
-                "active": {
+                "enabled": {
                     "type": "boolean"
                 },
                 "startPosition": {
@@ -163,11 +169,18 @@
         "sectionTool": {
             "type": "object",
             "properties": {
-                "active": {
+                "enabled": {
                     "type": "boolean"
                 },
-                "plane": {
-                    "$ref": "math.schema.json#/definitions/vector4"
+                "axis": {
+                    "type": "string",
+                    "enum": [ "X", "Y", "Z" ]
+                },
+                "inverted": {
+                    "type": "boolean"
+                },
+                "position": {
+                    "type": "number"
                 }
             }
         }

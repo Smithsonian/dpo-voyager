@@ -20,8 +20,9 @@ import CVArticles from "./CVArticles";
 import CVBackground from "./CVBackground";
 import CVDocument from "./CVDocument";
 import CVDocumentLoader from "./CVDocumentLoader";
+import CVFeatures from "./CVFeatures";
 import CVFloor from "./CVFloor";
-import CVHomeGrid from "./CVHomeGrid";
+import CVGrid from "./CVGrid";
 import CVInterface from "./CVInterface";
 import CVItemManager from "./CVItemManager";
 import CVMeta from "./CVMeta";
@@ -29,7 +30,6 @@ import CVProcess from "./CVProcess";
 import CVReader from "./CVReader";
 import CVReference from "./CVReference";
 import CVRenderTool from "./CVRenderTool";
-import CVSectionTool from "./CVSectionTool";
 import CVSliceTool from "./CVSliceTool";
 import CVSnapshots from "./CVSnapshots";
 import CVTape from "./CVTape";
@@ -47,8 +47,9 @@ export {
     CVBackground,
     CVDocument,
     CVDocumentLoader,
+    CVFeatures,
     CVFloor,
-    CVHomeGrid,
+    CVGrid,
     CVInterface,
     CVItemManager,
     CVMeta,
@@ -56,7 +57,6 @@ export {
     CVReader,
     CVReference,
     CVRenderTool,
-    CVSectionTool,
     CVSliceTool,
     CVSnapshots,
     CVTape,
@@ -73,8 +73,9 @@ export const componentTypes = [
     CVBackground,
     CVDocument,
     CVDocumentLoader,
+    CVFeatures,
     CVFloor,
-    CVHomeGrid,
+    CVGrid,
     CVInterface,
     CVItemManager,
     CVMeta,
@@ -82,7 +83,6 @@ export const componentTypes = [
     CVReader,
     CVReference,
     CVRenderTool,
-    CVSectionTool,
     CVSliceTool,
     CVSnapshots,
     CVTape,

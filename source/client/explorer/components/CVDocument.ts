@@ -28,6 +28,7 @@ import NVDocument from "../nodes/NVDocument";
 import NVFeatures from "../nodes/NVFeatures";
 import NVScene from "../nodes/NVScene";
 import NVItem from "../nodes/NVItem";
+import CVFeatures from "./CVFeatures";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,8 +78,8 @@ export default class CVDocument extends CDocument
     get sceneNode() {
         return this.getInnerNode(NVScene);
     }
-    get featuresNode() {
-        return this.getInnerNode(NVFeatures);
+    get features() {
+        return this.getInnerComponent(CVFeatures);
     }
 
     createItem()
@@ -121,15 +122,15 @@ export default class CVDocument extends CDocument
     {
         this.sceneNode.fromData(data);
 
-        if (data.features && this.featuresNode) {
-            this.featuresNode.fromData(data.features);
+        if (data.features && this.features) {
+            this.features.fromData(data.features);
         }
     }
 
     toPresentation(writeReferences: boolean = false): IPresentation
     {
         let data = this.sceneNode.toData(writeReferences);
-        data.features = this.featuresNode.toData();
+        data.features = this.features.toData();
 
         const info = {
             type: CVDocument.mimeType,

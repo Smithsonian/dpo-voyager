@@ -94,7 +94,8 @@ body {
   .sv-reader-view {
     @include fullsize;
     margin-top: 54px;
-    border-top: $section-border;
+    background-color: transparentize(white, 0.95);
+    //border-top: $section-border;
     //z-index: 2;
   }
 }

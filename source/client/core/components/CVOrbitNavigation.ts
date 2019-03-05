@@ -177,9 +177,18 @@ export default class CVOrbitNavigation extends CVNavigation
 
     fromData(data: INavigation)
     {
+        data = data || {} as INavigation;
+
         super.fromData(data);
 
-        const orbit = data.orbit;
+        const orbit = data.orbit || {
+            orbit: [ -25, -25, 0 ],
+            offset: [ 0, 0, 100 ],
+            minOrbit: [ -90, -Infinity, -Infinity ],
+            minOffset: [ -Infinity, -Infinity, 0.1 ],
+            maxOrbit: [ 90, Infinity, Infinity ],
+            maxOffset: [ Infinity, Infinity, Infinity ]
+        };
 
         this.ins.copyValues({
             orbit: orbit.orbit.slice(),

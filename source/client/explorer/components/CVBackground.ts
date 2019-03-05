@@ -29,11 +29,13 @@ export default class CVBackground extends CBackground
 
     fromData(data: IBackground)
     {
+        data = data || {} as IBackground;
+
         this.ins.copyValues({
             style: EBackgroundStyle[data.style] || EBackgroundStyle.Solid,
-            color0: data.color0,
-            color1: data.color1
-        })
+            color0: data.color0 || [ 0.2, 0.25, 0.3 ],
+            color1: data.color1 || [ 0.01, 0.03, 0.05 ],
+        });
     }
 
     toData(): IBackground
@@ -43,7 +45,7 @@ export default class CVBackground extends CBackground
         return {
             style: EBackgroundStyle[ins.style.value] as TBackgroundStyle,
             color0: ins.color0.cloneValue(),
-            color1: ins.color1.cloneValue()
+            color1: ins.color1.cloneValue(),
         };
     }
 }

@@ -16,7 +16,7 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
+import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
@@ -28,9 +28,37 @@ export default class CVTool extends Component
 {
     static readonly typeName: string = "CVTool";
 
+    get tools() {
+        return this.system.getMainComponent(CVTools);
+    }
+    get documentManager() {
+        return this.system.getMainComponent(CDocumentManager);
+    }
+    get activeDocument() {
+        return this.documentManager.activeDocument;
+    }
+
+    create()
+    {
+        super.create();
+        this.documentManager.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+        this.onActiveDocument({ type: "active-document", previous: null, next: this.activeDocument });
+    }
+
+    dispose()
+    {
+        this.onActiveDocument({ type: "active-document", previous: this.activeDocument, next: null });
+        this.documentManager.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+        super.dispose();
+    }
+
     createView(): HTMLElement
     {
         return null;
+    }
+
+    protected onActiveDocument(event: IActiveDocumentEvent)
+    {
     }
 }
 
@@ -47,16 +75,6 @@ export class ToolView<T extends CVTool> extends CustomElement
     {
         super();
         this.tool = tool;
-    }
-
-    get tools() {
-        return this.tool.system.getMainComponent(CVTools);
-    }
-    get documentManager() {
-        return this.tool.system.getMainComponent(CDocumentManager);
-    }
-    get activeDocument() {
-        return this.documentManager.activeDocument;
     }
 
     protected firstConnected()

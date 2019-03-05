@@ -33,18 +33,21 @@ export enum ENavigationType { Orbit, Walk }
 export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }
 
+export type TSliceAxis = "X" | "Y" | "Z";
+export enum ESliceAxis { X, Y, Z }
+
 
 export interface IFeatures
 {
-    scene?: IScene;
-    reader?: IReader;
     interface?: IInterface;
+    reader?: IReader;
+    tapeTool?: ITapeTool;
+    sliceTool?: ISliceTool;
     navigation?: INavigation;
+    scene?: IScene;
     background?: IBackground;
     floor?: IFloor;
     grid?: IGrid;
-    tapeTool?: ITapeTool;
-    sectionTool?: ISectionTool;
 }
 
 export interface IScene
@@ -121,15 +124,17 @@ export interface IGrid
 
 export interface ITapeTool
 {
-    active: boolean;
+    enabled: boolean;
     startPosition: number[];
     startDirection: number[];
     endPosition: number[];
     endDirection: number[];
 }
 
-export interface ISectionTool
+export interface ISliceTool
 {
-    active: boolean;
-    plane: number[];
+    enabled: boolean;
+    axis: TSliceAxis;
+    inverted: boolean;
+    position: number;
 }

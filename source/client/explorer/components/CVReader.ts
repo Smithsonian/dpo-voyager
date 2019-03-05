@@ -45,8 +45,10 @@ export default class CVReader extends Component
 
     fromData(data: IReader)
     {
+        data = data || {} as IReader;
+
         this.ins.setValues({
-            visible: data.visible,
+            visible: !!data.visible,
             position: EReaderPosition[data.position] || EReaderPosition.Overlay,
             url: data.url
         });

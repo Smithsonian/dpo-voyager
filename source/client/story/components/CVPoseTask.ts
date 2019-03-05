@@ -185,11 +185,11 @@ export default class CVPoseTask extends CVTask
         const nextPresentation = event.next as CVDocument;
 
         if (prevPresentation) {
-            prevPresentation.featuresNode.homeGrid.ins.visible.setValue(this._gridVisible);
+            prevPresentation.features.grid.ins.visible.setValue(this._gridVisible);
             prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
-            let prop = nextPresentation.featuresNode.homeGrid.ins.visible;
+            let prop = nextPresentation.features.grid.ins.visible;
             this._gridVisible = prop.value;
             prop.setValue(true);
 

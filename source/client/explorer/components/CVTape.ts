@@ -27,15 +27,17 @@ import CVModel from "../../core/components/CVModel";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _mat3 = new THREE.Matrix3();
+const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
 const _vec3up = new THREE.Vector3(0, 1, 0);
 
+export enum ETapeState { SetStart, SetEnd }
 
 export default class CVTape extends CObject3D
 {
     static readonly typeName: string = "CVTape";
 
     protected static readonly tapeIns = {
-        active: types.Boolean("Tape.Active"),
         startPosition: types.Vector3("Start.Position"),
         startDirection: types.Vector3("Start.Direction"),
         endPosition: types.Vector3("End.Position"),
@@ -43,8 +45,8 @@ export default class CVTape extends CObject3D
     };
 
     protected static readonly tapeOuts = {
-        complete: types.Boolean("Measurement.Complete"),
-        distance: types.Number("Measurement.Distance"),
+        state: types.Enum("Tape.State", ETapeState),
+        distance: types.Number("Tape.Distance"),
     };
 
     ins = this.addInputs<CObject3D, typeof CVTape.tapeIns>(CVTape.tapeIns);
@@ -53,9 +55,6 @@ export default class CVTape extends CObject3D
     protected startPin: Pin = null;
     protected endPin: Pin = null;
     protected line: THREE.Line = null;
-
-    protected startPosition = new THREE.Vector3();
-    protected endPosition = new THREE.Vector3();
 
     create()
     {
@@ -83,7 +82,9 @@ export default class CVTape extends CObject3D
         super.update(context);
 
         const ins = this.ins;
+        const lineGeometry = this.line.geometry as THREE.Geometry;
 
+        // if tape is visible, listen for pointer events to set tape start/end
         if (ins.visible.changed) {
             if (ins.visible.value) {
                 this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -93,13 +94,42 @@ export default class CVTape extends CObject3D
             }
         }
 
+        // update tape start point
+        if (ins.startPosition.changed || ins.startDirection.changed) {
+            const startPin = this.startPin;
+            startPin.position.fromArray(ins.startPosition.value);
+            _vec3a.fromArray(ins.startDirection.value);
+            startPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
+            startPin.updateMatrix();
+
+            lineGeometry.vertices[0].copy(startPin.position);
+            lineGeometry.verticesNeedUpdate = true;
+        }
+
+        // update tape end point
+        if (ins.endPosition.changed || ins.endDirection.changed) {
+            const endPin = this.endPin;
+            endPin.position.fromArray(ins.endPosition.value);
+            _vec3a.fromArray(ins.endDirection.value);
+            endPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
+            endPin.updateMatrix();
+
+            lineGeometry.vertices[1].copy(endPin.position);
+            lineGeometry.verticesNeedUpdate = true;
+        }
+
+        // update distance between measured points
+        _vec3a.fromArray(ins.startPosition.value);
+        _vec3b.fromArray(ins.endPosition.value);
+        this.outs.distance.setValue(_vec3a.distanceTo(_vec3b));
+
         return true;
     }
 
     fromData(data: ITapeTool)
     {
         this.ins.copyValues({
-            visible: data.active,
+            visible: data.enabled,
             startPosition: data.startPosition,
             startDirection: data.startDirection,
             endPosition: data.endPosition,
@@ -112,7 +142,7 @@ export default class CVTape extends CObject3D
         const ins = this.ins;
 
         return {
-            active: ins.visible.cloneValue(),
+            enabled: ins.visible.cloneValue(),
             startPosition: ins.startPosition.cloneValue(),
             startDirection: ins.startDirection.cloneValue(),
             endPosition: ins.endPosition.cloneValue(),
@@ -135,40 +165,32 @@ export default class CVTape extends CObject3D
         const normal = event.view.pickNormal(event).applyMatrix3(_mat3).normalize();
 
         // update pins and measurement line
-        const { startPin, endPin, line, outs } = this;
-        const lineGeometry = line.geometry as THREE.Geometry;
+        const { startPin, endPin, line, ins, outs } = this;
 
-        if (!startPin.visible || endPin.visible) {
-            // set start position of tape
+        if (outs.state.value === ETapeState.SetStart) {
+            position.toArray(ins.startPosition.value);
+            normal.toArray(ins.startDirection.value);
+            ins.startPosition.set();
+            ins.startDirection.set();
+
             startPin.visible = true;
             endPin.visible = false;
-            startPin.position.copy(position);
-            startPin.quaternion.setFromUnitVectors(_vec3up, normal);
-            startPin.updateMatrix();
-
             line.visible = false;
-            lineGeometry.vertices[0].copy(position);
 
-            this.startPosition.copy(position);
-            outs.complete.setValue(false);
-            outs.distance.setValue(0);
+            outs.state.setValue(ETapeState.SetEnd);
         }
         else {
+            position.toArray(ins.endPosition.value);
+            normal.toArray(ins.endDirection.value);
+            ins.endPosition.set();
+            ins.endDirection.set();
+
             // set end position of tape
+            startPin.visible = true;
             endPin.visible = true;
-            endPin.position.copy(position);
-            endPin.quaternion.setFromUnitVectors(_vec3up, normal);
-            endPin.updateMatrix();
-
             line.visible = true;
-            lineGeometry.vertices[1].copy(position);
-            lineGeometry.verticesNeedUpdate = true;
 
-            // calculate measured distance
-            this.endPosition.copy(position);
-            const distance = this.startPosition.distanceTo(this.endPosition);
-            outs.complete.setValue(true);
-            outs.distance.setValue(distance);
+            outs.state.setValue(ETapeState.SetStart);
         }
     }
 }
