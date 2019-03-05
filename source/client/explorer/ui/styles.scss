@@ -74,34 +74,73 @@
 
 .sv-chrome-view {
   @include fullsize;
+  display: flex;
+  flex-direction: column;
 
-  .sv-main-menu {
-    position: absolute;
-    z-index: 1;
-    margin: 4px;
-    display: flex;
+  z-index: 1;
 
-    ff-button-group {
-      display: flex;
+  .ff-button {
+    flex: 0 1 auto;
+    box-sizing: border-box;
+
+    &:hover, &:focus {
+      outline: none;
+
+      & > .ff-icon {
+        fill: $color-text;
+      }
+    }
+
+    &[selected] {
+      background-color: $color-primary;
+
+      & > .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        fill: $color-text;
+      }
+
+      &:hover {
+      }
+      &:focus {
+      }
     }
   }
+}
 
-  .ff-menu-button {
-    pointer-events: auto;
+////////////////////////////////////////////////////////////////////////////////
+// CHROME HEADER / MAIN MENU
+
+.sv-chrome-header {
+  display: flex;
+  //align-items: flex-start;
+}
+
+.sv-logo {
+  margin: 8px;
+  width: 175px;
+  user-select: none;
+}
+
+.sv-main-menu {
+  display: flex;
+  flex-direction: column;
+  margin: 6px;
+
+  .ff-button {
     box-sizing: border-box;
-    width: 44px;
-    height: 44px;
-    margin: 4px;
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 3px 0;
+    background-color: transparentize(#282828, 0.2);
+    border-radius: 20px;
     font-size: 18px;
-    background: $menu-color-background;
-    color: transparentize($menu-color-text, 0.4);
-    transition: color $tx-short, background-color $tx-short;
+    transition: all $tx-short;
+    pointer-events: auto;
 
     &:hover, &:focus {
       outline: none;
       background-color: $menu-color-background-hover;
-      color: $menu-color-text;
+      fill: $color-text;
     }
 
     &[selected] {
@@ -110,98 +149,147 @@
 
       & > .ff-icon {
         filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        fill: $color-text;
       }
 
       &:hover, &:focus {
         background-color: $color-primary-light;
       }
     }
- }
-
-  .sv-logo {
-    position: absolute;
-    z-index: 1;
-    top: 8px;
-    right: 8px;
-    width: 190px;
-    user-select: none;
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MENUS
+// TOOL VIEW
 
-sv-view-menu {
-  width: 180px;
-  overflow: hidden;
+////////////////////////////////////////////////////////////////////////////////
+// CHROME TOOL BAR
+
+.sv-tool-bar-container {
+  display: flex;
+  justify-content: center;
 }
 
-.sv-popup-menu {
-  box-sizing: border-box;
-  background-color: $menu-color-background;
-  border: 1px solid $color-background-light;
-  border-radius: 3px;
-  font-size: 0.8rem;
-  opacity: 0;
-  transition: opacity $tx-short;
+.sv-tool-bar {
+  flex: 0 1 960px;
+  display: flex;
+  flex-direction: column;
+  background-color: transparentize(#080808, 0.2);
+  border-left: $section-border;
+  border-right: $section-border;
+  margin: 0 -1px 0 -1px;
+  pointer-events: auto;
 
-  label {
-    background: $color-background-light;
-    margin: 4px 0;
-    padding: 1px 2px 3px 2px;
-    color: $menu-color-text;
+  transition: transform $tx-medium ease-out, opacity $tx-short ease-out;
+
+  &.sv-transition {
+    transform: translateY(40px);
+    opacity: 0;
   }
 
-  label:first-child {
-    margin-top: 0;
+  .sv-section {
+    display: flex;
+    //overflow: auto hidden;
+    border-top: $section-border;
   }
 
-  .ff-control {
-    margin: 2px 4px;
+  .sv-section-button {
+    flex: 0 0 auto;
+    padding: 6px;
+    width: 38px;
+    border-right: $section-border;
+  }
+
+  .sv-tool-buttons {
+    flex: 1 1 auto;
+    display: flex;
+    //flex-wrap: wrap;
+    justify-content: center;
+    margin: 4px;
+  }
+
+  .sv-tool-button {
+    flex: 0 1 auto;
+    margin: 2px;
+    padding: 1px 2px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+
+    .ff-text {
+      margin: 1px 2px;
+    }
+    .ff-icon {
+      height: 22px;
+      margin: 1px 2px;
+    }
+  }
+}
+
+.sv-tool-view {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+
+  .sv-property-view {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    margin: 4px;
+  }
+
+  .sv-property-slider {
+    flex: 0 2 180px;
+  }
+
+  .sv-options {
+    display: flex;
+  }
+
+  .ff-label {
+    margin: 2px;
+  }
+
+  .ff-string {
+    flex: 0 1 auto;
+    height: 26px;
+    margin: 2px;
+    font-size: 1rem;
   }
 
   .ff-button {
-    padding: 3px;
-    background-color: transparent;
-    border-radius: 3px;
-    color: $menu-color-text-dim;
-
-    &:hover, &:focus {
-      background-color: inherit;
-      outline: none;
-      color: $menu-color-text;
-    }
-
-    &[selected] {
-      background: $color-primary !important;
-      color: $menu-color-text;
-    }
+    height: 26px;
+    margin: 2px;
+    padding: 0 4px;
+    background: $color-background;
+    border-radius: 2px;
   }
 
-  .sv-cube {
-    padding: 8px;
+  .ff-linear-slider {
+    height: 6px;
+    margin: 12px 2px;
+    padding-right: 16px;
+    border-radius: 2px;
+    background-color: $color-background-light;
 
-    .ff-button {
-      box-sizing: border-box;
-      width: 2.2em;
-      height: 2.2em;
-      margin: 0 -1px -1px 0;
-      padding: 0;
-      background: rgba(32, 32, 32, 0.3);
-      border: 1px solid #404040;
-      border-radius: 0;
-
-      .ff-text {
-        font-size: 1.5em;
-        line-height: 0.9em;
-      }
-
-      .ff-icon {
-        font-size: 1.2em;
-        line-height: 1em;
-        vertical-align: center;
-      }
+    .ff-knob {
+      width: 16px;
+      height: 26px;
+      margin: -10px 0 0 0;
+      border-radius: 2px;
+      background-color: $color-primary;
+      box-shadow: 0 0 6px black;
     }
   }
 }
 
+.sv-view-tool-view, .sv-render-tool-view {
+  .sv-options {
+    flex-wrap: wrap;
+  }
+}
+
+.sv-tape-tool-view, .sv-slice-tool-view {
+  flex-wrap: wrap;
+}

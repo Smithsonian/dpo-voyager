@@ -26,6 +26,7 @@ import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
 import CVDocumentLoader from "../components/CVDocumentLoader";
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
+import CVTourPlayer from "../components/CVTourPlayer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +44,7 @@ export default class NVExplorer extends Node
         this.createComponent(CVDocumentLoader);
         this.createComponent(CVInterface);
         this.createComponent(CVReader);
+        this.createComponent(CVTourPlayer);
         this.createComponent(CVOrbitNavigation);
     }
 }

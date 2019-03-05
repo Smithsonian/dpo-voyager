@@ -15,35 +15,19 @@
  * limitations under the License.
  */
 
-import NVDocument from "./NVDocument";
-import NVDocuments from "./NVDocuments";
-import NVExplorer from "./NVExplorer";
-import NVFeatures from "./NVFeatures";
-import NVItem from "./NVItem";
-import NVReference from "./NVReference";
-import NVScene from "./NVScene";
-import NVTools from "./NVTools";
+import Component, { types } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    NVDocument,
-    NVDocuments,
-    NVExplorer,
-    NVFeatures,
-    NVItem,
-    NVReference,
-    NVScene,
-    NVTools,
-};
+export enum ETourPlayerState { Off, Menu, Tour }
 
-export const nodeTypes = [
-    NVDocument,
-    NVDocuments,
-    NVExplorer,
-    NVFeatures,
-    NVItem,
-    NVReference,
-    NVScene,
-    NVTools,
-];
+export default class CVTourPlayer extends Component
+{
+    static readonly typeName: string = "CVTourPlayer";
+
+    protected static readonly ins = {
+        state: types.Enum("Player.State", ETourPlayerState)
+    };
+
+    ins = this.addInputs(CVTourPlayer.ins);
+}

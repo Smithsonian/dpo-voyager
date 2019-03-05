@@ -18,58 +18,58 @@
 import { types } from "@ff/graph/Component";
 
 import "../ui/PropertyBoolean";
-import "../ui/PropertyString";
+import "../ui/PropertyOptions";
+import "../ui/PropertySlider";
 
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVTapeTool extends CVTool
+export default class CVSliceTool extends CVTool
 {
-    static readonly typeName: string = "CVTapeTool";
+    static readonly typeName: string = "CVSliceTool";
 
-    static readonly text = "Tape Measure";
-    static readonly icon = "tape";
+    static readonly text = "Slice Tool";
+    static readonly icon = "knife";
 
-    protected static readonly tapeIns = {
-        enabled: types.Boolean("Tape.Enabled"),
+    protected static readonly sliceIns = {
+        enabled: types.Boolean("Slice.Enabled"),
+        axis: types.Option("Slice.Axis", [ "X", "Y", "Z" ]),
+        position: types.Number("Slice.Position", { min: -1, max: 1, preset: 0 }),
     };
 
-    protected static readonly tapeOuts = {
-        state: types.String("Tape.Measurement", "Tap on model to set start of tape.")
-    };
+    ins = this.addInputs(CVSliceTool.sliceIns);
 
-    ins = this.addInputs(CVTapeTool.tapeIns);
-    outs = this.addOutputs(CVTapeTool.tapeOuts);
-
-    update(context)
+    update()
     {
         return true;
     }
 
     createView()
     {
-        return new TapeToolView(this);
+        return new SliceToolView(this);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-tape-tool-view")
-export class TapeToolView extends ToolView<CVTapeTool>
+@customElement("sv-slice-tool-view")
+export class SliceToolView extends ToolView<CVSliceTool>
 {
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-tape-tool-view");
+        this.classList.add("sv-slice-tool-view");
     }
 
     protected render()
     {
         const enabled = this.tool.ins.enabled;
-        const state = this.tool.outs.state;
+        const axis = this.tool.ins.axis;
+        const position = this.tool.ins.position;
 
-        return html`<sv-property-boolean .property=${enabled} name="Tape Tool"></sv-property-boolean>
-            <sv-property-string .property=${state} name="Measured Distance"></sv-property-string>`;
+        return html`<sv-property-boolean .property=${enabled} name="Slice Tool"></sv-property-boolean>
+            <sv-property-options .property=${axis}></sv-property-options>
+            <sv-property-slider .property=${position}></sv-property-slider>`;
     }
 }

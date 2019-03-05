@@ -42,6 +42,7 @@ import CVDocumentLoader from "./components/CVDocumentLoader";
 
 import NVExplorer from "./nodes/NVExplorer";
 import NVDocuments from "./nodes/NVDocuments";
+import NVTools from "./nodes/NVTools";
 import NVItem from "./nodes/NVItem";
 
 import MainView from "./ui/MainView";
@@ -111,6 +112,7 @@ export default class ExplorerApplication
         const system = this.system = new System(registry);
 
         const main = system.graph.createCustomNode(NVExplorer, "Main");
+        system.graph.createCustomNode(NVTools, "Tools");
         system.graph.createCustomNode(NVDocuments, "Documents");
 
         // create main view if not given

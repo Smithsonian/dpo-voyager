@@ -66,6 +66,8 @@ export interface IInterface
 {
     visible: boolean;
     logo: boolean;
+    menu: boolean;
+    tools: boolean;
 }
 
 export interface INavigation

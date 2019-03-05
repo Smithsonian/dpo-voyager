@@ -28,10 +28,16 @@ import CVMeta from "./CVMeta";
 import CVProcess from "./CVProcess";
 import CVReader from "./CVReader";
 import CVReference from "./CVReference";
+import CVRenderTool from "./CVRenderTool";
 import CVSectionTool from "./CVSectionTool";
+import CVSliceTool from "./CVSliceTool";
 import CVSnapshots from "./CVSnapshots";
+import CVTape from "./CVTape";
 import CVTapeTool from "./CVTapeTool";
+import CVTools from "./CVTools";
+import CVTourPlayer from "./CVTourPlayer";
 import CVTours from "./CVTours";
+import CVViewTool from "./CVViewTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,10 +55,16 @@ export {
     CVProcess,
     CVReader,
     CVReference,
+    CVRenderTool,
     CVSectionTool,
+    CVSliceTool,
     CVSnapshots,
+    CVTape,
     CVTapeTool,
+    CVTools,
+    CVTourPlayer,
     CVTours,
+    CVViewTool,
 };
 
 export const componentTypes = [
@@ -69,8 +81,14 @@ export const componentTypes = [
     CVProcess,
     CVReader,
     CVReference,
+    CVRenderTool,
     CVSectionTool,
+    CVSliceTool,
     CVSnapshots,
+    CVTape,
     CVTapeTool,
+    CVTools,
+    CVTourPlayer,
     CVTours,
+    CVViewTool,
 ];

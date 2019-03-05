@@ -25,7 +25,7 @@ import CVBackground from "../components/CVBackground";
 import CVFloor from "../components/CVFloor";
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
-import CVTapeTool from "../components/CVTapeTool";
+import CVTape from "../components/CVTape";
 import CVSectionTool from "../components/CVSectionTool";
 
 import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
@@ -81,8 +81,8 @@ export default class NVFeatures extends NTransform
     get homeGrid() {
         return this.getComponent(CVHomeGrid);
     }
-    get tapeTool() {
-        return this.getComponent(CVTapeTool);
+    get tape() {
+        return this.getComponent(CVTape);
     }
     get sectionTool() {
         return this.getComponent(CVSectionTool);
@@ -96,7 +96,7 @@ export default class NVFeatures extends NTransform
         this.createComponent(CVBackground);
         this.createComponent(CVFloor);
         this.createComponent(CVHomeGrid);
-        this.createComponent(CVTapeTool);
+        this.createComponent(CVTape);
         this.createComponent(CVSectionTool);
 
         this.renderer.on<IActiveSceneEvent>("active-scene", this.onActiveScene, this);
@@ -151,7 +151,7 @@ export default class NVFeatures extends NTransform
         if (gridData) {
             data.grid = gridData;
         }
-        const tapeToolData = this.tapeTool.toData();
+        const tapeToolData = this.tape.toData();
         if (tapeToolData) {
             data.tapeTool = tapeToolData;
         }
@@ -182,7 +182,7 @@ export default class NVFeatures extends NTransform
             this.homeGrid.fromData(data.grid);
         }
         if (data.tapeTool) {
-            this.tapeTool.fromData(data.tapeTool);
+            this.tape.fromData(data.tapeTool);
         }
         if (data.sectionTool) {
             this.sectionTool.fromData(data.sectionTool);

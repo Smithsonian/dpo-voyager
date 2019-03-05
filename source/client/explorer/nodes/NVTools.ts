@@ -15,35 +15,31 @@
  * limitations under the License.
  */
 
-import NVDocument from "./NVDocument";
-import NVDocuments from "./NVDocuments";
-import NVExplorer from "./NVExplorer";
-import NVFeatures from "./NVFeatures";
-import NVItem from "./NVItem";
-import NVReference from "./NVReference";
-import NVScene from "./NVScene";
-import NVTools from "./NVTools";
+import Node from "@ff/graph/Node";
+
+import CVTools from "../components/CVTools";
+
+import CVViewTool from "../components/CVViewTool";
+import CVRenderTool from "../components/CVRenderTool";
+import CVTapeTool from "../components/CVTapeTool";
+import CVSliceTool from "../components/CVSliceTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    NVDocument,
-    NVDocuments,
-    NVExplorer,
-    NVFeatures,
-    NVItem,
-    NVReference,
-    NVScene,
-    NVTools,
-};
+export default class NVTools extends Node
+{
+    static readonly typeName: string = "NVTools";
 
-export const nodeTypes = [
-    NVDocument,
-    NVDocuments,
-    NVExplorer,
-    NVFeatures,
-    NVItem,
-    NVReference,
-    NVScene,
-    NVTools,
-];
+    get tools() {
+        return this.getComponent(CVTools);
+    }
+
+    createComponents()
+    {
+        this.createComponent(CVTools);
+        this.createComponent(CVViewTool);
+        this.createComponent(CVRenderTool);
+        this.createComponent(CVTapeTool);
+        this.createComponent(CVSliceTool);
+    }
+}

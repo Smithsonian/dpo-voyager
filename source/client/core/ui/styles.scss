@@ -23,8 +23,10 @@ $color-secondary: #ffcd00; // Smithsonian secondary yellow
 
 $menu-color-text: #f0f0f0;
 $menu-color-text-dim: #a0a0a0;
-$menu-color-background: transparentize(#202020, 0.3);
-$menu-color-background-hover: transparentize(#404040, 0.4);
+$menu-color-background: transparentize(#404040, 0.4);
+$menu-color-background-hover: transparentize(#606060, 0.5);
+
+$section-border: 1px solid transparentize(#0089bf, 0.5);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,8 +93,8 @@ body {
 
   .sv-reader-view {
     @include fullsize;
-    margin-top: 60px;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    margin-top: 54px;
+    border-top: $section-border;
     //z-index: 2;
   }
 }

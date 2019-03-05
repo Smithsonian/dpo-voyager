@@ -21,22 +21,25 @@ import { IInterface } from "common/types/features";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _inputs = {
-    visible: types.Boolean("Interface.Visible", true),
-    logo: types.Boolean("Interface.Logo", true),
-};
-
-const _outputs = {
-    fullscreenAvailable: types.Boolean("Fullscreen.Available", false),
-    fullscreenEnabled: types.Boolean("Fullscreen.Enabled", false),
-};
 
 export default class CVInterface extends Component
 {
     static readonly typeName: string = "CVInterface";
 
-    ins = this.addInputs(_inputs);
-    outs = this.addOutputs(_outputs);
+    protected static readonly ins = {
+        visible: types.Boolean("Interface.Visible", true),
+        logo: types.Boolean("Interface.Logo", true),
+        menu: types.Boolean("Interface.Menu", true),
+        tools: types.Boolean("Interface.Tools", true),
+    };
+
+    protected static readonly outs = {
+        fullscreenAvailable: types.Boolean("Fullscreen.Available", false),
+        fullscreenEnabled: types.Boolean("Fullscreen.Enabled", false),
+    };
+
+    ins = this.addInputs(CVInterface.ins);
+    outs = this.addOutputs(CVInterface.outs);
 
     private _fullscreenElement: HTMLElement = null;
 
@@ -89,8 +92,10 @@ export default class CVInterface extends Component
     fromData(data: IInterface)
     {
         this.ins.setValues({
-            visible: data.visible,
-            logo: data.logo
+            visible: data.visible !== undefined ? data.visible : true,
+            logo: data.logo !== undefined ? data.logo : true,
+            menu: data.menu !== undefined ? data.menu : true,
+            tools: data.tools !== undefined ? data.tools : true
         });
     }
 
@@ -100,7 +105,9 @@ export default class CVInterface extends Component
 
         return {
             visible: ins.visible.value,
-            logo: ins.logo.value
+            logo: ins.logo.value,
+            menu: ins.menu.value,
+            tools: ins.tools.value
         };
     }
 
