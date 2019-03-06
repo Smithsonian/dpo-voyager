@@ -112,13 +112,23 @@
 
 .sv-chrome-header {
   display: flex;
-  //align-items: flex-start;
-}
+  align-items: flex-start;
 
-.sv-logo {
-  margin: 8px;
-  width: 175px;
-  user-select: none;
+  .sv-top-bar {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-start;
+    height: 40px;
+    margin: 9px;
+  }
+
+  .sv-main-title {
+    flex: 1 1 auto;
+    margin-top: 6px;
+    font-weight: normal;
+    font-size: 1.2rem;
+    //@include ellipsis;
+  }
 }
 
 .sv-main-menu {

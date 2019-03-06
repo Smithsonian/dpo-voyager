@@ -195,14 +195,14 @@ export default class CVAnnotationsTask extends CVTask
 
         if (prevDocument) {
             prevDocument.features.grid.ins.visible.setValue(this._gridVisible);
-            prevDocument.scene.ins.annotations.setValue(this._annotationsVisible);
+            prevDocument.scene.ins.annotationsVisible.setValue(this._annotationsVisible);
         }
         if (nextDocument) {
             let prop = nextDocument.features.grid.ins.visible;
             this._gridVisible = prop.value;
             prop.setValue(false);
 
-            prop = nextDocument.scene.ins.annotations;
+            prop = nextDocument.scene.ins.annotationsVisible;
             this._annotationsVisible = prop.value;
             prop.setValue(true);
         }

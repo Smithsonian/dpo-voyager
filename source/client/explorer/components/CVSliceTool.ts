@@ -101,11 +101,15 @@ export default class CVSliceTool extends CVTool
         const axisInverted = ins.inverted.value;
         const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const bb = this.boundingBox;
+        const boundingBox = this.boundingBox;
+        if (!boundingBox) {
+            return true;
+        }
+
         this.plane = _planes[planeIndex];
-        const min = bb.min.getComponent(axisIndex);
-        const max = bb.max.getComponent(axisIndex);
-        const value = ins.position.value;
+        const min = boundingBox.min.getComponent(axisIndex);
+        const max = boundingBox.max.getComponent(axisIndex);
+        const value = 1 - ins.position.value;
         this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
 
         const models = document.getInnerComponents(CVModel);

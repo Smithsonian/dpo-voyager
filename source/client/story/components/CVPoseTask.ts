@@ -186,14 +186,14 @@ export default class CVPoseTask extends CVTask
 
         if (prevPresentation) {
             prevPresentation.features.grid.ins.visible.setValue(this._gridVisible);
-            prevPresentation.scene.ins.annotations.setValue(this._annotationsVisible);
+            prevPresentation.scene.ins.annotationsVisible.setValue(this._annotationsVisible);
         }
         if (nextPresentation) {
             let prop = nextPresentation.features.grid.ins.visible;
             this._gridVisible = prop.value;
             prop.setValue(true);
 
-            prop = nextPresentation.scene.ins.annotations;
+            prop = nextPresentation.scene.ins.annotationsVisible;
             this._annotationsVisible = prop.value;
             prop.setValue(false);
         }

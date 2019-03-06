@@ -111,6 +111,11 @@ export default class CVInterface extends Component
         this.outs.fullscreenAvailable.setValue(!!fullscreenAvailable);
     }
 
+    update(context)
+    {
+        return true;
+    }
+
     fromData(data: IInterface)
     {
         data = data || {} as IInterface;

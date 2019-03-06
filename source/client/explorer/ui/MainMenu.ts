@@ -15,22 +15,19 @@
  * limitations under the License.
  */
 
-import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
+import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
 
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
 import CVTourPlayer, { ETourPlayerState } from "../components/CVTourPlayer";
 import CVTools from "../components/CVTools";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
+import CVScene from "../../core/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-main-menu")
-export default class MainMenu extends SystemElement
+export default class MainMenu extends DocumentView
 {
-    protected get documentManager() {
-        return this.system.getMainComponent(CDocumentManager);
-    }
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
     }
@@ -42,6 +39,10 @@ export default class MainMenu extends SystemElement
     }
     protected get tools() {
         return this.system.getMainComponent(CVTools);
+    }
+    protected get scene() {
+        const document = this.activeDocument;
+        return document ? document.getInnerComponent(CVScene) : null;
     }
 
     protected firstConnected()
@@ -71,7 +72,6 @@ export default class MainMenu extends SystemElement
     {
         const readerVisible = this.reader.ins.visible.value;
         const toursVisible = this.tourPlayer.ins.state.value !== ETourPlayerState.Off;
-        const annotationsVisible = false;
         const toolsVisible = this.tools.ins.visible.value;
 
         const _interface = this.interface;
@@ -79,14 +79,17 @@ export default class MainMenu extends SystemElement
         const showFullscreenButton = _interface.outs.fullscreenAvailable.value;
         const showToolButton = _interface.ins.tools.value;
 
-        return html`<ff-button icon="information" title="Read more..."
+        const scene = this.scene;
+        const annotationsVisible = scene ? scene.ins.annotationsVisible.value : false;
+
+        return html`<ff-button icon="document" title="Read more..."
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
-        ${readerVisible ? null : html`${showFullscreenButton ? html`<ff-button icon="expand" title="Toggle fullscreen mode"
-            ?selected=${fullscreenEnabled} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        <ff-button icon="globe" title="Interactive Tours"
+        ${readerVisible ? null : html`<ff-button icon="globe" title="Interactive Tours - NOT YET AVAILABLE"
             ?selected=${toursVisible} @click=${this.onToggleTours}></ff-button>
         <ff-button icon="comment" title="Toggle Annotations"
             ?selected=${annotationsVisible} @click=${this.onToggleAnnotations}></ff-button>
+        ${showFullscreenButton ? html`<ff-button icon="expand" title="Toggle fullscreen mode"
+            ?selected=${fullscreenEnabled} @click=${this.onToggleFullscreen}></ff-button>` : null}
         ${showToolButton ? html`<ff-button icon="tools" title="Tools and Settings"
             ?selected=${toolsVisible} @click=${this.onToggleTools}></ff-button>` : null}`}`;
     }
@@ -125,7 +128,11 @@ export default class MainMenu extends SystemElement
 
     protected onToggleAnnotations()
     {
-
+        const scene = this.scene;
+        if (scene) {
+            const prop = scene.ins.annotationsVisible;
+            prop.setValue(!prop.value);
+        }
     }
 
     protected onToggleTools()

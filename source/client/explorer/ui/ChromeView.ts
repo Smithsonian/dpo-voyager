@@ -21,15 +21,16 @@ import "@ff/ui/PopupButton";
 import CVInterface from "../components/CVInterface";
 import CVTools from "../components/CVTools";
 
+import "../../core/ui/Logo";
 import "./MainMenu";
 import "./ToolBar";
 
-import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
+import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-chrome-view")
-export default class ChromeView extends SystemElement
+export default class ChromeView extends SystemView
 {
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
@@ -73,10 +74,10 @@ export default class ChromeView extends SystemElement
         return html`
             <div class="sv-chrome-header">
                 <sv-main-menu .system=${system}></sv-main-menu>
-                <div class="ff-flex-spacer"></div>
-                ${logoVisible ? html`<div class="sv-logo">
-                    <img src="images/si-dpo3d-logo-neg.svg" alt="Smithsonian DPO 3D Logo">
-                </div>` : null}
+                <div class="sv-top-bar">
+                    <div class="sv-main-title">Here goes the object title<span>&nbsp; &nbsp;</span></div>
+                    ${logoVisible ? html`<sv-logo></sv-logo>` : null}
+                </div>
             </div>
             <div class="ff-flex-spacer"></div>
             ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.onToggleTools}></sv-tool-bar></div>` : null}`;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 

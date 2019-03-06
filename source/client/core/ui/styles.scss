@@ -42,6 +42,42 @@ body {
   //color: $color-text;
 }
 
+sv-logo {
+  flex: 0 50 180px;
+  min-width: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+
+  height: 40px;
+  user-select: none;
+
+  .sv-short {
+    flex-grow: 1;
+    width: 0;
+    max-width: 40px;
+
+    .sv-sunburst {
+    }
+  }
+
+  .sv-full {
+    flex: 1 0 180px;
+    display: flex;
+
+    .sv-sunburst {
+      flex: 0 0 14%;
+    }
+    .sv-smithsonian {
+      flex: 0 0 83%;
+      margin-left: 3%;
+    }
+  }
+
+}
+
 @keyframes spin { 100% { transform:rotate(360deg); } }
 
 .sv-spinner {
@@ -94,8 +130,8 @@ body {
   .sv-reader-view {
     @include fullsize;
     margin-top: 54px;
-    background-color: transparentize(white, 0.95);
-    //border-top: $section-border;
+    //background-color: transparentize(white, 0.95);
+    border-top: $section-border;
     //z-index: 2;
   }
 }

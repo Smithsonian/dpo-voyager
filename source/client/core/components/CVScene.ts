@@ -34,7 +34,7 @@ export { EUnitType, EShaderMode };
 
 const ins = {
     units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
-    annotations: types.Boolean("Annotations.Visible", true),
+    annotationsVisible: types.Boolean("Annotations.Visible", false),
     shader: types.Enum("Renderer.Shader", EShaderMode),
     exposure: types.Number("Renderer.Exposure", 1),
     gamma: types.Number("Renderer.Gamma", 1),
@@ -68,8 +68,8 @@ export default class CVScene extends CScene
         if (ins.units.changed) {
             this.updateModels();
         }
-        if (ins.annotations.changed) {
-            const visible = ins.annotations.value;
+        if (ins.annotationsVisible.changed) {
+            const visible = ins.annotationsVisible.value;
             this.getGraphComponents(CVAnnotations).forEach(comp => comp.ins.visible.setValue(visible));
         }
         if (ins.shader.changed) {
