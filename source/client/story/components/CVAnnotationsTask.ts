@@ -17,6 +17,8 @@
 
 import * as THREE from "three";
 
+import * as helpers from "@ff/three/helpers";
+
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
 import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
@@ -36,7 +38,9 @@ import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3 = new THREE.Vector3();
+const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
+const _quat = new THREE.Quaternion();
 const _mat4 = new THREE.Matrix4();
 const _mat3 = new THREE.Matrix3();
 
@@ -154,6 +158,7 @@ export default class CVAnnotationsTask extends CVTask
 
     protected onPointerUp(event: IPointerEvent)
     {
+        // do not handle event if user is dragging (the camera)
         if (event.isDragging) {
             return;
         }
@@ -164,8 +169,10 @@ export default class CVAnnotationsTask extends CVTask
         if (event.component === model) {
 
             // get click position and normal in annotation space = pose transform * model space
-            _vec3.setScalar(1 / model.outs.unitScale.value);
-            _mat4.copy(model.object3D.matrix).scale(_vec3);
+            _vec3a.fromArray(model.ins.position.value);
+            helpers.degreesToQuaternion(model.ins.rotation.value, CVModel.rotationOrder, _quat);
+            _vec3b.setScalar(1);
+            _mat4.compose(_vec3a, _quat, _vec3b);
             _mat3.getNormalMatrix(_mat4);
             const position = event.view.pickPosition(event).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();

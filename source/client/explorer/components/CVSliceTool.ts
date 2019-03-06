@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import * as THREE from "three";
+
 import { types } from "@ff/graph/Component";
 
 import { ESliceAxis, ISliceTool, TSliceAxis } from "common/types/features";
@@ -25,6 +27,7 @@ import "../ui/PropertySlider";
 
 import UberPBRMaterial from "../../core/shaders/UberPBRMaterial";
 import CVModel from "../../core/components/CVModel";
+import CVScene from "../../core/components/CVScene";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
 
@@ -49,19 +52,38 @@ export default class CVSliceTool extends CVTool
     protected static readonly sliceIns = {
         enabled: types.Boolean("Slice.Enabled"),
         axis: types.Enum("Slice.Axis", ESliceAxis),
-        position: types.Number("Slice.Position", { min: -1, max: 1, preset: 0 }),
+        position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
         inverted: types.Boolean("Slice.Inverted"),
         color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
     };
 
     ins = this.addInputs(CVSliceTool.sliceIns);
 
+    get scene() {
+        const document = this.activeDocument;
+        return document ? document.getInnerComponent(CVScene) : null;
+    }
+
     protected plane: number[] = null;
     protected axisIndex = -1;
+    protected boundingBox: THREE.Box3 = null;
 
     update()
     {
         const ins = this.ins;
+
+        if (!ins.enabled.value && !ins.enabled.changed) {
+            return false;
+        }
+
+        const document = this.activeDocument;
+        if (!document) {
+            return false;
+        }
+
+        if (ins.enabled.changed && ins.enabled.value) {
+            this.boundingBox = document.getInnerComponent(CVScene).updateBoundingBox();
+        }
 
         if (ins.axis.changed) {
             const axisIndex = ins.axis.getValidatedValue();
@@ -75,26 +97,31 @@ export default class CVSliceTool extends CVTool
             }
         }
 
-        const index = ins.axis.getValidatedValue() + (ins.inverted.value ? 3 : 0);
-        this.plane = _planes[index];
-        this.plane[3] = ins.position.value;
+        const axisIndex = ins.axis.getValidatedValue();
+        const axisInverted = ins.inverted.value;
+        const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const document = this.activeDocument;
-        if (document) {
-            const models = document.getInnerComponents(CVModel);
+        const bb = this.boundingBox;
+        this.plane = _planes[planeIndex];
+        const min = bb.min.getComponent(axisIndex);
+        const max = bb.max.getComponent(axisIndex);
+        const value = ins.position.value;
+        this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
 
-            models.forEach(model => {
-                const object = model.object3D;
-                object.traverse((mesh: THREE.Mesh) => {
-                    if (mesh.isMesh) {
-                        const material = mesh.material as UberPBRMaterial;
-                        if (material.isUberPBRMaterial) {
-                            this.updateMaterial(material);
-                        }
+        const models = document.getInnerComponents(CVModel);
+
+        models.forEach(model => {
+            const object = model.object3D;
+            object.traverse((mesh: THREE.Mesh) => {
+                if (mesh.isMesh) {
+                    const material = mesh.material as UberPBRMaterial;
+                    if (material.isUberPBRMaterial) {
+                        this.updateMaterial(material);
                     }
-                });
+                }
             });
-        }
+        });
+
         return true;
     }
 

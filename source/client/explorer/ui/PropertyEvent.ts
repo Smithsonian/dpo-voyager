@@ -19,11 +19,12 @@ import Property from "@ff/graph/Property";
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
+import { IButtonClickEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-property-string")
-export default class PropertyString extends CustomElement
+@customElement("sv-property-event")
+export default class PropertyEvent extends CustomElement
 {
     @property({ attribute: false })
     property: Property = null;
@@ -31,9 +32,15 @@ export default class PropertyString extends CustomElement
     @property({ type: String })
     name = "";
 
+    @property({ type: String })
+    text = "";
+
+    @property({ type: String })
+    icon = "";
+
     protected firstConnected()
     {
-        this.classList.add("sv-property-view", "sv-property-string");
+        this.classList.add("sv-property-view", "sv-property-event");
     }
 
     protected connected()
@@ -50,9 +57,17 @@ export default class PropertyString extends CustomElement
     {
         const property = this.property;
         const name = this.name || property.name;
-        const text = property.value;
+        const text = this.text;
+        const icon = this.icon;
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <div class="ff-string">${text}</div>`;
+            <div class="sv-options">
+                <ff-button .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
+            </div>`;
+    }
+
+    protected onButtonClick(event: IButtonClickEvent)
+    {
+        this.property.set();
     }
 }

@@ -20,6 +20,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 
 import { IFeatures } from "common/types/features";
 
+import CVNavigation from "../../core/components/CVOrbitNavigation";
 import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
 
 import CVInterface from "./CVInterface";
@@ -52,14 +53,14 @@ export default class CVFeatures extends Component
     get sliceTool() {
         return this.getMainComponent(CVSliceTool);
     }
-    get navigation() {
-        return this.getMainComponent(CVOrbitNavigation);
-    }
 
     // accessors for document-local components
 
     get scene() {
         return this.getGraphComponent(CVScene);
+    }
+    get navigation() {
+        return this.getComponent(CVNavigation);
     }
     get background() {
         return this.getComponent(CVBackground);
@@ -107,6 +108,7 @@ export default class CVFeatures extends Component
         }
 
         this.scene.fromData(data.scene);
+        this.navigation.fromData(data.navigation);
         this.background.fromData(data.background);
         this.floor.fromData(data.floor);
         this.grid.fromData(data.grid);
@@ -122,6 +124,7 @@ export default class CVFeatures extends Component
         }
 
         data.scene = this.scene.toData();
+        data.navigation = this.navigation.toData();
         data.background = this.background.toData();
         data.floor = this.floor.toData();
         data.grid = this.grid.toData();
@@ -136,7 +139,6 @@ export default class CVFeatures extends Component
         this.interface.fromData(data.interface);
         this.reader.fromData(data.reader);
         this.sliceTool.fromData(data.sliceTool);
-        this.navigation.fromData(data.navigation);
     }
 
     protected deflateGlobalComponents()
@@ -145,6 +147,5 @@ export default class CVFeatures extends Component
         data.interface = this.interface.toData();
         data.reader = this.reader.toData();
         data.sliceTool = this.sliceTool.toData();
-        data.navigation = this.navigation.toData();
     }
 }

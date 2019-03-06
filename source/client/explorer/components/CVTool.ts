@@ -24,6 +24,8 @@ import CVTools from "../components/CVTools";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { types, customElement, html };
+
 export default class CVTool extends Component
 {
     static readonly typeName: string = "CVTool";
@@ -64,12 +66,17 @@ export default class CVTool extends Component
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { customElement, html };
-
 export class ToolView<T extends CVTool> extends CustomElement
 {
     @property({ attribute: false })
     tool: T = null;
+
+    get documentManager() {
+        return this.tool.system.getMainComponent(CDocumentManager);
+    }
+    get activeDocument() {
+        return this.documentManager.activeDocument;
+    }
 
     constructor(tool?: T)
     {
@@ -80,5 +87,22 @@ export class ToolView<T extends CVTool> extends CustomElement
     protected firstConnected()
     {
         this.classList.add("sv-tool-view");
+    }
+
+    protected connected()
+    {
+        this.documentManager.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+        this.onActiveDocument({ type: "active-document", previous: null, next: this.activeDocument });
+
+    }
+
+    protected disconnected()
+    {
+        this.onActiveDocument({ type: "active-document", previous: this.activeDocument, next: null });
+        this.documentManager.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+    }
+
+    protected onActiveDocument(event: IActiveDocumentEvent)
+    {
     }
 }

@@ -37,6 +37,7 @@ import NVItem from "../../explorer/nodes/NVItem";
 
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
+const _vec3c = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _box = new THREE.Box3();
 
@@ -79,7 +80,7 @@ export default class CVModel extends CObject3D
 {
     static readonly typeName: string = "CVModel";
 
-    protected static readonly rotationOrder = "ZYX";
+    static readonly rotationOrder = "ZYX";
 
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
     outs = this.addOutputs<CObject3D, typeof _outputs>(_outputs);
@@ -311,12 +312,11 @@ export default class CVModel extends CObject3D
     {
         const ins = this.ins;
         const unitScale = this.outs.unitScale.value;
+        const object3D = this.object3D;
 
         _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);
         helpers.degreesToQuaternion(ins.rotation.value, CVModel.rotationOrder, _quat);
         _vec3b.setScalar(unitScale);
-
-        const object3D = this.object3D;
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;
     }

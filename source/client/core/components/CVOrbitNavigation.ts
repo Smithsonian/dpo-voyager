@@ -15,32 +15,25 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import math from "@ff/core/math";
 import { types } from "@ff/graph/propertyTypes";
-import OrbitManipulator from "@ff/three/OrbitManipulator";
+
+import CameraController from "@ff/three/CameraController";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
 import { INavigation } from "common/types/features";
 
-import CVNavigation, { EViewPreset, EProjection } from "./CVNavigation";
+import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _box = new THREE.Box3();
-const _size = new THREE.Vector3();
-const _center = new THREE.Vector3();
-const _translation = new THREE.Vector3();
+const _orientationPresets = [];
+_orientationPresets[EViewPreset.Left] = [ 0, -90, 0 ];
+_orientationPresets[EViewPreset.Right] = [ 0, 90, 0 ];
+_orientationPresets[EViewPreset.Front] = [ 0, 0, 0 ];
+_orientationPresets[EViewPreset.Back] = [ 0, 180, 0 ];
+_orientationPresets[EViewPreset.Top] = [ -90, 0, 0 ];
+_orientationPresets[EViewPreset.Bottom] = [ 90, 0, 0 ];
 
-const _orientationPreset = [
-    [ 0, -90, 0 ], // left
-    [ 0, 90, 0 ],  // right
-    [ -90, 0, 0 ], // top
-    [ 90, 0, 0 ],  // bottom
-    [ 0, 0, 0 ],   // front
-    [ 0, 180, 0 ], // back
-];
 
 const _replaceNull = function(vector: number[], replacement: number)
 {
@@ -48,19 +41,6 @@ const _replaceNull = function(vector: number[], replacement: number)
         vector[i] = vector[i] === null ? replacement : vector[i];
     }
     return vector;
-};
-
-
-const _inputs = {
-    orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
-    offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
-    minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
-    minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
-    maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
-    maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ]),
-};
-
-const _outputs = {
 };
 
 /**
@@ -71,28 +51,23 @@ export default class CVOrbitNavigation extends CVNavigation
 {
     static readonly typeName: string = "CVOrbitNavigation";
 
-    ins = this.addInputs<CVNavigation, typeof _inputs>(_inputs);
-    outs = this.addOutputs<CVNavigation, typeof _outputs>(_outputs);
+    protected static readonly navIns = {
+        orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
+        offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
+        minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
+        minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
+        maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
+        maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ]),
+    };
 
-    private _manip = new OrbitManipulator();
+    ins = this.addInputs<CVNavigation, typeof CVOrbitNavigation.navIns>(CVOrbitNavigation.navIns);
 
+    protected controller = new CameraController();
 
-    create()
-    {
-        super.create();
-
-        this._manip.cameraMode = true;
-    }
-
-    dispose()
-    {
-        super.dispose();
-    }
 
     update()
     {
         const ins = this.ins;
-        const manip = this._manip;
 
         const cameraComponent = this.activeCamera;
         const camera = cameraComponent ? cameraComponent.camera : null;
@@ -100,34 +75,36 @@ export default class CVOrbitNavigation extends CVNavigation
         const { projection, preset, orbit, offset } = ins;
 
         // camera projection
-        if (camera && projection.changed) {
-            camera.setProjection(projection.value);
-            manip.orthographicMode = projection.value === EProjection.Orthographic;
+        if (cameraComponent && projection.changed) {
+            camera.setProjection(projection.getValidatedValue());
+            cameraComponent.ins.projection.setValue(projection.value, true);
         }
 
         // camera preset
         if (preset.changed && preset.value !== EViewPreset.None) {
-            orbit.setValue(_orientationPreset[preset.getValidatedValue()].slice());
+            orbit.setValue(_orientationPresets[preset.getValidatedValue()].slice());
         }
 
-        // zoom extent
-        if (camera && ins.zoomExtent.changed) {
-            manip.zoomExtent(this.activeScene.boundingBox, camera.fov);
+        const controller = this.controller;
+
+        // zoom extents
+        if (camera && ins.zoomExtents.changed) {
+            controller.zoomExtents(this.scene.updateBoundingBox());
         }
 
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
 
         // orbit, offset and limits
         if (orbit.changed || offset.changed) {
-            manip.orbit.fromArray(orbit.value);
-            manip.offset.fromArray(offset.value);
+            controller.orbit.fromArray(orbit.value);
+            controller.offset.fromArray(offset.value);
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
-            manip.minOrbit.fromArray(minOrbit.value);
-            manip.minOffset.fromArray(minOffset.value);
-            manip.maxOrbit.fromArray(maxOrbit.value);
-            manip.maxOffset.fromArray(maxOffset.value);
+            controller.minOrbit.fromArray(minOrbit.value);
+            controller.minOffset.fromArray(minOffset.value);
+            controller.maxOrbit.fromArray(maxOrbit.value);
+            controller.maxOffset.fromArray(maxOffset.value);
         }
 
         return true;
@@ -135,41 +112,34 @@ export default class CVOrbitNavigation extends CVNavigation
 
     tick()
     {
-        const manip = this._manip;
-        const cameraComponent = this.activeCamera;
         const ins = this.ins;
+        const cameraComponent = this.activeCamera;
 
+        if (!ins.enabled.value || !cameraComponent) {
+            return;
+        }
 
-        if (ins.enabled.value) {
+        const controller = this.controller;
+        controller.camera = cameraComponent.camera;
 
-            const manipUpdated = manip.update();
+        const transform = cameraComponent.transform;
+        const forceUpdate = this.changed;
 
-            if (manipUpdated) {
-                manip.orbit.toArray(ins.orbit.value);
-                ins.orbit.set(true);
-                manip.offset.toArray(ins.offset.value);
-                ins.offset.set(true);
-                ins.preset.setValue(EViewPreset.None, true);
+        if (controller.updateCamera(transform.object3D, forceUpdate)) {
+            controller.orbit.toArray(ins.orbit.value);
+            ins.orbit.set(true);
+            controller.offset.toArray(ins.offset.value);
+            ins.offset.set(true);
+            ins.preset.setValue(EViewPreset.None, true);
+
+            if (transform) {
+                transform.setPropertiesFromMatrix();
+            }
+            else {
+                cameraComponent.setPropertiesFromMatrix();
             }
 
-            if (cameraComponent && (manipUpdated || this.updated)) {
-                const camera = cameraComponent.camera;
-                const parentComponent = cameraComponent.parentComponent;
-
-                if (parentComponent) {
-                    this._manip.toObject(parentComponent.object3D);
-                }
-                else {
-                    this._manip.toObject(camera);
-                }
-
-                if (camera.isOrthographicCamera) {
-                    camera.size = this._manip.offset.z;
-                    camera.updateProjectionMatrix();
-                }
-
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -187,16 +157,16 @@ export default class CVOrbitNavigation extends CVNavigation
             minOrbit: [ -90, -Infinity, -Infinity ],
             minOffset: [ -Infinity, -Infinity, 0.1 ],
             maxOrbit: [ 90, Infinity, Infinity ],
-            maxOffset: [ Infinity, Infinity, Infinity ]
+            maxOffset: [ Infinity, Infinity, Infinity ],
         };
 
         this.ins.copyValues({
-            orbit: orbit.orbit.slice(),
-            offset: orbit.offset.slice(),
-            minOrbit: _replaceNull(orbit.minOrbit.slice(), -Infinity),
-            maxOrbit: _replaceNull(orbit.maxOrbit.slice(), Infinity),
-            minOffset: _replaceNull(orbit.minOffset.slice(), -Infinity),
-            maxOffset: _replaceNull(orbit.maxOffset.slice(), Infinity),
+            orbit: orbit.orbit,
+            offset: orbit.offset,
+            minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
+            maxOrbit: _replaceNull(orbit.maxOrbit, Infinity),
+            minOffset: _replaceNull(orbit.minOffset, -Infinity),
+            maxOffset: _replaceNull(orbit.maxOffset, Infinity),
         });
     }
 
@@ -221,13 +191,15 @@ export default class CVOrbitNavigation extends CVNavigation
     protected onPointer(event: IPointerEvent)
     {
         const viewport = event.viewport;
+
+        // if viewport has it's own camera, don't handle event here
         if (viewport.camera) {
             return;
         }
 
         if (this.ins.enabled.value && this.activeCamera) {
-            this._manip.setViewportSize(viewport.width, viewport.height);
-            this._manip.onPointer(event);
+            this.controller.setViewportSize(viewport.width, viewport.height);
+            this.controller.onPointer(event);
             event.stopPropagation = true;
         }
     }
@@ -235,13 +207,15 @@ export default class CVOrbitNavigation extends CVNavigation
     protected onTrigger(event: ITriggerEvent)
     {
         const viewport = event.viewport;
+
+        // if viewport has it's own camera, don't handle event here
         if (viewport.camera) {
             return;
         }
 
         if (this.ins.enabled.value && this.activeCamera) {
-            this._manip.setViewportSize(viewport.width, viewport.height);
-            this._manip.onTrigger(event);
+            this.controller.setViewportSize(viewport.width, viewport.height);
+            this.controller.onTrigger(event);
             event.stopPropagation = true;
         }
     }

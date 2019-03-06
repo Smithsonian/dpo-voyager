@@ -35,6 +35,9 @@ export default class PropertyOptions extends CustomElement
     @property({ attribute: false })
     options: string[] = null;
 
+    @property({ attribute: false })
+    indexMap: number[] = null;
+
     protected firstConnected()
     {
         this.classList.add("sv-property-view", "sv-property-options");
@@ -53,14 +56,24 @@ export default class PropertyOptions extends CustomElement
     protected render()
     {
         const property = this.property;
+        const indexMap = this.indexMap;
         const name = this.name || property.name;
         const options = this.options || property.schema.options;
         const value = property.value;
 
-        return html`<label class="ff-label ff-off">${name}</label>
-            <div class="sv-options">${options.map((option, index) =>
-                html`<ff-button .text=${option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}></ff-button>`)}
-            </div>`;
+        let buttons;
+        if (indexMap) {
+            buttons = indexMap.map(index =>
+                html`<ff-button .text=${options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                    </ff-button>`);
+        }
+        else {
+            buttons = options.map((option, index) =>
+                html`<ff-button .text=${option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                    </ff-button>`)
+        }
+
+        return html`<label class="ff-label ff-off">${name}</label><div class="sv-options">${buttons}</div>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)

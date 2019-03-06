@@ -21,7 +21,6 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
 
 import CVDocumentLoader from "../components/CVDocumentLoader";
 import CVInterface from "../components/CVInterface";
@@ -45,6 +44,5 @@ export default class NVExplorer extends Node
         this.createComponent(CVInterface);
         this.createComponent(CVReader);
         this.createComponent(CVTourPlayer);
-        this.createComponent(CVOrbitNavigation);
     }
 }

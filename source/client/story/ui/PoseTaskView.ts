@@ -82,6 +82,6 @@ export default class PoseTaskView extends TaskView
     protected onClickZoomViews()
     {
         const activeDocument = this.task.documentManager.activeDocument;
-        activeDocument.getInnerComponent(CVScene).ins.zoomExtent.set();
+        activeDocument.getInnerComponent(CVScene).ins.zoomExtents.set();
     }
 }

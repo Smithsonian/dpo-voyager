@@ -38,7 +38,7 @@ const ins = {
     shader: types.Enum("Renderer.Shader", EShaderMode),
     exposure: types.Number("Renderer.Exposure", 1),
     gamma: types.Number("Renderer.Gamma", 1),
-    zoomExtent: types.Event("ZoomExtent")
+    zoomExtents: types.Event("Viewports.ZoomExtents")
 };
 
 export default class CVScene extends CScene
@@ -49,7 +49,7 @@ export default class CVScene extends CScene
 
     boundingBox = new THREE.Box3();
 
-    private _zoomViews = false;
+    private _zoomExtents = false;
 
 
     create()
@@ -76,11 +76,11 @@ export default class CVScene extends CScene
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel).forEach(model => model.ins.shader.setValue(shader));
         }
-        if (ins.zoomExtent.changed) {
-            this._zoomViews = true;
+        if (ins.zoomExtents.changed) {
+            this._zoomExtents = true;
             const manip = this.system.components.get(CVOrbitNavigation);
             if (manip) {
-                manip.ins.zoomExtent.set();
+                manip.ins.zoomExtents.set();
             }
         }
 
@@ -94,14 +94,14 @@ export default class CVScene extends CScene
         if (this.updated) {
             context.renderer.toneMappingExposure = this.ins.exposure.value;
         }
-        if (this._zoomViews) {
-            context.viewport.moveCameraToView(this.boundingBox);
+        if (this._zoomExtents) {
+            context.viewport.zoomExtents(this.boundingBox);
         }
     }
 
     complete()
     {
-        this._zoomViews = false;
+        this._zoomExtents = false;
     }
 
     fromData(data: IScene)
@@ -139,11 +139,26 @@ export default class CVScene extends CScene
         }
     }
 
+    updateBoundingBox(): THREE.Box3
+    {
+        // get bounding box of all models
+        const box = this.boundingBox.makeEmpty();
+        const models = this.getGraphComponents(CVModel);
+        const units = this.ins.units.getValidatedValue();
+
+        models.forEach(model => {
+            model.setGlobalUnits(units);
+            box.expandByObject(model.object3D);
+        });
+
+        return box;
+    }
+
     protected updateModels()
     {
         // get bounding box of all models
         const box = this.boundingBox.makeEmpty();
-        const models = this.transform.getChildren(CVModel, true);
+        const models = this.getGraphComponents(CVModel);
         const units = this.ins.units.getValidatedValue();
 
         models.forEach(model => {

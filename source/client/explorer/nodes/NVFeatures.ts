@@ -17,6 +17,9 @@
 
 import NTransform from "@ff/scene/nodes/NTransform";
 
+import CVNavigation from "../../core/components/CVNavigation";
+import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
+
 import CVFeatures from "../components/CVFeatures";
 import CVBackground from "../components/CVBackground";
 import CVFloor from "../components/CVFloor";
@@ -31,7 +34,10 @@ export default class NVFeatures extends NTransform
     static readonly typeName: string = "NVFeatures";
 
     get features() {
-        return this.getGraphComponent(CVFeatures);
+        return this.getComponent(CVFeatures);
+    }
+    get navigation() {
+        return this.getComponent(CVNavigation);
     }
     get background() {
         return this.getComponent(CVBackground);
@@ -51,6 +57,7 @@ export default class NVFeatures extends NTransform
         super.createComponents();
 
         this.createComponent(CVFeatures);
+        this.createComponent(CVOrbitNavigation);
         this.createComponent(CVBackground);
         this.createComponent(CVFloor);
         this.createComponent(CVGrid);

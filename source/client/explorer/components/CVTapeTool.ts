@@ -21,6 +21,7 @@ import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 import "../ui/PropertyBoolean";
 import "../ui/PropertyString";
 
+import CVScene from "../../core/components/CVScene";
 import CVTape, { ETapeState } from "./CVTape";
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
@@ -47,6 +48,10 @@ export default class CVTapeTool extends CVTool
     protected get tape() {
         const document = this.activeDocument;
         return document ? document.getInnerComponent(CVTape) : null;
+    }
+    protected get scene() {
+        const document = this.activeDocument;
+        return document ? document.getInnerComponent(CVScene) : null;
     }
 
     update(context)
@@ -100,7 +105,8 @@ export default class CVTapeTool extends CVTool
                 text.setValue("Tap on model to set start of tape.");
             }
             else if (state === ETapeState.SetStart) {
-                text.setValue(`${distance.toFixed(2)} units.`);
+                const units = this.scene.ins.units.getOptionText();
+                text.setValue(`${distance.toFixed(2)} ${units}`);
             }
             else {
                 text.setValue("Tap on model to set end of tape.");

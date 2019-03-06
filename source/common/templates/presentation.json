@@ -34,9 +34,9 @@
     "cameras": [{
         "type": "perspective",
         "perspective": {
-            "yfov": 45,
+            "yfov": 52,
             "znear": 0.1,
-            "zfar": 10000
+            "zfar": 100000
         }
     }],
     "lights": [{
@@ -57,18 +57,6 @@
         "intensity": 1
     }],
     "features": {
-        "navigation": {
-            "type": "Orbit",
-            "enabled": true,
-            "orbit": {
-                "orbit": [-24, -26, 0],
-                "offset": [0, 0, 199.64320696292842],
-                "minOrbit": [-90, null, null],
-                "maxOrbit": [90, null, null],
-                "minOffset": [null, null, 0.1],
-                "maxOffset": [null, null, 10000]
-            }
-        },
         "interface": {
             "visible": true,
             "logo": true,
@@ -85,6 +73,18 @@
             "shader": "Default",
             "exposure": 1,
             "gamma": 1
+        },
+        "navigation": {
+            "type": "Orbit",
+            "enabled": true,
+            "orbit": {
+                "orbit": [-24, -26, 0],
+                "offset": [0, 0, 150],
+                "minOrbit": [-90, null, null],
+                "maxOrbit": [90, null, null],
+                "minOffset": [null, null, 0.1],
+                "maxOffset": [null, null, 10000]
+            }
         },
         "background": {
             "style": "RadialGradient",
@@ -110,11 +110,11 @@
             "endPosition": [0, 0, 0],
             "endDirection": [0, 0, 0]
         },
-        "sectionTool": {
+        "sliceTool": {
             "enabled": false,
             "axis": "X",
             "inverted": false,
-            "position": 0
+            "position": 0.5
         }
     }
 }

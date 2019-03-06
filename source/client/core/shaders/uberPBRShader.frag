@@ -65,7 +65,7 @@ varying vec3 vViewPosition;
 
 void main() {
     #ifdef CUT_PLANE
-        if (dot(vWorldPosition, cutPlaneDirection.xyz) < cutPlaneDirection.w) {
+        if (dot(vWorldPosition, cutPlaneDirection.xyz) < -cutPlaneDirection.w) {
             discard;
         }
     #endif

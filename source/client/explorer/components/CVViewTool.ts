@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-import CVNavigation from "../../core/components/CVNavigation";
+import CVNavigation, { EViewPreset } from "../../core/components/CVNavigation";
 
 import "../ui/PropertyOptions";
+import "../ui/PropertyEvent";
 
-import CVTool, { ToolView, customElement, html } from "./CVTool";
+import CVTool, { customElement, html, ToolView } from "./CVTool";
+import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +31,12 @@ export default class CVViewTool extends CVTool
 
     static readonly text = "View Options";
     static readonly icon = "eye";
+
+
+    get navigation() {
+        const document = this.activeDocument;
+        return document ? document.getInnerComponent(CVNavigation) : null;
+    }
 
     createView()
     {
@@ -41,38 +49,42 @@ export default class CVViewTool extends CVTool
 @customElement("sv-view-tool-view")
 export class ViewToolView extends ToolView<CVViewTool>
 {
-    protected get navigation() {
-        return this.tool.system.getMainComponent(CVNavigation);
-    }
-
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-view-tool-view");
     }
 
-    protected connected()
-    {
-        super.connected();
-
-        this.navigation.ins.projection.on("value", this.performUpdate, this);
-        this.navigation.ins.preset.on("value", this.performUpdate, this);
-    }
-
-    protected disconnected()
-    {
-        this.navigation.ins.projection.off("value", this.performUpdate, this);
-        this.navigation.ins.preset.off("value", this.performUpdate, this);
-
-        super.disconnected();
-    }
-
     protected render()
     {
-        const projection = this.navigation.ins.projection;
-        const preset = this.navigation.ins.preset;
+        const navigation = this.tool.navigation;
+        if (!navigation) {
+            return html``;
+        }
+
+        const zoom = navigation.ins.zoomExtents;
+        const projection = navigation.ins.projection;
+        const preset = navigation.ins.preset;
+        const presetMap = [ EViewPreset.Front, EViewPreset.Back,
+            EViewPreset.Left, EViewPreset.Right,
+            EViewPreset.Top, EViewPreset.Bottom ];
 
         return html`<sv-property-options .property=${projection}></sv-property-options>
-            <sv-property-options .property=${preset} name="View"></sv-property-options>`;
+            <sv-property-options .property=${preset} name="View" .indexMap=${presetMap}></sv-property-options>
+            <sv-property-event .property=${zoom} name="Zoom" icon="zoom"></sv-property-event>`;
+    }
+
+    protected onActiveDocument(event: IActiveDocumentEvent)
+    {
+        if (event.previous) {
+            const navigation = event.previous.getInnerComponent(CVNavigation);
+            navigation.ins.projection.off("value", this.performUpdate, this);
+            navigation.ins.preset.off("value", this.performUpdate, this);
+        }
+        if (event.next) {
+            const navigation = event.next.getInnerComponent(CVNavigation);
+            navigation.ins.projection.on("value", this.performUpdate, this);
+            navigation.ins.preset.on("value", this.performUpdate, this);
+        }
     }
 }
