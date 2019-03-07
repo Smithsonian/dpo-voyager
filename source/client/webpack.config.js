@@ -138,7 +138,7 @@ function createAppConfig(app, version, dirs, isDevMode)
             }),
             new HTMLWebpackPlugin({
                 filename: isDevMode ? `${appName}-dev.html` : `${appName}.html`,
-                template: "index-demo.hbs",
+                template: "index.hbs",
                 title: appTitle,
                 isDevelopment: isDevMode,
                 element: `<${appName}></${appName}>`,
