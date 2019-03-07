@@ -16,20 +16,29 @@
  */
 
 
-import CVAssetLoader from "../components/CVAssetLoader";
+import CVAssetLoader from "../../core/components/CVAssetLoader";
+import CVScene from "../../core/components/CVScene";
 
-import SystemElement, { customElement, html } from "./SystemElement";
+import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import "./SceneView";
-import "./Spinner";
+import SceneView from "../../core/ui/SceneView";
+import "../../core/ui/Spinner";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-content-view")
 export default class ContentView extends SystemElement
 {
+    protected sceneView: SceneView = null;
+
     protected get assetLoader() {
         return this.system.getMainComponent(CVAssetLoader);
+    }
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-content-view");
+        this.sceneView = new SceneView(this.system);
     }
 
     protected connected()
@@ -44,10 +53,17 @@ export default class ContentView extends SystemElement
 
     protected render()
     {
-        const system = this.system;
         const isLoading = this.assetLoader.outs.loading.value;
 
-        return html`<sv-scene-view .system=${system}>
-            </sv-scene-view><sv-spinner ?visible=${isLoading}></sv-spinner>`;
+        if (!isLoading) {
+            const scene = this.system.getComponent(CVScene, true);
+            if (scene) {
+                scene.ins.zoomExtents.set();
+            }
+        }
+
+
+        return html`${this.sceneView}
+            <sv-spinner ?visible=${isLoading}></sv-spinner>`;
     }
 }

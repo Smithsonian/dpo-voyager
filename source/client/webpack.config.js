@@ -43,19 +43,19 @@ const apps = {
         name: "voyager-explorer",
         entryPoint: "client/explorer/ui/MainView.ts",
         title: "Voyager Explorer",
-        template: "app.hbs",
+        template: "viewer.hbs",
     },
     "mini": {
         name: "voyager-mini",
         entryPoint: "client/mini/ui/MainView.ts",
         title: "Voyager Mini",
-        template: "app.hbs",
+        template: "viewer.hbs",
     },
     "story": {
         name: "voyager-story",
         entryPoint: "client/story/ui/MainView.ts",
         title: "Voyager Story",
-        template: "app.hbs",
+        template: "story.hbs",
     },
     "demo": {
         name: "voyager-demo",

@@ -16,6 +16,7 @@
  */
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
+import CVScene from "../../core/components/CVScene";
 import CVReader, { EReaderPosition } from "../components/CVReader";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
@@ -68,6 +69,14 @@ export default class ContentView extends SystemElement
 
         const sceneView = this.sceneView;
         sceneView.classList.remove("sv-blur");
+
+        // TODO: quick hack
+        if (!isLoading) {
+            const scene = this.system.getComponent(CVScene, true);
+            if (scene) {
+                scene.ins.zoomExtents.set();
+            }
+        }
 
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {

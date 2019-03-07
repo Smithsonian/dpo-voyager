@@ -17,7 +17,7 @@
 
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 
-import ContentView from "../../explorer/ui/ContentView";
+import ContentView from "./ContentView";
 
 import MiniApplication, { IMiniApplicationProps } from "../MiniApplication";
 

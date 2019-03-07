@@ -30,8 +30,6 @@ import { nodeTypes as graphNodes } from "@ff/graph/nodes";
 import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
 import { nodeTypes as miniNodes } from "./nodes";
 
-import { IItem } from "common/types/item";
-
 import CVAssetLoader from "../core/components/CVAssetLoader";
 
 import NVMiniExplorer from "./nodes/NVMiniExplorer";

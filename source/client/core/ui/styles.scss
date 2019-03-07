@@ -95,64 +95,15 @@ sv-logo {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CONTENT LAYER
+// SCENE VIEW
 
-.sv-content-view {
-  @include fullsize;
-}
 
 .sv-scene-view {
+  @include fullsize;
+  overflow: hidden;
+
   &.sv-blur {
     filter: brightness(80%) blur(5px);
     transition: filter 0.5s;
   }
-}
-
-.sv-content-reader-split {
-  @include fullsize;
-  display: flex;
-
-  .sv-scene-view {
-    flex: 1 1 60%;
-  }
-  .sv-reader-view {
-    flex: 1 1 40%;
-  }
-}
-
-.sv-content-reader-overlay {
-  @include fullsize;
-
-  .sv-scene-view {
-    @include fullsize;
-  }
-
-  .sv-reader-view {
-    @include fullsize;
-    margin-top: 54px;
-    //background-color: transparentize(white, 0.95);
-    border-top: $section-border;
-    //z-index: 2;
-  }
-}
-
-.sv-content-reader-off {
-  .sv-scene-view {
-    @include fullsize;
-  }
-}
-
-.sv-reader-view {
-  overflow-y: auto;
-
-  .sv-article {
-    margin: 0 20px;
-  }
-}
-
-
-.sv-content-overlay {
-}
-
-.ff-viewport-overlay {
 }

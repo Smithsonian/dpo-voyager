@@ -19,6 +19,7 @@ import Node from "@ff/graph/Node";
 import CPulse from "@ff/graph/components/CPulse";
 
 import CRenderer from "@ff/scene/components/CRenderer";
+import CBackground from "@ff/scene/components/CBackground";
 import NCamera from "@ff/scene/nodes/NCamera";
 import NDirectionalLight from "@ff/scene/nodes/NDirectionalLight";
 
@@ -50,7 +51,6 @@ export default class NVMiniExplorer extends Node
         this.createComponent(CRenderer);
 
         this.createComponent(CVAssetLoader);
-        this.createComponent(CVOrbitNavigation);
 
         const scene = this.createComponent(CVScene);
         this.createScene(scene);
@@ -58,6 +58,9 @@ export default class NVMiniExplorer extends Node
 
     protected createScene(scene: CVScene)
     {
+        scene.node.createComponent(CBackground);
+        scene.node.createComponent(CVOrbitNavigation);
+
         const item = scene.graph.createCustomNode(NVMiniItem);
         scene.addChild(item.transform);
 
