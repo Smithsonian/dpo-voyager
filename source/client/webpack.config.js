@@ -42,18 +42,27 @@ const apps = {
     "explorer": {
         name: "voyager-explorer",
         entryPoint: "client/explorer/ui/MainView.ts",
-        title: "Voyager Explorer"
+        title: "Voyager Explorer",
+        template: "app.hbs",
     },
     "mini": {
         name: "voyager-mini",
         entryPoint: "client/mini/ui/MainView.ts",
-        title: "Voyager Mini"
+        title: "Voyager Mini",
+        template: "app.hbs",
     },
     "story": {
         name: "voyager-story",
         entryPoint: "client/story/ui/MainView.ts",
-        title: "Voyager Story"
-    }
+        title: "Voyager Story",
+        template: "app.hbs",
+    },
+    "demo": {
+        name: "voyager-demo",
+        entryPoint: "client/demo.js",
+        title: "Voyager Tools",
+        template: "demo.hbs",
+    },
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +81,7 @@ module.exports = function(env, argv) {
             createAppConfig(apps.explorer, version, dirs, isDevMode),
             createAppConfig(apps.mini, version, dirs, isDevMode),
             createAppConfig(apps.story, version, dirs, isDevMode),
+            createAppConfig(apps.demo, version, dirs, isDevMode),
         ];
     }
     else {
@@ -84,7 +94,6 @@ function createAppConfig(app, version, dirs, isDevMode)
     const devMode = isDevMode ? "development" : "production";
 
     const appName = app.name;
-    const appEntryPoint = app.entryPoint;
     const appTitle = `${app.title} ${version} ${isDevMode ? " DEV" : " PROD"}`;
 
     console.log("VOYAGER - WEBPACK BUILD SCRIPT");
@@ -96,7 +105,7 @@ function createAppConfig(app, version, dirs, isDevMode)
     const config = {
         mode: devMode,
 
-        entry: { [appName]: path.resolve(dirs.source, appEntryPoint) },
+        entry: { [appName]: path.resolve(dirs.source, app.entryPoint) },
 
         output: {
             path: dirs.output,
@@ -138,8 +147,9 @@ function createAppConfig(app, version, dirs, isDevMode)
             }),
             new HTMLWebpackPlugin({
                 filename: isDevMode ? `${appName}-dev.html` : `${appName}.html`,
-                template: "index.hbs",
+                template: app.template,
                 title: appTitle,
+                version: version,
                 isDevelopment: isDevMode,
                 element: `<${appName}></${appName}>`,
                 chunks: [ appName ]
