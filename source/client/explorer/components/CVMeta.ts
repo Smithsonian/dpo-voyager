@@ -16,7 +16,9 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import Component from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
+
+import COuts from "@ff/graph/components/COuts";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,11 +26,55 @@ export default class CVMeta extends Component
 {
     static readonly typeName: string = "CVMeta";
 
+    protected static readonly ins = {
+        dump: types.Event("Meta.Dump"),
+    };
+
+    protected static readonly outs = {
+        update: types.Event("Meta.Update"),
+        title: types.String("Meta.Title"),
+    };
+
+    ins = this.addInputs(CVMeta.ins);
+    outs = this.addOutputs(CVMeta.outs);
+
     protected data: Dictionary<any> = {};
+    protected dataChanged = false;
+
+    create()
+    {
+        const outs = this.getGraphComponent(COuts);
+        if (outs) {
+            const titleOut = this.outs.title;
+            const titleIn = outs.addCustomInput(titleOut.path, titleOut.schema);
+            titleIn.linkFrom(titleOut);
+        }
+    }
+
+    update(context)
+    {
+        if (this.ins.dump.changed) {
+            console.log("---------- CVMeta.dump ----------");
+            console.log(this.data);
+        }
+
+        if (this.dataChanged) {
+            this.dataChanged = false;
+
+            const data = this.data;
+            this.outs.title.setValue(data["title"] || data["name"] || "");
+            this.outs.update.set();
+
+            return true;
+        }
+
+        return false;
+    }
 
     set(key: string, value: any)
     {
         this.data[key] = value;
+        this.setDataChanged();
     }
 
     get(key: string)
@@ -39,11 +85,13 @@ export default class CVMeta extends Component
     remove(key: string)
     {
         delete this.data[key];
+        this.setDataChanged();
     }
 
     clear()
     {
         this.data = {};
+        this.setDataChanged();
     }
 
     hasData()
@@ -72,5 +120,12 @@ export default class CVMeta extends Component
     fromData(data: Dictionary<any>)
     {
         this.data = Object.assign({}, data);
+        this.setDataChanged();
+    }
+
+    protected setDataChanged()
+    {
+        this.dataChanged = true;
+        this.changed = true;
     }
 }

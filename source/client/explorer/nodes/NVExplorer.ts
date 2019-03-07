@@ -37,7 +37,9 @@ export default class NVExplorer extends Node
     {
         this.createComponent(CPulse);
         this.createComponent(CRenderer);
-        this.createComponent(CPickSelection);
+
+        const pickSel = this.createComponent(CPickSelection);
+        pickSel.ins.viewportBrackets.setValue(false);
 
         this.createComponent(CVAssetLoader);
         this.createComponent(CVDocumentLoader);

@@ -43,20 +43,13 @@ export default class CVTours extends CVCollection<ITour>
 {
     static readonly typeName: string = "CVTours";
 
-    protected rootCollection: CVTours = null;
-
     create()
     {
-        this.rootCollection = this.findRootCollection();
     }
 
     addTour(tour: ITour)
     {
         this.insert(tour);
-
-        if (this.rootCollection) {
-            this.rootCollection.addTour(tour);
-        }
 
         this.emit("changed");
     }
@@ -64,10 +57,6 @@ export default class CVTours extends CVCollection<ITour>
     removeTour(id: string)
     {
         const tour = this.remove(id);
-
-        if (this.rootCollection) {
-            this.rootCollection.removeTour(id);
-        }
 
         this.emit("changed");
 

@@ -18,6 +18,7 @@
 import Component, { types } from "@ff/graph/Component";
 
 import { IInterface } from "common/types/features";
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +35,7 @@ export default class CVInterface extends Component
     };
 
     protected static readonly outs = {
+        documentTitle: types.String("Document.Title"),
         fullscreenAvailable: types.Boolean("Fullscreen.Available", false),
         fullscreenEnabled: types.Boolean("Fullscreen.Enabled", false),
     };
@@ -48,7 +50,6 @@ export default class CVInterface extends Component
         super(id);
         this.onFullscreenChange = this.onFullscreenChange.bind(this);
     }
-
 
     get fullscreenElement() {
         return this._fullscreenElement;
@@ -66,6 +67,13 @@ export default class CVInterface extends Component
                 element.addEventListener("fullscreenchange", this.onFullscreenChange);
             }
         }
+    }
+
+    protected get documentManager() {
+        return this.getMainComponent(CDocumentManager);
+    }
+    protected get activeDocument() {
+        return this.documentManager.activeDocument;
     }
 
     toggleFullscreen()

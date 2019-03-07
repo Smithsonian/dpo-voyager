@@ -23,12 +23,14 @@
 // ANNOTATIONS
 
 .sv-annotation {
+  position: absolute;
+  z-index: 1;
   max-width: 20%;
   box-sizing: border-box;
-  padding: 3px 4px;
+  padding: 0 4px;
   background: transparentize(black, 0.4);
   cursor: pointer;
-  z-index: 1;
+  pointer-events: auto;
 
   &.sv-expanded {
     min-width: 120px;
@@ -56,12 +58,13 @@
   }
 
   .sv-title {
-    padding: 0 0 3px 0;
+    padding: 2px 0;
     font-size: 0.9rem;
     font-weight: bold;
   }
 
   .sv-description {
+    padding: 2px 0;
     font-size: 0.85rem;
     height: 0;
     overflow: hidden;

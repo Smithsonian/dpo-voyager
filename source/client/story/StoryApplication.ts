@@ -19,6 +19,8 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import Commander from "@ff/core/Commander";
 import System from "@ff/graph/System";
 
+import CPickSelection from "@ff/scene/components/CPickSelection";
+
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
@@ -86,6 +88,9 @@ export default class StoryApplication
         storyNode.createComponent(CVTaskController);
         storyNode.createComponent(CVStoryController);
         storyNode.createComponent(CVNotePad);
+
+        // enable viewport brackets
+        this.system.getMainComponent(CPickSelection).ins.viewportBrackets.setValue(true);
 
         this.initFromProps();
 

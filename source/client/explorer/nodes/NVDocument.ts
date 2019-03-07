@@ -16,7 +16,14 @@
  */
 
 import Node from "@ff/graph/Node";
+
+import CIns from "@ff/graph/components/CIns";
+import COuts from "@ff/graph/components/COuts";
+
 import CAssetManager from "@ff/scene/components/CAssetManager";
+
+import CVMeta from "../components/CVMeta";
+import CVTours from "../components/CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,6 +33,10 @@ export default class NVDocument extends Node
 
     createComponents()
     {
+        this.createComponent(CIns);
+        this.createComponent(COuts);
         this.createComponent(CAssetManager);
+        this.createComponent(CVMeta);
+        this.createComponent(CVTours);
     }
 }

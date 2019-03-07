@@ -25,12 +25,13 @@ import "../../core/ui/Logo";
 import "./MainMenu";
 import "./ToolBar";
 
-import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
+import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
+import CVMeta from "../components/CVMeta";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-chrome-view")
-export default class ChromeView extends SystemView
+export default class ChromeView extends DocumentView
 {
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
@@ -71,11 +72,22 @@ export default class ChromeView extends SystemView
             return html``;
         }
 
+        // TODO: quick hack to retrieve a document title
+        const document = this.documentManager.activeDocument;
+        const metas = document ? document.getInnerComponents(CVMeta) : [];
+        let title = "";
+        for (let i = 0, n = metas.length; i < n; ++i) {
+            title = metas[i].outs.title.value;
+            if (title) {
+                break;
+            }
+        }
+
         return html`
             <div class="sv-chrome-header">
                 <sv-main-menu .system=${system}></sv-main-menu>
                 <div class="sv-top-bar">
-                    <div class="sv-main-title">Here goes the object title<span>&nbsp; &nbsp;</span></div>
+                    <div class="sv-main-title">${title || ""}<span>&nbsp; &nbsp;</span></div>
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>

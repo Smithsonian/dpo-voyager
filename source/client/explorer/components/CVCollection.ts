@@ -89,21 +89,6 @@ export default class CVCollection<T extends { id?: string }> extends Component
     }
 
     /**
-     * Looks for a hierarchy component, traverses to the root and returns
-     * the collection component of the same type from the root entity.
-     * @returns {this} Root collection of the same type or null if not found.
-     */
-    findRootCollection(): this | null
-    {
-        const hierarchy = this.hierarchy;
-        if (hierarchy) {
-            return hierarchy.getRoot(this);
-        }
-
-        return null;
-    }
-
-    /**
      * Returns a dictionary with all collection items, with their id as key.
      * @returns {Dictionary<T extends {id?: string}>}
      */

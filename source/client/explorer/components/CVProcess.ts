@@ -16,7 +16,7 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import Component from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,11 +24,41 @@ export default class CVProcess extends Component
 {
     static readonly typeName: string = "CVProcess";
 
+    protected static readonly ins = {
+        dump: types.Event("Process.Dump"),
+    };
+
+    protected static readonly outs = {
+        update: types.Event("Process.Update"),
+    };
+
+    ins = this.addInputs(CVProcess.ins);
+    outs = this.addOutputs(CVProcess.outs);
+
     protected data: Dictionary<any> = {};
+    protected dataChanged = false;
+
+    update(context)
+    {
+        if (this.ins.dump.changed) {
+            console.log("---------- CVProcess.dump ----------");
+            console.log(this.data);
+        }
+
+        if (this.dataChanged) {
+            this.dataChanged = false;
+            this.outs.update.set();
+
+            return true;
+        }
+
+        return false;
+    }
 
     set(key: string, value: any)
     {
         this.data[key] = value;
+        this.setDataChanged();
     }
 
     get(key: string)
@@ -39,11 +69,13 @@ export default class CVProcess extends Component
     remove(key: string)
     {
         delete this.data[key];
+        this.setDataChanged();
     }
 
     clear()
     {
         this.data = {};
+        this.setDataChanged();
     }
 
     hasData()
@@ -72,5 +104,12 @@ export default class CVProcess extends Component
     fromData(data: Dictionary<any>)
     {
         this.data = Object.assign({}, data);
+        this.setDataChanged();
+    }
+
+    protected setDataChanged()
+    {
+        this.dataChanged = true;
+        this.changed = true;
     }
 }
