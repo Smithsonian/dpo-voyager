@@ -279,7 +279,7 @@ export default class CVModel extends CObject3D
             this._boundingBox.min.fromArray(data.boundingBox.min);
             this._boundingBox.max.fromArray(data.boundingBox.max);
 
-            this._boxFrame = new THREE["Box3Helper"](this._boundingBox, "#ffffff");
+            this._boxFrame = new (THREE.Box3Helper as any)(this._boundingBox, "#ffffff");
             this.addObject3D(this._boxFrame);
 
             this.emit<IModelChangeEvent>({ type: "change", what: "derivative", component: this });
