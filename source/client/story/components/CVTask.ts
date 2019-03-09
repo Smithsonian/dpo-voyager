@@ -31,7 +31,7 @@ import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { types, customElement, html };
+export { types, customElement, property, html };
 
 export default class CVTask extends Component
 {

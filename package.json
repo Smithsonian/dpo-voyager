@@ -5,7 +5,7 @@
     "scripts": {
         "start": "npm run server",
         "server": "nodemon services/server/bin/index.js",
-        "watch": "APP_VERSION=$(git describe --tags); concurrently \"cd source/client && webpack --watch --app=all --vers=$APP_VERSION\", \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+        "watch": "APP_VERSION=$(git describe --tags); concurrently \"cd source/client && webpack --watch --app=story --vers=$APP_VERSION\", \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
         "build": "concurrently \"npm run build-server\" \"npm run build-dev\"",
         "build-all": "npm run build-dev; npm run build-prod",
         "build-dev": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=development --app=all --vers=$APP_VERSION; cd ../..",

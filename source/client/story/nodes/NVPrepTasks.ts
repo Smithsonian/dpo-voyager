@@ -25,6 +25,7 @@ import CVCaptureTask from "../components/CVCaptureTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 import CVExploreTask from "../components/CVExploreTask";
 import CVPoseTask from "../components/CVPoseTask";
+import CVToursTask from "../components/CVToursTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +45,7 @@ export default class NVPrepTasks extends Node
         this.createComponent(CVPoseTask);
         this.createComponent(CVCaptureTask);
         this.createComponent(CVAnnotationsTask);
+        this.createComponent(CVToursTask);
         this.createComponent(CVArticlesTask);
         this.createComponent(CVDerivativesTask);
     }

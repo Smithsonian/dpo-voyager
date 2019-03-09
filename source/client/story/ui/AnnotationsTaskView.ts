@@ -16,9 +16,12 @@
  */
 
 import { customElement, html } from "@ff/ui/CustomElement";
+
 import { IButtonClickEvent } from "@ff/ui/Button";
+
 import "@ff/ui/LineEdit";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+
 import "@ff/ui/TextEdit";
 import "@ff/ui/Splitter";
 

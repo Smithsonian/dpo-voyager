@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-import { customElement, html } from "@ff/ui/CustomElement";
-
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import CVCaptureTask from "../components/CVCaptureTask";
-import { TaskView } from "../components/CVTask";
+import "./PropertyView";
 
-import "./ItemList";
+import CVCaptureTask from "../components/CVCaptureTask";
+import { TaskView, customElement, html } from "../components/CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +45,7 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
         const item = this.activeItem;
 
         if (!item) {
-            return html`<div class="sv-placeholder">Please select an item to take a picture</div>`;
+            return html`<div class="sv-placeholder">Please select an item to take a picture.</div>`;
         }
 
         const ins = this.task.ins;

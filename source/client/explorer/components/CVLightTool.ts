@@ -17,29 +17,27 @@
 
 import CVScene from "../../core/components/CVScene";
 
-import "../ui/PropertyOptions";
-
 import CVDocument from "./CVDocument";
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVRenderTool extends CVTool
+export default class CVLightTool extends CVTool
 {
-    static readonly typeName: string = "CVRenderTool";
+    static readonly typeName: string = "CVLightTool";
 
-    static readonly text = "Material";
-    static readonly icon = "palette";
+    static readonly text = "Lights";
+    static readonly icon = "bulb";
 
     protected static readonly outs = {
         scene: types.Object("Document.Scene", CVScene),
     };
 
-    outs = this.addOutputs<CVTool, typeof CVRenderTool.outs>(CVRenderTool.outs);
+    outs = this.addOutputs<CVTool, typeof CVLightTool.outs>(CVLightTool.outs);
 
     createView()
     {
-        return new RenderToolView(this);
+        return new LightToolView(this);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
@@ -51,15 +49,15 @@ export default class CVRenderTool extends CVTool
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-render-tool-view")
-export class RenderToolView extends ToolView<CVRenderTool>
+@customElement("sv-light-tool-view")
+export class LightToolView extends ToolView<CVLightTool>
 {
     protected scene: CVScene = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-render-tool-view");
+        this.classList.add("sv-light-tool-view");
     }
 
     protected connected()
@@ -84,18 +82,16 @@ export class RenderToolView extends ToolView<CVRenderTool>
             return html``;
         }
 
-        const shader = scene.ins.shader;
-
-        return html`<sv-property-options .property=${shader} name="Material"></sv-property-options>`;
+        return html`<div>Light Tool (coming soon)</div>`;
     }
 
     protected onScene(scene: CVScene)
     {
         if (this.scene) {
-            this.scene.ins.shader.off("value", this.performUpdate, this);
+
         }
         if (scene) {
-            scene.ins.shader.on("value", this.performUpdate, this);
+
         }
 
         this.scene = scene;

@@ -25,6 +25,7 @@ import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
 import CVInterface from "./CVInterface";
 import CVItemManager from "./CVItemManager";
+import CVLightTool from "./CVLightTool";
 import CVMeta from "./CVMeta";
 import CVProcess from "./CVProcess";
 import CVReader from "./CVReader";
@@ -52,6 +53,7 @@ export {
     CVGrid,
     CVInterface,
     CVItemManager,
+    CVLightTool,
     CVMeta,
     CVProcess,
     CVReader,
@@ -78,6 +80,7 @@ export const componentTypes = [
     CVGrid,
     CVInterface,
     CVItemManager,
+    CVLightTool,
     CVMeta,
     CVProcess,
     CVReader,

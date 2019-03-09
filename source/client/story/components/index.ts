@@ -24,6 +24,7 @@ import CVNotePad from "./CVNotePad";
 import CVPoseTask from "./CVPoseTask";
 import CVStoryController from "./CVStoryController";
 import CVTaskManager from "./CVTaskManager";
+import CVToursTask from "./CVToursTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +38,7 @@ export {
     CVPoseTask,
     CVStoryController,
     CVTaskManager,
+    CVToursTask,
 };
 
 export const componentTypes = [
@@ -49,4 +51,5 @@ export const componentTypes = [
     CVPoseTask,
     CVStoryController,
     CVTaskManager,
+    CVToursTask,
 ];

@@ -32,7 +32,7 @@ export default class CVTapeTool extends CVTool
 {
     static readonly typeName: string = "CVTapeTool";
 
-    static readonly text = "Tape Measure";
+    static readonly text = "Measure";
     static readonly icon = "tape";
 
     protected static readonly outs = {

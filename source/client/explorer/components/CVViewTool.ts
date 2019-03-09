@@ -29,7 +29,7 @@ export default class CVViewTool extends CVTool
 {
     static readonly typeName: string = "CVViewTool";
 
-    static readonly text = "View Options";
+    static readonly text = "View";
     static readonly icon = "eye";
 
     protected static readonly outs = {
@@ -94,7 +94,7 @@ export class ViewToolView extends ToolView<CVViewTool>
 
         return html`<sv-property-options .property=${projection}></sv-property-options>
             <sv-property-options .property=${preset} name="View" .indexMap=${presetMap}></sv-property-options>
-            <sv-property-event .property=${zoom} name="Zoom" icon="zoom"></sv-property-event>`;
+            <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>`;
     }
 
     protected onNavigation(navigation: CVNavigation)

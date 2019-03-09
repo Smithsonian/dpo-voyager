@@ -46,7 +46,7 @@ export default class CVSliceTool extends CVTool
 {
     static readonly typeName: string = "CVSliceTool";
 
-    static readonly text = "Slice Tool";
+    static readonly text = "Slice";
     static readonly icon = "knife";
 
     protected static readonly ins = {

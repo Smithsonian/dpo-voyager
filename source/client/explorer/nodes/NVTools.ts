@@ -19,10 +19,11 @@ import Node from "@ff/graph/Node";
 
 import CVToolManager from "../components/CVToolManager";
 
-import CVViewTool from "../components/CVViewTool";
+import CVLightTool from "../components/CVLightTool";
 import CVRenderTool from "../components/CVRenderTool";
-import CVTapeTool from "../components/CVTapeTool";
 import CVSliceTool from "../components/CVSliceTool";
+import CVTapeTool from "../components/CVTapeTool";
+import CVViewTool from "../components/CVViewTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +40,7 @@ export default class NVTools extends Node
         this.createComponent(CVToolManager);
         this.createComponent(CVViewTool);
         this.createComponent(CVRenderTool);
+        this.createComponent(CVLightTool);
         this.createComponent(CVTapeTool);
         this.createComponent(CVSliceTool);
     }
