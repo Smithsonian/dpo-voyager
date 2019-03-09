@@ -18,16 +18,12 @@
 import System from "@ff/graph/System";
 import CComponent from "@ff/graph/Component";
 import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
 
-import CVItemManager, {
-    IActiveItemEvent,
-    IItemEvent
-} from "../../explorer/components/CVItemManager";
+import CVItemManager from "../../explorer/components/CVItemManager";
 
 import NVItem from "../../explorer/nodes/NVItem";
 
@@ -40,7 +36,6 @@ class ItemList extends List<NVItem>
     @property({ attribute: false })
     system: System = null;
 
-    protected documentManager: CDocumentManager = null;
     protected itemManager: CVItemManager = null;
     protected selection: CSelection = null;
 
@@ -49,7 +44,6 @@ class ItemList extends List<NVItem>
         super.firstConnected();
         this.classList.add("sv-scrollable", "sv-item-list");
 
-        this.documentManager = this.system.getMainComponent(CDocumentManager);
         this.itemManager = this.system.getMainComponent(CVItemManager);
         this.selection = this.system.getMainComponent(CSelection);
     }
@@ -59,19 +53,15 @@ class ItemList extends List<NVItem>
         super.connected();
 
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.on(NVItem, this.onChange, this);
-
-        this.itemManager.on<IItemEvent>("item", this.onChange, this);
-        this.itemManager.on<IActiveItemEvent>("active-item", this.onChange, this);
+        this.selection.selectedNodes.on(NVItem, this.onRequestUpdate, this);
+        this.itemManager.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.off(NVItem, this.onChange, this);
-
-        this.itemManager.off<IActiveItemEvent>("active-item", this.onChange, this);
-        this.itemManager.off<IItemEvent>("item", this.onChange, this);
+        this.selection.selectedNodes.off(NVItem, this.onRequestUpdate, this);
+        this.itemManager.off("update", this.onRequestUpdate, this);
 
         super.disconnected();
     }
@@ -95,11 +85,6 @@ class ItemList extends List<NVItem>
             || this.selection.nodeContainsSelectedComponent(item);
     }
 
-    protected onChange()
-    {
-        this.requestUpdate();
-    }
-
     protected onSelectComponent(event: IComponentEvent)
     {
         if (event.object.node.is(NVItem)) {
@@ -110,5 +95,10 @@ class ItemList extends List<NVItem>
     protected onClickItem(event: MouseEvent, item: NVItem)
     {
         this.itemManager.activeItem = item;
+    }
+
+    protected onRequestUpdate()
+    {
+        this.requestUpdate();
     }
 }

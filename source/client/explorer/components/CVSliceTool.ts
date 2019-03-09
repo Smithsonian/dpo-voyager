@@ -49,7 +49,7 @@ export default class CVSliceTool extends CVTool
     static readonly text = "Slice Tool";
     static readonly icon = "knife";
 
-    protected static readonly sliceIns = {
+    protected static readonly ins = {
         enabled: types.Boolean("Slice.Enabled"),
         axis: types.Enum("Slice.Axis", ESliceAxis),
         position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
@@ -57,12 +57,7 @@ export default class CVSliceTool extends CVTool
         color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
     };
 
-    ins = this.addInputs(CVSliceTool.sliceIns);
-
-    get scene() {
-        const document = this.activeDocument;
-        return document ? document.getInnerComponent(CVScene) : null;
-    }
+    ins = this.addInputs<CVTool, typeof CVSliceTool.ins>(CVSliceTool.ins);
 
     protected plane: number[] = null;
     protected axisIndex = -1;
@@ -70,15 +65,17 @@ export default class CVSliceTool extends CVTool
 
     update()
     {
+        const updated = super.update();
+
         const ins = this.ins;
 
         if (!ins.enabled.value && !ins.enabled.changed) {
-            return false;
+            return updated;
         }
 
         const document = this.activeDocument;
         if (!document) {
-            return false;
+            return updated;
         }
 
         if (ins.enabled.changed && ins.enabled.value) {

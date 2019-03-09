@@ -16,16 +16,16 @@
  */
 
 import System from "@ff/graph/System";
-import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import "@ff/ui/Button";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
+import CVItemManager from "../../explorer/components/CVItemManager";
 import CVStoryController from "../components/CVStoryController";
-import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskController";
+import CVTaskManager from "../components/CVTaskManager";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ import CVTaskController, { IActiveTaskEvent } from "../components/CVTaskControll
 export default class TaskBar extends SystemElement
 {
     protected story: CVStoryController = null;
-    protected tasks: CVTaskController = null;
+    protected taskManager: CVTaskManager = null;
     protected documentManager: CDocumentManager = null;
     protected itemManager: CVItemManager = null;
 
@@ -43,7 +43,7 @@ export default class TaskBar extends SystemElement
         super(system);
 
         this.story = system.getMainComponent(CVStoryController);
-        this.tasks = system.getMainComponent(CVTaskController);
+        this.taskManager = system.getMainComponent(CVTaskManager);
         this.documentManager = system.getMainComponent(CDocumentManager);
         this.itemManager = system.getMainComponent(CVItemManager);
     }
@@ -56,23 +56,23 @@ export default class TaskBar extends SystemElement
     protected connected()
     {
         this.story.ins.expertMode.on("value", this.performUpdate, this);
-        this.tasks.on<IActiveTaskEvent>("active-task", this.performUpdate, this);
-        this.documentManager.on<IActiveDocumentEvent>("active-document", this.performUpdate, this);
-        this.itemManager.on<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.taskManager.outs.activeTask.on("value", this.performUpdate, this);
+        this.documentManager.outs.activeDocument.on("value", this.performUpdate, this);
+        this.itemManager.outs.activeItem.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.story.ins.expertMode.off("value", this.performUpdate, this);
-        this.tasks.off<IActiveTaskEvent>("active-task", this.performUpdate, this);
-        this.documentManager.off<IActiveDocumentEvent>("active-document", this.performUpdate, this);
-        this.itemManager.off<IActiveItemEvent>("active-item", this.performUpdate, this);
+        this.taskManager.outs.activeTask.off("value", this.performUpdate, this);
+        this.documentManager.outs.activeDocument.off("value", this.performUpdate, this);
+        this.itemManager.outs.activeItem.off("value", this.performUpdate, this);
     }
 
     protected render()
     {
-        const taskList = this.tasks.tasks;
-        const activeTask = this.tasks.activeTask;
+        const taskList = this.taskManager.tasks;
+        const activeTask = this.taskManager.activeTask;
         const expertMode = this.story.ins.expertMode.value;
         const taskMode = this.story.ins.mode.getOptionText();
 
@@ -99,10 +99,10 @@ export default class TaskBar extends SystemElement
 
     protected onClickTask(event: IButtonClickEvent)
     {
-        const taskList = this.tasks.tasks;
+        const taskList = this.taskManager.tasks;
 
         if (event.target instanceof Button) {
-            this.tasks.activeTask = taskList[event.target.index];
+            this.taskManager.activeTask = taskList[event.target.index];
         }
     }
 

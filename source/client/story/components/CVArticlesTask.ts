@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
 
-import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import CVArticles, { Article } from "../../explorer/components/CVArticles";
 import NVItem from "../../explorer/nodes/NVItem";
 
@@ -27,31 +25,14 @@ import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _inputs = {
-
-};
-
 export default class CVArticlesTask extends CVTask
 {
     static readonly typeName: string = "CVArticlesTask";
 
-    static readonly text: string = "Documents";
+    static readonly text: string = "Articles";
     static readonly icon: string = "document";
 
-    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
-
-    private _activeArticles: CVArticles = null;
     private _activeArticle: Article = null;
-
-    get activeArticles() {
-        return this._activeArticles;
-    }
-    set activeArticles(articles: CVArticles) {
-        if (articles !== this._activeArticles) {
-            this._activeArticles = articles;
-            this.emitUpdateEvent();
-        }
-    }
 
     get activeArticle() {
         return this._activeArticle;
@@ -59,7 +40,7 @@ export default class CVArticlesTask extends CVTask
     set activeArticle(article: Article) {
         if (article !== this._activeArticle) {
             this._activeArticle = article;
-            this.emitUpdateEvent();
+            this.emit("update");
         }
     }
 
@@ -71,29 +52,23 @@ export default class CVArticlesTask extends CVTask
     activateTask()
     {
         super.activateTask();
-
-        this.selectionController.selectedComponents.on(CVArticles, this.onSelectDocuments, this);
+        this.selectionController.selectedComponents.on(CVArticles, this.onSelectArticles, this);
     }
 
     deactivateTask()
     {
-        this.selectionController.selectedComponents.off(CVArticles, this.onSelectDocuments, this);
-
+        this.selectionController.selectedComponents.off(CVArticles, this.onSelectArticles, this);
         super.deactivateTask();
     }
 
-    protected onActiveItem(event: IActiveItemEvent)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        const nextArticles = event.next ? event.next.articles : null;
-
-        if (nextArticles) {
-            this.selectionController.selectComponent(nextArticles);
+        if (next) {
+            this.selectionController.selectComponent(next.articles);
         }
-
-        this.activeArticles = nextArticles;
     }
 
-    protected onSelectDocuments(event: IComponentEvent<CVArticles>)
+    protected onSelectArticles(event: IComponentEvent<CVArticles>)
     {
         const node = event.object.node;
 

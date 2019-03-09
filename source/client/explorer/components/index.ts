@@ -34,7 +34,7 @@ import CVSliceTool from "./CVSliceTool";
 import CVSnapshots from "./CVSnapshots";
 import CVTape from "./CVTape";
 import CVTapeTool from "./CVTapeTool";
-import CVTools from "./CVTools";
+import CVToolManager from "./CVToolManager";
 import CVTourPlayer from "./CVTourPlayer";
 import CVTours from "./CVTours";
 import CVViewTool from "./CVViewTool";
@@ -61,7 +61,7 @@ export {
     CVSnapshots,
     CVTape,
     CVTapeTool,
-    CVTools,
+    CVToolManager,
     CVTourPlayer,
     CVTours,
     CVViewTool,
@@ -87,7 +87,7 @@ export const componentTypes = [
     CVSnapshots,
     CVTape,
     CVTapeTool,
-    CVTools,
+    CVToolManager,
     CVTourPlayer,
     CVTours,
     CVViewTool,

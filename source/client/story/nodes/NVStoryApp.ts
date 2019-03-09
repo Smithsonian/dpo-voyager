@@ -17,29 +17,18 @@
 
 import Node from "@ff/graph/Node";
 
-import CVToolManager from "../components/CVToolManager";
-
-import CVViewTool from "../components/CVViewTool";
-import CVRenderTool from "../components/CVRenderTool";
-import CVTapeTool from "../components/CVTapeTool";
-import CVSliceTool from "../components/CVSliceTool";
+import CVStoryController from "../components/CVStoryController";
+import CVNotePad from "../components/CVNotePad";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVTools extends Node
+export default class NVStoryApp extends Node
 {
-    static readonly typeName: string = "NVTools";
-
-    get toolManager() {
-        return this.getComponent(CVToolManager);
-    }
+    static readonly typeName: string = "NVStoryApp";
 
     createComponents()
     {
-        this.createComponent(CVToolManager);
-        this.createComponent(CVViewTool);
-        this.createComponent(CVRenderTool);
-        this.createComponent(CVTapeTool);
-        this.createComponent(CVSliceTool);
+        this.createComponent(CVStoryController);
+        this.createComponent(CVNotePad);
     }
 }

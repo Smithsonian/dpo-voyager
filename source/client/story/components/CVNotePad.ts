@@ -15,26 +15,24 @@
  * limitations under the License.
  */
 
-import Component, { ITypedEvent, types } from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 
-import { INote } from "../../explorer/nodes/NVItem";
-import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
+import NVItem, { INote } from "../../explorer/nodes/NVItem";
+import CVItemManager from "../../explorer/components/CVItemManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { INote };
 
-/**
- * Emitted after the set of notes has changed.
- * @event
- */
-export interface INotesUpdateEvent extends ITypedEvent<"notes-update">
-{
-}
-
 export default class CVNotePad extends Component
 {
     static readonly typeName: string = "CVNotePad";
+
+    protected static readonly ins = {
+        activeItem: types.Object("Scope.ActiveItem", NVItem),
+    };
+
+    ins = this.addInputs(CVNotePad.ins);
 
     private _notes: INote[] = [];
     private _activeNote: INote = null;
@@ -48,7 +46,7 @@ export default class CVNotePad extends Component
     set activeNote(note: INote) {
         if (note !== this._activeNote) {
             this._activeNote = note;
-            this.emitUpdateEvent();
+            this.emit("update");
         }
     }
     get itemManager() {
@@ -66,7 +64,7 @@ export default class CVNotePad extends Component
         if (this.activeNote) {
             this.activeNote.user = user;
             this.activeNote.text = text;
-            this.emitUpdateEvent();
+            this.emit("update");
         }
     }
 
@@ -82,36 +80,30 @@ export default class CVNotePad extends Component
     create()
     {
         super.create();
-        this.itemManager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
+        this.itemManager.outs.activeItem.linkTo(this.ins.activeItem);
     }
 
-    dispose()
+    update()
     {
-        this.itemManager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
-        super.dispose();
-    }
+        const ins = this.ins;
 
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        if (event.next) {
-            setTimeout(() => {
-                this._notes = event.next.process.get("notes");
+        if (ins.activeItem.changed) {
+            const item = ins.activeItem.value;
+            if (item) {
+                this._notes = item.process.get("notes");
                 if (!this._notes) {
                     this._notes = [];
-                    event.next.process.set("notes", this._notes);
+                    item.process.set("notes", this._notes);
                 }
 
                 this.activeNote = this._notes[this._notes.length - 1];
-            }, 0);
+            }
+            else {
+                this._notes = [];
+                this.activeNote = null;
+            }
         }
-        else {
-            this._notes = [];
-            this.activeNote = null;
-        }
-    }
 
-    protected emitUpdateEvent()
-    {
-        this.emit<INotesUpdateEvent>({ type: "notes-update" });
+        return true;
     }
 }

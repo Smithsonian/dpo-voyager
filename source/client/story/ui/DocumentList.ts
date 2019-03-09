@@ -18,10 +18,7 @@
 import System from "@ff/graph/System";
 import CSelection from "@ff/graph/components/CSelection";
 import CDocument from "@ff/graph/components/CDocument";
-import CDocumentManager, {
-    IActiveDocumentEvent,
-    IDocumentEvent
-} from "@ff/graph/components/CDocumentManager";
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
@@ -52,25 +49,21 @@ class DocumentList extends List<CDocument>
     {
         super.connected();
 
-        this.selection.selectedComponents.on(CDocument, this.performUpdate, this);
-
-        this.documentManager.on<IActiveDocumentEvent>("active-document", this.performUpdate, this);
-        this.documentManager.on<IDocumentEvent>("document", this.performUpdate, this);
+        this.selection.selectedComponents.on(CDocument, this.onRequestUpdate, this);
+        this.documentManager.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedComponents.off(CDocument, this.performUpdate, this);
-
-        this.documentManager.off<IActiveDocumentEvent>("active-document", this.performUpdate, this);
-        this.documentManager.off<IDocumentEvent>("document", this.performUpdate, this);
+        this.selection.selectedComponents.off(CDocument, this.onRequestUpdate, this);
+        this.documentManager.off("update", this.onRequestUpdate, this);
 
         super.disconnected();
     }
 
     protected update(props: PropertyValues)
     {
-        this.data = this.system.components.getArray(CDocument);
+        this.data = this.documentManager.documents;
         super.update(props);
     }
 
@@ -90,5 +83,10 @@ class DocumentList extends List<CDocument>
     {
         this.documentManager.activeDocument = component;
         this.selection.selectComponent(component);
+    }
+
+    protected onRequestUpdate()
+    {
+        this.requestUpdate();
     }
 }

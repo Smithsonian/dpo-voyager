@@ -17,7 +17,7 @@
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVTools, { IActiveToolEvent } from "../components/CVTools";
+import CVToolManager from "../components/CVToolManager";
 import CVTool, { ToolView } from "../components/CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,8 +30,8 @@ export interface IToolBarCloseEvent extends CustomEvent
 @customElement("sv-tool-bar")
 export default class ToolBar extends SystemElement
 {
-    protected get tools() {
-        return this.system.getMainComponent(CVTools);
+    protected get toolManager() {
+        return this.system.getMainComponent(CVToolManager);
     }
 
     protected firstConnected()
@@ -42,22 +42,24 @@ export default class ToolBar extends SystemElement
 
     protected connected()
     {
-        this.tools.on<IActiveToolEvent>("active-tool", this.performUpdate, this);
+        super.connected();
+        this.toolManager.outs.activeTool.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.tools.off<IActiveToolEvent>("active-tool", this.performUpdate, this);
+        this.toolManager.outs.activeTool.off("value", this.performUpdate, this);
+        super.disconnected();
     }
 
     protected render()
     {
-        const tools = this.tools.tools;
-        const activeTool = this.tools.activeTool;
+        const tools = this.toolManager.tools;
+        const activeTool = this.toolManager.activeTool;
 
-        const toolButtons = tools.map(tool =>
+        const toolButtons = tools.map((tool, index) =>
             html`<ff-button class="sv-tool-button" transparent text=${tool.text} icon=${tool.icon}
-                ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
+                ?selected=${tool === activeTool} @click=${e => this.onSelectTool(index)}></ff-button>`);
 
         const toolView = activeTool ? html`<div class="sv-section">
             <ff-button class="sv-section-button" transparent icon=${activeTool.icon}></ff-button>
@@ -71,9 +73,9 @@ export default class ToolBar extends SystemElement
             </div>`;
     }
 
-    protected onSelectTool(tool: CVTool)
+    protected onSelectTool(index: number)
     {
-        this.tools.activeTool = tool;
+        this.toolManager.ins.activeTool.setValue(index + 1);
     }
 
     protected onClose(event: MouseEvent)

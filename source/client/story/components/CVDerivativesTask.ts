@@ -16,13 +16,9 @@
  */
 
 import { IComponentEvent, types } from "@ff/graph/Component";
-import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import NVItem from "../../explorer/nodes/NVItem";
 import CVModel from "../../core/components/CVModel";
-import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
-import CVInterface from "../../explorer/components/CVInterface";
-import CVDocument from "../../explorer/components/CVDocument";
 
 import CVTask from "./CVTask";
 import DerivativesTaskView from "../ui/DerivativesTaskView";
@@ -44,25 +40,6 @@ export default class CVDerivativesTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
-    private _activeModel: CVModel = null;
-    private _interfaceVisible = false;
-    private _gridVisible = false;
-    private _annotationsVisible = false;
-
-    get activeModel() {
-        return this._activeModel;
-    }
-    set activeModel(model: CVModel) {
-        if (model !== this._activeModel) {
-            this._activeModel = model;
-            this.emitUpdateEvent();
-        }
-    }
-
-    protected get interface() {
-        return this.getMainComponent(CVInterface);
-    }
-
     createView()
     {
         return new DerivativesTaskView(this);
@@ -73,60 +50,31 @@ export default class CVDerivativesTask extends CVTask
         super.activateTask();
 
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
-
-        // disable interface overlay
-        const interface_ = this.interface;
-        if (interface_) {
-            this._interfaceVisible = interface_.ins.visible.value;
-            interface_.ins.visible.setValue(false);
-        }
     }
 
     deactivateTask()
     {
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
 
-        // restore interface visibility
-        const interface_ = this.interface;
-        if (interface_) {
-            interface_.ins.visible.setValue(this._interfaceVisible);
-        }
-
         super.deactivateTask();
     }
 
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    create()
     {
-        const prevPresentation = event.previous as CVDocument;
-        const nextPresentation = event.next as CVDocument;
+        super.create();
 
-        if (prevPresentation) {
-            prevPresentation.features.grid.ins.visible.setValue(this._gridVisible);
-            prevPresentation.scene.ins.annotationsVisible.setValue(this._annotationsVisible);
-        }
-        if (nextPresentation) {
-            let prop = nextPresentation.features.grid.ins.visible;
-            this._gridVisible = prop.value;
-            prop.setValue(false);
-
-            prop = nextPresentation.scene.ins.annotationsVisible;
-            this._annotationsVisible = prop.value;
-            prop.setValue(false);
-        }
-
-        super.onActiveDocument(event);
+        const configuration = this.configuration;
+        configuration.interfaceVisible = false;
+        configuration.bracketsVisible = false;
+        configuration.gridVisible = false;
+        configuration.annotationsVisible = false;
     }
 
-    protected onActiveItem(event: IActiveItemEvent)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        const prevModel = event.previous ? event.previous.model : null;
-        const nextModel = event.next ? event.next.model : null;
-
-        if (nextModel) {
-            this.selectionController.selectComponent(nextModel);
+        if (next) {
+            this.selectionController.selectComponent(next.model);
         }
-
-        this.activeModel = nextModel;
     }
 
     protected onSelectModel(event: IComponentEvent<CVModel>)

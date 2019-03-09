@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
-
 import ExploreTaskView from "../ui/ExploreTaskView";
 import CVTask from "./CVTask";
+import NVItem from "../../explorer/nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,35 +28,26 @@ export default class CVExploreTask extends CVTask
     static readonly text: string = "Explore";
     static readonly icon: string = "eye";
 
-    private _bracketsVisible = false;
-
     createView()
     {
         return new ExploreTaskView(this);
     }
 
-    activateTask()
+    create()
     {
-        super.activateTask();
+        super.create();
 
-        // disable selection brackets
-        const prop = this.selectionController.ins.viewportBrackets;
-        this._bracketsVisible = prop.value;
-        prop.setValue(false);
+        const configuration = this.configuration;
+        configuration.interfaceVisible = true;
+        configuration.bracketsVisible = false;
     }
 
-    deactivateTask()
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        // restore selection brackets visibility
-        this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
+        super.onActiveItem(previous, next);
 
-        super.deactivateTask();
-    }
-
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        if (event.next) {
-            this.selectionController.selectNode(event.next);
+        if (next) {
+            this.selectionController.selectNode(next);
         }
     }
 }

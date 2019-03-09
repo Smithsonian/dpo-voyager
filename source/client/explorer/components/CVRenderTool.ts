@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
-
 import CVScene from "../../core/components/CVScene";
+
 import "../ui/PropertyOptions";
 
-import CVTool, { ToolView, customElement, html } from "./CVTool";
+import CVDocument from "./CVDocument";
+import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,9 +31,21 @@ export default class CVRenderTool extends CVTool
     static readonly text = "Render Options";
     static readonly icon = "palette";
 
+    protected static readonly outs = {
+        scene: types.Object("Document.Scene", CVScene),
+    };
+
+    outs = this.addOutputs<CVTool, typeof CVRenderTool.outs>(CVRenderTool.outs);
+
     createView()
     {
         return new RenderToolView(this);
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        super.onActiveDocument(previous, next);
+        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene) : null);
     }
 }
 
@@ -42,10 +54,7 @@ export default class CVRenderTool extends CVTool
 @customElement("sv-render-tool-view")
 export class RenderToolView extends ToolView<CVRenderTool>
 {
-    protected get activeScene() {
-        const document = this.tool.activeDocument;
-        return document ? document.getInnerComponent(CVScene) : null;
-    }
+    protected scene: CVScene = null;
 
     protected firstConnected()
     {
@@ -56,18 +65,21 @@ export class RenderToolView extends ToolView<CVRenderTool>
     protected connected()
     {
         super.connected();
-        this.activeScene.ins.shader.on("value", this.performUpdate, this);
+        const sceneProp = this.tool.outs.scene;
+        sceneProp.on("value", this.onScene, this);
+        this.onScene(sceneProp.value);
     }
 
     protected disconnected()
     {
-        this.activeScene.ins.shader.off("value", this.performUpdate, this);
+        this.onScene(null);
+        this.tool.outs.scene.off("value", this.onScene, this);
         super.disconnected();
     }
 
     protected render()
     {
-        const scene = this.activeScene;
+        const scene = this.scene;
         if (!scene) {
             return html``;
         }
@@ -75,5 +87,17 @@ export class RenderToolView extends ToolView<CVRenderTool>
         const shader = scene.ins.shader;
 
         return html`<sv-property-options .property=${shader}></sv-property-options>`;
+    }
+
+    protected onScene(scene: CVScene)
+    {
+        if (this.scene) {
+            this.scene.ins.shader.off("value", this.performUpdate, this);
+        }
+        if (scene) {
+            scene.ins.shader.on("value", this.performUpdate, this);
+        }
+
+        this.scene = scene;
     }
 }

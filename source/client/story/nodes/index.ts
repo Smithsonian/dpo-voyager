@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-import { customElement, html } from "@ff/ui/CustomElement";
-
-import CVExploreTask from "../components/CVExploreTask";
-import { TaskView } from "../components/CVTask";
+import NVAuthoringTasks from "./NVAuthoringTasks";
+import NVPrepTasks from "./NVPrepTasks";
+import NVStoryApp from "./NVStoryApp";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-explore-task-view")
-export default class ExploreTaskView extends TaskView<CVExploreTask>
-{
-    protected render()
-    {
-        return html`<div class="sv-placeholder">Preview mode.</div>`;
-    }
-}
+export {
+    NVAuthoringTasks,
+    NVPrepTasks,
+    NVStoryApp,
+};
+
+export const nodeTypes = [
+    NVAuthoringTasks,
+    NVPrepTasks,
+    NVStoryApp,
+];

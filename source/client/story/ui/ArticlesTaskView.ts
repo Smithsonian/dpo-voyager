@@ -17,28 +17,26 @@
 
 import { customElement, html } from "@ff/ui/CustomElement";
 
+import CVArticlesTask from "../components/CVArticlesTask";
+import { TaskView } from "../components/CVTask";
+
 import "./ArticleList";
 import { ISelectArticleEvent } from "./ArticleList";
-
-import CVArticlesTask from "../components/CVArticlesTask";
-import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-articles-task-view")
-export default class ArticlesTaskView extends TaskView
+export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 {
-    protected task: CVArticlesTask;
-
     protected render()
     {
-        const articles = this.task.activeArticles;
+        const item = this.activeItem;
 
-        if (!articles) {
+        if (!item) {
             return html`<div class="sv-placeholder">Please select an item to edit its articles</div>`;
         }
 
-        const articleList = articles.getArticles();
+        const articleList = item.articles.getArticles();
         const article = this.task.activeArticle;
 
         const detailView = article ? html`` : null;
@@ -49,7 +47,7 @@ export default class ArticlesTaskView extends TaskView
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <sv-article-list .data=${articleList} .selectedItem=${article} @select=${this.onSelectDocument}></sv-article-list>
+                <sv-article-list .data=${articleList} .selectedItem=${article} @select=${this.onSelectArticle}></sv-article-list>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>
             <div class="sv-panel-section sv-dialog sv-scrollable">
@@ -68,10 +66,8 @@ export default class ArticlesTaskView extends TaskView
 
     }
 
-    protected onSelectDocument(event: ISelectArticleEvent)
+    protected onSelectArticle(event: ISelectArticleEvent)
     {
-        if (this.task.activeArticles) {
-            this.task.activeArticle = event.detail.article;
-        }
+        this.task.activeArticle = event.detail.article;
     }
 }

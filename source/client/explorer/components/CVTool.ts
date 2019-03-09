@@ -16,11 +16,15 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
-import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
+import CDocument from "@ff/graph/components/CDocument";
+
+import CVItemManager from "../../explorer/components/CVItemManager";
+import NVItem from "../../explorer/nodes/NVItem";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
-
-import CVTools from "../components/CVTools";
+import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,58 +34,135 @@ export default class CVTool extends Component
 {
     static readonly typeName: string = "CVTool";
 
-    get tools() {
-        return this.system.getMainComponent(CVTools);
-    }
+    protected static readonly toolIns = {
+        activeDocument: types.Object("Tool.ActiveDocument", CDocument),
+        activeItem: types.Object("Tool.ActiveItem", NVItem),
+    };
+
+    protected static readonly toolOuts = {
+    };
+
+    ins = this.addInputs(CVTool.toolIns);
+    outs = this.addOutputs(CVTool.toolOuts);
+
     get documentManager() {
         return this.system.getMainComponent(CDocumentManager);
     }
-    get activeDocument() {
-        return this.documentManager.activeDocument;
+    get itemManager() {
+        return this.getMainComponent(CVItemManager);
     }
+
+    protected isActiveTool = false;
+    protected activeDocument: CVDocument = null;
+    protected activeItem: NVItem = null;
 
     create()
     {
-        super.create();
-        this.documentManager.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-        this.onActiveDocument({ type: "active-document", previous: null, next: this.activeDocument });
+        this.documentManager.outs.activeDocument.linkTo(this.ins.activeDocument);
+        this.itemManager.outs.activeItem.linkTo(this.ins.activeItem);
     }
 
-    dispose()
+    update()
     {
-        this.onActiveDocument({ type: "active-document", previous: this.activeDocument, next: null });
-        this.documentManager.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-        super.dispose();
+        if (!this.isActiveTool) {
+            return false;
+        }
+
+        const ins = this.ins;
+
+        if (ins.activeDocument.changed) {
+            const activeDocument = ins.activeDocument.value as CVDocument;
+            this.onActiveDocument(this.activeDocument, activeDocument);
+            this.activeDocument = activeDocument;
+        }
+
+        if (ins.activeItem.changed) {
+            const activeItem = ins.activeItem.value;
+            this.onActiveItem(this.activeItem, activeItem);
+            this.activeItem = activeItem;
+        }
+
+        return true;
     }
 
-    createView(): HTMLElement
+    createView(): ToolView
     {
-        return null;
+        throw new Error("must override");
     }
 
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    /**
+     * Called when the tool is activated.
+     */
+    activateTool()
+    {
+        this.isActiveTool = true;
+
+        const activeDocument = this.ins.activeDocument.value as CVDocument;
+        if (activeDocument) {
+            this.activeDocument = activeDocument;
+            this.onActiveDocument(null, activeDocument);
+        }
+
+        const activeItem = this.ins.activeItem.value;
+        if (activeItem) {
+            this.activeItem = activeItem;
+            this.onActiveItem(null, activeItem);
+        }
+    }
+
+    /**
+     * Called when the tool is deactivated.
+     */
+    deactivateTool()
+    {
+        if (this.activeDocument) {
+            this.onActiveDocument(this.activeDocument, null);
+            this.activeDocument = null;
+        }
+        if (this.activeItem) {
+            this.onActiveItem(this.activeItem, null);
+            this.activeItem = null;
+        }
+
+        this.isActiveTool = false;
+    }
+
+    /**
+     * Called when the currently active document changes.
+     */
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+    }
+
+    /**
+     * Called when the currently active item changes.
+     */
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class ToolView<T extends CVTool> extends CustomElement
+export class ToolView<T extends CVTool = CVTool> extends CustomElement
 {
     @property({ attribute: false })
     tool: T = null;
-
-    get documentManager() {
-        return this.tool.system.getMainComponent(CDocumentManager);
-    }
-    get activeDocument() {
-        return this.documentManager.activeDocument;
-    }
 
     constructor(tool?: T)
     {
         super();
         this.tool = tool;
+    }
+
+    protected get system() {
+        return this.tool.system;
+    }
+    protected get activeDocument() {
+        return this.tool.ins.activeDocument.value;
+    }
+    protected get activeItem() {
+        return this.tool.ins.activeItem.value;
     }
 
     protected firstConnected()
@@ -91,18 +172,11 @@ export class ToolView<T extends CVTool> extends CustomElement
 
     protected connected()
     {
-        this.documentManager.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-        this.onActiveDocument({ type: "active-document", previous: null, next: this.activeDocument });
-
+        this.tool.on("update", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.onActiveDocument({ type: "active-document", previous: this.activeDocument, next: null });
-        this.documentManager.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-    }
-
-    protected onActiveDocument(event: IActiveDocumentEvent)
-    {
+        this.tool.off("update", this.performUpdate, this);
     }
 }

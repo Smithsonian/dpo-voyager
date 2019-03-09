@@ -21,20 +21,16 @@ import * as helpers from "@ff/three/helpers";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
-import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import { IPointerEvent } from "@ff/scene/RenderView";
 
 import CVModel from "../../core/components/CVModel";
 import CVAnnotations, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotations";
 import Annotation from "../../explorer/models/Annotation";
-import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import AnnotationsTaskView from "../ui/AnnotationsTaskView";
 import CVTask from "./CVTask";
-import CVDocument from "../../explorer/components/CVDocument";
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,10 +42,6 @@ const _mat3 = new THREE.Matrix3();
 
 export enum EAnnotationsTaskMode { Off, Move, Create }
 
-const _inputs = {
-    mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
-};
-
 export default class CVAnnotationsTask extends CVTask
 {
     static readonly typeName: string = "CVAnnotationsTask";
@@ -57,12 +49,13 @@ export default class CVAnnotationsTask extends CVTask
     static readonly text: string = "Annotations";
     static readonly icon: string = "comment";
 
-    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
+    protected static readonly ins = {
+        mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
+    };
+
+    ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
 
     private _activeAnnotations: CVAnnotations = null;
-    private _bracketsVisible = false;
-    private _annotationsVisible = false;
-    private _gridVisible = false;
 
 
     get activeAnnotations() {
@@ -86,22 +79,25 @@ export default class CVAnnotationsTask extends CVTask
 
         this.selectionController.selectedComponents.on(CVAnnotations, this.onSelectAnnotations, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-
-        // disable selection brackets
-        const prop = this.selectionController.ins.viewportBrackets;
-        this._bracketsVisible = prop.value;
-        prop.setValue(false);
     }
 
     deactivateTask()
     {
-        // restore selection brackets visibility
-        this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
-
         this.selectionController.selectedComponents.off(CVAnnotations, this.onSelectAnnotations, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         super.deactivateTask();
+    }
+
+    create()
+    {
+        super.create();
+
+        const configuration = this.configuration;
+        configuration.annotationsVisible = true;
+        configuration.gridVisible = false;
+        configuration.interfaceVisible = true;
+        configuration.bracketsVisible = false;
     }
 
     update()
@@ -188,30 +184,10 @@ export default class CVAnnotationsTask extends CVTask
         }
     }
 
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        const prevDocument = event.previous as CVDocument;
-        const nextDocument = event.next as CVDocument;
-
-        if (prevDocument) {
-            prevDocument.features.grid.ins.visible.setValue(this._gridVisible);
-            prevDocument.scene.ins.annotationsVisible.setValue(this._annotationsVisible);
-        }
-        if (nextDocument) {
-            let prop = nextDocument.features.grid.ins.visible;
-            this._gridVisible = prop.value;
-            prop.setValue(false);
-
-            prop = nextDocument.scene.ins.annotationsVisible;
-            this._annotationsVisible = prop.value;
-            prop.setValue(true);
-        }
-    }
-
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        const prevAnnotations = event.previous ? event.previous.annotations : null;
-        const nextAnnotations = event.next ? event.next.annotations : null;
+        const prevAnnotations = previous ? previous.annotations : null;
+        const nextAnnotations = next ? next.annotations : null;
 
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
@@ -231,5 +207,10 @@ export default class CVAnnotationsTask extends CVTask
         if (event.add && node instanceof NVItem) {
             this.itemManager.activeItem = node;
         }
+    }
+
+    protected emitUpdateEvent()
+    {
+        this.emit("update");
     }
 }

@@ -22,7 +22,6 @@ import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
 import { types, IComponentEvent } from "@ff/graph/Component";
-import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -30,13 +29,10 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/models/Derivative";
 
 import CVModel from "../../core/components/CVModel";
-import CVInterface from "../../explorer/components/CVInterface";
-import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import CVTask from "./CVTask";
 import CaptureTaskView from "../ui/CaptureTaskView";
-import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,18 +62,6 @@ const _typeExtensions = {
     [EFileType.PNG]: "png"
 };
 
-const _inputs = {
-    take: types.Event("Picture.Take"),
-    save: types.Event("Picture.Save"),
-    download: types.Event("Picture.Download"),
-    remove: types.Event("Picture.Remove"),
-    type: types.Enum("Picture.Type", EFileType),
-    quality: types.Percent("Picture.Quality", 0.85),
-};
-
-const _outputs = {
-    ready: types.Boolean("Picture.Ready")
-};
 
 export default class CVCaptureTask extends CVTask
 {
@@ -86,53 +70,25 @@ export default class CVCaptureTask extends CVTask
     static readonly text: string = "Capture";
     static readonly icon: string = "camera";
 
-    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
-    outs = this.addOutputs<CVTask, typeof _outputs>(_outputs);
+    protected static readonly ins = {
+        take: types.Event("Picture.Take"),
+        save: types.Event("Picture.Save"),
+        download: types.Event("Picture.Download"),
+        remove: types.Event("Picture.Remove"),
+        type: types.Enum("Picture.Type", EFileType),
+        quality: types.Percent("Picture.Quality", 0.85),
+    };
 
-    get activeModel() {
-        return this._activeModel;
-    }
-    set activeModel(model: CVModel) {
-        if (model !== this._activeModel) {
+    protected static readonly outs = {
+        ready: types.Boolean("Picture.Ready"),
+    };
 
-            if (this._activeModel) {
-                this.outs.ready.setValue(false);
-                this._imageElements = {};
-                this._imageDataURIs = {};
-
-            }
-            if (model) {
-                // load existing captures
-                _qualityLevels.forEach(quality => {
-                    const derivative = model.derivatives.get(EDerivativeUsage.Web2D, quality);
-                    if (derivative) {
-                        const image = derivative.findAsset(EAssetType.Image);
-                        if (image) {
-                            const imageElement = document.createElement("img");
-                            imageElement.src = this.activeItem.getAssetUrl(image.uri);
-                            this._imageElements[quality] = imageElement;
-                        }
-                    }
-                });
-            }
-
-            this._activeModel = model;
-            this.emitUpdateEvent();
-        }
-    }
+    ins = this.addInputs<CVTask, typeof CVCaptureTask.ins>(CVCaptureTask.ins);
+    outs = this.addOutputs<CVTask, typeof CVCaptureTask.outs>(CVCaptureTask.outs);
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
     }
-    protected get interface() {
-        return this.getMainComponent(CVInterface);
-    }
-
-    private _activeModel: CVModel = null;
-    private _interfaceVisible = false;
-    private _gridVisible = false;
-    private _annotationsVisible = false;
-    private _bracketsVisible = false;
 
     private _imageDataURIs: Dictionary<string> = {};
     private _imageElements: Dictionary<HTMLImageElement> = {};
@@ -159,18 +115,6 @@ export default class CVCaptureTask extends CVTask
     {
         this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
 
-        // disable selection brackets
-        const prop = this.selectionController.ins.viewportBrackets;
-        this._bracketsVisible = prop.value;
-        prop.setValue(false);
-
-        // disable interface overlay
-        const interface_ = this.interface;
-        if (interface_) {
-            this._interfaceVisible = interface_.ins.visible.value;
-            interface_.ins.visible.setValue(false);
-        }
-
         super.activateTask();
     }
 
@@ -179,15 +123,17 @@ export default class CVCaptureTask extends CVTask
         super.deactivateTask();
 
         this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
+    }
 
-        // restore selection brackets visibility
-        this.selectionController.ins.viewportBrackets.setValue(this._bracketsVisible);
+    create()
+    {
+        super.create();
 
-        // restore interface visibility
-        const interface_ = this.interface;
-        if (interface_) {
-            interface_.ins.visible.setValue(this._interfaceVisible);
-        }
+        const configuration = this.configuration;
+        configuration.interfaceVisible = false;
+        configuration.annotationsVisible = false;
+        configuration.bracketsVisible = false;
+        configuration.gridVisible = false;
     }
 
     update()
@@ -236,7 +182,7 @@ export default class CVCaptureTask extends CVTask
 
     protected uploadPictures()
     {
-        const model = this.activeModel;
+        const model = this.activeItem.model;
         if (!model || !this.arePicturesReady()) {
             return;
         }
@@ -277,7 +223,7 @@ export default class CVCaptureTask extends CVTask
             return;
         }
 
-        const model = this.activeModel;
+        const model = this.activeItem.model;
 
         const derivative = model.derivatives.getOrCreate(EDerivativeUsage.Web2D, quality);
 
@@ -292,7 +238,7 @@ export default class CVCaptureTask extends CVTask
 
     protected getImageFileName(quality: EDerivativeQuality, extension: string)
     {
-        const assetBaseName = (this.activeModel.node as NVItem).assetBaseName;
+        const assetBaseName = this.activeItem.assetBaseName;
         const qualityName = EDerivativeQuality[quality].toLowerCase();
         const imageName = `image-${qualityName}.${extension}`;
         return assetBaseName + imageName;
@@ -303,38 +249,32 @@ export default class CVCaptureTask extends CVTask
         console.warn("CCaptureTask.removePictures - not implemented yet");
     }
 
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        const prevPresentation = event.previous as CVDocument;
-        const nextPresentation = event.next as CVDocument;
+        super.onActiveItem(previous, next);
 
-        if (prevPresentation) {
-            prevPresentation.features.grid.ins.visible.setValue(this._gridVisible);
-            prevPresentation.scene.ins.annotationsVisible.setValue(this._annotationsVisible);
-        }
-        if (nextPresentation) {
-            let prop = nextPresentation.features.grid.ins.visible;
-            this._gridVisible = prop.value;
-            prop.setValue(false);
-
-            prop = nextPresentation.scene.ins.annotationsVisible;
-            this._annotationsVisible = prop.value;
-            prop.setValue(false);
+        if (previous && previous.hasComponent(CVModel)) {
+            this.outs.ready.setValue(false);
+            this._imageElements = {};
+            this._imageDataURIs = {};
         }
 
-        super.onActiveDocument(event);
-    }
+        if (next && next.hasComponent(CVModel)) {
+            const model = next.model;
+            // load existing captures
+            _qualityLevels.forEach(quality => {
+                const derivative = model.derivatives.get(EDerivativeUsage.Web2D, quality);
+                if (derivative) {
+                    const image = derivative.findAsset(EAssetType.Image);
+                    if (image) {
+                        const imageElement = document.createElement("img");
+                        imageElement.src = this.activeItem.getAssetUrl(image.uri);
+                        this._imageElements[quality] = imageElement;
+                    }
+                }
+            });
 
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        const nextItem = event.next;
-
-        if (nextItem && nextItem.hasComponent(CVModel)) {
-            this.activeModel = nextItem.model;
-            this.selectionController.selectComponent(this.activeModel);
-        }
-        else {
-            this.activeModel = null;
+            this.selectionController.selectComponent(model);
         }
     }
 

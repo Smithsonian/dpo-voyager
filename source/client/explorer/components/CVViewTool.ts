@@ -20,8 +20,8 @@ import CVNavigation, { EViewPreset } from "../../core/components/CVNavigation";
 import "../ui/PropertyOptions";
 import "../ui/PropertyEvent";
 
-import CVTool, { customElement, html, ToolView } from "./CVTool";
-import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+import CVDocument from "./CVDocument";
+import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,15 +32,21 @@ export default class CVViewTool extends CVTool
     static readonly text = "View Options";
     static readonly icon = "eye";
 
+    protected static readonly outs = {
+        navigation: types.Object("Document.Navigation", CVNavigation),
+    };
 
-    get navigation() {
-        const document = this.activeDocument;
-        return document ? document.getInnerComponent(CVNavigation) : null;
-    }
+    outs = this.addOutputs<CVTool, typeof CVViewTool.outs>(CVViewTool.outs);
 
     createView()
     {
         return new ViewToolView(this);
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        super.onActiveDocument(previous, next);
+        this.outs.navigation.setValue(next ? next.getInnerComponent(CVNavigation) : null);
     }
 }
 
@@ -49,15 +55,32 @@ export default class CVViewTool extends CVTool
 @customElement("sv-view-tool-view")
 export class ViewToolView extends ToolView<CVViewTool>
 {
+    protected navigation: CVNavigation = null;
+
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-view-tool-view");
     }
 
+    protected connected()
+    {
+        super.connected();
+        this.tool.outs.navigation.on("value", this.onNavigation, this);
+        this.onNavigation(this.tool.outs.navigation.value);
+    }
+
+    protected disconnected()
+    {
+        this.onNavigation(null);
+        this.tool.outs.navigation.off("value", this.onNavigation, this);
+        super.disconnected();
+    }
+
     protected render()
     {
-        const navigation = this.tool.navigation;
+        const navigation = this.navigation;
+
         if (!navigation) {
             return html``;
         }
@@ -74,17 +97,15 @@ export class ViewToolView extends ToolView<CVViewTool>
             <sv-property-event .property=${zoom} name="Zoom" icon="zoom"></sv-property-event>`;
     }
 
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    protected onNavigation(navigation: CVNavigation)
     {
-        if (event.previous) {
-            const navigation = event.previous.getInnerComponent(CVNavigation);
-            navigation.ins.projection.off("value", this.performUpdate, this);
-            navigation.ins.preset.off("value", this.performUpdate, this);
+        if (this.navigation) {
+            this.navigation.off("update", this.performUpdate, this);
         }
-        if (event.next) {
-            const navigation = event.next.getInnerComponent(CVNavigation);
-            navigation.ins.projection.on("value", this.performUpdate, this);
-            navigation.ins.preset.on("value", this.performUpdate, this);
+        if (navigation) {
+            navigation.on("update", this.performUpdate, this);
         }
+
+        this.navigation = navigation;
     }
 }

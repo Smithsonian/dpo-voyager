@@ -21,18 +21,15 @@ import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
 import CVCaptureTask from "../components/CVCaptureTask";
+import { TaskView } from "../components/CVTask";
 
 import "./ItemList";
-import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-capture-task-view")
-export default class CaptureTaskView extends TaskView
+export default class CaptureTaskView extends TaskView<CVCaptureTask>
 {
-    protected task: CVCaptureTask;
-
-
     protected connected()
     {
         super.connected();
@@ -47,9 +44,9 @@ export default class CaptureTaskView extends TaskView
 
     protected render()
     {
-        const activeModel = this.task.activeModel;
+        const item = this.activeItem;
 
-        if (!activeModel) {
+        if (!item) {
             return html`<div class="sv-placeholder">Please select an item to take a picture</div>`;
         }
 

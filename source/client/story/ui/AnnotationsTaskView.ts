@@ -26,23 +26,22 @@ import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
-import TaskView from "./TaskView";
+import { TaskView } from "../components/CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-annotations-task-view")
-export default class AnnotationsTaskView extends TaskView
+export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 {
-    protected task: CVAnnotationsTask;
-
-
     protected render()
     {
-        const annotations = this.task.activeAnnotations;
+        const item = this.activeItem;
 
-        if (!annotations) {
+        if (!item) {
             return html`<div class="sv-placeholder">Please select an item to edit its annotations</div>`;
         }
+
+        const annotations = item.annotations;
 
         const inProps = annotations.ins;
         const modeProp = this.task.ins.mode;

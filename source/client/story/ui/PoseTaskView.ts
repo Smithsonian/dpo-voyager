@@ -25,32 +25,29 @@ import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 
 import "./ItemList";
 import "./PropertyView";
-import TaskView from "./TaskView";
+import { TaskView } from "../components/CVTask";
 import CVScene from "../../core/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-pose-task-view")
-export default class PoseTaskView extends TaskView
+export default class PoseTaskView extends TaskView<CVPoseTask>
 {
-    protected task: CVPoseTask;
-
-
     protected render()
     {
-        const activeDocument = this.task.documentManager.activeDocument;
-        const activeModel = this.task.activeModel;
+        const document = this.activeDocument;
+        const item = this.activeItem;
 
-        if (!activeDocument || !activeModel) {
+        if (!item) {
             return html`<div class="sv-placeholder">Please select an item to edit its pose</div>`;
         }
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = activeDocument.getInnerComponent(CVScene).ins.units;
-        const itemUnits = activeModel.ins.units;
-        const position = activeModel.ins.position;
-        const rotation = activeModel.ins.rotation;
+        const globalUnits = document.getInnerComponent(CVScene).ins.units;
+        const itemUnits = item.model.ins.units;
+        const position = item.model.ins.position;
+        const rotation = item.model.ins.rotation;
 
         return html`
             <div class="sv-commands">

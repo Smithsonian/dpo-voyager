@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import Component, { ITypedEvent } from "@ff/graph/Component";
-import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+import Component, { types } from "@ff/graph/Component";
+
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
+import CDocument from "@ff/graph/components/CDocument";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
+import CVInterface from "../../explorer/components/CVInterface";
 
-import CVItemManager, { IActiveItemEvent } from "../../explorer/components/CVItemManager";
+import CVItemManager from "../../explorer/components/CVItemManager";
+import NVItem from "../../explorer/nodes/NVItem";
 
-import CVTaskController from "./CVTaskController";
-import TaskView from "../ui/TaskView";
+import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _inputs = {
-    activate: types.Event("Activate")
-};
-
-export interface ITaskUpdateEvent extends ITypedEvent<"update">
-{
-}
+export { types, customElement, html };
 
 export default class CVTask extends Component
 {
@@ -43,10 +40,20 @@ export default class CVTask extends Component
     static readonly text: string = "Task";
     static readonly icon: string = "fa fa-tasks";
 
-    ins = this.addInputs(_inputs);
+    protected static readonly taskIns = {
+        activeDocument: types.Object("Task.ActiveDocument", CDocument),
+        activeItem: types.Object("Task.ActiveItem", NVItem),
+    };
 
-    get taskController() {
-        return this.getMainComponent(CVTaskController);
+    protected static readonly taskOuts = {
+        updated: types.Event("Task.Updated"),
+    };
+
+    ins = this.addInputs(CVTask.taskIns);
+    outs = this.addOutputs(CVTask.taskOuts);
+
+    get interface() {
+        return this.getMainComponent(CVInterface);
     }
     get selectionController() {
         return this.getMainComponent(CPickSelection);
@@ -57,17 +64,52 @@ export default class CVTask extends Component
     get itemManager() {
         return this.getMainComponent(CVItemManager);
     }
-    get activeItem() {
-        return this.itemManager.activeItem;
+
+    protected isActiveTask = false;
+    protected activeDocument: CVDocument = null;
+    protected activeItem: NVItem = null;
+
+    protected configuration = {
+        bracketsVisible: undefined,
+        interfaceVisible: undefined,
+        gridVisible: undefined,
+        annotationsVisible: undefined,
+    };
+
+    private _savedConfig = {
+        bracketsVisible: undefined,
+        interfaceVisible: undefined,
+        gridVisible: undefined,
+        annotationsVisible: undefined,
+    };
+
+    create()
+    {
+        this.documentManager.outs.activeDocument.linkTo(this.ins.activeDocument);
+        this.itemManager.outs.activeItem.linkTo(this.ins.activeItem);
     }
 
     update()
     {
-        if (this.ins.activate.changed) {
-            this.taskController.activeTask = this;
+        if (!this.isActiveTask) {
+            return false;
         }
 
-        return false;
+        const ins = this.ins;
+
+        if (ins.activeDocument.changed) {
+            const activeDocument = ins.activeDocument.value as CVDocument;
+            this.onActiveDocument(this.activeDocument, activeDocument);
+            this.activeDocument = activeDocument;
+        }
+
+        if (ins.activeItem.changed) {
+            const activeItem = ins.activeItem.value;
+            this.onActiveItem(this.activeItem, activeItem);
+            this.activeItem = activeItem;
+        }
+
+        return true;
     }
 
     createView(): TaskView
@@ -75,46 +117,140 @@ export default class CVTask extends Component
         throw new Error("must override");
     }
 
+    /**
+     * Called when the task is activated.
+     */
     activateTask()
     {
-        const documentManager = this.documentManager;
-        documentManager.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-        this.onActiveDocument({ type: "active-document", previous: null, next: documentManager.activeDocument });
+        this.isActiveTask = true;
 
-        const itemManager = this.itemManager;
-        itemManager.on<IActiveItemEvent>("active-item", this.onActiveItem, this);
-        this.onActiveItem({ type: "active-item", previous: null, next: itemManager.activeItem });
+        const activeDocument = this.ins.activeDocument.value as CVDocument;
+        if (activeDocument) {
+            this.activeDocument = activeDocument;
+            this.onActiveDocument(null, activeDocument);
+        }
+
+        const activeItem = this.ins.activeItem.value;
+        if (activeItem) {
+            this.activeItem = activeItem;
+            this.onActiveItem(null, activeItem);
+        }
+
+        const configuration = this.configuration;
+        const savedConfig = this._savedConfig;
+
+        if (configuration.bracketsVisible !== undefined) {
+            const prop = this.selectionController.ins.viewportBrackets;
+            savedConfig.bracketsVisible = prop.value;
+            prop.setValue(!!configuration.bracketsVisible);
+        }
+        if (configuration.interfaceVisible !== undefined) {
+            const prop = this.interface.ins.visible;
+            savedConfig.interfaceVisible = prop.value;
+            prop.setValue(!!configuration.interfaceVisible);
+        }
     }
 
+    /**
+     * Called when the task is deactivated.
+     */
     deactivateTask()
     {
-        const itemManager = this.itemManager;
-        itemManager.off<IActiveItemEvent>("active-item", this.onActiveItem, this);
-        this.onActiveItem({ type: "active-item", previous: itemManager.activeItem, next: null });
+        const savedConfig = this._savedConfig;
 
-        const documentManager = this.documentManager;
-        documentManager.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-        this.onActiveDocument({ type: "active-document", previous: documentManager.activeDocument, next: null });
+        if (savedConfig.bracketsVisible !== undefined) {
+            this.selectionController.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
+        }
+        if (savedConfig.interfaceVisible !== undefined) {
+            this.interface.ins.visible.setValue(savedConfig.interfaceVisible);
+        }
+
+        if (this.activeDocument) {
+            this.onActiveDocument(this.activeDocument, null);
+            this.activeDocument = null;
+        }
+        if (this.activeItem) {
+            this.onActiveItem(this.activeItem, null);
+            this.activeItem = null;
+        }
+
+        this.isActiveTask = false;
     }
 
     /**
      * Called when the currently active document changes.
-     * @param event
      */
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
+        console.log("CVTask.onActiveDocument - %s", this.displayName);
+        const configuration = this.configuration;
+        const savedConfig = this._savedConfig;
+
+        if (previous) {
+            if (savedConfig.gridVisible !== undefined) {
+                previous.features.grid.ins.visible.setValue(savedConfig.gridVisible);
+            }
+            if (savedConfig.annotationsVisible !== undefined) {
+                previous.scene.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
+            }
+        }
+        if (next) {
+            if (configuration.gridVisible !== undefined) {
+                const prop = next.features.grid.ins.visible;
+                savedConfig.gridVisible = prop.value;
+                prop.setValue(!!configuration.gridVisible);
+            }
+            if (configuration.annotationsVisible !== undefined) {
+                const prop = next.scene.ins.annotationsVisible;
+                savedConfig.annotationsVisible = prop.value;
+                prop.setValue(!!configuration.annotationsVisible);
+            }
+        }
     }
 
     /**
      * Called when the currently active item changes.
-     * @param event
      */
-    protected onActiveItem(event: IActiveItemEvent)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
     }
+}
 
-    protected emitUpdateEvent()
+////////////////////////////////////////////////////////////////////////////////
+
+export class TaskView<T extends CVTask = CVTask> extends CustomElement
+{
+    @property({ attribute: false })
+    task: T = null;
+
+    constructor(task?: T)
     {
-        this.emit<ITaskUpdateEvent>({ type: "update" });
+        super();
+        this.task = task;
+    }
+
+    protected get system() {
+        return this.task.system;
+    }
+    protected get activeDocument() {
+        return this.task.ins.activeDocument.value;
+    }
+    protected get activeItem() {
+        return this.task.ins.activeItem.value;
+    }
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-task-view");
+    }
+
+    protected connected()
+    {
+        this.task.on("update", this.performUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.task.off("update", this.performUpdate, this);
     }
 }

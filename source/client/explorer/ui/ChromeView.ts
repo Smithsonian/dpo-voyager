@@ -19,7 +19,7 @@ import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
 import CVInterface from "../components/CVInterface";
-import CVTools from "../components/CVTools";
+import CVToolManager from "../components/CVToolManager";
 
 import "../../core/ui/Logo";
 import "./MainMenu";
@@ -36,8 +36,8 @@ export default class ChromeView extends DocumentView
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
     }
-    protected get tools() {
-        return this.system.getMainComponent(CVTools);
+    protected get toolManager() {
+        return this.system.getMainComponent(CVToolManager);
     }
 
     protected firstConnected()
@@ -51,13 +51,13 @@ export default class ChromeView extends DocumentView
     protected connected()
     {
         this.interface.on("update", this.performUpdate, this);
-        this.tools.ins.visible.on("value", this.performUpdate, this);
+        this.toolManager.ins.visible.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.interface.off("update", this.performUpdate, this);
-        this.tools.ins.visible.off("value", this.performUpdate, this);
+        this.toolManager.ins.visible.off("value", this.performUpdate, this);
     }
 
     protected render()
@@ -66,7 +66,7 @@ export default class ChromeView extends DocumentView
 
         const interfaceVisible = this.interface.ins.visible.value;
         const logoVisible = this.interface.ins.logo.value;
-        const toolsVisible = this.tools.ins.visible.value;
+        const toolsVisible = this.toolManager.ins.visible.value;
 
         if (!interfaceVisible) {
             return html``;
@@ -97,7 +97,7 @@ export default class ChromeView extends DocumentView
 
     protected onToggleTools()
     {
-        const prop = this.tools.ins.visible;
+        const prop = this.toolManager.ins.visible;
         prop.setValue(!prop.value);
     }
 }

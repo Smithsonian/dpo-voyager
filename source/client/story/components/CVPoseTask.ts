@@ -19,20 +19,18 @@ import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentEvent } from "@ff/graph/Node";
-import { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
 
 import Viewport from "@ff/three/Viewport";
 import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import CVDocument from "../../explorer/components/CVDocument";
-import { IActiveItemEvent } from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 import CVInterface from "../../explorer/components/CVInterface";
 import CVModel from "../../core/components/CVModel";
 
 import PoseTaskView from "../ui/PoseTaskView";
-import CVTask, { ITaskUpdateEvent } from "./CVTask";
+import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,9 +42,6 @@ const _quat1 = new THREE.Quaternion();
 
 export enum EPoseManipMode { Off, Translate, Rotate }
 
-const ins = {
-    mode: types.Enum("Mode", EPoseManipMode, EPoseManipMode.Off)
-};
 
 export default class CVPoseTask extends CVTask
 {
@@ -55,29 +50,21 @@ export default class CVPoseTask extends CVTask
     static readonly text: string = "Pose";
     static readonly icon: string = "move";
 
-    ins = this.addInputs<CVTask, typeof ins>(ins);
+    protected static readonly ins = {
+        mode: types.Enum("Pose.Mode", EPoseManipMode, EPoseManipMode.Off)
+    };
 
-    get activeModel() {
-        return this._activeModel;
-    }
-    set activeModel(model: CVModel) {
-        if (model !== this._activeModel) {
-            this._activeModel = model;
-            this.emitUpdateEvent();
-        }
-    }
+    ins = this.addInputs<CVTask, typeof CVPoseTask.ins>(CVPoseTask.ins);
+
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
     }
-    protected get interface() {
-        return this.getMainComponent(CVInterface);
+    protected get activeModel() {
+        const item = this.activeItem;
+        return item ? item.model : null;
     }
 
-    private _activeModel: CVModel = null;
-    private _interfaceVisible = false;
-    private _annotationsVisible = false;
-    private _gridVisible = false;
     private _viewport: Viewport = null;
     private _deltaX = 0;
     private _deltaY = 0;
@@ -100,11 +87,6 @@ export default class CVPoseTask extends CVTask
             }
         });
 
-        // switch off user interface
-        const prop = this.interface.ins.visible;
-        this._interfaceVisible = prop.value;
-        prop.setValue(false);
-
         super.activateTask();
     }
 
@@ -121,20 +103,17 @@ export default class CVPoseTask extends CVTask
                 view.layout = EQuadViewLayout.Single;
             }
         });
-
-        // restore user interface
-        this.interface.ins.visible.setValue(this._interfaceVisible);
     }
 
-    update()
+    create()
     {
-        const changed = super.update();
+        super.create();
 
-        if (this.ins.mode.changed) {
-            this.emitUpdateEvent();
-        }
-
-        return changed;
+        const configuration = this.configuration;
+        configuration.gridVisible = true;
+        configuration.annotationsVisible = false;
+        configuration.interfaceVisible = false;
+        configuration.bracketsVisible = true;
     }
 
     tick()
@@ -179,36 +158,10 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
-    protected onActiveDocument(event: IActiveDocumentEvent)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        const prevPresentation = event.previous as CVDocument;
-        const nextPresentation = event.next as CVDocument;
-
-        if (prevPresentation) {
-            prevPresentation.features.grid.ins.visible.setValue(this._gridVisible);
-            prevPresentation.scene.ins.annotationsVisible.setValue(this._annotationsVisible);
-        }
-        if (nextPresentation) {
-            let prop = nextPresentation.features.grid.ins.visible;
-            this._gridVisible = prop.value;
-            prop.setValue(true);
-
-            prop = nextPresentation.scene.ins.annotationsVisible;
-            this._annotationsVisible = prop.value;
-            prop.setValue(false);
-        }
-    }
-
-    protected onActiveItem(event: IActiveItemEvent)
-    {
-        const nextItem = event.next;
-
-        if (nextItem && nextItem.hasComponent(CVModel)) {
-            this.activeModel = nextItem.model;
-            this.selectionController.selectComponent(this.activeModel);
-        }
-        else {
-            this.activeModel = null;
+        if (next && next.hasComponent(CVModel)) {
+            this.selectionController.selectComponent(next.model);
         }
     }
 

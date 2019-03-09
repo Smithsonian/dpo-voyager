@@ -26,8 +26,6 @@ import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import Notification from "@ff/ui/Notification";
 
-import CVTaskController from "./CVTaskController";
-
 import taskSets, { EStoryMode } from "../taskSets";
 import CVItemManager from "../../explorer/components/CVItemManager";
 import CVDocument from "../../explorer/components/CVDocument";
@@ -55,10 +53,6 @@ export default class CVStoryController extends CController<CVStoryController>
 
     ins = this.addInputs(_inputs);
 
-    protected selection: CSelection = null;
-    protected documentManager: CDocumentManager = null;
-    protected itemManager: CVItemManager = null;
-    protected tasks: CVTaskController = null;
 
     constructor(id: string)
     {
@@ -85,6 +79,16 @@ export default class CVStoryController extends CController<CVStoryController>
         return null;
     }
 
+    protected get selection() {
+        return this.getMainComponent(CSelection);
+    }
+    protected get documentManager() {
+        return this.getMainComponent(CDocumentManager);
+    }
+    protected get itemManager() {
+        return this.getMainComponent(CVItemManager);
+    }
+
     createActions(commander: Commander)
     {
         return {};
@@ -92,11 +96,6 @@ export default class CVStoryController extends CController<CVStoryController>
 
     create()
     {
-        this.selection = this.getMainComponent(CSelection);
-        this.documentManager = this.getMainComponent(CDocumentManager);
-        this.itemManager = this.getMainComponent(CVItemManager);
-        this.tasks = this.getMainComponent(CVTaskController);
-
         window.addEventListener("beforeunload", this.beforeUnload);
     }
 
@@ -111,10 +110,10 @@ export default class CVStoryController extends CController<CVStoryController>
         const ins = this.ins;
 
         if (ins.mode.changed) {
-            const taskTypes = taskSets[EStoryMode[ins.mode.getValidatedValue()]];
-            if (taskTypes) {
-                this.tasks.setTaskTypes(taskTypes);
-            }
+            //const taskTypes = taskSets[EStoryMode[ins.mode.getValidatedValue()]];
+            //if (taskTypes) {
+            //    this.taskManager.setTaskTypes(taskTypes);
+            //}
         }
 
         // save active item/document

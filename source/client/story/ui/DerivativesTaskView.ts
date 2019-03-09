@@ -20,32 +20,32 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import CVDerivativesTask from "../components/CVDerivativesTask";
 import Derivative from "../../core/models/Derivative";
+
+import CVDerivativesTask from "../components/CVDerivativesTask";
+import { TaskView } from "../components/CVTask";
 
 import "./DerivativeList";
 import { ISelectDerivativeEvent } from "./DerivativeList";
 
-import TaskView from "./TaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-derivatives-task-view")
-export default class DerivativesTaskView extends TaskView
+export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 {
-    protected task: CVDerivativesTask;
     protected selectedDerivative: Derivative = null;
 
 
     protected render()
     {
-        const model = this.task.activeModel;
+        const item = this.activeItem;
 
-        if (!model) {
+        if (!item) {
             return html`<div class="sv-placeholder">Please select an item to inspect its derivatives</div>`;
         }
 
-        const derivatives = model.derivatives.getArray();
+        const derivatives = item.model.derivatives.getArray();
         const derivative = this.selectedDerivative;
 
         const detailView = derivative ? html`` : null;

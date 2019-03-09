@@ -22,73 +22,42 @@ import CVTool from "./CVTool";
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Emitted after the active tool has changed.
- * @event
+ * Manages available tools and keeps track of the currently active tool.
  */
-export interface IActiveToolEvent extends ITypedEvent<"active-tool">
+export default class CVToolManager extends Component
 {
-    previous: CVTool;
-    next: CVTool;
-}
-
-/**
- * Emitted after a tool has been added or removed.
- * @event
- */
-export interface IToolEvent extends ITypedEvent<"tool">
-{
-}
-
-export default class CVTools extends Component
-{
-    static readonly typeName: string = "CVTools";
+    static readonly typeName: string = "CVToolManager";
     static readonly isSystemSingleton = true;
 
     protected static readonly ins = {
         visible: types.Boolean("Tools.Visible"),
-        activeTool: types.Option("Tools.Active", []),
+        activeTool: types.Option("Tools.ActiveTool", []),
     };
 
-    ins = this.addInputs(CVTools.ins);
+    protected static readonly outs = {
+        activeTool: types.Object("Tools.ActiveTool", CVTool),
+        changedTools: types.Event("Tools.Changed"),
+    };
 
-    private _activeTool: CVTool = null;
+    ins = this.addInputs(CVToolManager.ins);
+    outs = this.addOutputs(CVToolManager.outs);
 
     get tools() {
         return this.getComponents(CVTool);
     }
-
     get activeTool() {
-        return this._activeTool;
+        return this.outs.activeTool.value;
     }
     set activeTool(tool: CVTool) {
-        if (tool !== this._activeTool) {
-            const previous = this._activeTool;
-
-            if (previous) {
-                // deactivate
-            }
-
-            this._activeTool = tool;
-
-            if (tool) {
-                // activate
-            }
-
-            this.emit<IActiveToolEvent>({
-                type: "active-tool",
-                previous,
-                next: tool
-            });
+        if (tool !== this.activeTool) {
+            const index = this.tools.indexOf(tool);
+            this.ins.activeTool.setValue(index + 1);
         }
-
-        const index = this.tools.indexOf(tool);
-        this.ins.activeTool.setValue(index + 1, true);
     }
 
     create()
     {
-        this.components.on(CVTool, this.updateToolSet, this);
-        this.updateToolSet();
+        this.components.on(CVTool, this.updateTools, this);
     }
 
     update(context)
@@ -97,7 +66,19 @@ export default class CVTools extends Component
 
         if (ins.activeTool.changed) {
             const index = ins.activeTool.getValidatedValue() - 1;
-            this.activeTool = index >= 0 ? this.tools[index] : null;
+            const nextTool = index >= 0 ? this.tools[index] : null;
+            const activeTool = this.activeTool;
+
+            if (nextTool !== activeTool) {
+                if (activeTool) {
+                    activeTool.deactivateTool();
+                }
+                if (nextTool) {
+                    nextTool.activateTool();
+                }
+
+                this.outs.activeTool.setValue(nextTool);
+            }
         }
 
         return true;
@@ -105,10 +86,11 @@ export default class CVTools extends Component
 
     dispose()
     {
-        this.components.off(CVTool, this.updateToolSet, this);
+        this.components.off(CVTool, this.updateTools, this);
+        super.dispose();
     }
 
-    protected updateToolSet()
+    protected updateTools()
     {
         const tools = this.tools;
         const names = tools.map(tool => tool.displayName);
@@ -116,10 +98,15 @@ export default class CVTools extends Component
         this.ins.activeTool.setOptions(names);
 
         let activeTool = this.activeTool;
-        if (activeTool && tools.indexOf(activeTool) < 0) {
-            this.activeTool = null;
+
+        const index = activeTool ?
+            tools.indexOf(activeTool) :
+            Math.min(1, tools.length);
+
+        if (index !== this.ins.activeTool.getValidatedValue()) {
+            this.ins.activeTool.setValue(index);
         }
 
-        this.emit<IToolEvent>({ type: "tool" });
+        this.outs.changedTools.set();
     }
 }

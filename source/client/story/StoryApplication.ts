@@ -24,18 +24,18 @@ import CPickSelection from "@ff/scene/components/CPickSelection";
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
-import CVDocument from "../explorer/components/CVDocument";
-
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 
 import { componentTypes as storyComponents } from "./components";
+import { nodeTypes as storyNodes } from "./nodes";
 
-import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
 import NVItem from "../explorer/nodes/NVItem";
+import CVDocument from "../explorer/components/CVDocument";
+import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
 
+import NVPrepTasks from "./nodes/NVPrepTasks";
+import NVStoryApp from "./nodes/NVStoryApp";
 import CVStoryController from "./components/CVStoryController";
-import CVTaskController from "./components/CVTaskController";
-import CVNotePad from "./components/CVNotePad";
 
 import MainView from "./ui/MainView";
 
@@ -80,14 +80,13 @@ export default class StoryApplication
         // register additional story tool components
         const registry = this.system.registry;
         registry.add(storyComponents);
+        registry.add(storyNodes);
 
         //this.logController = new LogController(this.system, this.commander);
 
         // add story components
-        const storyNode = this.system.graph.createNode("Story");
-        storyNode.createComponent(CVTaskController);
-        storyNode.createComponent(CVStoryController);
-        storyNode.createComponent(CVNotePad);
+        this.system.graph.createCustomNode(NVStoryApp, "Story Application");
+        this.system.graph.createCustomNode(NVPrepTasks, "Story Prep Tasks");
 
         // enable viewport brackets
         this.system.getMainComponent(CPickSelection).ins.viewportBrackets.setValue(true);

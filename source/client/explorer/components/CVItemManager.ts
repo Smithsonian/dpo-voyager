@@ -15,34 +15,14 @@
  * limitations under the License.
  */
 
-import Component, { types, ITypedEvent } from "@ff/graph/Component";
-import CDocumentManager, { IActiveDocumentEvent } from "@ff/graph/components/CDocumentManager";
+import Component, { types } from "@ff/graph/Component";
+
+import CDocumentManager from "@ff/graph/components/CDocumentManager";
+import CDocument from "@ff/graph/components/CDocument";
 
 import NVItem from "../nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Emitted after the set of items has changed.
- * @event
- */
-export interface IItemEvent extends ITypedEvent<"item">
-{
-}
-
-/**
- * Emitted after the active item has changed.
- * @event
- */
-export interface IActiveItemEvent extends ITypedEvent<"active-item">
-{
-    previous: NVItem;
-    next: NVItem;
-}
-
-const _inputs = {
-    activeItem: types.Option("Items.Active", []),
-};
 
 /**
  * System component keeping track of all items in the currently active document.
@@ -53,44 +33,40 @@ export default class CVItemManager extends Component
     static readonly typeName: string = "CVItemManager";
     static readonly isSystemSingleton = true;
 
-    ins = this.addInputs(_inputs);
+    protected static readonly ins = {
+        activeItem: types.Option("Items.ActiveItem", []),
+        activeDocument: types.Object("Items.ActiveDocument", CDocument),
+    };
 
-    private _activeItem: NVItem = null;
+    protected static readonly outs = {
+        activeItem: types.Object("Items.ActiveItem", NVItem),
+        changedItems: types.Event("Items.Changed"),
+    };
+
+    ins = this.addInputs(CVItemManager.ins);
+    outs = this.addOutputs(CVItemManager.outs);
+
+    protected activeDocument: CDocument = null;
 
     get items(): NVItem[] {
-        const document = this.documentManger.activeDocument;
+        const document = this.ins.activeDocument.value;
         return document ? document.getInnerNodes(NVItem) : [];
     }
-
     get activeItem(): NVItem {
-        return this._activeItem;
+        return this.outs.activeItem.value;
     }
     set activeItem(item: NVItem) {
-        if (item !== this._activeItem) {
-            const previous = this._activeItem;
-            this._activeItem = item;
-
+        if (item !== this.activeItem) {
             const index = this.items.indexOf(item);
-            this.ins.activeItem.setValue(index + 1, true);
-
-            this.emit<IActiveItemEvent>({
-                type: "active-item",
-                previous,
-                next: item
-            });
+            this.ins.activeItem.setValue(index + 1);
         }
-
-        const index = this.items.indexOf(item);
-        this.ins.activeItem.setValue(index + 1, true);
-    }
-
-    protected get documentManger() {
-        return this.getMainComponent(CDocumentManager);
     }
 
     create()
     {
-        this.documentManger.on<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
+        const documentManager = this.getMainComponent(CDocumentManager);
+        documentManager.outs.activeDocument.linkTo(this.ins.activeDocument);
+
         this.updateItems();
     }
 
@@ -98,9 +74,29 @@ export default class CVItemManager extends Component
     {
         const ins = this.ins;
 
+        if (ins.activeDocument.changed) {
+
+            if (this.activeDocument) {
+                this.activeDocument.innerNodes.off(NVItem, this.updateItems, this);
+            }
+
+            this.activeDocument = ins.activeDocument.value;
+
+            if (this.activeDocument) {
+                this.activeDocument.innerNodes.on(NVItem, this.updateItems, this);
+            }
+
+            this.updateItems();
+        }
+
         if (ins.activeItem.changed) {
             const index = ins.activeItem.getValidatedValue() - 1;
-            this.activeItem = index >= 0 ? this.items[index] : null;
+            const nextItem = index >= 0 ? this.items[index] : null;
+            const activeItem = this.outs.activeItem.value;
+
+            if (nextItem !== activeItem) {
+                this.outs.activeItem.setValue(nextItem);
+            }
         }
 
         return true;
@@ -108,16 +104,8 @@ export default class CVItemManager extends Component
 
     dispose()
     {
-        this.documentManger.off<IActiveDocumentEvent>("active-document", this.onActiveDocument, this);
-    }
-
-    protected onActiveDocument(event: IActiveDocumentEvent)
-    {
-        if (event.previous) {
-            event.previous.innerNodes.off(NVItem, this.updateItems, this);
-        }
-        if (event.next) {
-            event.next.innerNodes.on(NVItem, this.updateItems, this);
+        if (this.activeDocument) {
+            this.activeDocument.innerNodes.off(NVItem, this.updateItems, this);
         }
     }
 
@@ -129,13 +117,16 @@ export default class CVItemManager extends Component
         names.unshift("(none)");
         this.ins.activeItem.setOptions(names);
 
-        // if the current active item is invalid, set the first item in the list active
-        let activeItem = this._activeItem;
-        if (!activeItem || items.indexOf(activeItem) < 0) {
-            activeItem = items[0];
+        let activeItem = this.outs.activeItem.value;
+
+        const index = activeItem ?
+            items.indexOf(activeItem) :
+            Math.min(1, items.length);
+
+        if (index !== this.ins.activeItem.getValidatedValue()) {
+            this.ins.activeItem.setValue(index);
         }
 
-        this.activeItem = activeItem;
-        this.emit<IItemEvent>({ type: "item" });
+        this.outs.changedItems.set();
     }
 }

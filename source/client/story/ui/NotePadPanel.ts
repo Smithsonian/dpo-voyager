@@ -33,7 +33,7 @@ import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVNotePad, { INote, INotesUpdateEvent } from "../components/CVNotePad";
+import CVNotePad, { INote } from "../components/CVNotePad";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,12 +73,12 @@ export default class NotePadPanel extends SystemElement
     protected connected()
     {
         super.connected();
-        this.notePad.on<INotesUpdateEvent>("notes-update", this.performUpdate, this);
+        this.notePad.on("update", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.notePad.off<INotesUpdateEvent>("notes-update", this.performUpdate, this);
+        this.notePad.off("update", this.performUpdate, this);
         super.disconnected();
     }
 
