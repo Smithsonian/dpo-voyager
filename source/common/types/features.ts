@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+import { Index } from "@ff/core/types";
+import { ITweenState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
+
 import { TUnitType, EUnitType } from "./item";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,13 +44,14 @@ export interface IFeatures
 {
     interface?: IInterface;
     reader?: IReader;
-    tapeTool?: ITapeTool;
-    sliceTool?: ISliceTool;
     navigation?: INavigation;
     scene?: IScene;
     background?: IBackground;
     floor?: IFloor;
     grid?: IGrid;
+    story?: IStory;
+    tapeTool?: ITapeTool;
+    sliceTool?: ISliceTool;
 }
 
 export interface IScene
@@ -137,4 +141,24 @@ export interface ISliceTool
     axis: TSliceAxis;
     inverted: boolean;
     position: number;
+}
+
+/**
+ * Describes the story elements of an item: snapshots and tours.
+ */
+export interface IStory
+{
+    tours?: ITour[];
+}
+
+/**
+ * A tour consists of a sequence of tour steps, where each step
+ * recalls a snapshot.
+ */
+export interface ITour
+{
+    title: string;
+    description: string;
+    steps: ITweenState[];
+    targets: ITweenTarget[];
 }

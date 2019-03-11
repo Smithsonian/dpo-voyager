@@ -15,90 +15,202 @@
  * limitations under the License.
  */
 
-import { Dictionary } from "@ff/core/types";
+import clone from "@ff/core/clone";
 
-import { ITour as ITourData, TCurveType } from "common/types/item";
+import Component, { ITypedEvent, types } from "@ff/graph/Component";
+import CTweenMachine, { IMachineState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
 
-import CVCollection from "./CVCollection";
+import { ITour } from "common/types/features";
+import Property from "@ff/graph/Property";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface ITour
+export enum EToursState { Off, Select, Playing }
+
+export interface ITourUpdateEvent extends ITypedEvent<"tour">
 {
-    id?: string;
-    title: string;
-    description: string;
-    steps: ITourStep[];
+    tour: ITour;
 }
 
-export interface ITourStep
-{
-    snapshotId: string;
-    transitionTime: number;
-    transitionCurve: TCurveType;
-    transitionCutPoint: number;
-}
-
-export default class CVTours extends CVCollection<ITour>
+export default class CVTours extends Component
 {
     static readonly typeName: string = "CVTours";
 
-    create()
-    {
+    protected static readonly ins = {
+        enabled: types.Boolean("Tours.Enabled"),
+        tour: types.Option("Tours.Tour", []),
+    };
+
+    protected static readonly outs = {
+        state: types.Enum("Player.State", EToursState),
+        title: types.String("Tour.Title"),
+        description: types.String("Tour.Description"),
+        step: types.Integer("Tour.Step"),
+        count: types.Integer("Tour.Steps"),
+    };
+
+    ins = this.addInputs(CVTours.ins);
+    outs = this.addOutputs(CVTours.outs);
+
+    private _tours: ITour[] = [];
+    private _activeTourIndex = -1;
+    private _defaultTargets: ITweenTarget[] = [];
+
+    get tweenMachine() {
+        return this.getComponent(CTweenMachine);
     }
 
-    addTour(tour: ITour)
-    {
-        this.insert(tour);
-
-        this.emit("changed");
+    get tours() {
+        return this._tours;
     }
-
-    removeTour(id: string)
-    {
-        const tour = this.remove(id);
-
-        this.emit("changed");
-
-        return tour;
+    get activeTour() {
+        const index = this._activeTourIndex;
+        return index >= 0 ? this._tours[index] : null;
     }
+    set activeTour(tour: ITour) {
+        const activeTour = this.activeTour;
+        const tours = this._tours;
 
-    fromData(data: ITourData[], snapIds: string[])
-    {
-        data.forEach(tourData => {
-            this.addTour({
-                title: tourData.title,
-                description: tourData.description || "",
-                steps: tourData.steps.map(stepData => ({
-                    snapshotId: snapIds[stepData.snapshot],
-                    transitionTime: stepData.transitionTime,
-                    transitionCurve: stepData.transitionCurve,
-                    transitionCutPoint: stepData.transitionCutPoint
-                }))
-            });
-        });
-    }
-
-    toData(snapIds: Dictionary<number>): ITourData[]
-    {
-        const tours = this.getArray();
-
-        return tours.map(tour => {
-            const tourData: ITourData = {
-                title: tour.title,
-                steps: tour.steps.map(step => ({
-                    snapshot: snapIds[step.snapshotId],
-                    transitionTime: step.transitionTime,
-                    transitionCurve: step.transitionCurve,
-                    transitionCutPoint: step.transitionCutPoint
-                }))
-            };
-
-            if (tour.description) {
-                tourData.description = tour.description;
+        if (tour !== activeTour) {
+            if (activeTour) {
+                const state: IMachineState = this.tweenMachine.deflateState();
+                activeTour.steps = state.states || [];
+                activeTour.targets = state.targets || [];
             }
 
-            return tourData;
-        })
+            this._activeTourIndex = tour ? tours.indexOf(tour) : -1;
+
+            if (tour) {
+                const outs = this.outs;
+                outs.title.setValue(tour.title);
+                outs.description.setValue(tour.description);
+                outs.step.setValue(0);
+                outs.count.setValue(tour.steps.length);
+
+                const state = { states: tour.steps, targets: tour.targets };
+                this.tweenMachine.inflateState(state);
+            }
+
+            this.emit<ITourUpdateEvent>({ type: "tour", tour });
+        }
+    }
+
+    create()
+    {
+        this.updateTourList();
+    }
+
+    update()
+    {
+        const { ins, outs } = this;
+
+        const isEnabled = ins.enabled.value;
+
+        if (ins.enabled.changed) {
+            const index = ins.tour.value;
+
+            outs.state.setValue(isEnabled ? (index > 0 ? EToursState.Playing : EToursState.Select) : EToursState.Off);
+        }
+
+        if (!isEnabled) {
+            return ins.enabled.changed;
+        }
+
+        if (ins.tour.changed) {
+            const index = ins.tour.getValidatedValue() - 1;
+            if (index >= 0) {
+                this.activeTour = this._tours[index];
+                outs.state.setValue(EToursState.Playing);
+            }
+            else {
+                this.activeTour = null;
+                outs.state.setValue(EToursState.Select);
+            }
+        }
+
+        return true;
+    }
+
+    createTour()
+    {
+        const tour = {
+            title: "New Tour",
+            description: "",
+            steps: [],
+            targets: clone(this._defaultTargets),
+        };
+
+        this._tours.push(tour);
+        this.updateTourList();
+        this.activeTour = tour;
+    }
+
+    deleteTour()
+    {
+        const tours = this._tours;
+        const index = this._activeTourIndex;
+
+        this._tours.splice(index, 1);
+        this._activeTourIndex = -1;
+
+        this.updateTourList();
+        this.activeTour = index < tours.length ? tours[index] : tours[index - 1];
+    }
+
+    updateTour()
+    {
+        this.emit<ITourUpdateEvent>({ type: "tour", tour: this.activeTour });
+    }
+
+    moveTourUp()
+    {
+        const tours = this._tours;
+        const index = this._activeTourIndex;
+
+        if (index > 0) {
+            const activeTour = tours[index];
+            tours[index] = tours[index - 1];
+            tours[index - 1] = activeTour;
+            this._activeTourIndex = index - 1;
+            this.updateTourList();
+        }
+    }
+
+    moveTourDown()
+    {
+        const tours = this._tours;
+        const index = this._activeTourIndex;
+
+        if (index + 1 < tours.length) {
+            const activeTour = tours[index];
+            tours[index] = tours[index + 1];
+            tours[index + 1] = activeTour;
+            this._activeTourIndex = index + 1;
+            this.updateTourList();
+        }
+    }
+
+    addTarget(component: Component, property: Property)
+    {
+        this._defaultTargets.push({ id: component.id, key: property.key });
+    }
+
+    fromData(tours: ITour[])
+    {
+        this._tours = tours;
+    }
+
+    toData(): ITour[]
+    {
+        return this._tours;
+    }
+
+    protected updateTourList()
+    {
+        const names = this._tours.map(tour => tour.title);
+        names.unshift("(none)");
+        this.ins.tour.setOptions(names);
+
+        this.emit("update");
     }
 }

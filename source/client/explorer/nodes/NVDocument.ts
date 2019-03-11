@@ -19,6 +19,7 @@ import Node from "@ff/graph/Node";
 
 import CIns from "@ff/graph/components/CIns";
 import COuts from "@ff/graph/components/COuts";
+import CTweenMachine from "@ff/graph/components/CTweenMachine";
 
 import CAssetManager from "@ff/scene/components/CAssetManager";
 
@@ -38,5 +39,6 @@ export default class NVDocument extends Node
         this.createComponent(CAssetManager);
         this.createComponent(CVMeta);
         this.createComponent(CVTours);
+        this.createComponent(CTweenMachine);
     }
 }

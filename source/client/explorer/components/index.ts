@@ -32,7 +32,6 @@ import CVReader from "./CVReader";
 import CVReference from "./CVReference";
 import CVRenderTool from "./CVRenderTool";
 import CVSliceTool from "./CVSliceTool";
-import CVSnapshots from "./CVSnapshots";
 import CVTape from "./CVTape";
 import CVTapeTool from "./CVTapeTool";
 import CVToolManager from "./CVToolManager";
@@ -60,7 +59,6 @@ export {
     CVReference,
     CVRenderTool,
     CVSliceTool,
-    CVSnapshots,
     CVTape,
     CVTapeTool,
     CVToolManager,
@@ -87,7 +85,6 @@ export const componentTypes = [
     CVReference,
     CVRenderTool,
     CVSliceTool,
-    CVSnapshots,
     CVTape,
     CVTapeTool,
     CVToolManager,

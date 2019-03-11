@@ -201,58 +201,6 @@ export interface IGroup
 }
 
 /**
- * Describes the story elements of an item: snapshots and tours.
- */
-export interface IStory
-{
-    templateUri?: string;
-    snapshots?: ISnapshot[];
-    tours?: ITour[];
-}
-
-/**
- * A snapshot captures a set of viewer/scene properties.
- * Snapshots can be used to bring the viewer/scene back to a specific state.
- */
-export interface ISnapshot
-{
-    title?: string;
-    description?: string;
-    properties: ISnapshotProperty[];
-}
-
-/**
- * Unit of snapshot data.
- */
-export interface ISnapshotProperty
-{
-    target: string;
-    value: any;
-}
-
-/**
- * A tour consists of a sequence of tour steps, where each step
- * recalls a snapshot.
- */
-export interface ITour
-{
-    title: string;
-    description?: string;
-    steps: ITourStep[];
-}
-
-/**
- * Single step within a tour.
- */
-export interface ITourStep
-{
-    snapshot: Index;
-    transitionTime?: number;
-    transitionCurve?: TCurveType;
-    transitionCutPoint?: number;
-}
-
-/**
  * Meta-data describing the capture, computation, and editorial process.
  */
 export interface IProcess

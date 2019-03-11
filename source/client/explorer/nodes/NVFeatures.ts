@@ -26,6 +26,10 @@ import CVFloor from "../components/CVFloor";
 import CVGrid from "../components/CVGrid";
 import CVTape from "../components/CVTape";
 
+import CVSliceTool from "../components/CVSliceTool";
+import CVInterface from "../components/CVInterface";
+import CVReader from "../components/CVReader";
+import CVTours from "../components/CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,11 +60,44 @@ export default class NVFeatures extends NTransform
     {
         super.createComponents();
 
+        const tours = this.getGraphComponent(CVTours);
+
         this.createComponent(CVFeatures);
-        this.createComponent(CVOrbitNavigation);
-        this.createComponent(CVBackground);
-        this.createComponent(CVFloor);
-        this.createComponent(CVGrid);
-        this.createComponent(CVTape);
+
+        const navigation = this.createComponent(CVOrbitNavigation, "Navigation", "nav");
+        const background = this.createComponent(CVBackground, "Background", "bg");
+        const floor = this.createComponent(CVFloor, "Floor", "floor");
+        const grid = this.createComponent(CVGrid, "Grid", "grid");
+        const tape = this.createComponent(CVTape, "Tape", "tape");
+
+        // Snapshot, document-local properties
+        tours.addTarget(navigation, navigation.ins.orbit);
+        tours.addTarget(navigation, navigation.ins.offset);
+
+        tours.addTarget(background, background.ins.style);
+        tours.addTarget(background, background.ins.color0);
+        tours.addTarget(background, background.ins.color1);
+
+        tours.addTarget(floor, floor.ins.opacity);
+
+        tours.addTarget(grid, grid.ins.visible);
+
+        tours.addTarget(tape, tape.ins.visible);
+        tours.addTarget(tape, tape.ins.startPosition);
+        tours.addTarget(tape, tape.ins.startDirection);
+        tours.addTarget(tape, tape.ins.endPosition);
+        tours.addTarget(tape, tape.ins.endDirection);
+
+        // Snapshot, global properties
+        const iface = this.getMainComponent(CVInterface);
+
+        const reader = this.getMainComponent(CVReader);
+
+        const slice = this.getMainComponent(CVSliceTool);
+        tours.addTarget(slice, slice.ins.enabled);
+        tours.addTarget(slice, slice.ins.axis);
+        tours.addTarget(slice, slice.ins.inverted);
+        tours.addTarget(slice, slice.ins.position);
+        tours.addTarget(slice, slice.ins.color);
     }
 }
