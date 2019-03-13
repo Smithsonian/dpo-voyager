@@ -15,26 +15,11 @@
  * limitations under the License.
  */
 
-import CVAssetLoader from "./CVAssetLoader";
-import CVModel from "./CVModel";
-import CVOrbitNavigation from "./CVOrbitNavigation";
-import CVPart from "./CVPart";
-import CVScene from "./CVScene";
+import CGraph from "@ff/graph/components/CGraph";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVAssetLoader,
-    CVModel,
-    CVOrbitNavigation,
-    CVPart,
-    CVScene,
-};
-
-export const componentTypes = [
-    CVAssetLoader,
-    CVModel,
-    CVOrbitNavigation,
-    CVPart,
-    CVScene,
-];
+export default class CVAnnotation extends CGraph
+{
+    static readonly typeName: string = "CVAnnotation";
+}

@@ -18,7 +18,7 @@
 
 import List from "@ff/ui/List";
 
-import Tour from "../../explorer/models/Tour";
+import CVTours, { ITour } from "../../explorer/components/CVTours";
 
 import CVToursTask from "../components/CVToursTask";
 import { TaskView, customElement, property, html } from "../components/CVTask";
@@ -67,15 +67,15 @@ interface ISelectTourEvent extends CustomEvent
 {
     target: TourList;
     detail: {
-        tour: Tour;
+        tour: ITour;
     }
 }
 
 @customElement("sv-tour-list")
-export class TourList extends List<Tour>
+export class TourList extends List<ITour>
 {
     @property({ attribute: false })
-    selectedItem: Tour = null;
+    selectedItem: ITour = null;
 
     protected firstConnected()
     {
@@ -83,17 +83,17 @@ export class TourList extends List<Tour>
         this.classList.add("sv-tour-list");
     }
 
-    protected renderItem(item: Tour)
+    protected renderItem(item: ITour)
     {
         return item.title;
     }
 
-    protected isItemSelected(item: Tour)
+    protected isItemSelected(item: ITour)
     {
         return item === this.selectedItem;
     }
 
-    protected onClickItem(event: MouseEvent, item: Tour)
+    protected onClickItem(event: MouseEvent, item: ITour)
     {
         this.dispatchEvent(new CustomEvent("select", {
             detail: { tour: item }

@@ -25,6 +25,7 @@ import Property from "@ff/graph/Property";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { ITour };
 export enum EToursState { Off, Select, Playing }
 
 export interface ITourUpdateEvent extends ITypedEvent<"tour">

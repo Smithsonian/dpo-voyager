@@ -23,6 +23,8 @@ import CVToolManager from "../components/CVToolManager";
 
 import "../../core/ui/Logo";
 import "./MainMenu";
+//import "./TourMenu";
+import "./TourNavigator";
 import "./ToolBar";
 
 import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
@@ -83,11 +85,13 @@ export default class ChromeView extends DocumentView
             }
         }
 
+        // <div class="sv-main-title">${title || ""}<span>&nbsp; &nbsp;</span></div>
+
         return html`
             <div class="sv-chrome-header">
                 <sv-main-menu .system=${system}></sv-main-menu>
                 <div class="sv-top-bar">
-                    <div class="sv-main-title">${title || ""}<span>&nbsp; &nbsp;</span></div>
+                    <sv-tour-nagivator .system=${system}>abc</sv-tour-nagivator>
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>

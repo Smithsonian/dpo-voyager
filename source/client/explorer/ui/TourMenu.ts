@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
-import CVAssetLoader from "./CVAssetLoader";
-import CVModel from "./CVModel";
-import CVOrbitNavigation from "./CVOrbitNavigation";
-import CVPart from "./CVPart";
-import CVScene from "./CVScene";
+import "@ff/ui/Button";
+
+import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVAssetLoader,
-    CVModel,
-    CVOrbitNavigation,
-    CVPart,
-    CVScene,
-};
+@customElement("sv-tour-menu")
+export default class TourMenu extends DocumentView
+{
+    protected firstConnected()
+    {
+        super.firstConnected();
+        this.classList.add("sv-tour-menu");
+    }
 
-export const componentTypes = [
-    CVAssetLoader,
-    CVModel,
-    CVOrbitNavigation,
-    CVPart,
-    CVScene,
-];
+    protected render()
+    {
+        return html`tour menu`;
+    }
+}

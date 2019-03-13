@@ -80,6 +80,22 @@ export interface IModel
     material?: IMaterial;
 }
 
+export interface IModel2
+{
+    units: TUnitType;
+    parts: IPart[];
+}
+
+export interface IPart
+{
+    name: string;
+    derivatives: IDerivative[];
+    boundingBox?: IBoundingBox;
+    translation?: Vector3;
+    rotation?: Vector4;
+    material?: IMaterial;
+}
+
 /**
  * Axis-aligned bounding box.
  */
@@ -131,6 +147,7 @@ export interface IAsset
 {
     uri: string;
     type: TAssetType;
+    part?: string;
     mimeType?: string;
     byteSize?: number;
     numFaces?: number;
