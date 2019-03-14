@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
+import DocumentView, { customElement, html } from "./DocumentView";
 
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";

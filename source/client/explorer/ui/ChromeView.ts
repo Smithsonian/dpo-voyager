@@ -27,7 +27,7 @@ import "./MainMenu";
 import "./TourNavigator";
 import "./ToolBar";
 
-import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
+import DocumentView, { customElement, html } from "./DocumentView";
 import CVMeta from "../components/CVMeta";
 
 ////////////////////////////////////////////////////////////////////////////////

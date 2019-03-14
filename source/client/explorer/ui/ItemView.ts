@@ -21,7 +21,7 @@ import DocumentView, {
     html,
     PropertyValues,
     TemplateResult
-} from "@ff/scene/ui/DocumentView";
+} from "./DocumentView";
 
 import CVItemManager from "../components/CVItemManager";
 import NVItem from "../nodes/NVItem";

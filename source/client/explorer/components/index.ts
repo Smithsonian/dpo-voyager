@@ -18,7 +18,9 @@
 import CVAnnotations from "./CVAnnotations";
 import CVArticles from "./CVArticles";
 import CVBackground from "./CVBackground";
+import CVDocument from "./CVDocument";
 import CVDocumentLoader from "./CVDocumentLoader";
+import CVDocumentManager from "./CVDocumentManager";
 import CVFeatures from "./CVFeatures";
 import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
@@ -26,7 +28,6 @@ import CVInterface from "./CVInterface";
 import CVItemManager from "./CVItemManager";
 import CVLightTool from "./CVLightTool";
 import CVMeta from "./CVMeta";
-import CVDocument from "./CVDocument";
 import CVProcess from "./CVProcess";
 import CVReader from "./CVReader";
 import CVReference from "./CVReference";
@@ -45,7 +46,9 @@ export {
     CVAnnotations,
     CVArticles,
     CVBackground,
+    CVDocument,
     CVDocumentLoader,
+    CVDocumentManager,
     CVFeatures,
     CVFloor,
     CVGrid,
@@ -53,7 +56,6 @@ export {
     CVItemManager,
     CVLightTool,
     CVMeta,
-    CVDocument,
     CVProcess,
     CVReader,
     CVReference,
@@ -71,7 +73,9 @@ export const componentTypes = [
     CVAnnotations,
     CVArticles,
     CVBackground,
+    CVDocument,
     CVDocumentLoader,
+    CVDocumentManager,
     CVFeatures,
     CVFloor,
     CVGrid,
@@ -79,7 +83,6 @@ export const componentTypes = [
     CVItemManager,
     CVLightTool,
     CVMeta,
-    CVDocument,
     CVProcess,
     CVReader,
     CVReference,

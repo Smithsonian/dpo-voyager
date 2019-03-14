@@ -17,7 +17,7 @@
 
 import "@ff/ui/Button";
 
-import DocumentView, { customElement, html } from "@ff/scene/ui/DocumentView";
+import DocumentView, { customElement, html } from "./DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 

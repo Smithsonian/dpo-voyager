@@ -81,7 +81,7 @@ export default class CVDocument extends CDocument
         return this.getInnerNode(NVScene);
     }
     get features() {
-        return this.getInnerComponent(CVFeatures);
+        return this.getInnerComponent<CVFeatures>("CVFeatures");
     }
 
     createItem()
@@ -98,7 +98,8 @@ export default class CVDocument extends CDocument
 
         this.innerGraph.createCustomNode(NVDocument);
         const sceneNode = this.innerGraph.createCustomNode(NVScene);
-        sceneNode.scene.addChild(this.innerGraph.createCustomNode(NVFeatures).transform);
+        const featureNode = this.innerGraph.createCustomNode<NVFeatures>("NVFeatures");
+        sceneNode.scene.addChild(featureNode.transform);
     }
 
     update(context)
