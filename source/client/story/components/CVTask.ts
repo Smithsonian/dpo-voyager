@@ -17,17 +17,15 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
-import CDocument from "@ff/graph/components/CDocument";
-
 import CPickSelection from "@ff/scene/components/CPickSelection";
 import CVInterface from "../../explorer/components/CVInterface";
 
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+import CVDocument from "../../explorer/components/CVDocument";
 import CVItemManager from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
-import CVDocument from "../../explorer/components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +39,7 @@ export default class CVTask extends Component
     static readonly icon: string = "fa fa-tasks";
 
     protected static readonly taskIns = {
-        activeDocument: types.Object("Task.ActiveDocument", CDocument),
+        activeDocument: types.Object("Task.ActiveDocument", CVDocument),
         activeItem: types.Object("Task.ActiveItem", NVItem),
     };
 
@@ -59,7 +57,7 @@ export default class CVTask extends Component
         return this.getMainComponent(CPickSelection);
     }
     get documentManager() {
-        return this.getMainComponent(CDocumentManager);
+        return this.getMainComponent(CVDocumentManager);
     }
     get itemManager() {
         return this.getMainComponent(CVItemManager);

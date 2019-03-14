@@ -17,11 +17,12 @@
 
 import System from "@ff/graph/System";
 
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
 import CAssetManager from "@ff/scene/components/CAssetManager";
 import AssetTree from "@ff/scene/ui/AssetTree";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
+
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +35,7 @@ export default class AssetPanel extends SystemElement
     }
 
     protected get documentManager() {
-        return this.system.getMainComponent(CDocumentManager);
+        return this.system.getMainComponent(CVDocumentManager);
     }
     protected get assetManager() {
         const document = this.documentManager.activeDocument;

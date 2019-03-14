@@ -22,13 +22,13 @@ import download from "@ff/browser/download";
 
 import CController, { Commander, Actions, types } from "@ff/graph/components/CController";
 import CSelection from "@ff/graph/components/CSelection";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import Notification from "@ff/ui/Notification";
 
 import taskSets, { EStoryMode } from "../taskSets";
 import CVItemManager from "../../explorer/components/CVItemManager";
 import CVDocument from "../../explorer/components/CVDocument";
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -83,7 +83,7 @@ export default class CVStoryController extends CController<CVStoryController>
         return this.getMainComponent(CSelection);
     }
     protected get documentManager() {
-        return this.getMainComponent(CDocumentManager);
+        return this.getMainComponent(CVDocumentManager);
     }
     protected get itemManager() {
         return this.getMainComponent(CVItemManager);
@@ -130,7 +130,7 @@ export default class CVStoryController extends CController<CVStoryController>
             }
             else if (document) {
                 url = document.url;
-                file = new File([JSON.stringify(document.toPresentation())], document.urlName, { type: "text/json" });
+                file = new File([JSON.stringify(document.toDocument())], document.urlName, { type: "text/json" });
             }
 
             if (url && file) {
@@ -156,7 +156,7 @@ export default class CVStoryController extends CController<CVStoryController>
                 download.json(item.toData(), item.urlName);
             }
             else if (document) {
-                download.json(document.toPresentation(), document.urlName);
+                download.json(document.toDocument(), document.urlName);
             }
         }
 

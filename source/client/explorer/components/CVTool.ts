@@ -17,14 +17,13 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
-import CDocument from "@ff/graph/components/CDocument";
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+import CVDocument from "../../explorer/components/CVDocument";
 
 import CVItemManager from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
-import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +34,7 @@ export default class CVTool extends Component
     static readonly typeName: string = "CVTool";
 
     protected static readonly toolIns = {
-        activeDocument: types.Object("Tool.ActiveDocument", CDocument),
+        activeDocument: types.Object("Tool.ActiveDocument", CVDocument),
         activeItem: types.Object("Tool.ActiveItem", NVItem),
     };
 
@@ -46,7 +45,7 @@ export default class CVTool extends Component
     outs = this.addOutputs(CVTool.toolOuts);
 
     get documentManager() {
-        return this.system.getMainComponent(CDocumentManager);
+        return this.system.getMainComponent(CVDocumentManager);
     }
     get itemManager() {
         return this.getMainComponent(CVItemManager);

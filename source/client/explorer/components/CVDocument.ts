@@ -19,7 +19,9 @@ import resolvePathname from "resolve-pathname";
 import download from "@ff/browser/download";
 
 import { types } from "@ff/graph/Component";
+
 import CDocument from "@ff/graph/components/CDocument";
+
 import CAssetManager from "@ff/scene/components/CAssetManager";
 
 import { IPresentation } from "common/types/presentation";
@@ -32,21 +34,21 @@ import CVFeatures from "./CVFeatures";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _inputs = {
-    presentationDump: types.Event("Presentation.Dump"),
-    presentationDownload: types.Event("Presentation.Download"),
-};
-
 /**
- * A presentation is a special kind of document. Its inner graph has a standard structure, and it can
+ * A document is a special kind of document. Its inner graph has a standard structure, and it can
  * be serialized to and from an IPresentation structure which is very similar to a glTF document.
  */
 export default class CVDocument extends CDocument
 {
-    static readonly typeName: string = "CVPresentation";
-    static readonly mimeType = "application/si-dpo-3d.presentation+json";
+    static readonly typeName: string = "CVDocument";
+    static readonly mimeType = "application/si-dpo-3d.document+json";
 
-    ins = this.addInputs<CDocument, typeof _inputs>(_inputs);
+    protected static readonly ins = {
+        documentDump: types.Event("Document.Dump"),
+        documentDownload: types.Event("Document.Download"),
+    };
+
+    ins = this.addInputs<CDocument, typeof CVDocument.ins>(CVDocument.ins);
 
     private _url: string = "";
 
@@ -105,20 +107,20 @@ export default class CVDocument extends CDocument
 
         const ins = this.ins;
 
-        if (ins.presentationDump.changed) {
-            const json = this.toPresentation();
-            console.log("-------------------- PRESENTATION --------------------");
+        if (ins.documentDump.changed) {
+            const json = this.toDocument();
+            console.log("-------------------- VOYAGER DOCUMENT --------------------");
             console.log(JSON.stringify(json, null, 2));
         }
 
-        if (ins.presentationDownload.changed) {
-            download.json(this.toPresentation(), this.urlName || "presentation.json");
+        if (ins.documentDownload.changed) {
+            download.json(this.toDocument(), this.urlName || "document.json");
         }
 
         return true;
     }
 
-    fromPresentation(data: IPresentation)
+    fromDocument(data: IPresentation)
     {
         this.sceneNode.fromData(data);
 
@@ -127,7 +129,7 @@ export default class CVDocument extends CDocument
         }
     }
 
-    toPresentation(writeReferences: boolean = false): IPresentation
+    toDocument(writeReferences: boolean = false): IPresentation
     {
         let data = this.sceneNode.toData(writeReferences);
         data.features = this.features.toData();
@@ -135,8 +137,8 @@ export default class CVDocument extends CDocument
         const info = {
             type: CVDocument.mimeType,
             copyright: "Copyright Smithsonian Institution",
-            generator: "Voyager Presentation Parser",
-            version: "1.3"
+            generator: "Voyager Document Parser",
+            version: "1.4"
         };
 
         // ensure info is first key in data

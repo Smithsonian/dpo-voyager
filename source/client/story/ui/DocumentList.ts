@@ -17,23 +17,24 @@
 
 import System from "@ff/graph/System";
 import CSelection from "@ff/graph/components/CSelection";
-import CDocument from "@ff/graph/components/CDocument";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 
+import CVDocument from "../../explorer/components/CVDocument";
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-document-list")
-class DocumentList extends List<CDocument>
+class DocumentList extends List<CVDocument>
 {
     @property({ attribute: false })
     system: System = null;
 
-    protected documentManager: CDocumentManager = null;
+    protected documentManager: CVDocumentManager = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
@@ -41,7 +42,7 @@ class DocumentList extends List<CDocument>
         super.firstConnected();
         this.classList.add("sv-presentation-list");
 
-        this.documentManager = this.system.getMainComponent(CDocumentManager);
+        this.documentManager = this.system.getMainComponent(CVDocumentManager);
         this.selection = this.system.getMainComponent(CSelection);
     }
 
@@ -49,13 +50,13 @@ class DocumentList extends List<CDocument>
     {
         super.connected();
 
-        this.selection.selectedComponents.on(CDocument, this.onRequestUpdate, this);
+        this.selection.selectedComponents.on(CVDocument, this.onRequestUpdate, this);
         this.documentManager.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedComponents.off(CDocument, this.onRequestUpdate, this);
+        this.selection.selectedComponents.off(CVDocument, this.onRequestUpdate, this);
         this.documentManager.off("update", this.onRequestUpdate, this);
 
         super.disconnected();
@@ -67,19 +68,19 @@ class DocumentList extends List<CDocument>
         super.update(props);
     }
 
-    protected renderItem(component: CDocument)
+    protected renderItem(component: CVDocument)
     {
         const isActive = component === this.documentManager.activeDocument;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(component: CDocument)
+    protected isItemSelected(component: CVDocument)
     {
         return this.selection.selectedComponents.contains(component);
     }
 
-    protected onClickItem(event: MouseEvent, component: CDocument)
+    protected onClickItem(event: MouseEvent, component: CVDocument)
     {
         this.documentManager.activeDocument = component;
         this.selection.selectComponent(component);

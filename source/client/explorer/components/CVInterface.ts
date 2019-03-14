@@ -18,7 +18,7 @@
 import Component, { types } from "@ff/graph/Component";
 
 import { IInterface } from "common/types/features";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
+import CVDocumentManager from "./CVDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,7 +70,7 @@ export default class CVInterface extends Component
     }
 
     protected get documentManager() {
-        return this.getMainComponent(CDocumentManager);
+        return this.getMainComponent(CVDocumentManager);
     }
     protected get activeDocument() {
         return this.documentManager.activeDocument;

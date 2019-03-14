@@ -18,7 +18,6 @@
 import resolvePathname from "resolve-pathname";
 
 import Component from "@ff/graph/Component";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
@@ -28,6 +27,7 @@ import * as presentationTemplate from "common/templates/presentation.json";
 import { EDerivativeQuality } from "../../core/models/Derivative";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
+import CVDocumentManager from "./CVDocumentManager";
 import CVDocument from "./CVDocument";
 
 import NVDocuments from "../nodes/NVDocuments";
@@ -72,7 +72,7 @@ export default class CVDocumentLoader extends Component
         return getPresentation.then(presentationData => {
             const document = documents.createComponent(CVDocument);
             document.url = url;
-            document.fromPresentation(presentationData);
+            document.fromDocument(presentationData);
             return document;
         }).catch(error => {
             console.warn("Failed to open presentation", error);
@@ -87,7 +87,7 @@ export default class CVDocumentLoader extends Component
 
     loadItem(itemOrUrl: string | IItem): Promise<NVItem | null>
     {
-        const documentManager = this.system.getMainComponent(CDocumentManager);
+        const documentManager = this.system.getMainComponent(CVDocumentManager);
 
         const url = typeof itemOrUrl === "string" ? itemOrUrl : "item.json";
         const getItem = url ? this.assetLoader.loadItemData(url) : Promise.resolve(itemOrUrl as IItem);
@@ -111,7 +111,7 @@ export default class CVDocumentLoader extends Component
 
     createItemWithModelAsset(modelUrl: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
     {
-        let document = this.system.getMainComponent(CDocumentManager).activeDocument as CVDocument;
+        let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument;
 
         let derivativeQuality = EDerivativeQuality[quality];
         if (!isFinite(derivativeQuality)) {
@@ -143,7 +143,7 @@ export default class CVDocumentLoader extends Component
     createItemFromGeometryAndMaps(geoUrl: string, colorMapUrl?: string,
                                   occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
     {
-        let document = this.system.getMainComponent(CDocumentManager).activeDocument as CVDocument;
+        let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument;
 
         let derivativeQuality = EDerivativeQuality[quality];
         if (!isFinite(derivativeQuality)) {

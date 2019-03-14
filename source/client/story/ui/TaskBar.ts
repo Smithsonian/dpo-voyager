@@ -16,13 +16,13 @@
  */
 
 import System from "@ff/graph/System";
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
 
 import "@ff/ui/Button";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 import CVItemManager from "../../explorer/components/CVItemManager";
 import CVStoryController from "../components/CVStoryController";
 import CVTaskManager from "../components/CVTaskManager";
@@ -35,7 +35,7 @@ export default class TaskBar extends SystemElement
 {
     protected story: CVStoryController = null;
     protected taskManager: CVTaskManager = null;
-    protected documentManager: CDocumentManager = null;
+    protected documentManager: CVDocumentManager = null;
     protected itemManager: CVItemManager = null;
 
     constructor(system?: System)
@@ -44,7 +44,7 @@ export default class TaskBar extends SystemElement
 
         this.story = system.getMainComponent(CVStoryController);
         this.taskManager = system.getMainComponent(CVTaskManager);
-        this.documentManager = system.getMainComponent(CDocumentManager);
+        this.documentManager = system.getMainComponent(CVDocumentManager);
         this.itemManager = system.getMainComponent(CVItemManager);
     }
 

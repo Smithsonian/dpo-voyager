@@ -17,8 +17,8 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CDocumentManager from "@ff/graph/components/CDocumentManager";
-import CDocument from "@ff/graph/components/CDocument";
+import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+import CVDocument from "../../explorer/components/CVDocument";
 
 import NVItem from "../nodes/NVItem";
 
@@ -35,7 +35,7 @@ export default class CVItemManager extends Component
 
     protected static readonly ins = {
         activeItem: types.Option("Items.ActiveItem", []),
-        activeDocument: types.Object("Items.ActiveDocument", CDocument),
+        activeDocument: types.Object("Items.ActiveDocument", CVDocument),
     };
 
     protected static readonly outs = {
@@ -46,7 +46,7 @@ export default class CVItemManager extends Component
     ins = this.addInputs(CVItemManager.ins);
     outs = this.addOutputs(CVItemManager.outs);
 
-    protected activeDocument: CDocument = null;
+    protected activeDocument: CVDocument = null;
 
     get items(): NVItem[] {
         const document = this.ins.activeDocument.value;
@@ -64,7 +64,7 @@ export default class CVItemManager extends Component
 
     create()
     {
-        const documentManager = this.getMainComponent(CDocumentManager);
+        const documentManager = this.getMainComponent(CVDocumentManager);
         documentManager.outs.activeDocument.linkTo(this.ins.activeDocument);
 
         this.updateItems();
