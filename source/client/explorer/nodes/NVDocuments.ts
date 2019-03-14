@@ -17,6 +17,7 @@
 
 import Node from "@ff/graph/Node";
 
+import CVDocumentLoader from "../components/CVDocumentLoader";
 import CVDocumentManager from "../components/CVDocumentManager";
 import CVItemManager from "../components/CVItemManager";
 
@@ -26,15 +27,19 @@ export default class NVDocuments extends Node
 {
     static readonly typeName: string = "NVDocuments";
 
+    get documentLoader() {
+        return this.components.get(CVDocumentLoader);
+    }
     get documentManager() {
-        return this.getComponent(CVDocumentManager);
+        return this.components.get(CVDocumentManager);
     }
     get itemManager() {
-        return this.getComponent(CVItemManager);
+        return this.components.get(CVItemManager);
     }
 
     createComponents()
     {
+        this.createComponent(CVDocumentLoader);
         this.createComponent(CVDocumentManager);
         this.createComponent(CVItemManager);
     }

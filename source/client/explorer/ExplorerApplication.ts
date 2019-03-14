@@ -32,6 +32,7 @@ import { componentTypes as explorerComponents } from "./components";
 
 import { nodeTypes as graphNodes } from "@ff/graph/nodes";
 import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
+import { nodeTypes as coreNodes } from "../core/nodes";
 import { nodeTypes as explorerNodes } from "./nodes";
 
 import { IPresentation } from "common/types/presentation";
@@ -46,6 +47,7 @@ import NVTools from "./nodes/NVTools";
 import NVItem from "./nodes/NVItem";
 
 import MainView from "./ui/MainView";
+import NVEngine from "../core/nodes/NVEngine";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -106,12 +108,14 @@ export default class ExplorerApplication
 
         registry.add(graphNodes);
         registry.add(sceneNodes);
+        registry.add(coreNodes);
         registry.add(explorerNodes);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const main = system.graph.createCustomNode(NVExplorer, "Main");
+        const engine = system.graph.createCustomNode(NVEngine, "Engine");
+        system.graph.createCustomNode(NVExplorer, "Explorer");
         system.graph.createCustomNode(NVDocuments, "Documents");
         system.graph.createCustomNode(NVTools, "Tools");
 
@@ -121,7 +125,7 @@ export default class ExplorerApplication
         }
 
         // start rendering
-        main.getComponent(CPulse).start();
+        engine.pulse.start();
 
         // start loading from properties
         this.startup();

@@ -85,8 +85,8 @@ export default class StoryApplication
         //this.logController = new LogController(this.system, this.commander);
 
         // add story components
-        this.system.graph.createCustomNode(NVStoryApp, "Story Application");
-        this.system.graph.createCustomNode(NVPrepTasks, "Story Prep Tasks");
+        this.system.graph.createCustomNode(NVStoryApp, "Story");
+        this.system.graph.createCustomNode(NVPrepTasks, "Tasks");
 
         // enable viewport brackets
         this.system.getMainComponent(CPickSelection).ins.viewportBrackets.setValue(true);

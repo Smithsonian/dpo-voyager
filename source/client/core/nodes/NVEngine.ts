@@ -16,23 +16,32 @@
  */
 
 import Node from "@ff/graph/Node";
-
-import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVInterface from "../components/CVInterface";
-import CVReader from "../components/CVReader";
-import CVTourPlayer from "../components/CVTourPlayer";
+import CPulse from "@ff/graph/components/CPulse";
+import CRenderer from "@ff/scene/components/CRenderer";
+import CPickSelection from "@ff/scene/components/CPickSelection";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVExplorer extends Node
+export default class NVEngine extends Node
 {
-    static readonly typeName: string = "NVExplorer";
+    static readonly typeName: string = "NVEngine";
+
+    get pulse() {
+        return this.components.get(CPulse);
+    }
+    get renderer() {
+        return this.components.get(CRenderer);
+    }
+    get selection() {
+        return this.components.get(CPickSelection);
+    }
 
     createComponents()
     {
-        this.createComponent(CVAssetLoader);
-        this.createComponent(CVInterface);
-        this.createComponent(CVReader);
-        this.createComponent(CVTourPlayer);
+        this.createComponent(CPulse);
+        this.createComponent(CRenderer);
+        this.createComponent(CPickSelection);
+
+        this.selection.ins.viewportBrackets.setValue(false);
     }
 }
