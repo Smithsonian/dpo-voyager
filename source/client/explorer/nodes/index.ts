@@ -15,35 +15,53 @@
  * limitations under the License.
  */
 
+import NVCamera from "./NVCamera";
 import NVDocument from "./NVDocument";
+import NVDirectionalLight from "./NVDirectionalLight";
 import NVDocuments from "./NVDocuments";
 import NVExplorer from "./NVExplorer";
 import NVFeatures from "./NVFeatures";
 import NVItem from "./NVItem";
+import NVLight from "./NVLight";
+import NVNode from "./NVNode";
+import NVPointLight from "./NVPointLight";
 import NVReference from "./NVReference";
 import NVScene from "./NVScene";
+import NVSpotLight from "./NVSpotLight";
 import NVTools from "./NVTools";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
+    NVCamera,
     NVDocument,
+    NVDirectionalLight,
     NVDocuments,
     NVExplorer,
     NVFeatures,
     NVItem,
+    NVLight,
+    NVNode,
+    NVPointLight,
     NVReference,
     NVScene,
+    NVSpotLight,
     NVTools,
 };
 
 export const nodeTypes = [
+    NVCamera,
     NVDocument,
+    NVDirectionalLight,
     NVDocuments,
     NVExplorer,
     NVFeatures,
     NVItem,
+    NVLight,
+    NVNode,
+    NVPointLight,
     NVReference,
     NVScene,
+    NVSpotLight,
     NVTools,
 ];

@@ -95,8 +95,8 @@ export default class CVDocument extends CDocument
         super.create();
 
         this.innerGraph.createCustomNode(NVDocument);
-        const scene = this.innerGraph.createCustomNode(NVScene);
-        scene.addChild(this.innerGraph.createCustomNode(NVFeatures));
+        const sceneNode = this.innerGraph.createCustomNode(NVScene);
+        sceneNode.scene.addChild(this.innerGraph.createCustomNode(NVFeatures).transform);
     }
 
     update(context)
