@@ -20,13 +20,14 @@ import * as THREE from "three";
 import { types } from "@ff/graph/propertyTypes";
 import { IComponentChangeEvent, IComponentEvent } from "@ff/graph/Component";
 
-import CScene, { IRenderContext } from "@ff/scene/components/CScene";
+import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
 import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/features";
 
 import CVModel, { IModelChangeEvent } from "./CVModel";
 import CVOrbitNavigation from "./CVOrbitNavigation";
 import CVAnnotations from "../../explorer/components/CVAnnotations";
+import CScene from "@ff/scene/components/CScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,21 +42,26 @@ const ins = {
     zoomExtents: types.Event("Viewports.ZoomExtents")
 };
 
-export default class CVScene extends CScene
+export default class CVScene extends CObject3D
 {
     static readonly typeName: string = "CVScene";
 
-    ins = this.addInputs<CScene, typeof ins>(ins);
+    ins = this.addInputs<CObject3D, typeof ins>(ins);
 
     boundingBox = new THREE.Box3();
 
+    //private _scene: CScene = null;
     private _zoomExtents = false;
 
+
+    // get activeCameraComponent() {
+    //     return this._scene.activeCameraComponent;
+    // }
 
     create()
     {
         super.create();
-
+        //this._scene = this.scene;
         this.graph.components.on(CVModel, this.onModelComponent, this);
     }
 
@@ -89,8 +95,6 @@ export default class CVScene extends CScene
 
     preRender(context: IRenderContext)
     {
-        super.preRender(context);
-
         if (this.updated) {
             context.renderer.toneMappingExposure = this.ins.exposure.value;
         }

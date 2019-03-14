@@ -20,17 +20,15 @@ import download from "@ff/browser/download";
 
 import { types } from "@ff/graph/Component";
 
-import CDocument from "@ff/graph/components/CDocument";
-
+import CRenderGraph from "@ff/scene/components/CRenderGraph";
 import CAssetManager from "@ff/scene/components/CAssetManager";
 
 import { IPresentation } from "common/types/presentation";
 
 import NVDocument from "../nodes/NVDocument";
 import NVFeatures from "../nodes/NVFeatures";
-import NVScene from "../nodes/NVScene";
+import NVRoot from "../nodes/NVRoot";
 import NVItem from "../nodes/NVItem";
-import CVFeatures from "./CVFeatures";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,17 +36,22 @@ import CVFeatures from "./CVFeatures";
  * A document is a special kind of document. Its inner graph has a standard structure, and it can
  * be serialized to and from an IPresentation structure which is very similar to a glTF document.
  */
-export default class CVDocument extends CDocument
+export default class CVDocument extends CRenderGraph
 {
     static readonly typeName: string = "CVDocument";
     static readonly mimeType = "application/si-dpo-3d.document+json";
 
     protected static readonly ins = {
-        documentDump: types.Event("Document.Dump"),
-        documentDownload: types.Event("Document.Download"),
+        dump: types.Event("Document.Dump"),
+        download: types.Event("Document.Download"),
     };
 
-    ins = this.addInputs<CDocument, typeof CVDocument.ins>(CVDocument.ins);
+    protected static readonly outs = {
+        active: types.Boolean("Document.Active"),
+    };
+
+    ins = this.addInputs(CVDocument.ins);
+    outs = this.addOutputs(CVDocument.outs);
 
     private _url: string = "";
 
@@ -75,20 +78,20 @@ export default class CVDocument extends CDocument
     }
 
     get scene() {
-        return this.sceneNode.scene;
+        return this.features.scene;
     }
-    get sceneNode() {
-        return this.getInnerNode(NVScene);
+    get root() {
+        return this.getInnerNode(NVRoot);
     }
     get features() {
-        return this.getInnerComponent<CVFeatures>("CVFeatures");
+        return this.getInnerNode<NVFeatures>("NVFeatures");
     }
 
     createItem()
     {
         const item = this.innerGraph.createCustomNode(NVItem);
         item.url = this.urlPath + "item.json";
-        this.sceneNode.scene.addChild(item.transform);
+        this.root.transform.addChild(item.transform);
         return item;
     }
 
@@ -97,9 +100,9 @@ export default class CVDocument extends CDocument
         super.create();
 
         this.innerGraph.createCustomNode(NVDocument);
-        const sceneNode = this.innerGraph.createCustomNode(NVScene);
+        const rootNode = this.innerGraph.createCustomNode(NVRoot);
         const featureNode = this.innerGraph.createCustomNode<NVFeatures>("NVFeatures");
-        sceneNode.scene.addChild(featureNode.transform);
+        rootNode.transform.addChild(featureNode.transform);
     }
 
     update(context)
@@ -108,22 +111,34 @@ export default class CVDocument extends CDocument
 
         const ins = this.ins;
 
-        if (ins.documentDump.changed) {
+        if (ins.dump.changed) {
             const json = this.toDocument();
             console.log("-------------------- VOYAGER DOCUMENT --------------------");
             console.log(JSON.stringify(json, null, 2));
         }
 
-        if (ins.documentDownload.changed) {
+        if (ins.download.changed) {
             download.json(this.toDocument(), this.urlName || "document.json");
         }
 
         return true;
     }
 
+    activateInnerGraph()
+    {
+        super.activateInnerGraph();
+        this.outs.active.setValue(true);
+    }
+
+    deactivateInnerGraph()
+    {
+        super.deactivateInnerGraph();
+        this.outs.active.setValue(false);
+    }
+
     fromDocument(data: IPresentation)
     {
-        this.sceneNode.fromData(data);
+        this.root.fromData(data);
 
         if (data.features && this.features) {
             this.features.fromData(data.features);
@@ -132,7 +147,7 @@ export default class CVDocument extends CDocument
 
     toDocument(writeReferences: boolean = false): IPresentation
     {
-        let data = this.sceneNode.toData(writeReferences);
+        let data = this.root.toData(writeReferences);
         data.features = this.features.toData();
 
         const info = {

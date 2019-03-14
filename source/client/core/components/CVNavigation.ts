@@ -16,12 +16,13 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
+
+import CScene from "@ff/scene/components/CScene";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
+
 import { EProjection } from "@ff/three/UniversalCamera";
 
 import { INavigation } from "common/types/features";
-
-import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,16 +43,13 @@ export default class CVNavigation extends Component
 
     ins = this.addInputs(_inputs);
 
-    protected get scene() {
-        return this.getGraphComponent(CVScene);
-    }
-    protected get activeCamera() {
-        return this.scene.activeCameraComponent;
-    }
+    protected rootScene: CScene = null;
 
     create()
     {
         super.create();
+
+        this.rootScene = this.hierarchy.getParent(CScene, true);
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);

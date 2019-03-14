@@ -21,7 +21,6 @@ import CVBackground from "./CVBackground";
 import CVDocument from "./CVDocument";
 import CVDocumentLoader from "./CVDocumentLoader";
 import CVDocumentManager from "./CVDocumentManager";
-import CVFeatures from "./CVFeatures";
 import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
 import CVInterface from "./CVInterface";
@@ -49,7 +48,6 @@ export {
     CVDocument,
     CVDocumentLoader,
     CVDocumentManager,
-    CVFeatures,
     CVFloor,
     CVGrid,
     CVInterface,
@@ -76,7 +74,6 @@ export const componentTypes = [
     CVDocument,
     CVDocumentLoader,
     CVDocumentManager,
-    CVFeatures,
     CVFloor,
     CVGrid,
     CVInterface,

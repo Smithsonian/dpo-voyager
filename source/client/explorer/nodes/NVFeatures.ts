@@ -17,19 +17,20 @@
 
 import NTransform from "@ff/scene/nodes/NTransform";
 
-import CVNavigation from "../../core/components/CVNavigation";
+import { IFeatures } from "common/types/features";
+
 import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
 
-import CVFeatures from "../components/CVFeatures";
+import CVInterface from "../components/CVInterface";
+import CVReader from "../components/CVReader";
+import CVSliceTool from "../components/CVSliceTool";
+import CVTours from "../components/CVTours";
+
+import CVScene from "../../core/components/CVScene";
 import CVBackground from "../components/CVBackground";
 import CVFloor from "../components/CVFloor";
 import CVGrid from "../components/CVGrid";
 import CVTape from "../components/CVTape";
-
-import CVSliceTool from "../components/CVSliceTool";
-import CVInterface from "../components/CVInterface";
-import CVReader from "../components/CVReader";
-import CVTours from "../components/CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,11 +38,25 @@ export default class NVFeatures extends NTransform
 {
     static readonly typeName: string = "NVFeatures";
 
-    get features() {
-        return this.getComponent(CVFeatures);
+    protected data: IFeatures = null;
+
+    // accessors for system-global components
+
+    get interface() {
+        return this.getMainComponent(CVInterface);
+    }
+    get reader() {
+        return this.getMainComponent(CVReader);
+    }
+    get sliceTool() {
+        return this.getMainComponent(CVSliceTool);
+    }
+
+    get scene() {
+        return this.getComponent(CVScene);
     }
     get navigation() {
-        return this.getComponent(CVNavigation);
+        return this.getComponent(CVOrbitNavigation);
     }
     get background() {
         return this.getComponent(CVBackground);
@@ -56,14 +71,28 @@ export default class NVFeatures extends NTransform
         return this.getComponent(CVTape);
     }
 
+    // TODO: Read/write global components
+    activate()
+    {
+        if (this.data) {
+            this.inflateGlobalComponents();
+        }
+    }
+
+    deactivate()
+    {
+        if (this.data) {
+            this.deflateGlobalComponents();
+        }
+    }
+
     createComponents()
     {
         super.createComponents();
 
         const tours = this.getGraphComponent(CVTours);
 
-        this.createComponent(CVFeatures);
-
+        const scene = this.createComponent(CVScene, "Scene", "scene");
         const navigation = this.createComponent(CVOrbitNavigation, "Navigation", "nav");
         const background = this.createComponent(CVBackground, "Background", "bg");
         const floor = this.createComponent(CVFloor, "Floor", "floor");
@@ -99,5 +128,55 @@ export default class NVFeatures extends NTransform
         tours.addTarget(slice, slice.ins.inverted);
         tours.addTarget(slice, slice.ins.position);
         tours.addTarget(slice, slice.ins.color);
+    }
+
+    fromData(data: IFeatures)
+    {
+        this.data = data;
+
+        if (this.graph.isActive) {
+            this.inflateGlobalComponents();
+        }
+
+        this.scene.fromData(data.scene);
+        this.navigation.fromData(data.navigation);
+        this.background.fromData(data.background);
+        this.floor.fromData(data.floor);
+        this.grid.fromData(data.grid);
+        this.tape.fromData(data.tapeTool);
+    }
+
+    toData(): IFeatures
+    {
+        const data: IFeatures = this.data = {};
+
+        if (this.graph.isActive) {
+            this.deflateGlobalComponents();
+        }
+
+        data.scene = this.scene.toData();
+        data.navigation = this.navigation.toData();
+        data.background = this.background.toData();
+        data.floor = this.floor.toData();
+        data.grid = this.grid.toData();
+        data.tapeTool = this.tape.toData();
+
+        return data;
+    }
+
+    protected inflateGlobalComponents()
+    {
+        const data = this.data;
+        this.interface.fromData(data.interface);
+        this.reader.fromData(data.reader);
+        this.sliceTool.fromData(data.sliceTool);
+    }
+
+    protected deflateGlobalComponents()
+    {
+        const data = this.data;
+        data.interface = this.interface.toData();
+        data.reader = this.reader.toData();
+        data.sliceTool = this.sliceTool.toData();
     }
 }

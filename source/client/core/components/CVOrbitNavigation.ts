@@ -22,6 +22,7 @@ import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
 import { INavigation } from "common/types/features";
 
+import CVScene from "./CVScene";
 import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +70,7 @@ export default class CVOrbitNavigation extends CVNavigation
     {
         const ins = this.ins;
 
-        const cameraComponent = this.activeCamera;
+        const cameraComponent = this.rootScene.activeCameraComponent;
         const camera = cameraComponent ? cameraComponent.camera : null;
 
         const { projection, preset, orbit, offset } = ins;
@@ -89,7 +90,7 @@ export default class CVOrbitNavigation extends CVNavigation
 
         // zoom extents
         if (camera && ins.zoomExtents.changed) {
-            controller.zoomExtents(this.scene.updateBoundingBox());
+            controller.zoomExtents(this.getGraphComponent(CVScene).updateBoundingBox());
         }
 
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
@@ -113,7 +114,7 @@ export default class CVOrbitNavigation extends CVNavigation
     tick()
     {
         const ins = this.ins;
-        const cameraComponent = this.activeCamera;
+        const cameraComponent = this.rootScene.activeCameraComponent;
 
         if (!ins.enabled.value || !cameraComponent) {
             return;
@@ -197,7 +198,7 @@ export default class CVOrbitNavigation extends CVNavigation
             return;
         }
 
-        if (this.ins.enabled.value && this.activeCamera) {
+        if (this.ins.enabled.value && this.rootScene.activeCameraComponent) {
             this.controller.setViewportSize(viewport.width, viewport.height);
             this.controller.onPointer(event);
             event.stopPropagation = true;
@@ -213,7 +214,7 @@ export default class CVOrbitNavigation extends CVNavigation
             return;
         }
 
-        if (this.ins.enabled.value && this.activeCamera) {
+        if (this.ins.enabled.value && this.rootScene.activeCameraComponent) {
             this.controller.setViewportSize(viewport.width, viewport.height);
             this.controller.onTrigger(event);
             event.stopPropagation = true;

@@ -68,20 +68,20 @@ export default class CVGrid extends CObject3D
     get grid() {
         return this.object3D as ThreeGrid;
     }
-    get scene() {
+    get voyagerScene() {
         return this.getGraphComponent(CVScene);
     }
 
     create()
     {
-        this.scene.on("change", this.onSceneChange, this);
+        this.voyagerScene.on("change", this.onSceneChange, this);
         this.ins.pickable.setValue(false);
         this.ins.visible.setValue(false);
     }
 
     dispose()
     {
-        this.scene.off("change", this.onSceneChange, this);
+        this.voyagerScene.off("change", this.onSceneChange, this);
     }
 
     update(): boolean
@@ -101,8 +101,8 @@ export default class CVGrid extends CObject3D
             }
 
             if (ins.update.changed) {
-                const box = this.scene.boundingBox;
-                const units = this.scene.ins.units.value;
+                const box = this.voyagerScene.boundingBox;
+                const units = this.voyagerScene.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);

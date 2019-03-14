@@ -25,7 +25,6 @@ import {
 } from "common/types/presentation";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVScene from "../../core/components/CVScene";
 
 import NVNode from "./NVNode";
 import NVCamera from "./NVCamera";
@@ -38,16 +37,13 @@ import NVItem from "./NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVScene extends NVNode
+export default class NVRoot extends NVNode
 {
-    static readonly typeName: string = "NVScene";
+    static readonly typeName: string = "NVRoot";
 
     url: string;
     assetPath: string;
 
-    get scene() {
-        return this.getComponent(CVScene);
-    }
     get loadingManager() {
         return this.getMainComponent(CVAssetLoader);
     }
@@ -58,18 +54,12 @@ export default class NVScene extends NVNode
         this.assetPath = assetPath || resolvePathname(".", url);
     }
 
-    createComponents()
-    {
-        //super.createComponents();
-        this.createComponent(CVScene);
-    }
-
     fromData(data: IPresentation)
     {
         const nodes = data.scene.nodes;
         nodes.forEach(nodeIndex => {
             const nodeData = data.nodes[nodeIndex];
-            this.nodeFromData(this.scene, nodeData, data);
+            this.nodeFromData(this.transform, nodeData, data);
         });
     }
 
@@ -81,7 +71,7 @@ export default class NVScene extends NVNode
             scene: { nodes: [] }
         };
 
-        const children = this.scene.children;
+        const children = this.transform.children;
 
         if (children.length > 0) {
             data.nodes = [];
