@@ -267,13 +267,13 @@ export default class CVAnnotations_old extends CObject3D
         this.updateSprite(annotation);
     }
 
-    deflate()
+    toJSON()
     {
         const data = this.toData();
         return data ? { data } : null;
     }
 
-    inflate(json: any)
+    fromJSON(json: any)
     {
         if (json.data) {
             this.fromData(json);
@@ -293,7 +293,7 @@ export default class CVAnnotations_old extends CObject3D
         const groupIds = Object.keys(this._groups);
         if (groupIds.length > 0) {
             data = data || {};
-            data.groups = groupIds.map(id => this._groups[id].deflate());
+            data.groups = groupIds.map(id => this._groups[id].toJSON());
         }
 
         return data as IAnnotations;
@@ -305,7 +305,7 @@ export default class CVAnnotations_old extends CObject3D
             data.annotations.forEach(data => this.addAnnotation(new Annotation(data.id).fromData(data)));
         }
         if (data.groups) {
-            data.groups.forEach(data => this.addGroup(new Group(data.id).inflate(data)));
+            data.groups.forEach(data => this.addGroup(new Group(data.id).fromJSON(data)));
         }
     }
 

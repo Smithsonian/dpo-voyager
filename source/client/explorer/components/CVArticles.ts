@@ -78,13 +78,13 @@ export default class CVArticles extends Component
         this.emit<IArticleEvent>({ type: "article", add: false, remove: true, article });
     }
 
-    deflate()
+    toJSON()
     {
         const data = this.toData();
         return data ? { data } : null;
     }
 
-    inflate(json: any)
+    fromJSON(json: any)
     {
         if (json.data) {
             this.fromData(json);
@@ -103,7 +103,7 @@ export default class CVArticles extends Component
 
         if (articleIds.length > 0) {
             data = data || {};
-            data.articles = articleIds.map(id => this.articles[id].deflate());
+            data.articles = articleIds.map(id => this.articles[id].toJSON());
         }
 
         return data as IArticles;
@@ -112,7 +112,7 @@ export default class CVArticles extends Component
     fromData(data: IArticles)
     {
         if (data.articles) {
-            data.articles.forEach(data => this.addArticle(new Article(data.id).inflate(data)));
+            data.articles.forEach(data => this.addArticle(new Article(data.id).fromJSON(data)));
         }
 
         if (data.mainArticleId) {

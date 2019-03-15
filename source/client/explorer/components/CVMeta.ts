@@ -99,13 +99,13 @@ export default class CVMeta extends Component
         return Object.keys(this.data).length > 0;
     }
 
-    deflate()
+    toJSON()
     {
         const data = this.toData();
         return data ? { data } : null;
     }
 
-    inflate(json: any)
+    fromJSON(json: any)
     {
         if (json.data) {
             this.fromData(json);

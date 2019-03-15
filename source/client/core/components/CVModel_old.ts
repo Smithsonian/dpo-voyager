@@ -206,13 +206,13 @@ export default class CVModel_old extends CObject3D
         rotation.set();
     }
 
-    deflate()
+    toJSON()
     {
         const data = this.toData();
         return data ? { data } : null;
     }
 
-    inflate(json: any)
+    fromJSON(json: any)
     {
         if (json.data) {
             this.fromData(json);
@@ -293,7 +293,7 @@ export default class CVModel_old extends CObject3D
         this.ins.autoLoad.set();
     }
 
-    inflateReferences()
+    referencesFromJSON()
     {
     }
 

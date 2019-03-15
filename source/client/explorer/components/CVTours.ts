@@ -74,7 +74,7 @@ export default class CVTours extends Component
 
         if (tour !== activeTour) {
             if (activeTour) {
-                const state: IMachineState = this.tweenMachine.deflateState();
+                const state: IMachineState = this.tweenMachine.stateToJSON();
                 activeTour.steps = state.states || [];
                 activeTour.targets = state.targets || [];
             }
@@ -89,7 +89,7 @@ export default class CVTours extends Component
                 outs.count.setValue(tour.steps.length);
 
                 const state = { states: tour.steps, targets: tour.targets };
-                this.tweenMachine.inflateState(state);
+                this.tweenMachine.stateFromJSON(state);
             }
 
             this.emit<ITourUpdateEvent>({ type: "tour", tour });

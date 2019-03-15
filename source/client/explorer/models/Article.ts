@@ -50,7 +50,7 @@ export default class Article extends Publisher
         this.emit<IArticleUpdateEvent>({ type: "update", article: this });
     }
 
-    deflate(): IArticle
+    toJSON(): IArticle
     {
         const data: Partial<IArticle> = { id: this.id };
 
@@ -73,7 +73,7 @@ export default class Article extends Publisher
         return data as IArticle;
     }
 
-    inflate(data: IArticle): Article
+    fromJSON(data: IArticle): Article
     {
         this.title = data.title || "";
         this.description = data.description || "";

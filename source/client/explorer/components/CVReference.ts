@@ -37,14 +37,14 @@ export default class CVReference extends Component
         return false;
     }
 
-    deflate()
+    toJSON()
     {
-        return super.deflate();
+        return super.toJSON();
     }
 
-    inflate(json: any)
+    fromJSON(json: any)
     {
-        super.inflate(json);
+        super.fromJSON(json);
     }
 
     toData(): IReference

@@ -53,8 +53,8 @@ export default class CVDocumentLoader extends Component
 
         return getDocument.then(jsonData => {
             const document = documents.createComponent(CVDocument_old);
-            document.inflate(jsonData);
-            document.inflateReferences(jsonData);
+            document.fromJSON(jsonData);
+            document.referencesFromJSON(jsonData);
             return document;
         }).catch(error => {
             console.warn("Failed to open document", error);

@@ -48,7 +48,7 @@ export default class Group extends Publisher
         this.emit<IGroupUpdateEvent>({ type: "update", group: this });
     }
 
-    deflate(): IGroup
+    toJSON(): IGroup
     {
         const data: Partial<IGroup> = { id: this.id };
 
@@ -65,7 +65,7 @@ export default class Group extends Publisher
         return data as IGroup;
     }
 
-    inflate(data: IGroup): Group
+    fromJSON(data: IGroup): Group
     {
         this.title = data.title || "";
         this.description = data.description || "";
