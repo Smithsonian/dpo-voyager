@@ -116,8 +116,8 @@ export default class ExplorerApplication
 
         const engine = system.graph.createCustomNode(NVEngine, "Engine");
         system.graph.createCustomNode(NVExplorer, "Explorer");
-        system.graph.createCustomNode(NVDocuments, "Documents");
-        system.graph.createCustomNode(NVTools, "Tools");
+        system.graph.createCustomNode(NVDocuments, "Documents").unlock();
+        system.graph.createCustomNode(NVTools, "Tools").unlock();
 
         // create main view if not given
         if (element) {

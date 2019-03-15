@@ -28,6 +28,12 @@ export default class NVPart extends NVNode
 
     private _features: NVFeatures = null;
 
+    get part() {
+        return this.components.get(CVPart);
+    }
+    get features() {
+        return this._features;
+    }
 
     createComponents()
     {
@@ -38,5 +44,13 @@ export default class NVPart extends NVNode
         this.transform.addChild(this._features.transform);
     }
 
+    toJSON()
+    {
 
+    }
+
+    fromJSON()
+    {
+
+    }
 }
