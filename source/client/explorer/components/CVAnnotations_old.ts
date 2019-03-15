@@ -27,7 +27,7 @@ import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/C
 
 import { IAnnotations } from "common/types/item";
 
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 
 import Annotation, { EAnnotationStyle } from "../models/Annotation";
 import Group from "../models/Group";
@@ -65,9 +65,9 @@ const _inputs = {
     azimuth: types.Number("Annotation.Azimuth"),
 };
 
-export default class CVAnnotations extends CObject3D
+export default class CVAnnotations_old extends CObject3D
 {
-    static readonly typeName: string = "CVAnnotations";
+    static readonly typeName: string = "CVAnnotations_old";
 
     ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
 
@@ -79,7 +79,7 @@ export default class CVAnnotations extends CObject3D
     private _sprites: Dictionary<HTMLSprite> = {};
 
     protected get model() {
-        return this.getComponent(CVModel);
+        return this.getComponent(CVModel_old);
     }
 
     get activeAnnotation() {

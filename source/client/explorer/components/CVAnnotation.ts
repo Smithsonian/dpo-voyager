@@ -15,11 +15,20 @@
  * limitations under the License.
  */
 
-import CGraph from "@ff/graph/components/CGraph";
+import CRenderGraph from "@ff/scene/components/CRenderGraph";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVAnnotation extends CGraph
+/**
+ * Graph component rendering an annotation.
+ */
+export default class CVAnnotation extends CRenderGraph
 {
     static readonly typeName: string = "CVAnnotation";
+
+    protected static readonly ins = {
+
+    };
+
+    ins = this.addInputs(CVAnnotation.ins);
 }

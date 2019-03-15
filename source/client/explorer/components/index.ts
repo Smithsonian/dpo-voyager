@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import CVAnnotations from "./CVAnnotations";
+import CVAnnotations_old from "./CVAnnotations_old";
 import CVArticles from "./CVArticles";
 import CVBackground from "./CVBackground";
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 import CVDocumentLoader from "./CVDocumentLoader";
 import CVDocumentManager from "./CVDocumentManager";
 import CVFloor from "./CVFloor";
@@ -42,10 +42,10 @@ import CVViewTool from "./CVViewTool";
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    CVAnnotations,
+    CVAnnotations_old,
     CVArticles,
     CVBackground,
-    CVDocument,
+    CVDocument_old,
     CVDocumentLoader,
     CVDocumentManager,
     CVFloor,
@@ -68,10 +68,10 @@ export {
 };
 
 export const componentTypes = [
-    CVAnnotations,
+    CVAnnotations_old,
     CVArticles,
     CVBackground,
-    CVDocument,
+    CVDocument_old,
     CVDocumentLoader,
     CVDocumentManager,
     CVFloor,

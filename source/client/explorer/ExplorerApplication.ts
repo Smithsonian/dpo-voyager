@@ -38,7 +38,7 @@ import { nodeTypes as explorerNodes } from "./nodes";
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
-import CVDocument from "./components/CVDocument";
+import CVDocument_old from "./components/CVDocument_old";
 import CVDocumentLoader from "./components/CVDocumentLoader";
 
 import NVExplorer from "./nodes/NVExplorer";
@@ -131,17 +131,17 @@ export default class ExplorerApplication
         this.startup();
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument_old | null>
     {
         return this.loader.loadDocument(documentOrUrl);
     }
 
-    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument_old | null>
     {
         return this.loader.loadPresentation(presentationOrUrl);
     }
 
-    loadDefaultPresentation(): Promise<CVDocument>
+    loadDefaultPresentation(): Promise<CVDocument_old>
     {
         return this.loader.loadDefaultPresentation();
     }

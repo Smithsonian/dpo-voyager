@@ -25,11 +25,12 @@ import CAssetManager from "@ff/scene/components/CAssetManager";
 
 import { IPresentation } from "common/types/presentation";
 
-import NVDocument from "../nodes/NVDocument";
-import NVFeatures from "../nodes/NVFeatures";
-import NVScene from "../nodes/NVScene";
+import NVDocument_old from "../nodes/NVDocument_old";
+import NVFeatures_old from "../nodes/NVFeatures_old";
+import NVScene_old from "../nodes/NVScene_old";
 import NVItem from "../nodes/NVItem";
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
+import CTransform from "@ff/scene/components/CTransform";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,9 +38,9 @@ import CVScene from "../../core/components/CVScene";
  * A document is a special kind of document. Its inner graph has a standard structure, and it can
  * be serialized to and from an IPresentation structure which is very similar to a glTF document.
  */
-export default class CVDocument extends CRenderGraph
+export default class CVDocument_old extends CRenderGraph
 {
-    static readonly typeName: string = "CVDocument";
+    static readonly typeName: string = "CVDocument_old";
     static readonly mimeType = "application/si-dpo-3d.document+json";
 
     protected static readonly ins = {
@@ -51,8 +52,8 @@ export default class CVDocument extends CRenderGraph
         active: types.Boolean("Document.Active"),
     };
 
-    ins = this.addInputs(CVDocument.ins);
-    outs = this.addOutputs(CVDocument.outs);
+    ins = this.addInputs(CVDocument_old.ins);
+    outs = this.addOutputs(CVDocument_old.outs);
 
     private _url: string = "";
 
@@ -78,14 +79,14 @@ export default class CVDocument extends CRenderGraph
         return this.url.substr(nameIndex);
     }
 
-    get scene() {
-        return this.getInnerComponent(CVScene);
+    get voyagerScene() {
+        return this.getInnerComponent(CVScene_old);
     }
     get root() {
-        return this.getInnerNode(NVScene);
+        return this.getInnerNode(NVScene_old);
     }
     get features() {
-        return this.getInnerNode<NVFeatures>("NVFeatures");
+        return this.getInnerNode<NVFeatures_old>("NVFeatures_old");
     }
 
     createItem()
@@ -100,9 +101,9 @@ export default class CVDocument extends CRenderGraph
     {
         super.create();
 
-        this.innerGraph.createCustomNode(NVDocument);
-        const rootNode = this.innerGraph.createCustomNode(NVScene);
-        const featureNode = this.innerGraph.createCustomNode<NVFeatures>("NVFeatures");
+        this.innerGraph.createCustomNode(NVDocument_old);
+        const rootNode = this.innerGraph.createCustomNode(NVScene_old);
+        const featureNode = this.innerGraph.createCustomNode<NVFeatures_old>("NVFeatures_old");
         rootNode.transform.addChild(featureNode.transform);
     }
 
@@ -152,7 +153,7 @@ export default class CVDocument extends CRenderGraph
         data.features = this.features.toData();
 
         const info = {
-            type: CVDocument.mimeType,
+            type: CVDocument_old.mimeType,
             copyright: "Copyright Smithsonian Institution",
             generator: "Voyager Document Parser",
             version: "1.4"

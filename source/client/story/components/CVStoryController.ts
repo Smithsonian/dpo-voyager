@@ -27,7 +27,7 @@ import Notification from "@ff/ui/Notification";
 
 import taskSets, { EStoryMode } from "../taskSets";
 import CVItemManager from "../../explorer/components/CVItemManager";
-import CVDocument from "../../explorer/components/CVDocument";
+import CVDocument_old from "../../explorer/components/CVDocument_old";
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ export default class CVStoryController extends CController<CVStoryController>
             let url, file;
 
             const item = this.activeSelectedItem;
-            const document = this.activeSelectedDocument as CVDocument;
+            const document = this.activeSelectedDocument as CVDocument_old;
 
             if (item) {
                 url = item.url;
@@ -150,7 +150,7 @@ export default class CVStoryController extends CController<CVStoryController>
         if (ins.download.changed) {
 
             const item = this.activeSelectedItem;
-            const document = this.activeSelectedDocument as CVDocument;
+            const document = this.activeSelectedDocument as CVDocument_old;
 
             if (item) {
                 download.json(item.toData(), item.urlName);

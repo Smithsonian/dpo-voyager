@@ -28,7 +28,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/models/Derivative";
 
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 import NVItem from "../../explorer/nodes/NVItem";
 
 import CVTask from "./CVTask";
@@ -113,7 +113,7 @@ export default class CVCaptureTask extends CVTask
 
     activateTask()
     {
-        this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.on(CVModel_old, this.onSelectModel, this);
 
         super.activateTask();
     }
@@ -122,7 +122,7 @@ export default class CVCaptureTask extends CVTask
     {
         super.deactivateTask();
 
-        this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.off(CVModel_old, this.onSelectModel, this);
     }
 
     create()
@@ -253,13 +253,13 @@ export default class CVCaptureTask extends CVTask
     {
         super.onActiveItem(previous, next);
 
-        if (previous && previous.hasComponent(CVModel)) {
+        if (previous && previous.hasComponent(CVModel_old)) {
             this.outs.ready.setValue(false);
             this._imageElements = {};
             this._imageDataURIs = {};
         }
 
-        if (next && next.hasComponent(CVModel)) {
+        if (next && next.hasComponent(CVModel_old)) {
             const model = next.model;
             // load existing captures
             _qualityLevels.forEach(quality => {
@@ -278,7 +278,7 @@ export default class CVCaptureTask extends CVTask
         }
     }
 
-    protected onSelectModel(event: IComponentEvent<CVModel>)
+    protected onSelectModel(event: IComponentEvent<CVModel_old>)
     {
         const node = event.object.node;
 

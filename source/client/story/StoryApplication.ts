@@ -30,7 +30,7 @@ import { componentTypes as storyComponents } from "./components";
 import { nodeTypes as storyNodes } from "./nodes";
 
 import NVItem from "../explorer/nodes/NVItem";
-import CVDocument from "../explorer/components/CVDocument";
+import CVDocument_old from "../explorer/components/CVDocument_old";
 import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
 
 import NVPrepTasks from "./nodes/NVPrepTasks";
@@ -98,17 +98,17 @@ export default class StoryApplication
         }
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument_old | null>
     {
         return this.loader.loadDocument(documentOrUrl);
     }
 
-    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument_old | null>
     {
         return this.loader.loadPresentation(presentationOrUrl);
     }
 
-    loadDefaultPresentation(): Promise<CVDocument>
+    loadDefaultPresentation(): Promise<CVDocument_old>
     {
         return this.loader.loadDefaultPresentation();
     }

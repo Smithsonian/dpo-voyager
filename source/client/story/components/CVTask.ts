@@ -21,7 +21,7 @@ import CPickSelection from "@ff/scene/components/CPickSelection";
 import CVInterface from "../../explorer/components/CVInterface";
 
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
-import CVDocument from "../../explorer/components/CVDocument";
+import CVDocument_old from "../../explorer/components/CVDocument_old";
 import CVItemManager from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
 
@@ -39,7 +39,7 @@ export default class CVTask extends Component
     static readonly icon: string = "fa fa-tasks";
 
     protected static readonly taskIns = {
-        activeDocument: types.Object("Task.ActiveDocument", CVDocument),
+        activeDocument: types.Object("Task.ActiveDocument", CVDocument_old),
         activeItem: types.Object("Task.ActiveItem", NVItem),
     };
 
@@ -64,7 +64,7 @@ export default class CVTask extends Component
     }
 
     protected isActiveTask = false;
-    protected activeDocument: CVDocument = null;
+    protected activeDocument: CVDocument_old = null;
     protected activeItem: NVItem = null;
 
     protected configuration = {
@@ -96,7 +96,7 @@ export default class CVTask extends Component
         const ins = this.ins;
 
         if (ins.activeDocument.changed) {
-            const activeDocument = ins.activeDocument.value as CVDocument;
+            const activeDocument = ins.activeDocument.value as CVDocument_old;
             this.onActiveDocument(this.activeDocument, activeDocument);
             this.activeDocument = activeDocument;
         }
@@ -122,7 +122,7 @@ export default class CVTask extends Component
     {
         this.isActiveTask = true;
 
-        const activeDocument = this.ins.activeDocument.value as CVDocument;
+        const activeDocument = this.ins.activeDocument.value as CVDocument_old;
         if (activeDocument) {
             this.activeDocument = activeDocument;
             this.onActiveDocument(null, activeDocument);
@@ -178,7 +178,7 @@ export default class CVTask extends Component
     /**
      * Called when the currently active document changes.
      */
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
         console.log("CVTask.onActiveDocument - %s", this.displayName);
         const configuration = this.configuration;
@@ -189,7 +189,7 @@ export default class CVTask extends Component
                 previous.features.grid.ins.visible.setValue(savedConfig.gridVisible);
             }
             if (savedConfig.annotationsVisible !== undefined) {
-                previous.scene.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
+                previous.voyagerScene.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
             }
         }
         if (next) {
@@ -199,7 +199,7 @@ export default class CVTask extends Component
                 prop.setValue(!!configuration.gridVisible);
             }
             if (configuration.annotationsVisible !== undefined) {
-                const prop = next.scene.ins.annotationsVisible;
+                const prop = next.voyagerScene.ins.annotationsVisible;
                 savedConfig.annotationsVisible = prop.value;
                 prop.setValue(!!configuration.annotationsVisible);
             }

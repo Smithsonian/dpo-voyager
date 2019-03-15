@@ -24,8 +24,8 @@ import { IComponentEvent } from "@ff/graph/Node";
 
 import { IPointerEvent } from "@ff/scene/RenderView";
 
-import CVModel from "../../core/components/CVModel";
-import CVAnnotations, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotations";
+import CVModel_old from "../../core/components/CVModel_old";
+import CVAnnotations_old, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotations_old";
 import Annotation from "../../explorer/models/Annotation";
 import NVItem from "../../explorer/nodes/NVItem";
 
@@ -55,13 +55,13 @@ export default class CVAnnotationsTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
 
-    private _activeAnnotations: CVAnnotations = null;
+    private _activeAnnotations: CVAnnotations_old = null;
 
 
     get activeAnnotations() {
         return this._activeAnnotations;
     }
-    set activeAnnotations(annotations: CVAnnotations) {
+    set activeAnnotations(annotations: CVAnnotations_old) {
         if (annotations !== this._activeAnnotations) {
             this._activeAnnotations = annotations;
             this.emitUpdateEvent();
@@ -77,13 +77,13 @@ export default class CVAnnotationsTask extends CVTask
     {
         super.activateTask();
 
-        this.selectionController.selectedComponents.on(CVAnnotations, this.onSelectAnnotations, this);
+        this.selectionController.selectedComponents.on(CVAnnotations_old, this.onSelectAnnotations, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     deactivateTask()
     {
-        this.selectionController.selectedComponents.off(CVAnnotations, this.onSelectAnnotations, this);
+        this.selectionController.selectedComponents.off(CVAnnotations_old, this.onSelectAnnotations, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         super.deactivateTask();
@@ -159,14 +159,14 @@ export default class CVAnnotationsTask extends CVTask
             return;
         }
 
-        const model = this.activeAnnotations.getComponent(CVModel);
+        const model = this.activeAnnotations.getComponent(CVModel_old);
 
         // user clicked on model
         if (event.component === model) {
 
             // get click position and normal in annotation space = pose transform * model space
             _vec3a.fromArray(model.ins.position.value);
-            helpers.degreesToQuaternion(model.ins.rotation.value, CVModel.rotationOrder, _quat);
+            helpers.degreesToQuaternion(model.ins.rotation.value, CVModel_old.rotationOrder, _quat);
             _vec3b.setScalar(1);
             _mat4.compose(_vec3a, _quat, _vec3b);
             _mat3.getNormalMatrix(_mat4);
@@ -200,7 +200,7 @@ export default class CVAnnotationsTask extends CVTask
         this.activeAnnotations = nextAnnotations;
     }
 
-    protected onSelectAnnotations(event: IComponentEvent<CVAnnotations>)
+    protected onSelectAnnotations(event: IComponentEvent<CVAnnotations_old>)
     {
         const node = event.object.node;
 

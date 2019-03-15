@@ -24,7 +24,7 @@ import {
 } from "@ff/ui/CustomElement";
 
 import CVDocumentManager from "../components/CVDocumentManager";
-import CVDocument from "../components/CVDocument";
+import CVDocument_old from "../components/CVDocument_old";
 
 import SystemView from "@ff/scene/ui/SystemView";
 
@@ -34,7 +34,7 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 
 export default class DocumentView extends SystemView
 {
-    private _activeDocument: CVDocument = null;
+    private _activeDocument: CVDocument_old = null;
 
     protected get documentManager() {
         return this.system.getMainComponent(CVDocumentManager);
@@ -56,11 +56,11 @@ export default class DocumentView extends SystemView
         this.documentManager.outs.activeDocument.off("value", this._onActiveDocument, this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
     }
 
-    private _onActiveDocument(document: CVDocument)
+    private _onActiveDocument(document: CVDocument_old)
     {
         if (document !== this._activeDocument) {
             this.onActiveDocument(this._activeDocument, document);

@@ -29,7 +29,7 @@ import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 
 import { EUnitType, IGrid } from "common/types/features";
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ export default class CVGrid extends CObject3D
         return this.object3D as ThreeGrid;
     }
     get voyagerScene() {
-        return this.getGraphComponent(CVScene);
+        return this.getGraphComponent(CVScene_old);
     }
 
     create()
@@ -183,7 +183,7 @@ export default class CVGrid extends CObject3D
         };
     }
 
-    protected onSceneChange(event: IComponentChangeEvent<CVScene>)
+    protected onSceneChange(event: IComponentChangeEvent<CVScene_old>)
     {
         if (event.what === "boundingBox") {
             this.ins.update.set();

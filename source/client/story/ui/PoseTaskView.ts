@@ -26,7 +26,7 @@ import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 import "./ItemList";
 import "./PropertyView";
 import { TaskView } from "../components/CVTask";
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +44,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = document.getInnerComponent(CVScene).ins.units;
+        const globalUnits = document.getInnerComponent(CVScene_old).ins.units;
         const itemUnits = item.model.ins.units;
         const position = item.model.ins.position;
         const rotation = item.model.ins.rotation;
@@ -79,6 +79,6 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
     protected onClickZoomViews()
     {
         const activeDocument = this.task.documentManager.activeDocument;
-        activeDocument.getInnerComponent(CVScene).ins.zoomExtents.set();
+        activeDocument.getInnerComponent(CVScene_old).ins.zoomExtents.set();
     }
 }

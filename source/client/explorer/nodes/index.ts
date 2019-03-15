@@ -16,17 +16,17 @@
  */
 
 import NVCamera from "./NVCamera";
-import NVDocument from "./NVDocument";
+import NVDocument_old from "./NVDocument_old";
 import NVDirectionalLight from "./NVDirectionalLight";
 import NVDocuments from "./NVDocuments";
 import NVExplorer from "./NVExplorer";
-import NVFeatures from "./NVFeatures";
+import NVFeatures_old from "./NVFeatures_old";
 import NVItem from "./NVItem";
 import NVLight from "./NVLight";
 import NVNode from "./NVNode";
 import NVPointLight from "./NVPointLight";
 import NVReference from "./NVReference";
-import NVScene from "./NVScene";
+import NVScene_old from "./NVScene_old";
 import NVSpotLight from "./NVSpotLight";
 import NVTools from "./NVTools";
 
@@ -34,34 +34,34 @@ import NVTools from "./NVTools";
 
 export {
     NVCamera,
-    NVDocument,
+    NVDocument_old,
     NVDirectionalLight,
     NVDocuments,
     NVExplorer,
-    NVFeatures,
+    NVFeatures_old,
     NVItem,
     NVLight,
     NVNode,
     NVPointLight,
     NVReference,
-    NVScene,
+    NVScene_old,
     NVSpotLight,
     NVTools,
 };
 
 export const nodeTypes = [
     NVCamera,
-    NVDocument,
+    NVDocument_old,
     NVDirectionalLight,
     NVDocuments,
     NVExplorer,
-    NVFeatures,
+    NVFeatures_old,
     NVItem,
     NVLight,
     NVNode,
     NVPointLight,
     NVReference,
-    NVScene,
+    NVScene_old,
     NVSpotLight,
     NVTools,
 ];

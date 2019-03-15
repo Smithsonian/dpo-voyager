@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ export default class CVLightTool extends CVTool
     static readonly icon = "bulb";
 
     protected static readonly outs = {
-        scene: types.Object("Document.Scene", CVScene),
+        scene: types.Object("Document.Scene", CVScene_old),
     };
 
     outs = this.addOutputs<CVTool, typeof CVLightTool.outs>(CVLightTool.outs);
@@ -40,10 +40,10 @@ export default class CVLightTool extends CVTool
         return new LightToolView(this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
         super.onActiveDocument(previous, next);
-        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene) : null);
+        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene_old) : null);
     }
 }
 
@@ -52,7 +52,7 @@ export default class CVLightTool extends CVTool
 @customElement("sv-light-tool-view")
 export class LightToolView extends ToolView<CVLightTool>
 {
-    protected scene: CVScene = null;
+    protected scene: CVScene_old = null;
 
     protected firstConnected()
     {
@@ -85,7 +85,7 @@ export class LightToolView extends ToolView<CVLightTool>
         return html`<div>Light Tool (coming soon)</div>`;
     }
 
-    protected onScene(scene: CVScene)
+    protected onScene(scene: CVScene_old)
     {
         if (this.scene) {
 

@@ -18,7 +18,7 @@
 import { IComponentEvent, types } from "@ff/graph/Component";
 
 import NVItem from "../../explorer/nodes/NVItem";
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 
 import CVTask from "./CVTask";
 import DerivativesTaskView from "../ui/DerivativesTaskView";
@@ -49,12 +49,12 @@ export default class CVDerivativesTask extends CVTask
     {
         super.activateTask();
 
-        this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.on(CVModel_old, this.onSelectModel, this);
     }
 
     deactivateTask()
     {
-        this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.off(CVModel_old, this.onSelectModel, this);
 
         super.deactivateTask();
     }
@@ -77,7 +77,7 @@ export default class CVDerivativesTask extends CVTask
         }
     }
 
-    protected onSelectModel(event: IComponentEvent<CVModel>)
+    protected onSelectModel(event: IComponentEvent<CVModel_old>)
     {
         const node = event.object.node;
 

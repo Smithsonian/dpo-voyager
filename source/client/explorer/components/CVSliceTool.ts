@@ -26,8 +26,8 @@ import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
 
 import UberPBRMaterial from "../../core/shaders/UberPBRMaterial";
-import CVModel from "../../core/components/CVModel";
-import CVScene from "../../core/components/CVScene";
+import CVModel_old from "../../core/components/CVModel_old";
+import CVScene_old from "../../core/components/CVScene_old";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
 
@@ -79,7 +79,7 @@ export default class CVSliceTool extends CVTool
         }
 
         if (ins.enabled.changed && ins.enabled.value) {
-            this.boundingBox = document.getInnerComponent(CVScene).updateBoundingBox();
+            this.boundingBox = document.getInnerComponent(CVScene_old).updateBoundingBox();
         }
 
         if (ins.axis.changed) {
@@ -109,7 +109,7 @@ export default class CVSliceTool extends CVTool
         const value = 1 - ins.position.value;
         this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
 
-        const models = document.getInnerComponents(CVModel);
+        const models = document.getInnerComponents(CVModel_old);
 
         models.forEach(model => {
             const object = model.object3D;

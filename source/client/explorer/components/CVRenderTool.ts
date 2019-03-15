@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 
 import "../ui/PropertyOptions";
 
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ export default class CVRenderTool extends CVTool
     static readonly icon = "palette";
 
     protected static readonly outs = {
-        scene: types.Object("Document.Scene", CVScene),
+        scene: types.Object("Document.Scene", CVScene_old),
     };
 
     outs = this.addOutputs<CVTool, typeof CVRenderTool.outs>(CVRenderTool.outs);
@@ -42,10 +42,10 @@ export default class CVRenderTool extends CVTool
         return new RenderToolView(this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
         super.onActiveDocument(previous, next);
-        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene) : null);
+        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene_old) : null);
     }
 }
 
@@ -54,7 +54,7 @@ export default class CVRenderTool extends CVTool
 @customElement("sv-render-tool-view")
 export class RenderToolView extends ToolView<CVRenderTool>
 {
-    protected scene: CVScene = null;
+    protected scene: CVScene_old = null;
 
     protected firstConnected()
     {
@@ -89,7 +89,7 @@ export class RenderToolView extends ToolView<CVRenderTool>
         return html`<sv-property-options .property=${shader} name="Material"></sv-property-options>`;
     }
 
-    protected onScene(scene: CVScene)
+    protected onScene(scene: CVScene_old)
     {
         if (this.scene) {
             this.scene.ins.shader.off("value", this.performUpdate, this);

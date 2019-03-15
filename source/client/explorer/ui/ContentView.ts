@@ -16,7 +16,7 @@
  */
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 import CVReader, { EReaderPosition } from "../components/CVReader";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
@@ -72,7 +72,7 @@ export default class ContentView extends SystemElement
 
         // TODO: quick hack
         if (!isLoading) {
-            const scene = this.system.getComponent(CVScene, true);
+            const scene = this.system.getComponent(CVScene_old, true);
             if (scene) {
                 scene.ins.zoomExtents.set();
             }

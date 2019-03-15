@@ -21,10 +21,10 @@ import NTransform from "@ff/scene/nodes/NTransform";
 
 import { IItem } from "common/types/item";
 
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 import CVMeta from "../components/CVMeta";
 import CVProcess from "../components/CVProcess";
-import CVAnnotations from "../components/CVAnnotations";
+import CVAnnotations_old from "../components/CVAnnotations_old";
 import CVArticles from "../components/CVArticles";
 import { EDerivativeQuality } from "../../core/models/Derivative";
 
@@ -54,13 +54,13 @@ export default class NVItem extends NTransform
         return this.getComponent(CVProcess);
     }
     get model() {
-        return this.getComponent(CVModel);
+        return this.getComponent(CVModel_old);
     }
     get articles() {
         return this.getComponent(CVArticles);
     }
     get annotations() {
-        return this.getComponent(CVAnnotations);
+        return this.getComponent(CVAnnotations_old);
     }
 
     set url(url: string) {
@@ -109,8 +109,8 @@ export default class NVItem extends NTransform
 
         this.createComponent(CVMeta);
         this.createComponent(CVProcess);
-        this.createComponent(CVModel);
-        this.createComponent(CVAnnotations);
+        this.createComponent(CVModel_old);
+        this.createComponent(CVAnnotations_old);
         this.createComponent(CVArticles);
 
         this.name = "Item";

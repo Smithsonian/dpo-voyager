@@ -49,7 +49,7 @@ export default class CVNavigation extends Component
     {
         super.create();
 
-        this.rootScene = this.hierarchy.getParent(CScene, true);
+        this.rootScene = this.hierarchy.getParentComponent(CScene, true);
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);

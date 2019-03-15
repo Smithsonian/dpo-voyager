@@ -15,16 +15,36 @@
  * limitations under the License.
  */
 
-import NTransform from "@ff/scene/nodes/NTransform";
+import CTransform from "@ff/scene/components/CTransform";
+import CModel from "@ff/scene/components/CModel";
+
+import CVModel from "./CVModel";
+import NVFeatures from "../nodes/NVFeatures";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVFeatures extends NTransform
+/**
+ * Graph component rendering an annotation.
+ */
+export default class CVPart extends CModel
 {
-    static readonly typeName: string = "NVFeatures";
+    static readonly typeName: string = "CVPart";
 
-    createComponents()
+    protected static readonly ins = {
+
+    };
+
+    ins = this.addInputs(CVPart.ins);
+
+    protected model: CVModel = null;
+    protected features: NVFeatures = null;
+
+    create()
     {
-        super.createComponents();
+        super.create();
+
+        const transform = this.getComponent(CTransform);
+        this.model = transform.getParentComponent(CVModel, false);
+        this.features = transform.getSiblingNode(NVFeatures);
     }
 }

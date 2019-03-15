@@ -23,13 +23,13 @@ import "@ff/ui/Icon";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 
-import CVDocument from "../../explorer/components/CVDocument";
+import CVDocument_old from "../../explorer/components/CVDocument_old";
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-document-list")
-class DocumentList extends List<CVDocument>
+class DocumentList extends List<CVDocument_old>
 {
     @property({ attribute: false })
     system: System = null;
@@ -50,13 +50,13 @@ class DocumentList extends List<CVDocument>
     {
         super.connected();
 
-        this.selection.selectedComponents.on(CVDocument, this.onRequestUpdate, this);
+        this.selection.selectedComponents.on(CVDocument_old, this.onRequestUpdate, this);
         this.documentManager.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedComponents.off(CVDocument, this.onRequestUpdate, this);
+        this.selection.selectedComponents.off(CVDocument_old, this.onRequestUpdate, this);
         this.documentManager.off("update", this.onRequestUpdate, this);
 
         super.disconnected();
@@ -68,19 +68,19 @@ class DocumentList extends List<CVDocument>
         super.update(props);
     }
 
-    protected renderItem(component: CVDocument)
+    protected renderItem(component: CVDocument_old)
     {
         const isActive = component === this.documentManager.activeDocument;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(component: CVDocument)
+    protected isItemSelected(component: CVDocument_old)
     {
         return this.selection.selectedComponents.contains(component);
     }
 
-    protected onClickItem(event: MouseEvent, component: CVDocument)
+    protected onClickItem(event: MouseEvent, component: CVDocument_old)
     {
         this.documentManager.activeDocument = component;
         this.selection.selectComponent(component);

@@ -52,7 +52,7 @@ const _unitConversionFactor = {
 
 export { EShaderMode };
 
-export interface IModelChangeEvent extends IComponentChangeEvent<CVModel>
+export interface IModelChangeEvent extends IComponentChangeEvent<CVModel_old>
 {
     what: "derivative" | "boundingBox"
 }
@@ -76,9 +76,9 @@ const _outputs = {
 /**
  * Renderable component representing a Voyager explorer model.
  */
-export default class CVModel extends CObject3D
+export default class CVModel_old extends CObject3D
 {
-    static readonly typeName: string = "CVModel";
+    static readonly typeName: string = "CVModel_old";
 
     static readonly rotationOrder = "ZYX";
 
@@ -200,7 +200,7 @@ export default class CVModel extends CObject3D
         matrix.decompose(_vec3a, _quat, _vec3b);
         _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(position.value);
 
-        helpers.quaternionToDegrees(_quat, CVModel.rotationOrder, rotation.value);
+        helpers.quaternionToDegrees(_quat, CVModel_old.rotationOrder, rotation.value);
 
         position.set();
         rotation.set();
@@ -240,7 +240,7 @@ export default class CVModel extends CObject3D
 
         const rotation = ins.rotation.value;
         if (rotation[0] !== 0 || rotation[1] !== 0 || rotation[2] !== 0) {
-            helpers.degreesToQuaternion(rotation, CVModel.rotationOrder, _quat);
+            helpers.degreesToQuaternion(rotation, CVModel_old.rotationOrder, _quat);
             data.rotation = _quat.toArray();
         }
 
@@ -266,7 +266,7 @@ export default class CVModel extends CObject3D
 
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
-                rotation.setValue(helpers.quaternionToDegrees(_quat, CVModel.rotationOrder));
+                rotation.setValue(helpers.quaternionToDegrees(_quat, CVModel_old.rotationOrder));
             }
             else {
                 rotation.setValue([ 0, 0, 0 ]);
@@ -315,7 +315,7 @@ export default class CVModel extends CObject3D
         const object3D = this.object3D;
 
         _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);
-        helpers.degreesToQuaternion(ins.rotation.value, CVModel.rotationOrder, _quat);
+        helpers.degreesToQuaternion(ins.rotation.value, CVModel_old.rotationOrder, _quat);
         _vec3b.setScalar(unitScale);
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;

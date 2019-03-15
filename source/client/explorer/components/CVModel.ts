@@ -15,26 +15,20 @@
  * limitations under the License.
  */
 
-import CVAssetLoader from "./CVAssetLoader";
-import CVModel_old from "./CVModel_old";
-import CVOrbitNavigation from "./CVOrbitNavigation";
-import CVPart from "./CVPart";
-import CVScene_old from "./CVScene_old";
+import Component, { types } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export {
-    CVAssetLoader,
-    CVModel_old,
-    CVOrbitNavigation,
-    CVPart,
-    CVScene_old,
-};
+/**
+ * Graph component rendering an annotation.
+ */
+export default class CVModel extends Component
+{
+    static readonly typeName: string = "CVModel";
 
-export const componentTypes = [
-    CVAssetLoader,
-    CVModel_old,
-    CVOrbitNavigation,
-    CVPart,
-    CVScene_old,
-];
+    protected static readonly ins = {
+
+    };
+
+    ins = this.addInputs(CVModel.ins);
+}

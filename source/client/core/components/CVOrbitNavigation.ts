@@ -22,7 +22,7 @@ import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
 import { INavigation } from "common/types/features";
 
-import CVScene from "./CVScene";
+import CVScene_old from "./CVScene_old";
 import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ export default class CVOrbitNavigation extends CVNavigation
 
         // zoom extents
         if (camera && ins.zoomExtents.changed) {
-            controller.zoomExtents(this.getGraphComponent(CVScene).updateBoundingBox());
+            controller.zoomExtents(this.getGraphComponent(CVScene_old).updateBoundingBox());
         }
 
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;

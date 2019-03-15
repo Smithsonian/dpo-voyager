@@ -24,9 +24,9 @@ import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
 import { IScene, EShaderMode, TShaderMode, EUnitType, TUnitType } from "common/types/features";
 
-import CVModel, { IModelChangeEvent } from "./CVModel";
+import CVModel_old, { IModelChangeEvent } from "./CVModel_old";
 import CVOrbitNavigation from "./CVOrbitNavigation";
-import CVAnnotations from "../../explorer/components/CVAnnotations";
+import CVAnnotations_old from "../../explorer/components/CVAnnotations_old";
 import CScene from "@ff/scene/components/CScene";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,9 +42,9 @@ const ins = {
     zoomExtents: types.Event("Viewports.ZoomExtents")
 };
 
-export default class CVScene extends CObject3D
+export default class CVScene_old extends CObject3D
 {
-    static readonly typeName: string = "CVScene";
+    static readonly typeName: string = "CVScene_old";
 
     ins = this.addInputs<CObject3D, typeof ins>(ins);
 
@@ -62,7 +62,7 @@ export default class CVScene extends CObject3D
     {
         super.create();
         //this._scene = this.scene;
-        this.graph.components.on(CVModel, this.onModelComponent, this);
+        this.graph.components.on(CVModel_old, this.onModelComponent, this);
     }
 
     update(context)
@@ -76,11 +76,11 @@ export default class CVScene extends CObject3D
         }
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
-            this.getGraphComponents(CVAnnotations).forEach(comp => comp.ins.visible.setValue(visible));
+            this.getGraphComponents(CVAnnotations_old).forEach(comp => comp.ins.visible.setValue(visible));
         }
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
-            this.getGraphComponents(CVModel).forEach(model => model.ins.shader.setValue(shader));
+            this.getGraphComponents(CVModel_old).forEach(model => model.ins.shader.setValue(shader));
         }
         if (ins.zoomExtents.changed) {
             this._zoomExtents = true;
@@ -132,7 +132,7 @@ export default class CVScene extends CObject3D
         };
     }
 
-    protected onModelComponent(event: IComponentEvent<CVModel>)
+    protected onModelComponent(event: IComponentEvent<CVModel_old>)
     {
         if (event.add) {
             event.object.setGlobalUnits(this.ins.units.value);
@@ -147,7 +147,7 @@ export default class CVScene extends CObject3D
     {
         // get bounding box of all models
         const box = this.boundingBox.makeEmpty();
-        const models = this.getGraphComponents(CVModel);
+        const models = this.getGraphComponents(CVModel_old);
         const units = this.ins.units.getValidatedValue();
 
         models.forEach(model => {
@@ -162,7 +162,7 @@ export default class CVScene extends CObject3D
     {
         // get bounding box of all models
         const box = this.boundingBox.makeEmpty();
-        const models = this.getGraphComponents(CVModel);
+        const models = this.getGraphComponents(CVModel_old);
         const units = this.ins.units.getValidatedValue();
 
         models.forEach(model => {

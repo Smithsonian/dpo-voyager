@@ -18,7 +18,7 @@
 import Component, { types } from "@ff/graph/Component";
 
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
-import CVDocument from "../../explorer/components/CVDocument";
+import CVDocument_old from "./CVDocument_old";
 
 import CVItemManager from "../../explorer/components/CVItemManager";
 import NVItem from "../../explorer/nodes/NVItem";
@@ -34,7 +34,7 @@ export default class CVTool extends Component
     static readonly typeName: string = "CVTool";
 
     protected static readonly toolIns = {
-        activeDocument: types.Object("Tool.ActiveDocument", CVDocument),
+        activeDocument: types.Object("Tool.ActiveDocument", CVDocument_old),
         activeItem: types.Object("Tool.ActiveItem", NVItem),
     };
 
@@ -52,7 +52,7 @@ export default class CVTool extends Component
     }
 
     protected isActiveTool = false;
-    protected activeDocument: CVDocument = null;
+    protected activeDocument: CVDocument_old = null;
     protected activeItem: NVItem = null;
 
     create()
@@ -70,7 +70,7 @@ export default class CVTool extends Component
         const ins = this.ins;
 
         if (ins.activeDocument.changed) {
-            const activeDocument = ins.activeDocument.value as CVDocument;
+            const activeDocument = ins.activeDocument.value as CVDocument_old;
             this.onActiveDocument(this.activeDocument, activeDocument);
             this.activeDocument = activeDocument;
         }
@@ -96,7 +96,7 @@ export default class CVTool extends Component
     {
         this.isActiveTool = true;
 
-        const activeDocument = this.ins.activeDocument.value as CVDocument;
+        const activeDocument = this.ins.activeDocument.value as CVDocument_old;
         if (activeDocument) {
             this.activeDocument = activeDocument;
             this.onActiveDocument(null, activeDocument);
@@ -129,7 +129,7 @@ export default class CVTool extends Component
     /**
      * Called when the currently active document changes.
      */
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
     }
 

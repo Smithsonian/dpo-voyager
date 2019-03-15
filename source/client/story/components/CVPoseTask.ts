@@ -24,10 +24,10 @@ import Viewport from "@ff/three/Viewport";
 import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import CVDocument from "../../explorer/components/CVDocument";
+import CVDocument_old from "../../explorer/components/CVDocument_old";
 import NVItem from "../../explorer/nodes/NVItem";
 import CVInterface from "../../explorer/components/CVInterface";
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 
 import PoseTaskView from "../ui/PoseTaskView";
 import CVTask from "./CVTask";
@@ -77,7 +77,7 @@ export default class CVPoseTask extends CVTask
 
     activateTask()
     {
-        this.selectionController.selectedComponents.on(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.on(CVModel_old, this.onSelectModel, this);
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         // switch to quad view layout
@@ -94,7 +94,7 @@ export default class CVPoseTask extends CVTask
     {
         super.deactivateTask();
 
-        this.selectionController.selectedComponents.off(CVModel, this.onSelectModel, this);
+        this.selectionController.selectedComponents.off(CVModel_old, this.onSelectModel, this);
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         // switch back to single view layout
@@ -160,7 +160,7 @@ export default class CVPoseTask extends CVTask
 
     protected onActiveItem(previous: NVItem, next: NVItem)
     {
-        if (next && next.hasComponent(CVModel)) {
+        if (next && next.hasComponent(CVModel_old)) {
             this.selectionController.selectComponent(next.model);
         }
     }
@@ -180,7 +180,7 @@ export default class CVPoseTask extends CVTask
         }
     }
 
-    protected onSelectModel(event: IComponentEvent<CVModel>)
+    protected onSelectModel(event: IComponentEvent<CVModel_old>)
     {
         const node = event.object.node;
 

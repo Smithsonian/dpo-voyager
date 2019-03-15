@@ -28,9 +28,9 @@ import CVTours from "../components/CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVDocument extends Node
+export default class NVDocument_old extends Node
 {
-    static readonly typeName: string = "NVDocument";
+    static readonly typeName: string = "NVDocument_old";
 
     createComponents()
     {

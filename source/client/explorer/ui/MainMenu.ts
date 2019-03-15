@@ -21,8 +21,8 @@ import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
 import CVTourPlayer, { ETourPlayerState } from "../components/CVTourPlayer";
 import CVToolManager from "../components/CVToolManager";
-import CVScene from "../../core/components/CVScene";
-import CVDocument from "../components/CVDocument";
+import CVScene_old from "../../core/components/CVScene_old";
+import CVDocument_old from "../components/CVDocument_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,15 +70,15 @@ export default class MainMenu extends DocumentView
         super.disconnected();
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
         super.onActiveDocument(previous, next);
 
         if (previous) {
-            previous.getInnerComponent(CVScene).ins.annotationsVisible.off("value", this.performUpdate, this);
+            previous.getInnerComponent(CVScene_old).ins.annotationsVisible.off("value", this.performUpdate, this);
         }
         if (next) {
-            next.getInnerComponent(CVScene).ins.annotationsVisible.on("value", this.performUpdate, this);
+            next.getInnerComponent(CVScene_old).ins.annotationsVisible.on("value", this.performUpdate, this);
         }
     }
 
@@ -94,7 +94,7 @@ export default class MainMenu extends DocumentView
         const showToolButton = _interface.ins.tools.value;
 
         const document = this.activeDocument;
-        const scene = document ? document.getInnerComponent(CVScene) : null;
+        const scene = document ? document.getInnerComponent(CVScene_old) : null;
         const annotationsVisible = scene ? scene.ins.annotationsVisible.value : false;
 
         return html`<ff-button icon="document" title="Read more..."
@@ -144,7 +144,7 @@ export default class MainMenu extends DocumentView
     protected onToggleAnnotations()
     {
         const document = this.activeDocument;
-        const scene = document ? document.getInnerComponent(CVScene) : null;
+        const scene = document ? document.getInnerComponent(CVScene_old) : null;
 
         if (scene) {
             const prop = scene.ins.annotationsVisible;

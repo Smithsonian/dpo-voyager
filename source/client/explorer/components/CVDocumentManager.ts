@@ -17,7 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,7 +31,7 @@ export default class CVDocumentManager extends Component
     };
 
     protected static readonly outs = {
-        activeDocument: types.Object("Documents.ActiveDocument", CVDocument),
+        activeDocument: types.Object("Documents.ActiveDocument", CVDocument_old),
         changedDocuments: types.Event("Documents.Changed"),
     };
 
@@ -39,12 +39,12 @@ export default class CVDocumentManager extends Component
     outs = this.addOutputs(CVDocumentManager.outs);
 
     get documents() {
-        return this.getComponents(CVDocument);
+        return this.getComponents(CVDocument_old);
     }
     get activeDocument() {
         return this.outs.activeDocument.value;
     }
-    set activeDocument(document: CVDocument) {
+    set activeDocument(document: CVDocument_old) {
         if (document !== this.activeDocument) {
             const index = this.documents.indexOf(document);
             this.ins.activeDocument.setValue(index + 1);
@@ -53,7 +53,7 @@ export default class CVDocumentManager extends Component
 
     create()
     {
-        this.components.on(CVDocument, this.updateDocuments, this);
+        this.components.on(CVDocument_old, this.updateDocuments, this);
         this.updateDocuments();
     }
 
@@ -83,7 +83,7 @@ export default class CVDocumentManager extends Component
 
     dispose()
     {
-        this.components.off(CVDocument, this.updateDocuments, this);
+        this.components.off(CVDocument_old, this.updateDocuments, this);
     }
 
     protected updateDocuments()

@@ -20,10 +20,10 @@ import { types } from "@ff/graph/Component";
 import "../ui/PropertyBoolean";
 import "../ui/PropertyString";
 
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 import CVTape, { ETapeState } from "./CVTape";
 
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ export default class CVTapeTool extends CVTool
 
     protected static readonly outs = {
         tape: types.Object("Components.Tape", CVTape),
-        scene: types.Object("Components.Scene", CVScene),
+        scene: types.Object("Components.Scene", CVScene_old),
     };
 
     outs = this.addOutputs<CVTool, typeof CVTapeTool.outs>(CVTapeTool.outs);
@@ -48,7 +48,7 @@ export default class CVTapeTool extends CVTool
     }
     protected get scene() {
         const document = this.activeDocument;
-        return document ? document.getInnerComponent(CVScene) : null;
+        return document ? document.getInnerComponent(CVScene_old) : null;
     }
 
     createView()
@@ -56,12 +56,12 @@ export default class CVTapeTool extends CVTool
         return new TapeToolView(this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
         super.onActiveDocument(previous, next);
 
         this.outs.tape.setValue(next ? next.getInnerComponent(CVTape) : null);
-        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene) : null);
+        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene_old) : null);
     }
 }
 
@@ -101,7 +101,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             return html``;
         }
 
-        const scene = tape.getGraphComponent(CVScene);
+        const scene = tape.getGraphComponent(CVScene_old);
         const visible = tape.ins.visible;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;

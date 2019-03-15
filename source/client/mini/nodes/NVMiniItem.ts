@@ -21,7 +21,7 @@ import NTransform from "@ff/scene/nodes/NTransform";
 
 import { IItem } from "common/types/item";
 
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 import { EDerivativeQuality } from "../../core/models/Derivative";
 import CVAssetLoader from "../../core/components/CVAssetLoader";
 
@@ -35,7 +35,7 @@ export default class NVMiniItem extends NTransform
     private _url = "";
 
     get model() {
-        return this.getComponent(CVModel);
+        return this.getComponent(CVModel_old);
     }
 
     set url(url: string) {
@@ -57,7 +57,7 @@ export default class NVMiniItem extends NTransform
     createComponents()
     {
         super.createComponents();
-        this.createComponent(CVModel);
+        this.createComponent(CVModel_old);
     }
 
     loadItem(itemUrl: string)

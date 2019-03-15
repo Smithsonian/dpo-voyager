@@ -22,7 +22,7 @@ import CObject3D, { IPointerEvent, types } from "@ff/scene/components/CObject3D"
 import { ITapeTool } from "common/types/features";
 
 import Pin from "../../core/utils/Pin";
-import CVModel from "../../core/components/CVModel";
+import CVModel_old from "../../core/components/CVModel_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -152,12 +152,12 @@ export default class CVTape extends CObject3D
 
     protected onPointerUp(event: IPointerEvent)
     {
-        if (event.isDragging || !event.component || !event.component.is(CVModel)) {
+        if (event.isDragging || !event.component || !event.component.is(CVModel_old)) {
             return;
         }
 
         // get click position and normal
-        const model = event.component as CVModel;
+        const model = event.component as CVModel_old;
         const worldMatrix = model.object3D.matrixWorld;
         _mat3.getNormalMatrix(worldMatrix);
 

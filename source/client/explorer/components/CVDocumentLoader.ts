@@ -28,7 +28,7 @@ import { EDerivativeQuality } from "../../core/models/Derivative";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
 import CVDocumentManager from "./CVDocumentManager";
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 
 import NVDocuments from "../nodes/NVDocuments";
 import NVItem from "../nodes/NVItem";
@@ -43,7 +43,7 @@ export default class CVDocumentLoader extends Component
         return this.getMainComponent(CVAssetLoader);
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument_old | null>
     {
         const loaders = this.system.getMainComponent(CVAssetLoader);
         const documents = this.system.getMainNode(NVDocuments);
@@ -52,7 +52,7 @@ export default class CVDocumentLoader extends Component
             loaders.loadJSON(documentOrUrl) : Promise.resolve(documentOrUrl);
 
         return getDocument.then(jsonData => {
-            const document = documents.createComponent(CVDocument);
+            const document = documents.createComponent(CVDocument_old);
             document.inflate(jsonData);
             document.inflateReferences(jsonData);
             return document;
@@ -62,7 +62,7 @@ export default class CVDocumentLoader extends Component
         });
     }
 
-    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument | null>
+    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument_old | null>
     {
         const documents = this.system.getMainNode(NVDocuments);
 
@@ -70,7 +70,7 @@ export default class CVDocumentLoader extends Component
         const getPresentation = url ? this.assetLoader.loadPresentationData(url) : Promise.resolve(presentationOrUrl as IPresentation);
 
         return getPresentation.then(presentationData => {
-            const document = documents.createComponent(CVDocument);
+            const document = documents.createComponent(CVDocument_old);
             document.url = url;
             document.fromDocument(presentationData);
             return document;
@@ -80,7 +80,7 @@ export default class CVDocumentLoader extends Component
         });
     }
 
-    loadDefaultPresentation(): Promise<CVDocument>
+    loadDefaultPresentation(): Promise<CVDocument_old>
     {
         return this.loadPresentation(presentationTemplate as IPresentation);
     }
@@ -96,7 +96,7 @@ export default class CVDocumentLoader extends Component
 
         return getItem.then(data => {
             itemData = data;
-            return documentManager.activeDocument as CVDocument ||
+            return documentManager.activeDocument as CVDocument_old ||
                 this.loadPresentation(presentationTemplate as IPresentation);
         }).then(document => {
             const item = document.createItem();
@@ -111,7 +111,7 @@ export default class CVDocumentLoader extends Component
 
     createItemWithModelAsset(modelUrl: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
     {
-        let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument;
+        let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument_old;
 
         let derivativeQuality = EDerivativeQuality[quality];
         if (!isFinite(derivativeQuality)) {
@@ -143,7 +143,7 @@ export default class CVDocumentLoader extends Component
     createItemFromGeometryAndMaps(geoUrl: string, colorMapUrl?: string,
                                   occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
     {
-        let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument;
+        let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument_old;
 
         let derivativeQuality = EDerivativeQuality[quality];
         if (!isFinite(derivativeQuality)) {

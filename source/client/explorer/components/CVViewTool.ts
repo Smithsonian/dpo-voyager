@@ -20,7 +20,7 @@ import CVNavigation, { EViewPreset } from "../../core/components/CVNavigation";
 import "../ui/PropertyOptions";
 import "../ui/PropertyEvent";
 
-import CVDocument from "./CVDocument";
+import CVDocument_old from "./CVDocument_old";
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ export default class CVViewTool extends CVTool
         return new ViewToolView(this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
     {
         super.onActiveDocument(previous, next);
         this.outs.navigation.setValue(next ? next.getInnerComponent(CVNavigation) : null);

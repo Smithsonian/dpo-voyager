@@ -25,7 +25,7 @@ import {
 } from "common/types/presentation";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVScene from "../../core/components/CVScene";
+import CVScene_old from "../../core/components/CVScene_old";
 
 import NVNode from "./NVNode";
 import NVCamera from "./NVCamera";
@@ -35,12 +35,13 @@ import NVPointLight from "./NVPointLight";
 import NVSpotLight from "./NVSpotLight";
 import NVReference from "./NVReference";
 import NVItem from "./NVItem";
+import CTransform from "@ff/scene/components/CTransform";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVScene extends NVNode
+export default class NVScene_old extends NVNode
 {
-    static readonly typeName: string = "NVScene";
+    static readonly typeName: string = "NVScene_old";
 
     url: string;
     assetPath: string;
@@ -49,7 +50,7 @@ export default class NVScene extends NVNode
         return this.getMainComponent(CVAssetLoader);
     }
     get scene() {
-        return this.getComponent(CVScene);
+        return this.getComponent(CVScene_old);
     }
 
     setUrl(url: string, assetPath?: string)
@@ -61,7 +62,7 @@ export default class NVScene extends NVNode
     createComponents()
     {
         super.createComponents();
-        this.createComponent(CVScene);
+        this.createComponent(CVScene_old);
     }
 
     fromData(data: IPresentation)
@@ -141,7 +142,7 @@ export default class NVScene extends NVNode
         }
 
         node.fromNodeData(nodeData);
-        parent.addChild(node.transform);
+        parent.addChild(node.getComponent(CTransform));
 
         if (nodeData.name) {
             node.name = nodeData.name;
