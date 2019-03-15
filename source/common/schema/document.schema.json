@@ -1,0 +1,454 @@
+{
+    "$id": "https://schemas.3d.si.edu/voyager/document.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Smithsonian 3D Document",
+    "description": "Describes a 3D document containing a scene with 3D models.",
+
+    "definitions": {
+        "node": {
+            "$id": "#node",
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "description": "The indices of this node's children.",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+
+                "matrix": {
+                    "description": "A floating-point 4x4 transformation matrix stored in column-major order.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 16,
+                    "maxItems": 16,
+                    "default": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ]
+                },
+                "translation": {
+                    "description": "The node's translation along the x, y, and z axes.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "default": [ 0.0, 0.0, 0.0 ]
+                },
+                "rotation": {
+                    "description": "The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.",
+                    "type": "array",
+                    "items": {
+                        "type": "number",
+                        "minimum": -1.0,
+                        "maximum": 1.0
+                    },
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "default": [ 0.0, 0.0, 0.0, 1.0 ]
+                },
+                "scale": {
+                    "description": "The node's non-uniform scale, given as the scaling factors along the x, y, and z axes.",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "default": [ 1.0, 1.0, 1.0 ]
+                },
+
+                "camera": {
+                    "description": "The index of the camera in this node.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "light": {
+                    "description": "The index of the light in this node.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+
+                "extensions": {
+                    "type": "object",
+                    "properties": {
+                        "si-document": {
+                            "type": "object",
+                            "properties": {
+                                "model": {
+                                    "description": "The index of the model in this node.",
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                "part": {
+                                    "description": "The index of the part in this node.",
+                                    "type": "integer",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "not": {
+                "anyOf": [
+                    { "required": [ "matrix", "translation" ] },
+                    { "required": [ "matrix", "rotation" ] },
+                    { "required": [ "matrix", "scale" ] }
+                ]
+            }
+        },
+
+        "scene": {
+            "$id": "#scene",
+            "type": "object",
+            "properties": {
+                "units": {
+                    "type": "string",
+                    "enum": [
+                        "mm",
+                        "cm",
+                        "m",
+                        "in",
+                        "ft",
+                        "yd"
+                    ]
+                },
+                "derivatives": {
+                    "description": "List of visual representations derived from the master model.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schemas.3d.si.edu/voyager/derivative.schema.json"
+                    }
+                },
+                "features": {
+                    "$ref": "https://schemas.3d.si.edu/voyager/features.schema.json"
+                }
+            }
+        },
+
+        "reference": {
+            "$id": "#reference",
+            "type": "object",
+            "properties": {
+                "mimeType": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "uri"
+            ]
+        },
+
+        "camera": {
+            "$id": "#camera",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Specifies if the camera uses a perspective or orthographic projection.",
+                    "type": "string",
+                    "enum": [
+                        "perspective",
+                        "orthographic"
+                    ]
+                },
+                "perspective": {
+                    "description": "A perspective camera containing properties to create a perspective projection matrix.",
+                    "type": "object",
+                    "properties": {
+                        "yfov": {
+                            "type": "number",
+                            "description": "The floating-point vertical field of view in radians.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "aspectRatio": {
+                            "type": "number",
+                            "description": "The floating-point aspect ratio of the field of view.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "znear": {
+                            "type": "number",
+                            "description": "The floating-point distance to the near clipping plane.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "zfar": {
+                            "type": "number",
+                            "description": "The floating-point distance to the far clipping plane.",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "required": [
+                        "yfov",
+                        "znear"
+                    ]
+                },
+                "orthographic": {
+                    "description": "An orthographic camera containing properties to create an orthographic projection matrix.",
+                    "type": "object",
+                    "properties": {
+                        "xmag": {
+                            "type": "number",
+                            "description": "The floating-point horizontal magnification of the view. Must not be zero."
+                        },
+                        "ymag": {
+                            "type": "number",
+                            "description": "The floating-point vertical magnification of the view. Must not be zero."
+                        },
+                        "znear": {
+                            "type": "number",
+                            "description": "The floating-point distance to the near clipping plane.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "zfar": {
+                            "type": "number",
+                            "description": "The floating-point distance to the far clipping plane. `zfar` must be greater than `znear`.",
+                            "exclusiveMinimum": 0.0
+                        }
+                    },
+                    "required": [
+                        "xmag",
+                        "ymag",
+                        "znear",
+                        "zfar"
+                    ]
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "not": {
+                "required": [ "perspective", "orthographic" ]
+            }
+        },
+
+        "light": {
+            "$id": "#light",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Specifies the type of the light source.",
+                    "type": "string",
+                    "enum": [
+                        "ambient",
+                        "directional",
+                        "point",
+                        "spot",
+                        "hemisphere"
+                    ]
+                },
+                "color": {
+                    "$ref": "#/definitions/colorRGB"
+                },
+                "intensity": {
+                    "type": "number",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "castShadow": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "point": {
+                    "type": "object",
+                    "properties": {
+                        "distance": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "decay": {
+                            "type": "number",
+                            "minimum": 0
+                        }
+                    }
+                },
+                "spot": {
+                    "type": "object",
+                    "properties": {
+                        "distance": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "decay": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "angle": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "penumbra": {
+                            "type": "number",
+                            "minimum": 0
+                        }
+                    }
+                },
+                "hemisphere": {
+                    "type": "object",
+                    "properties": {
+                        "groundColor": {
+                            "$ref": "#/definitions/colorRGB"
+                        }
+                    }
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "not": {
+                "required": [ "point", "spot", "hemisphere" ]
+            }
+        },
+
+        "colorRGB": {
+            "$id": "#colorRGB",
+            "type": "array",
+            "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+            },
+            "minItems": 3,
+            "maxItems": 3,
+            "default": [ 1.0, 1.0, 1.0 ]
+        }
+    },
+
+    "type": "object",
+    "properties": {
+        "asset": {
+            "type": "object",
+            "properties": {
+                "copyright": {
+                    "type": "string",
+                    "description": "A copyright message to credit the content creator."
+                },
+                "generator": {
+                    "type": "string",
+                    "description": "Tool that generated this presentation description."
+                },
+                "version": {
+                    "type": "string",
+                    "description": "Version of this presentation description."
+                },
+                "extensions": {
+                    "type": "object",
+                    "properties": {
+                        "si-document": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "const": "application/si-dpo-3d.document+json"
+                                },
+                                "version": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "version"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "si-document"
+                    ]
+                }
+            },
+            "required": [
+                "version",
+                "extensions"
+            ]
+        },
+        "scene": {
+            "description": "The main scene of the document.",
+            "type": "integer"
+        },
+        "nodes": {
+            "description": "An array of nodes.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/node"
+            },
+            "minItems": 1
+        },
+        "cameras": {
+            "description": "An array of cameras.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/camera"
+            },
+            "minItems": 1
+        },
+        "lights": {
+            "description": "An array of lights.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/light"
+            },
+            "minItems": 1
+        },
+        "extensions": {
+            "type": "object",
+            "properties": {
+                "si-document": {
+                    "type": "object",
+                    "properties": {
+                        "scenes": {
+                            "description": "An array of scenes.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/scene"
+                            },
+                            "minItems": 1,
+                            "maxItems": 1
+                        },
+                        "references": {
+                            "description": "An array of references.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/reference"
+                            }
+                        },
+                        "models": {
+                            "description": "An array if models.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "https://schemas.3d.si.edu/voyager/model2.schema.json"
+                            },
+                            "minItems": 1
+                        },
+                        "parts": {
+                            "description": "An array of parts.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "https://schemas.3d.si.edu/voyager/part.schema.json"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "required": [
+                        "scenes"
+                    ]
+                }
+            },
+            "required": [
+                "si-document"
+            ]
+        }
+    },
+    "required": [
+        "scene",
+        "nodes",
+        "extensions"
+    ]
+}

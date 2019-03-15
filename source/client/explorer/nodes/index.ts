@@ -26,7 +26,7 @@ import NVLight from "./NVLight";
 import NVNode from "./NVNode";
 import NVPointLight from "./NVPointLight";
 import NVReference from "./NVReference";
-import NVRoot from "./NVRoot";
+import NVScene from "./NVScene";
 import NVSpotLight from "./NVSpotLight";
 import NVTools from "./NVTools";
 
@@ -44,7 +44,7 @@ export {
     NVNode,
     NVPointLight,
     NVReference,
-    NVRoot,
+    NVScene,
     NVSpotLight,
     NVTools,
 };
@@ -61,7 +61,7 @@ export const nodeTypes = [
     NVNode,
     NVPointLight,
     NVReference,
-    NVRoot,
+    NVScene,
     NVSpotLight,
     NVTools,
 ];

@@ -1,5 +1,5 @@
 {
-    "$id": "https://schemas.3d.si.edu/public_api/annotations.schema.json",
+    "$id": "https://schemas.3d.si.edu/voyager/annotations.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "title": "Annotations",
@@ -117,13 +117,13 @@
         "annotations": {
             "type": "array",
             "items": {
-                "$ref": "#annotation"
+                "$ref": "#/definitions/annotation"
             }
         },
         "groups": {
             "type": "array",
             "items": {
-                "$ref": "#group"
+                "$ref": "#/definitions/group"
             }
         }
     },

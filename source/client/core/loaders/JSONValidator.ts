@@ -17,19 +17,22 @@
 
 import * as Ajv from "ajv";
 
-import * as mathSchema from "common/schema/math.schema.json";
-
-import * as presentationSchema from "common/schema/presentation.schema.json";
-import * as featuresSchema from "common/schema/features.schema.json";
-
-import * as itemSchema from "common/schema/item.schema.json";
-import * as metaSchema from "common/schema/meta.schema.json";
-import * as processSchema from "common/schema/process.schema.json";
-import * as modelSchema from "common/schema/model.schema.json";
 import * as annotationsSchema from "common/schema/annotations.schema.json";
-import * as storySchema from "common/schema/story.schema.json";
 import * as articlesSchema from "common/schema/articles.schema.json";
+import * as derivativeSchema from "common/schema/derivative.schema.json";
+import * as documentSchema from "common/schema/document.schema.json";
+import * as featuresSchema from "common/schema/features.schema.json";
+import * as itemSchema from "common/schema/item.schema.json";
+import * as mathSchema from "common/schema/math.schema.json";
+import * as metaSchema from "common/schema/meta.schema.json";
+import * as modelSchema from "common/schema/model.schema.json";
+import * as model2Schema from "common/schema/model2.schema.json";
+import * as partSchema from "common/schema/part.schema.json";
+import * as presentationSchema from "common/schema/presentation.schema.json";
+import * as processSchema from "common/schema/process.schema.json";
+import * as toursSchema from "common/schema/tours.schema.json";
 
+import { IDocument } from "common/types/document";
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
@@ -38,6 +41,7 @@ import { IItem } from "common/types/item";
 export default class JSONValidator
 {
     private _schemaValidator;
+    private _validateDocument;
     private _validatePresentation;
     private _validateItem;
 
@@ -45,27 +49,47 @@ export default class JSONValidator
     {
         this._schemaValidator = new Ajv({
             schemas: [
-                mathSchema,
-                presentationSchema,
+                annotationsSchema,
+                articlesSchema,
+                derivativeSchema,
+                documentSchema,
                 featuresSchema,
                 itemSchema,
+                mathSchema,
                 metaSchema,
-                processSchema,
                 modelSchema,
-                articlesSchema,
-                annotationsSchema,
-                storySchema
+                model2Schema,
+                partSchema,
+                presentationSchema,
+                processSchema,
+                toursSchema,
             ],
             allErrors: true
         });
 
+        this._validateDocument = this._schemaValidator.getSchema(
+            "https://schemas.3d.si.edu/voyager/document.schema.json"
+        );
+
         this._validatePresentation = this._schemaValidator.getSchema(
-            "https://schemas.3d.si.edu/public_api/presentation.schema.json"
+            "https://schemas.3d.si.edu/voyager/presentation.schema.json"
         );
 
         this._validateItem = this._schemaValidator.getSchema(
-            "https://schemas.3d.si.edu/public_api/item.schema.json"
+            "https://schemas.3d.si.edu/voyager/item.schema.json"
         );
+    }
+
+    validateDocument(document: IDocument): boolean
+    {
+        if (!this._validateDocument(document)) {
+            console.warn(this._schemaValidator.errorsText(
+                this._validateDocument.errors, { separator: ", ", dataVar: "document" }));
+            return false;
+        }
+
+        console.log("JSONValidator.validateDocument - OK");
+        return true;
     }
 
     validatePresentation(presentation: IPresentation): boolean

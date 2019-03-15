@@ -1,5 +1,5 @@
 {
-    "$id": "https://schemas.3d.si.edu/public_api/presentation.schema.json",
+    "$id": "https://schemas.3d.si.edu/voyager/presentation.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "title": "Smithsonian 3D Presentation",
@@ -204,7 +204,7 @@
                     ]
                 },
                 "color": {
-                    "$ref": "#colorRGB"
+                    "$ref": "#/definitions/colorRGB"
                 },
                 "intensity": {
                     "type": "number",
@@ -253,7 +253,7 @@
                     "type": "object",
                     "properties": {
                         "groundColor": {
-                            "$ref": "#colorRGB"
+                            "$ref": "#/definitions/colorRGB"
                         }
                     }
                 }
@@ -319,7 +319,7 @@
             "description": "An array of nodes.",
             "type": "array",
             "items": {
-                "$ref": "#node"
+                "$ref": "#/definitions/node"
             },
             "minItems": 1
         },
@@ -327,7 +327,7 @@
             "description": "An array if items.",
             "type": "array",
             "items": {
-                "$ref": "item.schema.json"
+                "$ref": "https://schemas.3d.si.edu/voyager/item.schema.json"
             },
             "minItems": 1
         },
@@ -335,7 +335,7 @@
             "description": "An array of references.",
             "type": "array",
             "items": {
-                "$ref": "#reference"
+                "$ref": "#/definitions/reference"
             },
             "minItems": 1
         },
@@ -343,7 +343,7 @@
             "description": "An array of cameras.",
             "type": "array",
             "items": {
-                "$ref": "#camera"
+                "$ref": "#/definitions/camera"
             },
             "minItems": 1
         },
@@ -351,17 +351,17 @@
             "description": "An array of lights.",
             "type": "array",
             "items": {
-                "$ref": "#light"
+                "$ref": "#/definitions/light"
             },
             "minItems": 1
         },
         "story": {
             "description": "Presentation-level tours and snapshots",
-            "$ref": "story.schema.json"
+            "$ref": "https://schemas.3d.si.edu/voyager/tours.schema.json"
         },
         "features": {
             "description": "Voyager explorer global features.",
-            "$ref": "features.schema.json"
+            "$ref": "https://schemas.3d.si.edu/voyager/features.schema.json"
         }
     },
     "required": [

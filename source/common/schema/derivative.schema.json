@@ -1,0 +1,97 @@
+{
+    "$id": "https://schemas.3d.si.edu/voyager/derivative.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Derivative",
+    "description": "Derivative of a 3D model.",
+
+    "definitions": {
+        "asset": {
+            "description": "Resource for a 3D derivative.",
+            "$id": "#asset",
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Model",
+                        "Geometry",
+                        "Image",
+                        "Points",
+                        "Volume"
+                    ]
+                },
+                "mimeType": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "byteSize": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "numFaces": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "imageSize": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "mapType": {
+                    "type": "string",
+                    "enum": [
+                        "Color",
+                        "Normal",
+                        "Occlusion",
+                        "Emissive",
+                        "Metallic",
+                        "Roughness",
+                        "MetallicRoughness",
+                        "Zone"
+                    ]
+                }
+            },
+            "required": [
+                "uri",
+                "type"
+            ]
+        }
+    },
+
+    "type": "object",
+    "properties": {
+        "usage": {
+            "description": "usage categories for a derivative.",
+            "type": "string",
+            "enum": [
+                "2D",
+                "Web",
+                "Print",
+                "Editorial"
+            ]
+        },
+        "quality": {
+            "type": "string",
+            "enum": [
+                "Thumb",
+                "Low",
+                "Medium",
+                "High",
+                "Highest",
+                "LOD",
+                "Stream"
+            ]
+        },
+        "assets": {
+            "description": "List of individual resources this derivative is composed of.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/asset"
+            }
+        }
+    }
+}

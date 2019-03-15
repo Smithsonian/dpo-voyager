@@ -1,0 +1,36 @@
+{
+    "$id": "https://schemas.3d.si.edu/voyager/model2.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Model",
+    "description": "3D model, consisting of one or multiple parts and meta-data.",
+
+    "type": "object",
+    "properties": {
+        "units": {
+            "type": "string",
+            "enum": [
+                "mm",
+                "cm",
+                "m",
+                "in",
+                "ft",
+                "yd"
+            ]
+        },
+        "boundingBox": {
+            "description": "Bounding box for this model, shared by all derivatives.",
+            "$ref": "math.schema.json#/definitions/boundingBox"
+        },
+        "derivatives": {
+            "description": "List of visual representations derived from the master model.",
+            "type": "array",
+            "items": {
+                "$ref": "https://schemas.3d.si.edu/voyager/derivative.schema.json"
+            }
+        },
+        "features": {
+            "$ref": "https://schemas.3d.si.edu/voyager/features.schema.json"
+        }
+    }
+}

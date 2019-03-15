@@ -52,9 +52,6 @@ export default class NVFeatures extends NTransform
         return this.getMainComponent(CVSliceTool);
     }
 
-    get scene() {
-        return this.getComponent(CVScene);
-    }
     get navigation() {
         return this.getComponent(CVOrbitNavigation);
     }
@@ -92,7 +89,6 @@ export default class NVFeatures extends NTransform
 
         const tours = this.getGraphComponent(CVTours);
 
-        const scene = this.createComponent(CVScene, "Scene", "scene");
         const navigation = this.createComponent(CVOrbitNavigation, "Navigation", "nav");
         const background = this.createComponent(CVBackground, "Background", "bg");
         const floor = this.createComponent(CVFloor, "Floor", "floor");
@@ -138,7 +134,6 @@ export default class NVFeatures extends NTransform
             this.inflateGlobalComponents();
         }
 
-        this.scene.fromData(data.scene);
         this.navigation.fromData(data.navigation);
         this.background.fromData(data.background);
         this.floor.fromData(data.floor);
@@ -154,7 +149,6 @@ export default class NVFeatures extends NTransform
             this.deflateGlobalComponents();
         }
 
-        data.scene = this.scene.toData();
         data.navigation = this.navigation.toData();
         data.background = this.background.toData();
         data.floor = this.floor.toData();

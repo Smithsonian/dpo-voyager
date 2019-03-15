@@ -27,8 +27,9 @@ import { IPresentation } from "common/types/presentation";
 
 import NVDocument from "../nodes/NVDocument";
 import NVFeatures from "../nodes/NVFeatures";
-import NVRoot from "../nodes/NVRoot";
+import NVScene from "../nodes/NVScene";
 import NVItem from "../nodes/NVItem";
+import CVScene from "../../core/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,10 +79,10 @@ export default class CVDocument extends CRenderGraph
     }
 
     get scene() {
-        return this.features.scene;
+        return this.getInnerComponent(CVScene);
     }
     get root() {
-        return this.getInnerNode(NVRoot);
+        return this.getInnerNode(NVScene);
     }
     get features() {
         return this.getInnerNode<NVFeatures>("NVFeatures");
@@ -100,7 +101,7 @@ export default class CVDocument extends CRenderGraph
         super.create();
 
         this.innerGraph.createCustomNode(NVDocument);
-        const rootNode = this.innerGraph.createCustomNode(NVRoot);
+        const rootNode = this.innerGraph.createCustomNode(NVScene);
         const featureNode = this.innerGraph.createCustomNode<NVFeatures>("NVFeatures");
         rootNode.transform.addChild(featureNode.transform);
     }

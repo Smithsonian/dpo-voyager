@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-import { Index } from "@ff/core/types";
+import { Index, Identifier, Dictionary } from "@ff/core/types";
 import { ITweenState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
 
 import { TUnitType, EUnitType } from "./item";
+import { Vector3 } from "./model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +43,10 @@ export enum ESliceAxis { X, Y, Z }
 
 export interface IFeatures
 {
+    meta?: IMeta;
+    process?: IProcess;
+    articles?: IArticles;
+    annotations?: IAnnotations;
     interface?: IInterface;
     reader?: IReader;
     navigation?: INavigation;
@@ -52,6 +57,75 @@ export interface IFeatures
     story?: IStory;
     tapeTool?: ITapeTool;
     sliceTool?: ISliceTool;
+}
+
+/**
+ * Meta data section of a collection item.
+ */
+export interface IMeta
+{
+    [id: string]: any;
+}
+
+/**
+ * Meta-data describing the capture, computation, and editorial process.
+ */
+export interface IProcess
+{
+    [key: string]: any;
+}
+
+/**
+ * Describes the annotations of an item, organized in groups.
+ */
+export interface IAnnotations
+{
+    annotations?: IAnnotation[];
+}
+
+/**
+ * Connects annotated information to a spatial location.
+ * Annotation targets are specific locations (spots) or areas (zones) on an item.
+ */
+export interface IAnnotation
+{
+    id: Identifier;
+    title?: string;
+    description?: string;
+    tags?: string[];
+    articles?: Identifier[];
+
+    style?: string;
+    visible?: boolean;
+    expanded?: boolean;
+
+    position?: Vector3;
+    direction?: Vector3;
+    scale?: number;
+    offset?: number;
+    tilt?: number;
+    azimuth?: number;
+
+    zoneIndex?: number;
+}
+
+export interface IArticles
+{
+    mainArticleId?: Identifier;
+    articles?: IArticle[];
+}
+
+/**
+ * Refers to an external document or a media file (audio, video, image).
+ */
+export interface IArticle
+{
+    id: Identifier;
+    title?: string;
+    description?: string;
+    uri?: string;
+    mimeType?: string;
+    thumbnailUri?: string;
 }
 
 export interface IScene

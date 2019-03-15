@@ -1,12 +1,27 @@
 {
-    "$id": "https://schemas.3d.si.edu/public_api/features.schema.json",
+    "$id": "https://schemas.3d.si.edu/voyager/features.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
-    "title": "Smithsonian 3D Presentation - Voyager Explorer Features",
-    "description": "contains information about Voyager explorer feature configuration (scene environment, UI, tools, etc.)",
+    "title": "Smithsonian 3D Voyager Feature Components",
+    "description": "Settings of feature components (scene environment, UI, tools, etc.)",
 
     "type": "object",
     "properties": {
+        "meta": {
+            "$ref": "https://schemas.3d.si.edu/voyager/meta.schema.json"
+        },
+        "process": {
+            "$ref": "https://schemas.3d.si.edu/voyager/process.schema.json"
+        },
+        "annotations": {
+            "$ref": "https://schemas.3d.si.edu/voyager/annotations.schema.json"
+        },
+        "articles": {
+            "$ref": "https://schemas.3d.si.edu/voyager/articles.schema.json"
+        },
+        "tours": {
+            "$ref": "https://schemas.3d.si.edu/voyager/tours.schema.json"
+        },
         "scene": {
             "type": "object",
             "properties": {

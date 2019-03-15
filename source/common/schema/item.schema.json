@@ -1,5 +1,5 @@
 {
-    "$id": "https://schemas.3d.si.edu/public_api/item.schema.json",
+    "$id": "https://schemas.3d.si.edu/voyager/item.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "title": "3D Item",
