@@ -21,13 +21,13 @@ import * as annotationsSchema from "common/schema/annotations.schema.json";
 import * as articlesSchema from "common/schema/articles.schema.json";
 import * as derivativeSchema from "common/schema/derivative.schema.json";
 import * as documentSchema from "common/schema/document.schema.json";
+import * as explorerSchema from "common/schema/explorer.schema.json";
 import * as featuresSchema from "common/schema/features.schema.json";
+import * as item_oldSchema from "common/schema/item_old.schema.json";
 import * as itemSchema from "common/schema/item.schema.json";
 import * as mathSchema from "common/schema/math.schema.json";
 import * as metaSchema from "common/schema/meta.schema.json";
 import * as modelSchema from "common/schema/model.schema.json";
-import * as model2Schema from "common/schema/model2.schema.json";
-import * as partSchema from "common/schema/part.schema.json";
 import * as presentationSchema from "common/schema/presentation.schema.json";
 import * as processSchema from "common/schema/process.schema.json";
 import * as toursSchema from "common/schema/tours.schema.json";
@@ -53,13 +53,13 @@ export default class JSONValidator
                 articlesSchema,
                 derivativeSchema,
                 documentSchema,
+                explorerSchema,
                 featuresSchema,
                 itemSchema,
+                item_oldSchema,
                 mathSchema,
                 metaSchema,
                 modelSchema,
-                model2Schema,
-                partSchema,
                 presentationSchema,
                 processSchema,
                 toursSchema,
@@ -76,7 +76,7 @@ export default class JSONValidator
         );
 
         this._validateItem = this._schemaValidator.getSchema(
-            "https://schemas.3d.si.edu/voyager/item.schema.json"
+            "https://schemas.3d.si.edu/voyager/item_old.schema.json"
         );
     }
 

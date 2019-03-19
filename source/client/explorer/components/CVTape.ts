@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import CObject3D, { IPointerEvent, types } from "@ff/scene/components/CObject3D";
 
-import { ITapeTool } from "common/types/features";
+import { ITape } from "common/types/explorer";
 
 import Pin from "../../core/utils/Pin";
 import CVModel_old from "../../core/components/CVModel_old";
@@ -126,7 +126,7 @@ export default class CVTape extends CObject3D
         return true;
     }
 
-    fromData(data: ITapeTool)
+    fromData(data: ITape)
     {
         this.ins.copyValues({
             visible: data.enabled,
@@ -137,7 +137,7 @@ export default class CVTape extends CObject3D
         });
     }
 
-    toData(): ITapeTool
+    toData(): ITape
     {
         const ins = this.ins;
 

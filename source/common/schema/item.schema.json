@@ -2,64 +2,164 @@
     "$id": "https://schemas.3d.si.edu/voyager/item.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
-    "title": "3D Item",
-    "description": "Describes a Smithsonian DPO 3D repository item.",
+    "title": "Item Node",
+    "description": "Describes the base part of an item node (scene item, group item, or model item).",
 
     "definitions": {
-        "info": {
-            "$id": "#info",
+        "units": {
+            "$id": "#units",
+            "type": "string",
+            "enum": [
+                "inherit",
+                "mm",
+                "cm",
+                "m",
+                "in",
+                "ft",
+                "yd"
+            ]
+        },
+        "meta": {
+            "type": "object"
+        },
+        "article": {
+            "$id": "#article",
+            "description": "Reference to an external document (HTML) or a media file (audio, video, image).",
             "type": "object",
             "properties": {
-                "type": {
+                "title": {
+                    "description": "Short title.",
                     "type": "string"
                 },
-                "copyright": {
+                "lead": {
+                    "description": "Short lead text.",
                     "type": "string"
                 },
-                "generator": {
+                "tags": {
+                    "description": "Array of tags, categorizing the article.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "uri": {
+                    "description": "Location of the resource, absolute URL or path relative to this document",
                     "type": "string"
                 },
-                "version": {
+                "mimeType": {
+                    "description": "MIME type of the resource.",
+                    "type": "string"
+                },
+                "thumbnailUri": {
+                    "description": "Location of a thumbnail/preview image of the resource.",
                     "type": "string"
                 }
             },
-            "required": [
-                "type",
-                "version"
-            ],
+            "additionalProperties": false
+        },
+        "annotation": {
+            "$id": "#annotation",
+            "description": "Spatial annotation (hot spot, hot zone) on a model. Annotations can reference articles.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "lead": {
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Array of tags, categorizing the annotation.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "articles": {
+                    "description": "Array of article indices, listing articles related to the annotation.",
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "style": {
+                    "type": "string"
+                },
+                "visible": {
+                    "description": "Flag indicating whether the annotation is visible.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "expanded": {
+                    "description": "Flag indicating whether the annotation is displayed in expanded state.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "scale": {
+                    "description": "Scales the annotation relative to its default size.",
+                    "type": "number",
+                    "default": 1
+                },
+                "offset": {
+                    "description": "Offsets the annotation along its direction.",
+                    "type": "number",
+                    "default": 0
+                },
+                "tilt": {
+                    "description": "Tilt angle of the annotation relative to the direction vector in degrees.",
+                    "type": "number",
+                    "default": 0
+                },
+                "azimuth": {
+                    "description": "Azimuth angle of a tilted annotation.",
+                    "type": "number",
+                    "default": 0
+                },
+                "position": {
+                    "description": "Position where the annotation is anchored, in local item coordinates.",
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "direction": {
+                    "description": "Direction of the stem of this annotation, usually corresponds to the surface normal.",
+                    "$ref": "math.schema.json#/definitions/vector3"
+                },
+                "zoneIndex": {
+                    "description": "Index of the zone on the zone texture.",
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
             "additionalProperties": false
         }
     },
 
     "type": "object",
     "properties": {
-        "info": {
-            "description": "Information about the type, generator, and version of this data structure.",
-            "$ref": "#info"
+        "units": {
+            "$ref": "#/definitions/units"
         },
         "meta": {
-            "description": "Meta data about this item, including title, record info, collection, etc.",
-            "$ref": "meta.schema.json"
-        },
-        "process": {
-            "description": "Information about how this item was digitized and processed.",
-            "$ref": "process.schema.json"
-        },
-        "model": {
-            "description": "Describes the visual representations (models, derivatives).",
-            "$ref": "model.schema.json"
+            "$ref": "#/definitions/meta"
         },
         "articles": {
-            "description": "References to external articles (documents, media files) containing additional information.",
-            "$ref": "articles.schema.json"
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/article"
+            },
+            "minLength": 1
+        },
+        "article": {
+            "description": "Index of the main article. This is the default article displayed with the item.",
+            "type": "integer"
         },
         "annotations": {
-            "description": "Spatial annotations (hot spots, hot zones). Annotations can reference articles.",
-            "$ref": "annotations.schema.json"
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/annotation"
+            },
+            "minLength": 1
         }
     },
-    "required": [
-        "info"
-    ],
     "additionalProperties": false
 }

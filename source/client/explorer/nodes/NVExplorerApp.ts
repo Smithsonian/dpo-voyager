@@ -15,11 +15,24 @@
  * limitations under the License.
  */
 
-import CModel from "@ff/scene/components/CModel";
+import Node from "@ff/graph/Node";
+
+import CVAssetLoader from "../../core/components/CVAssetLoader";
+import CVInterface from "../components/CVInterface";
+import CVReader from "../components/CVReader";
+import CVTourPlayer from "../components/CVTourPlayer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVPart extends CModel
+export default class NVExplorerApp extends Node
 {
-    static readonly typeName: string = "CVPart";
+    static readonly typeName: string = "NVExplorerApp";
+
+    createComponents()
+    {
+        this.createComponent(CVAssetLoader);
+        this.createComponent(CVInterface);
+        this.createComponent(CVReader);
+        this.createComponent(CVTourPlayer);
+    }
 }

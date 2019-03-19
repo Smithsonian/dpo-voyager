@@ -18,7 +18,6 @@
 import CVAssetLoader from "./CVAssetLoader";
 import CVModel_old from "./CVModel_old";
 import CVOrbitNavigation from "./CVOrbitNavigation";
-import CVPart from "./CVPart";
 import CVScene_old from "./CVScene_old";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +26,6 @@ export {
     CVAssetLoader,
     CVModel_old,
     CVOrbitNavigation,
-    CVPart,
     CVScene_old,
 };
 
@@ -35,6 +33,5 @@ export const componentTypes = [
     CVAssetLoader,
     CVModel_old,
     CVOrbitNavigation,
-    CVPart,
     CVScene_old,
 ];

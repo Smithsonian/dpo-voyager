@@ -327,7 +327,7 @@
             "description": "An array if items.",
             "type": "array",
             "items": {
-                "$ref": "https://schemas.3d.si.edu/voyager/item.schema.json"
+                "$ref": "https://schemas.3d.si.edu/voyager/item_old.schema.json"
             },
             "minItems": 1
         },

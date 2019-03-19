@@ -27,7 +27,7 @@ import { IPointerEvent } from "@ff/scene/RenderView";
 import CVModel_old from "../../core/components/CVModel_old";
 import CVAnnotations_old, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotations_old";
 import Annotation from "../../explorer/models/Annotation";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVItem_old from "../../explorer/nodes/NVItem_old";
 
 import AnnotationsTaskView from "../ui/AnnotationsTaskView";
 import CVTask from "./CVTask";
@@ -184,7 +184,7 @@ export default class CVAnnotationsTask extends CVTask
         }
     }
 
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
     {
         const prevAnnotations = previous ? previous.annotations : null;
         const nextAnnotations = next ? next.annotations : null;
@@ -204,7 +204,7 @@ export default class CVAnnotationsTask extends CVTask
     {
         const node = event.object.node;
 
-        if (event.add && node instanceof NVItem) {
+        if (event.add && node instanceof NVItem_old) {
             this.itemManager.activeItem = node;
         }
     }

@@ -20,7 +20,7 @@ import { types } from "@ff/graph/propertyTypes";
 import CameraController from "@ff/three/CameraController";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
-import { INavigation } from "common/types/features";
+import { INavigation } from "common/types/explorer";
 
 import CVScene_old from "./CVScene_old";
 import CVNavigation, { EViewPreset } from "./CVNavigation";

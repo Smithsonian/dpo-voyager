@@ -21,7 +21,7 @@ import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 import CVDocument_old from "./CVDocument_old";
 
 import CVItemManager from "../../explorer/components/CVItemManager";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVItem_old from "../nodes/NVItem_old";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
@@ -35,7 +35,7 @@ export default class CVTool extends Component
 
     protected static readonly toolIns = {
         activeDocument: types.Object("Tool.ActiveDocument", CVDocument_old),
-        activeItem: types.Object("Tool.ActiveItem", NVItem),
+        activeItem: types.Object("Tool.ActiveItem", NVItem_old),
     };
 
     protected static readonly toolOuts = {
@@ -53,7 +53,7 @@ export default class CVTool extends Component
 
     protected isActiveTool = false;
     protected activeDocument: CVDocument_old = null;
-    protected activeItem: NVItem = null;
+    protected activeItem: NVItem_old = null;
 
     create()
     {
@@ -136,7 +136,7 @@ export default class CVTool extends Component
     /**
      * Called when the currently active item changes.
      */
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
     {
     }
 }

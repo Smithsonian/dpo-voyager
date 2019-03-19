@@ -41,12 +41,8 @@ export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }
 
 
-export interface IFeatures
+export interface IExplorer
 {
-    meta?: IMeta;
-    process?: IProcess;
-    articles?: IArticles;
-    annotations?: IAnnotations;
     interface?: IInterface;
     reader?: IReader;
     navigation?: INavigation;
@@ -54,78 +50,9 @@ export interface IFeatures
     background?: IBackground;
     floor?: IFloor;
     grid?: IGrid;
-    story?: IStory;
-    tapeTool?: ITapeTool;
-    sliceTool?: ISliceTool;
-}
-
-/**
- * Meta data section of a collection item.
- */
-export interface IMeta
-{
-    [id: string]: any;
-}
-
-/**
- * Meta-data describing the capture, computation, and editorial process.
- */
-export interface IProcess
-{
-    [key: string]: any;
-}
-
-/**
- * Describes the annotations of an item, organized in groups.
- */
-export interface IAnnotations
-{
-    annotations?: IAnnotation[];
-}
-
-/**
- * Connects annotated information to a spatial location.
- * Annotation targets are specific locations (spots) or areas (zones) on an item.
- */
-export interface IAnnotation
-{
-    id: Identifier;
-    title?: string;
-    description?: string;
-    tags?: string[];
-    articles?: Identifier[];
-
-    style?: string;
-    visible?: boolean;
-    expanded?: boolean;
-
-    position?: Vector3;
-    direction?: Vector3;
-    scale?: number;
-    offset?: number;
-    tilt?: number;
-    azimuth?: number;
-
-    zoneIndex?: number;
-}
-
-export interface IArticles
-{
-    mainArticleId?: Identifier;
-    articles?: IArticle[];
-}
-
-/**
- * Refers to an external document or a media file (audio, video, image).
- */
-export interface IArticle
-{
-    id: Identifier;
-    title?: string;
-    description?: string;
-    uri?: string;
-    mimeType?: string;
-    thumbnailUri?: string;
+    tours?: ITour[];
+    tape?: ITape;
+    slicer?: ISlicer;
 }
 
 export interface IScene
@@ -200,7 +127,7 @@ export interface IGrid
     color: number[];
 }
 
-export interface ITapeTool
+export interface ITape
 {
     enabled: boolean;
     startPosition: number[];
@@ -209,20 +136,12 @@ export interface ITapeTool
     endDirection: number[];
 }
 
-export interface ISliceTool
+export interface ISlicer
 {
     enabled: boolean;
     axis: TSliceAxis;
     inverted: boolean;
     position: number;
-}
-
-/**
- * Describes the story elements of an item: snapshots and tours.
- */
-export interface IStory
-{
-    tours?: ITour[];
 }
 
 /**
@@ -232,7 +151,8 @@ export interface IStory
 export interface ITour
 {
     title: string;
-    description: string;
+    lead: string;
+    tags: string[];
     steps: ITweenState[];
     targets: ITweenTarget[];
 }

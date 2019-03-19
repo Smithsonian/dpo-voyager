@@ -20,6 +20,7 @@ import * as THREE from "three";
 
 import Component, { ITypedEvent, types } from "@ff/graph/Component";
 
+import { IDocument } from "common/types/document";
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
@@ -91,6 +92,22 @@ export default class CVAssetLoader extends Component
     {
         const url = resolvePathname(asset.uri, path);
         return this.textureLoader.load(url);
+    }
+
+    loadDocumentData(url: string): Promise<IDocument>
+    {
+        return this.loadJSON(url).then(json => this.validateDocument(json));
+    }
+
+    validateDocument(json: any): Promise<IDocument>
+    {
+        return new Promise((resolve, reject) => {
+            if (!this.validator.validateDocument(json)) {
+                return reject(new Error("invalid document data, validation failed"));
+            }
+
+            return resolve(json as IDocument);
+        });
     }
 
     loadPresentationData(url: string): Promise<IPresentation>

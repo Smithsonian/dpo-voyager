@@ -31,7 +31,7 @@ import Derivative, { EDerivativeQuality, EDerivativeUsage } from "../models/Deri
 import DerivativeList from "../models/DerivativeList";
 
 import CVAssetLoader from "./CVAssetLoader";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVItem_old from "../../explorer/nodes/NVItem_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -105,7 +105,7 @@ export default class CVModel_old extends CObject3D
         return this.system.getMainComponent(CVAssetLoader);
     }
     protected get item() {
-        return this.node as NVItem;
+        return this.node as NVItem_old;
     }
 
     private _marker: THREE.Mesh;

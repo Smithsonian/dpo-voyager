@@ -103,14 +103,14 @@
             "visible": false,
             "color": [0.5, 0.7, 0.8]
         },
-        "tapeTool": {
+        "tape": {
             "enabled": false,
             "startPosition": [0, 0, 0],
             "startDirection": [0, 0, 0],
             "endPosition": [0, 0, 0],
             "endDirection": [0, 0, 0]
         },
-        "sliceTool": {
+        "slicer": {
             "enabled": false,
             "axis": "X",
             "inverted": false,

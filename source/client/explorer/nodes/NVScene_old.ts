@@ -34,7 +34,7 @@ import NVDirectionalLight from "./NVDirectionalLight";
 import NVPointLight from "./NVPointLight";
 import NVSpotLight from "./NVSpotLight";
 import NVReference from "./NVReference";
-import NVItem from "./NVItem";
+import NVItem_old from "./NVItem_old";
 import CTransform from "@ff/scene/components/CTransform";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ export default class NVScene_old extends NVNode
         }
         else if (isFinite(nodeData.item)) {
             const itemData = presentationData.items[nodeData.item];
-            node = this.graph.createCustomNode(NVItem);
+            node = this.graph.createCustomNode(NVItem_old);
             node.item.fromData(itemData);
         }
         else if (isFinite(nodeData.camera)) {
@@ -158,7 +158,7 @@ export default class NVScene_old extends NVNode
 
     protected nodeToData(node: NVNode, data: Partial<IPresentation>, refIndex: number): number
     {
-        const nodeData = node.toNodeData();
+        const nodeData = node.transform.toData();
 
         if (node.name) {
             nodeData.name = node.name;
@@ -167,7 +167,7 @@ export default class NVScene_old extends NVNode
         const index = data.nodes.length;
         data.nodes.push(nodeData);
 
-        if (node instanceof NVItem) {
+        if (node instanceof NVItem_old) {
             if (refIndex === undefined) {
                 data.items = data.items || [];
                 nodeData.item = data.items.length;

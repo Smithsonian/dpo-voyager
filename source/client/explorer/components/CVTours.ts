@@ -20,7 +20,7 @@ import clone from "@ff/core/clone";
 import Component, { ITypedEvent, types } from "@ff/graph/Component";
 import CTweenMachine, { IMachineState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
 
-import { ITour } from "common/types/features";
+import { ITour } from "common/types/explorer";
 import Property from "@ff/graph/Property";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ export default class CVTours extends Component
             if (tour) {
                 const outs = this.outs;
                 outs.title.setValue(tour.title);
-                outs.description.setValue(tour.description);
+                outs.description.setValue(tour.lead);
                 outs.step.setValue(0);
                 outs.count.setValue(tour.steps.length);
 
@@ -136,7 +136,8 @@ export default class CVTours extends Component
     {
         const tour = {
             title: "New Tour",
-            description: "",
+            lead: "",
+            tags: [],
             steps: [],
             targets: clone(this._defaultTargets),
         };

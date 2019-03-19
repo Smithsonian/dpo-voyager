@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
-import Node from "@ff/graph/Node";
+import { IExplorer } from "common/types/explorer";
 
-import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVInterface from "../components/CVInterface";
-import CVReader from "../components/CVReader";
-import CVTourPlayer from "../components/CVTourPlayer";
+import NTransform from "@ff/scene/nodes/NTransform";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVExplorer extends Node
+export default class NVExplorer extends NTransform
 {
     static readonly typeName: string = "NVExplorer";
 
     createComponents()
     {
-        this.createComponent(CVAssetLoader);
-        this.createComponent(CVInterface);
-        this.createComponent(CVReader);
-        this.createComponent(CVTourPlayer);
+        super.createComponents();
+    }
+
+    fromData(data: IExplorer)
+    {
+
+    }
+
+    toData(): IExplorer
+    {
+        return null;
     }
 }

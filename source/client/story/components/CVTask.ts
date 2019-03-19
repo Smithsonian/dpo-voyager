@@ -23,7 +23,7 @@ import CVInterface from "../../explorer/components/CVInterface";
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 import CVDocument_old from "../../explorer/components/CVDocument_old";
 import CVItemManager from "../../explorer/components/CVItemManager";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVItem_old from "../../explorer/nodes/NVItem_old";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
@@ -40,7 +40,7 @@ export default class CVTask extends Component
 
     protected static readonly taskIns = {
         activeDocument: types.Object("Task.ActiveDocument", CVDocument_old),
-        activeItem: types.Object("Task.ActiveItem", NVItem),
+        activeItem: types.Object("Task.ActiveItem", NVItem_old),
     };
 
     protected static readonly taskOuts = {
@@ -65,7 +65,7 @@ export default class CVTask extends Component
 
     protected isActiveTask = false;
     protected activeDocument: CVDocument_old = null;
-    protected activeItem: NVItem = null;
+    protected activeItem: NVItem_old = null;
 
     protected configuration = {
         bracketsVisible: undefined,
@@ -209,7 +209,7 @@ export default class CVTask extends Component
     /**
      * Called when the currently active item changes.
      */
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
     {
     }
 }

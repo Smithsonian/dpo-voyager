@@ -15,32 +15,24 @@
  * limitations under the License.
  */
 
-import { IModelItem, EUnitType, TUnitType } from "common/types/document";
+import { EUnitType, IGroupItem } from "common/types/document";
 
 import NVItem from "./NVItem";
 
 import CVMeta from "../components/CVMeta";
 import CVArticles from "../components/CVArticles";
-import CVAnnotations from "../components/CVAnnotations_old";
-import CVModel from "../components/CVModel";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVModel extends NVItem
+export default class NVGroup extends NVItem
 {
-    static readonly typeName: string = "NVModel";
+    static readonly typeName: string = "NVGroup";
 
     get meta() {
         return this.components.get(CVMeta);
     }
     get articles() {
         return this.components.get(CVArticles);
-    }
-    get annotations() {
-        return this.components.get(CVAnnotations);
-    }
-    get model() {
-        return this.components.get(CVModel);
     }
 
     createComponents()
@@ -49,11 +41,9 @@ export default class NVModel extends NVItem
 
         this.createComponent(CVMeta);
         this.createComponent(CVArticles);
-        this.createComponent(CVAnnotations);
-        this.createComponent(CVModel);
     }
 
-    fromData(data: IModelItem)
+    fromData(data: IGroupItem)
     {
         // base class serializes units
         super.fromData(data);
@@ -65,20 +55,12 @@ export default class NVModel extends NVItem
         if (data.articles) {
             this.articles.fromData(data.articles);
         }
-
-        if (data.annotations) {
-            this.annotations.fromData(data.annotations);
-        }
-
-        if (data.model) {
-            this.model.fromData(data.model);
-        }
     }
 
-    toData(): IModelItem
+    toData(): IGroupItem
     {
         // base class serializes units
-        const data: IModelItem = super.toData();
+        const data: IGroupItem = super.toData();
 
         const metaData = this.meta.toData();
         if (metaData) {
@@ -88,16 +70,6 @@ export default class NVModel extends NVItem
         const articleData = this.articles.toData();
         if (articleData) {
             data.articles = articleData;
-        }
-
-        const annotationData = this.annotations.toData();
-        if (annotationData) {
-            data.annotations = annotationData;
-        }
-
-        const modelData = this.model.toData();
-        if (modelData) {
-            data.model = modelData;
         }
 
         return data;

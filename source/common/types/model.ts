@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-import { IFeatures } from "./features";
+import { Index } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-export type TUnitType = "mm" | "cm" | "m" | "in" | "ft" | "yd";
 
 export type TNormalSpaceType = "Tangent" | "Object";
 
@@ -45,16 +43,9 @@ export interface IBoundingBox
 
 export interface IModel
 {
-    units: TUnitType;
     boundingBox?: IBoundingBox;
-    features?: IFeatures;
-}
-
-export interface IPart
-{
-    material?: IMaterial;
     derivatives?: IDerivative[];
-    features?: IFeatures;
+    material?: IMaterial;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@
 import { IComponentEvent } from "@ff/graph/Node";
 
 import CVArticles, { Article } from "../../explorer/components/CVArticles";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVItem_old from "../../explorer/nodes/NVItem_old";
 
 import ArticlesTaskView from "../ui/ArticlesTaskView";
 import CVTask from "./CVTask";
@@ -61,7 +61,7 @@ export default class CVArticlesTask extends CVTask
         super.deactivateTask();
     }
 
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
     {
         if (next) {
             this.selectionController.selectComponent(next.articles);
@@ -72,7 +72,7 @@ export default class CVArticlesTask extends CVTask
     {
         const node = event.object.node;
 
-        if (event.add && node instanceof NVItem) {
+        if (event.add && node instanceof NVItem_old) {
             this.itemManager.activeItem = node;
         }
     }

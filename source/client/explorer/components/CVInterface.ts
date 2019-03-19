@@ -17,7 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import { IInterface } from "common/types/features";
+import { IInterface } from "common/types/explorer";
 import CVDocumentManager from "./CVDocumentManager";
 
 ////////////////////////////////////////////////////////////////////////////////

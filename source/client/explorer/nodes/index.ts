@@ -19,9 +19,9 @@ import NVCamera from "./NVCamera";
 import NVDocument_old from "./NVDocument_old";
 import NVDirectionalLight from "./NVDirectionalLight";
 import NVDocuments from "./NVDocuments";
-import NVExplorer from "./NVExplorer";
+import NVExplorerApp from "./NVExplorerApp";
 import NVFeatures_old from "./NVFeatures_old";
-import NVItem from "./NVItem";
+import NVItem_old from "./NVItem_old";
 import NVLight from "./NVLight";
 import NVNode from "./NVNode";
 import NVPointLight from "./NVPointLight";
@@ -37,9 +37,9 @@ export {
     NVDocument_old,
     NVDirectionalLight,
     NVDocuments,
-    NVExplorer,
+    NVExplorerApp,
     NVFeatures_old,
-    NVItem,
+    NVItem_old,
     NVLight,
     NVNode,
     NVPointLight,
@@ -54,9 +54,9 @@ export const nodeTypes = [
     NVDocument_old,
     NVDirectionalLight,
     NVDocuments,
-    NVExplorer,
+    NVExplorerApp,
     NVFeatures_old,
-    NVItem,
+    NVItem_old,
     NVLight,
     NVNode,
     NVPointLight,

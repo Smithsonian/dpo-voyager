@@ -78,15 +78,15 @@
                 "extensions": {
                     "type": "object",
                     "properties": {
-                        "si-document": {
+                        "SI_Document": {
                             "type": "object",
                             "properties": {
-                                "model": {
+                                "group": {
                                     "description": "The index of the model in this node.",
                                     "type": "integer",
                                     "minimum": 0
                                 },
-                                "part": {
+                                "model": {
                                     "description": "The index of the part in this node.",
                                     "type": "integer",
                                     "minimum": 0
@@ -110,43 +110,93 @@
             "type": "object",
             "properties": {
                 "units": {
-                    "type": "string",
-                    "enum": [
-                        "mm",
-                        "cm",
-                        "m",
-                        "in",
-                        "ft",
-                        "yd"
-                    ]
+                    "$ref": "./item.schema.json#/definitions/units"
+                },
+                "meta": {
+                    "$ref": "./item.schema.json#/definitions/meta"
+                },
+                "articles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "./item.schema.json#/definitions/article"
+                    },
+                    "minLength": 1
+                },
+                "article": {
+                    "description": "Index of the main article. This is the default article displayed with the scene.",
+                    "type": "integer"
+                },
+                "explorer": {
+                    "$ref": "./explorer.schema.json"
+                }
+            }
+        },
+
+        "group": {
+            "$id": "#group",
+            "description": "3D group item, contains articles, and meta data.",
+            "type": "object",
+            "properties": {
+                "units": {
+                    "$ref": "./item.schema.json#/definitions/units"
+                },
+                "meta": {
+                    "$ref": "./item.schema.json#/definitions/meta"
+                },
+                "articles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "./item.schema.json#/definitions/article"
+                    },
+                    "minLength": 1
+                },
+                "article": {
+                    "description": "Index of the main article. This is the default article displayed with the scene.",
+                    "type": "integer"
+                }
+            }
+        },
+
+        "model": {
+            "$id": "#model",
+            "description": "3D model item, contains model derivatives, articles, annotations, and meta data.",
+            "type": "object",
+            "properties": {
+                "units": {
+                    "$ref": "./item.schema.json#/definitions/units"
+                },
+                "meta": {
+                    "$ref": "./item.schema.json#/definitions/meta"
+                },
+                "articles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "./item.schema.json#/definitions/article"
+                    },
+                    "minLength": 1
+                },
+                "article": {
+                    "description": "Index of the main article. This is the default article displayed with the scene.",
+                    "type": "integer"
+                },
+                "annotations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "./item.schema.json#/definitions/annotation"
+                    }
+                },
+                "boundingBox": {
+                    "description": "Bounding box for this model, shared by all derivatives.",
+                    "$ref": "math.schema.json#/definitions/boundingBox"
                 },
                 "derivatives": {
                     "description": "List of visual representations derived from the master model.",
                     "type": "array",
                     "items": {
-                        "$ref": "https://schemas.3d.si.edu/voyager/derivative.schema.json"
+                        "$ref": "./derivative.schema.json"
                     }
-                },
-                "features": {
-                    "$ref": "https://schemas.3d.si.edu/voyager/features.schema.json"
                 }
             }
-        },
-
-        "reference": {
-            "$id": "#reference",
-            "type": "object",
-            "properties": {
-                "mimeType": {
-                    "type": "string"
-                },
-                "uri": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "uri"
-            ]
         },
 
         "camera": {
@@ -342,7 +392,7 @@
                 "extensions": {
                     "type": "object",
                     "properties": {
-                        "si-document": {
+                        "SI_document": {
                             "type": "object",
                             "properties": {
                                 "type": {
@@ -360,7 +410,7 @@
                         }
                     },
                     "required": [
-                        "si-document"
+                        "SI_document"
                     ]
                 }
             },
@@ -371,7 +421,17 @@
         },
         "scene": {
             "description": "The main scene of the document.",
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
+        },
+        "scenes": {
+            "description": "An array of scenes.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/scene"
+            },
+            "minItems": 1,
+            "maxItems": 1
         },
         "nodes": {
             "description": "An array of nodes.",
@@ -400,38 +460,22 @@
         "extensions": {
             "type": "object",
             "properties": {
-                "si-document": {
+                "SI_document": {
                     "type": "object",
                     "properties": {
-                        "scenes": {
-                            "description": "An array of scenes.",
+                        "groups": {
+                            "description": "An array of groups.",
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/scene"
-                            },
-                            "minItems": 1,
-                            "maxItems": 1
-                        },
-                        "references": {
-                            "description": "An array of references.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/reference"
-                            }
-                        },
-                        "models": {
-                            "description": "An array if models.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "https://schemas.3d.si.edu/voyager/model2.schema.json"
+                                "$ref": "#/definitions/group"
                             },
                             "minItems": 1
                         },
                         "parts": {
-                            "description": "An array of parts.",
+                            "description": "An array of models.",
                             "type": "array",
                             "items": {
-                                "$ref": "https://schemas.3d.si.edu/voyager/part.schema.json"
+                                "$ref": "#/definitions/model"
                             },
                             "minItems": 1
                         }
@@ -442,7 +486,7 @@
                 }
             },
             "required": [
-                "si-document"
+                "SI_document"
             ]
         }
     },

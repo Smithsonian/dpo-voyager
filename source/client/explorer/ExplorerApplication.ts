@@ -39,12 +39,13 @@ import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
 import CVDocument_old from "./components/CVDocument_old";
+import CVDocument from "./components/CVDocument";
 import CVDocumentLoader from "./components/CVDocumentLoader";
 
-import NVExplorer from "./nodes/NVExplorer";
+import NVExplorerApp from "./nodes/NVExplorerApp";
 import NVDocuments from "./nodes/NVDocuments";
 import NVTools from "./nodes/NVTools";
-import NVItem from "./nodes/NVItem";
+import NVItem_old from "./nodes/NVItem_old";
 
 import MainView from "./ui/MainView";
 import NVEngine from "../core/nodes/NVEngine";
@@ -115,7 +116,7 @@ export default class ExplorerApplication
         const system = this.system = new System(registry);
 
         const engine = system.graph.createCustomNode(NVEngine, "Engine");
-        system.graph.createCustomNode(NVExplorer, "Explorer");
+        system.graph.createCustomNode(NVExplorerApp, "Explorer");
         system.graph.createCustomNode(NVDocuments, "Documents").unlock();
         system.graph.createCustomNode(NVTools, "Tools").unlock();
 
@@ -131,7 +132,7 @@ export default class ExplorerApplication
         this.startup();
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument_old | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
     {
         return this.loader.loadDocument(documentOrUrl);
     }
@@ -146,17 +147,17 @@ export default class ExplorerApplication
         return this.loader.loadDefaultPresentation();
     }
 
-    loadItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    loadItem(itemOrUrl: string | IItem): Promise<NVItem_old | null>
     {
         return this.loader.loadItem(itemOrUrl);
     }
 
-    loadModel(modelUrl: string): Promise<NVItem | null>
+    loadModel(modelUrl: string): Promise<NVItem_old | null>
     {
         return this.loader.createItemWithModelAsset(modelUrl);
     }
 
-    loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string): Promise<NVItem | null>
+    loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string): Promise<NVItem_old | null>
     {
         return this.loader.createItemFromGeometryAndMaps(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
     }

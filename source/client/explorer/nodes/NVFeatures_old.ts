@@ -17,7 +17,7 @@
 
 import NTransform from "@ff/scene/nodes/NTransform";
 
-import { IFeatures } from "common/types/features";
+import { IExplorer } from "common/types/explorer";
 
 import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
 
@@ -26,7 +26,6 @@ import CVReader from "../components/CVReader";
 import CVSliceTool from "../components/CVSliceTool";
 import CVTours from "../components/CVTours";
 
-import CVScene_old from "../../core/components/CVScene_old";
 import CVBackground from "../components/CVBackground";
 import CVFloor from "../components/CVFloor";
 import CVGrid from "../components/CVGrid";
@@ -38,7 +37,7 @@ export default class NVFeatures_old extends NTransform
 {
     static readonly typeName: string = "NVFeatures_old";
 
-    protected data: IFeatures = null;
+    protected data: IExplorer = null;
 
     // accessors for system-global components
 
@@ -126,7 +125,7 @@ export default class NVFeatures_old extends NTransform
         tours.addTarget(slice, slice.ins.color);
     }
 
-    fromData(data: IFeatures)
+    fromData(data: IExplorer)
     {
         this.data = data;
 
@@ -138,12 +137,12 @@ export default class NVFeatures_old extends NTransform
         this.background.fromData(data.background);
         this.floor.fromData(data.floor);
         this.grid.fromData(data.grid);
-        this.tape.fromData(data.tapeTool);
+        this.tape.fromData(data.tape);
     }
 
-    toData(): IFeatures
+    toData(): IExplorer
     {
-        const data: IFeatures = this.data = {};
+        const data: IExplorer = this.data = {};
 
         if (this.graph.isActive) {
             this.deflateGlobalComponents();
@@ -153,7 +152,7 @@ export default class NVFeatures_old extends NTransform
         data.background = this.background.toData();
         data.floor = this.floor.toData();
         data.grid = this.grid.toData();
-        data.tapeTool = this.tape.toData();
+        data.tape = this.tape.toData();
 
         return data;
     }
@@ -163,7 +162,7 @@ export default class NVFeatures_old extends NTransform
         const data = this.data;
         this.interface.fromData(data.interface);
         this.reader.fromData(data.reader);
-        this.sliceTool.fromData(data.sliceTool);
+        this.sliceTool.fromData(data.slicer);
     }
 
     protected deflateGlobalComponents()
@@ -171,6 +170,6 @@ export default class NVFeatures_old extends NTransform
         const data = this.data;
         data.interface = this.interface.toData();
         data.reader = this.reader.toData();
-        data.sliceTool = this.sliceTool.toData();
+        data.slicer = this.sliceTool.toData();
     }
 }

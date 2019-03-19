@@ -20,7 +20,7 @@ import Component, { types } from "@ff/graph/Component";
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
 import CVDocument_old from "./CVDocument_old";
 
-import NVItem from "../nodes/NVItem";
+import NVItem_old from "../nodes/NVItem_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ export default class CVItemManager extends Component
     };
 
     protected static readonly outs = {
-        activeItem: types.Object("Items.ActiveItem", NVItem),
+        activeItem: types.Object("Items.ActiveItem", NVItem_old),
         changedItems: types.Event("Items.Changed"),
     };
 
@@ -48,14 +48,14 @@ export default class CVItemManager extends Component
 
     protected activeDocument: CVDocument_old = null;
 
-    get items(): NVItem[] {
+    get items(): NVItem_old[] {
         const document = this.ins.activeDocument.value;
-        return document ? document.getInnerNodes(NVItem) : [];
+        return document ? document.getInnerNodes(NVItem_old) : [];
     }
-    get activeItem(): NVItem {
+    get activeItem(): NVItem_old {
         return this.outs.activeItem.value;
     }
-    set activeItem(item: NVItem) {
+    set activeItem(item: NVItem_old) {
         if (item !== this.activeItem) {
             const index = this.items.indexOf(item);
             this.ins.activeItem.setValue(index + 1);
@@ -77,13 +77,13 @@ export default class CVItemManager extends Component
         if (ins.activeDocument.changed) {
 
             if (this.activeDocument) {
-                this.activeDocument.innerNodes.off(NVItem, this.updateItems, this);
+                this.activeDocument.innerNodes.off(NVItem_old, this.updateItems, this);
             }
 
             this.activeDocument = ins.activeDocument.value;
 
             if (this.activeDocument) {
-                this.activeDocument.innerNodes.on(NVItem, this.updateItems, this);
+                this.activeDocument.innerNodes.on(NVItem_old, this.updateItems, this);
             }
 
             this.updateItems();
@@ -105,7 +105,7 @@ export default class CVItemManager extends Component
     dispose()
     {
         if (this.activeDocument) {
-            this.activeDocument.innerNodes.off(NVItem, this.updateItems, this);
+            this.activeDocument.innerNodes.off(NVItem_old, this.updateItems, this);
         }
     }
 

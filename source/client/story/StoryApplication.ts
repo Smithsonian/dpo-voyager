@@ -29,7 +29,7 @@ import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/Expl
 import { componentTypes as storyComponents } from "./components";
 import { nodeTypes as storyNodes } from "./nodes";
 
-import NVItem from "../explorer/nodes/NVItem";
+import NVItem_old from "../explorer/nodes/NVItem_old";
 import CVDocument_old from "../explorer/components/CVDocument_old";
 import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
 
@@ -113,18 +113,18 @@ export default class StoryApplication
         return this.loader.loadDefaultPresentation();
     }
 
-    loadItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    loadItem(itemOrUrl: string | IItem): Promise<NVItem_old | null>
     {
         return this.loader.loadItem(itemOrUrl);
     }
 
-    createItemWithModelAsset(modelUrl: string, itemUrl: string, quality: string): Promise<NVItem | null>
+    createItemWithModelAsset(modelUrl: string, itemUrl: string, quality: string): Promise<NVItem_old | null>
     {
         return this.loader.createItemWithModelAsset(modelUrl, itemUrl, quality);
     }
 
     createItemFromGeometryAndMaps(geoUrl: string, colorMapUrl?: string,
-        occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
+        occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem_old | null>
     {
         return this.loader.createItemFromGeometryAndMaps(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, itemUrl, quality);
     }

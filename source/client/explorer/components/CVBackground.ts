@@ -17,7 +17,7 @@
 
 import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
-import { IBackground, TBackgroundStyle } from "common/types/features";
+import { IBackground, TBackgroundStyle } from "common/types/explorer";
 
 ////////////////////////////////////////////////////////////////////////////////
 

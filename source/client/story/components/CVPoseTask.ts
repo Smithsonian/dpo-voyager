@@ -25,7 +25,7 @@ import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/Render
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import CVDocument_old from "../../explorer/components/CVDocument_old";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVItem_old from "../../explorer/nodes/NVItem_old";
 import CVInterface from "../../explorer/components/CVInterface";
 import CVModel_old from "../../core/components/CVModel_old";
 
@@ -158,7 +158,7 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
     {
         if (next && next.hasComponent(CVModel_old)) {
             this.selectionController.selectComponent(next.model);
@@ -184,7 +184,7 @@ export default class CVPoseTask extends CVTask
     {
         const node = event.object.node;
 
-        if (event.add && node instanceof NVItem) {
+        if (event.add && node instanceof NVItem_old) {
             this.itemManager.activeItem = node;
         }
     }

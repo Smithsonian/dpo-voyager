@@ -24,6 +24,7 @@ import CVDocumentManager from "./CVDocumentManager";
 import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
 import CVInterface from "./CVInterface";
+import CVItem from "./CVItem";
 import CVItemManager from "./CVItemManager";
 import CVLightTool from "./CVLightTool";
 import CVMeta from "./CVMeta";
@@ -37,6 +38,7 @@ import CVTapeTool from "./CVTapeTool";
 import CVToolManager from "./CVToolManager";
 import CVTourPlayer from "./CVTourPlayer";
 import CVTours from "./CVTours";
+import CVNode from "./CVNode";
 import CVViewTool from "./CVViewTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +53,7 @@ export {
     CVFloor,
     CVGrid,
     CVInterface,
+    CVItem,
     CVItemManager,
     CVLightTool,
     CVMeta,
@@ -64,6 +67,7 @@ export {
     CVToolManager,
     CVTourPlayer,
     CVTours,
+    CVNode,
     CVViewTool,
 };
 
@@ -77,6 +81,7 @@ export const componentTypes = [
     CVFloor,
     CVGrid,
     CVInterface,
+    CVItem,
     CVItemManager,
     CVLightTool,
     CVMeta,
@@ -90,5 +95,6 @@ export const componentTypes = [
     CVToolManager,
     CVTourPlayer,
     CVTours,
+    CVNode,
     CVViewTool,
 ];

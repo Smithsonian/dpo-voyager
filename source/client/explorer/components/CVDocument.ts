@@ -23,24 +23,20 @@ import { types } from "@ff/graph/Component";
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
 import CAssetManager from "@ff/scene/components/CAssetManager";
 
-import { IPresentation } from "common/types/presentation";
+import { IDocument } from "common/types/document";
 
-import NVDocument_old from "../nodes/NVDocument_old";
-import NVFeatures_old from "../nodes/NVFeatures_old";
-import NVScene_old from "../nodes/NVScene_old";
-import NVItem_old from "../nodes/NVItem_old";
-import CVScene_old from "../../core/components/CVScene_old";
-import CTransform from "@ff/scene/components/CTransform";
+import NVNode from "../nodes/NVNode";
+import NVScene from "../nodes/NVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * A document is a special kind of document. Its inner graph has a standard structure, and it can
- * be serialized to and from an IPresentation structure which is very similar to a glTF document.
+ * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
+ * be serialized to and from an IDocument structure which is compatible with a glTF document.
  */
-export default class CVDocument_old extends CRenderGraph
+export default class CVDocument extends CRenderGraph
 {
-    static readonly typeName: string = "CVDocument_old";
+    static readonly typeName: string = "CVDocument";
     static readonly mimeType = "application/si-dpo-3d.document+json";
 
     protected static readonly ins = {
@@ -52,8 +48,8 @@ export default class CVDocument_old extends CRenderGraph
         active: types.Boolean("Document.Active"),
     };
 
-    ins = this.addInputs(CVDocument_old.ins);
-    outs = this.addOutputs(CVDocument_old.outs);
+    ins = this.addInputs(CVDocument.ins);
+    outs = this.addOutputs(CVDocument.outs);
 
     private _url: string = "";
 
@@ -79,32 +75,28 @@ export default class CVDocument_old extends CRenderGraph
         return this.url.substr(nameIndex);
     }
 
-    get voyagerScene() {
-        return this.getInnerComponent(CVScene_old);
-    }
-    get root() {
-        return this.getInnerNode(NVScene_old);
-    }
-    get features() {
-        return this.getInnerNode<NVFeatures_old>("NVFeatures_old");
+    read(document: IDocument)
+    {
+        this.getInnerNode(NVScene).fromData(document);
     }
 
-    createItem()
+    merge(document: IDocument, node: NVNode)
     {
-        const item = this.innerGraph.createCustomNode(NVItem_old);
-        item.url = this.urlPath + "item.json";
-        this.root.transform.addChild(item.transform);
-        return item;
+
     }
+
+    write(): IDocument
+    {
+        return this.getInnerNode(NVScene).toData();
+    }
+
+
 
     create()
     {
         super.create();
 
-        this.innerGraph.createCustomNode(NVDocument_old);
-        const rootNode = this.innerGraph.createCustomNode(NVScene_old);
-        const featureNode = this.innerGraph.createCustomNode<NVFeatures_old>("NVFeatures_old");
-        rootNode.transform.addChild(featureNode.transform);
+        this.innerGraph.createCustomNode(NVScene);
     }
 
     update(context)
@@ -114,13 +106,13 @@ export default class CVDocument_old extends CRenderGraph
         const ins = this.ins;
 
         if (ins.dump.changed) {
-            const json = this.toDocument();
+            const json = this.write();
             console.log("-------------------- VOYAGER DOCUMENT --------------------");
             console.log(JSON.stringify(json, null, 2));
         }
 
         if (ins.download.changed) {
-            download.json(this.toDocument(), this.urlName || "document.json");
+            download.json(this.write(), this.urlName || "document.json");
         }
 
         return true;
@@ -136,32 +128,5 @@ export default class CVDocument_old extends CRenderGraph
     {
         super.deactivateInnerGraph();
         this.outs.active.setValue(false);
-    }
-
-    fromDocument(data: IPresentation)
-    {
-        this.root.fromData(data);
-
-        if (data.features && this.features) {
-            this.features.fromData(data.features);
-        }
-    }
-
-    toDocument(writeReferences: boolean = false): IPresentation
-    {
-        let data = this.root.toData(writeReferences);
-        data.features = this.features.toData();
-
-        const info = {
-            type: CVDocument_old.mimeType,
-            copyright: "Copyright Smithsonian Institution",
-            generator: "Voyager Document Parser",
-            version: "1.4"
-        };
-
-        // ensure info is first key in data
-        data = Object.assign({ info }, data);
-
-        return data as IPresentation;
     }
 }

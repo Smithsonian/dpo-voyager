@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import { types } from "@ff/graph/Component";
 
-import { ESliceAxis, ISliceTool, TSliceAxis } from "common/types/features";
+import { ESliceAxis, ISlicer, TSliceAxis } from "common/types/explorer";
 
 import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
@@ -144,9 +144,9 @@ export default class CVSliceTool extends CVTool
         return new SliceToolView(this);
     }
 
-    fromData(data: ISliceTool)
+    fromData(data: ISlicer)
     {
-        data = data || {} as ISliceTool;
+        data = data || {} as ISlicer;
 
         this.ins.setValues({
             enabled: data.enabled || false,
@@ -156,7 +156,7 @@ export default class CVSliceTool extends CVTool
         });
     }
 
-    toData(): ISliceTool
+    toData(): ISlicer
     {
         const ins = this.ins;
 

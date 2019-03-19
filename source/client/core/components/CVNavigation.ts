@@ -22,7 +22,7 @@ import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
 import { EProjection } from "@ff/three/UniversalCamera";
 
-import { INavigation } from "common/types/features";
+import { INavigation } from "common/types/explorer";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -1,0 +1,144 @@
+{
+    "asset": {
+        "version": "2.0",
+        "copyright": "(c) Smithsonian Institution, all rights reserved",
+        "generator": "Manual Test Document",
+
+        "extensions": {
+            "SI_document": {
+                "type": "application/si-dpo-3d.document+json",
+                "version": "0.1"
+            }
+        }
+    },
+    "scene": 0,
+    "scenes": [{
+        "name": "Template",
+        "nodes": [0, 1],
+        
+        "extensions": {
+            "SI_document": {
+                "units": "cm",
+                "meta": {
+                    "name": "Template"
+                },
+                "articles": [{
+                    "id": "1",
+                    "title": "Ululatibus proles",
+                    "description": "Iunonem ter mihi frustraque et vestrae dixit.",
+                    "uri": "article-sample-1.md",
+                    "mimeType": "text/markdown"
+                }],
+                "article": 0,
+                "explorer": {
+                    "interface": {
+                        "visible": true,
+                        "logo": true,
+                        "menu": true,
+                        "tools": true
+                    },
+                    "reader": {
+                        "visible": false,
+                        "position": "Overlay",
+                        "url": ""
+                    },
+                    "scene": {
+                        "shader": "Default",
+                        "exposure": 1,
+                        "gamma": 1
+                    },
+                    "navigation": {
+                        "type": "Orbit",
+                        "enabled": true,
+                        "orbit": {
+                            "orbit": [-24, -26, 0],
+                            "offset": [0, 0, 150],
+                            "minOrbit": [-90, null, null],
+                            "maxOrbit": [90, null, null],
+                            "minOffset": [null, null, 0.1],
+                            "maxOffset": [null, null, 10000]
+                        }
+                    },
+                    "background": {
+                        "style": "RadialGradient",
+                        "color0": [ 0.2, 0.25, 0.3 ],
+                        "color1": [ 0.01, 0.03, 0.05 ]
+                    },
+                    "floor": {
+                        "visible": false,
+                        "position": [0, -25, 0],
+                        "size": 50,
+                        "color": [ 0.6, 0.75, 0.8 ],
+                        "opacity": 0.5,
+                        "receiveShadow": false
+                    },
+                    "grid": {
+                        "visible": false,
+                        "color": [0.5, 0.7, 0.8]
+                    },
+                    "tapeTool": {
+                        "enabled": false,
+                        "startPosition": [0, 0, 0],
+                        "startDirection": [0, 0, 0],
+                        "endPosition": [0, 0, 0],
+                        "endDirection": [0, 0, 0]
+                    },
+                    "sliceTool": {
+                        "enabled": false,
+                        "axis": "X",
+                        "inverted": false,
+                        "position": 0.5
+                    }
+                }
+            }
+        }
+    }],
+    "nodes": [{
+        "translation": [0, 0, 15],
+        "camera": 0
+    }, {
+        "name": "Lights",
+        "children": [2, 3, 4, 5]
+    }, {
+        "translation": [-3, 1, 2],
+        "name": "Light",
+        "light": 0
+    }, {
+        "translation": [2, 0, 3],
+        "name": "Light",
+        "light": 1
+    }, {
+        "translation": [0, 2, -0.5],
+        "name": "Light",
+        "light": 2
+    }, {
+        "translation": [0, -2, -1.2],
+        "name": "Light",
+        "light": 3
+    }],
+    "cameras": [{
+        "type": "perspective",
+        "perspective": {
+            "yfov": 52,
+            "znear": 0.1,
+            "zfar": 100000
+        }
+    }],
+    "lights": [{
+        "type": "directional",
+        "color": [1, 0.95, 0.9],
+        "intensity": 0.8
+    }, {
+        "type": "directional",
+        "color": [1, 1, 1],
+        "intensity": 0.8
+    }, {
+        "type": "directional",
+        "color": [1, 0.95, 0.85],
+        "intensity": 0.5
+    }, {
+        "type": "directional",
+        "color": [0.8, 0.85, 1],
+        "intensity": 1
+    }]
+}

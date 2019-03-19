@@ -17,7 +17,7 @@
 
 import CFloor from "@ff/scene/components/CFloor";
 
-import { IFloor } from "common/types/features";
+import { IFloor } from "common/types/explorer";
 
 ////////////////////////////////////////////////////////////////////////////////
 

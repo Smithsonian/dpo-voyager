@@ -19,6 +19,7 @@ import resolvePathname from "resolve-pathname";
 
 import Component from "@ff/graph/Component";
 
+import { IDocument } from "common/types/document";
 import { IPresentation } from "common/types/presentation";
 import { IItem } from "common/types/item";
 
@@ -28,10 +29,11 @@ import { EDerivativeQuality } from "../../core/models/Derivative";
 
 import CVAssetLoader from "../../core/components/CVAssetLoader";
 import CVDocumentManager from "./CVDocumentManager";
+import CVDocument from "./CVDocument";
 import CVDocument_old from "./CVDocument_old";
 
 import NVDocuments from "../nodes/NVDocuments";
-import NVItem from "../nodes/NVItem";
+import NVItem_old from "../nodes/NVItem_old";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,21 +45,13 @@ export default class CVDocumentLoader extends Component
         return this.getMainComponent(CVAssetLoader);
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument_old | null>
+    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
     {
-        const loaders = this.system.getMainComponent(CVAssetLoader);
-        const documents = this.system.getMainNode(NVDocuments);
+        const url = typeof documentOrUrl === "string" ? documentOrUrl : "";
+        const getDocument = url ? this.assetLoader.loadDocumentData(url) : Promise.resolve(documentOrUrl as IDocument);
 
-        const getDocument = typeof documentOrUrl === "string" ?
-            loaders.loadJSON(documentOrUrl) : Promise.resolve(documentOrUrl);
-
-        return getDocument.then(jsonData => {
-            const document = documents.createComponent(CVDocument_old);
-            document.fromJSON(jsonData);
-            document.referencesFromJSON(jsonData);
-            return document;
-        }).catch(error => {
-            console.warn("Failed to open document", error);
+        return getDocument.then(documentData => {
+            console.log(documentData);
             return null;
         });
     }
@@ -85,7 +79,7 @@ export default class CVDocumentLoader extends Component
         return this.loadPresentation(presentationTemplate as IPresentation);
     }
 
-    loadItem(itemOrUrl: string | IItem): Promise<NVItem | null>
+    loadItem(itemOrUrl: string | IItem): Promise<NVItem_old | null>
     {
         const documentManager = this.system.getMainComponent(CVDocumentManager);
 
@@ -109,7 +103,7 @@ export default class CVDocumentLoader extends Component
         });
     }
 
-    createItemWithModelAsset(modelUrl: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
+    createItemWithModelAsset(modelUrl: string, itemUrl?: string, quality?: string): Promise<NVItem_old | null>
     {
         let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument_old;
 
@@ -141,7 +135,7 @@ export default class CVDocumentLoader extends Component
     }
 
     createItemFromGeometryAndMaps(geoUrl: string, colorMapUrl?: string,
-                                  occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem | null>
+                                  occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem_old | null>
     {
         let document = this.system.getMainComponent(CVDocumentManager).activeDocument as CVDocument_old;
 

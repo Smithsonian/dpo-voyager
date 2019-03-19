@@ -17,18 +17,41 @@
 
 import Component, { types } from "@ff/graph/Component";
 
+import CTransform from "@ff/scene/components/CTransform";
+import CModel from "@ff/scene/components/CModel";
+
+import { IModel } from "common/types/model";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Graph component rendering an annotation.
+ * Graph component rendering a model or model part.
  */
-export default class CVModel extends Component
+export default class CVModel extends CModel
 {
     static readonly typeName: string = "CVModel";
 
     protected static readonly ins = {
+    };
 
+    protected static readonly outs = {
     };
 
     ins = this.addInputs(CVModel.ins);
+    outs = this.addOutputs(CVModel.outs);
+
+    create()
+    {
+        super.create();
+    }
+
+    fromData(data: IModel)
+    {
+
+    }
+
+    toData(): IModel
+    {
+        return null;
+    }
 }

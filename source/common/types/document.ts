@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { Index } from "@ff/core/types";
+import { Index, Identifier, Dictionary } from "@ff/core/types";
 
-import { IModel, IPart, TUnitType } from "./model";
-import { IFeatures } from "./features";
+import { IExplorer } from "./explorer";
+import { IModel } from "./model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +31,8 @@ export type TColorRGB = TVector3;
 export type TCameraType = "perspective" | "orthographic";
 export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
 
+export type TUnitType = "inherit" | "mm" | "cm" | "m" | "in" | "ft" | "yd";
+export enum EUnitType { inherit, mm, cm, m, in, ft, yd }
 
 export interface IDocument
 {
@@ -42,9 +44,9 @@ export interface IDocument
     lights?: ILight[];
 
     extensions?: {
-        "si-document"?: {
-            models?: IModel[];
-            parts?: IPart[];
+        "SI_document"?: {
+            groups?: IGroupItem[];
+            models?: IModelItem[];
         }
     }
 }
@@ -56,7 +58,7 @@ export interface IDocumentAsset
     generator?: string;
 
     extensions: {
-        "si-document": {
+        "SI_document": {
             type: "application/si-dpo-3d.document+json";
             version: string;
         }
@@ -69,11 +71,31 @@ export interface IScene
     nodes: Index[];
 
     extensions?: {
-        "si-document"?: {
-            units: TUnitType;
-            features: IFeatures;
-        }
+        "SI_document"?: ISceneItem;
     }
+}
+
+export interface IItem
+{
+    units?: TUnitType;
+    meta?: Dictionary<any>;
+    articles?: IArticle[];
+    article?: Index;
+    annotations?: IAnnotation[];
+}
+
+export interface ISceneItem extends IItem
+{
+    explorer?: IExplorer;
+}
+
+export interface IGroupItem extends IItem
+{
+}
+
+export interface IModelItem extends IItem
+{
+    model?: IModel;
 }
 
 export interface ITransform
@@ -82,6 +104,12 @@ export interface ITransform
     translation?: TVector3;
     rotation?: TQuaternion;
     scale?: TVector3;
+}
+
+export interface INodeExt
+{
+    group?: Index;
+    model?: Index;
 }
 
 /**
@@ -96,10 +124,7 @@ export interface INode extends ITransform
     light?: Index;
 
     extensions?: {
-        "si-document"?: {
-            model: Index;
-            part: Index;
-        }
+        "SI_document"?: INodeExt;
     }
 }
 
@@ -171,4 +196,43 @@ export interface ISpotLightProps extends IPointLightProps
 {
     angle: number;
     penumbra: number;
+}
+
+/**
+ * Connects annotated information to a spatial location.
+ * Annotation targets are specific locations (spots) or areas (zones) on an item.
+ */
+export interface IAnnotation
+{
+    title?: string;
+    lead?: string;
+    tags?: string[];
+    articles?: Index[];
+
+    style?: string;
+    visible?: boolean;
+    expanded?: boolean;
+
+    position?: TVector3;
+    direction?: TVector3;
+    scale?: number;
+    offset?: number;
+    tilt?: number;
+    azimuth?: number;
+
+    zoneIndex?: number;
+}
+
+/**
+ * Refers to an external document or a media file (audio, video, image).
+ */
+export interface IArticle
+{
+    title?: string;
+    lead?: string;
+    tags?: string[];
+
+    uri?: string;
+    mimeType?: string;
+    thumbnailUri?: string;
 }
