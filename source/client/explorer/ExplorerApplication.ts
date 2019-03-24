@@ -15,40 +15,32 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
-
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
 import TypeRegistry from "@ff/core/TypeRegistry";
 
 import System from "@ff/graph/System";
-import CPulse from "@ff/graph/components/CPulse";
 
 import { componentTypes as graphComponents } from "@ff/graph/components";
 import { componentTypes as sceneComponents } from "@ff/scene/components";
-import { componentTypes as coreComponents } from "../core/components";
 import { componentTypes as explorerComponents } from "./components";
 
 import { nodeTypes as graphNodes } from "@ff/graph/nodes";
 import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
-import { nodeTypes as coreNodes } from "../core/nodes";
 import { nodeTypes as explorerNodes } from "./nodes";
 
-import { IPresentation } from "common/types/presentation";
-import { IItem } from "common/types/item";
+import { IDocument } from "common/types/document";
 
-import CVDocument_old from "./components/CVDocument_old";
 import CVDocument from "./components/CVDocument";
 import CVDocumentLoader from "./components/CVDocumentLoader";
 
-import NVExplorerApp from "./nodes/NVExplorerApp";
+import NVEngine from "./nodes/NVEngine";
+import NVExplorer from "./nodes/NVExplorer";
 import NVDocuments from "./nodes/NVDocuments";
 import NVTools from "./nodes/NVTools";
-import NVItem_old from "./nodes/NVItem_old";
 
 import MainView from "./ui/MainView";
-import NVEngine from "../core/nodes/NVEngine";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -59,10 +51,6 @@ export interface IExplorerApplicationProps
 {
     /** URL of the document to load and display at startup. */
     document?: string;
-    /** URL of the presentation to load and display at startup. */
-    presentation?: string;
-    /** URL of the item to load and display at startup. */
-    item?: string;
     /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
     model?: string;
     /** URL of a geometry (supported formats: obj, ply) to load and display at startup. */
@@ -104,21 +92,19 @@ export default class ExplorerApplication
 
         registry.add(graphComponents);
         registry.add(sceneComponents);
-        registry.add(coreComponents);
         registry.add(explorerComponents);
 
         registry.add(graphNodes);
         registry.add(sceneNodes);
-        registry.add(coreNodes);
         registry.add(explorerNodes);
 
         this.commander = new Commander();
         const system = this.system = new System(registry);
 
-        const engine = system.graph.createCustomNode(NVEngine, "Engine");
-        system.graph.createCustomNode(NVExplorerApp, "Explorer");
-        system.graph.createCustomNode(NVDocuments, "Documents").unlock();
-        system.graph.createCustomNode(NVTools, "Tools").unlock();
+        const engine = system.graph.createCustomNode(NVEngine);
+        system.graph.createCustomNode(NVExplorer);
+        system.graph.createCustomNode(NVDocuments);
+        system.graph.createCustomNode(NVTools);
 
         // create main view if not given
         if (element) {
@@ -132,62 +118,51 @@ export default class ExplorerApplication
         this.startup();
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>
+    loadDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
     {
         return this.loader.loadDocument(documentOrUrl);
     }
 
-    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument_old | null>
+    openDefaultDocument(): Promise<CVDocument>
     {
-        return this.loader.loadPresentation(presentationOrUrl);
+        return this.loader.openDefaultDocument();
     }
 
-    loadDefaultPresentation(): Promise<CVDocument_old>
+    mergeDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
     {
-        return this.loader.loadDefaultPresentation();
+        return this.loader.mergeDocument(documentOrUrl);
     }
 
-    loadItem(itemOrUrl: string | IItem): Promise<NVItem_old | null>
+    loadModel(modelUrl: string, quality: string): Promise<void>
     {
-        return this.loader.loadItem(itemOrUrl);
+        return this.loader.loadModel(modelUrl, quality);
     }
 
-    loadModel(modelUrl: string): Promise<NVItem_old | null>
+    loadGeometry(geoUrl: string, colorMapUrl?: string,
+                 occlusionMapUrl?: string, normalMapUrl?: string, quality?: string): Promise<void>
     {
-        return this.loader.createItemWithModelAsset(modelUrl);
+        return this.loader.loadGeometry(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, quality);
     }
 
-    loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string): Promise<NVItem_old | null>
-    {
-        return this.loader.createItemFromGeometryAndMaps(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
-    }
 
     protected startup()
     {
         const props = this.props;
 
         props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
-        props.presentation = props.presentation || parseUrlParameter("presentation") || parseUrlParameter("p");
-        props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
 
         if (props.document) {
-            this.loader.loadDocument(props.document);
-        }
-        if (props.presentation) {
-            this.loader.loadPresentation(props.presentation);
+            this.loadDocument(props.document);
         }
         if (props.model) {
-            this.loader.createItemWithModelAsset(props.model, props.item, props.quality);
+            this.loadModel(props.model, props.quality);
         }
         else if (props.geometry) {
-            this.loader.createItemFromGeometryAndMaps(props.geometry, props.texture, null, null, props.item, props.quality);
-        }
-        else if (props.item) {
-            this.loader.loadItem(props.item);
+            this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
 
         return Promise.resolve();

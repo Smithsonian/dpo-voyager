@@ -16,93 +16,142 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
+import CSelection, { IComponentEvent, INodeEvent } from "@ff/graph/components/CSelection";
 
-import CVDocument_old from "./CVDocument_old";
+import NVNode from "../nodes/NVNode";
+import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Manages a set of [[CVDocument]] components. One document at a time is the active document.
+ * Selection of a [[CVDocument]], or selection of an inner [[NVNode]] of a [[CVDocument]] makes
+ * the document the active document.
+ */
 export default class CVDocumentManager extends Component
 {
     static readonly typeName: string = "CVDocumentManager";
     static readonly isSystemSingleton = true;
 
     protected static readonly ins = {
-        activeDocument: types.Option("Documents.ActiveDocument", []),
     };
 
     protected static readonly outs = {
-        activeDocument: types.Object("Documents.ActiveDocument", CVDocument_old),
+        activeDocument: types.Object("Documents.ActiveDocument", CVDocument),
         changedDocuments: types.Event("Documents.Changed"),
+        activeNode: types.Object("Nodes.ActiveNode", NVNode),
+        changedNodes: types.Event("Nodes.Changed"),
     };
 
     ins = this.addInputs(CVDocumentManager.ins);
     outs = this.addOutputs(CVDocumentManager.outs);
 
     get documents() {
-        return this.getComponents(CVDocument_old);
+        return this.getComponents(CVDocument);
     }
     get activeDocument() {
         return this.outs.activeDocument.value;
     }
-    set activeDocument(document: CVDocument_old) {
-        if (document !== this.activeDocument) {
-            const index = this.documents.indexOf(document);
-            this.ins.activeDocument.setValue(index + 1);
+    set activeDocument(document: CVDocument) {
+        const activeDocument = this.activeDocument;
+
+        if (document !== activeDocument) {
+
+            if (activeDocument) {
+                activeDocument.ins.visible.setValue(false);
+                activeDocument.ins.active.setValue(false);
+            }
+            if (document) {
+                document.ins.visible.setValue(true);
+                document.ins.active.setValue(true);
+            }
+
+            this.outs.activeDocument.setValue(document);
+
+            const activeNode = this.activeNode;
+            if (activeNode && activeNode.graph.parent !== document) {
+                this.outs.activeNode.setValue(null);
+            }
+
+            this.outs.changedNodes.set();
         }
+    }
+    get activeNode() {
+        return this.outs.activeNode.value;
+    }
+    set activeNode(node: NVNode) {
+        const activeNode = this.activeNode;
+
+        if (node !== activeNode) {
+            if (node) {
+                const document = node.graph.parent;
+                if (document && document.is(CVDocument)) {
+                    this.activeDocument = document as CVDocument;
+                }
+            }
+
+            this.outs.activeNode.setValue(node);
+        }
+    }
+
+    protected get selection() {
+        return this.getMainComponent(CSelection);
     }
 
     create()
     {
-        this.components.on(CVDocument_old, this.updateDocuments, this);
-        this.updateDocuments();
-    }
+        super.create();
 
-    update()
-    {
-        const ins = this.ins;
+        this.selection.selectedComponents.on(CVDocument, this.onSelectDocument, this);
+        this.selection.selectedNodes.on(NVNode, this.onSelectNode, this);
 
-        if (ins.activeDocument.changed) {
-            const index = ins.activeDocument.getValidatedValue() - 1;
-            const nextDocument = index >= 0 ? this.documents[index] : null;
-            const activeDocument = this.activeDocument;
-
-            if (nextDocument !== activeDocument) {
-                if (activeDocument) {
-                    activeDocument.deactivateInnerGraph();
-                }
-                if (nextDocument) {
-                    nextDocument.activateInnerGraph();
-                }
-
-                this.outs.activeDocument.setValue(nextDocument);
-            }
-        }
-
-        return true;
+        this.components.on(CVDocument, this.onDocument, this);
+        this.system.nodes.on(NVNode, this.onNode, this);
     }
 
     dispose()
     {
-        this.components.off(CVDocument_old, this.updateDocuments, this);
+        this.selection.selectedComponents.off(CVDocument, this.onSelectDocument, this);
+        this.selection.selectedNodes.off(NVNode, this.onSelectNode, this);
+
+        this.components.off(CVDocument, this.onDocument, this);
+        this.system.nodes.off(NVNode, this.onNode, this);
+
+        super.dispose();
     }
 
-    protected updateDocuments()
+    protected onDocument(event: IComponentEvent<CVDocument>)
     {
-        const documents = this.documents;
-        const names = documents.map(document => document.displayName);
-        names.unshift("(none)");
-        this.ins.activeDocument.setOptions(names);
-
-        let activeDocument = this.activeDocument;
-
-        const index = activeDocument ?
-            documents.indexOf(activeDocument) :
-            Math.min(1, documents.length);
-
-        if (index !== this.ins.activeDocument.getValidatedValue()) {
-            this.ins.activeDocument.setValue(index);
+        if (event.remove && event.object === this.activeDocument) {
+            this.activeDocument = null;
         }
 
         this.outs.changedDocuments.set();
+    }
+
+    protected onSelectDocument(event: IComponentEvent<CVDocument>)
+    {
+        if (event.add) {
+            this.activeDocument = event.object;
+        }
+    }
+
+    protected onNode(event: INodeEvent<NVNode>)
+    {
+        if (event.remove && event.object === this.activeNode) {
+            this.activeNode = null;
+        }
+
+        const document = event.object.graph.parent;
+        if (document && document === this.activeDocument) {
+            this.outs.changedNodes.set();
+        }
+    }
+
+    protected onSelectNode(event: INodeEvent<NVNode>)
+    {
+        if (event.add) {
+            this.activeNode = event.object;
+        }
     }
 }

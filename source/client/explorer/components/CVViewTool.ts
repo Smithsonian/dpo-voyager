@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import CVNavigation, { EViewPreset } from "../../core/components/CVNavigation";
-
 import "../ui/PropertyOptions";
 import "../ui/PropertyEvent";
 
-import CVDocument_old from "./CVDocument_old";
+import CVDocument from "./CVDocument";
+import CVNavigation, { EViewPreset } from "./CVNavigation";
+
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,21 +32,9 @@ export default class CVViewTool extends CVTool
     static readonly text = "View";
     static readonly icon = "eye";
 
-    protected static readonly outs = {
-        navigation: types.Object("Document.Navigation", CVNavigation),
-    };
-
-    outs = this.addOutputs<CVTool, typeof CVViewTool.outs>(CVViewTool.outs);
-
     createView()
     {
         return new ViewToolView(this);
-    }
-
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
-    {
-        super.onActiveDocument(previous, next);
-        this.outs.navigation.setValue(next ? next.getInnerComponent(CVNavigation) : null);
     }
 }
 
@@ -61,20 +49,6 @@ export class ViewToolView extends ToolView<CVViewTool>
     {
         super.firstConnected();
         this.classList.add("sv-view-tool-view");
-    }
-
-    protected connected()
-    {
-        super.connected();
-        this.tool.outs.navigation.on("value", this.onNavigation, this);
-        this.onNavigation(this.tool.outs.navigation.value);
-    }
-
-    protected disconnected()
-    {
-        this.onNavigation(null);
-        this.tool.outs.navigation.off("value", this.onNavigation, this);
-        super.disconnected();
     }
 
     protected render()
@@ -97,15 +71,15 @@ export class ViewToolView extends ToolView<CVViewTool>
             <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>`;
     }
 
-    protected onNavigation(navigation: CVNavigation)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (this.navigation) {
             this.navigation.off("update", this.performUpdate, this);
+            this.navigation = null;
         }
-        if (navigation) {
-            navigation.on("update", this.performUpdate, this);
+        if (next) {
+            this.navigation = next.documentScene.navigation;
+            this.navigation.on("update", this.performUpdate, this);
         }
-
-        this.navigation = navigation;
     }
 }

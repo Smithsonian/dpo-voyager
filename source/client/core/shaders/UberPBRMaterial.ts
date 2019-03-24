@@ -20,7 +20,7 @@ import * as THREE from "three";
 import * as fragmentShader from "!raw-loader!./uberPBRShader.frag";
 import * as vertexShader from "!raw-loader!./uberPBRShader.vert";
 
-import { EShaderMode } from "common/types/explorer";
+import { EShaderMode } from "common/types/scene";
 
 ////////////////////////////////////////////////////////////////////////////////
 

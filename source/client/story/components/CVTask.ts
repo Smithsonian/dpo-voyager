@@ -16,14 +16,11 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
-
 import CPickSelection from "@ff/scene/components/CPickSelection";
-import CVInterface from "../../explorer/components/CVInterface";
 
+import NVNode from "../../explorer/nodes/NVNode";
 import CVDocumentManager from "../../explorer/components/CVDocumentManager";
-import CVDocument_old from "../../explorer/components/CVDocument_old";
-import CVItemManager from "../../explorer/components/CVItemManager";
-import NVItem_old from "../../explorer/nodes/NVItem_old";
+import CVDocument from "../../explorer/components/CVDocument";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
@@ -39,33 +36,35 @@ export default class CVTask extends Component
     static readonly icon: string = "fa fa-tasks";
 
     protected static readonly taskIns = {
-        activeDocument: types.Object("Task.ActiveDocument", CVDocument_old),
-        activeItem: types.Object("Task.ActiveItem", NVItem_old),
+        activeDocument: types.Object("Task.ActiveDocument", CVDocument),
+        activeNode: types.Object("Task.ActiveNode", NVNode),
     };
 
     protected static readonly taskOuts = {
-        updated: types.Event("Task.Updated"),
     };
 
     ins = this.addInputs(CVTask.taskIns);
     outs = this.addOutputs(CVTask.taskOuts);
 
-    get interface() {
-        return this.getMainComponent(CVInterface);
+    protected get selection() {
+        return this.system.getMainComponent(CPickSelection);
     }
-    get selectionController() {
-        return this.getMainComponent(CPickSelection);
+    protected get documentManager() {
+        return this.system.getMainComponent(CVDocumentManager);
     }
-    get documentManager() {
-        return this.getMainComponent(CVDocumentManager);
+    protected get activeDocument() {
+        return this._activeDocument;
     }
-    get itemManager() {
-        return this.getMainComponent(CVItemManager);
+    protected get activeNode() {
+        return this._activeNode;
+    }
+    protected get isActiveTask() {
+        return this._isActiveTask;
     }
 
-    protected isActiveTask = false;
-    protected activeDocument: CVDocument_old = null;
-    protected activeItem: NVItem_old = null;
+    private _isActiveTask = false;
+    private _activeDocument: CVDocument = null;
+    private _activeNode: NVNode = null;
 
     protected configuration = {
         bracketsVisible: undefined,
@@ -81,30 +80,33 @@ export default class CVTask extends Component
         annotationsVisible: undefined,
     };
 
-    create()
+    dispose()
     {
-        this.documentManager.outs.activeDocument.linkTo(this.ins.activeDocument);
-        this.itemManager.outs.activeItem.linkTo(this.ins.activeItem);
-    }
-
-    update()
-    {
-        if (!this.isActiveTask) {
-            return false;
+        if (this._isActiveTask) {
+            this.deactivateTask();
         }
 
+        super.dispose();
+    }
+
+    update(context)
+    {
         const ins = this.ins;
 
         if (ins.activeDocument.changed) {
-            const activeDocument = ins.activeDocument.value as CVDocument_old;
-            this.onActiveDocument(this.activeDocument, activeDocument);
-            this.activeDocument = activeDocument;
+            const document = ins.activeDocument.value;
+            if (document !== this._activeDocument) {
+                this.onActiveDocument(this._activeDocument, document);
+                this._activeDocument = document;
+            }
         }
 
-        if (ins.activeItem.changed) {
-            const activeItem = ins.activeItem.value;
-            this.onActiveItem(this.activeItem, activeItem);
-            this.activeItem = activeItem;
+        if (ins.activeNode.changed) {
+            const node = ins.activeNode.value;
+            if (node !== this._activeNode) {
+                this.onActiveNode(this._activeNode, node);
+                this._activeNode = node;
+            }
         }
 
         return true;
@@ -120,32 +122,18 @@ export default class CVTask extends Component
      */
     activateTask()
     {
-        this.isActiveTask = true;
+        this._isActiveTask = true;
 
-        const activeDocument = this.ins.activeDocument.value as CVDocument_old;
-        if (activeDocument) {
-            this.activeDocument = activeDocument;
-            this.onActiveDocument(null, activeDocument);
-        }
-
-        const activeItem = this.ins.activeItem.value;
-        if (activeItem) {
-            this.activeItem = activeItem;
-            this.onActiveItem(null, activeItem);
-        }
+        this.ins.activeDocument.linkFrom(this.documentManager.outs.activeDocument);
+        this.ins.activeNode.linkFrom(this.documentManager.outs.activeNode);
 
         const configuration = this.configuration;
         const savedConfig = this._savedConfig;
 
         if (configuration.bracketsVisible !== undefined) {
-            const prop = this.selectionController.ins.viewportBrackets;
+            const prop = this.selection.ins.viewportBrackets;
             savedConfig.bracketsVisible = prop.value;
             prop.setValue(!!configuration.bracketsVisible);
-        }
-        if (configuration.interfaceVisible !== undefined) {
-            const prop = this.interface.ins.visible;
-            savedConfig.interfaceVisible = prop.value;
-            prop.setValue(!!configuration.interfaceVisible);
         }
     }
 
@@ -157,59 +145,57 @@ export default class CVTask extends Component
         const savedConfig = this._savedConfig;
 
         if (savedConfig.bracketsVisible !== undefined) {
-            this.selectionController.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
-        }
-        if (savedConfig.interfaceVisible !== undefined) {
-            this.interface.ins.visible.setValue(savedConfig.interfaceVisible);
+            this.selection.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
         }
 
-        if (this.activeDocument) {
-            this.onActiveDocument(this.activeDocument, null);
-            this.activeDocument = null;
-        }
-        if (this.activeItem) {
-            this.onActiveItem(this.activeItem, null);
-            this.activeItem = null;
-        }
+        this.ins.activeDocument.unlinkFrom(this.documentManager.outs.activeDocument);
+        this.ins.activeNode.unlinkFrom(this.documentManager.outs.activeNode);
 
-        this.isActiveTask = false;
+        this._isActiveTask = false;
     }
 
     /**
      * Called when the currently active document changes.
      */
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        console.log("CVTask.onActiveDocument - %s", this.displayName);
         const configuration = this.configuration;
         const savedConfig = this._savedConfig;
 
         if (previous) {
             if (savedConfig.gridVisible !== undefined) {
-                previous.features.grid.ins.visible.setValue(savedConfig.gridVisible);
+                previous.documentScene.grid.ins.visible.setValue(savedConfig.gridVisible);
             }
             if (savedConfig.annotationsVisible !== undefined) {
-                previous.voyagerScene.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
+                previous.documentScene.annotations.ins.visible.setValue(savedConfig.annotationsVisible);
+            }
+            if (savedConfig.interfaceVisible !== undefined) {
+                previous.documentScene.interface.ins.visible.setValue(savedConfig.interfaceVisible);
             }
         }
         if (next) {
             if (configuration.gridVisible !== undefined) {
-                const prop = next.features.grid.ins.visible;
+                const prop = next.documentScene.grid.ins.visible;
                 savedConfig.gridVisible = prop.value;
                 prop.setValue(!!configuration.gridVisible);
             }
             if (configuration.annotationsVisible !== undefined) {
-                const prop = next.voyagerScene.ins.annotationsVisible;
+                const prop = next.documentScene.annotations.ins.visible;
                 savedConfig.annotationsVisible = prop.value;
                 prop.setValue(!!configuration.annotationsVisible);
+            }
+            if (configuration.interfaceVisible !== undefined) {
+                const prop = next.documentScene.interface.ins.visible;
+                savedConfig.interfaceVisible = prop.value;
+                prop.setValue(!!configuration.interfaceVisible);
             }
         }
     }
 
     /**
-     * Called when the currently active item changes.
+     * Called when the currently active node changes.
      */
-    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
+    protected onActiveNode(previous: NVNode, next: NVNode)
     {
     }
 }
@@ -221,6 +207,9 @@ export class TaskView<T extends CVTask = CVTask> extends CustomElement
     @property({ attribute: false })
     task: T = null;
 
+    private _activeDocument: CVDocument = null;
+    private _activeNode: NVNode = null;
+
     constructor(task?: T)
     {
         super();
@@ -231,10 +220,10 @@ export class TaskView<T extends CVTask = CVTask> extends CustomElement
         return this.task.system;
     }
     protected get activeDocument() {
-        return this.task.ins.activeDocument.value;
+        return this._activeDocument;
     }
-    protected get activeItem() {
-        return this.task.ins.activeItem.value;
+    protected get activeNode() {
+        return this._activeNode;
     }
 
     protected firstConnected()
@@ -244,11 +233,52 @@ export class TaskView<T extends CVTask = CVTask> extends CustomElement
 
     protected connected()
     {
-        this.task.on("update", this.performUpdate, this);
+        const adProp = this.task.ins.activeDocument;
+        adProp.on("value", this._onActiveDocument, this);
+        this._onActiveDocument(adProp.value);
+
+        const anProp = this.task.ins.activeNode;
+        anProp.on("value", this._onActiveNode, this);
+        this._onActiveNode(anProp.value);
+
+        this.task.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
-        this.task.off("update", this.performUpdate, this);
+        this.task.off("update", this.onRequestUpdate, this);
+
+        const adProp = this.task.ins.activeDocument;
+        adProp.off("value", this._onActiveDocument, this);
+        this._onActiveDocument(null);
+
+        const anProp = this.task.ins.activeNode;
+        anProp.off("value", this._onActiveNode, this);
+        this._onActiveNode(null);
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+    }
+
+    protected onRequestUpdate()
+    {
+        this.requestUpdate();
+    }
+
+    private _onActiveDocument(document: CVDocument)
+    {
+        this.onActiveDocument(this._activeDocument, document);
+        this._activeDocument = document;
+    }
+
+    private _onActiveNode(node: NVNode)
+    {
+        this.onActiveNode(this._activeNode, node);
+        this._activeNode = node;
     }
 }

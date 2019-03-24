@@ -20,8 +20,9 @@ import clone from "@ff/core/clone";
 import Component, { ITypedEvent, types } from "@ff/graph/Component";
 import CTweenMachine, { IMachineState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
 
-import { ITour } from "common/types/explorer";
+import { ITour } from "common/types/scene";
 import Property from "@ff/graph/Property";
+import OrderedCollection from "@ff/core/OrderedCollection";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +53,8 @@ export default class CVTours extends Component
 
     ins = this.addInputs(CVTours.ins);
     outs = this.addOutputs(CVTours.outs);
+
+    tours = new OrderedCollection<ITour>();
 
     private _tours: ITour[] = [];
     private _activeTourIndex = -1;

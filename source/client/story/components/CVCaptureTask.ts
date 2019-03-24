@@ -29,7 +29,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/models/Derivative";
 
 import CVModel_old from "../../core/components/CVModel_old";
-import NVItem_old from "../../explorer/nodes/NVItem_old";
+import NVItem from "../../explorer/nodes/NVItem";
 
 import CVTask from "./CVTask";
 import CaptureTaskView from "../ui/CaptureTaskView";
@@ -249,7 +249,7 @@ export default class CVCaptureTask extends CVTask
         console.warn("CCaptureTask.removePictures - not implemented yet");
     }
 
-    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
         super.onActiveItem(previous, next);
 
@@ -282,7 +282,7 @@ export default class CVCaptureTask extends CVTask
     {
         const node = event.object.node;
 
-        if (event.add && node instanceof NVItem_old) {
+        if (event.add && node instanceof NVItem) {
             this.itemManager.activeItem = node;
         }
     }

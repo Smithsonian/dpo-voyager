@@ -15,117 +15,64 @@
  * limitations under the License.
  */
 
-import { Index, Identifier, Dictionary } from "@ff/core/types";
+import { Index } from "@ff/core/types";
 
-import { IExplorer } from "./explorer";
+import { Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
+import { IInfo } from "./info";
+import { IScene } from "./scene";
 import { IModel } from "./model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type TMatrix4 = number[];
-export type TVector3 = number[];
-export type TVector4 = number[];
-export type TQuaternion = TVector4;
-export type TColorRGB = TVector3;
+export { Vector3, Quaternion, Matrix4, ColorRGB };
 
 export type TCameraType = "perspective" | "orthographic";
 export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
 
-export type TUnitType = "inherit" | "mm" | "cm" | "m" | "in" | "ft" | "yd";
-export enum EUnitType { inherit, mm, cm, m, in, ft, yd }
-
+/**
+ * Encapsulates a node tree representing a renderable scene.
+ */
 export interface IDocument
 {
     asset: IDocumentAsset;
-    scene: Index;
-    scenes: IScene[];
+    root: Index;
     nodes?: INode[];
     cameras?: ICamera[];
     lights?: ILight[];
-
-    extensions?: {
-        "SI_document"?: {
-            groups?: IGroupItem[];
-            models?: IModelItem[];
-        }
-    }
+    infos?: IInfo[];
+    models?: IModel[];
+    scenes?: IScene[];
 }
 
+/**
+ * Information about the document, such as its type, version, copyright and generator.
+ */
 export interface IDocumentAsset
 {
+    type: "application/si-dpo-3d.document+json";
     version: string;
     copyright?: string;
     generator?: string;
-
-    extensions: {
-        "SI_document": {
-            type: "application/si-dpo-3d.document+json";
-            version: string;
-        }
-    }
-}
-
-export interface IScene
-{
-    name?: string;
-    nodes: Index[];
-
-    extensions?: {
-        "SI_document"?: ISceneItem;
-    }
-}
-
-export interface IItem
-{
-    units?: TUnitType;
-    meta?: Dictionary<any>;
-    articles?: IArticle[];
-    article?: Index;
-    annotations?: IAnnotation[];
-}
-
-export interface ISceneItem extends IItem
-{
-    explorer?: IExplorer;
-}
-
-export interface IGroupItem extends IItem
-{
-}
-
-export interface IModelItem extends IItem
-{
-    model?: IModel;
-}
-
-export interface ITransform
-{
-    matrix?: TMatrix4;
-    translation?: TVector3;
-    rotation?: TQuaternion;
-    scale?: TVector3;
-}
-
-export interface INodeExt
-{
-    group?: Index;
-    model?: Index;
 }
 
 /**
  * Node in scene hierarchy.
  */
-export interface INode extends ITransform
+export interface INode
 {
     name?: string;
     children?: Index[];
 
+    matrix?: Matrix4;
+    translation?: Vector3;
+    rotation?: Quaternion;
+    scale?: Vector3;
+
     camera?: Index;
     light?: Index;
-
-    extensions?: {
-        "SI_document"?: INodeExt;
-    }
+    info?: Index;
+    model?: Index;
+    scene?: Index;
 }
 
 /**
@@ -164,7 +111,7 @@ export interface IOrthographicCameraProps
 export interface ILight
 {
     type: TLightType;
-    color?: TColorRGB;
+    color?: ColorRGB;
     intensity?: number;
     castShadow?: boolean;
     hemisphere?: IHemisphereLightProps;
@@ -177,7 +124,7 @@ export interface ILight
  */
 export interface IHemisphereLightProps
 {
-    groundColor: TColorRGB;
+    groundColor: ColorRGB;
 }
 
 /**
@@ -196,43 +143,4 @@ export interface ISpotLightProps extends IPointLightProps
 {
     angle: number;
     penumbra: number;
-}
-
-/**
- * Connects annotated information to a spatial location.
- * Annotation targets are specific locations (spots) or areas (zones) on an item.
- */
-export interface IAnnotation
-{
-    title?: string;
-    lead?: string;
-    tags?: string[];
-    articles?: Index[];
-
-    style?: string;
-    visible?: boolean;
-    expanded?: boolean;
-
-    position?: TVector3;
-    direction?: TVector3;
-    scale?: number;
-    offset?: number;
-    tilt?: number;
-    azimuth?: number;
-
-    zoneIndex?: number;
-}
-
-/**
- * Refers to an external document or a media file (audio, video, image).
- */
-export interface IArticle
-{
-    title?: string;
-    lead?: string;
-    tags?: string[];
-
-    uri?: string;
-    mimeType?: string;
-    thumbnailUri?: string;
 }

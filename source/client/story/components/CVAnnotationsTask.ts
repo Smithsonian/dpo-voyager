@@ -25,9 +25,9 @@ import { IComponentEvent } from "@ff/graph/Node";
 import { IPointerEvent } from "@ff/scene/RenderView";
 
 import CVModel_old from "../../core/components/CVModel_old";
-import CVAnnotations_old, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotations_old";
+import CVAnnotationView, { IAnnotationsUpdateEvent } from "../../explorer/components/CVAnnotationView";
 import Annotation from "../../explorer/models/Annotation";
-import NVItem_old from "../../explorer/nodes/NVItem_old";
+import NVItem from "../../explorer/nodes/NVItem";
 
 import AnnotationsTaskView from "../ui/AnnotationsTaskView";
 import CVTask from "./CVTask";
@@ -55,13 +55,13 @@ export default class CVAnnotationsTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
 
-    private _activeAnnotations: CVAnnotations_old = null;
+    private _activeAnnotations: CVAnnotationView = null;
 
 
     get activeAnnotations() {
         return this._activeAnnotations;
     }
-    set activeAnnotations(annotations: CVAnnotations_old) {
+    set activeAnnotations(annotations: CVAnnotationView) {
         if (annotations !== this._activeAnnotations) {
             this._activeAnnotations = annotations;
             this.emitUpdateEvent();
@@ -77,13 +77,13 @@ export default class CVAnnotationsTask extends CVTask
     {
         super.activateTask();
 
-        this.selectionController.selectedComponents.on(CVAnnotations_old, this.onSelectAnnotations, this);
+        this.selectionController.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     deactivateTask()
     {
-        this.selectionController.selectedComponents.off(CVAnnotations_old, this.onSelectAnnotations, this);
+        this.selectionController.selectedComponents.off(CVAnnotationView, this.onSelectAnnotations, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         super.deactivateTask();
@@ -184,7 +184,7 @@ export default class CVAnnotationsTask extends CVTask
         }
     }
 
-    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
         const prevAnnotations = previous ? previous.annotations : null;
         const nextAnnotations = next ? next.annotations : null;
@@ -200,11 +200,11 @@ export default class CVAnnotationsTask extends CVTask
         this.activeAnnotations = nextAnnotations;
     }
 
-    protected onSelectAnnotations(event: IComponentEvent<CVAnnotations_old>)
+    protected onSelectAnnotations(event: IComponentEvent<CVAnnotationView>)
     {
         const node = event.object.node;
 
-        if (event.add && node instanceof NVItem_old) {
+        if (event.add && node instanceof NVItem) {
             this.itemManager.activeItem = node;
         }
     }

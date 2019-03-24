@@ -6,24 +6,113 @@
     "description": "Describes the visual representations (models, derivatives) of a 3D item.",
 
     "definitions": {
-        "material": {
-            "$id": "#material",
+        "annotation": {
+            "description": "Spatial annotation (hot spot, hot zone) on a model. Annotations can reference articles.",
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string"
+                },
+                "lead": {
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Array of tags, categorizing the annotation.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "articles": {
+                    "description": "Array of article ids, listing articles related to the annotation.",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "style": {
+                    "type": "string"
+                },
+                "visible": {
+                    "description": "Flag indicating whether the annotation is visible.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "expanded": {
+                    "description": "Flag indicating whether the annotation is displayed in expanded state.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "scale": {
+                    "description": "Scales the annotation relative to its default size.",
+                    "type": "number",
+                    "default": 1
+                },
+                "offset": {
+                    "description": "Offsets the annotation along its direction.",
+                    "type": "number",
+                    "default": 0
+                },
+                "tilt": {
+                    "description": "Tilt angle of the annotation relative to the direction vector in degrees.",
+                    "type": "number",
+                    "default": 0
+                },
+                "azimuth": {
+                    "description": "Azimuth angle of a tilted annotation.",
+                    "type": "number",
+                    "default": 0
+                },
+                "position": {
+                    "description": "Position where the annotation is anchored, in local item coordinates.",
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "direction": {
+                    "description": "Direction of the stem of this annotation, usually corresponds to the surface normal.",
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "zoneIndex": {
+                    "description": "Index of the zone on the zone texture.",
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "additionalProperties": false
+        },
+        "part": {
+            "type": "object",
+            "properties": {
+                "derivatives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/derivative"
+                    }
+                },
+                "material": {
+                    "$ref": "#/definitions/material"
+                }
             }
         },
         "derivative": {
-            "$id": "#derivative",
+            "description": "Visual representation derived from the master model.",
             "type": "object",
             "properties": {
                 "usage": {
                     "description": "usage categories for a derivative.",
                     "type": "string",
                     "enum": [
-                        "Web2D",
+                        "2D",
                         "Web3D",
-                        "Print",
-                        "Editorial"
+                        "Print3D",
+                        "Editorial3D"
                     ]
                 },
                 "quality": {
@@ -49,7 +138,6 @@
         },
         "asset": {
             "description": "an individual resource for a 3D model.",
-            "$id": "#asset",
             "type": "object",
             "properties": {
                 "uri": {
@@ -65,6 +153,10 @@
                         "Points",
                         "Volume"
                     ]
+                },
+                "part": {
+                    "type": "string",
+                    "minLength": 1
                 },
                 "mimeType": {
                     "type": "string",
@@ -98,43 +190,44 @@
                 "uri",
                 "type"
             ]
+        },
+        "material": {
+            "description": "Surface properties for this model, shared by all derivatives.",
+            "type": "object",
+            "properties": {
+            }
         }
     },
 
     "type": "object",
     "properties": {
         "units": {
-            "type": "string",
-            "enum": [
-                "mm",
-                "cm",
-                "m",
-                "in",
-                "ft",
-                "yd"
-            ]
+            "$ref": "./common.schema.json#/definitions/units"
+        },
+        "parts": {
+            "$ref": "#/definitions/part"
+        },
+        "visible": {
+            "type": "boolean",
+            "default": true
         },
         "translation": {
-            "description": "Translation vector. Apply to bring model into a 'neutral' pose.",
-            "$ref": "math.schema.json#/definitions/vector3"
+            "description": "Translation vector. Must be applied to bring model into its 'neutral' pose.",
+            "$ref": "./common.schema.json#/definitions/vector3"
         },
         "rotation": {
-            "description": "Rotation quaternion. Apply to bring model into a 'neutral' pose.",
-            "$ref": "math.schema.json#/definitions/vector4"
+            "description": "Rotation quaternion. Must be applied to bring model into its 'neutral' pose.",
+            "$ref": "./common.schema.json#/definitions/vector4"
         },
         "boundingBox": {
             "description": "Bounding box for this model, shared by all derivatives.",
-            "$ref": "math.schema.json#/definitions/boundingBox"
+            "$ref": "./common.schema.json#/definitions/boundingBox"
         },
-        "material": {
-            "description": "Surface properties for this model, shared by all derivatives.",
-            "$ref": "#/definitions/material"
-        },
-        "derivatives": {
-            "description": "List of visual representations derived from the master model.",
+        "annotations": {
+            "description": "List of annotations to be displayed with the model",
             "type": "array",
             "items": {
-                "$ref": "#/definitions/derivative"
+                "$ref": "#/definitions/annotation"
             }
         }
     },

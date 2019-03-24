@@ -17,7 +17,7 @@
 
 import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
-import { IBackground, TBackgroundStyle } from "common/types/explorer";
+import { IBackground, TBackgroundStyle } from "common/types/scene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,8 +29,6 @@ export default class CVBackground extends CBackground
 
     fromData(data: IBackground)
     {
-        data = data || {} as IBackground;
-
         this.ins.copyValues({
             style: EBackgroundStyle[data.style] || EBackgroundStyle.Solid,
             color0: data.color0 || [ 0.2, 0.25, 0.3 ],

@@ -25,13 +25,13 @@ import "@ff/ui/Icon";
 
 import CVItemManager from "../../explorer/components/CVItemManager";
 
-import NVItem_old from "../../explorer/nodes/NVItem_old";
+import NVItem from "../../explorer/nodes/NVItem";
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-item-list")
-class ItemList extends List<NVItem_old>
+class ItemList extends List<NVItem>
 {
     @property({ attribute: false })
     system: System = null;
@@ -53,14 +53,14 @@ class ItemList extends List<NVItem_old>
         super.connected();
 
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.on(NVItem_old, this.onRequestUpdate, this);
+        this.selection.selectedNodes.on(NVItem, this.onRequestUpdate, this);
         this.itemManager.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.off(NVItem_old, this.onRequestUpdate, this);
+        this.selection.selectedNodes.off(NVItem, this.onRequestUpdate, this);
         this.itemManager.off("update", this.onRequestUpdate, this);
 
         super.disconnected();
@@ -72,14 +72,14 @@ class ItemList extends List<NVItem_old>
         return super.update(props);
     }
 
-    protected renderItem(item: NVItem_old)
+    protected renderItem(item: NVItem)
     {
         const isActive = item === this.itemManager.activeItem;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${item.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(item: NVItem_old): boolean
+    protected isItemSelected(item: NVItem): boolean
     {
         return this.selection.selectedNodes.contains(item)
             || this.selection.nodeContainsSelectedComponent(item);
@@ -87,12 +87,12 @@ class ItemList extends List<NVItem_old>
 
     protected onSelectComponent(event: IComponentEvent)
     {
-        if (event.object.node.is(NVItem_old)) {
+        if (event.object.node.is(NVItem)) {
             this.requestUpdate();
         }
     }
 
-    protected onClickItem(event: MouseEvent, item: NVItem_old)
+    protected onClickItem(event: MouseEvent, item: NVItem)
     {
         this.itemManager.activeItem = item;
     }

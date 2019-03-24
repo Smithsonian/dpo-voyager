@@ -24,7 +24,7 @@ import DocumentView, {
 } from "./DocumentView";
 
 import CVItemManager from "../components/CVItemManager";
-import NVItem_old from "../nodes/NVItem_old";
+import NVItem from "../nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 
 export default class ItemView extends DocumentView
 {
-    private _activeItem: NVItem_old = null;
+    private _activeItem: NVItem = null;
 
     protected get itemManager() {
         return this.system.getMainComponent(CVItemManager);
@@ -58,11 +58,11 @@ export default class ItemView extends DocumentView
         super.disconnected();
     }
 
-    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
     }
 
-    private _onActiveItem(item: NVItem_old)
+    private _onActiveItem(item: NVItem)
     {
         if (item !== this._activeItem) {
             this.onActiveItem(this._activeItem, item);

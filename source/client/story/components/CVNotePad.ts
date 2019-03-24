@@ -17,7 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import NVItem_old, { INote } from "../../explorer/nodes/NVItem_old";
+import NVItem, { INote } from "../../explorer/nodes/NVItem";
 import CVItemManager from "../../explorer/components/CVItemManager";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ export default class CVNotePad extends Component
     static readonly typeName: string = "CVNotePad";
 
     protected static readonly ins = {
-        activeItem: types.Object("Scope.ActiveItem", NVItem_old),
+        activeItem: types.Object("Scope.ActiveItem", NVItem),
     };
 
     ins = this.addInputs(CVNotePad.ins);

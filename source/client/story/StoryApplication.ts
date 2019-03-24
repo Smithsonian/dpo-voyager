@@ -21,16 +21,14 @@ import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import { IPresentation } from "common/types/presentation";
-import { IItem } from "common/types/item";
+import { IDocument } from "common/types/document";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 
 import { componentTypes as storyComponents } from "./components";
 import { nodeTypes as storyNodes } from "./nodes";
 
-import NVItem_old from "../explorer/nodes/NVItem_old";
-import CVDocument_old from "../explorer/components/CVDocument_old";
+import CVDocument from "../explorer/components/CVDocument";
 import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
 
 import NVPrepTasks from "./nodes/NVPrepTasks";
@@ -98,35 +96,30 @@ export default class StoryApplication
         }
     }
 
-    loadDocument(documentOrUrl: string | object): Promise<CVDocument_old | null>
+    loadDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
     {
         return this.loader.loadDocument(documentOrUrl);
     }
 
-    loadPresentation(presentationOrUrl: string | IPresentation): Promise<CVDocument_old | null>
+    openDefaultDocument(): Promise<CVDocument>
     {
-        return this.loader.loadPresentation(presentationOrUrl);
+        return this.loader.openDefaultDocument();
     }
 
-    loadDefaultPresentation(): Promise<CVDocument_old>
+    mergeDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
     {
-        return this.loader.loadDefaultPresentation();
+        return this.loader.mergeDocument(documentOrUrl);
     }
 
-    loadItem(itemOrUrl: string | IItem): Promise<NVItem_old | null>
+    loadModel(modelUrl: string, quality: string): Promise<void>
     {
-        return this.loader.loadItem(itemOrUrl);
+        return this.loader.loadModel(modelUrl, quality);
     }
 
-    createItemWithModelAsset(modelUrl: string, itemUrl: string, quality: string): Promise<NVItem_old | null>
+    loadGeometry(geoUrl: string, colorMapUrl?: string,
+        occlusionMapUrl?: string, normalMapUrl?: string, quality?: string): Promise<void>
     {
-        return this.loader.createItemWithModelAsset(modelUrl, itemUrl, quality);
-    }
-
-    createItemFromGeometryAndMaps(geoUrl: string, colorMapUrl?: string,
-        occlusionMapUrl?: string, normalMapUrl?: string, itemUrl?: string, quality?: string): Promise<NVItem_old | null>
-    {
-        return this.loader.createItemFromGeometryAndMaps(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, itemUrl, quality);
+        return this.loader.loadGeometry(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, quality);
     }
 
     protected initFromProps()

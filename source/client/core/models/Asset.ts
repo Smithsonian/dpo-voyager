@@ -15,12 +15,17 @@
  * limitations under the License.
  */
 
+import {
+    IAsset,
+    EAssetType,
+    TAssetType,
+    EMapType,
+    TMapType
+} from "common/types/model";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-import { IAsset, TAssetType, TMapType } from "common/types/item";
-
-export enum EAssetType { Model, Geometry, Image, Texture, Points, Volume }
-export enum EMapType { Color, Normal, Occlusion, Emissive, MetallicRoughness, Zone }
+export { IAsset, EAssetType, EMapType };
 
 export default class Asset
 {

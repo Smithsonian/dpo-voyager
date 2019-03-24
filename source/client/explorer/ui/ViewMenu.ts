@@ -22,7 +22,7 @@ import "@ff/ui/Grid";
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
-import CVNavigation, { EProjection, EViewPreset } from "../../core/components/CVNavigation";
+import CVNavigation, { EProjection, EViewPreset } from "../components/CVNavigation";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";

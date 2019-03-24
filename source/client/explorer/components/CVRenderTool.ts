@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import CVScene_old from "../../core/components/CVScene_old";
-
 import "../ui/PropertyOptions";
 
-import CVDocument_old from "./CVDocument_old";
+import CVDocument from "./CVDocument";
+import CVViewer from "./CVViewer";
+
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,21 +31,9 @@ export default class CVRenderTool extends CVTool
     static readonly text = "Material";
     static readonly icon = "palette";
 
-    protected static readonly outs = {
-        scene: types.Object("Document.Scene", CVScene_old),
-    };
-
-    outs = this.addOutputs<CVTool, typeof CVRenderTool.outs>(CVRenderTool.outs);
-
     createView()
     {
         return new RenderToolView(this);
-    }
-
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
-    {
-        super.onActiveDocument(previous, next);
-        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene_old) : null);
     }
 }
 
@@ -54,7 +42,7 @@ export default class CVRenderTool extends CVTool
 @customElement("sv-render-tool-view")
 export class RenderToolView extends ToolView<CVRenderTool>
 {
-    protected scene: CVScene_old = null;
+    protected viewer: CVViewer = null;
 
     protected firstConnected()
     {
@@ -62,42 +50,29 @@ export class RenderToolView extends ToolView<CVRenderTool>
         this.classList.add("sv-render-tool-view");
     }
 
-    protected connected()
-    {
-        super.connected();
-        const sceneProp = this.tool.outs.scene;
-        sceneProp.on("value", this.onScene, this);
-        this.onScene(sceneProp.value);
-    }
-
-    protected disconnected()
-    {
-        this.onScene(null);
-        this.tool.outs.scene.off("value", this.onScene, this);
-        super.disconnected();
-    }
-
     protected render()
     {
-        const scene = this.scene;
-        if (!scene) {
+
+        const viewer = this.viewer;
+        if (!viewer) {
             return html``;
         }
 
-        const shader = scene.ins.shader;
+        const shader = viewer.ins.shader;
 
         return html`<sv-property-options .property=${shader} name="Material"></sv-property-options>`;
     }
 
-    protected onScene(scene: CVScene_old)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        if (this.scene) {
-            this.scene.ins.shader.off("value", this.performUpdate, this);
-        }
-        if (scene) {
-            scene.ins.shader.on("value", this.performUpdate, this);
+        if (this.viewer) {
+            this.viewer.ins.shader.off("value", this.onRequestUpdate, this);
+            this.viewer = null;
         }
 
-        this.scene = scene;
+        if (next) {
+            this.viewer = next.documentScene.viewer;
+            this.viewer.ins.shader.on("value", this.onRequestUpdate, this);
+        }
     }
 }

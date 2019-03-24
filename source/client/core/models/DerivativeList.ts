@@ -17,7 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 
-import { IDerivative } from "common/types/item";
+import { IDerivative } from "common/types/model";
 
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "./Derivative";
 import { EAssetType, EMapType } from "./Asset";

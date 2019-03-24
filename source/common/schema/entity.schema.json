@@ -1,0 +1,76 @@
+{
+    "$id": "https://schemas.3d.si.edu/voyager/entity.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Entity",
+    "description": "Meta data for a scene or model item.",
+
+    "definitions": {
+        "article": {
+            "$id": "#article",
+            "description": "Reference to an external document (HTML) or a media file (audio, video, image).",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "description": "Short title.",
+                    "type": "string"
+                },
+                "lead": {
+                    "description": "Short lead text.",
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Array of tags, categorizing the article.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "uri": {
+                    "description": "Location of the resource, absolute URL or path relative to this document",
+                    "type": "string"
+                },
+                "mimeType": {
+                    "description": "MIME type of the resource.",
+                    "type": "string"
+                },
+                "thumbnailUri": {
+                    "description": "Location of a thumbnail/preview image of the resource.",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "uri"
+            ]
+        }
+    },
+
+    "type": "object",
+    "properties": {
+        "meta": {
+            "type": "object"
+        },
+        "process": {
+            "type": "object"
+        },
+        "articles": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/article"
+            },
+            "minLength": 1
+        },
+        "leadArticle": {
+            "description": "Id of the main article. This is the default article displayed with the item.",
+            "type": "string",
+            "minLength": 1
+        }
+    },
+    "additionalProperties": false
+}

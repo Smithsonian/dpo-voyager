@@ -1,0 +1,256 @@
+{
+    "$id": "https://schemas.3d.si.edu/voyager/scene.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+
+    "title": "Scene",
+    "description": "Tours and settings for explorer components (scene environment, UI, tools, etc.)",
+
+    "definitions": {
+        "viewer": {
+            "type": "object",
+            "properties": {
+                "shader": {
+                    "type": "string"
+                },
+                "exposure": {
+                    "type": "number"
+                },
+                "gamma": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "shader",
+                "exposure",
+                "gamma"
+            ]
+        },
+        "reader": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "documentUri": {
+                    "description": "URI of the document currently displayed in the reader",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "interface": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "logo": {
+                    "type": "boolean"
+                },
+                "menu": {
+                    "type": "boolean"
+                },
+                "tools": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "navigation": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "orbit", "walk"
+                    ]
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "orbit": {
+                    "$comment": "TODO: Implement",
+
+                    "type": "object",
+                    "properties": {
+
+                    }
+                },
+                "walk": {
+                    "$comment": "TODO: Implement",
+
+                    "type": "object",
+                    "properties": {
+                    }
+                }
+            }
+        },
+        "background": {
+            "type": "object",
+            "properties": {
+                "style": {
+                    "type": "string",
+                    "enum": [
+                        "Solid", "LinearGradient", "RadialGradient"
+                    ]
+                },
+                "color0": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "color1": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "floor": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "position": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "color": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "opacity": {
+                    "type": "number"
+                },
+                "receiveShadow": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "grid": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                },
+                "color": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "tape": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "startPosition": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "startDirection": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "endPosition": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                },
+                "endDirection": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "slicer": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "axis": {
+                    "type": "string",
+                    "enum": [ "X", "Y", "Z" ]
+                },
+                "inverted": {
+                    "type": "boolean"
+                },
+                "position": {
+                    "type": "number"
+                }
+            }
+        },
+        "annotations": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "tours": {
+            "description": "Animated tours and snapshots.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "lead": {
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Array of tags, categorizing the tour.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "states": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            }
+        }
+    },
+
+    "type": "object",
+    "properties": {
+        "units": {
+            "$ref": "./common.schema.json#/definitions/units"
+        },
+        "interface": {
+            "$ref": "#/definitions/interface"
+        },
+        "viewer": {
+            "$ref": "#/definitions/viewer"
+        },
+        "reader": {
+            "$ref": "#/definitions/reader"
+        },
+        "navigation": {
+            "$ref": "#/definitions/navigation"
+        },
+        "background": {
+            "$ref": "#/definitions/background"
+        },
+        "floor": {
+            "$ref": "#/definitions/floor"
+        },
+        "grid": {
+            "$ref": "#/definitions/grid"
+        },
+        "tape": {
+            "$ref": "#/definitions/tape"
+        },
+        "slicer": {
+            "$ref": "#/definitions/slicer"
+        },
+        "tours": {
+            "$ref": "#/definitions/tours"
+        }
+    }
+}

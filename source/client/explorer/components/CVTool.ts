@@ -17,25 +17,23 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CVDocumentManager from "../../explorer/components/CVDocumentManager";
-import CVDocument_old from "./CVDocument_old";
-
-import CVItemManager from "../../explorer/components/CVItemManager";
-import NVItem_old from "../nodes/NVItem_old";
+import NVNode from "../nodes/NVNode";
+import CVDocumentManager from "./CVDocumentManager";
+import CVDocument from "./CVDocument";
 
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { types, customElement, html };
+export { types, customElement, property, html };
 
 export default class CVTool extends Component
 {
     static readonly typeName: string = "CVTool";
 
     protected static readonly toolIns = {
-        activeDocument: types.Object("Tool.ActiveDocument", CVDocument_old),
-        activeItem: types.Object("Tool.ActiveItem", NVItem_old),
+        activeDocument: types.Object("Tool.ActiveDocument", CVDocument),
+        activeNode: types.Object("Tool.ActiveNode", NVNode),
     };
 
     protected static readonly toolOuts = {
@@ -44,41 +42,50 @@ export default class CVTool extends Component
     ins = this.addInputs(CVTool.toolIns);
     outs = this.addOutputs(CVTool.toolOuts);
 
-    get documentManager() {
+    protected get documentManager() {
         return this.system.getMainComponent(CVDocumentManager);
     }
-    get itemManager() {
-        return this.getMainComponent(CVItemManager);
+    protected get activeDocument() {
+        return this._activeDocument;
+    }
+    protected get activeNode() {
+        return this._activeNode;
+    }
+    protected get isActiveTool() {
+        return this._isActiveTool;
     }
 
-    protected isActiveTool = false;
-    protected activeDocument: CVDocument_old = null;
-    protected activeItem: NVItem_old = null;
+    private _isActiveTool = false;
+    private _activeDocument: CVDocument = null;
+    private _activeNode: NVNode = null;
 
-    create()
+    dispose()
     {
-        this.documentManager.outs.activeDocument.linkTo(this.ins.activeDocument);
-        this.itemManager.outs.activeItem.linkTo(this.ins.activeItem);
-    }
-
-    update()
-    {
-        if (!this.isActiveTool) {
-            return false;
+        if (this._isActiveTool) {
+            this.deactivateTool();
         }
 
+        super.dispose();
+    }
+
+    update(context)
+    {
         const ins = this.ins;
 
         if (ins.activeDocument.changed) {
-            const activeDocument = ins.activeDocument.value as CVDocument_old;
-            this.onActiveDocument(this.activeDocument, activeDocument);
-            this.activeDocument = activeDocument;
+            const document = ins.activeDocument.value;
+            if (document !== this._activeDocument) {
+                this.onActiveDocument(this._activeDocument, document);
+                this._activeDocument = document;
+            }
         }
 
-        if (ins.activeItem.changed) {
-            const activeItem = ins.activeItem.value;
-            this.onActiveItem(this.activeItem, activeItem);
-            this.activeItem = activeItem;
+        if (ins.activeNode.changed) {
+            const node = ins.activeNode.value;
+            if (node !== this._activeNode) {
+                this.onActiveNode(this._activeNode, node);
+                this._activeNode = node;
+            }
         }
 
         return true;
@@ -94,19 +101,10 @@ export default class CVTool extends Component
      */
     activateTool()
     {
-        this.isActiveTool = true;
+        this._isActiveTool = true;
 
-        const activeDocument = this.ins.activeDocument.value as CVDocument_old;
-        if (activeDocument) {
-            this.activeDocument = activeDocument;
-            this.onActiveDocument(null, activeDocument);
-        }
-
-        const activeItem = this.ins.activeItem.value;
-        if (activeItem) {
-            this.activeItem = activeItem;
-            this.onActiveItem(null, activeItem);
-        }
+        this.ins.activeDocument.linkFrom(this.documentManager.outs.activeDocument);
+        this.ins.activeNode.linkFrom(this.documentManager.outs.activeNode);
     }
 
     /**
@@ -114,29 +112,17 @@ export default class CVTool extends Component
      */
     deactivateTool()
     {
-        if (this.activeDocument) {
-            this.onActiveDocument(this.activeDocument, null);
-            this.activeDocument = null;
-        }
-        if (this.activeItem) {
-            this.onActiveItem(this.activeItem, null);
-            this.activeItem = null;
-        }
+        this.ins.activeDocument.unlinkFrom(this.documentManager.outs.activeDocument);
+        this.ins.activeNode.unlinkFrom(this.documentManager.outs.activeNode);
 
-        this.isActiveTool = false;
+        this._isActiveTool = false;
     }
 
-    /**
-     * Called when the currently active document changes.
-     */
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
     }
 
-    /**
-     * Called when the currently active item changes.
-     */
-    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
+    protected onActiveNode(previous: NVNode, next: NVNode)
     {
     }
 }
@@ -148,6 +134,9 @@ export class ToolView<T extends CVTool = CVTool> extends CustomElement
     @property({ attribute: false })
     tool: T = null;
 
+    private _activeDocument: CVDocument = null;
+    private _activeNode: NVNode = null;
+
     constructor(tool?: T)
     {
         super();
@@ -158,10 +147,10 @@ export class ToolView<T extends CVTool = CVTool> extends CustomElement
         return this.tool.system;
     }
     protected get activeDocument() {
-        return this.tool.ins.activeDocument.value;
+        return this._activeDocument;
     }
-    protected get activeItem() {
-        return this.tool.ins.activeItem.value;
+    protected get activeNode() {
+        return this._activeNode;
     }
 
     protected firstConnected()
@@ -171,11 +160,52 @@ export class ToolView<T extends CVTool = CVTool> extends CustomElement
 
     protected connected()
     {
-        this.tool.on("update", this.performUpdate, this);
+        const adProp = this.tool.ins.activeDocument;
+        adProp.on("value", this._onActiveDocument, this);
+        this._onActiveDocument(adProp.value);
+
+        const anProp = this.tool.ins.activeNode;
+        anProp.on("value", this._onActiveNode, this);
+        this._onActiveNode(anProp.value);
+
+        this.tool.on("update", this.onRequestUpdate, this);
     }
 
     protected disconnected()
     {
-        this.tool.off("update", this.performUpdate, this);
+        this.tool.off("update", this.onRequestUpdate, this);
+
+        const adProp = this.tool.ins.activeDocument;
+        adProp.off("value", this._onActiveDocument, this);
+        this._onActiveDocument(null);
+
+        const anProp = this.tool.ins.activeNode;
+        anProp.off("value", this._onActiveNode, this);
+        this._onActiveNode(null);
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+    }
+
+    protected onRequestUpdate()
+    {
+        this.requestUpdate();
+    }
+
+    private _onActiveDocument(document: CVDocument)
+    {
+        this.onActiveDocument(this._activeDocument, document);
+        this._activeDocument = document;
+    }
+
+    private _onActiveNode(node: NVNode)
+    {
+        this.onActiveNode(this._activeNode, node);
+        this._activeNode = node;
     }
 }

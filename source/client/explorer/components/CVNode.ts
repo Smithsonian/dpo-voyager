@@ -17,7 +17,6 @@
 
 import * as THREE from "three";
 
-import math from "@ff/core/math";
 import CTransform from "@ff/scene/components/CTransform";
 
 import { INode } from "common/types/document";
@@ -45,7 +44,7 @@ export default class CVNode extends CTransform
             _mat4.decompose(_vec3a, _quat, _vec3b);
             _vec3a.toArray(position.value);
             _euler.setFromQuaternion(_quat, "XYZ");
-            _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rotation.value);
+            _euler.toVector3(_vec3a).multiplyScalar(THREE.Math.RAD2DEG).toArray(rotation.value);
             _vec3b.toArray(scale.value);
 
             position.set();
@@ -59,7 +58,7 @@ export default class CVNode extends CTransform
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
                 _euler.setFromQuaternion(_quat, "XYZ");
-                _euler.toVector3(_vec3a).multiplyScalar(math.RAD2DEG).toArray(rotation.value);
+                _euler.toVector3(_vec3a).multiplyScalar(THREE.Math.RAD2DEG).toArray(rotation.value);
                 rotation.set();
             }
             if (data.scale) {

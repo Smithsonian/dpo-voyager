@@ -30,5 +30,5 @@ export default class CVAnnotation extends CRenderGraph
 
     };
 
-    ins = this.addInputs(CVAnnotation.ins);
+    ins = this.addInputs<CRenderGraph, typeof CVAnnotation.ins>(CVAnnotation.ins);
 }

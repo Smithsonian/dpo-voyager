@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component, { ITypedEvent, types } from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 
 import CVTool from "./CVTool";
 
@@ -49,7 +49,19 @@ export default class CVToolManager extends Component
         return this.outs.activeTool.value;
     }
     set activeTool(tool: CVTool) {
-        if (tool !== this.activeTool) {
+        const activeTool = this.activeTool;
+
+        if (tool !== activeTool) {
+
+            if (activeTool) {
+                activeTool.deactivateTool();
+            }
+            if (tool) {
+                tool.activateTool();
+            }
+
+            this.outs.activeTool.setValue(tool);
+
             const index = this.tools.indexOf(tool);
             this.ins.activeTool.setValue(index + 1);
         }
@@ -66,19 +78,7 @@ export default class CVToolManager extends Component
 
         if (ins.activeTool.changed) {
             const index = ins.activeTool.getValidatedValue() - 1;
-            const nextTool = index >= 0 ? this.tools[index] : null;
-            const activeTool = this.activeTool;
-
-            if (nextTool !== activeTool) {
-                if (activeTool) {
-                    activeTool.deactivateTool();
-                }
-                if (nextTool) {
-                    nextTool.activateTool();
-                }
-
-                this.outs.activeTool.setValue(nextTool);
-            }
+            this.activeTool = index >= 0 ? this.tools[index] : null;
         }
 
         return true;

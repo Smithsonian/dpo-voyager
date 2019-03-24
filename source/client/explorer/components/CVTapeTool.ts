@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/Component";
-
 import "../ui/PropertyBoolean";
 import "../ui/PropertyString";
 
-import CVScene_old from "../../core/components/CVScene_old";
+import CVDocument from "./CVDocument";
+import CVScene from "./CVScene";
 import CVTape, { ETapeState } from "./CVTape";
 
-import CVDocument_old from "./CVDocument_old";
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,33 +33,9 @@ export default class CVTapeTool extends CVTool
     static readonly text = "Measure";
     static readonly icon = "tape";
 
-    protected static readonly outs = {
-        tape: types.Object("Components.Tape", CVTape),
-        scene: types.Object("Components.Scene", CVScene_old),
-    };
-
-    outs = this.addOutputs<CVTool, typeof CVTapeTool.outs>(CVTapeTool.outs);
-
-    protected get tape() {
-        const document = this.activeDocument;
-        return document ? document.getInnerComponent(CVTape) : null;
-    }
-    protected get scene() {
-        const document = this.activeDocument;
-        return document ? document.getInnerComponent(CVScene_old) : null;
-    }
-
     createView()
     {
         return new TapeToolView(this);
-    }
-
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
-    {
-        super.onActiveDocument(previous, next);
-
-        this.outs.tape.setValue(next ? next.getInnerComponent(CVTape) : null);
-        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene_old) : null);
     }
 }
 
@@ -70,6 +44,7 @@ export default class CVTapeTool extends CVTool
 @customElement("sv-tape-tool-view")
 export class TapeToolView extends ToolView<CVTapeTool>
 {
+    protected scene: CVScene = null;
     protected tape: CVTape = null;
 
     protected firstConnected()
@@ -78,30 +53,15 @@ export class TapeToolView extends ToolView<CVTapeTool>
         this.classList.add("sv-tape-tool-view");
     }
 
-    protected connected()
-    {
-        super.connected();
-        const tapeProp = this.tool.outs.tape;
-        tapeProp.on("value", this.onTape, this);
-        this.onTape(tapeProp.value);
-    }
-
-    protected disconnected()
-    {
-        this.onTape(null);
-        this.tool.outs.tape.off("value", this.onTape, this);
-        super.disconnected();
-    }
-
     protected render()
     {
+        const scene = this.scene;
         const tape = this.tape;
 
         if (!tape) {
             return html``;
         }
 
-        const scene = tape.getGraphComponent(CVScene_old);
         const visible = tape.ins.visible;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
@@ -127,15 +87,9 @@ export class TapeToolView extends ToolView<CVTapeTool>
             <div class="ff-string">${text}</div></div>`;
     }
 
-    protected onTape(tape: CVTape)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        if (this.tape) {
-            this.tape.off("update", this.performUpdate, this);
-        }
-        if (tape) {
-            tape.on("update", this.performUpdate, this);
-        }
-
-        this.tape = tape;
+        this.scene = next ? next.documentScene : null;
+        this.tape = next ? next.documentScene.tape : null;
     }
 }

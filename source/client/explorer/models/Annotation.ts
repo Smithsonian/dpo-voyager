@@ -15,10 +15,14 @@
  * limitations under the License.
  */
 
+import uniqueId from "@ff/core/uniqueId";
 import { Identifier } from "@ff/core/types";
-import { IAnnotation } from "common/types/item";
+
+import { IAnnotation } from "common/types/model";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export { IAnnotation };
 
 export type Vector3 = number[];
 
@@ -26,37 +30,54 @@ export enum EAnnotationStyle { Default, Line, Balloon }
 
 export default class Annotation
 {
+    static fromJSON(json: IAnnotation)
+    {
+        return new Annotation(json.id).fromJSON(json);
+    }
+
     id: string;
     title: string = "New Annotation";
-    description: string = "";
+    lead: string = "";
+    tags: string[] = [];
+    articles: Identifier[] = [];
+
     style: EAnnotationStyle = EAnnotationStyle.Default;
     visible: boolean = true;
     expanded: boolean = false;
+
+    position: Vector3 = null;
+    direction: Vector3 = null;
     scale: number = 1;
     offset: number = 0;
     tilt: number = 0;
     azimuth: number = 0;
-    articles: Identifier[] = [];
-    groups: Identifier[] = [];
-    position: Vector3 = null;
-    direction: Vector3 = null;
+
     zoneIndex: number = -1;
 
 
     constructor(id?: string)
     {
-        this.id = id || "";
+        this.id = id || uniqueId(6);
     }
 
-    toData(): IAnnotation
+    toJSON(): IAnnotation
     {
-        const data: Partial<IAnnotation> = { id: this.id };
+        const data: Partial<IAnnotation> = {
+            id: this.id,
+        };
 
         if (this.title) {
             data.title = this.title;
         }
-        if (this.description) {
-            data.description = this.description;
+        if (this.lead) {
+            data.lead = this.lead;
+        }
+        if (this.tags.length > 0) {
+            data.tags = this.tags;
+        }
+        if (this.articles.length > 0) {
+            //TODO: Articles/IDs
+            //data.articles = this.articles.slice();
         }
         if (this.style !== EAnnotationStyle.Default) {
             data.style = EAnnotationStyle[this.style];
@@ -68,6 +89,12 @@ export default class Annotation
         // if (this.expanded) {
         //     data.expanded = this.expanded;
         // }
+        if (this.position) {
+            data.position = this.position.slice();
+        }
+        if (this.direction) {
+            data.direction = this.direction.slice();
+        }
         if (this.scale !== 1) {
             data.scale = this.scale;
         }
@@ -80,18 +107,6 @@ export default class Annotation
         if (this.azimuth !== 0) {
             data.azimuth = this.azimuth;
         }
-        if (this.articles.length > 0) {
-            data.articles = this.articles.slice();
-        }
-        if (this.groups.length > 0) {
-            data.groups = this.groups.slice();
-        }
-        if (this.position) {
-            data.position = this.position.slice();
-        }
-        if (this.direction) {
-            data.direction = this.direction.slice();
-        }
         if (this.zoneIndex > -1) {
             data.zoneIndex = this.zoneIndex;
         }
@@ -99,22 +114,27 @@ export default class Annotation
         return data as IAnnotation;
     }
 
-    fromData(data: IAnnotation): Annotation
+    fromJSON(data: IAnnotation): Annotation
     {
+        this.id = data.id;
+
         this.title = data.title || "";
-        this.description = data.description || "";
+        this.lead = data.lead || "";
+        this.tags = data.tags || [];
+        //TODO: Articles/IDs
+        //this.articles = data.articles ? data.articles.slice() : [];
+
         this.style = EAnnotationStyle[data.style] || EAnnotationStyle.Default;
         this.visible = data.visible !== undefined ? data.visible : true;
         this.expanded = data.expanded || false;
+
+        this.position = data.position.slice();
+        this.direction = data.direction.slice();
         this.scale = data.scale !== undefined ? data.scale : 1;
         this.offset = data.offset || 0;
         this.tilt = data.tilt || 0;
         this.azimuth = data.azimuth || 0;
-        this.articles = data.articles ? data.articles.slice() : [];
-        this.groups = data.groups ? data.groups.slice() : [];
 
-        this.position = data.position.slice();
-        this.direction = data.direction.slice();
         this.zoneIndex = data.zoneIndex !== undefined ? data.zoneIndex : -1;
 
         return this;

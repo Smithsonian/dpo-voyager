@@ -19,19 +19,23 @@ import * as THREE from "three";
 
 import { disposeObject } from "@ff/three/helpers";
 
-import { IDerivative, TDerivativeQuality, TDerivativeUsage } from "common/types/item";
+import {
+    IDerivative,
+    EDerivativeQuality,
+    TDerivativeQuality,
+    EDerivativeUsage,
+    TDerivativeUsage
+} from "common/types/model";
 
-import CVAssetLoader from "../components/CVAssetLoader";
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
+import CVAssetLoader from "../../explorer/components/CVAssetLoader";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { Asset, EAssetType };
+export { IDerivative, EDerivativeQuality, EDerivativeUsage, Asset, EAssetType };
 
-export enum EDerivativeUsage { Web2D, Web3D, Print, Editorial }
-export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
 
 export default class Derivative
 {

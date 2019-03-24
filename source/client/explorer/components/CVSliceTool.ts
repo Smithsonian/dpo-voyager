@@ -15,32 +15,16 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import { types } from "@ff/graph/Component";
-
-import { ESliceAxis, ISlicer, TSliceAxis } from "common/types/explorer";
-
 import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
 
-import UberPBRMaterial from "../../core/shaders/UberPBRMaterial";
-import CVModel_old from "../../core/components/CVModel_old";
-import CVScene_old from "../../core/components/CVScene_old";
+import CVDocument from "./CVDocument";
+import CVSlicer from "./CVSlicer";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const _planes = [
-    [-1, 0, 0, 0 ],
-    [ 0,-1, 0, 0 ],
-    [ 0, 0,-1, 0 ],
-    [ 1, 0, 0, 0 ],
-    [ 0, 1, 0, 0 ],
-    [ 0, 0, 1, 0 ],
-];
 
 export default class CVSliceTool extends CVTool
 {
@@ -49,123 +33,9 @@ export default class CVSliceTool extends CVTool
     static readonly text = "Slice";
     static readonly icon = "knife";
 
-    protected static readonly ins = {
-        enabled: types.Boolean("Slice.Enabled"),
-        axis: types.Enum("Slice.Axis", ESliceAxis),
-        position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
-        inverted: types.Boolean("Slice.Inverted"),
-        color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
-    };
-
-    ins = this.addInputs<CVTool, typeof CVSliceTool.ins>(CVSliceTool.ins);
-
-    protected plane: number[] = null;
-    protected axisIndex = -1;
-    protected boundingBox: THREE.Box3 = null;
-
-    update()
-    {
-        const updated = super.update();
-
-        const ins = this.ins;
-
-        if (!ins.enabled.value && !ins.enabled.changed) {
-            return updated;
-        }
-
-        const document = this.activeDocument;
-        if (!document) {
-            return updated;
-        }
-
-        if (ins.enabled.changed && ins.enabled.value) {
-            this.boundingBox = document.getInnerComponent(CVScene_old).updateBoundingBox();
-        }
-
-        if (ins.axis.changed) {
-            const axisIndex = ins.axis.getValidatedValue();
-
-            if (axisIndex === this.axisIndex) {
-                ins.inverted.setValue(!ins.inverted.value, true);
-            }
-            else {
-                ins.inverted.setValue(false, true);
-                this.axisIndex = axisIndex;
-            }
-        }
-
-        const axisIndex = ins.axis.getValidatedValue();
-        const axisInverted = ins.inverted.value;
-        const planeIndex = axisIndex + (axisInverted ? 3 : 0);
-
-        const boundingBox = this.boundingBox;
-        if (!boundingBox) {
-            return true;
-        }
-
-        this.plane = _planes[planeIndex];
-        const min = boundingBox.min.getComponent(axisIndex);
-        const max = boundingBox.max.getComponent(axisIndex);
-        const value = 1 - ins.position.value;
-        this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
-
-        const models = document.getInnerComponents(CVModel_old);
-
-        models.forEach(model => {
-            const object = model.object3D;
-            object.traverse((mesh: THREE.Mesh) => {
-                if (mesh.isMesh) {
-                    const material = mesh.material as UberPBRMaterial;
-                    if (material.isUberPBRMaterial) {
-                        this.updateMaterial(material);
-                    }
-                }
-            });
-        });
-
-        return true;
-    }
-
-    protected updateMaterial(material: UberPBRMaterial)
-    {
-        const ins = this.ins;
-
-        if (ins.enabled.changed) {
-            material.enableCutPlane(ins.enabled.value);
-            material.needsUpdate = true;
-        }
-
-        material.cutPlaneDirection.fromArray(this.plane);
-        material.cutPlaneColor.fromArray(ins.color.value);
-    }
-
     createView()
     {
         return new SliceToolView(this);
-    }
-
-    fromData(data: ISlicer)
-    {
-        data = data || {} as ISlicer;
-
-        this.ins.setValues({
-            enabled: data.enabled || false,
-            axis: ESliceAxis[data.axis] || ESliceAxis.X,
-            position: data.position || 0,
-            inverted: data.inverted || false
-        });
-    }
-
-    toData(): ISlicer
-    {
-        const ins = this.ins;
-
-        return {
-            enabled: ins.enabled.value,
-            axis: ESliceAxis[ins.axis.getValidatedValue()] as TSliceAxis,
-            position: ins.position.value,
-            inverted: ins.inverted.value,
-        };
     }
 }
 
@@ -174,6 +44,8 @@ export default class CVSliceTool extends CVTool
 @customElement("sv-slice-tool-view")
 export class SliceToolView extends ToolView<CVSliceTool>
 {
+    protected slicer: CVSlicer = null;
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -182,12 +54,22 @@ export class SliceToolView extends ToolView<CVSliceTool>
 
     protected render()
     {
-        const enabled = this.tool.ins.enabled;
-        const axis = this.tool.ins.axis;
-        const position = this.tool.ins.position;
+        const slicer = this.slicer;
+        if (!slicer) {
+            return html``;
+        }
+
+        const enabled = slicer.ins.enabled;
+        const axis = slicer.ins.axis;
+        const position = slicer.ins.position;
 
         return html`<sv-property-boolean .property=${enabled} name="Slice Tool"></sv-property-boolean>
             <sv-property-options .property=${axis}></sv-property-options>
             <sv-property-slider .property=${position}></sv-property-slider>`;
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        this.slicer = next ? next.documentScene.slicer : null;
     }
 }

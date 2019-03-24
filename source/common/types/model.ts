@@ -16,21 +16,71 @@
  */
 
 import { Index } from "@ff/core/types";
+import { ColorRGB, ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { EUnitType, TUnitType };
+
 export type TNormalSpaceType = "Tangent" | "Object";
 
-export type TDerivativeUsage = "Web2D" | "Web3D" | "Print" | "Editorial";
-export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
-export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";
-export type TMapType = "Color" | "Normal" | "Occlusion" | "Emissive" | "MetallicRoughness" | "Zone";
+export enum EDerivativeUsage { Image2D, Web3D, Print3D, Editorial3D }
+export type TDerivativeUsage = "Image2D" | "Web3D" | "Print3D" | "Editorial3D";
 
-export type Matrix4 = number[];
-export type Vector3 = number[];
-export type Vector4 = number[];
-export type ColorRGB = Vector3;
-export type ColorRGBA = Vector4;
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
+export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
+
+export enum EAssetType { Model, Geometry, Image, Texture, Points, Volume }
+export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";
+
+export enum EMapType { Color, Emissive, Occlusion, Normal, MetallicRoughness, Zone }
+export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "MetallicRoughness" | "Zone";
+
+
+export interface IModel
+{
+    units: TUnitType;
+    parts: IPart[];
+
+    visible?: boolean;
+    translation?: Vector3;
+    rotation?: Vector4;
+    boundingBox?: IBoundingBox;
+    annotations?: IAnnotation[];
+}
+
+/**
+ * Connects annotated information to a spatial location.
+ * Annotation targets are specific locations (spots) or areas (zones) on an item.
+ */
+export interface IAnnotation
+{
+    id: string;
+
+    title?: string;
+    lead?: string;
+    tags?: string[];
+    articles?: Index[];
+
+    style?: string;
+    visible?: boolean;
+    expanded?: boolean;
+
+    position?: Vector3;
+    direction?: Vector3;
+    scale?: number;
+    offset?: number;
+    tilt?: number;
+    azimuth?: number;
+
+    zoneIndex?: number;
+}
+
+export interface IPart
+{
+    derivatives?: IDerivative[];
+    material?: IMaterial;
+}
 
 /**
  * Axis-aligned bounding box.
@@ -39,38 +89,6 @@ export interface IBoundingBox
 {
     min: Vector3;
     max: Vector3;
-}
-
-export interface IModel
-{
-    boundingBox?: IBoundingBox;
-    derivatives?: IDerivative[];
-    material?: IMaterial;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-export interface IMaterial
-{
-    pbrMetallicRoughness?: IPBRMetallicRoughness;
-    normalTexture?: any;
-    normalSpace?: TNormalSpaceType;
-    occlusionTexture?: any;
-    occlusionStrength?: number;
-    emissiveTexture?: any;
-    emissiveFactor?: ColorRGB;
-    alphaMode?: any; // TODO
-    alphaCutoff?: number;
-    doubleSided?: boolean;
-}
-
-export interface IPBRMetallicRoughness
-{
-    baseColorFactor?: ColorRGBA;
-    baseColorTexture?: any;
-    metallicFactor?: number;
-    roughnessFactor?: number;
-    metallicRoughnessTexture?: any;
 }
 
 /**
@@ -98,4 +116,27 @@ export interface IAsset
     numFaces?: number;
     imageSize?: number;
     mapType?: TMapType;
+}
+
+export interface IMaterial
+{
+    pbrMetallicRoughness?: IPBRMetallicRoughness;
+    normalTexture?: any;
+    normalSpace?: TNormalSpaceType;
+    occlusionTexture?: any;
+    occlusionStrength?: number;
+    emissiveTexture?: any;
+    emissiveFactor?: ColorRGB;
+    alphaMode?: any; // TODO
+    alphaCutoff?: number;
+    doubleSided?: boolean;
+}
+
+export interface IPBRMetallicRoughness
+{
+    baseColorFactor?: ColorRGBA;
+    baseColorTexture?: any;
+    metallicFactor?: number;
+    roughnessFactor?: number;
+    metallicRoughnessTexture?: any;
 }

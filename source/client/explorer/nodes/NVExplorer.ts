@@ -15,28 +15,18 @@
  * limitations under the License.
  */
 
-import { IExplorer } from "common/types/explorer";
+import Node from "@ff/graph/Node";
 
-import NTransform from "@ff/scene/nodes/NTransform";
+import CVAssetLoader from "../components/CVAssetLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVExplorer extends NTransform
+export default class NVExplorer extends Node
 {
     static readonly typeName: string = "NVExplorer";
 
     createComponents()
     {
-        super.createComponents();
-    }
-
-    fromData(data: IExplorer)
-    {
-
-    }
-
-    toData(): IExplorer
-    {
-        return null;
+        this.createComponent(CVAssetLoader);
     }
 }

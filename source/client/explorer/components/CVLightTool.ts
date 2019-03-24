@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-import CVScene_old from "../../core/components/CVScene_old";
+import CLight from "@ff/scene/components/CLight";
 
-import CVDocument_old from "./CVDocument_old";
+import CVDocument from "./CVDocument";
+
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,21 +30,9 @@ export default class CVLightTool extends CVTool
     static readonly text = "Lights";
     static readonly icon = "bulb";
 
-    protected static readonly outs = {
-        scene: types.Object("Document.Scene", CVScene_old),
-    };
-
-    outs = this.addOutputs<CVTool, typeof CVLightTool.outs>(CVLightTool.outs);
-
     createView()
     {
         return new LightToolView(this);
-    }
-
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
-    {
-        super.onActiveDocument(previous, next);
-        this.outs.scene.setValue(next ? next.getInnerComponent(CVScene_old) : null);
     }
 }
 
@@ -52,7 +41,7 @@ export default class CVLightTool extends CVTool
 @customElement("sv-light-tool-view")
 export class LightToolView extends ToolView<CVLightTool>
 {
-    protected scene: CVScene_old = null;
+    protected lights: CLight[] = null;
 
     protected firstConnected()
     {
@@ -60,40 +49,20 @@ export class LightToolView extends ToolView<CVLightTool>
         this.classList.add("sv-light-tool-view");
     }
 
-    protected connected()
-    {
-        super.connected();
-        const sceneProp = this.tool.outs.scene;
-        sceneProp.on("value", this.onScene, this);
-        this.onScene(sceneProp.value);
-    }
-
-    protected disconnected()
-    {
-        this.onScene(null);
-        this.tool.outs.scene.off("value", this.onScene, this);
-        super.disconnected();
-    }
-
     protected render()
     {
-        const scene = this.scene;
-        if (!scene) {
+        const lights = this.lights;
+        if (!lights) {
             return html``;
         }
 
         return html`<div>Light Tool (coming soon)</div>`;
     }
 
-    protected onScene(scene: CVScene_old)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        if (this.scene) {
+        this.lights = next ? next.getInnerComponents(CLight) : null;
 
-        }
-        if (scene) {
-
-        }
-
-        this.scene = scene;
+        this.requestUpdate();
     }
 }

@@ -15,86 +15,107 @@
  * limitations under the License.
  */
 
-import CVAnnotations_old from "./CVAnnotations_old";
-import CVArticles from "./CVArticles";
+import CVAnnotation from "./CVAnnotation";
+import CVAnnotations from "./CVAnnotations";
+import CVAnnotationView from "./CVAnnotationView";
+import CVAssetLoader from "./CVAssetLoader";
 import CVBackground from "./CVBackground";
-import CVDocument_old from "./CVDocument_old";
+import CVCamera from "./CVCamera";
+import CVDirectionalLight from "./CVDirectionalLight";
+import CVDocument from "./CVDocument";
 import CVDocumentLoader from "./CVDocumentLoader";
 import CVDocumentManager from "./CVDocumentManager";
 import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
+import CVInfo from "./CVInfo";
 import CVInterface from "./CVInterface";
-import CVItem from "./CVItem";
-import CVItemManager from "./CVItemManager";
 import CVLightTool from "./CVLightTool";
-import CVMeta from "./CVMeta";
-import CVProcess from "./CVProcess";
+import CVModel2 from "./CVModel2";
+import CVNavigation from "./CVNavigation";
+import CVNode from "./CVNode";
+import CVOrbitNavigation from "./CVOrbitNavigation";
+import CVPointLight from "./CVPointLight";
 import CVReader from "./CVReader";
-import CVReference from "./CVReference";
 import CVRenderTool from "./CVRenderTool";
+import CVSlicer from "./CVSlicer";
 import CVSliceTool from "./CVSliceTool";
+import CVSpotLight from "./CVSpotLight";
 import CVTape from "./CVTape";
 import CVTapeTool from "./CVTapeTool";
 import CVToolManager from "./CVToolManager";
-import CVTourPlayer from "./CVTourPlayer";
 import CVTours from "./CVTours";
-import CVNode from "./CVNode";
+import CVUberMaterial from "./CVUberMaterial";
+import CVViewer from "./CVViewer";
 import CVViewTool from "./CVViewTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    CVAnnotations_old,
-    CVArticles,
+    CVAnnotation,
+    CVAnnotations,
+    CVAnnotationView,
+    CVAssetLoader,
     CVBackground,
-    CVDocument_old,
+    CVCamera,
+    CVDirectionalLight,
+    CVDocument,
     CVDocumentLoader,
     CVDocumentManager,
     CVFloor,
     CVGrid,
+    CVInfo,
     CVInterface,
-    CVItem,
-    CVItemManager,
     CVLightTool,
-    CVMeta,
-    CVProcess,
+    CVModel2,
+    CVNavigation,
+    CVNode,
+    CVOrbitNavigation,
+    CVPointLight,
     CVReader,
-    CVReference,
     CVRenderTool,
+    CVSlicer,
     CVSliceTool,
+    CVSpotLight,
     CVTape,
     CVTapeTool,
     CVToolManager,
-    CVTourPlayer,
     CVTours,
-    CVNode,
+    CVUberMaterial,
+    CVViewer,
     CVViewTool,
 };
 
 export const componentTypes = [
-    CVAnnotations_old,
-    CVArticles,
+    CVAnnotation,
+    CVAnnotations,
+    CVAnnotationView,
+    CVAssetLoader,
     CVBackground,
-    CVDocument_old,
+    CVCamera,
+    CVDirectionalLight,
+    CVDocument,
     CVDocumentLoader,
     CVDocumentManager,
     CVFloor,
     CVGrid,
+    CVInfo,
     CVInterface,
-    CVItem,
-    CVItemManager,
     CVLightTool,
-    CVMeta,
-    CVProcess,
+    CVModel2,
+    CVNavigation,
+    CVNode,
+    CVOrbitNavigation,
+    CVPointLight,
     CVReader,
-    CVReference,
     CVRenderTool,
+    CVSlicer,
     CVSliceTool,
+    CVSpotLight,
     CVTape,
     CVTapeTool,
     CVToolManager,
-    CVTourPlayer,
     CVTours,
-    CVNode,
+    CVUberMaterial,
+    CVViewer,
     CVViewTool,
 ];

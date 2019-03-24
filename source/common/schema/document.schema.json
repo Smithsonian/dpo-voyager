@@ -10,6 +10,9 @@
             "$id": "#node",
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "children": {
                     "type": "array",
                     "description": "The indices of this node's children.",
@@ -74,26 +77,20 @@
                     "type": "integer",
                     "minimum": 0
                 },
-
-                "extensions": {
-                    "type": "object",
-                    "properties": {
-                        "SI_Document": {
-                            "type": "object",
-                            "properties": {
-                                "group": {
-                                    "description": "The index of the model in this node.",
-                                    "type": "integer",
-                                    "minimum": 0
-                                },
-                                "model": {
-                                    "description": "The index of the part in this node.",
-                                    "type": "integer",
-                                    "minimum": 0
-                                }
-                            }
-                        }
-                    }
+                "entity": {
+                    "description": "The index of the entity attached to this node.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "model": {
+                    "description": "The index of the model attached to this node.",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "scene": {
+                    "description": "The index of the scene attached to this node.",
+                    "type": "integer",
+                    "minimum": 0
                 }
             },
             "not": {
@@ -102,100 +99,6 @@
                     { "required": [ "matrix", "rotation" ] },
                     { "required": [ "matrix", "scale" ] }
                 ]
-            }
-        },
-
-        "scene": {
-            "$id": "#scene",
-            "type": "object",
-            "properties": {
-                "units": {
-                    "$ref": "./item.schema.json#/definitions/units"
-                },
-                "meta": {
-                    "$ref": "./item.schema.json#/definitions/meta"
-                },
-                "articles": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "./item.schema.json#/definitions/article"
-                    },
-                    "minLength": 1
-                },
-                "article": {
-                    "description": "Index of the main article. This is the default article displayed with the scene.",
-                    "type": "integer"
-                },
-                "explorer": {
-                    "$ref": "./explorer.schema.json"
-                }
-            }
-        },
-
-        "group": {
-            "$id": "#group",
-            "description": "3D group item, contains articles, and meta data.",
-            "type": "object",
-            "properties": {
-                "units": {
-                    "$ref": "./item.schema.json#/definitions/units"
-                },
-                "meta": {
-                    "$ref": "./item.schema.json#/definitions/meta"
-                },
-                "articles": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "./item.schema.json#/definitions/article"
-                    },
-                    "minLength": 1
-                },
-                "article": {
-                    "description": "Index of the main article. This is the default article displayed with the scene.",
-                    "type": "integer"
-                }
-            }
-        },
-
-        "model": {
-            "$id": "#model",
-            "description": "3D model item, contains model derivatives, articles, annotations, and meta data.",
-            "type": "object",
-            "properties": {
-                "units": {
-                    "$ref": "./item.schema.json#/definitions/units"
-                },
-                "meta": {
-                    "$ref": "./item.schema.json#/definitions/meta"
-                },
-                "articles": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "./item.schema.json#/definitions/article"
-                    },
-                    "minLength": 1
-                },
-                "article": {
-                    "description": "Index of the main article. This is the default article displayed with the scene.",
-                    "type": "integer"
-                },
-                "annotations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "./item.schema.json#/definitions/annotation"
-                    }
-                },
-                "boundingBox": {
-                    "description": "Bounding box for this model, shared by all derivatives.",
-                    "$ref": "math.schema.json#/definitions/boundingBox"
-                },
-                "derivatives": {
-                    "description": "List of visual representations derived from the master model.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "./derivative.schema.json"
-                    }
-                }
             }
         },
 
@@ -377,61 +280,35 @@
         "asset": {
             "type": "object",
             "properties": {
-                "copyright": {
+                "type": {
                     "type": "string",
-                    "description": "A copyright message to credit the content creator."
-                },
-                "generator": {
-                    "type": "string",
-                    "description": "Tool that generated this presentation description."
+                    "const": "application/si-dpo-3d.document+json"
                 },
                 "version": {
+                    "description": "Version of this presentation description.",
                     "type": "string",
-                    "description": "Version of this presentation description."
+                    "minLength": 1
                 },
-                "extensions": {
-                    "type": "object",
-                    "properties": {
-                        "SI_document": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "const": "application/si-dpo-3d.document+json"
-                                },
-                                "version": {
-                                    "type": "string"
-                                }
-                            },
-                            "required": [
-                                "type",
-                                "version"
-                            ]
-                        }
-                    },
-                    "required": [
-                        "SI_document"
-                    ]
+                "copyright": {
+                    "description": "A copyright message to credit the content creator.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "generator": {
+                    "description": "Tool that generated this presentation description.",
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "required": [
-                "version",
-                "extensions"
+                "type",
+                "version"
             ]
         },
-        "scene": {
-            "description": "The main scene of the document.",
+        "root": {
+            "description": "Index of the root node of the document, usually a scene node.",
             "type": "integer",
             "minimum": 0
-        },
-        "scenes": {
-            "description": "An array of scenes.",
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/scene"
-            },
-            "minItems": 1,
-            "maxItems": 1
         },
         "nodes": {
             "description": "An array of nodes.",
@@ -457,42 +334,31 @@
             },
             "minItems": 1
         },
-        "extensions": {
-            "type": "object",
-            "properties": {
-                "SI_document": {
-                    "type": "object",
-                    "properties": {
-                        "groups": {
-                            "description": "An array of groups.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/group"
-                            },
-                            "minItems": 1
-                        },
-                        "parts": {
-                            "description": "An array of models.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model"
-                            },
-                            "minItems": 1
-                        }
-                    },
-                    "required": [
-                        "scenes"
-                    ]
-                }
+        "entities": {
+            "description": "An array of entities.",
+            "type": "array",
+            "items": {
+                "$ref": "./entity.schema.json"
+            }
+        },
+        "models": {
+            "description": "An array of models.",
+            "type": "array",
+            "items": {
+                "$ref": "./model.schema.json"
             },
-            "required": [
-                "SI_document"
-            ]
+            "minItems": 1
+        },
+        "scenes": {
+            "description": "An array of scenes.",
+            "type": "array",
+            "items": {
+                "$ref": "./scene.schema.json"
+            }
         }
     },
     "required": [
-        "scene",
-        "nodes",
-        "extensions"
+        "root",
+        "nodes"
     ]
 }

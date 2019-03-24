@@ -17,8 +17,6 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CSelection, { IComponentEvent } from "@ff/graph/components/CSelection";
-
 import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,20 +50,27 @@ export default class CVTaskManager extends Component
         return this.outs.activeTask.value;
     }
     set activeTask(task: CVTask) {
-        if (task !== this.activeTask) {
+        const activeTask = this.activeTask;
+
+        if (task !== activeTask) {
+
+            if (activeTask) {
+                activeTask.deactivateTask();
+            }
+            if (task) {
+                task.activateTask();
+            }
+
+            this.outs.activeTask.setValue(task);
+
             const index = this.tasks.indexOf(task);
             this.ins.activeTask.setValue(index + 1);
         }
     }
 
-    protected get selection() {
-        return this.getMainComponent(CSelection);
-    }
-
     create()
     {
         this.components.on(CVTask, this.updateTasks, this);
-        this.selection.selectedComponents.on(CVTask, this.onSelectTask, this);
     }
 
     update()
@@ -74,19 +79,7 @@ export default class CVTaskManager extends Component
 
         if (ins.activeTask.changed) {
             const index = ins.activeTask.getValidatedValue() - 1;
-            const nextTask = index >= 0 ? this.tasks[index] : null;
-            const activeTask = this.activeTask;
-
-            if (nextTask !== activeTask) {
-                if (activeTask) {
-                    activeTask.deactivateTask();
-                }
-                if (nextTask) {
-                    nextTask.activateTask();
-                }
-
-                this.outs.activeTask.setValue(nextTask);
-            }
+            this.activeTask = index >= 0 ? this.tasks[index] : null;
         }
 
         return true;
@@ -94,17 +87,8 @@ export default class CVTaskManager extends Component
 
     dispose()
     {
-        this.selection.selectedComponents.off(CVTask, this.onSelectTask, this);
         this.components.off(CVTask, this.updateTasks, this);
         super.dispose();
-    }
-
-    protected onSelectTask(event: IComponentEvent<CVTask>)
-    {
-        if (event.add) {
-            const index = this.tasks.indexOf(event.object);
-            this.ins.activeTask.setValue(index + 1);
-        }
     }
 
     protected updateTasks()

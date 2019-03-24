@@ -22,11 +22,14 @@ import { types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
 import CAssetManager from "@ff/scene/components/CAssetManager";
+import CLight from "@ff/scene/components/CLight";
+import CCamera from "@ff/scene/components/CCamera";
 
 import { IDocument } from "common/types/document";
+import { EDerivativeQuality } from "common/types/model";
 
 import NVNode from "../nodes/NVNode";
-import NVScene from "../nodes/NVScene";
+import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,12 +47,8 @@ export default class CVDocument extends CRenderGraph
         download: types.Event("Document.Download"),
     };
 
-    protected static readonly outs = {
-        active: types.Boolean("Document.Active"),
-    };
+    ins = this.addInputs<CRenderGraph, typeof CVDocument.ins>(CVDocument.ins);
 
-    ins = this.addInputs(CVDocument.ins);
-    outs = this.addOutputs(CVDocument.outs);
 
     private _url: string = "";
 
@@ -75,28 +74,17 @@ export default class CVDocument extends CRenderGraph
         return this.url.substr(nameIndex);
     }
 
-    read(document: IDocument)
-    {
-        this.getInnerNode(NVScene).fromData(document);
+    get documentScene() {
+        return this.innerComponents.get(CVScene);
     }
-
-    merge(document: IDocument, node: NVNode)
-    {
-
-    }
-
-    write(): IDocument
-    {
-        return this.getInnerNode(NVScene).toData();
-    }
-
-
 
     create()
     {
         super.create();
 
-        this.innerGraph.createCustomNode(NVScene);
+        // document is inactive and hidden, unless it becomes the active document
+        this.ins.active.setValue(false);
+        this.ins.visible.setValue(false);
     }
 
     update(context)
@@ -106,27 +94,131 @@ export default class CVDocument extends CRenderGraph
         const ins = this.ins;
 
         if (ins.dump.changed) {
-            const json = this.write();
+            const json = this.toDocument();
             console.log("-------------------- VOYAGER DOCUMENT --------------------");
             console.log(JSON.stringify(json, null, 2));
         }
 
         if (ins.download.changed) {
-            download.json(this.write(), this.urlName || "document.json");
+            download.json(this.toDocument(), this.urlName || "document.json");
         }
 
         return true;
     }
 
-    activateInnerGraph()
+    openDocument(documentData: IDocument, url?: string)
     {
-        super.activateInnerGraph();
-        this.outs.active.setValue(true);
+        this.clearInnerGraph();
+
+        this.url = url || this.url;
+
+        const rootNodeData = documentData.nodes[documentData.root];
+        const docRootNode = this.innerGraph.createCustomNode(NVNode);
+
+        // if document root is not a scene, create a scene and add document root as scene child
+        if (!isFinite(rootNodeData.scene)) {
+            const sceneNode = this.innerGraph.createCustomNode(NVNode);
+            sceneNode.createScene();
+            sceneNode.transform.addChild(docRootNode.transform);
+        }
+
+        // inflate scene tree starting from document root node
+        docRootNode.fromDocument(documentData, documentData.root);
     }
 
-    deactivateInnerGraph()
+    mergeDocument(documentData: IDocument, url?: string, parent?: NVNode)
     {
-        super.deactivateInnerGraph();
-        this.outs.active.setValue(false);
+        if (parent && parent.graph !== this.innerGraph) {
+            throw new Error("invalid parent node");
+        }
+        if (this.innerRoots.length === 0) {
+            return this.openDocument(documentData);
+        }
+
+        this.url = url || this.url;
+
+        // if merge document has lights, remove all existing lights
+        if (documentData.lights.length > 0) {
+            this.getInnerComponents(CLight).slice().forEach(light => {
+                if (light.transform.children.length > 0) {
+                    light.dispose();
+                }
+                else {
+                    light.node.dispose()
+                }
+            });
+        }
+        // if merge document has cameras, remove all existing cameras
+        if (documentData.cameras.length > 0) {
+            this.getInnerComponents(CCamera).slice().forEach(camera => {
+                if (camera.transform.children.length > 0) {
+                    camera.dispose();
+                }
+                else {
+                    camera.node.dispose()
+                }
+            });
+        }
+
+        parent = parent || this.innerRoots[0].node as NVNode;
+        const docRootNode = this.innerGraph.createCustomNode(NVNode);
+        parent.transform.addChild(docRootNode.transform);
+    }
+
+    appendModel(modelUrl: string, quality?: EDerivativeQuality, parent?: NVNode)
+    {
+        if (parent && parent.graph !== this.innerGraph) {
+            throw new Error("invalid parent node");
+        }
+        if (this.isEmpty()) {
+            throw new Error("empty document, can't append model");
+        }
+
+        parent = parent || this.innerRoots[0].node as NVNode;
+        const modelNode = this.innerGraph.createCustomNode(NVNode);
+        parent.transform.addChild(modelNode.transform);
+        const model = modelNode.createModel();
+
+        //model.addDerivative();
+    }
+
+    appendGeometry(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string, quality?: EDerivativeQuality, parent?: NVNode)
+    {
+        if (parent && parent.graph !== this.innerGraph) {
+            throw new Error("invalid parent node");
+        }
+        if (this.isEmpty()) {
+            throw new Error("empty document, can't append geometry");
+        }
+
+        parent = parent || this.innerRoots[0].node as NVNode;
+        const modelNode = this.innerGraph.createCustomNode(NVNode);
+        parent.transform.addChild(modelNode.transform);
+        const model = modelNode.createModel();
+
+        //model.addDerivative();
+    }
+
+    toDocument(root?: NVNode): IDocument
+    {
+        if (this.isEmpty()) {
+            throw new Error("empty document, nothing to serialize");
+        }
+
+        root = root || this.innerRoots[0].node as NVNode;
+
+        const document: IDocument = {
+            asset: {
+                type: CVDocument.mimeType,
+                version: "1.0",
+                generator: "Voyager",
+                copyright: "(c) Smithsonian Institution. All rights reserved."
+            },
+            root: 0,
+            nodes: []
+        };
+
+        document.root = root.toDocument(document);
+        return document;
     }
 }

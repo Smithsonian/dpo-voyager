@@ -15,53 +15,26 @@
  * limitations under the License.
  */
 
-import NVCamera from "./NVCamera";
-import NVDocument_old from "./NVDocument_old";
-import NVDirectionalLight from "./NVDirectionalLight";
 import NVDocuments from "./NVDocuments";
-import NVExplorerApp from "./NVExplorerApp";
-import NVFeatures_old from "./NVFeatures_old";
-import NVItem_old from "./NVItem_old";
-import NVLight from "./NVLight";
+import NVEngine from "./NVEngine";
+import NVExplorer from "./NVExplorer";
 import NVNode from "./NVNode";
-import NVPointLight from "./NVPointLight";
-import NVReference from "./NVReference";
-import NVScene_old from "./NVScene_old";
-import NVSpotLight from "./NVSpotLight";
 import NVTools from "./NVTools";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
-    NVCamera,
-    NVDocument_old,
-    NVDirectionalLight,
     NVDocuments,
-    NVExplorerApp,
-    NVFeatures_old,
-    NVItem_old,
-    NVLight,
+    NVEngine,
+    NVExplorer,
     NVNode,
-    NVPointLight,
-    NVReference,
-    NVScene_old,
-    NVSpotLight,
     NVTools,
 };
 
 export const nodeTypes = [
-    NVCamera,
-    NVDocument_old,
-    NVDirectionalLight,
     NVDocuments,
-    NVExplorerApp,
-    NVFeatures_old,
-    NVItem_old,
-    NVLight,
+    NVEngine,
+    NVExplorer,
     NVNode,
-    NVPointLight,
-    NVReference,
-    NVScene_old,
-    NVSpotLight,
     NVTools,
 ];

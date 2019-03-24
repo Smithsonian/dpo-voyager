@@ -99,7 +99,7 @@ export default class BeamSprite extends AnnotationSprite
 class BeamAnnotation extends AnnotationElement
 {
     protected titleElement: HTMLDivElement;
-    protected descriptionElement: HTMLDivElement;
+    protected leadElement: HTMLDivElement;
     protected wrapperElement: HTMLDivElement;
     protected handler = 0;
     protected isExpanded = true;
@@ -115,8 +115,8 @@ class BeamAnnotation extends AnnotationElement
 
         this.wrapperElement = this.appendElement("div");
 
-        this.descriptionElement = this.createElement("div", null, this.wrapperElement);
-        this.descriptionElement.classList.add("sv-content", "sv-description");
+        this.leadElement = this.createElement("div", null, this.wrapperElement);
+        this.leadElement.classList.add("sv-content", "sv-description");
     }
 
     getOpacity()
@@ -144,7 +144,7 @@ class BeamAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation;
 
         this.titleElement.innerText = annotation.title;
-        this.descriptionElement.innerText = annotation.description;
+        this.leadElement.innerText = annotation.lead;
 
         this.targetOpacity = annotation.visible ? 1 : 0;
 
@@ -155,14 +155,14 @@ class BeamAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 this.classList.add("sv-expanded");
-                this.descriptionElement.style.display = "inherit";
-                this.descriptionElement.style.height = this.descriptionElement.scrollHeight + "px";
+                this.leadElement.style.display = "inherit";
+                this.leadElement.style.height = this.leadElement.scrollHeight + "px";
 
             }
             else {
                 this.classList.remove("sv-expanded");
-                this.descriptionElement.style.height = "0";
-                this.handler = window.setTimeout(() => this.descriptionElement.style.display = "none", 300);
+                this.leadElement.style.height = "0";
+                this.handler = window.setTimeout(() => this.leadElement.style.display = "none", 300);
 
             }
         }

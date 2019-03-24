@@ -15,34 +15,40 @@
  * limitations under the License.
  */
 
+import uniqueId from "@ff/core/uniqueId";
 import Publisher, { ITypedEvent } from "@ff/core/Publisher";
 
-import { IArticle } from "common/types/item";
-import uniqueId from "@ff/core/uniqueId";
+import { IArticle } from "common/types/info";
 
 ////////////////////////////////////////////////////////////////////////////////
+
 
 export interface IArticleUpdateEvent extends ITypedEvent<"update">
 {
     article: Article;
 }
 
-export default class Article extends Publisher
+export default class Article extends Publisher implements IArticle
 {
-    readonly id: string;
+    static fromJSON(json: IArticle)
+    {
+        return new Article(json.id).fromJSON(json);
+    }
 
-    title: string = "New Document";
-    description: string = "";
+    id: string;
+    title: string = "New Article";
+    lead: string = "";
+    tags: string[] = [];
     uri: string = "";
     mimeType: string = "";
     thumbnailUri: string = "";
 
-    constructor(id: string)
+    constructor(id?: string)
     {
         super();
-        this.addEvent("change");
+        this.addEvent("update");
 
-        this.id = id || uniqueId(6);
+        this.id = id || uniqueId();
     }
 
     update()
@@ -52,16 +58,19 @@ export default class Article extends Publisher
 
     toJSON(): IArticle
     {
-        const data: Partial<IArticle> = { id: this.id };
+        const data: Partial<IArticle> = {
+            id: this.id,
+            uri: this.uri,
+        };
 
         if (this.title) {
             data.title = this.title;
         }
-        if (this.description) {
-            data.description = this.description;
+        if (this.lead) {
+            data.lead = this.lead;
         }
-        if (this.uri) {
-            data.uri = this.uri;
+        if (this.tags.length > 0) {
+            data.tags = this.tags.slice();
         }
         if (this.mimeType) {
             data.mimeType = this.mimeType;
@@ -75,9 +84,12 @@ export default class Article extends Publisher
 
     fromJSON(data: IArticle): Article
     {
+        this.id = data.id;
+        this.uri = data.uri;
+
         this.title = data.title || "";
-        this.description = data.description || "";
-        this.uri = data.uri || "";
+        this.lead = data.lead || "";
+        this.tags = data.tags || [];
         this.mimeType = data.mimeType || "";
         this.thumbnailUri = data.thumbnailUri || "";
 

@@ -17,19 +17,15 @@
 
 import * as THREE from "three";
 
-import math from "@ff/core/math";
-import Vector3 from "@ff/core/Vector3";
-
-import { types } from "@ff/graph/propertyTypes";
-import { IComponentChangeEvent } from "@ff/graph/Component";
-
-import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
-
 import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 
-import { EUnitType, IGrid } from "common/types/explorer";
-import CVScene_old from "../../core/components/CVScene_old";
+import { types } from "@ff/graph/Component";
+import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
+
+import { IGrid, EUnitType } from "common/types/scene";
+
+import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -68,20 +64,20 @@ export default class CVGrid extends CObject3D
     get grid() {
         return this.object3D as ThreeGrid;
     }
-    get voyagerScene() {
-        return this.getGraphComponent(CVScene_old);
+    get documentScene() {
+        return this.getGraphComponent(CVScene);
     }
 
     create()
     {
-        this.voyagerScene.on("change", this.onSceneChange, this);
+        this.documentScene.on("bounding-box", this.onModelBoundingBox, this);
         this.ins.pickable.setValue(false);
         this.ins.visible.setValue(false);
     }
 
     dispose()
     {
-        this.voyagerScene.off("change", this.onSceneChange, this);
+        this.documentScene.off("bounding-box", this.onModelBoundingBox, this);
     }
 
     update(): boolean
@@ -101,8 +97,8 @@ export default class CVGrid extends CObject3D
             }
 
             if (ins.update.changed) {
-                const box = this.voyagerScene.boundingBox;
-                const units = this.voyagerScene.ins.units.value;
+                const box = this.documentScene.modelBoundingBox;
+                const units = this.documentScene.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
@@ -183,10 +179,8 @@ export default class CVGrid extends CObject3D
         };
     }
 
-    protected onSceneChange(event: IComponentChangeEvent<CVScene_old>)
+    protected onModelBoundingBox()
     {
-        if (event.what === "boundingBox") {
-            this.ins.update.set();
-        }
+        this.ins.update.set();
     }
 }

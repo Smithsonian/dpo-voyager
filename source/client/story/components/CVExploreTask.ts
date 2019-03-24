@@ -17,7 +17,7 @@
 
 import ExploreTaskView from "../ui/ExploreTaskView";
 import CVTask from "./CVTask";
-import NVItem_old from "../../explorer/nodes/NVItem_old";
+import NVItem from "../../explorer/nodes/NVItem";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +42,7 @@ export default class CVExploreTask extends CVTask
         configuration.bracketsVisible = false;
     }
 
-    protected onActiveItem(previous: NVItem_old, next: NVItem_old)
+    protected onActiveItem(previous: NVItem, next: NVItem)
     {
         super.onActiveItem(previous, next);
 
