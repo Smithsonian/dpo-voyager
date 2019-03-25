@@ -17,7 +17,7 @@
 
 import Node from "@ff/graph/Node";
 
-import CVTaskManager from "../components/CVTaskManager";
+import CVTaskProvider from "../components/CVTaskProvider";
 
 import CVAnnotationsTask from "../components/CVAnnotationsTask";
 import CVArticlesTask from "../components/CVArticlesTask";
@@ -33,12 +33,12 @@ export default class NVAuthoringTasks extends Node
     static readonly typeName: string = "NVAuthoringTasks";
 
     get taskManager() {
-        return this.getComponent(CVTaskManager);
+        return this.getComponent(CVTaskProvider);
     }
 
     createComponents()
     {
-        this.createComponent(CVTaskManager);
+        this.createComponent(CVTaskProvider);
 
         this.createComponent(CVExploreTask);
         this.createComponent(CVPoseTask);

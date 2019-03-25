@@ -51,11 +51,23 @@ export default class CVDocument extends CRenderGraph
 
 
     private _url: string = "";
+    private _assetBaseName = "";
 
     set url(url: string) {
         this._url = url;
-        this.name = this.urlName;
-        this.getInnerComponent(CAssetManager).assetBaseUrl = url;
+
+        const urlName = this.urlName;
+        if (urlName.endsWith("item.json")) {
+            this._assetBaseName = urlName.substr(0, urlName.length - 9);
+        }
+        else {
+            const parts = urlName.split(".");
+            parts.pop();
+            this._assetBaseName = parts.join(".");
+        }
+
+        this.name = urlName;
+        //this.getInnerComponent(CAssetManager).assetBaseUrl = url;
 
         console.log("CVDocument.url");
         console.log("   url:           %s", this.url);
@@ -72,6 +84,13 @@ export default class CVDocument extends CRenderGraph
         const path = this.urlPath;
         const nameIndex = this.url.startsWith(path) ? path.length : 0;
         return this.url.substr(nameIndex);
+    }
+    get assetBaseName() {
+        return this._assetBaseName;
+    }
+
+    getAssetUrl(fileName: string) {
+        return resolvePathname(fileName, this.url);
     }
 
     get documentScene() {

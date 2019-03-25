@@ -15,26 +15,24 @@
  * limitations under the License.
  */
 
-import { customElement, property, html, PropertyValues, TemplateResult } from "@ff/ui/CustomElement";
+import Component, { types } from "@ff/graph/Component";
 
-import CVDocument from "../components/CVDocument";
-import CVDocumentProvider, { IActiveDocumentEvent } from "../components/CVDocumentProvider";
-
-import SystemView from "@ff/scene/ui/SystemView";
+import CVDocument from "./CVDocument";
+import CVDocumentProvider, { IActiveDocumentEvent } from "./CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { customElement, property, html, PropertyValues, TemplateResult };
-
-export default class DocumentView extends SystemView
+export default class CVDocumentObserver extends Component
 {
+    static readonly tagName: string = "CVDocumentObserver";
+
     protected activeDocument: CVDocument = null;
 
     protected get documentProvider() {
-        return this.system.getMainComponent(CVDocumentProvider);
+        return this.getGraphComponent(CVDocumentProvider);
     }
 
-    protected connected()
+    protected startObserving()
     {
         const provider = this.documentProvider;
         provider.on<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
@@ -45,7 +43,7 @@ export default class DocumentView extends SystemView
         }
     }
 
-    protected disconnected()
+    protected stopObserving()
     {
         const provider = this.documentProvider;
         provider.off<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
@@ -58,7 +56,6 @@ export default class DocumentView extends SystemView
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        this.requestUpdate();
     }
 
     protected onActiveDocumentEvent(event: IActiveDocumentEvent)

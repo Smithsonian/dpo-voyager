@@ -19,7 +19,7 @@ import System from "@ff/graph/System";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVTaskManager from "../components/CVTaskManager";
+import CVTaskProvider from "../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,13 +29,13 @@ import CVTaskManager from "../components/CVTaskManager";
 @customElement("sv-task-panel")
 export default class TaskPanel extends SystemElement
 {
-    protected taskManager: CVTaskManager = null;
+    protected taskManager: CVTaskProvider = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.taskManager = system.getMainComponent(CVTaskManager);
+        this.taskManager = system.getMainComponent(CVTaskProvider);
 
         if (!this.taskManager) {
             throw new Error("missing task manager");

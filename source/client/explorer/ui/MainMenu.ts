@@ -19,10 +19,9 @@ import DocumentView, { customElement, html } from "./DocumentView";
 
 import CVInterface from "../components/CVInterface";
 import CVReader from "../components/CVReader";
-import CVTourPlayer, { ETourPlayerState } from "../components/CVTourPlayer";
-import CVToolManager from "../components/CVToolManager";
-import CVScene_old from "../../core/components/CVScene_old";
-import CVDocument_old from "../components/CVDocument_old";
+import CVTours, { EToursState } from "../components/CVTours";
+import CVToolProvider from "../components/CVToolProvider";
+import CVDocument from "../components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,14 +31,8 @@ export default class MainMenu extends DocumentView
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
     }
-    protected get reader() {
-        return this.system.getMainComponent(CVReader);
-    }
-    protected get tourPlayer() {
-        return this.system.getMainComponent(CVTourPlayer);
-    }
-    protected get toolManager() {
-        return this.system.getMainComponent(CVToolManager);
+    protected get toolProvider() {
+        return this.system.getMainComponent(CVToolProvider);
     }
 
     protected firstConnected()
@@ -54,39 +47,41 @@ export default class MainMenu extends DocumentView
 
         this.interface.on("update", this.performUpdate, this);
         this.interface.outs.fullscreenEnabled.on("value", this.performUpdate, this);
-        this.reader.ins.visible.on("value", this.onReaderVisible, this);
-        this.tourPlayer.ins.state.on("value", this.performUpdate, this);
-        this.toolManager.ins.visible.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.interface.off("update", this.performUpdate, this);
         this.interface.outs.fullscreenEnabled.off("value", this.performUpdate, this);
-        this.reader.ins.visible.off("value", this.onReaderVisible, this);
-        this.tourPlayer.ins.state.off("value", this.performUpdate, this);
-        this.toolManager.ins.visible.off("value", this.performUpdate, this);
 
         super.disconnected();
     }
 
-    protected onActiveDocument(previous: CVDocument_old, next: CVDocument_old)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        super.onActiveDocument(previous, next);
-
         if (previous) {
-            previous.getInnerComponent(CVScene_old).ins.annotationsVisible.off("value", this.performUpdate, this);
+            const scene = previous.documentScene;
+            scene.reader.ins.visible.off("value", this.onReaderVisible, this);
+            scene.annotations.ins.visible.off("value", this.performUpdate, this);
+            //scene.tours.ins.state.off("value", this.performUpdate, this);
+            //scene.tours.ins.visible.off("value", this.performUpdate, this);
         }
         if (next) {
-            next.getInnerComponent(CVScene_old).ins.annotationsVisible.on("value", this.performUpdate, this);
+            const scene = next.documentScene;
+            scene.reader.ins.visible.on("value", this.onReaderVisible, this);
+            scene.annotations.ins.visible.on("value", this.performUpdate, this);
+            //scene.tours.ins.state.on("value", this.performUpdate, this);
+            //scene.tours.ins.visible.on("value", this.performUpdate, this);
         }
     }
 
     protected render()
     {
-        const readerVisible = this.reader.ins.visible.value;
-        const toursVisible = this.tourPlayer.ins.state.value !== ETourPlayerState.Off;
-        const toolsVisible = this.toolManager.ins.visible.value;
+        const scene = this.activeDocument.documentScene;
+        const readerVisible = scene.reader.ins.visible.value;
+        const annotationsVisible = scene.annotations.ins.visible.value;
+        const toursVisible = scene.tours.ins.state.value !== EToursState.Off;
+        const toolsVisible = scene.tours.ins.visible.value;
 
         const _interface = this.interface;
         const fullscreenEnabled = _interface.outs.fullscreenEnabled.value;
@@ -94,8 +89,6 @@ export default class MainMenu extends DocumentView
         const showToolButton = _interface.ins.tools.value;
 
         const document = this.activeDocument;
-        const scene = document ? document.getInnerComponent(CVScene_old) : null;
-        const annotationsVisible = scene ? scene.ins.annotationsVisible.value : false;
 
         return html`<ff-button icon="document" title="Read more..."
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>

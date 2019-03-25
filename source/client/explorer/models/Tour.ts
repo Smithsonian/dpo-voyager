@@ -17,39 +17,39 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import { IArticle } from "common/types/info";
+import { ITour } from "common/types/scene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IArticle };
+export { ITour };
 
-export type IArticleUpdateEvent = IDocumentUpdateEvent<Article>;
-export type IArticleDisposeEvent = IDocumentDisposeEvent<Article>;
+export type ITourUpdateEvent = IDocumentUpdateEvent<Tour>;
+export type ITourDisposeEvent = IDocumentDisposeEvent<Tour>;
 
-export default class Article extends Document<IArticle>
+export default class Tour extends Document<ITour>
 {
-    static fromJSON(json: IArticle)
+    static fromJSON(json: ITour)
     {
-        return new Article(json);
+        return new Tour(json);
     }
 
     protected init()
     {
         return {
             id: this.generateId(),
-            title: "New Article",
+            title: "New Tour",
             lead: "",
             tags: [],
-            uri: "",
-            mimeType: "",
-            thumbnailUri: "",
-        }
+            states: [],
+            targets: []
+        };
     }
 
-    protected deflate(data: IArticle, json: IArticle)
+    protected deflate(data: ITour, json: ITour)
     {
         json.id = data.id;
-        json.uri = data.uri;
+        json.states = data.states;
+        json.targets = data.targets;
 
         if (data.title) {
             json.title = data.title;
@@ -60,23 +60,16 @@ export default class Article extends Document<IArticle>
         if (data.tags.length > 0) {
             json.tags = data.tags.slice();
         }
-        if (data.mimeType) {
-            json.mimeType = data.mimeType;
-        }
-        if (data.thumbnailUri) {
-            json.thumbnailUri = data.thumbnailUri;
-        }
     }
 
-    protected inflate(json: IArticle, data: IArticle)
+    protected inflate(json: ITour, data: ITour)
     {
         data.id = json.id;
-        data.uri = json.uri;
+        data.states = json.states;
+        data.targets = json.targets;
 
         data.title = json.title || "";
         data.lead = json.lead || "";
         data.tags = json.tags || [];
-        data.mimeType = json.mimeType || "";
-        data.thumbnailUri = json.thumbnailUri || "";
     }
 }

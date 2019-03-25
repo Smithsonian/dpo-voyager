@@ -18,19 +18,17 @@
 import * as THREE from "three";
 
 import { types } from "@ff/graph/propertyTypes";
-import { IComponentEvent } from "@ff/graph/Node";
 
 import Viewport from "@ff/three/Viewport";
+
 import RenderQuadView, { EQuadViewLayout, IPointerEvent } from "@ff/scene/RenderQuadView";
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import CVDocument_old from "../../explorer/components/CVDocument_old";
-import NVItem from "../../explorer/nodes/NVItem";
-import CVInterface from "../../explorer/components/CVInterface";
-import CVModel_old from "../../core/components/CVModel_old";
+import NVNode from "../../explorer/nodes/NVNode";
+import CVModel2 from "../../explorer/components/CVModel2";
 
-import PoseTaskView from "../ui/PoseTaskView";
 import CVTask from "./CVTask";
+import PoseTaskView from "../ui/PoseTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,18 +55,15 @@ export default class CVPoseTask extends CVTask
     ins = this.addInputs<CVTask, typeof CVPoseTask.ins>(CVPoseTask.ins);
 
 
-    protected get renderer() {
-        return this.getMainComponent(CRenderer);
-    }
-    protected get activeModel() {
-        const item = this.activeItem;
-        return item ? item.model : null;
-    }
+    protected activeModel: CVModel2 = null;
 
     private _viewport: Viewport = null;
     private _deltaX = 0;
     private _deltaY = 0;
 
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
+    }
 
     createView()
     {
@@ -77,7 +72,7 @@ export default class CVPoseTask extends CVTask
 
     activateTask()
     {
-        this.selectionController.selectedComponents.on(CVModel_old, this.onSelectModel, this);
+        //this.selection.selectedComponents.on(CVModel2, this.onSelectModel, this);
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         // switch to quad view layout
@@ -94,7 +89,7 @@ export default class CVPoseTask extends CVTask
     {
         super.deactivateTask();
 
-        this.selectionController.selectedComponents.off(CVModel_old, this.onSelectModel, this);
+        //this.selection.selectedComponents.off(CVModel2, this.onSelectModel, this);
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         // switch back to single view layout
@@ -158,10 +153,14 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        if (next && next.hasComponent(CVModel_old)) {
-            this.selectionController.selectComponent(next.model);
+        if (next && next.model) {
+            this.selection.selectComponent(next.model);
+            this.activeModel = next.model;
+        }
+        else {
+            this.activeModel = null;
         }
     }
 
@@ -177,15 +176,6 @@ export default class CVPoseTask extends CVTask
             this._deltaY += event.movementY * speed;
             this._viewport = event.viewport;
             event.stopPropagation = true;
-        }
-    }
-
-    protected onSelectModel(event: IComponentEvent<CVModel_old>)
-    {
-        const node = event.object.node;
-
-        if (event.add && node instanceof NVItem) {
-            this.itemManager.activeItem = node;
         }
     }
 }

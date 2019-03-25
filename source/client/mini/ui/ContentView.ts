@@ -16,8 +16,8 @@
  */
 
 
-import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVScene_old from "../../core/components/CVScene_old";
+import CVAssetLoader from "../../explorer/components/CVAssetLoader";
+import CVScene_old from "../../explorer/components/CVScene_old";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 

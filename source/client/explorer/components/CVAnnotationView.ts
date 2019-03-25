@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import uniqueId from "@ff/core/uniqueId";
 import { Dictionary } from "@ff/core/types";
 
 import { ITypedEvent, types } from "@ff/graph/Component";
@@ -27,7 +26,8 @@ import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/C
 
 import CVModel2 from "./CVModel2";
 
-import Annotation, { IAnnotation, EAnnotationStyle } from "../models/Annotation";
+import { IAnnotation } from "common/types/model";
+import Annotation, { EAnnotationStyle } from "../models/Annotation";
 
 import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
 
@@ -78,23 +78,23 @@ export default class CVAnnotationView extends CObject3D
 
             const previous = this._activeAnnotation;
             if (previous) {
-                previous.expanded = false;
+                previous.set("expanded", false);
                 this.updateSprite(previous);
             }
 
             this._activeAnnotation = annotation;
 
             if (annotation) {
-                annotation.expanded = true;
+                annotation.set("expanded", true);
                 this.updateSprite(annotation);
             }
 
             const ins = this.ins;
-            ins.title.setValue(annotation ? annotation.title : "", true);
-            ins.lead.setValue(annotation ? annotation.lead : "", true);
-            ins.style.setValue(annotation ? annotation.style : EAnnotationStyle.Default, true);
-            ins.scale.setValue(annotation ? annotation.scale : 1, true);
-            ins.offset.setValue(annotation ? annotation.offset : 0, true);
+            ins.title.setValue(annotation ? annotation.data.title : "", true);
+            ins.lead.setValue(annotation ? annotation.data.lead : "", true);
+            ins.style.setValue(annotation ? annotation.data.style : EAnnotationStyle.Default, true);
+            ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
+            ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
 
             this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
         }
@@ -132,28 +132,28 @@ export default class CVAnnotationView extends CObject3D
 
         if (ins.title.changed) {
             if (annotation) {
-                annotation.title = ins.title.value;
+                annotation.set("title", ins.title.value);
             }
         }
         if (ins.lead.changed) {
             if (annotation) {
-                annotation.lead = ins.lead.value;
+                annotation.set("lead", ins.lead.value);
             }
         }
         if (ins.style.changed) {
             if (annotation) {
-                annotation.style = ins.style.getValidatedValue();
+                annotation.set("style", ins.style.getValidatedValue());
                 this.createSprite(annotation);
             }
         }
         if (ins.scale.changed) {
             if (annotation) {
-                annotation.scale = ins.scale.value;
+                annotation.set("scale", ins.scale.value);
             }
         }
         if (ins.offset.changed) {
             if (annotation) {
-                annotation.offset = ins.offset.value;
+                annotation.set("offset", ins.offset.value);
             }
         }
 
@@ -200,10 +200,6 @@ export default class CVAnnotationView extends CObject3D
 
     addAnnotation(annotation: Annotation)
     {
-        if (!annotation.id) {
-            annotation.id = uniqueId(6, this._annotations);
-        }
-
         this._annotations[annotation.id] = annotation;
         this.createSprite(annotation);
     }
@@ -257,7 +253,7 @@ export default class CVAnnotationView extends CObject3D
 
     fromData(data: IAnnotation[])
     {
-        data.forEach(annotation => this.addAnnotation(new Annotation().fromJSON(annotation)));
+        data.forEach(annotationJson => this.addAnnotation(new Annotation(annotationJson)));
     }
 
     protected onPointerUp(event: IPointerEvent)
@@ -298,7 +294,7 @@ export default class CVAnnotationView extends CObject3D
         this.removeSprite(annotation);
 
         let sprite;
-        switch(annotation.style) {
+        switch(annotation.data.style) {
             case EAnnotationStyle.Balloon:
                 sprite = new PinSprite(annotation);
                 break;

@@ -104,7 +104,7 @@ export default class DerivativeList
 
         if (bin) {
             for (let i = 0, n = bin.length; i < n; ++i) {
-                if (bin[i].quality === quality) {
+                if (bin[i].data.quality === quality) {
                     return bin[i];
                 }
             }
@@ -117,12 +117,14 @@ export default class DerivativeList
     {
         const bin = this.getOrCreateBin(usage);
         for (let i = 0, n = bin.length; i < n; ++i) {
-            if (bin[i].quality === quality) {
+            if (bin[i].data.quality === quality) {
                 return bin[i];
             }
         }
 
-        const derivative = new Derivative(usage, quality);
+        const derivative = new Derivative();
+        derivative.set("usage", usage);
+        derivative.set("quality", quality);
         bin.push(derivative);
         return derivative;
     }
@@ -141,7 +143,7 @@ export default class DerivativeList
 
         if (textureUri) {
             const asset = derivative.createAsset(EAssetType.Image, textureUri);
-            asset.mapType = EMapType.Color;
+            asset.set("mapType", EMapType.Color);
         }
 
         return derivative;
@@ -156,18 +158,18 @@ export default class DerivativeList
         this.derivatives = {};
     }
 
-    toData(): IDerivative[]
+    toJSON(): IDerivative[]
     {
         const data = [];
 
         for (let key in this.derivatives) {
-            this.derivatives[key].forEach(derivative => data.push(derivative.toData()));
+            this.derivatives[key].forEach(derivative => data.push(derivative.toJSON()));
         }
 
         return data;
     }
 
-    fromData(data: IDerivative[])
+    fromJSON(data: IDerivative[])
     {
         this.clear();
 

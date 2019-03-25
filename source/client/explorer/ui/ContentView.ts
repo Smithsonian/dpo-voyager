@@ -15,28 +15,25 @@
  * limitations under the License.
  */
 
-import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVScene_old from "../../core/components/CVScene_old";
+import CVDocument from "../components/CVDocument";
+import CVAssetLoader from "../components/CVAssetLoader";
 import CVReader, { EReaderPosition } from "../components/CVReader";
-
-import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
 import SceneView from "../../core/ui/SceneView";
 import "../../core/ui/Spinner";
 import "./ReaderView";
 
+import DocumentView, { customElement, html } from "./DocumentView";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-content-view")
-export default class ContentView extends SystemElement
+export default class ContentView extends DocumentView
 {
     protected sceneView: SceneView = null;
 
     protected get assetLoader() {
         return this.system.getMainComponent(CVAssetLoader);
-    }
-    protected get reader() {
-        return this.system.getMainComponent(CVReader);
     }
 
     protected firstConnected()
@@ -48,35 +45,51 @@ export default class ContentView extends SystemElement
     protected connected()
     {
         this.assetLoader.outs.loading.on("value", this.performUpdate, this);
-        this.reader.ins.visible.on("value", this.performUpdate, this);
-        this.reader.ins.position.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.assetLoader.outs.loading.off("value", this.performUpdate, this);
-        this.reader.ins.visible.off("value", this.performUpdate, this);
-        this.reader.ins.position.off("value", this.performUpdate, this);
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            const reader = previous.documentScene.reader;
+            reader.ins.visible.off("value", this.performUpdate, this);
+            reader.ins.position.off("value", this.performUpdate, this);
+        }
+        if (next) {
+            const reader = next.documentScene.reader;
+            reader.ins.visible.on("value", this.performUpdate, this);
+            reader.ins.position.on("value", this.performUpdate, this);
+        }
     }
 
     protected render()
     {
         const system = this.system;
-
         const isLoading = this.assetLoader.outs.loading.value;
-        const readerVisible = this.reader.ins.visible.value;
-        const readerPosition = this.reader.ins.position.value;
+
+        let readerVisible = false;
+        let readerPosition = EReaderPosition.Overlay;
+
+        if (this.activeDocument) {
+            const reader = this.activeDocument.documentScene.reader;
+            readerVisible = reader.ins.visible.value;
+            readerPosition = reader.ins.position.value;
+        }
 
         const sceneView = this.sceneView;
         sceneView.classList.remove("sv-blur");
 
         // TODO: quick hack
-        if (!isLoading) {
-            const scene = this.system.getComponent(CVScene_old, true);
-            if (scene) {
-                scene.ins.zoomExtents.set();
-            }
-        }
+        //if (!isLoading) {
+        //    const scene = this.system.getComponent(CVScene, true);
+        //    if (scene) {
+        //        scene.ins.zoomExtents.set();
+        //    }
+        //}
 
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {

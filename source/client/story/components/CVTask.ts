@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-import Component, { types } from "@ff/graph/Component";
+import { types } from "@ff/graph/Component";
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import NVNode from "../../explorer/nodes/NVNode";
-import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+import CVNodeObserver from "../../explorer/components/CVNodeObserver";
 import CVDocument from "../../explorer/components/CVDocument";
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import NodeView, { customElement, property, html } from "../../explorer/ui/NodeView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { types, customElement, property, html };
 
-export default class CVTask extends Component
+export default class CVTask extends CVNodeObserver
 {
     static readonly typeName: string = "CVTask";
 
@@ -36,8 +35,6 @@ export default class CVTask extends Component
     static readonly icon: string = "fa fa-tasks";
 
     protected static readonly taskIns = {
-        activeDocument: types.Object("Task.ActiveDocument", CVDocument),
-        activeNode: types.Object("Task.ActiveNode", NVNode),
     };
 
     protected static readonly taskOuts = {
@@ -47,24 +44,13 @@ export default class CVTask extends Component
     outs = this.addOutputs(CVTask.taskOuts);
 
     protected get selection() {
-        return this.system.getMainComponent(CPickSelection);
-    }
-    protected get documentManager() {
-        return this.system.getMainComponent(CVDocumentManager);
-    }
-    protected get activeDocument() {
-        return this._activeDocument;
-    }
-    protected get activeNode() {
-        return this._activeNode;
+        return this.getMainComponent(CPickSelection);
     }
     protected get isActiveTask() {
         return this._isActiveTask;
     }
 
     private _isActiveTask = false;
-    private _activeDocument: CVDocument = null;
-    private _activeNode: NVNode = null;
 
     protected configuration = {
         bracketsVisible: undefined,
@@ -89,29 +75,6 @@ export default class CVTask extends Component
         super.dispose();
     }
 
-    update(context)
-    {
-        const ins = this.ins;
-
-        if (ins.activeDocument.changed) {
-            const document = ins.activeDocument.value;
-            if (document !== this._activeDocument) {
-                this.onActiveDocument(this._activeDocument, document);
-                this._activeDocument = document;
-            }
-        }
-
-        if (ins.activeNode.changed) {
-            const node = ins.activeNode.value;
-            if (node !== this._activeNode) {
-                this.onActiveNode(this._activeNode, node);
-                this._activeNode = node;
-            }
-        }
-
-        return true;
-    }
-
     createView(): TaskView
     {
         throw new Error("must override");
@@ -123,9 +86,7 @@ export default class CVTask extends Component
     activateTask()
     {
         this._isActiveTask = true;
-
-        this.ins.activeDocument.linkFrom(this.documentManager.outs.activeDocument);
-        this.ins.activeNode.linkFrom(this.documentManager.outs.activeNode);
+        this.startObserving();
 
         const configuration = this.configuration;
         const savedConfig = this._savedConfig;
@@ -148,9 +109,7 @@ export default class CVTask extends Component
             this.selection.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
         }
 
-        this.ins.activeDocument.unlinkFrom(this.documentManager.outs.activeDocument);
-        this.ins.activeNode.unlinkFrom(this.documentManager.outs.activeNode);
-
+        this.stopObserving();
         this._isActiveTask = false;
     }
 
@@ -191,94 +150,23 @@ export default class CVTask extends Component
             }
         }
     }
-
-    /**
-     * Called when the currently active node changes.
-     */
-    protected onActiveNode(previous: NVNode, next: NVNode)
-    {
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class TaskView<T extends CVTask = CVTask> extends CustomElement
+export class TaskView<T extends CVTask = CVTask> extends NodeView
 {
     @property({ attribute: false })
     task: T = null;
 
-    private _activeDocument: CVDocument = null;
-    private _activeNode: NVNode = null;
-
     constructor(task?: T)
     {
-        super();
+        super(task.system);
         this.task = task;
-    }
-
-    protected get system() {
-        return this.task.system;
-    }
-    protected get activeDocument() {
-        return this._activeDocument;
-    }
-    protected get activeNode() {
-        return this._activeNode;
     }
 
     protected firstConnected()
     {
         this.classList.add("sv-task-view");
-    }
-
-    protected connected()
-    {
-        const adProp = this.task.ins.activeDocument;
-        adProp.on("value", this._onActiveDocument, this);
-        this._onActiveDocument(adProp.value);
-
-        const anProp = this.task.ins.activeNode;
-        anProp.on("value", this._onActiveNode, this);
-        this._onActiveNode(anProp.value);
-
-        this.task.on("update", this.onRequestUpdate, this);
-    }
-
-    protected disconnected()
-    {
-        this.task.off("update", this.onRequestUpdate, this);
-
-        const adProp = this.task.ins.activeDocument;
-        adProp.off("value", this._onActiveDocument, this);
-        this._onActiveDocument(null);
-
-        const anProp = this.task.ins.activeNode;
-        anProp.off("value", this._onActiveNode, this);
-        this._onActiveNode(null);
-    }
-
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
-    {
-    }
-
-    protected onActiveNode(previous: NVNode, next: NVNode)
-    {
-    }
-
-    protected onRequestUpdate()
-    {
-        this.requestUpdate();
-    }
-
-    private _onActiveDocument(document: CVDocument)
-    {
-        this.onActiveDocument(this._activeDocument, document);
-        this._activeDocument = document;
-    }
-
-    private _onActiveNode(node: NVNode)
-    {
-        this.onActiveNode(this._activeNode, node);
-        this._activeNode = node;
     }
 }

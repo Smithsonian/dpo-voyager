@@ -44,7 +44,7 @@ export default class PinSprite extends AnnotationSprite
 
     update()
     {
-        const annotation = this.annotation;
+        const annotation = this.annotation.data;
 
         this.pin.scale.setScalar(annotation.scale);
         this.pin.position.y = annotation.offset;
@@ -80,7 +80,7 @@ class PinAnnotation extends AnnotationElement
 
     protected render()
     {
-        const annotation = this.sprite.annotation;
+        const annotation = this.sprite.annotation.data;
         return html`<div>${annotation.title}</div>`;
     }
 }

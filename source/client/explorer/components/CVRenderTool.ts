@@ -66,13 +66,13 @@ export class RenderToolView extends ToolView<CVRenderTool>
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (this.viewer) {
-            this.viewer.ins.shader.off("value", this.onRequestUpdate, this);
+            this.viewer.ins.shader.off("value", this.onUpdate, this);
             this.viewer = null;
         }
 
         if (next) {
             this.viewer = next.documentScene.viewer;
-            this.viewer.ins.shader.on("value", this.onRequestUpdate, this);
+            this.viewer.ins.shader.on("value", this.onUpdate, this);
         }
     }
 }

@@ -20,6 +20,8 @@ import "@ff/ui/Button";
 
 import "./PropertyView";
 
+import CVModel2 from "../../explorer/components/CVModel2";
+
 import CVCaptureTask from "../components/CVCaptureTask";
 import { TaskView, customElement, html } from "../components/CVTask";
 
@@ -28,6 +30,8 @@ import { TaskView, customElement, html } from "../components/CVTask";
 @customElement("sv-capture-task-view")
 export default class CaptureTaskView extends TaskView<CVCaptureTask>
 {
+    protected activeModel: CVModel2 = null;
+
     protected connected()
     {
         super.connected();
@@ -42,10 +46,10 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
 
     protected render()
     {
-        const item = this.activeItem;
+        const model = this.activeModel;
 
-        if (!item) {
-            return html`<div class="sv-placeholder">Please select an item to take a picture.</div>`;
+        if (!model) {
+            return html`<div class="sv-placeholder">Please select a model to take a picture.</div>`;
         }
 
         const ins = this.task.ins;

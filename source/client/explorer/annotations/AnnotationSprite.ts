@@ -76,8 +76,8 @@ export default class AnnotationSprite extends HTMLSprite
         super.update();
 
         const annotation = this.annotation;
-        this.position.fromArray(annotation.position);
-        _vec3dir.fromArray(annotation.direction).normalize();
+        this.position.fromArray(annotation.data.position);
+        _vec3dir.fromArray(annotation.data.direction).normalize();
         this.quaternion.setFromUnitVectors(_vec3up, _vec3dir);
 
         this.updateMatrix();

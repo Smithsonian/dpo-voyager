@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
+import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
+
 import {
-    IAsset,
+    IAsset as IAssetJSON,
     EAssetType,
     TAssetType,
     EMapType,
@@ -25,9 +27,19 @@ import {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IAsset, EAssetType, EMapType };
+export { EAssetType, EMapType };
 
-export default class Asset
+export type IAssetUpdateEvent = IDocumentUpdateEvent<Asset>;
+export type IAssetDisposeEvent = IDocumentDisposeEvent<Asset>;
+
+// @ts-ignore: change property type from string to enum
+export interface IAsset extends IAssetJSON
+{
+    type: EAssetType;
+    mapType: EMapType;
+}
+
+export default class Asset extends Document<IAsset, IAssetJSON>
 {
     static readonly mimeType = {
         gltfJson: "model/gltf+json",
@@ -36,106 +48,97 @@ export default class Asset
         imagePng: "image/png"
     };
 
-    uri: string = "";
-    mimeType: string = "";
-    type: EAssetType = undefined;
-    mapType: EMapType = undefined;
-    byteSize: number = 0;
-    numFaces: number = 0;
-    numVertices: number = 0;
-    imageSize: number = 0;
-
-    constructor(type: EAssetType, uri: string)
-    constructor(assetData: IAsset);
-    constructor(typeOrData, uri?)
-    {
-        if (uri === undefined) {
-            this.fromData(typeOrData);
-        }
-        else {
-            this.type = typeOrData;
-            this.uri = uri;
-        }
-    }
-
     isValid()
     {
-        return !!this.uri && this.type !== undefined;
-    }
-
-    fromData(assetData: IAsset)
-    {
-        this.uri = assetData.uri;
-        this.mimeType = assetData.mimeType || "";
-        this.type = EAssetType[assetData.type];
-        this.mapType = EMapType[assetData.mapType];
-        this.byteSize = assetData.byteSize || 0;
-        this.numFaces = assetData.numFaces || 0;
-        this.imageSize = assetData.imageSize || 0;
-
-        if (this.type === undefined) {
-            this.type = this.guessAssetType();
-            if (this.type === undefined) {
-                console.warn(`failed to determine asset type from asset: ${this.uri}`);
-            }
-        }
-    }
-
-    toData(): IAsset
-    {
-        const data: IAsset = {
-            uri: this.uri,
-            type: EAssetType[this.type] as TAssetType
-        };
-
-        if (this.mimeType) {
-            data.mimeType = this.mimeType;
-        }
-        if (this.mapType !== undefined) {
-            data.mapType = EMapType[this.mapType] as TMapType;
-        }
-        if (this.byteSize > 0) {
-            data.byteSize = this.byteSize;
-        }
-
-        // for model and geometry assets, save number of faces
-        if (this.type === EAssetType.Model || this.type === EAssetType.Geometry) {
-            if (this.numFaces > 0) {
-                data.numFaces = this.numFaces;
-            }
-        }
-
-        // for model, image, and texture assets, save image/map size
-        if (this.type === EAssetType.Model || this.type === EAssetType.Image || this.type === EAssetType.Texture) {
-            if (this.imageSize > 0) {
-                data.imageSize = this.imageSize;
-            }
-        }
-
-        return data;
+        return !!this.data.uri && this.data.type !== undefined;
     }
 
     toString()
     {
-        return `Asset - type: '${EAssetType[this.type]}', uri: '${this.uri}', mime type: '${this.mimeType || "(not set)"}'`;
+        const data = this.data;
+        return `Asset - type: '${EAssetType[data.type]}', uri: '${data.uri}', mime type: '${data.mimeType || "(not set)"}'`;
+    }
+
+    protected init()
+    {
+        return {
+            uri: "",
+            mimeType: "",
+            type: undefined,
+            mapType: undefined,
+            byteSize: 0,
+            numFaces: 0,
+            numVertices: 0,
+            imageSize: 0,
+        };
+    }
+
+    protected deflate(data: IAsset, json: IAssetJSON)
+    {
+        json.uri = data.uri;
+        json.type = EAssetType[data.type] as TAssetType;
+
+        if (data.mimeType) {
+            json.mimeType = data.mimeType;
+        }
+        if (data.mapType !== undefined) {
+            json.mapType = EMapType[data.mapType] as TMapType;
+        }
+        if (data.byteSize > 0) {
+            json.byteSize = data.byteSize;
+        }
+
+        // for model and geometry assets, save number of faces
+        if (data.type === EAssetType.Model || data.type === EAssetType.Geometry) {
+            if (data.numFaces > 0) {
+                json.numFaces = data.numFaces;
+            }
+        }
+
+        // for model, image, and texture assets, save image/map size
+        if (data.type === EAssetType.Model || data.type === EAssetType.Image || data.type === EAssetType.Texture) {
+            if (data.imageSize > 0) {
+                json.imageSize = data.imageSize;
+            }
+        }
+    }
+
+    protected inflate(json: IAssetJSON, data: IAsset)
+    {
+        data.uri = json.uri;
+        data.mimeType = json.mimeType || "";
+        data.type = EAssetType[json.type];
+        data.mapType = EMapType[json.mapType];
+        data.byteSize = json.byteSize || 0;
+        data.numFaces = json.numFaces || 0;
+        data.imageSize = json.imageSize || 0;
+
+        if (data.type === undefined) {
+            data.type = this.guessAssetType();
+            if (data.type === undefined) {
+                console.warn(`failed to determine asset type from asset: ${data.uri}`);
+            }
+        }
     }
 
     protected guessAssetType(): EAssetType
     {
-        if (this.type !== undefined && EAssetType[this.type]) {
-            return this.type;
+        const data = this.data;
+
+        if (data.type !== undefined && EAssetType[data.type]) {
+            return data.type;
         }
 
-        if (this.mimeType) {
-            if (this.mimeType === Asset.mimeType.gltfJson || this.mimeType === Asset.mimeType.gltfBinary) {
+        if (data.mimeType) {
+            if (data.mimeType === Asset.mimeType.gltfJson || data.mimeType === Asset.mimeType.gltfBinary) {
                 return EAssetType.Model;
             }
-            if (this.mimeType === Asset.mimeType.imageJpeg || this.mimeType === Asset.mimeType.imagePng) {
+            if (data.mimeType === Asset.mimeType.imageJpeg || data.mimeType === Asset.mimeType.imagePng) {
                 return EAssetType.Image;
             }
         }
 
-        const extension = this.uri.split(".").pop().toLowerCase();
+        const extension = data.uri.split(".").pop().toLowerCase();
 
         if (extension === "gltf" || extension === "glb") {
             return EAssetType.Model

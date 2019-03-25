@@ -148,9 +148,11 @@ export interface IAnnotations
 
 export interface ITour
 {
-    title: string;
-    lead: string;
-    tags: string[];
+    id: string;
     states: any[]; //ITweenState[];
     targets: any[]; //ITweenTarget[];
+
+    title?: string;
+    lead?: string;
+    tags?: string[];
 }

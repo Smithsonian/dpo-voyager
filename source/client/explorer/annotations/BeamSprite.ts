@@ -51,7 +51,7 @@ export default class BeamSprite extends AnnotationSprite
 
     update()
     {
-        const annotation = this.annotation;
+        const annotation = this.annotation.data;
 
         this.beam.scale.setScalar(5 * annotation.scale);
         this.beam.position.y = annotation.offset;
@@ -141,7 +141,7 @@ class BeamAnnotation extends AnnotationElement
     {
         super.update(changedProperties);
 
-        const annotation = this.sprite.annotation;
+        const annotation = this.sprite.annotation.data;
 
         this.titleElement.innerText = annotation.title;
         this.leadElement.innerText = annotation.lead;

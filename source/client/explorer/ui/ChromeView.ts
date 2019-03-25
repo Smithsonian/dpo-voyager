@@ -19,7 +19,7 @@ import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
 import CVInterface from "../components/CVInterface";
-import CVToolManager from "../components/CVToolManager";
+import CVToolProvider from "../components/CVToolProvider";
 
 import "../../core/ui/Logo";
 import "./MainMenu";
@@ -28,7 +28,7 @@ import "./TourNavigator";
 import "./ToolBar";
 
 import DocumentView, { customElement, html } from "./DocumentView";
-import CVMeta from "../components/CVMeta";
+import CVInfo from "../components/CVInfo";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,8 +38,8 @@ export default class ChromeView extends DocumentView
     protected get interface() {
         return this.system.getMainComponent(CVInterface);
     }
-    protected get toolManager() {
-        return this.system.getMainComponent(CVToolManager);
+    protected get toolProvider() {
+        return this.system.getMainComponent(CVToolProvider);
     }
 
     protected firstConnected()
@@ -53,13 +53,11 @@ export default class ChromeView extends DocumentView
     protected connected()
     {
         this.interface.on("update", this.performUpdate, this);
-        this.toolManager.ins.visible.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.interface.off("update", this.performUpdate, this);
-        this.toolManager.ins.visible.off("value", this.performUpdate, this);
     }
 
     protected render()
@@ -68,22 +66,15 @@ export default class ChromeView extends DocumentView
 
         const interfaceVisible = this.interface.ins.visible.value;
         const logoVisible = this.interface.ins.logo.value;
-        const toolsVisible = this.toolManager.ins.visible.value;
+        const toolsVisible = !!this.toolProvider.activeComponent;
 
         if (!interfaceVisible) {
             return html``;
         }
 
         // TODO: quick hack to retrieve a document title
-        const document = this.documentManager.activeDocument;
-        const metas = document ? document.getInnerComponents(CVMeta) : [];
-        let title = "";
-        for (let i = 0, n = metas.length; i < n; ++i) {
-            title = metas[i].outs.title.value;
-            if (title) {
-                break;
-            }
-        }
+        const document = this.activeDocument;
+        const title = (document ? document.documentScene.node.name : "") || "Untitled";
 
         // <div class="sv-main-title">${title || ""}<span>&nbsp; &nbsp;</span></div>
 
@@ -96,12 +87,11 @@ export default class ChromeView extends DocumentView
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>
-            ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.onToggleTools}></sv-tool-bar></div>` : null}`;
+            ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
     }
 
-    protected onToggleTools()
+    protected closeTools()
     {
-        const prop = this.toolManager.ins.visible;
-        prop.setValue(!prop.value);
+        this.toolProvider.activeComponent = null;
     }
 }

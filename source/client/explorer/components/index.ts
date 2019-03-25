@@ -24,7 +24,8 @@ import CVCamera from "./CVCamera";
 import CVDirectionalLight from "./CVDirectionalLight";
 import CVDocument from "./CVDocument";
 import CVDocumentLoader from "./CVDocumentLoader";
-import CVDocumentManager from "./CVDocumentManager";
+import CVDocumentObserver from "./CVDocumentObserver";
+import CVDocumentProvider from "./CVDocumentProvider";
 import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
 import CVInfo from "./CVInfo";
@@ -33,6 +34,8 @@ import CVLightTool from "./CVLightTool";
 import CVModel2 from "./CVModel2";
 import CVNavigation from "./CVNavigation";
 import CVNode from "./CVNode";
+import CVNodeObserver from "./CVNodeObserver";
+import CVNodeProvider from "./CVNodeProvider";
 import CVOrbitNavigation from "./CVOrbitNavigation";
 import CVPointLight from "./CVPointLight";
 import CVReader from "./CVReader";
@@ -42,7 +45,7 @@ import CVSliceTool from "./CVSliceTool";
 import CVSpotLight from "./CVSpotLight";
 import CVTape from "./CVTape";
 import CVTapeTool from "./CVTapeTool";
-import CVToolManager from "./CVToolManager";
+import CVToolProvider from "./CVToolProvider";
 import CVTours from "./CVTours";
 import CVUberMaterial from "./CVUberMaterial";
 import CVViewer from "./CVViewer";
@@ -60,7 +63,8 @@ export {
     CVDirectionalLight,
     CVDocument,
     CVDocumentLoader,
-    CVDocumentManager,
+    CVDocumentObserver,
+    CVDocumentProvider,
     CVFloor,
     CVGrid,
     CVInfo,
@@ -69,6 +73,8 @@ export {
     CVModel2,
     CVNavigation,
     CVNode,
+    CVNodeObserver,
+    CVNodeProvider,
     CVOrbitNavigation,
     CVPointLight,
     CVReader,
@@ -78,7 +84,7 @@ export {
     CVSpotLight,
     CVTape,
     CVTapeTool,
-    CVToolManager,
+    CVToolProvider,
     CVTours,
     CVUberMaterial,
     CVViewer,
@@ -95,7 +101,8 @@ export const componentTypes = [
     CVDirectionalLight,
     CVDocument,
     CVDocumentLoader,
-    CVDocumentManager,
+    CVDocumentObserver,
+    CVDocumentProvider,
     CVFloor,
     CVGrid,
     CVInfo,
@@ -104,6 +111,8 @@ export const componentTypes = [
     CVModel2,
     CVNavigation,
     CVNode,
+    CVNodeObserver,
+    CVNodeProvider,
     CVOrbitNavigation,
     CVPointLight,
     CVReader,
@@ -113,7 +122,7 @@ export const componentTypes = [
     CVSpotLight,
     CVTape,
     CVTapeTool,
-    CVToolManager,
+    CVToolProvider,
     CVTours,
     CVUberMaterial,
     CVViewer,

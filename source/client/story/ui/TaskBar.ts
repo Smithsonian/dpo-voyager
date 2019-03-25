@@ -22,10 +22,8 @@ import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVDocumentManager from "../../explorer/components/CVDocumentManager";
-import CVItemManager from "../../explorer/components/CVItemManager";
 import CVStoryController from "../components/CVStoryController";
-import CVTaskManager from "../components/CVTaskManager";
+import CVTaskProvider, { IActiveTaskEvent } from "../components/CVTaskProvider";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,18 +32,14 @@ import CVTaskManager from "../components/CVTaskManager";
 export default class TaskBar extends SystemElement
 {
     protected story: CVStoryController = null;
-    protected taskManager: CVTaskManager = null;
-    protected documentManager: CVDocumentManager = null;
-    protected itemManager: CVItemManager = null;
+    protected taskProvider: CVTaskProvider = null;
 
     constructor(system?: System)
     {
         super(system);
 
         this.story = system.getMainComponent(CVStoryController);
-        this.taskManager = system.getMainComponent(CVTaskManager);
-        this.documentManager = system.getMainComponent(CVDocumentManager);
-        this.itemManager = system.getMainComponent(CVItemManager);
+        this.taskProvider = system.getMainComponent(CVTaskProvider);
     }
 
     protected firstConnected()
@@ -55,24 +49,20 @@ export default class TaskBar extends SystemElement
 
     protected connected()
     {
-        this.story.ins.expertMode.on("value", this.performUpdate, this);
-        this.taskManager.outs.activeTask.on("value", this.performUpdate, this);
-        this.documentManager.outs.activeDocument.on("value", this.performUpdate, this);
-        this.itemManager.outs.activeItem.on("value", this.performUpdate, this);
+        this.story.ins.expertMode.on("value", this.onUpdate, this);
+        this.taskProvider.on<IActiveTaskEvent>("active-component", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.story.ins.expertMode.off("value", this.performUpdate, this);
-        this.taskManager.outs.activeTask.off("value", this.performUpdate, this);
-        this.documentManager.outs.activeDocument.off("value", this.performUpdate, this);
-        this.itemManager.outs.activeItem.off("value", this.performUpdate, this);
+        this.story.ins.expertMode.off("value", this.onUpdate, this);
+        this.taskProvider.off<IActiveTaskEvent>("active-component", this.onUpdate, this);
     }
 
     protected render()
     {
-        const taskList = this.taskManager.tasks;
-        const activeTask = this.taskManager.activeTask;
+        const tasks = this.taskProvider.scopedComponents;
+        const activeTask = this.taskProvider.activeComponent;
         const expertMode = this.story.ins.expertMode.value;
         const taskMode = this.story.ins.mode.getOptionText();
 
@@ -82,7 +72,7 @@ export default class TaskBar extends SystemElement
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
-                ${taskList.map((task, index) => html`<ff-button text=${task.text} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
+                ${tasks.map((task, index) => html`<ff-button text=${task.text} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
             </div>
             <div class="sv-divider"></div>
             <div class="sv-spacer"></div>
@@ -99,10 +89,9 @@ export default class TaskBar extends SystemElement
 
     protected onClickTask(event: IButtonClickEvent)
     {
-        const taskList = this.taskManager.tasks;
-
         if (event.target instanceof Button) {
-            this.taskManager.activeTask = taskList[event.target.index];
+            const tasks = this.taskProvider.scopedComponents;
+            this.taskProvider.activeComponent = tasks[event.target.index];
         }
     }
 

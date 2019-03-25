@@ -19,11 +19,11 @@ import resolvePathname from "resolve-pathname";
 
 import NTransform from "@ff/scene/nodes/NTransform";
 
-import { IItem } from "common/types/item";
+//import { IItem } from "common/types/item";
 
-import CVModel_old from "../../core/components/CVModel_old";
-import { EDerivativeQuality } from "../../core/models/Derivative";
-import CVAssetLoader from "../../core/components/CVAssetLoader";
+//import CVModel_old from "../../core/components/CVModel_old";
+//import { EDerivativeQuality } from "../../core/models/Derivative";
+//import CVAssetLoader from "../../core/components/CVAssetLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 

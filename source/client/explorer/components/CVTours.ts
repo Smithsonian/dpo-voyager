@@ -15,23 +15,25 @@
  * limitations under the License.
  */
 
-import clone from "@ff/core/clone";
+import OrderedCollection from "@ff/core/OrderedCollection";
 
 import Component, { ITypedEvent, types } from "@ff/graph/Component";
+import Property from "@ff/graph/Property";
+
 import CTweenMachine, { IMachineState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
 
-import { ITour } from "common/types/scene";
-import Property from "@ff/graph/Property";
-import OrderedCollection from "@ff/core/OrderedCollection";
+import { ITour } from "../models/Tour";
+import Tour from "../models/Tour";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { ITour };
+export { Tour };
 export enum EToursState { Off, Select, Playing }
 
-export interface ITourUpdateEvent extends ITypedEvent<"tour">
+export interface IActiveTourEvent extends ITypedEvent<"active-tour">
 {
-    tour: ITour;
+    previous: Tour;
+    next: Tour;
 }
 
 export default class CVTours extends Component
@@ -54,48 +56,48 @@ export default class CVTours extends Component
     ins = this.addInputs(CVTours.ins);
     outs = this.addOutputs(CVTours.outs);
 
-    tours = new OrderedCollection<ITour>();
+    tours = new OrderedCollection<Tour>();
 
-    private _tours: ITour[] = [];
-    private _activeTourIndex = -1;
+    private _activeTour: Tour = null;
     private _defaultTargets: ITweenTarget[] = [];
 
     get tweenMachine() {
         return this.getComponent(CTweenMachine);
     }
 
-    get tours() {
-        return this._tours;
-    }
     get activeTour() {
-        const index = this._activeTourIndex;
-        return index >= 0 ? this._tours[index] : null;
+        return this._activeTour;
     }
-    set activeTour(tour: ITour) {
+    set activeTour(tour: Tour) {
         const activeTour = this.activeTour;
-        const tours = this._tours;
 
         if (tour !== activeTour) {
+            const outs = this.outs;
+
             if (activeTour) {
                 const state: IMachineState = this.tweenMachine.stateToJSON();
-                activeTour.steps = state.states || [];
-                activeTour.targets = state.targets || [];
+                activeTour.set("states", state.states || []);
+                activeTour.set("targets", state.targets || []);
             }
-
-            this._activeTourIndex = tour ? tours.indexOf(tour) : -1;
 
             if (tour) {
-                const outs = this.outs;
-                outs.title.setValue(tour.title);
-                outs.description.setValue(tour.lead);
+                const data = tour.data;
+                outs.title.setValue(data.title);
+                outs.description.setValue(data.lead);
                 outs.step.setValue(0);
-                outs.count.setValue(tour.steps.length);
+                outs.count.setValue(data.states.length);
 
-                const state = { states: tour.steps, targets: tour.targets };
+                const state = { states: data.states, targets: data.targets };
                 this.tweenMachine.stateFromJSON(state);
+
+                outs.state.setValue(EToursState.Playing);
+            }
+            else {
+                outs.state.setValue(EToursState.Select);
             }
 
-            this.emit<ITourUpdateEvent>({ type: "tour", tour });
+            this._activeTour = tour;
+            this.emit<IActiveTourEvent>({ type: "active-tour", previous: activeTour, next: tour });
         }
     }
 
@@ -122,14 +124,7 @@ export default class CVTours extends Component
 
         if (ins.tour.changed) {
             const index = ins.tour.getValidatedValue() - 1;
-            if (index >= 0) {
-                this.activeTour = this._tours[index];
-                outs.state.setValue(EToursState.Playing);
-            }
-            else {
-                this.activeTour = null;
-                outs.state.setValue(EToursState.Select);
-            }
+            this.activeTour = index >= 0 ? this.tours.getAt(index) : null;
         }
 
         return true;
@@ -137,62 +132,34 @@ export default class CVTours extends Component
 
     createTour()
     {
-        const tour = {
-            title: "New Tour",
-            lead: "",
-            tags: [],
-            steps: [],
-            targets: clone(this._defaultTargets),
-        };
+        const tour = new Tour();
+        this.tours.append(tour);
 
-        this._tours.push(tour);
         this.updateTourList();
         this.activeTour = tour;
     }
 
     deleteTour()
     {
-        const tours = this._tours;
-        const index = this._activeTourIndex;
+        const tours = this.tours;
 
-        this._tours.splice(index, 1);
-        this._activeTourIndex = -1;
+        const index = tours.getIndexOf(this.activeTour);
+        tours.removeAt(index);
 
         this.updateTourList();
         this.activeTour = index < tours.length ? tours[index] : tours[index - 1];
     }
 
-    updateTour()
-    {
-        this.emit<ITourUpdateEvent>({ type: "tour", tour: this.activeTour });
-    }
-
     moveTourUp()
     {
-        const tours = this._tours;
-        const index = this._activeTourIndex;
-
-        if (index > 0) {
-            const activeTour = tours[index];
-            tours[index] = tours[index - 1];
-            tours[index - 1] = activeTour;
-            this._activeTourIndex = index - 1;
-            this.updateTourList();
-        }
+        this.tours.moveItem(this.activeTour, -1);
+        this.updateTourList();
     }
 
     moveTourDown()
     {
-        const tours = this._tours;
-        const index = this._activeTourIndex;
-
-        if (index + 1 < tours.length) {
-            const activeTour = tours[index];
-            tours[index] = tours[index + 1];
-            tours[index + 1] = activeTour;
-            this._activeTourIndex = index + 1;
-            this.updateTourList();
-        }
+        this.tours.moveItem(this.activeTour, 1);
+        this.updateTourList();
     }
 
     addTarget(component: Component, property: Property)
@@ -202,17 +169,17 @@ export default class CVTours extends Component
 
     fromData(tours: ITour[])
     {
-        this._tours = tours;
+        this.tours.items = tours.map(tourData => Tour.fromJSON(tourData));
     }
 
     toData(): ITour[]
     {
-        return this._tours;
+        return this.tours.items.map(tour => tour.toJSON());
     }
 
     protected updateTourList()
     {
-        const names = this._tours.map(tour => tour.title);
+        const names = this.tours.items.map(tour => tour.data.title);
         names.unshift("(none)");
         this.ins.tour.setOptions(names);
 

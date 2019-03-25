@@ -25,7 +25,7 @@ import { EDerivativeQuality } from "common/types/model";
 import * as documentTemplate from "common/templates/document.json";
 
 import CVAssetLoader from "./CVAssetLoader";
-import CVDocumentManager from "./CVDocumentManager";
+import CVDocumentProvider from "./CVDocumentProvider";
 import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,11 +34,11 @@ export default class CVDocumentLoader extends Component
 {
     static readonly typeName: string = "CVDocumentLoader";
 
-    protected get documentManager() {
-        return this.components.get(CVDocumentManager);
+    protected get documentProvider() {
+        return this.components.get(CVDocumentProvider);
     }
     protected get activeDocument() {
-        return this.documentManager.activeDocument;
+        return this.documentProvider.activeComponent;
     }
     protected get assetLoader() {
         return this.getComponent(CVAssetLoader);

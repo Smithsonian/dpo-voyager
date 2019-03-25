@@ -66,7 +66,7 @@ class LabelAnnotation extends AnnotationElement
 
     protected render()
     {
-        const annotation = this.sprite.annotation;
+        const annotation = this.sprite.annotation.data;
         return html`<div>${annotation.title}</div>`;
     }
 }

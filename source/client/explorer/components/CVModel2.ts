@@ -34,6 +34,7 @@ import DerivativeList from "../../core/models/DerivativeList";
 import CVAnnotationView from "./CVAnnotationView";
 import CVAssetLoader from "./CVAssetLoader";
 import { Vector3 } from "common/types/common";
+import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +96,9 @@ export default class CVModel2 extends CObject3D
 
     protected get loaders() {
         return this.system.getMainComponent(CVAssetLoader);
+    }
+    protected get document() {
+        return this.graph.parent as CVDocument;
     }
 
 
@@ -228,7 +232,7 @@ export default class CVModel2 extends CObject3D
         const part0 = data.parts[0];
 
         if (part0.derivatives) {
-            this.derivatives.fromData(part0.derivatives);
+            this.derivatives.fromJSON(part0.derivatives);
         }
         if (part0.material) {
             // TODO: Implement
@@ -246,7 +250,7 @@ export default class CVModel2 extends CObject3D
         } as IModel;
 
         const part0 = {
-            derivatives: this.derivatives.toData(),
+            derivatives: this.derivatives.toJSON(),
         };
 
         data.boundingBox = {
@@ -332,7 +336,7 @@ export default class CVModel2 extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        return derivative.load(this.loaders, this.item.urlPath)
+        return derivative.load(this.loaders, this.document.urlPath)
         .then(() => {
             if (!derivative.model) {
                 return;

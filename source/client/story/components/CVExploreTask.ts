@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-import ExploreTaskView from "../ui/ExploreTaskView";
 import CVTask from "./CVTask";
-import NVItem from "../../explorer/nodes/NVItem";
+import ExploreTaskView from "../ui/ExploreTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,14 +39,5 @@ export default class CVExploreTask extends CVTask
         const configuration = this.configuration;
         configuration.interfaceVisible = true;
         configuration.bracketsVisible = false;
-    }
-
-    protected onActiveItem(previous: NVItem, next: NVItem)
-    {
-        super.onActiveItem(previous, next);
-
-        if (next) {
-            this.selectionController.selectNode(next);
-        }
     }
 }

@@ -44,7 +44,7 @@ export default class NVNode extends Node
         return this.components.get(CVCamera, true);
     }
     get light() {
-        return this.components.get(CLight) as ICVLight;
+        return this.components.get(CLight, true) as ICVLight;
     }
     get entity() {
         return this.components.get(CVInfo, true);
@@ -104,7 +104,7 @@ export default class NVNode extends Node
                     throw new Error(`unknown light type: '${type}'`);
             }
         }
-        if (isFinite(node.entity)) {
+        if (isFinite(node.info)) {
             this.createComponent(CVInfo).fromDocument(document, node);
         }
         if (isFinite(node.scene)) {

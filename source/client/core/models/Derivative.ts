@@ -19,12 +19,14 @@ import * as THREE from "three";
 
 import { disposeObject } from "@ff/three/helpers";
 
+import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
+
 import {
-    IDerivative,
+    IDerivative as IDerivativeJSON,
     EDerivativeQuality,
     TDerivativeQuality,
     EDerivativeUsage,
-    TDerivativeUsage
+    TDerivativeUsage, TAssetType
 } from "common/types/model";
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
@@ -34,46 +36,40 @@ import Asset, { EAssetType, EMapType } from "./Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IDerivative, EDerivativeQuality, EDerivativeUsage, Asset, EAssetType };
+export { EDerivativeQuality, EDerivativeUsage, Asset, EAssetType };
 
+export type IDerivativeUpdateEvent = IDocumentUpdateEvent<Derivative>;
+export type IDerivativeDisposeEvent = IDocumentDisposeEvent<Derivative>;
 
-export default class Derivative
+// @ts-ignore: change property type from string to enum
+export interface IDerivative extends IDerivativeJSON
 {
-    id: string;
     usage: EDerivativeUsage;
     quality: EDerivativeQuality;
     assets: Asset[];
+}
 
-    model: THREE.Object3D;
-
-    constructor(usage: EDerivativeUsage, quality: EDerivativeQuality);
-    constructor(data: IDerivative);
-    constructor(usageOrData, quality?)
+export default class Derivative extends Document<IDerivative, IDerivativeJSON>
+{
+    static fromJSON(json: IDerivativeJSON)
     {
-        this.id = "";
-
-        if (quality === undefined) {
-            this.fromData(usageOrData);
-        }
-        else {
-            this.usage = usageOrData;
-            this.quality = quality;
-            this.assets = [];
-        }
-
-        this.model = null;
+        return new Derivative(json);
     }
+
+    model: THREE.Object3D = null;
 
     dispose()
     {
         if (this.model) {
             disposeObject(this.model);
         }
+
+        super.dispose();
     }
 
     load(loaders: CVAssetLoader, baseUrl: string): Promise<THREE.Object3D>
     {
-        if (this.usage !== EDerivativeUsage.Web3D) {
+        if (this.data.usage !== EDerivativeUsage.Web3D) {
             throw new Error("can't load, not a Web3D derivative");
         }
 
@@ -119,60 +115,70 @@ export default class Derivative
         }
     }
 
-    createAsset(type: EAssetType, uri: string): Asset
+    createAsset(assetType: EAssetType, uri: string): Asset
     {
         if (!uri) {
             throw new Error("uri must be specified");
         }
 
-        const asset = new Asset(type, uri);
-        this.assets.push(asset);
+        const type = EAssetType[assetType] as TAssetType;
+        const asset = new Asset({ type, uri });
+        this.data.assets.push(asset);
         return asset;
-    }
-
-    fromData(data: IDerivative)
-    {
-        this.usage = EDerivativeUsage[data.usage];
-        if (this.usage === undefined) {
-            throw new Error(`unknown derivative usage: ${data.usage}`);
-        }
-
-        this.quality = EDerivativeQuality[data.quality];
-        if (this.quality === undefined) {
-            throw new Error(`unknown derivative quality: ${data.quality}`);
-        }
-
-        this.assets = data.assets.map(assetData => new Asset(assetData));
-    }
-
-    toData(): IDerivative
-    {
-        return {
-            usage: EDerivativeUsage[this.usage] as TDerivativeUsage,
-            quality: EDerivativeQuality[this.quality] as TDerivativeQuality,
-            assets: this.assets.map(asset => asset.toData())
-        };
-    }
-
-    toString(verbose: boolean = false)
-    {
-        if (verbose) {
-            return `Derivative - usage: '${EDerivativeUsage[this.usage]}', quality: '${EDerivativeQuality[this.quality]}'\n   `
-                + this.assets.map(asset => asset.toString()).join("\n   ");
-        }
-        else {
-            return `Derivative - usage: '${EDerivativeUsage[this.usage]}', quality: '${EDerivativeQuality[this.quality]}', #assets: ${this.assets.length})`;
-        }
     }
 
     findAsset(type: EAssetType): Asset | undefined
     {
-        return this.assets.find(asset => asset.type === type);
+        return this.data.assets.find(asset => asset.data.type === type);
     }
 
     findAssets(type: EAssetType): Asset[]
     {
-        return this.assets.filter(asset => asset.type === type);
+        return this.data.assets.filter(asset => asset.data.type === type);
+    }
+
+    toString(verbose: boolean = false)
+    {
+        const data = this.data;
+
+        if (verbose) {
+            return `Derivative - usage: '${EDerivativeUsage[data.usage]}', quality: '${EDerivativeQuality[data.quality]}'\n   `
+                + data.assets.map(asset => asset.toString()).join("\n   ");
+        }
+        else {
+            return `Derivative - usage: '${EDerivativeUsage[data.usage]}', quality: '${EDerivativeQuality[data.quality]}', #assets: ${data.assets.length})`;
+        }
+    }
+
+    protected init()
+    {
+        return {
+            usage: EDerivativeUsage.Web3D,
+            quality: EDerivativeQuality.Medium,
+            assets: [],
+        };
+    }
+
+    protected deflate(data: IDerivative, json: IDerivativeJSON)
+    {
+        json.usage = EDerivativeUsage[data.usage] as TDerivativeUsage;
+        json.quality = EDerivativeQuality[data.quality] as TDerivativeQuality;
+        json.assets = data.assets.map(asset => asset.toJSON());
+    }
+
+    protected inflate(json: IDerivativeJSON, data: IDerivative)
+    {
+        data.usage = EDerivativeUsage[json.usage];
+        if (data.usage === undefined) {
+            throw new Error(`unknown derivative usage: ${json.usage}`);
+        }
+
+        data.quality = EDerivativeQuality[json.quality];
+        if (data.quality === undefined) {
+            throw new Error(`unknown derivative quality: ${json.quality}`);
+        }
+
+        data.assets = json.assets.map(assetJson => new Asset(assetJson));
     }
 
     protected assignTextures(assets: Asset[], textures: THREE.Texture[], material: UberPBRMaterial)
@@ -181,7 +187,7 @@ export default class Derivative
             const asset = assets[i];
             const texture = textures[i];
 
-            switch(asset.mapType) {
+            switch(asset.data.mapType) {
                 case EMapType.Color:
                     material.map = texture;
                     break;
@@ -203,31 +209,6 @@ export default class Derivative
                     material.normalMap = texture;
                     break;
             }
-        }
-    }
-
-    protected disposeMesh(mesh: THREE.Mesh)
-    {
-        mesh.geometry.dispose();
-        const material: any = mesh.material;
-
-        if (material.map) {
-            material.map.dispose();
-        }
-        if (material.aoMap) {
-            material.aoMap.dispose();
-        }
-        if (material.emissiveMap) {
-            material.emissiveMap.dispose();
-        }
-        if (material.metalnessMap) {
-            material.metalnessMap.dispose();
-        }
-        if (material.roughnessMap) {
-            material.roughnessMap.dispose();
-        }
-        if (material.normalMap) {
-            material.normalMap.dispose();
         }
     }
 }

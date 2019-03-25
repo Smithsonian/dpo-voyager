@@ -18,7 +18,7 @@
 import Component, { types } from "@ff/graph/Component";
 
 import { IInterface } from "common/types/scene";
-import CVDocumentManager from "./CVDocumentManager";
+import CVDocumentProvider from "./CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,11 +69,11 @@ export default class CVInterface extends Component
         }
     }
 
-    protected get documentManager() {
-        return this.getMainComponent(CVDocumentManager);
+    protected get documentProvider() {
+        return this.getMainComponent(CVDocumentProvider);
     }
     protected get activeDocument() {
-        return this.documentManager.activeDocument;
+        return this.documentProvider.activeComponent;
     }
 
     toggleFullscreen()

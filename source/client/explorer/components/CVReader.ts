@@ -38,9 +38,9 @@ export default class CVReader extends Component
 
     ins = this.addInputs(CVReader.readerIns);
 
-    setDocument(document: Article)
+    setArticle(article: Article)
     {
-        this.ins.url.setValue(document.uri);
+        this.ins.url.setValue(article.data.uri);
     }
 
     fromData(data: IReader)

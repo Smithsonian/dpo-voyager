@@ -26,28 +26,31 @@ import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 import "./ItemList";
 import "./PropertyView";
 import { TaskView } from "../components/CVTask";
-import CVScene_old from "../../core/components/CVScene_old";
+import CVModel2 from "../../explorer/components/CVModel2";
+import NVNode from "../../explorer/nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView<CVPoseTask>
 {
+    protected activeModel: CVModel2 = null;
+
     protected render()
     {
         const document = this.activeDocument;
-        const item = this.activeItem;
+        const model = this.activeModel;
 
-        if (!item) {
-            return html`<div class="sv-placeholder">Please select an item to edit its pose</div>`;
+        if (!model) {
+            return html`<div class="sv-placeholder">Please select a model to edit its pose</div>`;
         }
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = document.getInnerComponent(CVScene_old).ins.units;
-        const itemUnits = item.model.ins.units;
-        const position = item.model.ins.position;
-        const rotation = item.model.ins.rotation;
+        const globalUnits = document.documentScene.ins.units;
+        const itemUnits = model.ins.localUnits;
+        const position = model.ins.position;
+        const rotation = model.ins.rotation;
 
         return html`
             <div class="sv-commands">
@@ -72,13 +75,17 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
     protected onClickCenter()
     {
-        const activeItem = this.task.itemManager.activeItem;
-        activeItem.model.ins.center.set();
+        this.activeModel.ins.center.set();
     }
 
     protected onClickZoomViews()
     {
-        const activeDocument = this.task.documentManager.activeDocument;
-        activeDocument.getInnerComponent(CVScene_old).ins.zoomExtents.set();
+        this.activeDocument.documentScene.navigation.ins.zoomExtents.set();
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+        this.activeModel = next && next.model;
+        this.requestUpdate();
     }
 }

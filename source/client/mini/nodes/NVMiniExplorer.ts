@@ -24,8 +24,8 @@ import CBackground from "@ff/scene/components/CBackground";
 import NCamera from "@ff/scene/nodes/NCamera";
 import NDirectionalLight from "@ff/scene/nodes/NDirectionalLight";
 
-import CVAssetLoader from "../../core/components/CVAssetLoader";
-import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
+//import CVAssetLoader from "../../core/components/CVAssetLoader";
+//import CVOrbitNavigation from "../../core/components/CVOrbitNavigation";
 
 import NVMiniItem from "./NVMiniItem";
 

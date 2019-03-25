@@ -17,7 +17,7 @@
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVToolManager from "../components/CVToolManager";
+import CVToolProvider from "../components/CVToolProvider";
 import CVTool, { ToolView } from "../components/CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,8 +30,8 @@ export interface IToolBarCloseEvent extends CustomEvent
 @customElement("sv-tool-bar")
 export default class ToolBar extends SystemElement
 {
-    protected get toolManager() {
-        return this.system.getMainComponent(CVToolManager);
+    protected get toolProvider() {
+        return this.system.getMainComponent(CVToolProvider);
     }
 
     protected firstConnected()
@@ -43,7 +43,7 @@ export default class ToolBar extends SystemElement
     protected connected()
     {
         super.connected();
-        this.toolManager.outs.activeTool.on("value", this.performUpdate, this);
+        this.toolProvider.on<IActiveToolEvent>.outs.activeTool.on("value", this.performUpdate, this);
     }
 
     protected disconnected()

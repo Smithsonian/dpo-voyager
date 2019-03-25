@@ -21,15 +21,15 @@ import download from "@ff/browser/download";
 import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
-import { types, IComponentEvent } from "@ff/graph/Component";
+import { types } from "@ff/graph/Component";
 
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "../../core/models/Derivative";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "common/types/model";
 
-import CVModel_old from "../../core/components/CVModel_old";
-import NVItem from "../../explorer/nodes/NVItem";
+import NVNode from "../../explorer/nodes/NVNode";
+import CVModel2 from "../../explorer/components/CVModel2";
 
 import CVTask from "./CVTask";
 import CaptureTaskView from "../ui/CaptureTaskView";
@@ -86,15 +86,17 @@ export default class CVCaptureTask extends CVTask
     ins = this.addInputs<CVTask, typeof CVCaptureTask.ins>(CVCaptureTask.ins);
     outs = this.addOutputs<CVTask, typeof CVCaptureTask.outs>(CVCaptureTask.outs);
 
-    protected get renderer() {
-        return this.getMainComponent(CRenderer);
-    }
+    protected activeModel: CVModel2 = null;
 
     private _imageDataURIs: Dictionary<string> = {};
     private _imageElements: Dictionary<HTMLImageElement> = {};
     private _mimeType: string = "";
     private _extension: string = "";
 
+
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
+    }
 
     getImageElement(quality: EDerivativeQuality = EDerivativeQuality.Low)
     {
@@ -113,7 +115,7 @@ export default class CVCaptureTask extends CVTask
 
     activateTask()
     {
-        this.selectionController.selectedComponents.on(CVModel_old, this.onSelectModel, this);
+        //this.selection.selectedComponents.on(CVModel2, this.onSelectModel, this);
 
         super.activateTask();
     }
@@ -122,7 +124,7 @@ export default class CVCaptureTask extends CVTask
     {
         super.deactivateTask();
 
-        this.selectionController.selectedComponents.off(CVModel_old, this.onSelectModel, this);
+        //this.selection.selectedComponents.off(CVModel2, this.onSelectModel, this);
     }
 
     create()
@@ -182,7 +184,7 @@ export default class CVCaptureTask extends CVTask
 
     protected uploadPictures()
     {
-        const model = this.activeItem.model;
+        const model = this.activeModel;
         if (!model || !this.arePicturesReady()) {
             return;
         }
@@ -190,7 +192,7 @@ export default class CVCaptureTask extends CVTask
         _qualityLevels.forEach(quality => {
             const dataURI = this._imageDataURIs[quality];
             const fileName = this.getImageFileName(quality, this._extension);
-            const fileURL = this.activeItem.getAssetUrl(fileName);
+            const fileURL = this.activeDocument.getAssetUrl(fileName);
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
@@ -223,22 +225,25 @@ export default class CVCaptureTask extends CVTask
             return;
         }
 
-        const model = this.activeItem.model;
+        const model = this.activeModel;
 
-        const derivative = model.derivatives.getOrCreate(EDerivativeUsage.Web2D, quality);
+        const derivative = model.derivatives.getOrCreate(EDerivativeUsage.Image2D, quality);
 
         const asset = derivative.findAsset(EAssetType.Image)
             || derivative.createAsset(EAssetType.Image, url);
 
-        asset.uri = url;
-        asset.imageSize = Math.max(_sizePresets[quality][0], _sizePresets[quality][1]);
-        asset.mimeType = mimeType;
-        asset.byteSize = Math.ceil(this._imageDataURIs[quality].length / 4 * 3);
+        asset.data.uri = url;
+        asset.data.imageSize = Math.max(_sizePresets[quality][0], _sizePresets[quality][1]);
+        asset.data.mimeType = mimeType;
+        asset.data.byteSize = Math.ceil(this._imageDataURIs[quality].length / 4 * 3);
+
+        asset.update();
     }
+
 
     protected getImageFileName(quality: EDerivativeQuality, extension: string)
     {
-        const assetBaseName = this.activeItem.assetBaseName;
+        const assetBaseName = this.activeDocument.assetBaseName;
         const qualityName = EDerivativeQuality[quality].toLowerCase();
         const imageName = `image-${qualityName}.${extension}`;
         return assetBaseName + imageName;
@@ -249,41 +254,33 @@ export default class CVCaptureTask extends CVTask
         console.warn("CCaptureTask.removePictures - not implemented yet");
     }
 
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        super.onActiveItem(previous, next);
-
-        if (previous && previous.hasComponent(CVModel_old)) {
+        if (previous && previous.model) {
             this.outs.ready.setValue(false);
             this._imageElements = {};
             this._imageDataURIs = {};
         }
 
-        if (next && next.hasComponent(CVModel_old)) {
-            const model = next.model;
+        if (next && next.model) {
+            this.activeModel = next.model;
             // load existing captures
             _qualityLevels.forEach(quality => {
-                const derivative = model.derivatives.get(EDerivativeUsage.Web2D, quality);
+                const derivative = this.activeModel.derivatives.get(EDerivativeUsage.Image2D, quality);
                 if (derivative) {
-                    const image = derivative.findAsset(EAssetType.Image);
-                    if (image) {
+                    const imageAsset = derivative.findAsset(EAssetType.Image);
+                    if (imageAsset) {
                         const imageElement = document.createElement("img");
-                        imageElement.src = this.activeItem.getAssetUrl(image.uri);
+                        imageElement.src = this.activeDocument.getAssetUrl(imageAsset.data.uri);
                         this._imageElements[quality] = imageElement;
                     }
                 }
             });
 
-            this.selectionController.selectComponent(model);
+            this.selection.selectComponent(this.activeModel);
         }
-    }
-
-    protected onSelectModel(event: IComponentEvent<CVModel_old>)
-    {
-        const node = event.object.node;
-
-        if (event.add && node instanceof NVItem) {
-            this.itemManager.activeItem = node;
+        else {
+            this.activeModel = null;
         }
     }
 }

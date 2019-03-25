@@ -15,32 +15,34 @@
  * limitations under the License.
  */
 
-import Node from "@ff/graph/Node";
-import CScene from "@ff/scene/components/CScene";
+import CComponentProvider, { EComponentScope } from "@ff/graph/components/CComponentProvider";
 
-import CVDocumentLoader from "../components/CVDocumentLoader";
-import CVDocumentProvider from "../components/CVDocumentProvider";
+import CVTask from "./CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVDocuments extends Node
+export default class CVActiveTask extends CComponentProvider<CVTask>
 {
-    static readonly typeName: string = "NVDocuments";
+    static readonly typeName: string = "CVActiveTask";
+    static readonly componentType = CVTask;
 
-    get documentProvider() {
-        return this.components.get(CVDocumentProvider);
-    }
-    get documentLoader() {
-        return this.components.get(CVDocumentLoader);
-    }
-    get scene() {
-        return this.components.get(CScene);
-    }
-
-    createComponents()
+    create()
     {
-        this.createComponent(CVDocumentProvider);
-        this.createComponent(CVDocumentLoader);
-        this.createComponent(CScene);
+        super.create();
+        this.scope = EComponentScope.Node;
+    }
+
+    protected activateComponent(task: CVTask)
+    {
+        task.activateTask();
+    }
+
+    protected deactivateComponent(task: CVTask)
+    {
+        task.deactivateTask();
+    }
+
+    protected onActiveComponent(previous: CVTask, next: CVTask)
+    {
     }
 }

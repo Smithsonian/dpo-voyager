@@ -76,19 +76,19 @@ export default class CVAssetLoader extends Component
 
     loadModelAsset(asset: Asset, path?: string): Promise<THREE.Object3D>
     {
-        const url = resolvePathname(asset.uri, path);
+        const url = resolvePathname(asset.data.uri, path);
         return this.modelLoader.load(url);
     }
 
     loadGeometryAsset(asset: Asset, path?: string): Promise<THREE.Geometry>
     {
-        const url = resolvePathname(asset.uri, path);
+        const url = resolvePathname(asset.data.uri, path);
         return this.geometryLoader.load(url);
     }
 
     loadTextureAsset(asset: Asset, path?: string): Promise<THREE.Texture>
     {
-        const url = resolvePathname(asset.uri, path);
+        const url = resolvePathname(asset.data.uri, path);
         return this.textureLoader.load(url);
     }
 

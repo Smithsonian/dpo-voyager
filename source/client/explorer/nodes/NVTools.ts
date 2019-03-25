@@ -17,13 +17,13 @@
 
 import Node from "@ff/graph/Node";
 
-import CVToolManager from "../components/CVToolManager";
+import CVToolProvider from "../components/CVToolProvider";
 
-// import CVLightTool from "../components/CVLightTool";
-// import CVRenderTool from "../components/CVRenderTool";
-// import CVSliceTool from "../components/CVSliceTool";
-// import CVTapeTool from "../components/CVTapeTool";
-// import CVViewTool from "../components/CVViewTool";
+import CVLightTool from "../components/CVLightTool";
+import CVRenderTool from "../components/CVRenderTool";
+import CVSliceTool from "../components/CVSliceTool";
+import CVTapeTool from "../components/CVTapeTool";
+import CVViewTool from "../components/CVViewTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,17 +31,17 @@ export default class NVTools extends Node
 {
     static readonly typeName: string = "NVTools";
 
-    get toolManager() {
-        return this.getComponent(CVToolManager);
+    get toolProvider() {
+        return this.getComponent(CVToolProvider);
     }
 
     createComponents()
     {
-        this.createComponent(CVToolManager);
-        // this.createComponent(CVViewTool);
-        // this.createComponent(CVRenderTool);
-        // this.createComponent(CVLightTool);
-        // this.createComponent(CVTapeTool);
-        // this.createComponent(CVSliceTool);
+        this.createComponent(CVToolProvider);
+        this.createComponent(CVViewTool);
+        this.createComponent(CVRenderTool);
+        this.createComponent(CVLightTool);
+        this.createComponent(CVTapeTool);
+        this.createComponent(CVSliceTool);
     }
 }
