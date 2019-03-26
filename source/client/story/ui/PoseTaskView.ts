@@ -23,7 +23,6 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 
 import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 
-import "./ItemList";
 import "./PropertyView";
 import { TaskView } from "../components/CVTask";
 import CVModel2 from "../../explorer/components/CVModel2";

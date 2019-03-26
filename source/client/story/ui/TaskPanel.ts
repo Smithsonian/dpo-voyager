@@ -19,7 +19,7 @@ import System from "@ff/graph/System";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVTaskProvider from "../components/CVTaskProvider";
+import CVTaskProvider, { IActiveTaskEvent } from "../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,16 +29,16 @@ import CVTaskProvider from "../components/CVTaskProvider";
 @customElement("sv-task-panel")
 export default class TaskPanel extends SystemElement
 {
-    protected taskManager: CVTaskProvider = null;
+    protected taskProvider: CVTaskProvider = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.taskManager = system.getMainComponent(CVTaskProvider);
+        this.taskProvider = system.getMainComponent(CVTaskProvider);
 
-        if (!this.taskManager) {
-            throw new Error("missing task manager");
+        if (!this.taskProvider) {
+            throw new Error("missing task provider");
         }
     }
 
@@ -50,18 +50,18 @@ export default class TaskPanel extends SystemElement
     protected connected()
     {
         super.connected();
-        this.taskManager.outs.activeTask.on("value", this.performUpdate, this);
+        this.taskProvider.on<IActiveTaskEvent>("active-component", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.taskManager.outs.activeTask.off("value", this.performUpdate, this);
+        this.taskProvider.off<IActiveTaskEvent>("active-component", this.onUpdate, this);
         super.disconnected();
     }
 
     protected render()
     {
-        const task = this.taskManager.activeTask;
+        const task = this.taskProvider.activeComponent;
         if (!task) {
             return html``;
         }

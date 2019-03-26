@@ -50,7 +50,7 @@ export default class TourNavigator extends DocumentView
         let title, info;
 
         if (activeTour) {
-            title = activeTour.title;
+            title = activeTour.data.title;
             info = "Step 1 of 10";
         }
         else {

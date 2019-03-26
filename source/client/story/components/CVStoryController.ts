@@ -20,21 +20,23 @@ import resolvePathname from "resolve-pathname";
 import fetch from "@ff/browser/fetch";
 import download from "@ff/browser/download";
 
-import CController, { Commander, Actions, types } from "@ff/graph/components/CController";
+import { types } from "@ff/graph/propertyTypes";
 import CSelection from "@ff/graph/components/CSelection";
 
 import Notification from "@ff/ui/Notification";
 
 import taskSets, { EStoryMode } from "../taskSets";
-import CVItemManager from "../../explorer/components/CVItemManager";
-import CVDocument_old from "../../explorer/components/CVDocument_old";
-import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+
+import NVNode from "../../explorer/nodes/NVNode";
+import CVNodeProvider from "../../explorer/components/CVNodeProvider";
+import CVDocument from "../../explorer/components/CVDocument";
+import CVDocumentProvider from "../../explorer/components/CVDocumentProvider";
+
+import CVNodeObserver from "../../explorer/components/CVNodeObserver";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EStoryMode };
-
-export type StoryActions = Actions<CVStoryController>;
 
 
 const _inputs = {
@@ -46,7 +48,7 @@ const _inputs = {
     referrer: types.String("Referrer")
 };
 
-export default class CVStoryController extends CController<CVStoryController>
+export default class CVStoryController extends CVNodeObserver
 {
     static readonly typeName: string = "CVStoryController";
     static readonly isSystemSingleton = true;
@@ -60,18 +62,18 @@ export default class CVStoryController extends CController<CVStoryController>
         this.beforeUnload = this.beforeUnload.bind(this);
     }
 
-    protected get activeSelectedItem() {
+    protected get activeSelectedNode() {
 
-        const item = this.itemManager.activeItem;
-        if (item && (this.selection.selectedNodes.contains(item) || this.selection.nodeContainsSelectedComponent(item))) {
-            return item;
+        const node = this.nodeProvider.activeNode;
+        if (node && (this.selection.selectedNodes.contains(node) || this.selection.nodeContainsSelectedComponent(node))) {
+            return node;
         }
 
         return null;
     }
     protected get activeSelectedDocument() {
 
-        const document = this.documentManager.activeDocument;
+        const document = this.documentProvider.activeComponent;
         if (document && this.selection.selectedComponents.contains(document)) {
             return document;
         }
@@ -81,17 +83,6 @@ export default class CVStoryController extends CController<CVStoryController>
 
     protected get selection() {
         return this.getMainComponent(CSelection);
-    }
-    protected get documentManager() {
-        return this.getMainComponent(CVDocumentManager);
-    }
-    protected get itemManager() {
-        return this.getMainComponent(CVItemManager);
-    }
-
-    createActions(commander: Commander)
-    {
-        return {};
     }
 
     create()
@@ -121,12 +112,12 @@ export default class CVStoryController extends CController<CVStoryController>
 
             let url, file;
 
-            const item = this.activeSelectedItem;
-            const document = this.activeSelectedDocument as CVDocument_old;
+            const node = this.activeSelectedNode;
+            const document = this.activeSelectedDocument;
 
-            if (item) {
-                url = item.url;
-                file = new File([JSON.stringify(item.toData())], item.urlName, { type: "text/json" });
+            if (node) {
+                //url = node.url;
+                //file = new File([JSON.stringify(node.toData())], node.urlName, { type: "text/json" });
             }
             else if (document) {
                 url = document.url;
@@ -149,11 +140,11 @@ export default class CVStoryController extends CController<CVStoryController>
         // download active item/document
         if (ins.download.changed) {
 
-            const item = this.activeSelectedItem;
-            const document = this.activeSelectedDocument as CVDocument_old;
+            const node = this.activeSelectedNode;
+            const document = this.activeSelectedDocument;
 
-            if (item) {
-                download.json(item.toData(), item.urlName);
+            if (node) {
+                //download.json(node.toData(), node.urlName);
             }
             else if (document) {
                 download.json(document.toDocument(), document.urlName);

@@ -44,7 +44,7 @@ class DerivativeList extends List<Derivative>
 
     protected renderItem(item: Derivative)
     {
-        return `${EDerivativeUsage[item.usage]} / ${EDerivativeQuality[item.quality]}`;
+        return `${EDerivativeUsage[item.data.usage]} / ${EDerivativeQuality[item.data.quality]}`;
     }
 
     protected isItemSelected(item: Derivative)

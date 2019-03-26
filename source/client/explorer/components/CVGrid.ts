@@ -70,12 +70,16 @@ export default class CVGrid extends CObject3D
 
     create()
     {
-        this.documentScene.on("bounding-box", this.onModelBoundingBox, this);
         this.ins.pickable.setValue(false);
         this.ins.visible.setValue(false);
     }
 
-    dispose()
+    activate()
+    {
+        this.documentScene.on("bounding-box", this.onModelBoundingBox, this);
+    }
+
+    deactivate()
     {
         this.documentScene.off("bounding-box", this.onModelBoundingBox, this);
     }

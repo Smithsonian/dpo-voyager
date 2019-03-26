@@ -40,23 +40,23 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
         changedNodes: types.Event("Nodes.Changed"),
     };
 
-    outs = this.addInputs(CVNodeProvider.outs);
+    outs = this.addOutputs(CVNodeProvider.outs);
 
-    protected get activeDocumentComponent() {
+    protected get documentProvider() {
         return this.getComponent(CVDocumentProvider);
     }
 
     create()
     {
         super.create();
-        this.activeDocumentComponent.on<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
+        this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
 
         this.scope = ENodeScope.Graph;
     }
 
     dispose()
     {
-        this.activeDocumentComponent.off<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
+        this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
         super.dispose();
     }
 

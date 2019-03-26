@@ -23,18 +23,18 @@ import "@ff/ui/Icon";
 
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 
-import CVDocument_old from "../../explorer/components/CVDocument_old";
-import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+import CVDocument from "../../explorer/components/CVDocument";
+import CVDocumentProvider, { IActiveDocumentEvent } from "../../explorer/components/CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-document-list")
-class DocumentList extends List<CVDocument_old>
+class DocumentList extends List<CVDocument>
 {
     @property({ attribute: false })
     system: System = null;
 
-    protected documentManager: CVDocumentManager = null;
+    protected documentProvider: CVDocumentProvider = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
@@ -42,7 +42,7 @@ class DocumentList extends List<CVDocument_old>
         super.firstConnected();
         this.classList.add("sv-presentation-list");
 
-        this.documentManager = this.system.getMainComponent(CVDocumentManager);
+        this.documentProvider = this.system.getMainComponent(CVDocumentProvider);
         this.selection = this.system.getMainComponent(CSelection);
     }
 
@@ -50,44 +50,38 @@ class DocumentList extends List<CVDocument_old>
     {
         super.connected();
 
-        this.selection.selectedComponents.on(CVDocument_old, this.onRequestUpdate, this);
-        this.documentManager.on("update", this.onRequestUpdate, this);
+        this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.selection.selectedComponents.off(CVDocument_old, this.onRequestUpdate, this);
-        this.documentManager.off("update", this.onRequestUpdate, this);
+        this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
 
         super.disconnected();
     }
 
     protected update(props: PropertyValues)
     {
-        this.data = this.documentManager.documents;
+        this.data = this.documentProvider.scopedComponents;
         super.update(props);
     }
 
-    protected renderItem(component: CVDocument_old)
+    protected renderItem(component: CVDocument)
     {
-        const isActive = component === this.documentManager.activeDocument;
+        const isActive = component === this.documentProvider.activeComponent;
+
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(component: CVDocument_old)
+    protected isItemSelected(component: CVDocument)
     {
         return this.selection.selectedComponents.contains(component);
     }
 
-    protected onClickItem(event: MouseEvent, component: CVDocument_old)
+    protected onClickItem(event: MouseEvent, component: CVDocument)
     {
-        this.documentManager.activeDocument = component;
+        this.documentProvider.activeComponent = component;
         this.selection.selectComponent(component);
-    }
-
-    protected onRequestUpdate()
-    {
-        this.requestUpdate();
     }
 }

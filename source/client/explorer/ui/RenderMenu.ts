@@ -20,11 +20,10 @@ import System from "@ff/graph/System";
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
-
-import CVScene_old, { EShaderMode } from "../../core/components/CVScene_old";
-
-import { customElement, html, property } from "@ff/ui/CustomElement";
 import Popup from "@ff/ui/Popup";
+import { customElement, html, property } from "@ff/ui/CustomElement";
+
+import { EShaderMode } from "common/types/scene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +51,8 @@ export default class RenderMenu extends Popup
     protected connected()
     {
         super.connected();
-        this.propShader.property = this.system.components.get(CVScene_old).ins.shader;
+
+        //this.propShader.property = this.system.components.get(CVScene_old).ins.shader;
     }
 
     protected disconnected()

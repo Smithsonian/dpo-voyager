@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
+import CFullscreen from "@ff/scene/components/CFullscreen";
+
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 
 import Icon from "@ff/ui/Icon";
 import Notification from "@ff/ui/Notification";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../ExplorerApplication";
-import CVInterface from "../components/CVInterface";
 
 import ContentView from "./ContentView";
 import ChromeView from "./ChromeView";
@@ -73,8 +74,6 @@ export default class MainView extends CustomElement
         else {
             const props: IExplorerApplicationProps = {
                 document: this.getAttribute("document"),
-                presentation: this.getAttribute("presentation"),
-                item: this.getAttribute("item"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
@@ -87,8 +86,8 @@ export default class MainView extends CustomElement
         window["voyagerExplorer"] = this.application;
     }
 
-    protected get interface() {
-        return this.application.system.getMainComponent(CVInterface);
+    protected get fullscreen() {
+        return this.application.system.getMainComponent(CFullscreen);
     }
 
     protected firstConnected()
@@ -106,11 +105,11 @@ export default class MainView extends CustomElement
 
     protected connected()
     {
-        this.interface.fullscreenElement = this;
+        this.fullscreen.fullscreenElement = this;
     }
 
     protected disconnected()
     {
-        this.interface.fullscreenElement = null;
+        this.fullscreen.fullscreenElement = null;
     }
 }

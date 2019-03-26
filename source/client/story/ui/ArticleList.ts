@@ -44,7 +44,7 @@ export default class ArticleList extends List<Article>
 
     protected renderItem(item: Article)
     {
-        return item.title;
+        return item.data.title;
     }
 
     protected isItemSelected(item: Article)

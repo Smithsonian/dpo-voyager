@@ -21,7 +21,6 @@ import download from "@ff/browser/download";
 import { types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
-import CAssetManager from "@ff/scene/components/CAssetManager";
 import CLight from "@ff/scene/components/CLight";
 import CCamera from "@ff/scene/components/CCamera";
 
@@ -100,6 +99,14 @@ export default class CVDocument extends CRenderGraph
     create()
     {
         super.create();
+
+        // create root scene node
+        const sceneNode = this.innerGraph.createCustomNode(NVNode);
+        sceneNode.createScene();
+
+        // create camera node
+        const cameraNode = this.innerGraph.createCustomNode(NVNode);
+        cameraNode.createCamera();
 
         // document is inactive and hidden, unless it becomes the active document
         this.ins.active.setValue(false);

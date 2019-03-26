@@ -103,8 +103,12 @@ export default class ExplorerApplication
 
         const engine = system.graph.createCustomNode(NVEngine);
         system.graph.createCustomNode(NVExplorer);
-        system.graph.createCustomNode(NVDocuments);
         system.graph.createCustomNode(NVTools);
+        const documents = system.graph.createCustomNode(NVDocuments);
+
+        // create empty document
+        const document = documents.createComponent(CVDocument);
+        documents.documentProvider.activeComponent = document;
 
         // create main view if not given
         if (element) {

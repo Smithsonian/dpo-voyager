@@ -40,6 +40,7 @@ import CVOrbitNavigation from "./CVOrbitNavigation";
 import CVPointLight from "./CVPointLight";
 import CVReader from "./CVReader";
 import CVRenderTool from "./CVRenderTool";
+import CVScene from "./CVScene";
 import CVSlicer from "./CVSlicer";
 import CVSliceTool from "./CVSliceTool";
 import CVSpotLight from "./CVSpotLight";
@@ -79,6 +80,7 @@ export {
     CVPointLight,
     CVReader,
     CVRenderTool,
+    CVScene,
     CVSlicer,
     CVSliceTool,
     CVSpotLight,
@@ -117,6 +119,7 @@ export const componentTypes = [
     CVPointLight,
     CVReader,
     CVRenderTool,
+    CVScene,
     CVSlicer,
     CVSliceTool,
     CVSpotLight,

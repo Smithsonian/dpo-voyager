@@ -24,7 +24,7 @@ import CVDocumentObserver from "./CVDocumentObserver";
 
 export default class CVNodeObserver extends CVDocumentObserver
 {
-    static readonly tagName: string = "CVNodeObserver";
+    static readonly typeName: string = "CVNodeObserver";
 
     protected activeNode: NVNode = null;
 

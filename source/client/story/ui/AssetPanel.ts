@@ -20,25 +20,15 @@ import System from "@ff/graph/System";
 import CAssetManager from "@ff/scene/components/CAssetManager";
 import AssetTree from "@ff/scene/ui/AssetTree";
 
-import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
-
-import CVDocumentManager from "../../explorer/components/CVDocumentManager";
+import DocumentView, { customElement, html } from "../../explorer/ui/DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-asset-panel")
-export default class AssetPanel extends SystemElement
+export default class AssetPanel extends DocumentView
 {
-    constructor(system?: System)
-    {
-        super(system);
-    }
-
-    protected get documentManager() {
-        return this.system.getMainComponent(CVDocumentManager);
-    }
     protected get assetManager() {
-        const document = this.documentManager.activeDocument;
+        const document = this.documentProvider.activeComponent;
         return document ? document.getInnerComponent(CAssetManager) : null;
     }
 

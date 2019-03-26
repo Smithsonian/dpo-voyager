@@ -23,28 +23,28 @@ import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElem
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
 
-import CVItemManager from "../../explorer/components/CVItemManager";
+import CVNodeProvider from "../../explorer/components/CVNodeProvider";
 
-import NVItem from "../../explorer/nodes/NVItem";
+import NVNode from "../../explorer/nodes/NVNode";
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-item-list")
-class ItemList extends List<NVItem>
+@customElement("sv-node-list")
+class NodeList extends List<NVNode>
 {
     @property({ attribute: false })
     system: System = null;
 
-    protected itemManager: CVItemManager = null;
+    protected nodeProvider: CVNodeProvider = null;
     protected selection: CSelection = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-scrollable", "sv-item-list");
+        this.classList.add("sv-scrollable", "sv-node-list");
 
-        this.itemManager = this.system.getMainComponent(CVItemManager);
+        this.nodeProvider = this.system.getMainComponent(CVNodeProvider);
         this.selection = this.system.getMainComponent(CSelection);
     }
 
@@ -53,33 +53,33 @@ class ItemList extends List<NVItem>
         super.connected();
 
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.on(NVItem, this.onRequestUpdate, this);
-        this.itemManager.on("update", this.onRequestUpdate, this);
+        this.selection.selectedNodes.on(NVNode, this.onUpdate, this);
+        this.nodeProvider.on("update", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
-        this.selection.selectedNodes.off(NVItem, this.onRequestUpdate, this);
-        this.itemManager.off("update", this.onRequestUpdate, this);
+        this.selection.selectedNodes.off(NVNode, this.onUpdate, this);
+        this.nodeProvider.off("update", this.onUpdate, this);
 
         super.disconnected();
     }
 
     protected update(props: PropertyValues)
     {
-        this.data = this.itemManager.items;
+        this.data = this.nodeProvider.scopedNodes;
         return super.update(props);
     }
 
-    protected renderItem(item: NVItem)
+    protected renderItem(item: NVNode)
     {
-        const isActive = item === this.itemManager.activeItem;
+        const isActive = item === this.nodeProvider.activeNode;
         return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
             <ff-text class="ff-ellipsis">${item.displayName}</ff-text></div>`;
     }
 
-    protected isItemSelected(item: NVItem): boolean
+    protected isItemSelected(item: NVNode): boolean
     {
         return this.selection.selectedNodes.contains(item)
             || this.selection.nodeContainsSelectedComponent(item);
@@ -87,18 +87,13 @@ class ItemList extends List<NVItem>
 
     protected onSelectComponent(event: IComponentEvent)
     {
-        if (event.object.node.is(NVItem)) {
+        if (event.object.node.is(NVNode)) {
             this.requestUpdate();
         }
     }
 
-    protected onClickItem(event: MouseEvent, item: NVItem)
+    protected onClickItem(event: MouseEvent, item: NVNode)
     {
-        this.itemManager.activeItem = item;
-    }
-
-    protected onRequestUpdate()
-    {
-        this.requestUpdate();
+        this.nodeProvider.activeNode = item;
     }
 }

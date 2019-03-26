@@ -15,10 +15,7 @@
  * limitations under the License.
  */
 
-import { IComponentEvent, types } from "@ff/graph/Component";
-
-import NVItem from "../../explorer/nodes/NVItem";
-import CVModel_old from "../../core/components/CVModel_old";
+import { types } from "@ff/graph/Component";
 
 import CVTask from "./CVTask";
 import DerivativesTaskView from "../ui/DerivativesTaskView";
@@ -40,25 +37,6 @@ export default class CVDerivativesTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
-    createView()
-    {
-        return new DerivativesTaskView(this);
-    }
-
-    activateTask()
-    {
-        super.activateTask();
-
-        this.selectionController.selectedComponents.on(CVModel_old, this.onSelectModel, this);
-    }
-
-    deactivateTask()
-    {
-        this.selectionController.selectedComponents.off(CVModel_old, this.onSelectModel, this);
-
-        super.deactivateTask();
-    }
-
     create()
     {
         super.create();
@@ -70,19 +48,8 @@ export default class CVDerivativesTask extends CVTask
         configuration.annotationsVisible = false;
     }
 
-    protected onActiveItem(previous: NVItem, next: NVItem)
+    createView()
     {
-        if (next) {
-            this.selectionController.selectComponent(next.model);
-        }
-    }
-
-    protected onSelectModel(event: IComponentEvent<CVModel_old>)
-    {
-        const node = event.object.node;
-
-        if (event.add && node instanceof NVItem) {
-            this.itemManager.activeItem = node;
-        }
+        return new DerivativesTaskView(this);
     }
 }

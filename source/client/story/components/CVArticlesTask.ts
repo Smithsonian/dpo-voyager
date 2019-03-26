@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-import { IComponentEvent } from "@ff/graph/Node";
+import { types } from "@ff/graph/Component";
 
-import CVArticles, { Article } from "../../explorer/components/CVArticles";
-import NVItem from "../../explorer/nodes/NVItem";
+import Article from "../../explorer/models/Article";
 
-import ArticlesTaskView from "../ui/ArticlesTaskView";
 import CVTask from "./CVTask";
+import ArticlesTaskView from "../ui/ArticlesTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,36 +43,17 @@ export default class CVArticlesTask extends CVTask
         }
     }
 
+    create()
+    {
+        super.create();
+
+        const configuration = this.configuration;
+        configuration.interfaceVisible = true;
+        configuration.bracketsVisible = false;
+    }
+
     createView()
     {
         return new ArticlesTaskView(this);
-    }
-
-    activateTask()
-    {
-        super.activateTask();
-        this.selectionController.selectedComponents.on(CVArticles, this.onSelectArticles, this);
-    }
-
-    deactivateTask()
-    {
-        this.selectionController.selectedComponents.off(CVArticles, this.onSelectArticles, this);
-        super.deactivateTask();
-    }
-
-    protected onActiveItem(previous: NVItem, next: NVItem)
-    {
-        if (next) {
-            this.selectionController.selectComponent(next.articles);
-        }
-    }
-
-    protected onSelectArticles(event: IComponentEvent<CVArticles>)
-    {
-        const node = event.object.node;
-
-        if (event.add && node instanceof NVItem) {
-            this.itemManager.activeItem = node;
-        }
     }
 }

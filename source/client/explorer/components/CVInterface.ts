@@ -18,7 +18,6 @@
 import Component, { types } from "@ff/graph/Component";
 
 import { IInterface } from "common/types/scene";
-import CVDocumentProvider from "./CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,88 +35,10 @@ export default class CVInterface extends Component
 
     protected static readonly outs = {
         documentTitle: types.String("Document.Title"),
-        fullscreenAvailable: types.Boolean("Fullscreen.Available", false),
-        fullscreenEnabled: types.Boolean("Fullscreen.Enabled", false),
     };
 
     ins = this.addInputs(CVInterface.ins);
     outs = this.addOutputs(CVInterface.outs);
-
-    private _fullscreenElement: HTMLElement = null;
-
-    constructor(id: string)
-    {
-        super(id);
-        this.onFullscreenChange = this.onFullscreenChange.bind(this);
-    }
-
-    get fullscreenElement() {
-        return this._fullscreenElement;
-    }
-    set fullscreenElement(element: HTMLElement) {
-
-        if (element !== this._fullscreenElement) {
-            if (this._fullscreenElement) {
-                this._fullscreenElement.removeEventListener("fullscreenchange", this.onFullscreenChange);
-            }
-
-            this._fullscreenElement = element;
-
-            if (element) {
-                element.addEventListener("fullscreenchange", this.onFullscreenChange);
-            }
-        }
-    }
-
-    protected get documentProvider() {
-        return this.getMainComponent(CVDocumentProvider);
-    }
-    protected get activeDocument() {
-        return this.documentProvider.activeComponent;
-    }
-
-    toggleFullscreen()
-    {
-        const outs = this.outs;
-        const e: any = this._fullscreenElement;
-
-        if (e) {
-            const state = outs.fullscreenEnabled.value;
-            if (!state && outs.fullscreenAvailable.value) {
-                if (e.requestFullscreen) {
-                    e.requestFullscreen();
-                }
-                else if (e.mozRequestFullScreen) {
-                    e.mozRequestFullScreen();
-                }
-                else if (e.webkitRequestFullscreen) {
-                    e.webkitRequestFullscreen((Element as any).ALLOW_KEYBOARD_INPUT);
-                }
-            }
-            else if (state) {
-                const d: any = document;
-                if (d.exitFullscreen) {
-                    d.exitFullscreen();
-                }
-                else if (d.cancelFullScreen) {
-                    d.cancelFullScreen();
-                }
-                else if (d.mozCancelFullScreen) {
-                    d.mozCancelFullScreen();
-                }
-                else if (d.webkitCancelFullScreen) {
-                    d.webkitCancelFullScreen();
-                }
-            }
-        }
-    }
-
-    create()
-    {
-        const e: any = document.documentElement;
-        const fullscreenAvailable = e.requestFullscreen || e.mozRequestFullScreen || e.webkitRequestFullscreen;
-        this.outs.fullscreenAvailable.setValue(!!fullscreenAvailable);
-    }
 
     update(context)
     {
@@ -146,12 +67,5 @@ export default class CVInterface extends Component
             menu: ins.menu.value,
             tools: ins.tools.value
         };
-    }
-
-    protected onFullscreenChange(event: Event)
-    {
-        const d: any = document;
-        const element = d.fullscreenElement || d.mozFullScreenElement || d.webkitFullscreenElement;
-        this.outs.fullscreenEnabled.setValue(!!element);
     }
 }

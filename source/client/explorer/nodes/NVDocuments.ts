@@ -20,6 +20,7 @@ import CScene from "@ff/scene/components/CScene";
 
 import CVDocumentLoader from "../components/CVDocumentLoader";
 import CVDocumentProvider from "../components/CVDocumentProvider";
+import CVNodeProvider from "../components/CVNodeProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,20 +28,24 @@ export default class NVDocuments extends Node
 {
     static readonly typeName: string = "NVDocuments";
 
-    get documentProvider() {
-        return this.components.get(CVDocumentProvider);
+    get scene() {
+        return this.components.get(CScene);
     }
     get documentLoader() {
         return this.components.get(CVDocumentLoader);
     }
-    get scene() {
-        return this.components.get(CScene);
+    get documentProvider() {
+        return this.components.get(CVDocumentProvider);
+    }
+    get nodeProvider() {
+        return this.components.get(CVNodeProvider);
     }
 
     createComponents()
     {
-        this.createComponent(CVDocumentProvider);
-        this.createComponent(CVDocumentLoader);
         this.createComponent(CScene);
+        this.createComponent(CVDocumentLoader);
+        this.createComponent(CVDocumentProvider);
+        this.createComponent(CVNodeProvider);
     }
 }

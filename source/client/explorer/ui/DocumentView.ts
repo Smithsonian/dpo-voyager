@@ -17,8 +17,9 @@
 
 import { customElement, property, html, PropertyValues, TemplateResult } from "@ff/ui/CustomElement";
 
-import CVDocument from "../components/CVDocument";
 import CVDocumentProvider, { IActiveDocumentEvent } from "../components/CVDocumentProvider";
+import CVDocument from "../components/CVDocument";
+import CVScene from "../components/CVScene";
 
 import SystemView from "@ff/scene/ui/SystemView";
 
@@ -29,6 +30,7 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 export default class DocumentView extends SystemView
 {
     protected activeDocument: CVDocument = null;
+    protected activeScene: CVScene = null;
 
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
@@ -41,6 +43,7 @@ export default class DocumentView extends SystemView
 
         if (provider.activeComponent) {
             this.activeDocument = provider.activeComponent;
+            this.activeScene = this.activeDocument.documentScene;
             this.onActiveDocument(null, provider.activeComponent);
         }
     }
@@ -64,6 +67,8 @@ export default class DocumentView extends SystemView
     protected onActiveDocumentEvent(event: IActiveDocumentEvent)
     {
         this.activeDocument = event.next;
+        this.activeScene = event.next ? event.next.documentScene : null;
+
         this.onActiveDocument(event.previous, event.next);
     }
 }

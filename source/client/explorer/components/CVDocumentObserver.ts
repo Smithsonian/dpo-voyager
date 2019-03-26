@@ -24,7 +24,7 @@ import CVDocumentProvider, { IActiveDocumentEvent } from "./CVDocumentProvider";
 
 export default class CVDocumentObserver extends Component
 {
-    static readonly tagName: string = "CVDocumentObserver";
+    static readonly typeName: string = "CVDocumentObserver";
 
     protected activeDocument: CVDocument = null;
 

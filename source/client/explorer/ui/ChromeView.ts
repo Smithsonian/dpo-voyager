@@ -29,15 +29,15 @@ import "./ToolBar";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVInfo from "../components/CVInfo";
+import CVDocument from "../components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-chrome-view")
 export default class ChromeView extends DocumentView
 {
-    protected get interface() {
-        return this.system.getMainComponent(CVInterface);
-    }
+    protected interface: CVInterface = null;
+
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
@@ -50,22 +50,17 @@ export default class ChromeView extends DocumentView
         this.classList.add("sv-chrome-view");
     }
 
-    protected connected()
-    {
-        this.interface.on("update", this.performUpdate, this);
-    }
-
-    protected disconnected()
-    {
-        this.interface.off("update", this.performUpdate, this);
-    }
-
     protected render()
     {
-        const system = this.system;
+        if (!this.activeDocument) {
+            return html``;
+        }
 
-        const interfaceVisible = this.interface.ins.visible.value;
-        const logoVisible = this.interface.ins.logo.value;
+        const system = this.system;
+        const iface = this.interface;
+
+        const interfaceVisible = iface ? iface.ins.visible.value : true;
+        const logoVisible = iface ? iface.ins.logo.value : true;
         const toolsVisible = !!this.toolProvider.activeComponent;
 
         if (!interfaceVisible) {
@@ -93,5 +88,19 @@ export default class ChromeView extends DocumentView
     protected closeTools()
     {
         this.toolProvider.activeComponent = null;
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            previous.documentScene.interface.off("update", this.onUpdate, this);
+        }
+        if (next) {
+            this.interface = next.documentScene.interface;
+            this.interface.on("update", this.onUpdate, this);
+        }
+        else {
+            this.interface = null;
+        }
     }
 }

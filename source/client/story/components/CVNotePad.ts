@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-import Component, { types } from "@ff/graph/Component";
-
-import NVItem, { INote } from "../../explorer/nodes/NVItem";
-import CVItemManager from "../../explorer/components/CVItemManager";
+import CVNodeObserver from "../../explorer/components/CVNodeObserver";
+import NVNode from "../../explorer/nodes/NVNode";
+import CVInfo from "../../explorer/components/CVInfo";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { INote };
+export interface INote
+{
+    date: string;
+    user: string;
+    text: string;
+}
 
-export default class CVNotePad extends Component
+export default class CVNotePad extends CVNodeObserver
 {
     static readonly typeName: string = "CVNotePad";
 
-    protected static readonly ins = {
-        activeItem: types.Object("Scope.ActiveItem", NVItem),
-    };
-
-    ins = this.addInputs(CVNotePad.ins);
+    info: CVInfo = null;
 
     private _notes: INote[] = [];
     private _activeNote: INote = null;
@@ -48,9 +48,6 @@ export default class CVNotePad extends Component
             this._activeNote = note;
             this.emit("update");
         }
-    }
-    get itemManager() {
-        return this.getMainComponent(CVItemManager);
     }
 
     addNote(note: INote)
@@ -77,33 +74,22 @@ export default class CVNotePad extends Component
         }
     }
 
-    create()
+    protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        super.create();
-        this.itemManager.outs.activeItem.linkTo(this.ins.activeItem);
-    }
+        const info = this.info = next && next.info;
 
-    update()
-    {
-        const ins = this.ins;
-
-        if (ins.activeItem.changed) {
-            const item = ins.activeItem.value;
-            if (item) {
-                this._notes = item.process.get("notes");
-                if (!this._notes) {
-                    this._notes = [];
-                    item.process.set("notes", this._notes);
-                }
-
-                this.activeNote = this._notes[this._notes.length - 1];
-            }
-            else {
+        if (info) {
+            this._notes = info.meta.get("notes");
+            if (!this._notes) {
                 this._notes = [];
-                this.activeNote = null;
+                info.meta.insert(this._notes, "notes");
             }
-        }
 
-        return true;
+            this.activeNote = this._notes[this._notes.length - 1];
+        }
+        else {
+            this._notes = [];
+            this.activeNote = null;
+        }
     }
 }

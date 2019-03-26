@@ -17,7 +17,7 @@
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-import CVToolProvider from "../components/CVToolProvider";
+import CVToolProvider, { IActiveToolEvent } from "../components/CVToolProvider";
 import CVTool, { ToolView } from "../components/CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,23 +43,23 @@ export default class ToolBar extends SystemElement
     protected connected()
     {
         super.connected();
-        this.toolProvider.on<IActiveToolEvent>.outs.activeTool.on("value", this.performUpdate, this);
+        this.toolProvider.on<IActiveToolEvent>("active-component", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.toolManager.outs.activeTool.off("value", this.performUpdate, this);
+        this.toolProvider.off<IActiveToolEvent>("active-component", this.onUpdate, this);
         super.disconnected();
     }
 
     protected render()
     {
-        const tools = this.toolManager.tools;
-        const activeTool = this.toolManager.activeTool;
+        const tools = this.toolProvider.scopedComponents;
+        const activeTool = this.toolProvider.activeComponent;
 
-        const toolButtons = tools.map((tool, index) =>
+        const toolButtons = tools.map(tool =>
             html`<ff-button class="sv-tool-button" transparent text=${tool.text} icon=${tool.icon}
-                ?selected=${tool === activeTool} @click=${e => this.onSelectTool(index)}></ff-button>`);
+                ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
 
         const toolView = activeTool ? html`<div class="sv-section">
             <ff-button class="sv-section-button" transparent icon=${activeTool.icon}></ff-button>
@@ -73,9 +73,9 @@ export default class ToolBar extends SystemElement
             </div>`;
     }
 
-    protected onSelectTool(index: number)
+    protected onSelectTool(tool: CVTool)
     {
-        this.toolManager.ins.activeTool.setValue(index + 1);
+        this.toolProvider.activeComponent = tool;
     }
 
     protected onClose(event: MouseEvent)

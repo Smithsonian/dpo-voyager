@@ -46,7 +46,7 @@ export default class NVNode extends Node
     get light() {
         return this.components.get(CLight, true) as ICVLight;
     }
-    get entity() {
+    get info() {
         return this.components.get(CVInfo, true);
     }
     get scene() {
@@ -59,6 +59,11 @@ export default class NVNode extends Node
     createComponents()
     {
         this.createComponent(CVNode, "Node", this.id);
+    }
+
+    createCamera()
+    {
+        this.createComponent(CVCamera);
     }
 
     createScene()
@@ -140,8 +145,8 @@ export default class NVNode extends Node
         if (this.light) {
             this.light.toDocument(document, node);
         }
-        if (this.entity) {
-            this.entity.toDocument(document, node);
+        if (this.info) {
+            this.info.toDocument(document, node);
         }
         if (this.scene) {
             this.scene.toDocument(document, node);

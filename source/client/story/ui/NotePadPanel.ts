@@ -102,10 +102,10 @@ export default class NotePadPanel extends SystemElement
 
     protected render()
     {
-        const activeItem = this.notePad.itemManager.activeItem;
-        if (!activeItem) {
+        const info = this.notePad.info;
+        if (!info) {
             return html`<div class="ff-placeholder">
-                <div>Please select an item to display its notes.</div>
+                <div>Please select a node to display its notes.</div>
             </div>`;
         }
 

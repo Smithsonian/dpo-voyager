@@ -25,6 +25,11 @@ export default class CVFloor extends CFloor
 {
     static readonly typeName: string = "CVFloor";
 
+    create()
+    {
+        super.create();
+        this.ins.visible.setValue(false);
+    }
 
     fromData(data: IFloor)
     {

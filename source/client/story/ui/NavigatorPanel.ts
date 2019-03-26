@@ -19,8 +19,8 @@ import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
-//import "./DocumentList";
-//import "./ItemList";
+import "./DocumentList";
+import "./NodeList";
 
 import CVStoryController, { EStoryMode } from "../components/CVStoryController";
 
@@ -59,16 +59,16 @@ export default class NavigatorPanel extends SystemElement
         const authMode = this.story.ins.mode.value === EStoryMode.Authoring;
 
         return html``;
-        // const documentList = authMode ? html`<div class="sv-panel-section">
-        //         <div class="sv-panel-header">Presentations</div>
-        //         <sv-document-list .system=${system}></sv-document-list>
-        //     </div>
-        //     <ff-splitter direction="vertical"></ff-splitter>` : null;
-        //
-        // return html`${documentList}
-        //     <div class="sv-panel-section">
-        //         <div class="sv-panel-header">Items</div>
-        //         <sv-item-list .system=${system}></sv-item-list>
-        //     </div>`;
+        const documentList = authMode ? html`<div class="sv-panel-section">
+                <div class="sv-panel-header">Documents</div>
+                <sv-document-list .system=${system}></sv-document-list>
+            </div>
+            <ff-splitter direction="vertical"></ff-splitter>` : null;
+
+        return html`${documentList}
+            <div class="sv-panel-section">
+                <div class="sv-panel-header">Nodes</div>
+                <sv-node-list .system=${system}></sv-node-list>
+            </div>`;
     }
 }
