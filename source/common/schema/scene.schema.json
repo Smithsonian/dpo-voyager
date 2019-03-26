@@ -64,7 +64,7 @@
                 "type": {
                     "type": "string",
                     "enum": [
-                        "orbit", "walk"
+                        "Orbit", "Walk"
                     ]
                 },
                 "enabled": {
@@ -186,31 +186,34 @@
         },
         "tours": {
             "description": "Animated tours and snapshots.",
-            "type": "object",
-            "properties": {
-                "title": {
-                    "type": "string"
-                },
-                "lead": {
-                    "type": "string"
-                },
-                "tags": {
-                    "description": "Array of tags, categorizing the tour.",
-                    "type": "array",
-                    "items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {
                         "type": "string"
-                    }
-                },
-                "states": {
-                    "type": "array",
-                    "items": {
-                        "type": "object"
-                    }
-                },
-                "targets": {
-                    "type": "array",
-                    "items": {
-                        "type": "object"
+                    },
+                    "lead": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "description": "Array of tags, categorizing the tour.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "states": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
                     }
                 }
             }

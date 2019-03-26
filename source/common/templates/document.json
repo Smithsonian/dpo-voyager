@@ -5,12 +5,12 @@
         "copyright": "(c) Smithsonian Institution, all rights reserved",
         "generator": "Voyager"
     },
-    "root": 0,
+    "roots": [0],
     "nodes": [{
         "name": "Template Scene",
         "children": [1, 2],
         "scene": 0,
-        "item": 0
+        "info": 0
     },{
         "translation": [0, 0, 15],
         "camera": 0
@@ -18,31 +18,27 @@
         "name": "Lights",
         "children": [3, 4, 5, 6]
     }, {
-        "name": "Light",
         "translation": [-3, 1, 2],
         "light": 0
     }, {
-        "name": "Light",
         "translation": [2, 0, 3],
         "light": 1
     }, {
-        "name": "Light",
         "translation": [0, 2, -0.5],
         "light": 2
     }, {
-        "name": "Light",
         "translation": [0, -2, -1.2],
         "light": 3
     }],
-    "items": [{
+    "infos": [{
         "articles": [{
             "id": "1",
             "title": "Ululatibus proles",
-            "description": "Iunonem ter mihi frustraque et vestrae dixit.",
+            "lead": "Iunonem ter mihi frustraque et vestrae dixit.",
             "uri": "article-sample-1.md",
             "mimeType": "text/markdown"
         }],
-        "article": 0
+        "leadArticle": "1"
     }],
     "scenes": [{
         "units": "cm",
@@ -103,7 +99,11 @@
             "axis": "X",
             "inverted": false,
             "position": 0.5
-        }
+        },
+        "annotations": {
+            "visible": false
+        },
+        "tours": []
     }],
     "cameras": [{
         "type": "perspective",

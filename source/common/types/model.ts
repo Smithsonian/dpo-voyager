@@ -40,12 +40,13 @@ export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "Metallic
 export interface IModel
 {
     units: TUnitType;
-    parts: IPart[];
+    derivatives: IDerivative[];
 
     visible?: boolean;
     translation?: Vector3;
     rotation?: Vector4;
     boundingBox?: IBoundingBox;
+    material?: IMaterial;
     annotations?: IAnnotation[];
 }
 
@@ -74,12 +75,6 @@ export interface IAnnotation
     azimuth?: number;
 
     zoneIndex?: number;
-}
-
-export interface IPart
-{
-    derivatives?: IDerivative[];
-    material?: IMaterial;
 }
 
 /**

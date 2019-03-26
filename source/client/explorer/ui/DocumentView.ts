@@ -41,10 +41,16 @@ export default class DocumentView extends SystemView
         const provider = this.documentProvider;
         provider.on<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
 
-        if (provider.activeComponent) {
-            this.activeDocument = provider.activeComponent;
-            this.activeScene = this.activeDocument.documentScene;
-            this.onActiveDocument(null, provider.activeComponent);
+        const document = provider.activeComponent;
+        if (document) {
+            this.activeDocument = document;
+            const scene = this.activeScene = document.documentScene;
+
+            this.onActiveDocument(null, document);
+
+            if (scene) {
+                this.onActiveScene(null, scene);
+            }
         }
     }
 
@@ -53,22 +59,37 @@ export default class DocumentView extends SystemView
         const provider = this.documentProvider;
         provider.off<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
 
-        if (provider.activeComponent) {
+        const document = provider.activeComponent;
+        if (document) {
             this.activeDocument = null;
-            this.onActiveDocument(provider.activeComponent, null);
+            this.activeScene = null;
+
+            this.onActiveDocument(document, null);
+
+            const scene = document.documentScene;
+            if (scene) {
+                this.onActiveScene(scene, null);
+            }
         }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        this.requestUpdate();
+    }
+
+    protected onActiveScene(previous: CVScene, next: CVScene)
+    {
     }
 
     protected onActiveDocumentEvent(event: IActiveDocumentEvent)
     {
-        this.activeDocument = event.next;
-        this.activeScene = event.next ? event.next.documentScene : null;
+        const prev = event.previous;
+        const next = event.next;
 
-        this.onActiveDocument(event.previous, event.next);
+        this.activeDocument = next;
+        this.activeScene = next && next.documentScene;
+
+        this.onActiveDocument(prev, next);
+        this.onActiveScene(prev && prev.documentScene, this.activeScene);
     }
 }

@@ -18,7 +18,6 @@
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
-import CVInterface from "../components/CVInterface";
 import CVToolProvider from "../components/CVToolProvider";
 
 import "../../core/ui/Logo";
@@ -28,16 +27,13 @@ import "./TourNavigator";
 import "./ToolBar";
 
 import DocumentView, { customElement, html } from "./DocumentView";
-import CVInfo from "../components/CVInfo";
-import CVDocument from "../components/CVDocument";
+import CVScene from "../components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-chrome-view")
 export default class ChromeView extends DocumentView
 {
-    protected interface: CVInterface = null;
-
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
@@ -50,6 +46,18 @@ export default class ChromeView extends DocumentView
         this.classList.add("sv-chrome-view");
     }
 
+    protected connected()
+    {
+        super.connected();
+        this.toolProvider.ins.visible.on("value", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.toolProvider.ins.visible.off("value", this.onUpdate, this);
+        super.disconnected();
+    }
+
     protected render()
     {
         if (!this.activeDocument) {
@@ -57,19 +65,20 @@ export default class ChromeView extends DocumentView
         }
 
         const system = this.system;
-        const iface = this.interface;
+        const scene = this.activeScene;
 
-        const interfaceVisible = iface ? iface.ins.visible.value : true;
-        const logoVisible = iface ? iface.ins.logo.value : true;
-        const toolsVisible = !!this.toolProvider.activeComponent;
+        const interfaceVisible = scene ? scene.interface.ins.visible.value : true;
+        const logoVisible = scene ? scene.interface.ins.logo.value : true;
+
+        const readerVisible = scene ? scene.reader.ins.visible.value : false;
+        const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
         if (!interfaceVisible) {
             return html``;
         }
 
         // TODO: quick hack to retrieve a document title
-        const document = this.activeDocument;
-        const title = (document ? document.documentScene.node.name : "") || "Untitled";
+        const title = (scene ? scene.node.name : "") || "Untitled";
 
         // <div class="sv-main-title">${title || ""}<span>&nbsp; &nbsp;</span></div>
 
@@ -77,7 +86,7 @@ export default class ChromeView extends DocumentView
             <div class="sv-chrome-header">
                 <sv-main-menu .system=${system}></sv-main-menu>
                 <div class="sv-top-bar">
-                    <sv-tour-nagivator .system=${system}>abc</sv-tour-nagivator>
+                    <sv-tour-nagivator .system=${system}>Tours</sv-tour-nagivator>
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>
@@ -87,20 +96,18 @@ export default class ChromeView extends DocumentView
 
     protected closeTools()
     {
-        this.toolProvider.activeComponent = null;
+        this.toolProvider.ins.visible.setValue(false);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveScene(previous: CVScene, next: CVScene)
     {
         if (previous) {
-            previous.documentScene.interface.off("update", this.onUpdate, this);
+            previous.interface.off("update", this.onUpdate, this);
+            previous.reader.ins.visible.off("value", this.onUpdate, this);
         }
         if (next) {
-            this.interface = next.documentScene.interface;
-            this.interface.on("update", this.onUpdate, this);
-        }
-        else {
-            this.interface = null;
+            next.interface.on("update", this.onUpdate, this);
+            next.reader.ins.visible.on("value", this.onUpdate, this);
         }
     }
 }

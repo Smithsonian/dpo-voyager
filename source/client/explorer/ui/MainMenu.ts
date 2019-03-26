@@ -49,10 +49,12 @@ export default class MainMenu extends DocumentView
     {
         super.connected();
         this.fullscreen.outs.fullscreenActive.on("value", this.onUpdate, this);
+        this.toolProvider.ins.visible.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         this.fullscreen.outs.fullscreenActive.off("value", this.onUpdate, this);
         super.disconnected();
     }
@@ -61,7 +63,7 @@ export default class MainMenu extends DocumentView
     {
         if (previous) {
             const scene = previous.documentScene;
-            scene.reader.ins.visible.off("value", this.onReaderVisible, this);
+            scene.reader.ins.visible.off("value", this.onUpdate, this);
             scene.annotations.ins.visible.off("value", this.onUpdate, this);
             scene.interface.off("update", this.onUpdate, this);
 
@@ -70,18 +72,15 @@ export default class MainMenu extends DocumentView
         }
         if (next) {
             const scene = next.documentScene;
-            scene.reader.ins.visible.on("value", this.onReaderVisible, this);
-            scene.annotations.ins.visible.on("value", this.performUpdate, this);
+            scene.reader.ins.visible.on("value", this.onUpdate, this);
+            scene.annotations.ins.visible.on("value", this.onUpdate, this);
             scene.interface.on("update", this.onUpdate, this);
 
-            this.interface = scene.interface;
             //scene.tours.ins.state.on("value", this.performUpdate, this);
             //scene.tours.ins.visible.on("value", this.performUpdate, this);
         }
-        else {
-            this.interface = null;
-        }
 
+        this.interface = next && next.documentScene.interface;
         this.requestUpdate();
     }
 
@@ -94,13 +93,13 @@ export default class MainMenu extends DocumentView
         }
 
         const fullscreen = this.fullscreen;
-        const fullscreenEnabled = fullscreen.outs.fullscreenActive.value;
+        const fullscreenActive = fullscreen.outs.fullscreenActive.value;
         const showFullscreenButton = fullscreen.outs.fullscreenAvailable.value;
 
         const readerVisible = scene.reader.ins.visible.value;
-        const annotationsVisible = scene.annotations.ins.visible.value;
         const toursVisible = scene.tours.outs.state.value !== EToursState.Off;
-        const toolsVisible = !!this.toolProvider.activeComponent;
+        const annotationsVisible = scene.annotations.ins.visible.value;
+        const toolsVisible = this.toolProvider.ins.visible.value;
 
         const iface = this.interface;
         const showToolButton = iface ? iface.ins.tools.value : false;
@@ -112,29 +111,15 @@ export default class MainMenu extends DocumentView
         <ff-button icon="comment" title="Toggle Annotations"
             ?selected=${annotationsVisible} @click=${this.onToggleAnnotations}></ff-button>
         ${showFullscreenButton ? html`<ff-button icon="expand" title="Toggle fullscreen mode"
-            ?selected=${fullscreenEnabled} @click=${this.onToggleFullscreen}></ff-button>` : null}
+            ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
         ${showToolButton ? html`<ff-button icon="tools" title="Tools and Settings"
             ?selected=${toolsVisible} @click=${this.onToggleTools}></ff-button>` : null}`}`;
-    }
-
-    protected onReaderVisible(visible: boolean)
-    {
-        if (visible) {
-            this.toolProvider.activeComponent = null;
-        }
-
-        this.requestUpdate();
     }
 
     protected onToggleReader()
     {
         const prop = this.activeScene.reader.ins.visible;
         prop.setValue(!prop.value);
-    }
-
-    protected onToggleFullscreen()
-    {
-        this.fullscreen.toggle();
     }
 
     protected onToggleTours()
@@ -149,14 +134,14 @@ export default class MainMenu extends DocumentView
         prop.setValue(!prop.value);
     }
 
+    protected onToggleFullscreen()
+    {
+        this.fullscreen.toggle();
+    }
+
     protected onToggleTools()
     {
-        const toolProvider = this.toolProvider;
-
-        if (toolProvider.activeComponent) {
-            toolProvider.activeComponent = null;
-        } else {
-            toolProvider.activeComponent = toolProvider.scopedComponents[0];
-        }
+        const prop = this.toolProvider.ins.visible;
+        prop.setValue(!prop.value);
     }
 }

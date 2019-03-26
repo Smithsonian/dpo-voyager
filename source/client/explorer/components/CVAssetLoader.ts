@@ -39,11 +39,16 @@ export default class CVAssetLoader extends Component
 {
     static readonly typeName: string = "CVAssetLoader";
 
-    protected static readonly loaderOuts = {
+    protected static readonly ins = {
+        rootUrl: types.String("Loader.RootURL"),
+    };
+
+    protected static readonly outs = {
         loading: types.Boolean("Loader.IsLoading"),
     };
 
-    outs = this.addOutputs(CVAssetLoader.loaderOuts);
+    ins = this.addInputs(CVAssetLoader.ins);
+    outs = this.addOutputs(CVAssetLoader.outs);
 
     readonly jsonLoader: JSONLoader;
     readonly validator: JSONValidator;
@@ -57,7 +62,6 @@ export default class CVAssetLoader extends Component
     constructor(id: string)
     {
         super(id);
-        this.addEvent("update");
 
         const loadingManager = this._loadingManager = new PrivateLoadingManager(this);
 
@@ -68,27 +72,44 @@ export default class CVAssetLoader extends Component
         this.textureLoader = new TextureLoader(loadingManager);
     }
 
-    loadJSON(url: string, path?: string): Promise<any>
+    setRootURL(url: string)
     {
-        url = resolvePathname(url, path);
+        const href = window.location.href.split("?")[0];
+        let rootUrl = resolvePathname(url, href);
+        rootUrl = resolvePathname(".", rootUrl);
+        this.ins.rootUrl.setValue(rootUrl);
+        console.log("ROOT URL: %s", rootUrl);
+    }
+
+    getAssetURL(uri: string)
+    {
+        console.log(uri, this.ins.rootUrl.value);
+        console.log(resolvePathname(uri, this.ins.rootUrl.value));
+
+        return resolvePathname(uri, this.ins.rootUrl.value);
+    }
+
+    loadJSON(url: string): Promise<any>
+    {
+        url = this.getAssetURL(url);
         return this.jsonLoader.load(url);
     }
 
-    loadModelAsset(asset: Asset, path?: string): Promise<THREE.Object3D>
+    loadModelAsset(asset: Asset): Promise<THREE.Object3D>
     {
-        const url = resolvePathname(asset.data.uri, path);
+        const url = this.getAssetURL(asset.data.uri);
         return this.modelLoader.load(url);
     }
 
-    loadGeometryAsset(asset: Asset, path?: string): Promise<THREE.Geometry>
+    loadGeometryAsset(asset: Asset): Promise<THREE.Geometry>
     {
-        const url = resolvePathname(asset.data.uri, path);
+        const url = this.getAssetURL(asset.data.uri);
         return this.geometryLoader.load(url);
     }
 
-    loadTextureAsset(asset: Asset, path?: string): Promise<THREE.Texture>
+    loadTextureAsset(asset: Asset): Promise<THREE.Texture>
     {
-        const url = resolvePathname(asset.data.uri, path);
+        const url = this.getAssetURL(asset.data.uri);
         return this.textureLoader.load(url);
     }
 

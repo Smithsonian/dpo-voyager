@@ -25,7 +25,6 @@ import CVPoseTask, { EPoseManipMode } from "../components/CVPoseTask";
 
 import "./PropertyView";
 import { TaskView } from "../components/CVTask";
-import CVModel2 from "../../explorer/components/CVModel2";
 import NVNode from "../../explorer/nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,12 +32,10 @@ import NVNode from "../../explorer/nodes/NVNode";
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView<CVPoseTask>
 {
-    protected activeModel: CVModel2 = null;
-
     protected render()
     {
-        const document = this.activeDocument;
-        const model = this.activeModel;
+        const node = this.activeNode;
+        const model = node && node.model;
 
         if (!model) {
             return html`<div class="sv-placeholder">Please select a model to edit its pose</div>`;
@@ -46,7 +43,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = document.documentScene.ins.units;
+        const globalUnits = this.activeScene.ins.units;
         const itemUnits = model.ins.localUnits;
         const position = model.ins.position;
         const rotation = model.ins.rotation;
@@ -74,7 +71,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
     protected onClickCenter()
     {
-        this.activeModel.ins.center.set();
+        this.activeNode.model.ins.center.set();
     }
 
     protected onClickZoomViews()
@@ -84,7 +81,6 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        this.activeModel = next && next.model;
         this.requestUpdate();
     }
 }

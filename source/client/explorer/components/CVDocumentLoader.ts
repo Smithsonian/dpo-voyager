@@ -34,14 +34,14 @@ export default class CVDocumentLoader extends Component
 {
     static readonly typeName: string = "CVDocumentLoader";
 
+    protected get assetLoader() {
+        return this.getGraphComponent(CVAssetLoader);
+    }
     protected get documentProvider() {
         return this.components.get(CVDocumentProvider);
     }
     protected get activeDocument() {
         return this.documentProvider.activeComponent;
-    }
-    protected get assetLoader() {
-        return this.getComponent(CVAssetLoader);
     }
 
     loadDocument(documentOrUrl: string | object): Promise<CVDocument | null>

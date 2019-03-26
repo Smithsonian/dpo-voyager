@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import resolvePathname from "resolve-pathname";
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
@@ -34,6 +35,7 @@ import { IDocument } from "common/types/document";
 
 import CVDocument from "./components/CVDocument";
 import CVDocumentLoader from "./components/CVDocumentLoader";
+import CVAssetLoader from "./components/CVAssetLoader";
 
 import NVEngine from "./nodes/NVEngine";
 import NVExplorer from "./nodes/NVExplorer";
@@ -49,6 +51,8 @@ import MainView from "./ui/MainView";
  */
 export interface IExplorerApplicationProps
 {
+    /** URL of the root asset folder. */
+    root?: string;
     /** URL of the document to load and display at startup. */
     document?: string;
     /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
@@ -78,8 +82,11 @@ export default class ExplorerApplication
     readonly system: System;
     readonly commander: Commander;
 
-    protected get loader() {
+    protected get documentLoader() {
         return this.system.getMainComponent(CVDocumentLoader);
+    }
+    protected get assetLoader() {
+        return this.system.getMainComponent(CVAssetLoader);
     }
 
     constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
@@ -106,9 +113,13 @@ export default class ExplorerApplication
         system.graph.createCustomNode(NVTools);
         const documents = system.graph.createCustomNode(NVDocuments);
 
-        // create empty document
-        const document = documents.createComponent(CVDocument);
-        documents.documentProvider.activeComponent = document;
+        // create default document
+        this.documentLoader.openDefaultDocument().then(document => {
+            documents.documentProvider.activeComponent = document;
+        }).then(() => {
+            // start loading from properties
+            this.startup();
+        });
 
         // create main view if not given
         if (element) {
@@ -117,35 +128,27 @@ export default class ExplorerApplication
 
         // start rendering
         engine.pulse.start();
+    }
 
-        // start loading from properties
-        this.startup();
+    setRootUrl(url: string)
+    {
+        this.assetLoader.setRootURL(url);
     }
 
     loadDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
     {
-        return this.loader.loadDocument(documentOrUrl);
-    }
-
-    openDefaultDocument(): Promise<CVDocument>
-    {
-        return this.loader.openDefaultDocument();
-    }
-
-    mergeDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
-    {
-        return this.loader.mergeDocument(documentOrUrl);
+        return this.documentLoader.mergeDocument(documentOrUrl);
     }
 
     loadModel(modelUrl: string, quality: string): Promise<void>
     {
-        return this.loader.loadModel(modelUrl, quality);
+        return this.documentLoader.loadModel(modelUrl, quality);
     }
 
     loadGeometry(geoUrl: string, colorMapUrl?: string,
                  occlusionMapUrl?: string, normalMapUrl?: string, quality?: string): Promise<void>
     {
-        return this.loader.loadGeometry(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, quality);
+        return this.documentLoader.loadGeometry(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, quality);
     }
 
 
@@ -153,11 +156,14 @@ export default class ExplorerApplication
     {
         const props = this.props;
 
+        props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
         props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
-        props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
+        props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("t");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
+
+        this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
 
         if (props.document) {
             this.loadDocument(props.document);
@@ -173,4 +179,5 @@ export default class ExplorerApplication
     }
 }
 
+window["resolvePathname"] = resolvePathname;
 window["VoyagerExplorer"] = ExplorerApplication;

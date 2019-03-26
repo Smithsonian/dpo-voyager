@@ -16,6 +16,7 @@
  */
 
 import CComponentProvider, {
+    types,
     EComponentScope,
     IActiveComponentEvent
 } from "@ff/graph/components/CComponentProvider";
@@ -32,10 +33,29 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
     static readonly isSystemSingleton = true;
     static readonly componentType = CVTool;
 
+    protected static readonly ins = {
+        visible: types.Boolean("Tools.Visible")
+    };
+
+    ins = this.addInputs(CVToolProvider.ins);
+
     create()
     {
         super.create();
         this.scope = EComponentScope.Node;
+    }
+
+    update(context)
+    {
+        const ins = this.ins;
+
+        if (ins.visible.changed) {
+            if (ins.visible.value && !this.activeComponent) {
+                this.activeComponent = this.scopedComponents[0];
+            }
+        }
+
+        return true;
     }
 
     protected activateComponent(tool: CVTool)

@@ -19,13 +19,13 @@ import Node from "@ff/graph/Node";
 
 import CVTaskProvider from "../components/CVTaskProvider";
 
-// import CVAnnotationsTask from "../components/CVAnnotationsTask";
-// import CVArticlesTask from "../components/CVArticlesTask";
-// import CVCaptureTask from "../components/CVCaptureTask";
-// import CVDerivativesTask from "../components/CVDerivativesTask";
-// import CVExploreTask from "../components/CVExploreTask";
-// import CVPoseTask from "../components/CVPoseTask";
-// import CVToursTask from "../components/CVToursTask";
+import CVExploreTask from "../components/CVExploreTask";
+import CVPoseTask from "../components/CVPoseTask";
+import CVCaptureTask from "../components/CVCaptureTask";
+import CVAnnotationsTask from "../components/CVAnnotationsTask";
+import CVToursTask from "../components/CVToursTask";
+import CVArticlesTask from "../components/CVArticlesTask";
+import CVDerivativesTask from "../components/CVDerivativesTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,12 +41,12 @@ export default class NVPrepTasks extends Node
     {
         this.createComponent(CVTaskProvider);
 
-        // this.createComponent(CVExploreTask);
-        // this.createComponent(CVPoseTask);
-        // this.createComponent(CVCaptureTask);
-        // this.createComponent(CVAnnotationsTask);
-        // this.createComponent(CVToursTask);
-        // this.createComponent(CVArticlesTask);
-        // this.createComponent(CVDerivativesTask);
+        this.createComponent(CVExploreTask);
+        this.createComponent(CVPoseTask);
+        this.createComponent(CVCaptureTask);
+        this.createComponent(CVAnnotationsTask);
+        this.createComponent(CVToursTask);
+        this.createComponent(CVArticlesTask);
+        this.createComponent(CVDerivativesTask);
     }
 }

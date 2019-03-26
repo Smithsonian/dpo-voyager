@@ -1,5 +1,5 @@
 {
-    "$id": "https://schemas.3d.si.edu/voyager/entity.schema.json",
+    "$id": "https://schemas.3d.si.edu/voyager/info.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "title": "Entity",
@@ -43,11 +43,11 @@
                     "type": "string"
                 }
             },
-            "additionalProperties": false,
             "required": [
                 "id",
                 "uri"
-            ]
+            ],
+            "additionalProperties": false
         }
     },
 

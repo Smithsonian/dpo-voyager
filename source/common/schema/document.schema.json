@@ -305,10 +305,13 @@
                 "version"
             ]
         },
-        "root": {
-            "description": "Index of the root node of the document, usually a scene node.",
-            "type": "integer",
-            "minimum": 0
+        "roots": {
+            "description": "Index of the root nodes of the document.",
+            "type": "array",
+            "items": {
+                "type": "integer",
+                "minimum": 0
+            }
         },
         "nodes": {
             "description": "An array of nodes.",
@@ -334,11 +337,11 @@
             },
             "minItems": 1
         },
-        "entities": {
+        "infos": {
             "description": "An array of entities.",
             "type": "array",
             "items": {
-                "$ref": "./entity.schema.json"
+                "$ref": "./info.schema.json"
             }
         },
         "models": {
@@ -358,7 +361,8 @@
         }
     },
     "required": [
-        "root",
+        "roots",
         "nodes"
-    ]
+    ],
+    "additionalProperties": false
 }

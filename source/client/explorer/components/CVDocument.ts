@@ -93,20 +93,21 @@ export default class CVDocument extends CRenderGraph
     }
 
     get documentScene() {
-        return this.innerComponents.get(CVScene);
+        return this.innerComponents.get(CVScene, true);
     }
 
     create()
     {
         super.create();
 
-        // create root scene node
-        const sceneNode = this.innerGraph.createCustomNode(NVNode);
-        sceneNode.createScene();
-
-        // create camera node
-        const cameraNode = this.innerGraph.createCustomNode(NVNode);
-        cameraNode.createCamera();
+        // // create root scene node
+        // const sceneNode = this.innerGraph.createCustomNode(NVNode);
+        // sceneNode.createScene();
+        //
+        // // create camera node
+        // const cameraNode = this.innerGraph.createCustomNode(NVNode);
+        // cameraNode.createCamera();
+        // sceneNode.transform.addChild(cameraNode.transform);
 
         // document is inactive and hidden, unless it becomes the active document
         this.ins.active.setValue(false);
@@ -138,18 +139,20 @@ export default class CVDocument extends CRenderGraph
 
         this.url = url || this.url;
 
-        const rootNodeData = documentData.nodes[documentData.root];
-        const docRootNode = this.innerGraph.createCustomNode(NVNode);
+        const rootIndices = documentData.roots;
+        const sceneNode = this.innerGraph.createCustomNode(NVNode);
 
-        // if document root is not a scene, create a scene and add document root as scene child
-        if (!isFinite(rootNodeData.scene)) {
-            const sceneNode = this.innerGraph.createCustomNode(NVNode);
-            sceneNode.createScene();
-            sceneNode.transform.addChild(docRootNode.transform);
+        if (rootIndices.length === 1 && isFinite(documentData.nodes[rootIndices[0]].scene)) {
+            sceneNode.fromDocument(documentData, rootIndices[0]);
         }
-
-        // inflate scene tree starting from document root node
-        docRootNode.fromDocument(documentData, documentData.root);
+        else {
+            sceneNode.createScene();
+            rootIndices.forEach(rootIndex => {
+                const rootNode = this.innerGraph.createCustomNode(NVNode);
+                sceneNode.transform.addChild(rootNode.transform);
+                rootNode.fromDocument(documentData, rootIndex);
+            });
+        }
     }
 
     mergeDocument(documentData: IDocument, url?: string, parent?: NVNode)
@@ -163,32 +166,42 @@ export default class CVDocument extends CRenderGraph
 
         this.url = url || this.url;
 
-        // if merge document has lights, remove all existing lights
-        if (documentData.lights.length > 0) {
-            this.getInnerComponents(CLight).slice().forEach(light => {
-                if (light.transform.children.length > 0) {
-                    light.dispose();
-                }
-                else {
-                    light.node.dispose()
-                }
-            });
+        parent = parent || this.innerRoots[0].node as NVNode;
+        const rootIndices = documentData.roots;
+
+        if (parent.scene && rootIndices.length === 1 && isFinite(documentData.nodes[rootIndices[0]].scene)) {
+            parent.fromDocument(documentData, rootIndices[0]);
         }
-        // if merge document has cameras, remove all existing cameras
-        if (documentData.cameras.length > 0) {
-            this.getInnerComponents(CCamera).slice().forEach(camera => {
-                if (camera.transform.children.length > 0) {
-                    camera.dispose();
-                }
-                else {
-                    camera.node.dispose()
-                }
+        else {
+            rootIndices.forEach(rootIndex => {
+                const rootNode = this.innerGraph.createCustomNode(NVNode);
+                parent.transform.addChild(rootNode.transform);
+                rootNode.fromDocument(documentData, rootIndex);
             });
         }
 
-        parent = parent || this.innerRoots[0].node as NVNode;
-        const docRootNode = this.innerGraph.createCustomNode(NVNode);
-        parent.transform.addChild(docRootNode.transform);
+        // // if merge document has lights, remove all existing lights
+        // if (documentData.lights.length > 0) {
+        //     this.getInnerComponents(CLight).slice().forEach(light => {
+        //         if (light.transform.children.length > 0) {
+        //             light.dispose();
+        //         }
+        //         else {
+        //             light.node.dispose()
+        //         }
+        //     });
+        // }
+        // // if merge document has cameras, remove all existing cameras
+        // if (documentData.cameras.length > 0) {
+        //     this.getInnerComponents(CCamera).slice().forEach(camera => {
+        //         if (camera.transform.children.length > 0) {
+        //             camera.dispose();
+        //         }
+        //         else {
+        //             camera.node.dispose()
+        //         }
+        //     });
+        // }
     }
 
     appendModel(modelUrl: string, quality?: EDerivativeQuality, parent?: NVNode)
@@ -240,11 +253,11 @@ export default class CVDocument extends CRenderGraph
                 generator: "Voyager",
                 copyright: "(c) Smithsonian Institution. All rights reserved."
             },
-            root: 0,
+            roots: [],
             nodes: []
         };
 
-        document.root = root.toDocument(document);
+        document.roots.push(root.toDocument(document));
         return document;
     }
 }

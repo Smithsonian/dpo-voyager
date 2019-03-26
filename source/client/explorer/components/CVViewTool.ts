@@ -43,8 +43,6 @@ export default class CVViewTool extends CVTool
 @customElement("sv-view-tool-view")
 export class ViewToolView extends ToolView<CVViewTool>
 {
-    protected navigation: CVNavigation = null;
-
     protected firstConnected()
     {
         super.firstConnected();
@@ -53,7 +51,8 @@ export class ViewToolView extends ToolView<CVViewTool>
 
     protected render()
     {
-        const navigation = this.navigation;
+        const scene = this.activeScene;
+        const navigation = scene && scene.navigation;
 
         if (!navigation) {
             return html``;
@@ -71,15 +70,9 @@ export class ViewToolView extends ToolView<CVViewTool>
             <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>`;
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onUpdate()
     {
-        if (this.navigation) {
-            this.navigation.off("update", this.performUpdate, this);
-            this.navigation = null;
-        }
-        if (next) {
-            this.navigation = next.documentScene.navigation;
-            this.navigation.on("update", this.performUpdate, this);
-        }
+        console.log("view tool update");
+        super.onUpdate();
     }
 }

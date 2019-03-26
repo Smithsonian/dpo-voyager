@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import CVDocument from "../components/CVDocument";
 import CVAssetLoader from "../components/CVAssetLoader";
+import CVScene from "../components/CVScene";
 import CVReader, { EReaderPosition } from "../components/CVReader";
 
 import SceneView from "../../core/ui/SceneView";
@@ -44,26 +44,14 @@ export default class ContentView extends DocumentView
 
     protected connected()
     {
+        super.connected();
         this.assetLoader.outs.loading.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
         this.assetLoader.outs.loading.off("value", this.performUpdate, this);
-    }
-
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
-    {
-        if (previous) {
-            const reader = previous.documentScene.reader;
-            reader.ins.visible.off("value", this.performUpdate, this);
-            reader.ins.position.off("value", this.performUpdate, this);
-        }
-        if (next) {
-            const reader = next.documentScene.reader;
-            reader.ins.visible.on("value", this.performUpdate, this);
-            reader.ins.position.on("value", this.performUpdate, this);
-        }
+        super.disconnected();
     }
 
     protected render()
@@ -74,10 +62,10 @@ export default class ContentView extends DocumentView
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
 
-        if (this.activeDocument) {
-            const reader = this.activeDocument.documentScene.reader;
-            readerVisible = reader.ins.visible.value;
-            readerPosition = reader.ins.position.value;
+        const scene = this.activeScene;
+        if (scene) {
+            readerVisible = scene.reader.ins.visible.value;
+            readerPosition = scene.reader.ins.position.value;
         }
 
         const sceneView = this.sceneView;
@@ -112,6 +100,22 @@ export default class ContentView extends DocumentView
 
         return html`<div class="sv-content-reader-off">${sceneView}</div>
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;
+    }
+
+    protected onActiveScene(previous: CVScene, next: CVScene)
+    {
+        if (previous) {
+            const reader = previous.reader;
+            reader.ins.visible.off("value", this.onUpdate, this);
+            reader.ins.position.off("value", this.onUpdate, this);
+        }
+        if (next) {
+            const reader = next.reader;
+            reader.ins.visible.on("value", this.onUpdate, this);
+            reader.ins.position.on("value", this.onUpdate, this);
+        }
+
+        this.requestUpdate();
     }
 }
 

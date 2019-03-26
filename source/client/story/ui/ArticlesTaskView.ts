@@ -30,13 +30,14 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 {
     protected render()
     {
-        const item = this.activeItem;
+        const node = this.activeNode;
+        const info = node && node.info;
 
-        if (!item) {
-            return html`<div class="sv-placeholder">Please select an item to edit its articles</div>`;
+        if (!info) {
+            return html`<div class="sv-placeholder">Please select a node to edit its articles</div>`;
         }
 
-        const articleList = item.articles.getArticles();
+        const articleList = info.articles.items;
         const article = this.task.activeArticle;
 
         const detailView = article ? html`` : null;

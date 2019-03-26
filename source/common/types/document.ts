@@ -35,7 +35,7 @@ export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisph
 export interface IDocument
 {
     asset: IDocumentAsset;
-    root: Index;
+    roots: Index[];
     nodes?: INode[];
     cameras?: ICamera[];
     lights?: ILight[];

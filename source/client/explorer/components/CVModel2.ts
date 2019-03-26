@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import { ITypedEvent, types } from "@ff/graph/Component";
 import CObject3D from "@ff/scene/components/CObject3D";
-//import CModel from "@ff/scene/components/CModel";
+
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "common/types/document";
@@ -102,7 +102,8 @@ export default class CVModel2 extends CObject3D
         super.create();
         this.object3D = new THREE.Group();
 
-        this.node.createComponent(CVAnnotationView);
+        const av = this.node.createComponent(CVAnnotationView);
+        av.ins.unitScale.linkFrom(this.outs.unitScale);
     }
 
     update()
@@ -224,12 +225,10 @@ export default class CVModel2 extends CObject3D
 
         this.ins.localUnits.setValue(EUnitType[data.units || "cm"] || EUnitType.cm);
 
-        const part0 = data.parts[0];
-
-        if (part0.derivatives) {
-            this.derivatives.fromJSON(part0.derivatives);
+        if (data.derivatives) {
+            this.derivatives.fromJSON(data.derivatives);
         }
-        if (part0.material) {
+        if (data.material) {
             // TODO: Implement
         }
 
@@ -241,12 +240,8 @@ export default class CVModel2 extends CObject3D
     {
         const data = {
             units: EUnitType[this.ins.localUnits.getValidatedValue()],
-            parts: [],
-        } as IModel;
-
-        const part0 = {
             derivatives: this.derivatives.toJSON(),
-        };
+        } as IModel;
 
         data.boundingBox = {
             min: this._boundingBox.min.toArray() as Vector3,
@@ -331,7 +326,7 @@ export default class CVModel2 extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        return derivative.load(this.loaders, "" /* this.document.urlPath */)
+        return derivative.load(this.loaders)
         .then(() => {
             if (!derivative.model) {
                 return;

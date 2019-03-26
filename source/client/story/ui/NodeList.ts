@@ -23,7 +23,7 @@ import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElem
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
 
-import CVNodeProvider from "../../explorer/components/CVNodeProvider";
+import CVNodeProvider, { INodesEvent } from "../../explorer/components/CVNodeProvider";
 
 import NVNode from "../../explorer/nodes/NVNode";
 
@@ -54,14 +54,14 @@ class NodeList extends List<NVNode>
 
         this.selection.selectedComponents.on(CComponent, this.onSelectComponent, this);
         this.selection.selectedNodes.on(NVNode, this.onUpdate, this);
-        this.nodeProvider.on("update", this.onUpdate, this);
+        this.nodeProvider.on<INodesEvent>("scoped-nodes", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.selection.selectedComponents.off(CComponent, this.onSelectComponent, this);
         this.selection.selectedNodes.off(NVNode, this.onUpdate, this);
-        this.nodeProvider.off("update", this.onUpdate, this);
+        this.nodeProvider.off<INodesEvent>("scoped-nodes", this.onUpdate, this);
 
         super.disconnected();
     }

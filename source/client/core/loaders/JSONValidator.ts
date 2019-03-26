@@ -18,8 +18,8 @@
 import * as Ajv from "ajv";
 
 import * as documentSchema from "common/schema/document.schema.json";
-import * as entitySchema from "common/schema/entity.schema.json";
 import * as commonSchema from "common/schema/common.schema.json";
+import * as infoSchema from "common/schema/info.schema.json";
 import * as modelSchema from "common/schema/model.schema.json";
 import * as sceneSchema from "common/schema/scene.schema.json";
 
@@ -37,8 +37,8 @@ export default class JSONValidator
         this._schemaValidator = new Ajv({
             schemas: [
                 documentSchema,
-                entitySchema,
                 commonSchema,
+                infoSchema,
                 modelSchema,
                 sceneSchema,
             ],

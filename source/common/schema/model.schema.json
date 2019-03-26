@@ -87,20 +87,6 @@
             ],
             "additionalProperties": false
         },
-        "part": {
-            "type": "object",
-            "properties": {
-                "derivatives": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/derivative"
-                    }
-                },
-                "material": {
-                    "$ref": "#/definitions/material"
-                }
-            }
-        },
         "derivative": {
             "description": "Visual representation derived from the master model.",
             "type": "object",
@@ -109,7 +95,7 @@
                     "description": "usage categories for a derivative.",
                     "type": "string",
                     "enum": [
-                        "2D",
+                        "Image2D",
                         "Web3D",
                         "Print3D",
                         "Editorial3D"
@@ -204,12 +190,11 @@
         "units": {
             "$ref": "./common.schema.json#/definitions/units"
         },
-        "parts": {
-            "$ref": "#/definitions/part"
-        },
-        "visible": {
-            "type": "boolean",
-            "default": true
+        "derivatives": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/derivative"
+            }
         },
         "translation": {
             "description": "Translation vector. Must be applied to bring model into its 'neutral' pose.",
@@ -222,6 +207,9 @@
         "boundingBox": {
             "description": "Bounding box for this model, shared by all derivatives.",
             "$ref": "./common.schema.json#/definitions/boundingBox"
+        },
+        "material": {
+            "$ref": "#/definitions/material"
         },
         "annotations": {
             "description": "List of annotations to be displayed with the model",

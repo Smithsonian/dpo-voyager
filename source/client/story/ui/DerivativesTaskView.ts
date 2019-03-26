@@ -39,13 +39,14 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 
     protected render()
     {
-        const item = this.activeItem;
+        const node = this.activeNode;
+        const model = node && node.model;
 
-        if (!item) {
-            return html`<div class="sv-placeholder">Please select an item to inspect its derivatives</div>`;
+        if (!model) {
+            return html`<div class="sv-placeholder">Please select a model node to inspect its derivatives</div>`;
         }
 
-        const derivatives = item.model.derivatives.getArray();
+        const derivatives = model.derivatives.getArray();
         const derivative = this.selectedDerivative;
 
         const detailView = derivative ? html`` : null;

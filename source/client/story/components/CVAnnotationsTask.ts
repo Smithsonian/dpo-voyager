@@ -103,8 +103,6 @@ export default class CVAnnotationsTask extends CVTask
 
     update(context)
     {
-        super.update(context);
-
         if (this.ins.mode.changed) {
             this.emitUpdateEvent();
         }

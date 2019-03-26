@@ -141,7 +141,11 @@ export default class CVOrbitNavigation extends CVNavigation
             ins.orbit.set(true);
             controller.offset.toArray(ins.offset.value);
             ins.offset.set(true);
-            ins.preset.setValue(EViewPreset.None, true);
+
+            // if camera has moved, set preset to "None"
+            if (ins.preset.value !== EViewPreset.None && !ins.preset.changed) {
+                ins.preset.setValue(EViewPreset.None, true);
+            }
 
             if (transform) {
                 transform.setPropertiesFromMatrix();
@@ -159,6 +163,7 @@ export default class CVOrbitNavigation extends CVNavigation
     preRender(context: IRenderContext)
     {
         if (this._modelBoundingBox) {
+            console.log("tock");
             context.viewport.zoomExtents(this._modelBoundingBox);
         }
     }

@@ -58,27 +58,22 @@ export default class NVNode extends Node
 
     createComponents()
     {
-        this.createComponent(CVNode, "Node", this.id);
-    }
-
-    createCamera()
-    {
-        this.createComponent(CVCamera);
+        this.name = "Node";
+        this.createComponent(CVNode);
     }
 
     createScene()
     {
-        return this.createComponent(CVScene);
+        this.name = "Scene";
+        this.createComponent(CVInfo);
+        this.createComponent(CVScene);
     }
 
     createModel()
     {
-        return this.createComponent(CVModel2);
-    }
-
-    createEntity()
-    {
-        return this.createComponent(CVInfo);
+        this.name = "Model";
+        this.createComponent(CVInfo);
+        this.createComponent(CVModel2);
     }
 
     fromDocument(document: IDocument, nodeIndex: number)
@@ -86,38 +81,47 @@ export default class NVNode extends Node
         const node = document.nodes[nodeIndex];
         this.transform.fromData(node);
 
-        if (node.name) {
-            this.name = node.name;
-        }
+        let name = "Node";
 
+        if (isFinite(node.info)) {
+            this.createComponent(CVInfo).fromDocument(document, node);
+            name = "Info";
+        }
         if (isFinite(node.camera)) {
             this.createComponent(CVCamera).fromDocument(document, node);
+            name = "Camera";
         }
         if (isFinite(node.light)) {
             const type = document.lights[node.light].type;
             switch (type) {
                 case "directional":
                     this.createComponent(CVDirectionalLight).fromDocument(document, node);
-                    break;
-                case "spot":
-                    this.createComponent(CVSpotLight).fromDocument(document, node);
+                    name = "Directional Light";
                     break;
                 case "point":
                     this.createComponent(CVPointLight).fromDocument(document, node);
+                    name = "Point Light";
+                    break;
+                case "spot":
+                    this.createComponent(CVSpotLight).fromDocument(document, node);
+                    name = "Spot Light";
                     break;
                 default:
                     throw new Error(`unknown light type: '${type}'`);
             }
         }
-        if (isFinite(node.info)) {
-            this.createComponent(CVInfo).fromDocument(document, node);
-        }
         if (isFinite(node.scene)) {
-            this.createComponent(CVScene).fromDocument(document, node);
+            if (!this.hasGraphComponent(CVScene)) {
+                this.createComponent(CVScene).fromDocument(document, node);
+                name = "Scene";
+            }
         }
         if (isFinite(node.model)) {
             this.createComponent(CVModel2).fromDocument(document, node);
+            name = "Model";
         }
+
+        this.name = node.name || name;
 
         const children = node.children;
         if (children) {

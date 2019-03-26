@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
+import DocumentView, { customElement, html } from "./DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-reader-view")
-export default class ReaderView extends SystemElement
+export default class ReaderView extends DocumentView
 {
     protected firstConnected()
     {

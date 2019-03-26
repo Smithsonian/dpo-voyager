@@ -35,28 +35,24 @@ class DocumentList extends List<CVDocument>
     system: System = null;
 
     protected documentProvider: CVDocumentProvider = null;
-    protected selection: CSelection = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-presentation-list");
+        this.classList.add("sv-document-list");
 
         this.documentProvider = this.system.getMainComponent(CVDocumentProvider);
-        this.selection = this.system.getMainComponent(CSelection);
     }
 
     protected connected()
     {
         super.connected();
-
         this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
-
         super.disconnected();
     }
 
@@ -68,20 +64,17 @@ class DocumentList extends List<CVDocument>
 
     protected renderItem(component: CVDocument)
     {
-        const isActive = component === this.documentProvider.activeComponent;
-
-        return html`<div class="ff-flex-row"><ff-icon name=${isActive ? "check" : "empty"}></ff-icon>
+        return html`<div class="ff-flex-row">
             <ff-text class="ff-ellipsis">${component.displayName}</ff-text></div>`;
     }
 
     protected isItemSelected(component: CVDocument)
     {
-        return this.selection.selectedComponents.contains(component);
+        return component === this.documentProvider.activeComponent;
     }
 
     protected onClickItem(event: MouseEvent, component: CVDocument)
     {
         this.documentProvider.activeComponent = component;
-        this.selection.selectComponent(component);
     }
 }

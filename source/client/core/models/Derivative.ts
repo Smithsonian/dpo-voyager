@@ -67,7 +67,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         super.dispose();
     }
 
-    load(loaders: CVAssetLoader, baseUrl: string): Promise<THREE.Object3D>
+    load(loaders: CVAssetLoader): Promise<THREE.Object3D>
     {
         if (this.data.usage !== EDerivativeUsage.Web3D) {
             throw new Error("can't load, not a Web3D derivative");
@@ -76,7 +76,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return loaders.loadModelAsset(modelAsset, baseUrl)
+            return loaders.loadModelAsset(modelAsset)
             .then(object => {
                 if (this.model) {
                     disposeObject(this.model);
@@ -90,11 +90,11 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
-            return loaders.loadGeometryAsset(geoAsset, baseUrl)
+            return loaders.loadGeometryAsset(geoAsset)
             .then(geometry => {
                 this.model = new THREE.Mesh(geometry, new UberPBRMaterial());
 
-                return Promise.all(imageAssets.map(asset => loaders.loadTextureAsset(asset, baseUrl)))
+                return Promise.all(imageAssets.map(asset => loaders.loadTextureAsset(asset)))
                 .catch(error => {
                     console.warn("failed to load texture files");
                     return [];

@@ -115,8 +115,6 @@ export default class CVAnnotationView extends CObject3D
 
         this.object3D = new HTMLSpriteGroup();
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-
-        this.model.outs.unitScale.linkTo(this.ins.unitScale);
     }
 
     update(context)

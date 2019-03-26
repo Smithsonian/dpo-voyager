@@ -49,9 +49,9 @@ export default class NVEngine extends Node
         const selection = this.createComponent(CPickSelection);
 
         // allow simultaneous selection of nodes and components
-        selection.multiSelect = false;
+        //selection.exclusiveSelect = false;
         // don't allow selecting multiple nodes or components
-        selection.exclusiveSelect = false;
+        //selection.multiSelect = false;
         // do not display selection brackets
         selection.ins.viewportBrackets.setValue(false);
     }

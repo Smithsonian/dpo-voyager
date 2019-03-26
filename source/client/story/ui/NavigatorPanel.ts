@@ -20,7 +20,7 @@ import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
 import "./DocumentList";
-import "./NodeList";
+import "./NodeTreeView";
 
 import CVStoryController, { EStoryMode } from "../components/CVStoryController";
 
@@ -56,9 +56,8 @@ export default class NavigatorPanel extends SystemElement
     protected render()
     {
         const system = this.system;
-        const authMode = this.story.ins.mode.value === EStoryMode.Authoring;
+        const authMode = true; // this.story.ins.mode.value === EStoryMode.Authoring;
 
-        return html``;
         const documentList = authMode ? html`<div class="sv-panel-section">
                 <div class="sv-panel-header">Documents</div>
                 <sv-document-list .system=${system}></sv-document-list>
@@ -68,7 +67,7 @@ export default class NavigatorPanel extends SystemElement
         return html`${documentList}
             <div class="sv-panel-section">
                 <div class="sv-panel-header">Nodes</div>
-                <sv-node-list .system=${system}></sv-node-list>
+                <sv-node-tree-view .system=${system}></sv-node-tree-view>
             </div>`;
     }
 }

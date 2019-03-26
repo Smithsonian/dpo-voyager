@@ -27,6 +27,7 @@ import "@ff/ui/Splitter";
 
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
+import CVAnnotationView from "../../explorer/components/CVAnnotationView";
 
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../components/CVAnnotationsTask";
 import { TaskView } from "../components/CVTask";
@@ -38,13 +39,12 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 {
     protected render()
     {
-        const item = this.activeItem;
+        const node = this.activeNode;
+        const annotations = node && node.getComponent(CVAnnotationView, true);
 
-        if (!item) {
-            return html`<div class="sv-placeholder">Please select an item to edit its annotations</div>`;
+        if (!annotations) {
+            return html`<div class="sv-placeholder">Please select a model to edit its annotations</div>`;
         }
-
-        const annotations = item.annotations;
 
         const inProps = annotations.ins;
         const modeProp = this.task.ins.mode;
@@ -58,8 +58,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
-            <div class="sv-label">Description</div>
-            <ff-text-edit name="description" text=${inProps.description.value} @change=${this.onTextEdit}></ff-text-edit>` : null;
+            <div class="sv-label">Lead</div>
+            <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
@@ -88,8 +88,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         if (target.name === "title") {
             annotations.ins.title.setValue(event.detail.text);
         }
-        else if (target.name === "description") {
-            annotations.ins.description.setValue(event.detail.text);
+        else if (target.name === "lead") {
+            annotations.ins.lead.setValue(event.detail.text);
         }
     }
 

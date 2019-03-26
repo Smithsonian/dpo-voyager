@@ -42,6 +42,12 @@ class DerivativeList extends List<Derivative>
         this.classList.add("sv-derivative-list");
     }
 
+    protected render()
+    {
+        console.log(this.data);
+        return super.render();
+    }
+
     protected renderItem(item: Derivative)
     {
         return `${EDerivativeUsage[item.data.usage]} / ${EDerivativeQuality[item.data.quality]}`;
