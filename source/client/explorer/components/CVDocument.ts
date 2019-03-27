@@ -11,24 +11,23 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions andr
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
 import download from "@ff/browser/download";
 
-import { types } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
-import CLight from "@ff/scene/components/CLight";
-import CCamera from "@ff/scene/components/CCamera";
 
 import { IDocument } from "common/types/document";
 import { EDerivativeQuality } from "common/types/model";
 
-import NVNode from "../nodes/NVNode";
+import NVNode, { INodeComponents } from "../nodes/NVNode";
 import CVScene from "./CVScene";
+import CVAssetReader from "./CVAssetReader";
+import CTransform from "@ff/scene/components/CTransform";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,79 +38,29 @@ import CVScene from "./CVScene";
 export default class CVDocument extends CRenderGraph
 {
     static readonly typeName: string = "CVDocument";
+
     static readonly mimeType = "application/si-dpo-3d.document+json";
+    static readonly version = "1.0";
 
     protected static readonly ins = {
+        assetPath: types.AssetPath("Asset.Path"),
         dump: types.Event("Document.Dump"),
         download: types.Event("Document.Download"),
     };
 
     ins = this.addInputs<CRenderGraph, typeof CVDocument.ins>(CVDocument.ins);
 
-
-    private _url: string = "";
-    private _assetBaseName = "";
-
-    set url(url: string) {
-        this._url = url;
-
-        const urlName = this.urlName;
-        if (urlName.endsWith("item.json")) {
-            this._assetBaseName = urlName.substr(0, urlName.length - 9);
-        }
-        else {
-            const parts = urlName.split(".");
-            parts.pop();
-            this._assetBaseName = parts.join(".");
-        }
-
-        this.name = urlName;
-        //this.getInnerComponent(CAssetManager).assetBaseUrl = url;
-
-        console.log("CVDocument.url");
-        console.log("   url:           %s", this.url);
-        console.log("   urlPath:       %s", this.urlPath);
-        console.log("   urlName:       %s", this.urlName);
-    }
-    get url() {
-        return this._url;
-    }
-    get urlPath() {
-        return resolvePathname(".", this.url);
-    }
-    get urlName() {
-        const path = this.urlPath;
-        const nameIndex = this.url.startsWith(path) ? path.length : 0;
-        return this.url.substr(nameIndex);
-    }
-    get assetBaseName() {
-        return this._assetBaseName;
-    }
-
-    getAssetUrl(fileName: string) {
-        return resolvePathname(fileName, this.url);
-    }
-
-    get documentScene() {
-        return this.innerComponents.get(CVScene, true);
-    }
-
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
-
-        // // create root scene node
-        // const sceneNode = this.innerGraph.createCustomNode(NVNode);
-        // sceneNode.createScene();
-        //
-        // // create camera node
-        // const cameraNode = this.innerGraph.createCustomNode(NVNode);
-        // cameraNode.createCamera();
-        // sceneNode.transform.addChild(cameraNode.transform);
+        super(node, id);
 
         // document is inactive and hidden, unless it becomes the active document
         this.ins.active.setValue(false);
         this.ins.visible.setValue(false);
+    }
+
+    get documentScene() {
+        return this.innerComponents.get(CVScene, true);
     }
 
     update(context)
@@ -120,91 +69,82 @@ export default class CVDocument extends CRenderGraph
 
         const ins = this.ins;
 
+        if (ins.assetPath.changed) {
+            const path = ins.assetPath.value;
+            if (path) {
+                const reader = this.getMainComponent(CVAssetReader);
+                reader.getDocument(ins.assetPath.value)
+                .then(data => this.openDocument(data))
+                .catch(error => {
+                    console.warn("failed to load document");
+                });
+            }
+            else {
+                this.initDocument();
+            }
+        }
+
         if (ins.dump.changed) {
-            const json = this.toDocument();
+            const json = this.deflateDocument();
             console.log("-------------------- VOYAGER DOCUMENT --------------------");
             console.log(JSON.stringify(json, null, 2));
         }
 
         if (ins.download.changed) {
-            download.json(this.toDocument(), this.urlName || "document.json");
+            const fileName = ins.assetPath.value.split("/").pop() || "document.json";
+            download.json(this.deflateDocument(), fileName);
         }
 
         return true;
     }
 
-    openDocument(documentData: IDocument, url?: string)
+    initDocument()
     {
         this.clearInnerGraph();
-
-        this.url = url || this.url;
-
-        const rootIndices = documentData.roots;
-        const sceneNode = this.innerGraph.createCustomNode(NVNode);
-
-        if (rootIndices.length === 1 && isFinite(documentData.nodes[rootIndices[0]].scene)) {
-            sceneNode.fromDocument(documentData, rootIndices[0]);
-        }
-        else {
-            sceneNode.createScene();
-            rootIndices.forEach(rootIndex => {
-                const rootNode = this.innerGraph.createCustomNode(NVNode);
-                sceneNode.transform.addChild(rootNode.transform);
-                rootNode.fromDocument(documentData, rootIndex);
-            });
-        }
+        const rootNode = this.innerGraph.createCustomNode(NVNode);
+        rootNode.createComponent(CVScene);
     }
 
-    mergeDocument(documentData: IDocument, url?: string, parent?: NVNode)
+    openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode)
     {
-        if (parent && parent.graph !== this.innerGraph) {
+        if (assetPath) {
+            this.ins.assetPath.setValue(assetPath, true);
+            this.ins.assetPath.changed = false;
+        }
+
+        if (!mergeParent) {
+            this.initDocument();
+        }
+
+        let parent = typeof mergeParent === "object" ? mergeParent as NVNode : null;
+        if (parent && (parent.graph !== this.innerGraph || parent.transform.parent)) {
             throw new Error("invalid parent node");
         }
-        if (this.innerRoots.length === 0) {
-            return this.openDocument(documentData);
+
+        if (!parent) {
+            const root = this.innerRoots[0];
+            parent = root && root.node.is(NVNode) ? root.node as NVNode : this.innerGraph.createCustomNode(NVNode);
+            if (!parent.scene) {
+                parent.createScene();
+            }
         }
 
-        this.url = url || this.url;
-
-        parent = parent || this.innerRoots[0].node as NVNode;
         const rootIndices = documentData.roots;
 
         if (parent.scene && rootIndices.length === 1 && isFinite(documentData.nodes[rootIndices[0]].scene)) {
             parent.fromDocument(documentData, rootIndices[0]);
         }
         else {
+            parent.createScene();
             rootIndices.forEach(rootIndex => {
                 const rootNode = this.innerGraph.createCustomNode(NVNode);
                 parent.transform.addChild(rootNode.transform);
                 rootNode.fromDocument(documentData, rootIndex);
             });
         }
-
-        // // if merge document has lights, remove all existing lights
-        // if (documentData.lights.length > 0) {
-        //     this.getInnerComponents(CLight).slice().forEach(light => {
-        //         if (light.transform.children.length > 0) {
-        //             light.dispose();
-        //         }
-        //         else {
-        //             light.node.dispose()
-        //         }
-        //     });
-        // }
-        // // if merge document has cameras, remove all existing cameras
-        // if (documentData.cameras.length > 0) {
-        //     this.getInnerComponents(CCamera).slice().forEach(camera => {
-        //         if (camera.transform.children.length > 0) {
-        //             camera.dispose();
-        //         }
-        //         else {
-        //             camera.node.dispose()
-        //         }
-        //     });
-        // }
     }
 
-    appendModel(modelUrl: string, quality?: EDerivativeQuality, parent?: NVNode)
+    appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode)
     {
         if (parent && parent.graph !== this.innerGraph) {
             throw new Error("invalid parent node");
@@ -216,12 +156,13 @@ export default class CVDocument extends CRenderGraph
         parent = parent || this.innerRoots[0].node as NVNode;
         const modelNode = this.innerGraph.createCustomNode(NVNode);
         parent.transform.addChild(modelNode.transform);
-        const model = modelNode.createModel();
+        modelNode.createModel();
 
-        //model.addDerivative();
+        const model = modelNode.model;
+        model.derivatives.createModelAsset(assetPath, quality);
     }
 
-    appendGeometry(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string, quality?: EDerivativeQuality, parent?: NVNode)
+    appendGeometry(geoPath: string, colorMapPath?: string, occlusionMapPath?: string, normalMapPath?: string, quality?: EDerivativeQuality | string, parent?: NVNode)
     {
         if (parent && parent.graph !== this.innerGraph) {
             throw new Error("invalid parent node");
@@ -233,23 +174,31 @@ export default class CVDocument extends CRenderGraph
         parent = parent || this.innerRoots[0].node as NVNode;
         const modelNode = this.innerGraph.createCustomNode(NVNode);
         parent.transform.addChild(modelNode.transform);
-        const model = modelNode.createModel();
+        modelNode.createModel();
 
-        //model.addDerivative();
+        const model = modelNode.model;
+        model.derivatives.createMeshAsset(geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
 
-    toDocument(root?: NVNode): IDocument
+    deflateDocument(components?: INodeComponents): IDocument
     {
         if (this.isEmpty()) {
-            throw new Error("empty document, nothing to serialize");
+            throw new Error("empty document, can't serialize");
         }
 
-        root = root || this.innerRoots[0].node as NVNode;
+        const root = this.innerRoots[0] as CTransform;
+
+        if (!root || !root.hasComponent(CVScene)) {
+            throw new Error("malformed document, root not a scene node, can't serialize");
+        }
+
+        const roots = components && components.scenes ? [ root.node ] :
+            root.children.map(child => child.node).filter(node => node.is(NVNode));
 
         const document: IDocument = {
             asset: {
                 type: CVDocument.mimeType,
-                version: "1.0",
+                version: CVDocument.version,
                 generator: "Voyager",
                 copyright: "(c) Smithsonian Institution. All rights reserved."
             },
@@ -257,7 +206,12 @@ export default class CVDocument extends CRenderGraph
             nodes: []
         };
 
-        document.roots.push(root.toDocument(document));
+        roots.forEach((root: NVNode) => {
+            if (root.hasNodeComponents(components)) {
+                document.roots.push(root.toDocument(document, components));
+            }
+        });
+
         return document;
     }
 }

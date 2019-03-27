@@ -17,7 +17,7 @@
 
 import NVDocuments from "./NVDocuments";
 import NVEngine from "./NVEngine";
-import NVExplorer from "./NVExplorer";
+import NVoyagerExplorer from "./NVoyagerExplorer";
 import NVNode from "./NVNode";
 import NVTools from "./NVTools";
 
@@ -26,7 +26,7 @@ import NVTools from "./NVTools";
 export {
     NVDocuments,
     NVEngine,
-    NVExplorer,
+    NVoyagerExplorer,
     NVNode,
     NVTools,
 };
@@ -34,7 +34,7 @@ export {
 export const nodeTypes = [
     NVDocuments,
     NVEngine,
-    NVExplorer,
+    NVoyagerExplorer,
     NVNode,
     NVTools,
 ];

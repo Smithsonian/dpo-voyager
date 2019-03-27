@@ -17,7 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 
-import { ITypedEvent, types } from "@ff/graph/Component";
+import { Node, ITypedEvent, types } from "@ff/graph/Component";
 
 import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
 import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
@@ -100,21 +100,17 @@ export default class CVAnnotationView extends CObject3D
         }
     }
 
-    constructor(id: string)
+    constructor(node: Node, id: string)
     {
-        super(id);
+        super(node, id);
         this.addEvents("active-annotation", "group");
 
         this.onSpriteClick = this.onSpriteClick.bind(this);
         this.onSpriteLink = this.onSpriteLink.bind(this);
-    }
 
-    create()
-    {
-        super.create();
+        this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         this.object3D = new HTMLSpriteGroup();
-        this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     update(context)

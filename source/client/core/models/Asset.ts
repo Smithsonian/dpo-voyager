@@ -17,13 +17,7 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import {
-    IAsset as IAssetJSON,
-    EAssetType,
-    TAssetType,
-    EMapType,
-    TMapType
-} from "common/types/model";
+import { EAssetType, EMapType, IAsset as IAssetJSON, TAssetType, TMapType } from "common/types/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +41,28 @@ export default class Asset extends Document<IAsset, IAssetJSON>
         imageJpeg: "image/jpeg",
         imagePng: "image/png"
     };
+
+    setModel(uri: string)
+    {
+        this.data.uri = uri;
+        this.data.type = EAssetType.Model;
+        this.data.mimeType = this.guessAssetMimeType();
+    }
+
+    setGeometry(uri: string)
+    {
+        this.data.uri = uri;
+        this.data.type = EAssetType.Geometry;
+        this.data.mimeType = this.guessAssetMimeType();
+    }
+
+    setTexture(uri: string, mapType: EMapType)
+    {
+        this.data.uri = uri;
+        this.data.type = EAssetType.Image;
+        this.data.mimeType = this.guessAssetMimeType();
+        this.data.mapType = mapType;
+    }
 
     isValid()
     {
@@ -151,5 +167,31 @@ export default class Asset extends Document<IAsset, IAssetJSON>
         }
 
         return undefined;
+    }
+
+    protected guessAssetMimeType(): string
+    {
+        const data = this.data;
+
+        if (data.mimeType) {
+            return data.mimeType;
+        }
+
+        const extension = data.uri.split(".").pop().toLowerCase();
+
+        if (extension === "gltf") {
+            return Asset.mimeType.gltfJson;
+        }
+        if (extension === "glb") {
+            return Asset.mimeType.gltfBinary;
+        }
+        if (extension === "jpg") {
+            return Asset.mimeType.imageJpeg;
+        }
+        if (extension === "png") {
+            return Asset.mimeType.imagePng;
+        }
+
+        return "";
     }
 }

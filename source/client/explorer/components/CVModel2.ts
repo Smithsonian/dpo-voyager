@@ -17,13 +17,13 @@
 
 import * as THREE from "three";
 
-import { ITypedEvent, types } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
 import CObject3D from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "common/types/document";
-import { IModel, EUnitType, TUnitType, EDerivativeUsage, EDerivativeQuality } from "common/types/model";
+import { IModel, EUnitType, EDerivativeUsage, EDerivativeQuality } from "common/types/model";
 
 import unitScaleFactor from "../../core/utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../../core/shaders/UberPBRMaterial";
@@ -32,7 +32,7 @@ import Derivative from "../../core/models/Derivative";
 import DerivativeList from "../../core/models/DerivativeList";
 
 import CVAnnotationView from "./CVAnnotationView";
-import CVAssetLoader from "./CVAssetLoader";
+import CVAssetReader from "./CVAssetReader";
 import { Vector3 } from "common/types/common";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +82,12 @@ export default class CVModel2 extends CObject3D
     private _boundingBox = new THREE.Box3();
     private _boxFrame: THREE.Mesh = null;
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        this.object3D = new THREE.Group();
+    }
 
     get derivatives() {
         return this._derivatives;
@@ -93,14 +99,13 @@ export default class CVModel2 extends CObject3D
         return this._activeDerivative;
     }
 
-    protected get loaders() {
-        return this.system.getMainComponent(CVAssetLoader);
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
     }
 
     create()
     {
         super.create();
-        this.object3D = new THREE.Group();
 
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
@@ -326,7 +331,7 @@ export default class CVModel2 extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
-        return derivative.load(this.loaders)
+        return derivative.load(this.assetReader)
         .then(() => {
             if (!derivative.model) {
                 return;

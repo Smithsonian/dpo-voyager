@@ -20,7 +20,7 @@ import resolvePathname from "resolve-pathname";
 import fetch from "@ff/browser/fetch";
 import download from "@ff/browser/download";
 
-import { types } from "@ff/graph/propertyTypes";
+import { Node, types } from "@ff/graph/Component";
 import CSelection from "@ff/graph/components/CSelection";
 
 import Notification from "@ff/ui/Notification";
@@ -56,9 +56,9 @@ export default class CVStoryController extends CVNodeObserver
     ins = this.addInputs(_inputs);
 
 
-    constructor(id: string)
+    constructor(node: Node, id: string)
     {
-        super(id);
+        super(node, id);
         this.beforeUnload = this.beforeUnload.bind(this);
     }
 
@@ -87,6 +87,7 @@ export default class CVStoryController extends CVNodeObserver
 
     create()
     {
+        super.create();
         window.addEventListener("beforeunload", this.beforeUnload);
     }
 
@@ -120,8 +121,8 @@ export default class CVStoryController extends CVNodeObserver
                 //file = new File([JSON.stringify(node.toData())], node.urlName, { type: "text/json" });
             }
             else if (document) {
-                url = document.url;
-                file = new File([JSON.stringify(document.toDocument())], document.urlName, { type: "text/json" });
+                //url = document.url;
+                //file = new File([JSON.stringify(document.toDocument())], document.urlName, { type: "text/json" });
             }
 
             if (url && file) {
@@ -147,7 +148,7 @@ export default class CVStoryController extends CVNodeObserver
                 //download.json(node.toData(), node.urlName);
             }
             else if (document) {
-                download.json(document.toDocument(), document.urlName);
+                //download.json(document.toDocument(), document.urlName);
             }
         }
 

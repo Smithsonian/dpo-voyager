@@ -21,7 +21,7 @@ import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import { IDocument } from "common/types/document";
+import * as documentTemplate from "common/templates/document.json";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "../explorer/ExplorerApplication";
 
@@ -29,10 +29,9 @@ import { componentTypes as storyComponents } from "./components";
 import { nodeTypes as storyNodes } from "./nodes";
 
 import CVDocument from "../explorer/components/CVDocument";
-import CVDocumentLoader from "../explorer/components/CVDocumentLoader";
 
 import NVPrepTasks from "./nodes/NVPrepTasks";
-import NVStoryApp from "./nodes/NVStoryApp";
+import NVoyagerStory from "./nodes/NVoyagerStory";
 import CVStoryController from "./components/CVStoryController";
 
 import MainView from "./ui/MainView";
@@ -62,14 +61,11 @@ export default class StoryApplication
     readonly system: System;
     readonly commander: Commander;
 
-    protected get loader() {
-        return this.system.getMainComponent(CVDocumentLoader);
-    }
 
-    constructor(element?: HTMLElement, props?: IStoryApplicationProps)
+    constructor(parent: HTMLElement, props?: IStoryApplicationProps)
     {
         // create the embedded explorer application, parse properties, start loading/presenting
-        this.explorer = new ExplorerApplication(null, props);
+        this.explorer = new ExplorerApplication(null, props, /* embedded */ true);
         this.props = props || {};
 
         this.system = this.explorer.system;
@@ -83,46 +79,46 @@ export default class StoryApplication
         //this.logController = new LogController(this.system, this.commander);
 
         // add story components
-        this.system.graph.createCustomNode(NVStoryApp, "Story");
+        this.system.graph.createCustomNode(NVoyagerStory, "Story");
         this.system.graph.createCustomNode(NVPrepTasks, "Tasks");
 
         // enable viewport brackets
         this.system.getMainComponent(CPickSelection).ins.viewportBrackets.setValue(true);
 
-        this.initFromProps();
-
-        if (element) {
-            new MainView(this).appendTo(element);
+        if (parent) {
+            // create a view and attach to parent
+            new MainView(this).appendTo(parent);
         }
+
+        // initialize default document
+        this.openDocument(documentTemplate).then(() => {
+            // start loading from properties
+            this.evaluateProps();
+        });
     }
 
-    loadDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
+    openDocument(document: any, documentPath?: string, merge?: boolean): Promise<CVDocument>
     {
-        return this.loader.loadDocument(documentOrUrl);
+        return this.explorer.openDocument(document, documentPath, merge);
     }
 
-    openDefaultDocument(): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
-        return this.loader.openDefaultDocument();
+        return this.explorer.loadDocument(documentPath, merge);
     }
 
-    mergeDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
+    loadModel(modelPath: string, quality: string)
     {
-        return this.loader.mergeDocument(documentOrUrl);
+        return this.explorer.loadModel(modelPath, quality);
     }
 
-    loadModel(modelUrl: string, quality: string): Promise<void>
+    loadGeometry(geoPath: string, colorMapPath?: string,
+                 occlusionMapPath?: string, normalMapPath?: string, quality?: string)
     {
-        return this.loader.loadModel(modelUrl, quality);
+        return this.explorer.loadGeometry(geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
 
-    loadGeometry(geoUrl: string, colorMapUrl?: string,
-        occlusionMapUrl?: string, normalMapUrl?: string, quality?: string): Promise<void>
-    {
-        return this.loader.loadGeometry(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, quality);
-    }
-
-    protected initFromProps()
+    protected evaluateProps()
     {
         const props = this.props;
 
@@ -133,6 +129,8 @@ export default class StoryApplication
         const story = this.system.components.get(CVStoryController);
         story.ins.referrer.setValue(props.referrer);
         story.ins.expertMode.setValue(!!props.expert);
+
+        this.explorer.evaluateProps();
     }
 }
 

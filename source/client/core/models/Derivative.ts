@@ -26,11 +26,11 @@ import {
     EDerivativeQuality,
     TDerivativeQuality,
     EDerivativeUsage,
-    TDerivativeUsage, TAssetType
+    TDerivativeUsage,
 } from "common/types/model";
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
-import CVAssetLoader from "../../explorer/components/CVAssetLoader";
+import CVAssetReader from "../../explorer/components/CVAssetReader";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
 
@@ -60,14 +60,11 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
 
     dispose()
     {
-        if (this.model) {
-            disposeObject(this.model);
-        }
-
+        this.unload();
         super.dispose();
     }
 
-    load(loaders: CVAssetLoader): Promise<THREE.Object3D>
+    load(assetReader: CVAssetReader): Promise<THREE.Object3D>
     {
         if (this.data.usage !== EDerivativeUsage.Web3D) {
             throw new Error("can't load, not a Web3D derivative");
@@ -76,7 +73,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return loaders.loadModelAsset(modelAsset)
+            return assetReader.getModel(modelAsset.data.uri)
             .then(object => {
                 if (this.model) {
                     disposeObject(this.model);
@@ -90,11 +87,11 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
-            return loaders.loadGeometryAsset(geoAsset)
+            return assetReader.getGeometry(geoAsset.data.uri)
             .then(geometry => {
                 this.model = new THREE.Mesh(geometry, new UberPBRMaterial());
 
-                return Promise.all(imageAssets.map(asset => loaders.loadTextureAsset(asset)))
+                return Promise.all(imageAssets.map(asset => assetReader.getTexture(asset.data.uri)))
                 .catch(error => {
                     console.warn("failed to load texture files");
                     return [];
@@ -115,16 +112,29 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         }
     }
 
-    createAsset(assetType: EAssetType, uri: string): Asset
+    unload()
     {
-        if (!uri) {
+        if (this.model) {
+            disposeObject(this.model);
+        }
+    }
+
+    addAsset(asset: Asset)
+    {
+        if (!asset.data.uri) {
             throw new Error("uri must be specified");
         }
 
-        const type = EAssetType[assetType] as TAssetType;
-        const asset = new Asset({ type, uri });
         this.data.assets.push(asset);
-        return asset;
+        this.update();
+    }
+
+    removeAsset(asset: Asset)
+    {
+        const index = this.data.assets.indexOf(asset);
+        if (index >= 0) {
+            this.data.assets.splice(index, 1);
+        }
     }
 
     findAsset(type: EAssetType): Asset | undefined

@@ -18,12 +18,12 @@
 import CVAnnotation from "./CVAnnotation";
 import CVAnnotations from "./CVAnnotations";
 import CVAnnotationView from "./CVAnnotationView";
-import CVAssetLoader from "./CVAssetLoader";
+import CVAssetReader from "./CVAssetReader";
+import CVAssetWriter from "./CVAssetWriter";
 import CVBackground from "./CVBackground";
 import CVCamera from "./CVCamera";
 import CVDirectionalLight from "./CVDirectionalLight";
 import CVDocument from "./CVDocument";
-import CVDocumentLoader from "./CVDocumentLoader";
 import CVDocumentObserver from "./CVDocumentObserver";
 import CVDocumentProvider from "./CVDocumentProvider";
 import CVFloor from "./CVFloor";
@@ -58,12 +58,12 @@ export {
     CVAnnotation,
     CVAnnotations,
     CVAnnotationView,
-    CVAssetLoader,
+    CVAssetReader,
+    CVAssetWriter,
     CVBackground,
     CVCamera,
     CVDirectionalLight,
     CVDocument,
-    CVDocumentLoader,
     CVDocumentObserver,
     CVDocumentProvider,
     CVFloor,
@@ -97,12 +97,12 @@ export const componentTypes = [
     CVAnnotation,
     CVAnnotations,
     CVAnnotationView,
-    CVAssetLoader,
+    CVAssetReader,
+    CVAssetWriter,
     CVBackground,
     CVCamera,
     CVDirectionalLight,
     CVDocument,
-    CVDocumentLoader,
     CVDocumentObserver,
     CVDocumentProvider,
     CVFloor,

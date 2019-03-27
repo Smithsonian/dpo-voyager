@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
+import { Node, types } from "@ff/graph/Component";
 
 import CComponentProvider, {
     EComponentScope,
@@ -42,9 +42,9 @@ export default class CVDocumentProvider extends CComponentProvider<CVDocument>
 
     outs = this.addOutputs(CVDocumentProvider.outs);
 
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
+        super(node, id);
         this.scope = EComponentScope.Node;
     }
 

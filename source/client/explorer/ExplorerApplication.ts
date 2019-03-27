@@ -31,18 +31,18 @@ import { nodeTypes as graphNodes } from "@ff/graph/nodes";
 import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
 import { nodeTypes as explorerNodes } from "./nodes";
 
-import { IDocument } from "common/types/document";
+import * as documentTemplate from "common/templates/document.json";
 
 import CVDocument from "./components/CVDocument";
-import CVDocumentLoader from "./components/CVDocumentLoader";
-import CVAssetLoader from "./components/CVAssetLoader";
+import CVAssetReader from "./components/CVAssetReader";
 
 import NVEngine from "./nodes/NVEngine";
-import NVExplorer from "./nodes/NVExplorer";
+import NVoyagerExplorer from "./nodes/NVoyagerExplorer";
 import NVDocuments from "./nodes/NVDocuments";
 import NVTools from "./nodes/NVTools";
 
 import MainView from "./ui/MainView";
+import CVDocumentProvider from "./components/CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,14 +82,17 @@ export default class ExplorerApplication
     readonly system: System;
     readonly commander: Commander;
 
-    protected get documentLoader() {
-        return this.system.getMainComponent(CVDocumentLoader);
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
     }
-    protected get assetLoader() {
-        return this.system.getMainComponent(CVAssetLoader);
+    protected get documentProvider() {
+        return this.system.getMainComponent(CVDocumentProvider);
+    }
+    protected get documents() {
+        return this.system.getMainNode(NVDocuments);
     }
 
-    constructor(element?: HTMLElement, props?: IExplorerApplicationProps)
+    constructor(parent: HTMLElement, props?: IExplorerApplicationProps, embedded?: boolean)
     {
         this.props = props;
         console.log(ExplorerApplication.splashMessage);
@@ -109,21 +112,22 @@ export default class ExplorerApplication
         const system = this.system = new System(registry);
 
         const engine = system.graph.createCustomNode(NVEngine);
-        system.graph.createCustomNode(NVExplorer);
+        system.graph.createCustomNode(NVoyagerExplorer);
         system.graph.createCustomNode(NVTools);
-        const documents = system.graph.createCustomNode(NVDocuments);
+        system.graph.createCustomNode(NVDocuments);
 
-        // create default document
-        this.documentLoader.openDefaultDocument().then(document => {
-            documents.documentProvider.activeComponent = document;
-        }).then(() => {
-            // start loading from properties
-            this.startup();
-        });
 
-        // create main view if not given
-        if (element) {
-            new MainView(this).appendTo(element);
+        if (parent) {
+            // create a view and attach to parent
+            new MainView(this).appendTo(parent);
+        }
+
+        if (!embedded) {
+            // initialize default document
+            this.openDocument(documentTemplate).then(() => {
+                // start loading from properties
+                this.evaluateProps();
+            });
         }
 
         // start rendering
@@ -132,27 +136,71 @@ export default class ExplorerApplication
 
     setRootUrl(url: string)
     {
-        this.assetLoader.setRootURL(url);
+        this.assetReader.setRootURL(url);
     }
 
-    loadDocument(documentOrUrl: string | IDocument): Promise<CVDocument | null>
+    openDocument(document: any, documentPath?: string, merge?: boolean): Promise<CVDocument>
     {
-        return this.documentLoader.mergeDocument(documentOrUrl);
+        const provider = this.documentProvider;
+
+        return this.assetReader.validateDocument(document).then(documentData => {
+            let document = provider.activeComponent;
+
+            if (!document) {
+                document = this.documents.createComponent(CVDocument);
+            }
+
+            document.openDocument(documentData, documentPath, merge);
+            provider.activeComponent = document;
+
+            return document;
+        });
     }
 
-    loadModel(modelUrl: string, quality: string): Promise<void>
+    loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
-        return this.documentLoader.loadModel(modelUrl, quality);
+        let documentData;
+
+        return this.assetReader.getDocument(documentPath)
+            .then(data => {
+                documentData = data;
+                return this.openDocument(documentTemplate);
+            })
+            .then(document => {
+                document.openDocument(documentData, documentPath, merge);
+                return document;
+            })
+            .catch(error => {
+                console.warn(`error while loading document: ${error.message}`);
+                throw error;
+            });
     }
 
-    loadGeometry(geoUrl: string, colorMapUrl?: string,
-                 occlusionMapUrl?: string, normalMapUrl?: string, quality?: string): Promise<void>
+    loadModel(modelPath: string, quality: string)
     {
-        return this.documentLoader.loadGeometry(geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl, quality);
+        const document = this.documentProvider.activeComponent;
+        if (!document) {
+            console.warn("no active document, can't append model");
+            return;
+        }
+
+        document.appendModel(modelPath, quality);
+    }
+
+    loadGeometry(geoPath: string, colorMapPath?: string,
+                 occlusionMapPath?: string, normalMapPath?: string, quality?: string)
+    {
+        const document = this.documentProvider.activeComponent;
+        if (!document) {
+            console.warn("no active document, can't append geometry");
+            return;
+        }
+
+        document.appendGeometry(geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
 
 
-    protected startup()
+    evaluateProps()
     {
         const props = this.props;
 
@@ -174,8 +222,6 @@ export default class ExplorerApplication
         else if (props.geometry) {
             this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
-
-        return Promise.resolve();
     }
 }
 

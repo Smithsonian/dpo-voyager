@@ -97,7 +97,6 @@ export default class CVScene extends Component
         return this._modelBoundingBox;
     }
 
-
     create()
     {
         super.create();

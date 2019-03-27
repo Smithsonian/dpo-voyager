@@ -19,8 +19,7 @@ import * as THREE from "three";
 
 import * as helpers from "@ff/three/helpers";
 
-import { types } from "@ff/graph/propertyTypes";
-import { IComponentEvent } from "@ff/graph/Node";
+import { Node, types } from "@ff/graph/Component";
 
 import { IPointerEvent } from "@ff/scene/RenderView";
 
@@ -58,6 +57,16 @@ export default class CVAnnotationsTask extends CVTask
 
     private _activeAnnotations: CVAnnotationView = null;
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        const configuration = this.configuration;
+        configuration.annotationsVisible = true;
+        configuration.gridVisible = false;
+        configuration.interfaceVisible = true;
+        configuration.bracketsVisible = false;
+    }
 
     get activeAnnotations() {
         return this._activeAnnotations;
@@ -88,17 +97,6 @@ export default class CVAnnotationsTask extends CVTask
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         super.deactivateTask();
-    }
-
-    create()
-    {
-        super.create();
-
-        const configuration = this.configuration;
-        configuration.annotationsVisible = true;
-        configuration.gridVisible = false;
-        configuration.interfaceVisible = true;
-        configuration.bracketsVisible = false;
     }
 
     update(context)
@@ -187,15 +185,14 @@ export default class CVAnnotationsTask extends CVTask
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        const prevAnnotations = previous ? previous.annotations : null;
-        const nextAnnotations = next ? next.annotations : null;
+        const prevAnnotations = previous ? previous.getComponent(CVAnnotationView) : null;
+        const nextAnnotations = next ? next.getComponent(CVAnnotationView) : null;
 
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
         }
         if (nextAnnotations) {
             nextAnnotations.on<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
-            this.selectionController.selectComponent(nextAnnotations);
         }
 
         this.activeAnnotations = nextAnnotations;

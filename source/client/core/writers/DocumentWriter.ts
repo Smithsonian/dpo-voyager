@@ -15,31 +15,18 @@
  * limitations under the License.
  */
 
-import { Node } from "@ff/graph/Component";
-
-import CVTask from "./CVTask";
-import ExploreTaskView from "../ui/ExploreTaskView";
+import CVDocument from "../../explorer/components/CVDocument";
+import CVAssetWriter from "../../explorer/components/CVAssetWriter";
+import NVNode, { INodeComponents } from "../../explorer/nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVExploreTask extends CVTask
+export { INodeComponents };
+
+export default class DocumentWriter
 {
-    static readonly typeName: string = "CVExploreTask";
-
-    static readonly text: string = "Explore";
-    static readonly icon: string = "eye";
-
-    constructor(node: Node, id: string)
+    put(document: CVDocument, components: INodeComponents, assetPath?: string)
     {
-        super(node, id);
 
-        const configuration = this.configuration;
-        configuration.interfaceVisible = true;
-        configuration.bracketsVisible = false;
-    }
-
-    createView()
-    {
-        return new ExploreTaskView(this);
     }
 }

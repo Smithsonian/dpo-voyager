@@ -15,18 +15,11 @@
  * limitations under the License.
  */
 
-import Node from "@ff/graph/Node";
-
-import CVAssetLoader from "../components/CVAssetLoader";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVExplorer extends Node
+export default class CVoyagerStory
 {
-    static readonly typeName: string = "NVExplorer";
-
-    createComponents()
-    {
-        this.createComponent(CVAssetLoader);
-    }
+    static readonly typeName: string = "CVoyagerStory";
 }

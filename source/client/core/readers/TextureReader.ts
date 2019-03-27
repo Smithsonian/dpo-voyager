@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class TextureLoader
+export default class TextureReader
 {
     static readonly extensions = [ "jpg", "png" ];
     static readonly mimeTypes = [ "image/jpeg", "image/png" ];
@@ -32,18 +32,18 @@ export default class TextureLoader
         this.textureLoader = new THREE.TextureLoader(loadingManager);
     }
 
-    canLoad(url: string): boolean
+    isValid(url: string): boolean
     {
         const extension = url.split(".").pop().toLowerCase();
-        return TextureLoader.extensions.indexOf(extension) >= 0;
+        return TextureReader.extensions.indexOf(extension) >= 0;
     }
 
-    canLoadMimeType(mimeType: string): boolean
+    isValidMimeType(mimeType: string): boolean
     {
-        return TextureLoader.mimeTypes.indexOf(mimeType) >= 0;
+        return TextureReader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    load(url: string): Promise<THREE.Texture>
+    get(url: string): Promise<THREE.Texture>
     {
         return new Promise((resolve, reject) => {
             this.textureLoader.load(url, texture => {
@@ -55,7 +55,7 @@ export default class TextureLoader
         });
     }
 
-    loadImmediate(url: string): THREE.Texture
+    getImmediate(url: string): THREE.Texture
     {
         return this.textureLoader.load(url, null, null, errorEvent => {
             console.error(errorEvent);

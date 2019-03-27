@@ -44,7 +44,7 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return item.title;
+        return item.data.title;
     }
 
     protected isItemSelected(item: Annotation)

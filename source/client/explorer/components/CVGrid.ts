@@ -72,6 +72,8 @@ export default class CVGrid extends CObject3D
     {
         this.ins.pickable.setValue(false);
         this.ins.visible.setValue(false);
+
+        super.create();
     }
 
     activate()

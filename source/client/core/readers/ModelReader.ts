@@ -32,7 +32,7 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class ModelLoader
+export default class ModelReader
 {
     static readonly extensions = [ "gltf", "glb" ];
     static readonly mimeTypes = [ "model/gltf+json", "model/gltf-binary" ];
@@ -48,18 +48,18 @@ export default class ModelLoader
         this.gltfLoader.setDRACOLoader(new DRACOLoader());
     }
 
-    canLoad(url: string): boolean
+    isValid(url: string): boolean
     {
         const extension = url.split(".").pop().toLowerCase();
-        return ModelLoader.extensions.indexOf(extension) >= 0;
+        return ModelReader.extensions.indexOf(extension) >= 0;
     }
 
-    canLoadMimeType(mimeType: string): boolean
+    isValidMimeType(mimeType: string): boolean
     {
-        return ModelLoader.mimeTypes.indexOf(mimeType) >= 0;
+        return ModelReader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    load(url: string): Promise<THREE.Object3D>
+    get(url: string): Promise<THREE.Object3D>
     {
         return new Promise((resolve, reject) => {
             this.gltfLoader.load(url, gltf => {

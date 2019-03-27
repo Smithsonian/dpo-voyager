@@ -16,8 +16,8 @@
  */
 
 
-import CVAssetLoader from "../../explorer/components/CVAssetLoader";
-import CVScene_old from "../../explorer/components/CVScene_old";
+import CVAssetReader from "../../explorer/components/CVAssetReader";
+import CVScene from "../../explorer/components/CVScene";
 
 import SystemElement, { customElement, html } from "../../core/ui/SystemElement";
 
@@ -31,8 +31,8 @@ export default class ContentView extends SystemElement
 {
     protected sceneView: SceneView = null;
 
-    protected get assetLoader() {
-        return this.system.getMainComponent(CVAssetLoader);
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
     }
 
     protected firstConnected()
@@ -43,25 +43,24 @@ export default class ContentView extends SystemElement
 
     protected connected()
     {
-        this.assetLoader.outs.loading.on("value", this.performUpdate, this);
+        this.assetReader.outs.busy.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.assetLoader.outs.loading.off("value", this.performUpdate, this);
+        this.assetReader.outs.busy.off("value", this.performUpdate, this);
     }
 
     protected render()
     {
-        const isLoading = this.assetLoader.outs.loading.value;
+        const isLoading = this.assetReader.outs.busy.value;
 
-        if (!isLoading) {
-            const scene = this.system.getComponent(CVScene_old, true);
-            if (scene) {
-                scene.ins.zoomExtents.set();
-            }
-        }
-
+        // if (!isLoading) {
+        //     const scene = this.system.getComponent(CVScene, true);
+        //     if (scene) {
+        //         scene.ins.zoomExtents.set();
+        //     }
+        // }
 
         return html`${this.sceneView}
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;

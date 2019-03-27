@@ -33,18 +33,22 @@ import CVModel2 from "../components/CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export interface INodeComponents
+{
+    infos: boolean;
+    scenes: boolean;
+    models: boolean;
+    cameras: boolean;
+    lights: boolean;
+}
+
+
 export default class NVNode extends Node
 {
     static readonly typeName: string = "NVNode";
 
     get transform() {
         return this.components.get(CVNode);
-    }
-    get camera() {
-        return this.components.get(CVCamera, true);
-    }
-    get light() {
-        return this.components.get(CLight, true) as ICVLight;
     }
     get info() {
         return this.components.get(CVInfo, true);
@@ -54,6 +58,12 @@ export default class NVNode extends Node
     }
     get model() {
         return this.components.get(CVModel2, true);
+    }
+    get camera() {
+        return this.components.get(CVCamera, true);
+    }
+    get light() {
+        return this.components.get(CLight, true) as ICVLight;
     }
 
     createComponents()
@@ -84,8 +94,22 @@ export default class NVNode extends Node
         let name = "Node";
 
         if (isFinite(node.info)) {
-            this.createComponent(CVInfo).fromDocument(document, node);
+            const info = this.getComponent(CVInfo, true) || this.createComponent(CVInfo);
+            info.fromDocument(document, node);
             name = "Info";
+        }
+        if (isFinite(node.scene)) {
+            // only one scene at the root of the graph allowed
+            if (!this.hasGraphComponent(CVScene)) {
+                this.createComponent(CVScene);
+            }
+
+            this.getComponent(CVScene).fromDocument(document, node);
+            name = "Scene";
+        }
+        if (isFinite(node.model)) {
+            this.createComponent(CVModel2).fromDocument(document, node);
+            name = "Model";
         }
         if (isFinite(node.camera)) {
             this.createComponent(CVCamera).fromDocument(document, node);
@@ -110,16 +134,6 @@ export default class NVNode extends Node
                     throw new Error(`unknown light type: '${type}'`);
             }
         }
-        if (isFinite(node.scene)) {
-            if (!this.hasGraphComponent(CVScene)) {
-                this.createComponent(CVScene).fromDocument(document, node);
-                name = "Scene";
-            }
-        }
-        if (isFinite(node.model)) {
-            this.createComponent(CVModel2).fromDocument(document, node);
-            name = "Model";
-        }
 
         this.name = node.name || name;
 
@@ -133,8 +147,16 @@ export default class NVNode extends Node
         }
     }
 
-    toDocument(document: IDocument)
+    toDocument(document: IDocument, components?: INodeComponents)
     {
+        components = components || {
+            infos: true,
+            scenes: true,
+            models: true,
+            cameras: true,
+            lights: true,
+        };
+
         const index = document.nodes.length;
         const node = this.transform.toData();
         document.nodes.push(node);
@@ -143,31 +165,57 @@ export default class NVNode extends Node
             node.name = this.name;
         }
 
-        if (this.camera) {
-            this.camera.toDocument(document, node);
-        }
-        if (this.light) {
-            this.light.toDocument(document, node);
-        }
-        if (this.info) {
+        if (this.info && components.infos) {
             this.info.toDocument(document, node);
         }
-        if (this.scene) {
+        if (this.scene && components.scenes) {
             this.scene.toDocument(document, node);
         }
-        if (this.model) {
+        if (this.model && components.models) {
             this.model.toDocument(document, node);
         }
+        if (this.camera && components.cameras) {
+            this.camera.toDocument(document, node);
+        }
+        if (this.light && components.lights) {
+            this.light.toDocument(document, node);
+        }
 
-        const children = this.transform.children;
+        const children = this.transform.children
+            .map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
+
         children.forEach(child => {
-            if (child.node instanceof NVNode) {
-                const index = child.node.toDocument(document);
+            if (child.hasNodeComponents(components)) {
+                const index = child.toDocument(document, components);
                 node.children = node.children || [];
                 node.children.push(index);
             }
         });
 
         return index;
+    }
+
+    hasNodeComponents(components: INodeComponents)
+    {
+        const tf = this.transform;
+        const comps = this.components;
+
+        if (components.infos && (comps.has(CVInfo) || tf.hasChildComponents(CVInfo, true))) {
+            return true;
+        }
+        if (components.scenes && (comps.has(CVScene) || tf.hasChildComponents(CVScene, true))) {
+            return true;
+        }
+        if (components.models && (comps.has(CVModel2) || tf.hasChildComponents(CVModel2, true))) {
+            return true;
+        }
+        if (components.cameras && (comps.has(CVCamera) || tf.hasChildComponents(CVCamera, true))) {
+            return true;
+        }
+        if (components.lights && (comps.has(CLight) || tf.hasChildComponents(CLight, true))) {
+            return true;
+        }
+
+        return false;
     }
 }

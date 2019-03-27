@@ -27,7 +27,7 @@ import { IDocument } from "common/types/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class JSONValidator
+export default class DocumentValidator
 {
     private _schemaValidator;
     private _validateDocument;
@@ -50,7 +50,7 @@ export default class JSONValidator
         );
     }
 
-    validateDocument(document: IDocument): boolean
+    validate(document: IDocument): boolean
     {
         if (!this._validateDocument(document)) {
             console.warn(this._schemaValidator.errorsText(

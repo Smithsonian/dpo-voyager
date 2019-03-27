@@ -30,10 +30,12 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 export default class DocumentView extends SystemView
 {
     protected activeDocument: CVDocument = null;
-    protected activeScene: CVScene = null;
 
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
+    }
+    protected get activeScene() {
+        return this.activeDocument.documentScene;
     }
 
     protected connected()
@@ -44,7 +46,7 @@ export default class DocumentView extends SystemView
         const document = provider.activeComponent;
         if (document) {
             this.activeDocument = document;
-            const scene = this.activeScene = document.documentScene;
+            const scene = document.documentScene;
 
             this.onActiveDocument(null, document);
 
@@ -62,7 +64,6 @@ export default class DocumentView extends SystemView
         const document = provider.activeComponent;
         if (document) {
             this.activeDocument = null;
-            this.activeScene = null;
 
             this.onActiveDocument(document, null);
 
@@ -87,9 +88,8 @@ export default class DocumentView extends SystemView
         const next = event.next;
 
         this.activeDocument = next;
-        this.activeScene = next && next.documentScene;
 
         this.onActiveDocument(prev, next);
-        this.onActiveScene(prev && prev.documentScene, this.activeScene);
+        this.onActiveScene(prev && prev.documentScene, next && next.documentScene);
     }
 }

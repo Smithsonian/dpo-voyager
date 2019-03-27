@@ -15,31 +15,18 @@
  * limitations under the License.
  */
 
-import { Node } from "@ff/graph/Component";
+import Node from "@ff/graph/Node";
 
-import CVTask from "./CVTask";
-import ExploreTaskView from "../ui/ExploreTaskView";
+import CVAssetReader from "../components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVExploreTask extends CVTask
+export default class NVoyagerExplorer extends Node
 {
-    static readonly typeName: string = "CVExploreTask";
+    static readonly typeName: string = "NVoyagerExplorer";
 
-    static readonly text: string = "Explore";
-    static readonly icon: string = "eye";
-
-    constructor(node: Node, id: string)
+    createComponents()
     {
-        super(node, id);
-
-        const configuration = this.configuration;
-        configuration.interfaceVisible = true;
-        configuration.bracketsVisible = false;
-    }
-
-    createView()
-    {
-        return new ExploreTaskView(this);
+        this.createComponent(CVAssetReader);
     }
 }

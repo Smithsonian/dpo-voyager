@@ -15,31 +15,35 @@
  * limitations under the License.
  */
 
-import { Node } from "@ff/graph/Component";
-
-import CVTask from "./CVTask";
-import ExploreTaskView from "../ui/ExploreTaskView";
+import * as THREE from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVExploreTask extends CVTask
+export default class JSONReader
 {
-    static readonly typeName: string = "CVExploreTask";
+    private _loadingManager: THREE.LoadingManager;
 
-    static readonly text: string = "Explore";
-    static readonly icon: string = "eye";
-
-    constructor(node: Node, id: string)
+    constructor(loadingManager: THREE.LoadingManager)
     {
-        super(node, id);
-
-        const configuration = this.configuration;
-        configuration.interfaceVisible = true;
-        configuration.bracketsVisible = false;
+        this._loadingManager = loadingManager;
     }
 
-    createView()
+    get(url: string): Promise<any>
     {
-        return new ExploreTaskView(this);
+        this._loadingManager.itemStart(url);
+
+        return fetch(url, {
+            headers: {
+                "Accept": "application/json"
+            }
+        }).then(result => {
+            if (!result.ok) {
+                this._loadingManager.itemError(url);
+                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`)
+            }
+
+            this._loadingManager.itemEnd(url);
+            return result.json();
+        });
     }
 }

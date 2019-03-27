@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CVAssetLoader from "../components/CVAssetLoader";
+import CVAssetReader from "../components/CVAssetReader";
 import CVScene from "../components/CVScene";
 import CVReader, { EReaderPosition } from "../components/CVReader";
 
@@ -33,7 +33,7 @@ export default class ContentView extends DocumentView
     protected sceneView: SceneView = null;
 
     protected get assetLoader() {
-        return this.system.getMainComponent(CVAssetLoader);
+        return this.system.getMainComponent(CVAssetReader);
     }
 
     protected firstConnected()
@@ -45,19 +45,19 @@ export default class ContentView extends DocumentView
     protected connected()
     {
         super.connected();
-        this.assetLoader.outs.loading.on("value", this.performUpdate, this);
+        this.assetLoader.outs.busy.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.assetLoader.outs.loading.off("value", this.performUpdate, this);
+        this.assetLoader.outs.busy.off("value", this.performUpdate, this);
         super.disconnected();
     }
 
     protected render()
     {
         const system = this.system;
-        const isLoading = this.assetLoader.outs.loading.value;
+        const isLoading = this.assetLoader.outs.busy.value;
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;

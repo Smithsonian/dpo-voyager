@@ -25,7 +25,7 @@ const PLYLoader = (THREE as any).PLYLoader;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class GeometryLoader
+export default class GeometryReader
 {
     static readonly extensions = [ "obj", "ply" ];
 
@@ -38,13 +38,13 @@ export default class GeometryLoader
         this.plyLoader = new PLYLoader(loadingManager);
     }
 
-    canLoad(url: string): boolean
+    isValid(url: string): boolean
     {
         const extension = url.split(".").pop().toLowerCase();
-        return GeometryLoader.extensions.indexOf(extension) >= 0;
+        return GeometryReader.extensions.indexOf(extension) >= 0;
     }
 
-    load(url: string): Promise<THREE.Geometry>
+    get(url: string): Promise<THREE.Geometry>
     {
         const extension = url.split(".").pop().toLowerCase();
 

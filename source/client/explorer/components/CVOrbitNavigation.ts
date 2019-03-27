@@ -17,7 +17,7 @@
 
 import { Box3 } from "three/src/math/Box3";
 
-import { types } from "@ff/graph/propertyTypes";
+import { Node, types } from "@ff/graph/Component";
 
 import CameraController from "@ff/three/CameraController";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
@@ -70,9 +70,9 @@ export default class CVOrbitNavigation extends CVNavigation
     private _scene: CScene = null;
     private _modelBoundingBox: Box3 = null;
 
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
+        super(node, id);
         this._scene = this.scene;
     }
 

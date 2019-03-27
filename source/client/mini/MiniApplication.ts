@@ -30,7 +30,7 @@ import { nodeTypes as graphNodes } from "@ff/graph/nodes";
 import { nodeTypes as sceneNodes } from "@ff/scene/nodes";
 import { nodeTypes as miniNodes } from "./nodes";
 
-import CVAssetLoader from "../explorer/components/CVAssetLoader";
+import CVAssetReader from "../explorer/components/CVAssetReader";
 
 import NVMiniExplorer from "./nodes/NVMiniExplorer";
 
@@ -125,7 +125,7 @@ export default class MiniApplication
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
 
-        const loaders = this.system.getMainComponent(CVAssetLoader);
+        const loaders = this.system.getMainComponent(CVAssetReader);
 
         if (props.model) {
             this.loadModel(props.model);

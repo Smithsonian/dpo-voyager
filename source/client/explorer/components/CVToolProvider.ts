@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
+import { Node, types } from "@ff/graph/Component";
+
 import CComponentProvider, {
-    types,
     EComponentScope,
     IActiveComponentEvent
 } from "@ff/graph/components/CComponentProvider";
@@ -39,9 +40,9 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
 
     ins = this.addInputs(CVToolProvider.ins);
 
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
+        super(node, id);
         this.scope = EComponentScope.Node;
     }
 

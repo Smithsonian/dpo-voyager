@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
+
 import CNodeProvider, {
     ENodeScope,
     IActiveNodeEvent as _IActiveNodeEvent,
@@ -42,6 +43,13 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
 
     outs = this.addOutputs(CVNodeProvider.outs);
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        this.scope = ENodeScope.Graph;
+    }
+
     protected get documentProvider() {
         return this.getComponent(CVDocumentProvider);
     }
@@ -50,8 +58,6 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
     {
         super.create();
         this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
-
-        this.scope = ENodeScope.Graph;
     }
 
     dispose()

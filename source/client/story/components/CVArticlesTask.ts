@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
 
 import Article from "../../explorer/models/Article";
 
@@ -33,6 +33,14 @@ export default class CVArticlesTask extends CVTask
 
     private _activeArticle: Article = null;
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        const configuration = this.configuration;
+        configuration.interfaceVisible = true;
+        configuration.bracketsVisible = false;    }
+
     get activeArticle() {
         return this._activeArticle;
     }
@@ -41,15 +49,6 @@ export default class CVArticlesTask extends CVTask
             this._activeArticle = article;
             this.emit("update");
         }
-    }
-
-    create()
-    {
-        super.create();
-
-        const configuration = this.configuration;
-        configuration.interfaceVisible = true;
-        configuration.bracketsVisible = false;
     }
 
     createView()

@@ -17,33 +17,28 @@
 
 import * as THREE from "three";
 
+import fetch from "@ff/browser/fetch";
+
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class JSONLoader
+export default class JSONWriter
 {
-    private loadingManager: THREE.LoadingManager;
+    private _loadingManager: THREE.LoadingManager;
 
     constructor(loadingManager: THREE.LoadingManager)
     {
-        this.loadingManager = loadingManager;
+        this._loadingManager = loadingManager;
     }
 
-    load(url: string): Promise<any>
+    put(json: any, url: string): Promise<void>
     {
-        this.loadingManager.itemStart(url);
+        this._loadingManager.itemStart(url);
 
-        return fetch(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        }).then(result => {
-            if (!result.ok) {
-                this.loadingManager.itemError(url);
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`)
-            }
-
-            this.loadingManager.itemEnd(url);
-            return result.json();
+        return fetch.json(url, "PUT", json).then(() => {
+            this._loadingManager.itemEnd(url);
+        }).catch(error => {
+            this._loadingManager.itemError(url);
+            throw error;
         });
     }
 }

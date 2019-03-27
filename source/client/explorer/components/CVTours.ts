@@ -103,6 +103,7 @@ export default class CVTours extends Component
 
     create()
     {
+        super.create();
         this.updateTourList();
     }
 

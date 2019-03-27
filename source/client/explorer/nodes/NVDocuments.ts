@@ -18,7 +18,6 @@
 import Node from "@ff/graph/Node";
 import CScene from "@ff/scene/components/CScene";
 
-import CVDocumentLoader from "../components/CVDocumentLoader";
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVNodeProvider from "../components/CVNodeProvider";
 
@@ -31,9 +30,6 @@ export default class NVDocuments extends Node
     get scene() {
         return this.components.get(CScene);
     }
-    get documentLoader() {
-        return this.components.get(CVDocumentLoader);
-    }
     get documentProvider() {
         return this.components.get(CVDocumentProvider);
     }
@@ -44,7 +40,6 @@ export default class NVDocuments extends Node
     createComponents()
     {
         this.createComponent(CScene);
-        this.createComponent(CVDocumentLoader);
         this.createComponent(CVDocumentProvider);
         this.createComponent(CVNodeProvider);
     }

@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import { types } from "@ff/graph/propertyTypes";
+import { Node, types } from "@ff/graph/Component";
 
 import Viewport from "@ff/three/Viewport";
 
@@ -61,6 +61,17 @@ export default class CVPoseTask extends CVTask
     private _deltaX = 0;
     private _deltaY = 0;
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        const configuration = this.configuration;
+        configuration.gridVisible = true;
+        configuration.annotationsVisible = false;
+        configuration.interfaceVisible = false;
+        configuration.bracketsVisible = true;
+    }
+
     protected get renderer() {
         return this.getMainComponent(CRenderer);
     }
@@ -98,17 +109,6 @@ export default class CVPoseTask extends CVTask
                 view.layout = EQuadViewLayout.Single;
             }
         });
-    }
-
-    create()
-    {
-        super.create();
-
-        const configuration = this.configuration;
-        configuration.gridVisible = true;
-        configuration.annotationsVisible = false;
-        configuration.interfaceVisible = false;
-        configuration.bracketsVisible = true;
     }
 
     tick()

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
 
 import CVTask from "./CVTask";
 import DerivativesTaskView from "../ui/DerivativesTaskView";
@@ -37,9 +37,9 @@ export default class CVDerivativesTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
 
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
+        super(node, id);
 
         const configuration = this.configuration;
         configuration.interfaceVisible = false;

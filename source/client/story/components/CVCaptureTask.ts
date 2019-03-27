@@ -21,7 +21,7 @@ import download from "@ff/browser/download";
 import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
-import { types } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
 
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -30,6 +30,7 @@ import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "common/types/m
 
 import NVNode from "../../explorer/nodes/NVNode";
 import CVModel2 from "../../explorer/components/CVModel2";
+import CVAssetReader from "../../explorer/components/CVAssetReader";
 
 import CVTask from "./CVTask";
 import CaptureTaskView from "../ui/CaptureTaskView";
@@ -93,9 +94,22 @@ export default class CVCaptureTask extends CVTask
     private _mimeType: string = "";
     private _extension: string = "";
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        const configuration = this.configuration;
+        configuration.interfaceVisible = false;
+        configuration.annotationsVisible = false;
+        configuration.bracketsVisible = false;
+        configuration.gridVisible = false;
+    }
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
+    }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
     }
 
     getImageElement(quality: EDerivativeQuality = EDerivativeQuality.Low)
@@ -125,17 +139,6 @@ export default class CVCaptureTask extends CVTask
         super.deactivateTask();
 
         //this.selection.selectedComponents.off(CVModel2, this.onSelectModel, this);
-    }
-
-    create()
-    {
-        super.create();
-
-        const configuration = this.configuration;
-        configuration.interfaceVisible = false;
-        configuration.annotationsVisible = false;
-        configuration.bracketsVisible = false;
-        configuration.gridVisible = false;
     }
 
     update()
@@ -192,7 +195,7 @@ export default class CVCaptureTask extends CVTask
         _qualityLevels.forEach(quality => {
             const dataURI = this._imageDataURIs[quality];
             const fileName = this.getImageFileName(quality, this._extension);
-            const fileURL = this.activeDocument.getAssetUrl(fileName);
+            const fileURL = this.assetReader.getAssetURL(fileName);
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
@@ -271,7 +274,7 @@ export default class CVCaptureTask extends CVTask
                     const imageAsset = derivative.findAsset(EAssetType.Image);
                     if (imageAsset) {
                         const imageElement = document.createElement("img");
-                        imageElement.src = this.activeDocument.getAssetUrl(imageAsset.data.uri);
+                        imageElement.src = this.assetReader.getAssetURL(imageAsset.data.uri);
                         this._imageElements[quality] = imageElement;
                     }
                 }

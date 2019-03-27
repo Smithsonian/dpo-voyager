@@ -17,17 +17,19 @@
 
 import Node from "@ff/graph/Node";
 
+import CVAssetWriter from "../../explorer/components/CVAssetWriter";
 import CVStoryController from "../components/CVStoryController";
 import CVNotePad from "../components/CVNotePad";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVStoryApp extends Node
+export default class NVoyagerStory extends Node
 {
-    static readonly typeName: string = "NVStoryApp";
+    static readonly typeName: string = "NVoyagerStory";
 
     createComponents()
     {
+        this.createComponent(CVAssetWriter);
         this.createComponent(CVStoryController);
         this.createComponent(CVNotePad);
     }

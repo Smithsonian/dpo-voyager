@@ -20,7 +20,7 @@ import { Dictionary } from "@ff/core/types";
 import { IDerivative } from "common/types/model";
 
 import Derivative, { EDerivativeQuality, EDerivativeUsage } from "./Derivative";
-import { EAssetType, EMapType } from "./Asset";
+import Asset, { EMapType } from "./Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -129,21 +129,45 @@ export default class DerivativeList
         return derivative;
     }
 
-    createModelAsset(quality: EDerivativeQuality, uri: string): Derivative
+    createModelAsset(assetPath: string, quality: EDerivativeQuality | string): Derivative
     {
+        quality = (typeof quality === "string" ? EDerivativeQuality[quality] : quality) as EDerivativeQuality;
+        quality = isFinite(quality) ? quality : EDerivativeQuality.Medium;
+
         const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
-        derivative.createAsset(EAssetType.Model, uri);
+
+        const asset = new Asset();
+        asset.setModel(assetPath);
+        derivative.addAsset(asset);
+
         return derivative;
     }
 
-    createMeshAsset(quality: EDerivativeQuality, geoUri: string, textureUri: string): Derivative
+    createMeshAsset(geoPath: string, colorMapPath?: string, occlusionMapPath?: string, normalMapPath?: string, quality?: EDerivativeQuality | string): Derivative
     {
-        const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
-        derivative.createAsset(EAssetType.Geometry, geoUri);
+        quality = (typeof quality === "string" ? EDerivativeQuality[quality] : quality) as EDerivativeQuality;
+        quality = isFinite(quality) ? quality : EDerivativeQuality.Medium;
 
-        if (textureUri) {
-            const asset = derivative.createAsset(EAssetType.Image, textureUri);
-            asset.set("mapType", EMapType.Color);
+        const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
+
+        const geoAsset = new Asset();
+        geoAsset.setGeometry(geoPath);
+        derivative.addAsset(geoAsset);
+
+        if (colorMapPath) {
+            const colorMapAsset = new Asset();
+            colorMapAsset.setTexture(colorMapPath, EMapType.Color);
+            derivative.addAsset(colorMapAsset);
+        }
+        if (occlusionMapPath) {
+            const occlusionMapAsset = new Asset();
+            occlusionMapAsset.setTexture(occlusionMapPath, EMapType.Occlusion);
+            derivative.addAsset(occlusionMapAsset);
+        }
+        if (normalMapPath) {
+            const normalMapAsset = new Asset();
+            normalMapAsset.setTexture(normalMapPath, EMapType.Normal);
+            derivative.addAsset(normalMapAsset);
         }
 
         return derivative;

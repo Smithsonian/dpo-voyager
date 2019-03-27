@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import CObject3D, { IPointerEvent, types } from "@ff/scene/components/CObject3D";
+import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
 import { ITape } from "common/types/scene";
 
@@ -56,8 +56,10 @@ export default class CVTape extends CObject3D
     protected endPin: Pin = null;
     protected line: THREE.Line = null;
 
-    create()
+    constructor(node: Node, id: string)
     {
+        super(node, id);
+
         this.object3D = new THREE.Group();
 
         this.startPin = new Pin();

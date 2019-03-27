@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import Node from "@ff/graph/Node";
 import CFloor from "@ff/scene/components/CFloor";
 
 import { IFloor } from "common/types/scene";
@@ -25,9 +26,9 @@ export default class CVFloor extends CFloor
 {
     static readonly typeName: string = "CVFloor";
 
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
+        super(node, id);
         this.ins.visible.setValue(false);
     }
 

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import { Node, types } from "@ff/graph/Component";
 import CComponentProvider, { EComponentScope } from "@ff/graph/components/CComponentProvider";
 
 import CVTask from "./CVTask";
@@ -26,9 +27,10 @@ export default class CVActiveTask extends CComponentProvider<CVTask>
     static readonly typeName: string = "CVActiveTask";
     static readonly componentType = CVTask;
 
-    create()
+    constructor(node: Node, id: string)
     {
-        super.create();
+        super(node, id);
+
         this.scope = EComponentScope.Node;
     }
 

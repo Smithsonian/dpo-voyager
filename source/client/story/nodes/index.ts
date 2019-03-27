@@ -17,18 +17,18 @@
 
 import NVAuthoringTasks from "./NVAuthoringTasks";
 import NVPrepTasks from "./NVPrepTasks";
-import NVStoryApp from "./NVStoryApp";
+import NVoyagerStory from "./NVoyagerStory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export {
     NVAuthoringTasks,
     NVPrepTasks,
-    NVStoryApp,
+    NVoyagerStory,
 };
 
 export const nodeTypes = [
     NVAuthoringTasks,
     NVPrepTasks,
-    NVStoryApp,
+    NVoyagerStory,
 ];
