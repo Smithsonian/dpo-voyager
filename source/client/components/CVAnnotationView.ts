@@ -115,6 +115,8 @@ export default class CVAnnotationView extends CObject3D
 
     update(context)
     {
+        super.update(context);
+
         const ins = this.ins;
         const object3D = this.object3D;
         const annotation = this.activeAnnotation;
@@ -156,7 +158,7 @@ export default class CVAnnotationView extends CObject3D
             this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
         }
 
-        return super.update(context);
+        return true;
     }
 
     postRender(context: IRenderContext)

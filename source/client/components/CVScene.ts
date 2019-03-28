@@ -34,7 +34,6 @@ import CVFloor from "./CVFloor";
 import CVGrid from "./CVGrid";
 import CVTape from "./CVTape";
 import CVSlicer from "./CVSlicer";
-import CVAnnotations from "./CVAnnotations";
 import CVTours from "./CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,14 +86,11 @@ export default class CVScene extends Component
     get slicer() {
         return this.getComponent(CVSlicer);
     }
-    get annotations() {
-        return this.getComponent(CVAnnotations);
-    }
     get tours() {
         return this.getComponent(CVTours);
     }
     get models() {
-        return this.getComponents(CVModel2);
+        return this.getGraphComponents(CVModel2);
     }
 
     get modelBoundingBox() {
@@ -115,10 +111,11 @@ export default class CVScene extends Component
         node.createComponent(CVGrid);
         node.createComponent(CVTape);
         node.createComponent(CVSlicer);
-        node.createComponent(CVAnnotations);
         node.createComponent(CVTours);
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
+
+        this.models.forEach(model => model.ins.globalUnits.linkFrom(this.ins.units));
     }
 
     dispose()
@@ -132,8 +129,6 @@ export default class CVScene extends Component
         const ins = this.ins;
 
         if (ins.units.changed) {
-            const units = ins.units.getValidatedValue();
-            this.models.forEach(model => model.ins.globalUnits.setValue(units));
             this.updateModelBoundingBox();
         }
 
@@ -177,9 +172,6 @@ export default class CVScene extends Component
         if (data.slicer) {
             this.slicer.fromData(data.slicer);
         }
-        if (data.annotations) {
-            this.annotations.fromData(data.annotations);
-        }
         if (data.tours) {
             this.tours.fromData(data.tours);
         }
@@ -200,7 +192,6 @@ export default class CVScene extends Component
         data.grid = this.grid.toData();
         data.tape = this.tape.toData();
         data.slicer = this.slicer.toData();
-        data.annotations = this.annotations.toData();
         data.tours = this.tours.toData();
 
         document.scenes = document.scenes || [];
@@ -215,7 +206,7 @@ export default class CVScene extends Component
 
         if (event.add) {
             model.on("bounding-box", this.updateModelBoundingBox, this);
-            model.ins.globalUnits.setValue(this.ins.units.getValidatedValue());
+            model.ins.globalUnits.linkFrom(this.ins.units);
         }
         if (event.remove) {
             model.off("bounding-box", this.updateModelBoundingBox, this);

@@ -49,7 +49,6 @@ export interface IScene
     grid?: IGrid;
     tape?: ITape;
     slicer?: ISlicer;
-    annotations?: IAnnotations,
     tours?: ITour[];
 }
 
@@ -66,6 +65,7 @@ export interface IViewer
     shader: TShaderMode;
     exposure: number;
     gamma: number;
+    annotationsVisible: boolean;
 }
 
 export interface IReader
@@ -79,6 +79,7 @@ export interface INavigation
 {
     type: TNavigationType;
     enabled: boolean;
+    autoZoom: boolean;
     orbit?: IOrbitNavigation;
     walk?: IWalkNavigation;
 }

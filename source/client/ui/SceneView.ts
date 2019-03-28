@@ -24,6 +24,12 @@ import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/u
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Displays up to four viewports rendering 3D content from a node/component system.
+ * The built-in quad split functionality provides four different layouts: single view, horizontal split,
+ * vertical split, and quad split. The split proportions can be adjusted by moving the split handles
+ * between viewports.
+ */
 @customElement("sv-scene-view")
 export default class SceneView extends SystemView
 {

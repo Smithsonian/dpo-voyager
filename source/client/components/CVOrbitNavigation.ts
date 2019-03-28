@@ -163,7 +163,6 @@ export default class CVOrbitNavigation extends CVNavigation
     preRender(context: IRenderContext)
     {
         if (this._modelBoundingBox) {
-            console.log("tock");
             context.viewport.zoomExtents(this._modelBoundingBox);
         }
     }

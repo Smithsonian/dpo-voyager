@@ -22,6 +22,8 @@ import { EProjection } from "@ff/three/UniversalCamera";
 
 import { INavigation } from "common/types/scene";
 
+import CVAssetReader from "./CVAssetReader";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EProjection };
@@ -34,13 +36,19 @@ export default class CVNavigation extends CObject3D
     static readonly typeName: string = "CVNavigation";
 
     protected static readonly navIns = {
-        enabled: types.Boolean("Manip.Enabled", true),
+        enabled: types.Boolean("Navigation.Enabled", true),
+        autoZoom: types.Boolean("Navigation.AutoZoom", true),
+        zoomExtents: types.Event("Navigation.ZoomExtents"),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
         projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
-        zoomExtents: types.Event("Camera.ZoomExtents"),
     };
 
     ins = this.addInputs<CObject3D, typeof CVNavigation.navIns>(CVNavigation.navIns);
+
+
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
+    }
 
     create()
     {
@@ -48,10 +56,14 @@ export default class CVNavigation extends CObject3D
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        this.assetReader.outs.completed.on("value", this.onLoadingCompleted, this);
     }
 
     dispose()
     {
+        this.assetReader.outs.completed.off("value", this.onLoadingCompleted, this);
+
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
 
@@ -61,13 +73,17 @@ export default class CVNavigation extends CObject3D
 
     fromData(data: INavigation)
     {
-        this.ins.enabled.setValue(!!data.enabled);
+        this.ins.copyValues({
+            enabled: !!data.enabled,
+            autoZoom: !!data.autoZoom,
+        });
     }
 
     toData(): Partial<INavigation>
     {
         return {
             enabled: this.ins.enabled.value,
+            autoZoom: this.ins.autoZoom.value,
         };
     }
 
@@ -77,5 +93,10 @@ export default class CVNavigation extends CObject3D
 
     protected onTrigger(event: ITriggerEvent)
     {
+    }
+
+    protected onLoadingCompleted(isLoading: boolean)
+    {
+        this.ins.zoomExtents.set();
     }
 }

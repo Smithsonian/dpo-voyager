@@ -44,9 +44,6 @@ export default class CVTapeTool extends CVTool
 @customElement("sv-tape-tool-view")
 export class TapeToolView extends ToolView<CVTapeTool>
 {
-    protected scene: CVScene = null;
-    protected tape: CVTape = null;
-
     protected firstConnected()
     {
         super.firstConnected();
@@ -55,13 +52,13 @@ export class TapeToolView extends ToolView<CVTapeTool>
 
     protected render()
     {
-        const scene = this.scene;
-        const tape = this.tape;
+        const scene = this.activeScene;
 
-        if (!tape) {
+        if (!scene) {
             return html``;
         }
 
+        const tape = scene.tape;
         const visible = tape.ins.visible;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
@@ -87,9 +84,13 @@ export class TapeToolView extends ToolView<CVTapeTool>
             <div class="ff-string">${text}</div></div>`;
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveScene(previous: CVScene, next: CVScene)
     {
-        this.scene = next ? next.documentScene : null;
-        this.tape = next ? next.documentScene.tape : null;
+        if (previous) {
+            previous.tape.off("update", this.onUpdate, this);
+        }
+        if (next) {
+            next.tape.on("update", this.onUpdate, this);
+        }
     }
 }

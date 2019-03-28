@@ -17,6 +17,9 @@
                 },
                 "gamma": {
                     "type": "number"
+                },
+                "annotationsVisible": {
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -68,6 +71,9 @@
                     ]
                 },
                 "enabled": {
+                    "type": "boolean"
+                },
+                "autoZoom": {
                     "type": "boolean"
                 },
                 "orbit": {
@@ -173,14 +179,6 @@
                 },
                 "position": {
                     "type": "number"
-                }
-            }
-        },
-        "annotations": {
-            "type": "object",
-            "properties": {
-                "visible": {
-                    "type": "boolean"
                 }
             }
         },

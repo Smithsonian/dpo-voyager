@@ -150,6 +150,7 @@ export default class ExplorerApplication
     evaluateProps()
     {
         const props = this.props;
+        const reader = this.assetReader;
 
         props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
         props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
@@ -161,12 +162,16 @@ export default class ExplorerApplication
         this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
 
         if (props.document) {
+            props.document = props.root ? props.document : reader.getAssetFileName(props.document);
             this.loadDocument(props.document);
         }
         if (props.model) {
+            props.model = props.root ? props.model : reader.getAssetFileName(props.model);
             this.loadModel(props.model, props.quality);
         }
         else if (props.geometry) {
+            props.geometry = props.root ? props.geometry : reader.getAssetFileName(props.geometry);
+            props.texture = props.root ? props.texture : reader.getAssetFileName(props.texture);
             this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
     }

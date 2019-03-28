@@ -58,27 +58,27 @@ export default class CVSlicer extends Component
     {
         const ins = this.ins;
 
-        if (!ins.enabled.value && !ins.enabled.changed) {
-            return false;
-        }
-
         if (ins.axis.changed) {
             const axisIndex = ins.axis.getValidatedValue();
 
             if (axisIndex === this.axisIndex) {
-                ins.inverted.setValue(!ins.inverted.value, true);
+                ins.inverted.setValue(!ins.inverted.value);
             }
             else {
-                ins.inverted.setValue(false, true);
+                ins.inverted.setValue(false);
                 this.axisIndex = axisIndex;
             }
+        }
+
+        if (!ins.enabled.value && !ins.enabled.changed) {
+            return false;
         }
 
         const axisIndex = ins.axis.getValidatedValue();
         const axisInverted = ins.inverted.value;
         const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const boundingBox = this.getComponent(CVScene).modelBoundingBox;;
+        const boundingBox = this.getComponent(CVScene).modelBoundingBox;
         if (!boundingBox) {
             return true;
         }

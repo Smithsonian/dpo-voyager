@@ -17,9 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import { IAnnotations } from "common/types/scene";
-
-import CVAnnotationView from "./CVAnnotationView";
+import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,35 +26,19 @@ export default class CVAnnotations extends Component
     static readonly typeName: string = "CVAnnotations";
 
     protected static readonly ins = {
-        visible: types.Boolean("Annotations.Visible", false),
     };
 
     ins = this.addInputs(CVAnnotations.ins);
 
+    protected annotations;
+
+    protected get model() {
+        return this.getComponent(CVModel2);
+    }
 
     update(context)
     {
-        const ins = this.ins;
-
-        if (ins.visible.changed) {
-            const visible = ins.visible.value;
-            this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
-        }
-
         return true;
     }
 
-    fromData(data: IAnnotations)
-    {
-        this.ins.setValues({
-            visible: data.visible || false,
-        });
-    }
-
-    toData(): IAnnotations
-    {
-        return {
-            visible: this.ins.visible.value,
-        };
-    }
 }

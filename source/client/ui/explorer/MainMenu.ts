@@ -20,8 +20,6 @@ import DocumentView, { customElement, html } from "./DocumentView";
 import CFullscreen from "@ff/scene/components/CFullscreen";
 
 import CVInterface from "../../components/CVInterface";
-import CVReader from "../../components/CVReader";
-import CVTours, { EToursState } from "../../components/CVTours";
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
 
@@ -59,31 +57,6 @@ export default class MainMenu extends DocumentView
         super.disconnected();
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
-    {
-        if (previous) {
-            const scene = previous.documentScene;
-            scene.reader.ins.visible.off("value", this.onUpdate, this);
-            scene.annotations.ins.visible.off("value", this.onUpdate, this);
-            scene.interface.off("update", this.onUpdate, this);
-
-            //scene.tours.ins.state.off("value", this.performUpdate, this);
-            //scene.tours.ins.visible.off("value", this.performUpdate, this);
-        }
-        if (next) {
-            const scene = next.documentScene;
-            scene.reader.ins.visible.on("value", this.onUpdate, this);
-            scene.annotations.ins.visible.on("value", this.onUpdate, this);
-            scene.interface.on("update", this.onUpdate, this);
-
-            //scene.tours.ins.state.on("value", this.performUpdate, this);
-            //scene.tours.ins.visible.on("value", this.performUpdate, this);
-        }
-
-        this.interface = next && next.documentScene.interface;
-        this.requestUpdate();
-    }
-
     protected render()
     {
         const scene = this.activeScene;
@@ -97,8 +70,8 @@ export default class MainMenu extends DocumentView
         const showFullscreenButton = fullscreen.outs.fullscreenAvailable.value;
 
         const readerVisible = scene.reader.ins.visible.value;
-        const toursVisible = scene.tours.outs.state.value !== EToursState.Off;
-        const annotationsVisible = scene.annotations.ins.visible.value;
+        const toursVisible = scene.tours.ins.enabled.value;
+        const annotationsVisible = scene.viewer.ins.annotationsVisible.value;
         const toolsVisible = this.toolProvider.ins.visible.value;
 
         const iface = this.interface;
@@ -130,7 +103,7 @@ export default class MainMenu extends DocumentView
 
     protected onToggleAnnotations()
     {
-        const prop = this.activeScene.annotations.ins.visible;
+        const prop = this.activeScene.viewer.ins.annotationsVisible;
         prop.setValue(!prop.value);
     }
 
@@ -143,5 +116,28 @@ export default class MainMenu extends DocumentView
     {
         const prop = this.toolProvider.ins.visible;
         prop.setValue(!prop.value);
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            const scene = previous.documentScene;
+            scene.interface.off("update", this.onUpdate, this);
+            scene.reader.ins.visible.off("value", this.onUpdate, this);
+            scene.tours.ins.enabled.off("value", this.onUpdate, this);
+            scene.viewer.ins.annotationsVisible.off("value", this.onUpdate, this);
+            this.toolProvider.ins.visible.off("value", this.onUpdate, this);
+        }
+        if (next) {
+            const scene = next.documentScene;
+            scene.interface.on("update", this.onUpdate, this);
+            scene.reader.ins.visible.on("value", this.onUpdate, this);
+            scene.tours.ins.enabled.on("value", this.onUpdate, this);
+            scene.viewer.ins.annotationsVisible.on("value", this.onUpdate, this);
+            this.toolProvider.ins.visible.on("value", this.onUpdate, this);
+        }
+
+        this.interface = next && next.documentScene.interface;
+        this.requestUpdate();
     }
 }

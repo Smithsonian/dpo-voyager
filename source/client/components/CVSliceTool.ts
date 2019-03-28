@@ -19,7 +19,7 @@ import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
 
-import CVDocument from "./CVDocument";
+import CVScene from "./CVScene";
 import CVSlicer from "./CVSlicer";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
@@ -44,8 +44,6 @@ export default class CVSliceTool extends CVTool
 @customElement("sv-slice-tool-view")
 export class SliceToolView extends ToolView<CVSliceTool>
 {
-    protected slicer: CVSlicer = null;
-
     protected firstConnected()
     {
         super.firstConnected();
@@ -54,11 +52,12 @@ export class SliceToolView extends ToolView<CVSliceTool>
 
     protected render()
     {
-        const slicer = this.slicer;
-        if (!slicer) {
+        const scene = this.activeScene;
+        if (!scene) {
             return html``;
         }
 
+        const slicer = scene.slicer;
         const enabled = slicer.ins.enabled;
         const axis = slicer.ins.axis;
         const position = slicer.ins.position;
@@ -68,8 +67,13 @@ export class SliceToolView extends ToolView<CVSliceTool>
             <sv-property-slider .property=${position}></sv-property-slider>`;
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    protected onActiveScene(previous: CVScene, next: CVScene)
     {
-        this.slicer = next ? next.documentScene.slicer : null;
+        if (previous) {
+            previous.slicer.off("update", this.onUpdate, this);
+        }
+        if (next) {
+            next.slicer.on("update", this.onUpdate, this);
+        }
     }
 }

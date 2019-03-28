@@ -55,12 +55,11 @@ export default class CVPoseTask extends CVTask
 
     ins = this.addInputs<CVTask, typeof CVPoseTask.ins>(CVPoseTask.ins);
 
-
-    protected activeModel: CVModel2 = null;
-
     private _viewport: Viewport = null;
     private _deltaX = 0;
     private _deltaY = 0;
+
+    protected activeModel: CVModel2 = null;
 
     constructor(node: Node, id: string)
     {
@@ -114,8 +113,12 @@ export default class CVPoseTask extends CVTask
 
     tick()
     {
+        if (!this.isActiveTask) {
+            return false;
+        }
+
         const mode = this.ins.mode.value;
-        if (mode === EPoseManipMode.Off || !this.activeModel) {
+        if (mode === EPoseManipMode.Off || !this.activeNode.model) {
             return false;
         }
 
@@ -143,7 +146,7 @@ export default class CVPoseTask extends CVTask
             _mat4.makeRotationFromQuaternion(_quat1);
         }
         else {
-            const f = camera.size / this._viewport.width;
+            const f = camera.size / this._viewport.height;
             _axis.set(deltaX * f, -deltaY * f, 0).applyQuaternion(_quat0);
             _mat4.identity().setPosition(_axis);
         }
@@ -156,13 +159,7 @@ export default class CVPoseTask extends CVTask
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        if (next && next.model) {
-            this.selection.selectComponent(next.model);
-            this.activeModel = next.model;
-        }
-        else {
-            this.activeModel = null;
-        }
+        this.activeModel = next && next.model;
     }
 
     protected onPointer(event: IPointerEvent)

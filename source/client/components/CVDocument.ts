@@ -28,6 +28,7 @@ import DocumentValidator from "../io/DocumentValidator";
 
 import NVNode, { INodeComponents } from "../nodes/NVNode";
 import CVScene from "./CVScene";
+import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +76,17 @@ export default class CVDocument extends CRenderGraph
     get documentScene() {
         return this.innerComponents.get(CVScene);
     }
+    get assetPath() {
+        return this.outs.assetPath.value;
+    }
+    get assetBaseName() {
+        let name = this.assetPath;
+        const index = name.indexOf("document.json");
+        if (index >= 0) {
+            name = name.substr(0, index);
+        }
+        return name;
+    }
 
     update(context)
     {
@@ -117,6 +129,7 @@ export default class CVDocument extends CRenderGraph
 
         if (assetPath) {
             this.outs.assetPath.setValue(assetPath);
+            this.name = this.getMainComponent(CVAssetReader).getAssetFileName(assetPath);
         }
 
         if (!mergeParent) {

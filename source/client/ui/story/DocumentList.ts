@@ -16,7 +16,6 @@
  */
 
 import System from "@ff/graph/System";
-import CSelection from "@ff/graph/components/CSelection";
 
 import List from "@ff/ui/List";
 import "@ff/ui/Icon";
@@ -24,7 +23,7 @@ import "@ff/ui/Icon";
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 
 import CVDocument from "../../components/CVDocument";
-import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
+import CVDocumentProvider, { IActiveDocumentEvent, IDocumentsEvent } from "../../components/CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,6 +34,7 @@ class DocumentList extends List<CVDocument>
     system: System = null;
 
     protected documentProvider: CVDocumentProvider = null;
+    protected documents: CVDocument[] = [];
 
     protected firstConnected()
     {
@@ -47,18 +47,22 @@ class DocumentList extends List<CVDocument>
     protected connected()
     {
         super.connected();
+        this.setDocuments(this.documentProvider.scopedComponents);
         this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onUpdate, this);
+        this.documentProvider.on<IDocumentsEvent>("scoped-components", this.onDocumentsEvent, this);
     }
 
     protected disconnected()
     {
+        this.documentProvider.off<IDocumentsEvent>("scoped-components", this.onDocumentsEvent, this);
         this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
+        this.setDocuments([]);
         super.disconnected();
     }
 
     protected update(props: PropertyValues)
     {
-        this.data = this.documentProvider.scopedComponents;
+        this.data = this.documents;
         super.update(props);
     }
 
@@ -76,5 +80,17 @@ class DocumentList extends List<CVDocument>
     protected onClickItem(event: MouseEvent, component: CVDocument)
     {
         this.documentProvider.activeComponent = component;
+    }
+
+    protected onDocumentsEvent()
+    {
+        this.setDocuments(this.documentProvider.scopedComponents);
+    }
+
+    protected setDocuments(documents: CVDocument[])
+    {
+        this.documents.forEach(doc => doc.off("change", this.onUpdate, this));
+        this.documents = documents;
+        this.documents.forEach(doc => doc.on("change", this.onUpdate, this));
     }
 }

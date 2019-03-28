@@ -236,6 +236,10 @@ export default class CVModel2 extends CObject3D
             // TODO: Implement
         }
 
+        if (data.annotations) {
+            this.getComponent(CVAnnotationView).fromData(data.annotations);
+        }
+
         // automatically display new derivatives if available
         this.ins.autoLoad.set();
     }
@@ -262,6 +266,11 @@ export default class CVModel2 extends CObject3D
         if (rotation[0] !== 0 || rotation[1] !== 0 || rotation[2] !== 0) {
             helpers.degreesToQuaternion(rotation, CVModel2.rotationOrder, _quat);
             data.rotation = _quat.toArray();
+        }
+
+        const annotations = this.getComponent(CVAnnotationView).toData();
+        if (annotations.length > 0) {
+            data.annotations = annotations;
         }
 
         document.models = document.models || [];
@@ -343,7 +352,7 @@ export default class CVModel2 extends CObject3D
             }
             if (this._activeDerivative) {
                 this.removeObject3D(this._activeDerivative.model);
-                this._activeDerivative.dispose();
+                this._activeDerivative.unload();
             }
 
             helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);

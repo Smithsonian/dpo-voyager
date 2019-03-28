@@ -126,7 +126,7 @@ export default class CVTask extends CVNodeObserver
                 previous.documentScene.grid.ins.visible.setValue(savedConfig.gridVisible);
             }
             if (savedConfig.annotationsVisible !== undefined) {
-                previous.documentScene.annotations.ins.visible.setValue(savedConfig.annotationsVisible);
+                previous.documentScene.viewer.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
             }
             if (savedConfig.interfaceVisible !== undefined) {
                 previous.documentScene.interface.ins.visible.setValue(savedConfig.interfaceVisible);
@@ -139,7 +139,7 @@ export default class CVTask extends CVNodeObserver
                 prop.setValue(!!configuration.gridVisible);
             }
             if (configuration.annotationsVisible !== undefined) {
-                const prop = next.documentScene.annotations.ins.visible;
+                const prop = next.documentScene.viewer.ins.annotationsVisible;
                 savedConfig.annotationsVisible = prop.value;
                 prop.setValue(!!configuration.annotationsVisible);
             }
@@ -168,5 +168,17 @@ export class TaskView<T extends CVTask = CVTask> extends NodeView
     protected firstConnected()
     {
         this.classList.add("sv-task-view");
+    }
+
+    protected connected()
+    {
+        super.connected();
+        this.task.on("update", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.task.off("update", this.onUpdate, this);
+        super.disconnected();
     }
 }

@@ -45,6 +45,8 @@ export default class CVAssetReader extends Component implements IAssetService
 
     protected static readonly outs = {
         busy: types.Boolean("Reader.IsBusy"),
+        initialCompleted: types.Event("Reader.InitialCompleted"),
+        completed: types.Event("Reader.Completed"),
     };
 
     ins = this.addInputs(CVAssetReader.ins);
@@ -57,6 +59,7 @@ export default class CVAssetReader extends Component implements IAssetService
 
     private _loadingManager: AssetLoadingManager;
     private _isBusy = false;
+    private _isFirst = true;
 
 
     constructor(node: Node, id: string)
@@ -84,8 +87,18 @@ export default class CVAssetReader extends Component implements IAssetService
 
     setBusy(isBusy: boolean)
     {
+        const outs = this.outs;
+
         this._isBusy = isBusy;
-        this.outs.busy.setValue(this.ins.setBusy.value || this._isBusy);
+        outs.busy.setValue(this.ins.setBusy.value || this._isBusy);
+
+        if (!isBusy) {
+            outs.completed.set();
+        }
+        if (this._isFirst) {
+            this._isFirst = false;
+            outs.initialCompleted.set();
+        }
     }
 
     setRootURL(url: string)
@@ -96,6 +109,12 @@ export default class CVAssetReader extends Component implements IAssetService
         this.ins.rootUrl.setValue(rootUrl);
 
         console.log("CVAssetReader.setRootURL - %s", rootUrl);
+    }
+
+    getAssetFileName(uri: string)
+    {
+        const base = resolvePathname(".", uri);
+        return base === "/" ? uri : uri.substr(base.length);
     }
 
     getAssetURL(uri: string)

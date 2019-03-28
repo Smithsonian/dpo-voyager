@@ -94,4 +94,16 @@ export class ToolView<T extends CVTool = CVTool> extends NodeView
     {
         this.classList.add("sv-tool-view");
     }
+
+    protected connected()
+    {
+        super.connected();
+        this.tool.on("update", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.tool.off("update", this.onUpdate, this);
+        super.disconnected();
+    }
 }

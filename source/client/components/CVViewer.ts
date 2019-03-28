@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-import CObject3D, { types } from "@ff/scene/components/CObject3D";
+import CRenderable, { types } from "@ff/scene/components/CRenderable";
 
 import { IViewer, EShaderMode, TShaderMode } from "common/types/scene";
 
 import CVModel2 from "./CVModel2";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVViewer extends CObject3D
+export default class CVViewer extends CRenderable
 {
     static readonly typeName: string = "CVViewer";
 
@@ -31,20 +32,23 @@ export default class CVViewer extends CObject3D
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 1),
+        annotationsVisible: types.Boolean("Annotations.Visible"),
     };
 
-    ins = this.addInputs<CObject3D, typeof CVViewer.ins>(CVViewer.ins);
+    ins = this.addInputs(CVViewer.ins);
 
 
     update(context)
     {
-        super.update(context);
-
         const ins = this.ins;
 
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.shader.setValue(shader));
+        }
+        if (ins.annotationsVisible.changed) {
+            const visible = ins.annotationsVisible.value;
+            this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
         }
 
         return true;
@@ -63,6 +67,7 @@ export default class CVViewer extends CObject3D
             shader: EShaderMode[data.shader] || EShaderMode.Default,
             exposure: data.exposure !== undefined ? data.exposure : 1,
             gamma: data.gamma !== undefined ? data.gamma : 1,
+            annotationsVisible: !!data.annotationsVisible,
         });
     }
 
@@ -73,7 +78,8 @@ export default class CVViewer extends CObject3D
         return {
             shader: EShaderMode[ins.shader.value] as TShaderMode,
             exposure: ins.exposure.value,
-            gamma: ins.gamma.value
+            gamma: ins.gamma.value,
+            annotationsVisible: ins.annotationsVisible.value,
         };
     }
 }

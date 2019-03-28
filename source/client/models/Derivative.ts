@@ -119,6 +119,16 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         }
     }
 
+    createAsset(type: EAssetType, uri: string)
+    {
+        const asset = new Asset();
+        asset.data.type = type;
+        asset.data.uri = uri;
+
+        this.addAsset(asset);
+        return asset;
+    }
+
     addAsset(asset: Asset)
     {
         if (!asset.data.uri) {

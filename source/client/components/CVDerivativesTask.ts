@@ -24,9 +24,6 @@ import DerivativesTaskView from "../ui/story/DerivativesTaskView";
 
 export enum EDerivativesTaskMode { Off }
 
-const _inputs = {
-    mode: types.Enum("Mode", EDerivativesTaskMode, EDerivativesTaskMode.Off),
-};
 
 export default class CVDerivativesTask extends CVTask
 {
@@ -35,7 +32,11 @@ export default class CVDerivativesTask extends CVTask
     static readonly text: string = "Derivatives";
     static readonly icon: string = "hierarchy";
 
-    ins = this.addInputs<CVTask, typeof _inputs>(_inputs);
+    protected static readonly ins = {
+        mode: types.Enum("Mode", EDerivativesTaskMode, EDerivativesTaskMode.Off),
+    };
+
+    ins = this.addInputs<CVTask, typeof CVDerivativesTask.ins>(CVDerivativesTask.ins);
 
     constructor(node: Node, id: string)
     {

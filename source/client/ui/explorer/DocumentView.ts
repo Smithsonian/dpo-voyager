@@ -29,12 +29,10 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 export default class DocumentView extends SystemView
 {
     protected activeDocument: CVDocument = null;
+    protected activeScene: CVScene = null;
 
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
-    }
-    protected get activeScene() {
-        return this.activeDocument.documentScene;
     }
 
     protected connected()
@@ -45,12 +43,12 @@ export default class DocumentView extends SystemView
         const document = provider.activeComponent;
         if (document) {
             this.activeDocument = document;
-            const scene = document.documentScene;
+            this.activeScene = document.documentScene;
 
             this.onActiveDocument(null, document);
 
-            if (scene) {
-                this.onActiveScene(null, scene);
+            if (this.activeScene) {
+                this.onActiveScene(null, this.activeScene);
             }
         }
     }
@@ -60,13 +58,15 @@ export default class DocumentView extends SystemView
         const provider = this.documentProvider;
         provider.off<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
 
-        const document = provider.activeComponent;
+        const document = this.activeDocument;
+        const scene = this.activeScene;
+
         if (document) {
             this.activeDocument = null;
+            this.activeScene = null;
 
             this.onActiveDocument(document, null);
 
-            const scene = document.documentScene;
             if (scene) {
                 this.onActiveScene(scene, null);
             }
@@ -75,6 +75,7 @@ export default class DocumentView extends SystemView
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
+        this.requestUpdate();
     }
 
     protected onActiveScene(previous: CVScene, next: CVScene)
@@ -87,8 +88,9 @@ export default class DocumentView extends SystemView
         const next = event.next;
 
         this.activeDocument = next;
+        this.activeScene = next && next.documentScene;
 
-        this.onActiveDocument(prev, next);
-        this.onActiveScene(prev && prev.documentScene, next && next.documentScene);
+        this.onActiveDocument(prev, this.activeDocument);
+        this.onActiveScene(prev && prev.documentScene, this.activeScene);
     }
 }

@@ -29,6 +29,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "common/types/model";
 
 import NVNode from "../nodes/NVNode";
+import CVInfo from "./CVInfo";
 import CVModel2 from "./CVModel2";
 import CVAssetReader from "./CVAssetReader";
 import CVTask from "./CVTask";
@@ -87,7 +88,8 @@ export default class CVCaptureTask extends CVTask
     ins = this.addInputs<CVTask, typeof CVCaptureTask.ins>(CVCaptureTask.ins);
     outs = this.addOutputs<CVTask, typeof CVCaptureTask.outs>(CVCaptureTask.outs);
 
-    protected activeModel: CVModel2 = null;
+    activeInfo: CVInfo = null;
+    activeModel: CVModel2 = null;
 
     private _imageDataURIs: Dictionary<string> = {};
     private _imageElements: Dictionary<HTMLImageElement> = {};
@@ -150,7 +152,7 @@ export default class CVCaptureTask extends CVTask
             this.takePictures(ins.quality.value, _mimeTypes[typeIndex], _typeExtensions[typeIndex]);
         }
         if (ins.save.changed) {
-            this.uploadPictures();
+            this.savePictures();
         }
         if (ins.download.changed) {
             this.downloadPicture();
@@ -185,23 +187,23 @@ export default class CVCaptureTask extends CVTask
         this.outs.ready.setValue(true);
     }
 
-    protected uploadPictures()
+    protected savePictures()
     {
-        const model = this.activeModel;
-        if (!model || !this.arePicturesReady()) {
+        if (!this.outs.ready.value) {
             return;
         }
 
         _qualityLevels.forEach(quality => {
             const dataURI = this._imageDataURIs[quality];
-            const fileName = this.getImageFileName(quality, this._extension);
-            const fileURL = this.assetReader.getAssetURL(fileName);
+            const filePath = this.getImageAssetPath(quality, this._extension);
+            const fileURL = this.assetReader.getAssetURL(filePath);
+            const fileName = this.assetReader.getAssetFileName(filePath);
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
             fetch.file(fileURL, "PUT", file)
             .then(() => {
-                this.updateDerivative(quality, this._mimeType, fileName);
+                this.updateImageMeta(quality, this._mimeType, filePath);
                 new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
             })
             .catch(e => {
@@ -213,43 +215,54 @@ export default class CVCaptureTask extends CVTask
 
     protected downloadPicture()
     {
-        if (!this.arePicturesReady()) {
+        if (!this.outs.ready.value) {
             return;
         }
 
         const dataURI = this._imageDataURIs[EDerivativeQuality.High];
-        const fileName = this.getImageFileName(EDerivativeQuality.High, this._extension);
+        const filePath = this.getImageAssetPath(EDerivativeQuality.High, this._extension);
+        const fileName = this.assetReader.getAssetFileName(filePath);
         download.url(dataURI, fileName);
     }
 
-    protected updateDerivative(quality: EDerivativeQuality, mimeType: string, url: string)
+    protected updateImageMeta(quality: EDerivativeQuality, mimeType: string, uri: string)
     {
-        if (!this.arePicturesReady()) {
-            return;
-        }
-
         const model = this.activeModel;
+        const info = this.activeInfo;
 
-        const derivative = model.derivatives.getOrCreate(EDerivativeUsage.Image2D, quality);
+        const byteSize = Math.ceil(this._imageDataURIs[quality].length / 4 * 3);
+        const width = _sizePresets[quality][0];
+        const height = _sizePresets[quality][1];
+        const imageSize = Math.max(width, height);
 
-        const asset = derivative.findAsset(EAssetType.Image)
-            || derivative.createAsset(EAssetType.Image, url);
-
-        asset.data.uri = url;
-        asset.data.imageSize = Math.max(_sizePresets[quality][0], _sizePresets[quality][1]);
-        asset.data.mimeType = mimeType;
-        asset.data.byteSize = Math.ceil(this._imageDataURIs[quality].length / 4 * 3);
-
-        asset.update();
+        if (model) {
+            const derivative = model.derivatives.getOrCreate(EDerivativeUsage.Image2D, quality);
+            const asset = derivative.findAsset(EAssetType.Image) || derivative.createAsset(EAssetType.Image, uri);
+            asset.data.byteSize = byteSize;
+            asset.data.imageSize = imageSize;
+            asset.data.mimeType = mimeType;
+            asset.update();
+        }
+        if (info) {
+            const images = info.meta.getOrCreate("images", {});
+            images[EDerivativeQuality[quality]] = {
+                uri,
+                byteSize,
+                width,
+                height,
+            };
+        }
     }
 
-
-    protected getImageFileName(quality: EDerivativeQuality, extension: string)
+    protected getImageAssetPath(quality: EDerivativeQuality, extension: string)
     {
-        const assetBaseName = this.activeDocument.assetBaseName;
+        let assetBaseName = this.activeDocument.assetBaseName;
+
+        if (this.activeNode.model) {
+        }
+
         const qualityName = EDerivativeQuality[quality].toLowerCase();
-        const imageName = `image-${qualityName}.${extension}`;
-        return assetBaseName + imageName;
+        return `${assetBaseName}image-${qualityName}.${extension}`;
     }
 
     protected removePictures()
@@ -259,17 +272,29 @@ export default class CVCaptureTask extends CVTask
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        if (previous && previous.model) {
+        if (previous && previous.info) {
             this.outs.ready.setValue(false);
             this._imageElements = {};
             this._imageDataURIs = {};
         }
 
-        if (next && next.model) {
-            this.activeModel = next.model;
-            // load existing captures
+        const model = this.activeModel = next && next.model;
+        const info = this.activeInfo = next && next.info;
+        const images = info && info.meta.get("images");
+
+        if (images) {
             _qualityLevels.forEach(quality => {
-                const derivative = this.activeModel.derivatives.get(EDerivativeUsage.Image2D, quality);
+                const imageMeta = images[EDerivativeQuality[quality]];
+                if (imageMeta) {
+                    const imageElement = document.createElement("img");
+                    imageElement.src = this.assetReader.getAssetURL(imageMeta.uri);
+                    this._imageElements[quality] = imageElement;
+                }
+            })
+        }
+        else if (model) {
+            _qualityLevels.forEach(quality => {
+                const derivative = model.derivatives.get(EDerivativeUsage.Image2D, quality);
                 if (derivative) {
                     const imageAsset = derivative.findAsset(EAssetType.Image);
                     if (imageAsset) {
@@ -279,11 +304,6 @@ export default class CVCaptureTask extends CVTask
                     }
                 }
             });
-
-            this.selection.selectComponent(this.activeModel);
-        }
-        else {
-            this.activeModel = null;
         }
     }
 }

@@ -94,7 +94,8 @@ export default class DerivativeList
 
     getArray(): Derivative[]
     {
-        return Object.keys(this.derivatives).reduce((arr, key) => arr.concat(this.derivatives[key]), []);
+        return Object.keys(this.derivatives)
+            .reduce((arr, key) => arr.concat(this.derivatives[key]), []);
     }
 
     get(usage: EDerivativeUsage, quality: EDerivativeQuality): Derivative | null
