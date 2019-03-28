@@ -59,17 +59,21 @@ export default class CVInfo extends Component
 
     toDocument(document: IDocument, node: INode)
     {
-        const data = {} as IInfo;
+        let data: IInfo = null;
 
         if (this.meta.length > 0) {
-            data.meta = this.meta.dictionary;
+            data = {
+                meta: this.meta.dictionary,
+            };
         }
 
         if (this.process.length > 0) {
+            data = data || {};
             data.process = this.process.dictionary;
         }
 
         if (this.articles.length > 0) {
+            data = data || {};
             const articles = this.articles.items;
             data.articles = articles.map(article => article.toJSON());
             if (this.leadArticle) {
@@ -77,8 +81,11 @@ export default class CVInfo extends Component
             }
         }
 
-        const index = document.infos.length;
-        document.infos.push(data);
-        node.info = index;
+        if (data) {
+            document.infos = document.infos || [];
+            const index = document.infos.length;
+            document.infos.push(data);
+            node.info = index;
+        }
     }
 }

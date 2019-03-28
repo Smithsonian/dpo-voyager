@@ -94,16 +94,11 @@ export default class NVNode extends Node
         let name = "Node";
 
         if (isFinite(node.info)) {
-            const info = this.getComponent(CVInfo, true) || this.createComponent(CVInfo);
+            const info = this.getOrCreateComponent(CVInfo);
             info.fromDocument(document, node);
             name = "Info";
         }
         if (isFinite(node.scene)) {
-            // only one scene at the root of the graph allowed
-            if (!this.hasGraphComponent(CVScene)) {
-                this.createComponent(CVScene);
-            }
-
             this.getComponent(CVScene).fromDocument(document, node);
             name = "Scene";
         }
@@ -137,9 +132,9 @@ export default class NVNode extends Node
 
         this.name = node.name || name;
 
-        const children = node.children;
-        if (children) {
-            children.forEach(childIndex => {
+        const childIndices = node.children;
+        if (childIndices) {
+            childIndices.forEach(childIndex => {
                 const childNode = this.graph.createCustomNode(NVNode);
                 this.transform.addChild(childNode.transform);
                 childNode.fromDocument(document, childIndex);
@@ -197,6 +192,10 @@ export default class NVNode extends Node
 
     hasNodeComponents(components: INodeComponents)
     {
+        if (!components) {
+            return true;
+        }
+
         const tf = this.transform;
         const comps = this.components;
 

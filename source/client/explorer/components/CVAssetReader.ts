@@ -20,10 +20,7 @@ import * as THREE from "three";
 
 import Component, { Node, types } from "@ff/graph/Component";
 
-import { IDocument } from "common/types/document";
-
 import JSONReader from "../../core/readers/JSONReader";
-import DocumentValidator from "../../core/readers/DocumentValidator";
 import ModelReader from "../../core/readers/ModelReader";
 import GeometryReader from "../../core/readers/GeometryReader";
 import TextureReader from "../../core/readers/TextureReader";
@@ -54,7 +51,6 @@ export default class CVAssetReader extends Component implements IAssetService
     outs = this.addOutputs(CVAssetReader.outs);
 
     readonly jsonLoader: JSONReader;
-    readonly validator: DocumentValidator;
     readonly modelLoader: ModelReader;
     readonly geometryLoader: GeometryReader;
     readonly textureLoader: TextureReader;
@@ -70,7 +66,6 @@ export default class CVAssetReader extends Component implements IAssetService
         const loadingManager = this._loadingManager = new AssetLoadingManager(this);
 
         this.jsonLoader = new JSONReader(loadingManager);
-        this.validator = new DocumentValidator();
         this.modelLoader = new ModelReader(loadingManager);
         this.geometryLoader = new GeometryReader(loadingManager);
         this.textureLoader = new TextureReader(loadingManager);
@@ -130,23 +125,6 @@ export default class CVAssetReader extends Component implements IAssetService
     {
         const url = this.getAssetURL(assetPath);
         return this.textureLoader.get(url);
-    }
-
-    getDocument(assetPath: string): Promise<IDocument>
-    {
-        return this.getJSON(assetPath)
-            .then(json => this.validateDocument(json));
-    }
-
-    validateDocument(json: any): Promise<IDocument>
-    {
-        return new Promise((resolve, reject) => {
-            if (!this.validator.validate(json)) {
-                return reject(new Error("document validation failed"));
-            }
-
-            return resolve(json as IDocument);
-        });
     }
 }
 

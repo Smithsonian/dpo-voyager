@@ -98,7 +98,7 @@ export default class CVAssetWriter extends Component implements IAssetService
 
     putDocument(document: CVDocument, components?: INodeComponents, assetPath?: string): Promise<void>
     {
-        const url = this.getAssetURL(assetPath || document.ins.assetPath.value);
+        const url = this.getAssetURL(assetPath || document.outs.assetPath.value);
         const documentData = document.deflateDocument(components);
 
         return this.jsonWriter.put(documentData, url)

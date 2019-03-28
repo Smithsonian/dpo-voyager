@@ -88,9 +88,6 @@ export default class ExplorerApplication
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
     }
-    protected get documents() {
-        return this.system.getMainNode(NVDocuments);
-    }
 
     constructor(parent: HTMLElement, props?: IExplorerApplicationProps, embedded?: boolean)
     {
@@ -124,10 +121,8 @@ export default class ExplorerApplication
 
         if (!embedded) {
             // initialize default document
-            this.openDocument(documentTemplate).then(() => {
-                // start loading from properties
-                this.evaluateProps();
-            });
+            this.documentProvider.createDocument(documentTemplate as any);
+            this.evaluateProps();
         }
 
         // start rendering
@@ -139,37 +134,10 @@ export default class ExplorerApplication
         this.assetReader.setRootURL(url);
     }
 
-    openDocument(document: any, documentPath?: string, merge?: boolean): Promise<CVDocument>
-    {
-        const provider = this.documentProvider;
-
-        return this.assetReader.validateDocument(document).then(documentData => {
-            let document = provider.activeComponent;
-
-            if (!document) {
-                document = this.documents.createComponent(CVDocument);
-            }
-
-            document.openDocument(documentData, documentPath, merge);
-            provider.activeComponent = document;
-
-            return document;
-        });
-    }
-
     loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
-        let documentData;
-
-        return this.assetReader.getDocument(documentPath)
-            .then(data => {
-                documentData = data;
-                return this.openDocument(documentTemplate);
-            })
-            .then(document => {
-                document.openDocument(documentData, documentPath, merge);
-                return document;
-            })
+        return this.assetReader.getJSON(documentPath)
+            .then(data => this.documentProvider.amendDocument(data, documentPath, merge))
             .catch(error => {
                 console.warn(`error while loading document: ${error.message}`);
                 throw error;
@@ -178,25 +146,14 @@ export default class ExplorerApplication
 
     loadModel(modelPath: string, quality: string)
     {
-        const document = this.documentProvider.activeComponent;
-        if (!document) {
-            console.warn("no active document, can't append model");
-            return;
-        }
-
-        document.appendModel(modelPath, quality);
+        return this.documentProvider.appendModel(modelPath, quality);
     }
 
     loadGeometry(geoPath: string, colorMapPath?: string,
                  occlusionMapPath?: string, normalMapPath?: string, quality?: string)
     {
-        const document = this.documentProvider.activeComponent;
-        if (!document) {
-            console.warn("no active document, can't append geometry");
-            return;
-        }
-
-        document.appendGeometry(geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
+        return this.documentProvider.appendGeometry(
+            geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
 
 

@@ -18,6 +18,7 @@
 import * as THREE from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import CTransform from "@ff/scene/components/CTransform";
 
 import { IDocument, INode } from "common/types/document";
 import { EUnitType, IScene, TUnitType } from "common/types/scene";
@@ -56,6 +57,9 @@ export default class CVScene extends Component
 
     private _modelBoundingBox = new THREE.Box3();
 
+    get transform() {
+        return this.getComponent(CTransform);
+    }
     get interface() {
         return this.getComponent(CVInterface);
     }
@@ -199,6 +203,7 @@ export default class CVScene extends Component
         data.annotations = this.annotations.toData();
         data.tours = this.tours.toData();
 
+        document.scenes = document.scenes || [];
         const index = document.scenes.length;
         document.scenes.push(data);
         node.scene = index;

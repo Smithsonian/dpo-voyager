@@ -23,7 +23,7 @@ import CComponentProvider, {
     IScopedComponentsEvent
 } from "@ff/graph/components/CComponentProvider";
 
-import CVDocument from "./CVDocument";
+import CVDocument, { IDocument } from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +46,60 @@ export default class CVDocumentProvider extends CComponentProvider<CVDocument>
     {
         super(node, id);
         this.scope = EComponentScope.Node;
+    }
+
+    createDocument(data?: IDocument, path?: string)
+    {
+        const document = this.node.createComponent(CVDocument);
+
+        if (data) {
+            document.openDocument(data, path);
+        }
+
+        this.activeComponent = document;
+        return document;
+    }
+
+    amendDocument(data: IDocument, path: string, merge: boolean)
+    {
+        const document = this.activeComponent;
+        if (!document) {
+            throw new Error("no active document, can't amend");
+        }
+
+        document.openDocument(data, path, true);
+        return document;
+    }
+
+    appendModel(modelPath: string, quality: string): CVDocument
+    {
+        const document = this.activeComponent;
+        if (!document) {
+            throw new Error("no active document, can't append model");
+        }
+
+        document.appendModel(modelPath, quality);
+        return document;
+    }
+
+    appendGeometry(geoPath: string, colorMapPath?: string,
+                   occlusionMapPath?: string, normalMapPath?: string, quality?: string)
+    {
+        const document = this.activeComponent;
+        if (!document) {
+            throw new Error("no active document, can't append geometry");
+        }
+
+        document.appendGeometry(geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
+        return document;
+    }
+
+    removeActiveDocument()
+    {
+        const document = this.activeComponent;
+        if (document) {
+            document.dispose();
+        }
     }
 
     protected activateComponent(document: CVDocument)

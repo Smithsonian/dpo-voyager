@@ -58,6 +58,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
         data.type = "directional";
 
+        document.lights = document.lights || [];
         const index = document.lights.length;
         document.lights.push(data);
         node.light = index;

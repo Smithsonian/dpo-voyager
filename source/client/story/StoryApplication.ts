@@ -35,6 +35,8 @@ import NVoyagerStory from "./nodes/NVoyagerStory";
 import CVStoryController from "./components/CVStoryController";
 
 import MainView from "./ui/MainView";
+import CVDocumentProvider from "../explorer/components/CVDocumentProvider";
+import CVAssetReader from "../explorer/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,6 +63,12 @@ export default class StoryApplication
     readonly system: System;
     readonly commander: Commander;
 
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
+    }
+    protected get documentProvider() {
+        return this.system.getMainComponent(CVDocumentProvider);
+    }
 
     constructor(parent: HTMLElement, props?: IStoryApplicationProps)
     {
@@ -91,31 +99,30 @@ export default class StoryApplication
         }
 
         // initialize default document
-        this.openDocument(documentTemplate).then(() => {
-            // start loading from properties
-            this.evaluateProps();
-        });
-    }
-
-    openDocument(document: any, documentPath?: string, merge?: boolean): Promise<CVDocument>
-    {
-        return this.explorer.openDocument(document, documentPath, merge);
+        this.documentProvider.createDocument(documentTemplate as any);
+        this.evaluateProps();
     }
 
     loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
-        return this.explorer.loadDocument(documentPath, merge);
+        return this.assetReader.getJSON(documentPath)
+        .then(data => this.documentProvider.amendDocument(data, documentPath, merge))
+        .catch(error => {
+            console.warn(`error while loading document: ${error.message}`);
+            throw error;
+        });
     }
 
     loadModel(modelPath: string, quality: string)
     {
-        return this.explorer.loadModel(modelPath, quality);
+        return this.documentProvider.appendModel(modelPath, quality);
     }
 
     loadGeometry(geoPath: string, colorMapPath?: string,
                  occlusionMapPath?: string, normalMapPath?: string, quality?: string)
     {
-        return this.explorer.loadGeometry(geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
+        return this.documentProvider.appendGeometry(
+            geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
 
     protected evaluateProps()

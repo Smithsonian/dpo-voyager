@@ -74,6 +74,7 @@ export default class CVCamera extends CCamera
             }
         }
 
+        document.cameras = document.cameras || [];
         const index = document.cameras.length;
         document.cameras.push(data);
         node.camera = index;

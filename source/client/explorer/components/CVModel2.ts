@@ -265,6 +265,7 @@ export default class CVModel2 extends CObject3D
             data.rotation = _quat.toArray();
         }
 
+        document.models = document.models || [];
         const index = document.models.length;
         document.models.push(data);
         node.model = index;

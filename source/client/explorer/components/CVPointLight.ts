@@ -62,6 +62,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
 
         data.type = "point";
 
+        document.lights = document.lights || [];
         const index = document.lights.length;
         document.lights.push(data);
         node.light = index;

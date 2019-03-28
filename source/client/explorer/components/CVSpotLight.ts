@@ -60,11 +60,13 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
                 distance: ins.distance.value,
                 decay: ins.decay.value,
                 angle: ins.angle.value,
-                penumbra: ins.penumbra.value,            },
+                penumbra: ins.penumbra.value,
+            },
         } as ILight;
 
         data.type = "spot";
 
+        document.lights = document.lights || [];
         const index = document.lights.length;
         document.lights.push(data);
         node.light = index;
