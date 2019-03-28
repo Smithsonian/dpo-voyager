@@ -41,19 +41,19 @@ const dirs = {
 const apps = {
     "explorer": {
         name: "voyager-explorer",
-        entryPoint: "client/explorer/ui/MainView.ts",
+        entryPoint: "client/ui/explorer/MainView.ts",
         title: "Voyager Explorer",
         template: "viewer.hbs",
     },
     "mini": {
         name: "voyager-mini",
-        entryPoint: "client/mini/ui/MainView.ts",
+        entryPoint: "client/ui/mini/MainView.ts",
         title: "Voyager Mini",
         template: "viewer.hbs",
     },
     "story": {
         name: "voyager-story",
-        entryPoint: "client/story/ui/MainView.ts",
+        entryPoint: "client/ui/story/MainView.ts",
         title: "Voyager Story",
         template: "story.hbs",
     },

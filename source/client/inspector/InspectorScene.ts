@@ -35,7 +35,7 @@ const DRACOLoader = (THREE as any).DRACOLoader;
 DRACOLoader.setDecoderPath('/js/draco/');
 
 import OrbitControllerScene from "./OrbitControllerScene";
-import UberPBRMaterial from "../core/shaders/UberPBRMaterial";
+import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -1,0 +1,380 @@
+/**
+ * 3D Foundation Project
+ * Copyright 2018 Smithsonian Institution
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+
+@import "../styles";
+
+////////////////////////////////////////////////////////////////////////////////
+// CONTENT LAYER
+
+.sv-content-view {
+  @include fullsize;
+  overflow: hidden;
+}
+
+.sv-content-reader-split {
+  @include fullsize;
+  display: flex;
+
+  .sv-scene-view {
+    flex: 1 1 60%;
+  }
+  .sv-reader-view {
+    flex: 1 1 40%;
+  }
+}
+
+.sv-content-reader-overlay {
+  @include fullsize;
+
+  .sv-scene-view {
+    @include fullsize;
+  }
+
+  .sv-reader-view {
+    @include fullsize;
+    margin-top: 54px;
+    //background-color: transparentize(white, 0.95);
+    border-top: $section-border;
+    //z-index: 2;
+  }
+}
+
+.sv-content-reader-off {
+  .sv-scene-view {
+    @include fullsize;
+  }
+}
+
+.sv-reader-view {
+  overflow-y: auto;
+
+  .sv-article {
+    margin: 0 20px;
+  }
+}
+
+.sv-content-overlay {
+}
+
+.ff-viewport-overlay {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ANNOTATIONS
+
+.sv-annotation {
+  position: absolute;
+  z-index: 1;
+  max-width: 20%;
+  box-sizing: border-box;
+  padding: 0 4px;
+  background: transparentize(black, 0.4);
+  cursor: pointer;
+  pointer-events: auto;
+
+  &.sv-expanded {
+    min-width: 120px;
+  }
+
+  &.sv-q0 {
+    transform: translate(0, -100%);
+    border-bottom: 1px solid $color-primary;
+    text-align: left;
+  }
+  &.sv-q1 {
+    transform: translate(-100%, -100%);
+    border-bottom: 1px solid $color-primary;
+    text-align: right;
+  }
+  &.sv-q2 {
+    transform: translate(-100%, 0);
+    border-top: 1px solid $color-primary;
+    text-align: right;
+  }
+  &.sv-q3 {
+    transform: translate(0, 0);
+    border-top: 1px solid $color-primary;
+    text-align: left;
+  }
+
+  .sv-title {
+    padding: 2px 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .sv-description {
+    padding: 2px 0;
+    font-size: 0.85rem;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CHROME LAYER
+
+.sv-chrome-view {
+  @include fullsize;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  z-index: 1;
+
+  .ff-button {
+    flex: 0 1 auto;
+    box-sizing: border-box;
+
+    &:hover, &:focus {
+      outline: none;
+
+      & > .ff-icon {
+        fill: $color-text;
+      }
+    }
+
+    &[selected] {
+      background-color: $color-primary;
+
+      & > .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        fill: $color-text;
+      }
+
+      &:hover {
+      }
+      &:focus {
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CHROME HEADER
+
+.sv-chrome-header {
+  display: flex;
+  align-items: flex-start;
+
+  .sv-top-bar {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-start;
+    height: 40px;
+    margin: 9px;
+  }
+
+  .sv-main-title {
+    flex: 1 1 auto;
+    margin-top: 6px;
+    font-weight: normal;
+    font-size: 1.2rem;
+    //@include ellipsis;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MAIN MENU
+
+.sv-main-menu {
+  display: flex;
+  flex-direction: column;
+  margin: 6px;
+
+  .ff-button {
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
+    margin: 3px 0;
+    background-color: transparentize(#282828, 0.2);
+    border-radius: 20px;
+    font-size: 18px;
+    transition: all $tx-short;
+    pointer-events: auto;
+
+    &:hover, &:focus {
+      outline: none;
+      background-color: $menu-color-background-hover;
+      fill: $color-text;
+    }
+
+    &[selected] {
+      background-color: $color-primary;
+      color: $menu-color-text;
+
+      & > .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        fill: $color-text;
+      }
+
+      &:hover, &:focus {
+        background-color: $color-primary-light;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TOOL NAVIGATOR
+
+.sv-tour-navigator {
+  flex: 1 1 auto;
+  display: flex;
+  height: 50px;
+  width: 50px;
+  background-color: red;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TOOL VIEW
+
+////////////////////////////////////////////////////////////////////////////////
+// CHROME TOOL BAR
+
+.sv-tool-bar-container {
+  display: flex;
+  justify-content: center;
+}
+
+.sv-tool-bar {
+  flex: 0 1 960px;
+  display: flex;
+  flex-direction: column;
+  background-color: transparentize(#080808, 0.2);
+  border-left: $section-border;
+  border-right: $section-border;
+  margin: 0 -1px 0 -1px;
+  pointer-events: auto;
+
+  transition: transform $tx-medium ease-out, opacity $tx-short ease-out;
+
+  &.sv-transition {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+
+  .sv-section {
+    display: flex;
+    //overflow: auto hidden;
+    border-top: $section-border;
+  }
+
+  .sv-section-button {
+    flex: 0 0 auto;
+    padding: 6px;
+    width: 38px;
+    border-right: $section-border;
+  }
+
+  .sv-tool-buttons {
+    flex: 1 1 auto;
+    display: flex;
+    //flex-wrap: wrap;
+    justify-content: center;
+    margin: 4px;
+  }
+
+  .sv-tool-button {
+    flex: 0 1 auto;
+    margin: 2px;
+    padding: 1px 2px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+
+    .ff-text {
+      margin: 1px 2px;
+    }
+    .ff-icon {
+      height: 22px;
+      margin: 1px 2px;
+    }
+  }
+}
+
+.sv-tool-view {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+
+  .sv-property-view {
+    flex: 0 1 auto;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    margin: 4px;
+  }
+
+  .sv-property-slider {
+    flex: 0 2 180px;
+  }
+
+  .sv-options {
+    display: flex;
+  }
+
+  .ff-label {
+    margin: 2px;
+  }
+
+  .ff-string {
+    flex: 0 1 auto;
+    height: 26px;
+    margin: 2px;
+    font-size: 1rem;
+  }
+
+  .ff-button {
+    height: 26px;
+    margin: 2px;
+    padding: 0 4px;
+    background: $color-background;
+    border-radius: 2px;
+  }
+
+  .ff-linear-slider {
+    height: 6px;
+    margin: 12px 2px;
+    padding-right: 16px;
+    border-radius: 2px;
+    background-color: $color-background-light;
+
+    .ff-knob {
+      width: 16px;
+      height: 26px;
+      margin: -10px 0 0 0;
+      border-radius: 2px;
+      background-color: $color-primary;
+      box-shadow: 0 0 6px black;
+    }
+  }
+}
+
+.sv-view-tool-view, .sv-render-tool-view {
+  .sv-options {
+    flex-wrap: wrap;
+  }
+}
+
+.sv-tape-tool-view, .sv-slice-tool-view {
+  flex-wrap: wrap;
+}
