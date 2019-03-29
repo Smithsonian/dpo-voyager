@@ -19,37 +19,32 @@ import "@ff/ui/Button";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 
-import CVTours from "../../components/CVTours";
+//import CVTours from "../../components/CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-console.log("LOAD");
 
 @customElement("sv-tour-navigator")
 export default class TourNavigator extends DocumentView
 {
     protected get tours() {
         const document = this.activeDocument;
-        return document ? document.getInnerComponent(CVTours) : null;
+        return document ? document.setup.tours : null;
     }
 
     protected firstConnected()
     {
-        console.log("FIRST CONNECTED");
         super.firstConnected();
         this.classList.add("sv-tour-navigator");
     }
 
     protected render()
     {
-        console.log("RENDER");
-
         const tours = this.tours;
         const activeTour = tours.activeTour;
 
         let title, info;
 
-        if (activeTour) {
+        if (tours && activeTour) {
             title = activeTour.data.title;
             info = "Step 1 of 10";
         }
@@ -58,13 +53,13 @@ export default class TourNavigator extends DocumentView
             info = "---";
         }
 
-        return html`<ff-button icon="bars" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
-            <div class="ff-flex-column">
-                <div class="sv-tour-title ff-ellipsis">${title}</div>
-                <div class="sv-tour-info ff-ellipsis">${info}</div>
+        return html`<ff-button icon="bars" ?disabled=${!true} @click=${this.onClickMenu}></ff-button>
+            <div class="ff-ellipsis sv-tour-content">
+                <div class="ff-ellipsis sv-tour-title">${title}</div>
+                <div class="ff-ellipsis sv-tour-info">${info}</div>
             </div>
-            <ff-button icon="triangle-left" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
-            <ff-button icon="triangle-right" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>`;
+            <ff-button icon="triangle-left" ?disabled=${!true} @click=${this.onClickPrevious}></ff-button>
+            <ff-button icon="triangle-right" ?disabled=${!true} @click=${this.onClickNext}></ff-button>`;
     }
 
     protected onClickMenu()

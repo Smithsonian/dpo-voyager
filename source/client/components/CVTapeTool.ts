@@ -52,7 +52,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
 
     protected render()
     {
-        const scene = this.activeScene;
+        const scene = this.activeSetup;
 
         if (!scene) {
             return html``;
@@ -84,7 +84,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             <div class="ff-string">${text}</div></div>`;
     }
 
-    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
+    protected onActiveSetup(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             previous.tape.off("update", this.onUpdate, this);

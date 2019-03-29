@@ -51,7 +51,7 @@ export class ViewToolView extends ToolView<CVViewTool>
 
     protected render()
     {
-        const scene = this.activeScene;
+        const scene = this.activeSetup;
         const navigation = scene && scene.navigation;
 
         if (!navigation) {

@@ -29,7 +29,7 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 export default class DocumentView extends SystemView
 {
     protected activeDocument: CVDocument = null;
-    protected activeScene: CVSetup = null;
+    protected activeSetup: CVSetup = null;
 
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
@@ -43,12 +43,12 @@ export default class DocumentView extends SystemView
         const document = provider.activeComponent;
         if (document) {
             this.activeDocument = document;
-            this.activeScene = document.setup;
+            this.activeSetup = document.setup;
 
             this.onActiveDocument(null, document);
 
-            if (this.activeScene) {
-                this.onActiveFeatures(null, this.activeScene);
+            if (this.activeSetup) {
+                this.onActiveSetup(null, this.activeSetup);
             }
         }
     }
@@ -59,16 +59,16 @@ export default class DocumentView extends SystemView
         provider.off<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
 
         const document = this.activeDocument;
-        const scene = this.activeScene;
+        const scene = this.activeSetup;
 
         if (document) {
             this.activeDocument = null;
-            this.activeScene = null;
+            this.activeSetup = null;
 
             this.onActiveDocument(document, null);
 
             if (scene) {
-                this.onActiveFeatures(scene, null);
+                this.onActiveSetup(scene, null);
             }
         }
     }
@@ -78,7 +78,7 @@ export default class DocumentView extends SystemView
         this.requestUpdate();
     }
 
-    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
+    protected onActiveSetup(previous: CVSetup, next: CVSetup)
     {
     }
 
@@ -88,9 +88,9 @@ export default class DocumentView extends SystemView
         const next = event.next;
 
         this.activeDocument = next;
-        this.activeScene = next && next.setup;
+        this.activeSetup = next && next.setup;
 
         this.onActiveDocument(prev, this.activeDocument);
-        this.onActiveFeatures(prev && prev.setup, this.activeScene);
+        this.onActiveSetup(prev && prev.setup, this.activeSetup);
     }
 }

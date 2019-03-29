@@ -21,44 +21,79 @@ import List from "@ff/ui/List";
 import CVTours, { Tour } from "../../components/CVTours";
 import CVToursTask from "../../components/CVToursTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
+import CVSetup from "../../components/CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-tours-task-view")
 export default class ToursTaskView extends TaskView<CVToursTask>
 {
+    protected activeTour: Tour = null;
+
     protected render()
     {
-        const document = this.activeDocument;
+        const setup = this.activeSetup;
 
-        if (!document) {
+        if (!setup) {
             return html`<div class="sv-placeholder">Please select a presentation to edit its tours.</div>`;
         }
 
-        const tours = [];
-        const selectedTour = null;
+        const tours = setup.tours.tours;
+        const activeTour = this.activeTour;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button text="Delete" icon="trash" @click=${this.onClickDelete}></ff-button>
+            <ff-button text="Move Up" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
+            <ff-button text="Move Down" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
+            <ff-button text="Delete" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <sv-tour-list .data=${tours} .selectedItem=${selectedTour} @select=${this.onSelectTour}></sv-tour-list>
+                <sv-tour-list .data=${tours} .selectedItem=${activeTour} @select=${this.onSelectTour}></sv-tour-list>
             </div>
         </div>`;
     }
 
     protected onClickCreate()
     {
+        this.task.createTour();
     }
 
     protected onClickDelete()
     {
+        this.task.deleteTour();
+    }
+
+    protected onClickUp()
+    {
+        this.task.moveTourUp();
+    }
+
+    protected onClickDown()
+    {
+        this.task.moveTourDown();
     }
 
     protected onSelectTour(event: ISelectTourEvent)
     {
+        this.activeDocument.setup.tours.activeTour = event.detail.tour;
+    }
+
+    protected onActiveSetup(previous: CVSetup, next: CVSetup)
+    {
+        if (previous) {
+            previous.tours.outs.activeTour.off("value", this.onActiveTour, this);
+        }
+        if (next) {
+            next.tours.outs.activeTour.on("value", this.onActiveTour, this);
+
+        }
+    }
+
+    protected onActiveTour(tour: Tour)
+    {
+        this.activeTour = tour;
+        this.requestUpdate();
     }
 }
 

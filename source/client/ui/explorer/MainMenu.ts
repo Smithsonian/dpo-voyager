@@ -59,7 +59,7 @@ export default class MainMenu extends DocumentView
 
     protected render()
     {
-        const scene = this.activeScene;
+        const scene = this.activeSetup;
         if (!scene) {
             console.warn("no scene");
             return html``;
@@ -91,19 +91,23 @@ export default class MainMenu extends DocumentView
 
     protected onToggleReader()
     {
-        const prop = this.activeScene.reader.ins.visible;
+        const prop = this.activeSetup.reader.ins.visible;
         prop.setValue(!prop.value);
     }
 
     protected onToggleTours()
     {
-        const prop = this.activeScene.tours.ins.enabled;
-        prop.setValue(!prop.value);
+        const toursProp = this.activeSetup.tours.ins.enabled;
+        toursProp.setValue(!toursProp.value);
+
+        if (toursProp.value) {
+            this.toolProvider.ins.visible.setValue(false);
+        }
     }
 
     protected onToggleAnnotations()
     {
-        const prop = this.activeScene.viewer.ins.annotationsVisible;
+        const prop = this.activeSetup.viewer.ins.annotationsVisible;
         prop.setValue(!prop.value);
     }
 
@@ -114,8 +118,12 @@ export default class MainMenu extends DocumentView
 
     protected onToggleTools()
     {
-        const prop = this.toolProvider.ins.visible;
-        prop.setValue(!prop.value);
+        const toolsProp = this.toolProvider.ins.visible;
+        toolsProp.setValue(!toolsProp.value);
+
+        if (toolsProp.value) {
+            this.activeSetup.tours.ins.enabled.setValue(false);
+        }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

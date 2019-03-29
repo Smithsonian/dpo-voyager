@@ -47,10 +47,8 @@ export default class CVTours extends Component
 
     protected static readonly outs = {
         state: types.Enum("Player.State", EToursState),
-        title: types.String("Tour.Title"),
-        description: types.String("Tour.Description"),
-        step: types.Integer("Tour.Step"),
-        count: types.Integer("Tour.Steps"),
+        activeTour: types.Object("Tours.ActiveTour", Tour),
+        toursUpdated: types.Event("Tours.Updated"),
     };
 
     ins = this.addInputs(CVTours.ins);
@@ -82,11 +80,6 @@ export default class CVTours extends Component
 
             if (tour) {
                 const data = tour.data;
-                outs.title.setValue(data.title);
-                outs.description.setValue(data.lead);
-                outs.step.setValue(0);
-                outs.count.setValue(data.states.length);
-
                 const state = { states: data.states, targets: data.targets };
                 this.tweenMachine.stateFromJSON(state);
 
@@ -97,6 +90,7 @@ export default class CVTours extends Component
             }
 
             this._activeTour = tour;
+            outs.activeTour.setValue(tour);
             this.emit<IActiveTourEvent>({ type: "active-tour", previous: activeTour, next: tour });
         }
     }
@@ -104,7 +98,20 @@ export default class CVTours extends Component
     create()
     {
         super.create();
+
+        this.createComponent(CTweenMachine);
+
+        this.tours.on("update", () => {
+            this.outs.toursUpdated.set();
+            this.updateTourList();
+        });
+
         this.updateTourList();
+    }
+
+    dispose()
+    {
+        super.dispose();
     }
 
     update()
@@ -129,38 +136,6 @@ export default class CVTours extends Component
         }
 
         return true;
-    }
-
-    createTour()
-    {
-        const tour = new Tour();
-        this.tours.append(tour);
-
-        this.updateTourList();
-        this.activeTour = tour;
-    }
-
-    deleteTour()
-    {
-        const tours = this.tours;
-
-        const index = tours.getIndexOf(this.activeTour);
-        tours.removeAt(index);
-
-        this.updateTourList();
-        this.activeTour = index < tours.length ? tours[index] : tours[index - 1];
-    }
-
-    moveTourUp()
-    {
-        this.tours.moveItem(this.activeTour, -1);
-        this.updateTourList();
-    }
-
-    moveTourDown()
-    {
-        this.tours.moveItem(this.activeTour, 1);
-        this.updateTourList();
     }
 
     addTarget(component: Component, property: Property)

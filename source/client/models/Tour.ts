@@ -33,6 +33,11 @@ export default class Tour extends Document<ITour>
         return new Tour(json);
     }
 
+    toString()
+    {
+        return this.data.title;
+    }
+
     protected init()
     {
         return {

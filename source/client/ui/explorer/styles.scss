@@ -179,15 +179,20 @@
     display: flex;
     align-items: flex-start;
     height: 40px;
-    margin: 9px;
+    margin: 9px 9px 0 0;
+    overflow: hidden;
   }
 
   .sv-main-title {
     flex: 1 1 auto;
-    margin-top: 6px;
+    margin: 6px;
     font-weight: normal;
     font-size: 1.2rem;
-    //@include ellipsis;
+    white-space: pre;
+
+    span {
+      color: transparent;
+    }
   }
 }
 
@@ -197,7 +202,7 @@
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  margin: 6px;
+  margin: 6px 0 0 6px;
 
   .ff-button {
     box-sizing: border-box;
@@ -236,11 +241,41 @@
 // TOOL NAVIGATOR
 
 .sv-tour-navigator {
-  flex: 1 1 auto;
+  box-sizing: border-box;
   display: flex;
-  height: 50px;
-  width: 50px;
-  background-color: red;
+  margin: 6px;
+  padding: 4px;
+  height: 40px;
+  min-width: 0;
+  border-radius: 20px;
+  background: transparentize(#282828, 0.2);
+
+  .ff-button {
+    background-color: transparent;
+    pointer-events: auto;
+    border-radius: 32px;
+    height: 32px;
+    width: 32px;
+    margin: 0 2px;
+
+    &:hover, &:focus {
+      outline: none;
+      background-color: $menu-color-background-hover;
+      fill: $color-text;
+    }
+  }
+
+  .sv-tour-content {
+    flex: 1;
+    margin: -3px 8px 0 8px;
+    text-align: center;
+  }
+  .sv-tour-title {
+    font-size: 1.1em;
+  }
+  .sv-tour-info {
+    font-size: 0.9em;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

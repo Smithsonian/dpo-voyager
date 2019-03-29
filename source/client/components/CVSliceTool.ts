@@ -52,7 +52,7 @@ export class SliceToolView extends ToolView<CVSliceTool>
 
     protected render()
     {
-        const scene = this.activeScene;
+        const scene = this.activeSetup;
         if (!scene) {
             return html``;
         }
@@ -67,7 +67,7 @@ export class SliceToolView extends ToolView<CVSliceTool>
             <sv-property-slider .property=${position}></sv-property-slider>`;
     }
 
-    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
+    protected onActiveSetup(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             previous.slicer.off("update", this.onUpdate, this);

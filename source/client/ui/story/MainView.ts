@@ -30,6 +30,7 @@ import HierarchyTreeView from "@ff/scene/ui/HierarchyTreeView";
 import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
+import TourPanel from "./TourPanel";
 import TaskPanel from "./TaskPanel";
 import NotePadPanel from "./NotePadPanel";
 import ConsolePanel from "./ConsolePanel";
@@ -67,7 +68,7 @@ interface IUIState
 @customElement("voyager-story")
 export default class MainView extends CustomElement
 {
-    static readonly stateKey: string = "main-view-state3";
+    static readonly stateKey: string = "main-view-1";
 
     protected application: StoryApplication;
     protected dockView: DockView;
@@ -111,7 +112,8 @@ export default class MainView extends CustomElement
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
-        registry.set("editor", () => new EditorPanel(system));
+        registry.set("article-editor", () => new EditorPanel(system));
+        registry.set("tour-editor", () => new TourPanel(system));
         registry.set("task", () => new TaskPanel(system));
         registry.set("notes", () => new NotePadPanel(system));
         registry.set("console", () => new ConsolePanel(system));
@@ -222,20 +224,23 @@ export default class MainView extends CustomElement
             size: 0.78,
             elements: [{
                 type: "stack",
-                size: 0.85,
+                size: 0.75,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "explorer",
                     text: "Explorer"
-                }, {
-                    contentId: "editor",
-                    text: "Editor"
                 }]
             }, {
                 type: "stack",
-                size: 0.15,
+                size: 0.25,
                 activePanelIndex: 0,
                 panels: [{
+                    contentId: "article-editor",
+                    text: "Article"
+                }, {
+                    contentId: "tour-editor",
+                    text: "Tour"
+                }, {
                     contentId: "notes",
                     text: "Notes"
                 }]
@@ -282,15 +287,18 @@ export default class MainView extends CustomElement
                 panels: [{
                     contentId: "explorer",
                     text: "Explorer"
-                }, {
-                    contentId: "editor",
-                    text: "Editor"
                 }]
             }, {
                 type: "stack",
                 size: 0.2,
                 activePanelIndex: 0,
                 panels: [{
+                    contentId: "article-editor",
+                    text: "Article"
+                }, {
+                    contentId: "tour-editor",
+                    text: "Tour"
+                }, {
                     contentId: "notes",
                     text: "Notes"
                 }, {

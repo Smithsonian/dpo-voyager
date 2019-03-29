@@ -38,6 +38,7 @@ export default class CVTask extends CVNodeObserver
     };
 
     protected static readonly taskOuts = {
+        isActive: types.Boolean("Task.IsActive"),
     };
 
     ins = this.addInputs(CVTask.taskIns);
@@ -88,6 +89,8 @@ export default class CVTask extends CVNodeObserver
         this._isActiveTask = true;
         this.startObserving();
 
+        this.outs.isActive.setValue(true);
+
         const configuration = this.configuration;
         const savedConfig = this._savedConfig;
 
@@ -109,8 +112,10 @@ export default class CVTask extends CVNodeObserver
             this.selection.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
         }
 
-        this.stopObserving();
         this._isActiveTask = false;
+        this.stopObserving();
+
+        this.outs.isActive.setValue(false);
     }
 
     /**

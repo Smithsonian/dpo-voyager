@@ -112,6 +112,7 @@ ff-dock-view {
 }
 
 .sv-panel-header {
+  box-sizing: border-box;
   flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -167,7 +168,7 @@ ff-dock-view {
   padding: 4px;
 }
 
-.sv-notes-panel {
+.sv-notes-panel, .sv-tour-panel {
   .sv-panel-content {
     display: flex;
     flex-direction: row;

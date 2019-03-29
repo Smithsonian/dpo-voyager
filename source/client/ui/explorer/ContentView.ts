@@ -62,7 +62,7 @@ export default class ContentView extends DocumentView
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
 
-        const scene = this.activeScene;
+        const scene = this.activeSetup;
         if (scene) {
             readerVisible = scene.reader.ins.visible.value;
             readerPosition = scene.reader.ins.position.value;
@@ -102,7 +102,7 @@ export default class ContentView extends DocumentView
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;
     }
 
-    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
+    protected onActiveSetup(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             const reader = previous.reader;
