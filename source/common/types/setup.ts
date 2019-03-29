@@ -37,7 +37,7 @@ export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }
 
 
-export interface IScene
+export interface ISetup
 {
     units: TUnitType;
     interface?: IInterface;

@@ -17,7 +17,7 @@
 
 
 import CVAssetReader from "../../components/CVAssetReader";
-import CVScene from "../../components/CVScene";
+import CVSetup from "../../components/CVSetup";
 
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 import SceneView from "../SceneView";

@@ -23,9 +23,9 @@ import CameraController from "@ff/three/CameraController";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 
-import { INavigation } from "common/types/scene";
+import { INavigation } from "common/types/setup";
 
-import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ export default class CVOrbitNavigation extends CVNavigation
 
         // zoom extents
         if (camera && ins.zoomExtents.changed) {
-            this._modelBoundingBox = this.getComponent(CVScene).modelBoundingBox;
+            this._modelBoundingBox = this.getComponent(CVSetup).modelBoundingBox;
             controller.zoomExtents(this._modelBoundingBox);
         }
 

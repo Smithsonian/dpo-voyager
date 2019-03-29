@@ -19,8 +19,8 @@ import { Index } from "@ff/core/types";
 
 import { Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
 import { IInfo } from "./info";
-import { IScene } from "./scene";
 import { IModel } from "./model";
+import { ISetup } from "./setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,13 +35,14 @@ export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisph
 export interface IDocument
 {
     asset: IDocumentAsset;
-    roots: Index[];
+    scene?: Index;
+    scenes?: IScene[];
     nodes?: INode[];
     cameras?: ICamera[];
     lights?: ILight[];
     infos?: IInfo[];
     models?: IModel[];
-    scenes?: IScene[];
+    setups?: ISetup[];
 }
 
 /**
@@ -53,6 +54,13 @@ export interface IDocumentAsset
     version: string;
     copyright?: string;
     generator?: string;
+}
+
+export interface IScene
+{
+    name?: string;
+    nodes?: Index[];
+    setup?: Index;
 }
 
 /**
@@ -72,7 +80,6 @@ export interface INode
     light?: Index;
     info?: Index;
     model?: Index;
-    scene?: Index;
 }
 
 /**

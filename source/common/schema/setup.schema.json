@@ -1,9 +1,9 @@
 {
-    "$id": "https://schemas.3d.si.edu/voyager/scene.schema.json",
+    "$id": "https://schemas.3d.si.edu/voyager/setup.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
 
-    "title": "Scene",
-    "description": "Tours and settings for explorer components (scene environment, UI, tools, etc.)",
+    "title": "Setup",
+    "description": "Tours and settings for explorer documents (background, interface, etc.)",
 
     "definitions": {
         "viewer": {

@@ -19,7 +19,7 @@ import "../ui/PropertyBoolean";
 import "../ui/PropertyString";
 
 import CVDocument from "./CVDocument";
-import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 import CVTape, { ETapeState } from "./CVTape";
 
 import CVTool, { ToolView, customElement, html } from "./CVTool";
@@ -84,7 +84,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             <div class="ff-string">${text}</div></div>`;
     }
 
-    protected onActiveScene(previous: CVScene, next: CVScene)
+    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             previous.tape.off("update", this.onUpdate, this);

@@ -23,9 +23,9 @@ import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 import { types } from "@ff/graph/Component";
 import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
-import { IGrid, EUnitType } from "common/types/scene";
+import { IGrid, EUnitType } from "common/types/setup";
 
-import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,8 +64,8 @@ export default class CVGrid extends CObject3D
     get grid() {
         return this.object3D as ThreeGrid;
     }
-    get documentScene() {
-        return this.getGraphComponent(CVScene);
+    get setup() {
+        return this.getGraphComponent(CVSetup);
     }
 
     create()
@@ -78,12 +78,12 @@ export default class CVGrid extends CObject3D
 
     activate()
     {
-        this.documentScene.on("bounding-box", this.onModelBoundingBox, this);
+        this.setup.on("bounding-box", this.onModelBoundingBox, this);
     }
 
     deactivate()
     {
-        this.documentScene.off("bounding-box", this.onModelBoundingBox, this);
+        this.setup.off("bounding-box", this.onModelBoundingBox, this);
     }
 
     update(): boolean
@@ -103,8 +103,8 @@ export default class CVGrid extends CObject3D
             }
 
             if (ins.update.changed) {
-                const box = this.documentScene.modelBoundingBox;
-                const units = this.documentScene.ins.units.value;
+                const box = this.setup.modelBoundingBox;
+                const units = this.setup.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);

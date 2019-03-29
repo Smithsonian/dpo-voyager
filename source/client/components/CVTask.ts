@@ -123,28 +123,28 @@ export default class CVTask extends CVNodeObserver
 
         if (previous) {
             if (savedConfig.gridVisible !== undefined) {
-                previous.documentScene.grid.ins.visible.setValue(savedConfig.gridVisible);
+                previous.setup.grid.ins.visible.setValue(savedConfig.gridVisible);
             }
             if (savedConfig.annotationsVisible !== undefined) {
-                previous.documentScene.viewer.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
+                previous.setup.viewer.ins.annotationsVisible.setValue(savedConfig.annotationsVisible);
             }
             if (savedConfig.interfaceVisible !== undefined) {
-                previous.documentScene.interface.ins.visible.setValue(savedConfig.interfaceVisible);
+                previous.setup.interface.ins.visible.setValue(savedConfig.interfaceVisible);
             }
         }
         if (next) {
             if (configuration.gridVisible !== undefined) {
-                const prop = next.documentScene.grid.ins.visible;
+                const prop = next.setup.grid.ins.visible;
                 savedConfig.gridVisible = prop.value;
                 prop.setValue(!!configuration.gridVisible);
             }
             if (configuration.annotationsVisible !== undefined) {
-                const prop = next.documentScene.viewer.ins.annotationsVisible;
+                const prop = next.setup.viewer.ins.annotationsVisible;
                 savedConfig.annotationsVisible = prop.value;
                 prop.setValue(!!configuration.annotationsVisible);
             }
             if (configuration.interfaceVisible !== undefined) {
-                const prop = next.documentScene.interface.ins.visible;
+                const prop = next.setup.interface.ins.visible;
                 savedConfig.interfaceVisible = prop.value;
                 prop.setValue(!!configuration.interfaceVisible);
             }

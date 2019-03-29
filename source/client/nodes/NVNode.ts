@@ -28,18 +28,18 @@ import CVPointLight from "../components/CVPointLight";
 import CVSpotLight from "../components/CVSpotLight";
 
 import CVInfo from "../components/CVInfo";
-import CVScene from "../components/CVScene";
+import CVSetup from "../components/CVSetup";
 import CVModel2 from "../components/CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface INodeComponents
 {
-    infos: boolean;
-    scenes: boolean;
-    models: boolean;
-    cameras: boolean;
-    lights: boolean;
+    setup: boolean;
+    info: boolean;
+    model: boolean;
+    camera: boolean;
+    light: boolean;
 }
 
 
@@ -52,9 +52,6 @@ export default class NVNode extends Node
     }
     get info() {
         return this.components.get(CVInfo, true);
-    }
-    get scene() {
-        return this.components.get(CVScene, true);
     }
     get model() {
         return this.components.get(CVModel2, true);
@@ -72,13 +69,6 @@ export default class NVNode extends Node
         this.createComponent(CVNode);
     }
 
-    createScene()
-    {
-        this.name = "Scene";
-        this.createComponent(CVInfo);
-        this.createComponent(CVScene);
-    }
-
     createModel()
     {
         this.name = "Model";
@@ -94,13 +84,8 @@ export default class NVNode extends Node
         let name = "Node";
 
         if (isFinite(node.info)) {
-            const info = this.getOrCreateComponent(CVInfo);
-            info.fromDocument(document, node);
+            this.createComponent(CVInfo).fromDocument(document, node);
             name = "Info";
-        }
-        if (isFinite(node.scene)) {
-            this.getComponent(CVScene).fromDocument(document, node);
-            name = "Scene";
         }
         if (isFinite(node.model)) {
             this.createComponent(CVModel2).fromDocument(document, node);
@@ -145,11 +130,11 @@ export default class NVNode extends Node
     toDocument(document: IDocument, components?: INodeComponents)
     {
         components = components || {
-            infos: true,
-            scenes: true,
-            models: true,
-            cameras: true,
-            lights: true,
+            setup: true,
+            info: true,
+            model: true,
+            camera: true,
+            light: true,
         };
 
         const index = document.nodes.length;
@@ -160,19 +145,16 @@ export default class NVNode extends Node
             node.name = this.name;
         }
 
-        if (this.info && components.infos) {
+        if (this.info && components.info) {
             this.info.toDocument(document, node);
         }
-        if (this.scene && components.scenes) {
-            this.scene.toDocument(document, node);
-        }
-        if (this.model && components.models) {
+        if (this.model && components.model) {
             this.model.toDocument(document, node);
         }
-        if (this.camera && components.cameras) {
+        if (this.camera && components.camera) {
             this.camera.toDocument(document, node);
         }
-        if (this.light && components.lights) {
+        if (this.light && components.light) {
             this.light.toDocument(document, node);
         }
 
@@ -199,19 +181,16 @@ export default class NVNode extends Node
         const tf = this.transform;
         const comps = this.components;
 
-        if (components.infos && (comps.has(CVInfo) || tf.hasChildComponents(CVInfo, true))) {
+        if (components.info && (comps.has(CVInfo) || tf.hasChildComponents(CVInfo, true))) {
             return true;
         }
-        if (components.scenes && (comps.has(CVScene) || tf.hasChildComponents(CVScene, true))) {
+        if (components.model && (comps.has(CVModel2) || tf.hasChildComponents(CVModel2, true))) {
             return true;
         }
-        if (components.models && (comps.has(CVModel2) || tf.hasChildComponents(CVModel2, true))) {
+        if (components.camera && (comps.has(CVCamera) || tf.hasChildComponents(CVCamera, true))) {
             return true;
         }
-        if (components.cameras && (comps.has(CVCamera) || tf.hasChildComponents(CVCamera, true))) {
-            return true;
-        }
-        if (components.lights && (comps.has(CLight) || tf.hasChildComponents(CLight, true))) {
+        if (components.light && (comps.has(CLight) || tf.hasChildComponents(CLight, true))) {
             return true;
         }
 

@@ -71,7 +71,7 @@ export class RenderToolView extends ToolView<CVRenderTool>
         }
 
         if (next) {
-            this.viewer = next.documentScene.viewer;
+            this.viewer = next.setup.viewer;
             this.viewer.ins.shader.on("value", this.onUpdate, this);
         }
     }

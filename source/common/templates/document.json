@@ -5,18 +5,17 @@
         "copyright": "(c) Smithsonian Institution, all rights reserved",
         "generator": "Voyager"
     },
-    "roots": [0],
+    "scene": 0,
+    "scenes": [{
+        "nodes": [0, 1],
+        "setup": 0
+    }],
     "nodes": [{
-        "name": "Template Scene",
-        "children": [1, 2],
-        "scene": 0,
-        "info": 0
-    },{
         "translation": [0, 0, 15],
         "camera": 0
     }, {
         "name": "Lights",
-        "children": [3, 4, 5, 6]
+        "children": [2, 3, 4, 5]
     }, {
         "translation": [-3, 1, 2],
         "light": 0
@@ -40,7 +39,7 @@
         }],
         "leadArticle": "1"
     }],
-    "scenes": [{
+    "setups": [{
         "units": "cm",
         "interface": {
             "visible": true,

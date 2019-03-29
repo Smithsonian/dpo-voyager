@@ -21,7 +21,7 @@ import * as documentSchema from "common/schema/document.schema.json";
 import * as commonSchema from "common/schema/common.schema.json";
 import * as infoSchema from "common/schema/info.schema.json";
 import * as modelSchema from "common/schema/model.schema.json";
-import * as sceneSchema from "common/schema/scene.schema.json";
+import * as setupSchema from "common/schema/setup.schema.json";
 
 import { IDocument } from "common/types/document";
 
@@ -40,7 +40,7 @@ export default class DocumentValidator
                 commonSchema,
                 infoSchema,
                 modelSchema,
-                sceneSchema,
+                setupSchema,
             ],
             allErrors: true
         });

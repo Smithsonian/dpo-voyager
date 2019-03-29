@@ -121,7 +121,7 @@ export default class MainMenu extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            const scene = previous.documentScene;
+            const scene = previous.setup;
             scene.interface.off("update", this.onUpdate, this);
             scene.reader.ins.visible.off("value", this.onUpdate, this);
             scene.tours.ins.enabled.off("value", this.onUpdate, this);
@@ -129,7 +129,7 @@ export default class MainMenu extends DocumentView
             this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         }
         if (next) {
-            const scene = next.documentScene;
+            const scene = next.setup;
             scene.interface.on("update", this.onUpdate, this);
             scene.reader.ins.visible.on("value", this.onUpdate, this);
             scene.tours.ins.enabled.on("value", this.onUpdate, this);
@@ -137,7 +137,7 @@ export default class MainMenu extends DocumentView
             this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         }
 
-        this.interface = next && next.documentScene.interface;
+        this.interface = next && next.setup.interface;
         this.requestUpdate();
     }
 }

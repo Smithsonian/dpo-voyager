@@ -19,7 +19,7 @@ import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
 
-import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 import CVSlicer from "./CVSlicer";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
@@ -67,7 +67,7 @@ export class SliceToolView extends ToolView<CVSliceTool>
             <sv-property-slider .property=${position}></sv-property-slider>`;
     }
 
-    protected onActiveScene(previous: CVScene, next: CVScene)
+    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             previous.slicer.off("update", this.onUpdate, this);

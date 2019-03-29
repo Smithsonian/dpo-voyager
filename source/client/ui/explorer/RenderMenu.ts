@@ -23,7 +23,7 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 import Popup from "@ff/ui/Popup";
 import { customElement, html, property } from "@ff/ui/CustomElement";
 
-import { EShaderMode } from "common/types/scene";
+import { EShaderMode } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

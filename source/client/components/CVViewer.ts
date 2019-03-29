@@ -17,7 +17,7 @@
 
 import CRenderable, { types } from "@ff/scene/components/CRenderable";
 
-import { IViewer, EShaderMode, TShaderMode } from "common/types/scene";
+import { IViewer, EShaderMode, TShaderMode } from "common/types/setup";
 
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";

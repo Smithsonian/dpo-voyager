@@ -25,6 +25,7 @@ import SystemView from "@ff/scene/ui/SystemView";
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
 import NVNode from "../../nodes/NVNode";
+import NVScene from "../../nodes/NVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -90,14 +91,12 @@ class NodeTree extends Tree<NVNode>
 
     protected update(changedProperties: PropertyValues): void
     {
-        const activeDocument = this.documentProvider.activeComponent;
+        const document = this.documentProvider.activeComponent;
 
-        if (activeDocument) {
+        if (document) {
             this.root = {
-                id: "root",
-                transform: {
-                    children: activeDocument.innerRoots
-                }
+                id: "scene",
+                children: [ document.root ]
             } as any;
         }
         else {
@@ -119,7 +118,15 @@ class NodeTree extends Tree<NVNode>
 
     protected getChildren(node: NVNode)
     {
-        return node.transform.children.filter(child => child.node.is(NVNode)).map(child => child.node);
+        if (node === this.root) {
+            return super.getChildren(node);
+        }
+        else {
+            return node.transform.children
+            .map(child => child.node)
+            .filter(child => child.is(NVNode) || child.is(NVScene));
+        }
+
     }
 
     protected onClickNode(event: MouseEvent, node: NVNode)

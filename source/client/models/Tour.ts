@@ -17,7 +17,7 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import { ITour } from "common/types/scene";
+import { ITour } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

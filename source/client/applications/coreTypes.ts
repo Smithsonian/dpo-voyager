@@ -24,7 +24,6 @@ import CNodeProvider from "@ff/graph/components/CNodeProvider";
 import CTweenMachine from "@ff/graph/components/CTweenMachine";
 
 import CRenderer from "@ff/scene/components/CRenderer";
-//import CRenderGraph from "@ff/scene/components/CRenderGraph";
 
 import CFullscreen from "@ff/scene/components/CFullscreen";
 import CPickSelection from "@ff/scene/components/CPickSelection";
@@ -40,9 +39,10 @@ import CVAssetReader from "../components/CVAssetReader";
 import CVDocument from "../components/CVDocument";
 import CVDocumentProvider from "../components/CVDocumentProvider";
 
+import CVScene from "../components/CVScene";
+import CVSetup from "../components/CVSetup";
 import CVNode from "../components/CVNode";
 import CVInfo from "../components/CVInfo";
-import CVScene from "../components/CVScene";
 import CVModel2 from "../components/CVModel2";
 import CVAnnotations from "../components/CVAnnotations";
 import CVAnnotationView from "../components/CVAnnotationView";
@@ -66,6 +66,7 @@ import CVTours from "../components/CVTours";
 
 import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
+import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +78,6 @@ const types = [
     CNodeProvider,
     CTweenMachine,
     CRenderer,
-//    CRenderGraph,
     CFullscreen,
     CPickSelection,
     CScene,
@@ -87,9 +87,11 @@ const types = [
     CVAssetReader,
     CVDocument,
     CVDocumentProvider,
+
+    CVScene,
+    CVSetup,
     CVNode,
     CVInfo,
-    CVScene,
     CVModel2,
     CVAnnotations,
     CVAnnotationView,
@@ -97,8 +99,6 @@ const types = [
     CVDirectionalLight,
     CVPointLight,
     CVSpotLight,
-
-
 
     CVInterface,
     CVViewer,
@@ -113,6 +113,7 @@ const types = [
 
     NVEngine,
     NVDocuments,
+    NVScene,
     NVNode,
 ];
 

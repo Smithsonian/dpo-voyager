@@ -19,7 +19,7 @@ import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
 import CVToolProvider from "../../components/CVToolProvider";
-import CVScene from "../../components/CVScene";
+import CVSetup from "../../components/CVSetup";
 
 import "../Logo";
 import "./MainMenu";
@@ -99,7 +99,7 @@ export default class ChromeView extends DocumentView
         this.toolProvider.ins.visible.setValue(false);
     }
 
-    protected onActiveScene(previous: CVScene, next: CVScene)
+    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             previous.interface.off("update", this.onUpdate, this);

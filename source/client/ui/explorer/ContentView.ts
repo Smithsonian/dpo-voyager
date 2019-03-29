@@ -16,7 +16,7 @@
  */
 
 import CVAssetReader from "../../components/CVAssetReader";
-import CVScene from "../../components/CVScene";
+import CVSetup from "../../components/CVSetup";
 import CVReader, { EReaderPosition } from "../../components/CVReader";
 
 import SceneView from "../SceneView";
@@ -102,7 +102,7 @@ export default class ContentView extends DocumentView
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;
     }
 
-    protected onActiveScene(previous: CVScene, next: CVScene)
+    protected onActiveFeatures(previous: CVSetup, next: CVSetup)
     {
         if (previous) {
             const reader = previous.reader;

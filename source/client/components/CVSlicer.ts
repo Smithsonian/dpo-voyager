@@ -19,11 +19,11 @@ import * as THREE from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
-import { ISlicer, ESliceAxis, TSliceAxis } from "common/types/scene";
+import { ISlicer, ESliceAxis, TSliceAxis } from "common/types/setup";
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
-import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ export default class CVSlicer extends Component
         const axisInverted = ins.inverted.value;
         const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const boundingBox = this.getComponent(CVScene).modelBoundingBox;
+        const boundingBox = this.getComponent(CVSetup).modelBoundingBox;
         if (!boundingBox) {
             return true;
         }

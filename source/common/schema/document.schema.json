@@ -6,6 +6,27 @@
     "description": "Describes a 3D document containing a scene with 3D models.",
 
     "definitions": {
+        "scene": {
+            "$id": "#scene",
+            "type": "object",
+            "properties": {
+                "nodes": {
+                    "type": "array",
+                    "description": "The indices of the scene's root nodes.",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "uniqueItems": true,
+                    "minItems": 1
+                },
+                "setup": {
+                    "description": "The index of the scene's setup.",
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
         "node": {
             "$id": "#node",
             "type": "object",
@@ -305,12 +326,16 @@
                 "version"
             ]
         },
-        "roots": {
-            "description": "Index of the root nodes of the document.",
+        "scene": {
+            "description": "Index of the root scene of the document.",
+            "type": "integer",
+            "minimum": 0
+        },
+        "scenes": {
+            "description": "An array of scenes.",
             "type": "array",
             "items": {
-                "type": "integer",
-                "minimum": 0
+                "$ref": "#/definitions/scene"
             }
         },
         "nodes": {
@@ -352,17 +377,19 @@
             },
             "minItems": 1
         },
-        "scenes": {
-            "description": "An array of scenes.",
+        "setups": {
+            "description": "An array of setups.",
             "type": "array",
             "items": {
-                "$ref": "./scene.schema.json"
-            }
+                "$ref": "./setup.schema.json"
+            },
+            "minItems": 1
         }
     },
     "required": [
-        "roots",
-        "nodes"
+        "asset",
+        "scene",
+        "scenes"
     ],
     "additionalProperties": false
 }

@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
-import { ITape } from "common/types/scene";
+import { ITape } from "common/types/setup";
 
 import Pin from "../utils/Pin";
 import CVModel2 from "./CVModel2";

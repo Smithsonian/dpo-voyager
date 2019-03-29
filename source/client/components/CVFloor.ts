@@ -18,7 +18,7 @@
 import Node from "@ff/graph/Node";
 import CFloor from "@ff/scene/components/CFloor";
 
-import { IFloor } from "common/types/scene";
+import { IFloor } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -27,8 +27,9 @@ import { EDerivativeQuality } from "common/types/model";
 import DocumentValidator from "../io/DocumentValidator";
 
 import NVNode, { INodeComponents } from "../nodes/NVNode";
-import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 import CVAssetReader from "./CVAssetReader";
+import NVScene from "../nodes/NVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,17 +65,19 @@ export default class CVDocument extends CRenderGraph
     {
         super(node, id);
 
-        // create root node with scene and info component
-        const root = this.innerGraph.createCustomNode(NVNode);
-        root.createScene();
+        // create root scene node with features component
+        this.innerGraph.createCustomNode(NVScene);
 
         // document is inactive and hidden, unless it becomes the active document
         this.ins.active.setValue(false);
         this.ins.visible.setValue(false);
     }
 
-    get documentScene() {
-        return this.innerComponents.get(CVScene);
+    get root() {
+        return this.innerNodes.get(NVScene);
+    }
+    get setup() {
+        return this.innerComponents.get(CVSetup);
     }
     get assetPath() {
         return this.outs.assetPath.value;
@@ -112,14 +115,13 @@ export default class CVDocument extends CRenderGraph
         return true;
     }
 
-    clearSceneTree()
+    clearNodeTree()
     {
-        const scene = this.documentScene;
-        const children = scene.transform.children.slice();
+        const children = this.root.transform.children.slice();
         children.forEach(child => child.dispose());
     }
 
-    openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode)
+    openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode | NVScene)
     {
         console.log("CVDocument.openDocument - assetPath: %s, mergeParent: %s", assetPath, mergeParent);
 
@@ -133,33 +135,29 @@ export default class CVDocument extends CRenderGraph
         }
 
         if (!mergeParent) {
-            this.clearSceneTree();
+            this.clearNodeTree();
         }
 
-        let parent = (typeof mergeParent === "object" ? mergeParent : this.documentScene.node) as NVNode;
+        let parent = (typeof mergeParent === "object" ? mergeParent : this.root);
         if (parent.graph !== this.innerGraph) {
             throw new Error("invalid parent node");
         }
 
-        let rootIndices = documentData.roots;
-
-        if (rootIndices.length === 1 && isFinite(documentData.nodes[rootIndices[0]].scene)) {
-            if (parent.scene) {
-                parent.fromDocument(documentData, rootIndices[0]);
-                return;
-            }
-
-            rootIndices = documentData.nodes[rootIndices[0]].children;
+        if (parent instanceof NVScene) {
+            parent.fromDocument(documentData, documentData.scene);
         }
-
-        rootIndices.forEach(rootIndex => {
-            const rootNode = this.innerGraph.createCustomNode(NVNode);
-            parent.transform.addChild(rootNode.transform);
-            rootNode.fromDocument(documentData, rootIndex);
-        });
+        else {
+            // if we append to a node, skip the document's root scene and append the scene's child nodes
+            const rootIndices = documentData.scenes[documentData.scene].nodes;
+            rootIndices.forEach(rootIndex => {
+                const rootNode = this.innerGraph.createCustomNode(NVNode);
+                parent.transform.addChild(rootNode.transform);
+                rootNode.fromDocument(documentData, rootIndex);
+            });
+        }
     }
 
-    appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode)
+    appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)
     {
         if (parent && parent.graph !== this.innerGraph) {
             throw new Error("invalid parent node");
@@ -168,7 +166,7 @@ export default class CVDocument extends CRenderGraph
             throw new Error("empty document, can't append model");
         }
 
-        parent = parent || this.innerRoots[0].node as NVNode;
+        parent = parent || this.root;
         const modelNode = this.innerGraph.createCustomNode(NVNode);
         parent.transform.addChild(modelNode.transform);
         modelNode.createModel();
@@ -177,7 +175,7 @@ export default class CVDocument extends CRenderGraph
         model.derivatives.createModelAsset(assetPath, quality);
     }
 
-    appendGeometry(geoPath: string, colorMapPath?: string, occlusionMapPath?: string, normalMapPath?: string, quality?: EDerivativeQuality | string, parent?: NVNode)
+    appendGeometry(geoPath: string, colorMapPath?: string, occlusionMapPath?: string, normalMapPath?: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)
     {
         if (parent && parent.graph !== this.innerGraph) {
             throw new Error("invalid parent node");
@@ -186,7 +184,7 @@ export default class CVDocument extends CRenderGraph
             throw new Error("empty document, can't append geometry");
         }
 
-        parent = parent || this.innerRoots[0].node as NVNode;
+        parent = parent || this.root;
         const modelNode = this.innerGraph.createCustomNode(NVNode);
         parent.transform.addChild(modelNode.transform);
         modelNode.createModel();
@@ -201,11 +199,6 @@ export default class CVDocument extends CRenderGraph
             throw new Error("empty document, can't serialize");
         }
 
-        const sceneNode = this.documentScene.node as NVNode;
-
-        const roots = !components || components.scenes ? [ sceneNode ] :
-            sceneNode.transform.children.map(child => child.node).filter(node => node.is(NVNode));
-
         const document: IDocument = {
             asset: {
                 type: CVDocument.mimeType,
@@ -213,16 +206,11 @@ export default class CVDocument extends CRenderGraph
                 generator: "Voyager",
                 copyright: "(c) Smithsonian Institution. All rights reserved."
             },
-            roots: [],
-            nodes: []
+            scene: 0,
+            scenes: [],
         };
 
-        roots.forEach((root: NVNode) => {
-            if (root.hasNodeComponents(components)) {
-                document.roots.push(root.toDocument(document, components));
-            }
-        });
-
+        document.scene = this.root.toDocument(document, components);
         return document;
     }
 }
