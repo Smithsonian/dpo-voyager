@@ -22,6 +22,7 @@ import CVDocument from "./CVDocument";
 import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
+import Subscriber from "@ff/core/Subscriber";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,13 +52,13 @@ export class ViewToolView extends ToolView<CVViewTool>
 
     protected render()
     {
-        const scene = this.activeSetup;
-        const navigation = scene && scene.navigation;
+        const document = this.activeDocument;
 
-        if (!navigation) {
+        if (!document) {
             return html``;
         }
 
+        const navigation = document.setup.navigation;
         const zoom = navigation.ins.zoomExtents;
         const projection = navigation.ins.projection;
         const preset = navigation.ins.preset;
@@ -70,9 +71,8 @@ export class ViewToolView extends ToolView<CVViewTool>
             <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>`;
     }
 
-    protected onUpdate()
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        console.log("view tool update");
-        super.onUpdate();
+        this.requestUpdate();
     }
 }

@@ -19,8 +19,7 @@ import "../ui/PropertyBoolean";
 import "../ui/PropertyString";
 
 import CVDocument from "./CVDocument";
-import CVSetup from "./CVSetup";
-import CVTape, { ETapeState } from "./CVTape";
+import { ETapeState } from "./CVTape";
 
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
@@ -52,13 +51,13 @@ export class TapeToolView extends ToolView<CVTapeTool>
 
     protected render()
     {
-        const scene = this.activeSetup;
+        const document = this.activeDocument;
 
-        if (!scene) {
+        if (!document) {
             return html``;
         }
 
-        const tape = scene.tape;
+        const tape = document.setup.tape;
         const visible = tape.ins.visible;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
@@ -72,7 +71,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             text = "Tap on model to set start of tape.";
         }
         else if (state === ETapeState.SetStart) {
-            const units = scene.ins.units.getOptionText();
+            const units = document.setup.ins.units.getOptionText();
             text = `${distance.toFixed(2)} ${units}`;
         }
         else {
@@ -84,13 +83,15 @@ export class TapeToolView extends ToolView<CVTapeTool>
             <div class="ff-string">${text}</div></div>`;
     }
 
-    protected onActiveSetup(previous: CVSetup, next: CVSetup)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.tape.off("update", this.onUpdate, this);
+            previous.setup.tape.off("update", this.onUpdate, this);
         }
         if (next) {
-            next.tape.on("update", this.onUpdate, this);
+            next.setup.tape.on("update", this.onUpdate, this);
         }
+
+        this.requestUpdate();
     }
 }

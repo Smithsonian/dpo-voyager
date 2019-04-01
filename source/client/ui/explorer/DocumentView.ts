@@ -20,7 +20,6 @@ import SystemView from "@ff/scene/ui/SystemView";
 
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
 import CVDocument from "../../components/CVDocument";
-import CVSetup from "../../components/CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +28,6 @@ export { customElement, property, html, PropertyValues, TemplateResult };
 export default class DocumentView extends SystemView
 {
     protected activeDocument: CVDocument = null;
-    protected activeSetup: CVSetup = null;
 
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
@@ -43,13 +41,7 @@ export default class DocumentView extends SystemView
         const document = provider.activeComponent;
         if (document) {
             this.activeDocument = document;
-            this.activeSetup = document.setup;
-
             this.onActiveDocument(null, document);
-
-            if (this.activeSetup) {
-                this.onActiveSetup(null, this.activeSetup);
-            }
         }
     }
 
@@ -59,38 +51,20 @@ export default class DocumentView extends SystemView
         provider.off<IActiveDocumentEvent>("active-component", this.onActiveDocumentEvent, this);
 
         const document = this.activeDocument;
-        const scene = this.activeSetup;
 
         if (document) {
             this.activeDocument = null;
-            this.activeSetup = null;
-
             this.onActiveDocument(document, null);
-
-            if (scene) {
-                this.onActiveSetup(scene, null);
-            }
         }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        this.requestUpdate();
-    }
-
-    protected onActiveSetup(previous: CVSetup, next: CVSetup)
-    {
     }
 
     protected onActiveDocumentEvent(event: IActiveDocumentEvent)
     {
-        const prev = event.previous;
-        const next = event.next;
-
-        this.activeDocument = next;
-        this.activeSetup = next && next.setup;
-
-        this.onActiveDocument(prev, this.activeDocument);
-        this.onActiveSetup(prev && prev.setup, this.activeSetup);
+        this.activeDocument = event.next;
+        this.onActiveDocument(event.previous, event.next);
     }
 }

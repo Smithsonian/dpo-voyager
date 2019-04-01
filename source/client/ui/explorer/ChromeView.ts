@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
+import Subscriber from "@ff/core/Subscriber";
+
 import "@ff/ui/ButtonGroup";
 import "@ff/ui/PopupButton";
 
 import CVToolProvider from "../../components/CVToolProvider";
-import CVSetup from "../../components/CVSetup";
+import CVDocument from "../../components/CVDocument";
 
 import "../Logo";
 import "./MainMenu";
@@ -34,6 +36,8 @@ import DocumentView, { customElement, html } from "./DocumentView";
 @customElement("sv-chrome-view")
 export default class ChromeView extends DocumentView
 {
+    protected documentProps = new Subscriber("value", this.onUpdate, this);
+
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
@@ -60,13 +64,13 @@ export default class ChromeView extends DocumentView
 
     protected render()
     {
-        const setup = this.activeSetup;
+        const document = this.activeDocument;
 
-        if (!this.activeSetup) {
+        if (!document) {
             return html``;
         }
 
-        const system = this.system;
+        const setup = document.setup;
 
         const interfaceVisible = setup.interface.ins.visible.value;
         const logoVisible = setup.interface.ins.logo.value;
@@ -82,17 +86,16 @@ export default class ChromeView extends DocumentView
         // TODO: quick hack to retrieve a document title
         const title = "A quite long and awesome model title";
 
-
         return html`
             <div class="sv-chrome-header">
-                <sv-main-menu .system=${system}></sv-main-menu>
+                <sv-main-menu .system=${this.system}></sv-main-menu>
                 <div class="sv-top-bar">
                     <div class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>
-            ${toursVisible ? html`<sv-tour-navigator .system=${system}></sv-tour-navigator>` : null}
+            ${toursVisible ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
             ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
     }
 
@@ -101,17 +104,21 @@ export default class ChromeView extends DocumentView
         this.toolProvider.ins.visible.setValue(false);
     }
 
-    protected onActiveSetup(previous: CVSetup, next: CVSetup)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.interface.off("update", this.onUpdate, this);
-            previous.reader.ins.visible.off("value", this.onUpdate, this);
-            previous.tours.ins.enabled.off("value", this.onUpdate, this);
+            this.documentProps.off();
         }
         if (next) {
-            next.interface.on("update", this.onUpdate, this);
-            next.reader.ins.visible.on("value", this.onUpdate, this);
-            next.tours.ins.enabled.on("value", this.onUpdate, this);
+            const setup = next.setup;
+            this.documentProps.on(
+                setup.interface.ins.visible,
+                setup.interface.ins.logo,
+                setup.reader.ins.visible,
+                setup.tours.ins.enabled
+            );
         }
+
+        this.requestUpdate();
     }
 }

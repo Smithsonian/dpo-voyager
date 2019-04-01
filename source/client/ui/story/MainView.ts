@@ -32,7 +32,7 @@ import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
 import TourPanel from "./TourPanel";
 import TaskPanel from "./TaskPanel";
-import NotePadPanel from "./NotePadPanel";
+import NotesPanel from "./NotesPanel";
 import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 import AssetPanel from "./AssetPanel";
@@ -115,7 +115,7 @@ export default class MainView extends CustomElement
         registry.set("article-editor", () => new EditorPanel(system));
         registry.set("tour-editor", () => new TourPanel(system));
         registry.set("task", () => new TaskPanel(system));
-        registry.set("notes", () => new NotePadPanel(system));
+        registry.set("notes", () => new NotesPanel(system));
         registry.set("console", () => new ConsolePanel(system));
         registry.set("navigator", () => new NavigatorPanel(system));
         registry.set("hierarchy", () => new HierarchyTreeView(system));

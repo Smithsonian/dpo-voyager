@@ -113,6 +113,8 @@ export default class CVSetup extends Component
         node.createComponent(CVSlicer);
         node.createComponent(CVTours);
 
+        this.registerTourTargets();
+
         this.graph.components.on(CVModel2, this.onModelComponent, this);
 
         this.models.forEach(model => model.ins.globalUnits.linkFrom(this.ins.units));
@@ -190,7 +192,11 @@ export default class CVSetup extends Component
         data.grid = this.grid.toData();
         data.tape = this.tape.toData();
         data.slicer = this.slicer.toData();
-        data.tours = this.tours.toData();
+
+        const tourData = this.tours.toData();
+        if (tourData) {
+            data.tours = tourData;
+        }
 
         return data;
     }
@@ -217,5 +223,12 @@ export default class CVSetup extends Component
 
         this.models.forEach(model => box.expandByObject(model.object3D));
         this.emit("bounding-box");
+    }
+
+    protected registerTourTargets()
+    {
+        const tours = this.tours;
+        tours.addTarget(this.navigation, this.navigation.ins.orbit);
+        tours.addTarget(this.navigation, this.navigation.ins.offset);
     }
 }

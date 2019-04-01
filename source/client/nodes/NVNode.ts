@@ -137,6 +137,7 @@ export default class NVNode extends Node
             light: true,
         };
 
+        document.nodes = document.nodes || [];
         const index = document.nodes.length;
         const node = this.transform.toData();
         document.nodes.push(node);

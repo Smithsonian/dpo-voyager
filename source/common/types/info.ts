@@ -28,6 +28,7 @@ export interface IInfo
     process?: Dictionary<any>;
     articles?: IArticle[];
     leadArticle?: Index;
+    notes?: INote[];
 }
 
 /**
@@ -44,4 +45,11 @@ export interface IArticle
 
     mimeType?: string;
     thumbnailUri?: string;
+}
+
+export interface INote
+{
+    date: string;
+    user: string;
+    text: string;
 }

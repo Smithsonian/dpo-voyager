@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
+import Subscriber from "@ff/core/Subscriber";
+
 import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
 
-import CVSetup from "./CVSetup";
-import CVSlicer from "./CVSlicer";
+import CVDocument from "./CVDocument";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
 
@@ -52,12 +53,13 @@ export class SliceToolView extends ToolView<CVSliceTool>
 
     protected render()
     {
-        const scene = this.activeSetup;
-        if (!scene) {
+        const document = this.activeDocument;
+
+        if (!document) {
             return html``;
         }
 
-        const slicer = scene.slicer;
+        const slicer = document.setup.slicer;
         const enabled = slicer.ins.enabled;
         const axis = slicer.ins.axis;
         const position = slicer.ins.position;
@@ -67,13 +69,8 @@ export class SliceToolView extends ToolView<CVSliceTool>
             <sv-property-slider .property=${position}></sv-property-slider>`;
     }
 
-    protected onActiveSetup(previous: CVSetup, next: CVSetup)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        if (previous) {
-            previous.slicer.off("update", this.onUpdate, this);
-        }
-        if (next) {
-            next.slicer.on("update", this.onUpdate, this);
-        }
+        this.requestUpdate();
     }
 }

@@ -43,7 +43,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = this.activeSetup.ins.units;
+        const globalUnits = this.activeDocument.setup.ins.units;
         const itemUnits = model.ins.localUnits;
         const position = model.ins.position;
         const rotation = model.ins.rotation;
@@ -56,12 +56,12 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
                 <ff-button icon="compress" text="Center" @click=${this.onClickCenter}></ff-button>
                 <ff-button icon="expand" text="Zoom Extent" @click=${this.onClickZoomViews}></ff-button>
             </div>
-            <div class="sv-panel-section sv-dialog sv-scrollable">
+            <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
                 <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
                 <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
                 <sv-property-view .property=${position}></sv-property-view>
                 <sv-property-view .property=${rotation}></sv-property-view>
-            </div>`;
+            </div></div>`;
     }
 
     protected onClickMode(event: IButtonClickEvent)

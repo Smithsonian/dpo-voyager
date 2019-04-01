@@ -49,7 +49,7 @@ export interface ISetup
     grid?: IGrid;
     tape?: ITape;
     slicer?: ISlicer;
-    tours?: ITour[];
+    tours?: ITours;
 }
 
 export interface IInterface
@@ -147,12 +147,15 @@ export interface IAnnotations
     visible: boolean;
 }
 
+export interface ITours
+{
+    targets: any[];
+    tours: ITour[];
+}
+
 export interface ITour
 {
-    id: string;
-    states: any[]; //ITweenState[];
-    targets: any[]; //ITweenTarget[];
-
+    states: any[];
     title?: string;
     lead?: string;
     tags?: string[];

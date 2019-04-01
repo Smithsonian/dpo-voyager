@@ -52,14 +52,15 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const annotation = annotations.activeAnnotation;
 
 
-        const detailView = annotation ? html`
+        const detailView = annotation ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${inProps.style}></sv-property-view>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Lead</div>
-            <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>` : null;
+            <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+        </div>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
@@ -69,11 +70,13 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="sv-panel-section sv-scrollable" style="flex-basis: 30%">
-                    <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                <div class="ff-splitter-section" style="flex-basis: 30%">
+                    <div class="ff-scroll-y ff-flex-column">
+                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                    </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
-                <div class="sv-panel-section sv-dialog sv-scrollable" style="flex-basis: 70%">
+                <div class="ff-splitter-section" style="flex-basis: 70%">
                     ${detailView}
                 </div>
             </div>
@@ -85,11 +88,13 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const annotations = this.task.activeAnnotations;
 
         const target = event.target;
+        const text = event.detail.text;
+
         if (target.name === "title") {
-            annotations.ins.title.setValue(event.detail.text);
+            annotations.ins.title.setValue(text);
         }
         else if (target.name === "lead") {
-            annotations.ins.lead.setValue(event.detail.text);
+            annotations.ins.lead.setValue(text);
         }
     }
 

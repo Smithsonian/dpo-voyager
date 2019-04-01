@@ -31,14 +31,15 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import "@ff/ui/TextEdit";
 import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
 
-import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
+import { INote } from "common/types/info";
 
-import CVNotePad, { INote } from "../../components/CVNotePad";
+import NodeView, { customElement, html } from "../explorer/NodeView";
+import NVNode from "../../nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-notepad-panel")
-export default class NotePadPanel extends SystemView
+@customElement("sv-notes-panel")
+export default class NotesPanel extends NodeView
 {
     protected static tableColumns: ITableColumn<INote>[] = [
         { header: "Date", width: 0.3,
@@ -51,35 +52,22 @@ export default class NotePadPanel extends SystemView
 
     protected noteTable: Table<INote>;
 
+    protected notes: INote[] = null;
+    protected activeNote: INote = null;
+
     constructor(system?: System)
     {
         super(system);
 
         this.noteTable = new Table<INote>();
-        this.noteTable.columns = NotePadPanel.tableColumns;
+        this.noteTable.columns = NotesPanel.tableColumns;
         this.noteTable.placeholder = "No notes available.";
         this.noteTable.addEventListener("rowclick", this.onClickTableRow.bind(this));
-    }
-
-    protected get notePad() {
-        return this.system.getMainComponent(CVNotePad);
     }
 
     protected firstConnected()
     {
         this.classList.add("sv-scrollable", "sv-panel", "sv-notes-panel");
-    }
-
-    protected connected()
-    {
-        super.connected();
-        this.notePad.on("update", this.performUpdate, this);
-    }
-
-    protected disconnected()
-    {
-        this.notePad.off("update", this.performUpdate, this);
-        super.disconnected();
     }
 
     protected renderNote(note: INote)
@@ -92,7 +80,7 @@ export default class NotePadPanel extends SystemView
 
         const date = moment(note.date).format("YYYY-MM-DD HH:mm:ss");
 
-        return html`<div class="ff-flex-column sv-note">
+        return html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-note-field">Created on ${date}</div>
             <ff-line-edit text=${note.user} placeholder="User" @change=${this.onEditUser}></ff-line-edit>
             <ff-text-edit text=${note.text} placeholder="Comment" @change=${this.onEditText}></ff-text-edit>
@@ -102,60 +90,79 @@ export default class NotePadPanel extends SystemView
 
     protected render()
     {
-        const info = this.notePad.info;
-        if (!info) {
+        const notes = this.notes;
+
+        if (!notes) {
             return html`<div class="ff-placeholder">
-                <div>Please select a node to display its notes.</div>
+                <div>Please select a scene or model to display its notes.</div>
             </div>`;
         }
 
-        const notes = this.notePad.notes;
-        const activeNote = this.notePad.activeNote;
+        const activeNote = this.activeNote;
 
-        const table = this.noteTable;
-        table.rows = notes;
-        table.selectedRows = activeNote;
-        table.requestUpdate();
+        const noteTable = this.noteTable;
+        noteTable.rows = notes;
+        noteTable.selectedRows = activeNote;
+        noteTable.requestUpdate();
 
-        return html`<div class="sv-panel-content">
-                <div class="sv-list">${table}</div>
-                <ff-splitter></ff-splitter>
-                <div class="ff-flex-column sv-details">
-                    <div class="sv-panel-header">
-                        <ff-button text="Add Note" icon="create" @click=${this.onClickCreate}></ff-button>
-                        <ff-button text="Delete Note" icon="trash" ?disabled=${!activeNote} @click=${this.onClickDelete}></ff-button>
-                    </div>
-                    ${this.renderNote(activeNote)}
-                </div>
-            </div>`;
+        return html`<div class="sv-panel-header">
+            <ff-button text="Add Note" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button text="Delete Note" icon="trash" ?disabled=${!activeNote} @click=${this.onClickDelete}></ff-button>
+        </div>
+        <div class="ff-flex-item-stretch ff-flex-row">
+            <div class="ff-splitter-section" style="flex-basis: 60%">
+                <div class="ff-scroll-y ff-flex-column">${noteTable}</div>
+            </div>
+            <ff-splitter></ff-splitter>
+            <div class="ff-splitter-section" style="flex-basis: 40%">
+                ${this.renderNote(activeNote)}
+            </div>
+        </div>`;
     }
 
     protected onEditUser(event: ILineEditChangeEvent)
     {
-        this.notePad.setNote(event.detail.text, this.notePad.activeNote.text);
+        this.activeNote.user = event.detail.text;
+        this.requestUpdate();
     }
 
     protected onEditText(event: ITextEditChangeEvent)
     {
-        this.notePad.setNote(this.notePad.activeNote.user, event.detail.text);
+        this.activeNote.text = event.detail.text;
+        this.requestUpdate();
     }
 
     protected onClickTableRow(event: ITableRowClickEvent<INote>)
     {
-        this.notePad.activeNote = event.detail.row;
+        this.activeNote = event.detail.row;
+
+        this.requestUpdate();
         setTimeout(() => (this.getElementsByTagName("ff-text-edit").item(0) as HTMLElement).focus(), 0);
     }
 
     protected onClickCreate()
     {
         const note: INote = { date: new Date().toISOString(), user: "", text: "" };
-        this.notePad.addNote(note);
+        this.notes.push(note);
+        this.activeNote = note;
 
+        this.requestUpdate();
         setTimeout(() => (this.getElementsByTagName("ff-line-edit").item(0) as HTMLElement).focus(), 0);
     }
 
     protected onClickDelete()
     {
-        this.notePad.removeActiveNote();
+        const index = this.notes.indexOf(this.activeNote);
+        if (index >= 0) {
+            this.notes.slice(index, 1);
+        }
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+        this.notes = next && next.info && next.info.notes;
+        this.activeNote = this.notes ? this.notes[0] : null;
+
+        this.requestUpdate();
     }
 }

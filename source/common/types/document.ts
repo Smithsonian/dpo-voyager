@@ -61,6 +61,7 @@ export interface IScene
     name?: string;
     nodes?: Index[];
     setup?: Index;
+    info?: Index;
 }
 
 /**

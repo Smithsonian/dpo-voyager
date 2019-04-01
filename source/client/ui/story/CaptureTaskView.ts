@@ -58,11 +58,11 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
                 <ff-button text="Save" icon="save" ?disabled=${!ready} @click=${this.onClickSave}></ff-button>
                 <ff-button text="Download" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
             </div>
-            <div class="sv-panel-section sv-dialog sv-scrollable">
+            <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
                 <sv-property-view .property=${ins.type}></sv-property-view>
                 <sv-property-view .property=${ins.quality}></sv-property-view>
                 ${image}
-            </div>`;
+            </div></div>`;
     }
 
     protected onClickTake()

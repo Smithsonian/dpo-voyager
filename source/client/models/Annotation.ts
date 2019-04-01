@@ -125,6 +125,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         data.lead = json.lead || "";
         data.tags = json.tags || [];
         //TODO: Articles/IDs
+        data.articles = [];
         //data.articles = json.articles ? json.articles.slice() : [];
 
         data.style = EAnnotationStyle[json.style] || EAnnotationStyle.Default;

@@ -41,10 +41,6 @@ ff-dock-view {
   flex: 1 1 auto;
 }
 
-.sv-scrollable {
-  overflow-y: auto;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MENU/TASK BAR
 
@@ -106,6 +102,16 @@ ff-dock-view {
 ////////////////////////////////////////////////////////////////////////////////
 // PANELS
 
+.sv-detail-view {
+  padding: 6px;
+}
+
+.sv-notes-panel {
+  .ff-text-edit, .ff-line-edit {
+    margin: 2px 0;
+  }
+}
+
 .sv-panel {
   display: flex;
   flex-direction: column;
@@ -148,10 +154,6 @@ ff-dock-view {
       margin: 2px;
     }
   }
-
-  .sv-scrollable {
-    overflow-y: auto;
-  }
 }
 
 .sv-panel-section {
@@ -164,46 +166,9 @@ ff-dock-view {
   }
 }
 
-.sv-dialog {
-  padding: 4px;
-}
-
-.sv-notes-panel, .sv-tour-panel {
-  .sv-panel-content {
-    display: flex;
-    flex-direction: row;
-  }
-  .sv-list {
-    flex: 1 1 60%;
-    display: flex;
-    box-sizing: border-box;
-    border-right: 2px solid $color-background-darker;
-
-    .ff-table-header {
-      cursor: pointer;
-    }
-    .ff-table-cell {
-      @include ellipsis;
-      cursor: default;
-    }
-  }
-  .sv-details {
-    flex: 1 1 40%;
-
-    .sv-note {
-      flex: 1 1;
-      padding: 4px;
-    }
-    .sv-note-field {
-      margin-bottom: 4px;
-      padding: 2px;
-      color: $color-text-dark;
-    }
-    .ff-line-edit {
-      margin-bottom: 4px;
-    }
-  }
-}
+//.sv-dialog {
+//  padding: 4px;
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TASK VIEW

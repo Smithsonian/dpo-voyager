@@ -17,7 +17,6 @@
 
 import CVStoryController from "../components/CVStoryController";
 import CVAssetWriter from "../components/CVAssetWriter";
-import CVNotePad from "../components/CVNotePad";
 
 import CVTaskProvider from "../components/CVTaskProvider";
 
@@ -39,7 +38,6 @@ import NVPrepTasks from "../nodes/NVPrepTasks";
 const types = [
     CVStoryController,
     CVAssetWriter,
-    CVNotePad,
 
     CVTaskProvider,
     CVExploreTask,

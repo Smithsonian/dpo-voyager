@@ -57,16 +57,20 @@ export default class NavigatorPanel extends SystemView
         const system = this.system;
         const authMode = true; // this.story.ins.mode.value === EStoryMode.Authoring;
 
-        const documentList = authMode ? html`<div class="sv-panel-section">
-                <div class="sv-panel-header">Documents</div>
-                <sv-document-list .system=${system}></sv-document-list>
+        const documentList = authMode ? html`<div class="ff-splitter-section ff-flex-column" style="flex-basis: 30%">
+            <div class="sv-panel-header">Documents</div>
+                <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
+                    <sv-document-list .system=${system}></sv-document-list>
+                </div></div>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>` : null;
 
         return html`${documentList}
-            <div class="sv-panel-section">
+            <div class="ff-splitter-section ff-flex-column" style="flex-basis: 70%">
                 <div class="sv-panel-header">Nodes</div>
-                <sv-node-tree-view .system=${system}></sv-node-tree-view>
+                <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
+                    <sv-node-tree-view .system=${system}></sv-node-tree-view>
+                </div></div>
             </div>`;
     }
 }

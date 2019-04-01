@@ -15,20 +15,20 @@
  * limitations under the License.
  */
 
-import DocumentView, { customElement, html } from "./DocumentView";
-
+import Subscriber from "@ff/core/Subscriber";
 import CFullscreen from "@ff/scene/components/CFullscreen";
 
-import CVInterface from "../../components/CVInterface";
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
+
+import DocumentView, { customElement, html } from "./DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-main-menu")
 export default class MainMenu extends DocumentView
 {
-    protected interface: CVInterface = null;
+    protected documentProps = new Subscriber("value", this.onUpdate, this);
 
     protected get fullscreen() {
         return this.system.getMainComponent(CFullscreen);
@@ -59,9 +59,9 @@ export default class MainMenu extends DocumentView
 
     protected render()
     {
-        const scene = this.activeSetup;
-        if (!scene) {
-            console.warn("no scene");
+        const document = this.activeDocument;
+        if (!document) {
+            console.warn("no active document");
             return html``;
         }
 
@@ -69,13 +69,12 @@ export default class MainMenu extends DocumentView
         const fullscreenActive = fullscreen.outs.fullscreenActive.value;
         const showFullscreenButton = fullscreen.outs.fullscreenAvailable.value;
 
-        const readerVisible = scene.reader.ins.visible.value;
-        const toursVisible = scene.tours.ins.enabled.value;
-        const annotationsVisible = scene.viewer.ins.annotationsVisible.value;
+        const setup = document.setup;
+        const readerVisible = setup.reader.ins.visible.value;
+        const toursVisible = setup.tours.ins.enabled.value;
+        const annotationsVisible = setup.viewer.ins.annotationsVisible.value;
         const toolsVisible = this.toolProvider.ins.visible.value;
-
-        const iface = this.interface;
-        const showToolButton = iface ? iface.ins.tools.value : false;
+        const showToolButton = setup.interface.ins.tools.value;
 
         return html`<ff-button icon="document" title="Read more..."
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
@@ -91,13 +90,13 @@ export default class MainMenu extends DocumentView
 
     protected onToggleReader()
     {
-        const prop = this.activeSetup.reader.ins.visible;
+        const prop = this.activeDocument.setup.reader.ins.visible;
         prop.setValue(!prop.value);
     }
 
     protected onToggleTours()
     {
-        const toursProp = this.activeSetup.tours.ins.enabled;
+        const toursProp = this.activeDocument.setup.tours.ins.enabled;
         toursProp.setValue(!toursProp.value);
 
         if (toursProp.value) {
@@ -107,7 +106,7 @@ export default class MainMenu extends DocumentView
 
     protected onToggleAnnotations()
     {
-        const prop = this.activeSetup.viewer.ins.annotationsVisible;
+        const prop = this.activeDocument.setup.viewer.ins.annotationsVisible;
         prop.setValue(!prop.value);
     }
 
@@ -122,30 +121,27 @@ export default class MainMenu extends DocumentView
         toolsProp.setValue(!toolsProp.value);
 
         if (toolsProp.value) {
-            this.activeSetup.tours.ins.enabled.setValue(false);
+            this.activeDocument.setup.tours.ins.enabled.setValue(false);
         }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            const scene = previous.setup;
-            scene.interface.off("update", this.onUpdate, this);
-            scene.reader.ins.visible.off("value", this.onUpdate, this);
-            scene.tours.ins.enabled.off("value", this.onUpdate, this);
-            scene.viewer.ins.annotationsVisible.off("value", this.onUpdate, this);
-            this.toolProvider.ins.visible.off("value", this.onUpdate, this);
+            this.documentProps.off();
         }
         if (next) {
-            const scene = next.setup;
-            scene.interface.on("update", this.onUpdate, this);
-            scene.reader.ins.visible.on("value", this.onUpdate, this);
-            scene.tours.ins.enabled.on("value", this.onUpdate, this);
-            scene.viewer.ins.annotationsVisible.on("value", this.onUpdate, this);
-            this.toolProvider.ins.visible.on("value", this.onUpdate, this);
+            const setup = next.setup;
+
+            this.documentProps.on(
+                setup.interface.ins.tools,
+                setup.reader.ins.visible,
+                setup.tours.ins.enabled,
+                setup.viewer.ins.annotationsVisible,
+                this.toolProvider.ins.visible
+            );
         }
 
-        this.interface = next && next.setup.interface;
         this.requestUpdate();
     }
 }

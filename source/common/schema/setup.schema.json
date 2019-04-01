@@ -184,33 +184,38 @@
         },
         "tours": {
             "description": "Animated tours and snapshots.",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "title": {
-                        "type": "string"
-                    },
-                    "lead": {
-                        "type": "string"
-                    },
-                    "tags": {
-                        "description": "Array of tags, categorizing the tour.",
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "states": {
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
-                    },
-                    "targets": {
-                        "type": "array",
-                        "items": {
-                            "type": "object"
+            "type": "object",
+            "properties": {
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "tours": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string"
+                            },
+                            "lead": {
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Array of tags, categorizing the tour.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "states": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
                 }

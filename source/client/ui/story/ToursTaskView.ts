@@ -18,28 +18,36 @@
 
 import List from "@ff/ui/List";
 
-import CVTours, { Tour } from "../../components/CVTours";
+import { ITour } from "common/types/setup";
+
 import CVToursTask from "../../components/CVToursTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
-import CVSetup from "../../components/CVSetup";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-tours-task-view")
 export default class ToursTaskView extends TaskView<CVToursTask>
 {
-    protected activeTour: Tour = null;
-
     protected render()
     {
-        const setup = this.activeSetup;
+        const task = this.task;
+        const tours = task.tours;
 
-        if (!setup) {
-            return html`<div class="sv-placeholder">Please select a presentation to edit its tours.</div>`;
+        if (!tours) {
+            return html`<div class="sv-placeholder">Please select a document to edit its tours.</div>`;
         }
 
-        const tours = setup.tours.tours;
-        const activeTour = this.activeTour;
+        const activeTour = task.activeTour;
+
+        const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <div class="sv-label">Title</div>
+            <ff-line-edit name="title" text=${task.ins.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
+            <div class="sv-label">Tags</div>
+            <ff-line-edit name="tags" text=${task.ins.tourTags.value} @change=${this.onTextEdit}></ff-line-edit>
+            <div class="sv-label">Lead</div>
+            <ff-text-edit name="lead" text=${task.ins.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
+        </div>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
@@ -49,51 +57,59 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <sv-tour-list .data=${tours} .selectedItem=${activeTour} @select=${this.onSelectTour}></sv-tour-list>
+                <div class="ff-splitter-section" style="flex-basis: 30%">
+                    <div class="ff-scroll-y ff-flex-column">
+                        <sv-tour-list .data=${tours.slice()} .selectedItem=${activeTour} @select=${this.onSelectTour}></sv-tour-list>
+                    </div>
+                </div>
+                <ff-splitter direction="vertical"></ff-splitter>
+                <div class="ff-splitter-section" style="flex-basis: 70%">
+                    ${detailView}
+                </div>
             </div>
         </div>`;
     }
 
     protected onClickCreate()
     {
-        this.task.createTour();
+        this.task.ins.createTour.set();
     }
 
     protected onClickDelete()
     {
-        this.task.deleteTour();
+        this.task.ins.deleteTour.set();
     }
 
     protected onClickUp()
     {
-        this.task.moveTourUp();
+        this.task.ins.moveTourUp.set();
     }
 
     protected onClickDown()
     {
-        this.task.moveTourDown();
+        this.task.ins.moveTourDown.set();
     }
 
     protected onSelectTour(event: ISelectTourEvent)
     {
-        this.activeDocument.setup.tours.activeTour = event.detail.tour;
+        this.task.ins.tourIndex.setValue(event.detail.index);
     }
 
-    protected onActiveSetup(previous: CVSetup, next: CVSetup)
+    protected onTextEdit(event: ILineEditChangeEvent)
     {
-        if (previous) {
-            previous.tours.outs.activeTour.off("value", this.onActiveTour, this);
-        }
-        if (next) {
-            next.tours.outs.activeTour.on("value", this.onActiveTour, this);
+        const task = this.task;
+        const target = event.target;
+        const text = event.detail.text;
 
+        if (target.name === "title") {
+            task.ins.tourTitle.setValue(text);
         }
-    }
-
-    protected onActiveTour(tour: Tour)
-    {
-        this.activeTour = tour;
-        this.requestUpdate();
+        else if (target.name === "lead") {
+            task.ins.tourLead.setValue(text);
+        }
+        else if (target.name === "tags") {
+            task.ins.tourTags.setValue(text);
+        }
     }
 }
 
@@ -101,15 +117,16 @@ interface ISelectTourEvent extends CustomEvent
 {
     target: TourList;
     detail: {
-        tour: Tour;
+        tour: ITour;
+        index: number;
     }
 }
 
 @customElement("sv-tour-list")
-export class TourList extends List<Tour>
+export class TourList extends List<ITour>
 {
     @property({ attribute: false })
-    selectedItem: Tour = null;
+    selectedItem: ITour = null;
 
     protected firstConnected()
     {
@@ -117,27 +134,27 @@ export class TourList extends List<Tour>
         this.classList.add("sv-tour-list");
     }
 
-    protected renderItem(item: Tour)
+    protected renderItem(item: ITour)
     {
-        return item.data.title;
+        return item.title;
     }
 
-    protected isItemSelected(item: Tour)
+    protected isItemSelected(item: ITour)
     {
         return item === this.selectedItem;
     }
 
-    protected onClickItem(event: MouseEvent, item: Tour)
+    protected onClickItem(event: MouseEvent, item: ITour, index: number)
     {
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { tour: item }
+            detail: { tour: item, index }
         }));
     }
 
     protected onClickEmpty(event: MouseEvent)
     {
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { tour: null }
+            detail: { tour: null, index: -1 }
         }));
     }
 }

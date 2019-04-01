@@ -70,6 +70,13 @@
             "description": "Id of the main article. This is the default article displayed with the item.",
             "type": "string",
             "minLength": 1
+        },
+        "notes": {
+            "description": "Notes taken during production.",
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
         }
     },
     "additionalProperties": false

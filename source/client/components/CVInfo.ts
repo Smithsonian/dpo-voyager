@@ -19,8 +19,8 @@ import OrderedCollection from "@ff/core/OrderedCollection";
 import UnorderedCollection from "@ff/core/UnorderedCollection";
 import Component from "@ff/graph/Component";
 
-import { IDocument, INode } from "common/types/document";
-import { IInfo } from "common/types/info";
+import { IDocument, INode, IScene } from "common/types/document";
+import { IInfo, INote } from "common/types/info";
 
 import Article from "../models/Article";
 
@@ -34,8 +34,9 @@ export default class CVInfo extends Component
     process = new UnorderedCollection<any>();
     articles = new OrderedCollection<Article>();
     leadArticle: Article = null;
+    notes: INote[] = [];
 
-    fromDocument(document: IDocument, node: INode)
+    fromDocument(document: IDocument, node: INode | IScene)
     {
         if (!isFinite(node.info)) {
             throw new Error("info property missing in node");
@@ -55,9 +56,11 @@ export default class CVInfo extends Component
                 this.leadArticle = this.articles.getAt(data.leadArticle);
             }
         }
+
+        this.notes = data.notes || [];
     }
 
-    toDocument(document: IDocument, node: INode)
+    toDocument(document: IDocument, node: INode | IScene)
     {
         let data: IInfo = null;
 
@@ -79,6 +82,10 @@ export default class CVInfo extends Component
             if (this.leadArticle) {
                 data.leadArticle = articles.indexOf(this.leadArticle);
             }
+        }
+        if (this.notes.length > 0) {
+            data = data || {};
+            data.notes = this.notes.slice();
         }
 
         if (data) {

@@ -21,6 +21,7 @@ import NVNode, { INodeComponents } from "./NVNode";
 
 import CVScene from "../components/CVScene";
 import CVSetup from "../components/CVSetup";
+import CVInfo from "../components/CVInfo";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +40,7 @@ export default class NVScene extends NVNode
     {
         this.createComponent(CVScene);
         this.createComponent(CVSetup);
+        this.createComponent(CVInfo);
     }
 
     fromDocument(document: IDocument, sceneIndex: number)
@@ -53,6 +55,9 @@ export default class NVScene extends NVNode
             const featureData = document.setups[scene.setup];
             this.setup.fromData(featureData);
         }
+        if (isFinite(scene.info)) {
+            this.info.fromDocument(document, scene);
+        }
 
         const nodeIndices = scene.nodes;
         if (nodeIndices) {
@@ -66,6 +71,7 @@ export default class NVScene extends NVNode
 
     toDocument(document: IDocument, components?: INodeComponents): number
     {
+        document.scenes = document.scenes || [];
         const index = document.scenes.length;
         const scene: IScene = {};
 
@@ -75,6 +81,8 @@ export default class NVScene extends NVNode
             document.setups.push(this.setup.toData());
             scene.setup = setupIndex;
         }
+
+        this.info.toDocument(document, scene);
 
         const children = this.transform.children
             .map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];

@@ -19,7 +19,6 @@ import Node from "@ff/graph/Node";
 
 import CVAssetWriter from "../components/CVAssetWriter";
 import CVStoryController from "../components/CVStoryController";
-import CVNotePad from "../components/CVNotePad";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +30,5 @@ export default class NVoyagerStory extends Node
     {
         this.createComponent(CVAssetWriter);
         this.createComponent(CVStoryController);
-        this.createComponent(CVNotePad);
     }
 }

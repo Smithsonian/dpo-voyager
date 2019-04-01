@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+import Subscriber from "@ff/core/Subscriber";
+
+import { EReaderPosition } from "common/types/setup";
+
 import CVAssetReader from "../../components/CVAssetReader";
-import CVSetup from "../../components/CVSetup";
-import CVReader, { EReaderPosition } from "../../components/CVReader";
+import CVDocument from "../../components/CVDocument";
 
 import SceneView from "../SceneView";
 import "../Spinner";
@@ -31,6 +34,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 export default class ContentView extends DocumentView
 {
     protected sceneView: SceneView = null;
+    protected documentProps = new Subscriber("value", this.onUpdate, this);
 
     protected get assetLoader() {
         return this.system.getMainComponent(CVAssetReader);
@@ -62,22 +66,15 @@ export default class ContentView extends DocumentView
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
 
-        const scene = this.activeSetup;
-        if (scene) {
-            readerVisible = scene.reader.ins.visible.value;
-            readerPosition = scene.reader.ins.position.value;
+        const document = this.activeDocument;
+        if (document) {
+            const reader = document.setup.reader;
+            readerVisible = reader.ins.visible.value;
+            readerPosition = reader.ins.position.value;
         }
 
         const sceneView = this.sceneView;
         sceneView.classList.remove("sv-blur");
-
-        // TODO: quick hack
-        //if (!isLoading) {
-        //    const scene = this.system.getComponent(CVScene, true);
-        //    if (scene) {
-        //        scene.ins.zoomExtents.set();
-        //    }
-        //}
 
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
@@ -102,17 +99,16 @@ export default class ContentView extends DocumentView
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;
     }
 
-    protected onActiveSetup(previous: CVSetup, next: CVSetup)
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            const reader = previous.reader;
-            reader.ins.visible.off("value", this.onUpdate, this);
-            reader.ins.position.off("value", this.onUpdate, this);
+            this.documentProps.off();
         }
         if (next) {
-            const reader = next.reader;
-            reader.ins.visible.on("value", this.onUpdate, this);
-            reader.ins.position.on("value", this.onUpdate, this);
+            this.documentProps.on(
+                next.setup.reader.ins.position,
+                next.setup.reader.ins.visible,
+            );
         }
 
         this.requestUpdate();

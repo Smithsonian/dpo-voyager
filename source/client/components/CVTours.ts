@@ -15,26 +15,17 @@
  * limitations under the License.
  */
 
-import OrderedCollection from "@ff/core/OrderedCollection";
-
-import Component, { ITypedEvent, types } from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
 import CTweenMachine, { IMachineState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
 
-import { ITour } from "../models/Tour";
-import Tour from "../models/Tour";
+import { ITours, ITour } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { Tour };
 export enum EToursState { Off, Select, Playing }
 
-export interface IActiveTourEvent extends ITypedEvent<"active-tour">
-{
-    previous: Tour;
-    next: Tour;
-}
 
 export default class CVTours extends Component
 {
@@ -42,71 +33,34 @@ export default class CVTours extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Tours.Enabled"),
-        tour: types.Option("Tours.Tour", []),
+        index: types.Integer("Tours.Index", -1),
     };
 
     protected static readonly outs = {
-        state: types.Enum("Player.State", EToursState),
-        activeTour: types.Object("Tours.ActiveTour", Tour),
-        toursUpdated: types.Event("Tours.Updated"),
+        state: types.Enum("Tours.State", EToursState),
+        index: types.Integer("Tours.Index", -1),
     };
 
     ins = this.addInputs(CVTours.ins);
     outs = this.addOutputs(CVTours.outs);
 
-    tours = new OrderedCollection<Tour>();
+    private _tours: ITour[] = [];
+    private _targets: ITweenTarget[] = [];
 
-    private _activeTour: Tour = null;
-    private _defaultTargets: ITweenTarget[] = [];
-
+    get targets() {
+        return this._targets;
+    }
+    get tours() {
+        return this._tours;
+    }
     get tweenMachine() {
         return this.getComponent(CTweenMachine);
-    }
-
-    get activeTour() {
-        return this._activeTour;
-    }
-    set activeTour(tour: Tour) {
-        const activeTour = this.activeTour;
-
-        if (tour !== activeTour) {
-            const outs = this.outs;
-
-            if (activeTour) {
-                const state: IMachineState = this.tweenMachine.stateToJSON();
-                activeTour.set("states", state.states || []);
-                activeTour.set("targets", state.targets || []);
-            }
-
-            if (tour) {
-                const data = tour.data;
-                const state = { states: data.states, targets: data.targets };
-                this.tweenMachine.stateFromJSON(state);
-
-                outs.state.setValue(EToursState.Playing);
-            }
-            else {
-                outs.state.setValue(EToursState.Select);
-            }
-
-            this._activeTour = tour;
-            outs.activeTour.setValue(tour);
-            this.emit<IActiveTourEvent>({ type: "active-tour", previous: activeTour, next: tour });
-        }
     }
 
     create()
     {
         super.create();
-
         this.createComponent(CTweenMachine);
-
-        this.tours.on("update", () => {
-            this.outs.toursUpdated.set();
-            this.updateTourList();
-        });
-
-        this.updateTourList();
     }
 
     dispose()
@@ -120,19 +74,26 @@ export default class CVTours extends Component
 
         const isEnabled = ins.enabled.value;
 
-        if (ins.enabled.changed) {
-            const index = ins.tour.value;
+        const tours = this._tours;
+        const index = Math.min(tours.length - 1, Math.max(-1, ins.index.value));
+        const indexChanged = index !== outs.index.value;
 
-            outs.state.setValue(isEnabled ? (index > 0 ? EToursState.Playing : EToursState.Select) : EToursState.Off);
+        if (indexChanged) {
+            const currentTour = tours[outs.index.value];
+            if (currentTour) {
+                const state: IMachineState = this.tweenMachine.stateToJSON();
+                currentTour.states = state.states;
+            }
+            const nextTour = tours[index];
+            if (nextTour) {
+                const state = { states: nextTour.states, targets: this._targets };
+                this.tweenMachine.stateFromJSON(state);
+            }
         }
 
-        if (!isEnabled) {
-            return ins.enabled.changed;
-        }
-
-        if (ins.tour.changed) {
-            const index = ins.tour.getValidatedValue() - 1;
-            this.activeTour = index >= 0 ? this.tours.getAt(index) : null;
+        if (ins.enabled.changed || indexChanged) {
+            outs.index.setValue(index);
+            outs.state.setValue(isEnabled ? (index < 0 ? EToursState.Select : EToursState.Playing) : EToursState.Off);
         }
 
         return true;
@@ -140,25 +101,55 @@ export default class CVTours extends Component
 
     addTarget(component: Component, property: Property)
     {
-        this._defaultTargets.push({ id: component.id, key: property.key });
+        this._targets.push({ id: component.id, key: property.key });
     }
 
-    fromData(tours: ITour[])
+    fromData(data: ITours)
     {
-        this.tours.items = tours.map(tourData => Tour.fromJSON(tourData));
+        this._targets = data.targets;
+
+        this._tours = data.tours.map(tourData => ({
+            states: tourData.states,
+            title: tourData.title || "",
+            lead: tourData.lead || "",
+            tags: tourData.tags || [],
+        }));
+
+        this.ins.index.setValue(-1);
     }
 
-    toData(): ITour[]
+    toData(): ITours | null
     {
-        return this.tours.items.map(tour => tour.toJSON());
-    }
+        if (this._tours.length === 0) {
+            return null;
+        }
 
-    protected updateTourList()
-    {
-        const names = this.tours.items.map(tour => tour.data.title);
-        names.unshift("(none)");
-        this.ins.tour.setOptions(names);
+        // update current tour states before serialization
+        const currentTour = this._tours[this.outs.index.value];
+        if (currentTour) {
+            const state: IMachineState = this.tweenMachine.stateToJSON();
+            currentTour.states = state.states;
+        }
 
-        this.emit("update");
+        return {
+            targets: this._targets,
+            tours: this._tours.map(tour => {
+                const data: ITour = {
+                    states: tour.states,
+                };
+
+                if (tour.title) {
+                    data.title = tour.title;
+                }
+                if (tour.lead) {
+                    data.lead = tour.lead;
+                }
+                if (tour.tags.length > 0) {
+                    data.tags = tour.tags.slice();
+                }
+
+                return data;
+            })
+        };
     }
 }

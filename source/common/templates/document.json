@@ -100,8 +100,7 @@
             "axis": "X",
             "inverted": false,
             "position": 0.5
-        },
-        "tours": []
+        }
     }],
     "cameras": [{
         "type": "perspective",
