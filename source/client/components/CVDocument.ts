@@ -35,6 +35,7 @@ import NVScene from "../nodes/NVScene";
 
 export { IDocument };
 
+
 /**
  * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
  * be serialized to and from an IDocument structure which is compatible with a glTF document.

@@ -17,19 +17,17 @@
 
 import "@ff/ui/Button";
 
-import DocumentView, { customElement, html } from "./DocumentView";
+import CVDocument from "../../components/CVDocument";
+import CVTours from "../../components/CVTours";
 
-//import CVTours from "../../components/CVTours";
+import DocumentView, { customElement, html } from "./DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-tour-navigator")
 export default class TourNavigator extends DocumentView
 {
-    protected get tours() {
-        const document = this.activeDocument;
-        return document ? document.setup.tours : null;
-    }
+    protected tours: CVTours;
 
     protected firstConnected()
     {
@@ -45,35 +43,52 @@ export default class TourNavigator extends DocumentView
         let title, info;
 
         if (tours && activeTour) {
-            title = activeTour.data.title;
-            info = "Step 1 of 10";
+            title = tours.outs.tourTitle.value;
+            const stepNumber = tours.outs.stepIndex.value + 1;
+            const stepCount = tours.outs.stepCount.value;
+            info = stepCount > 0 ? `Step ${stepNumber} of ${stepCount}` : "No tour steps defined";
         }
         else {
             title = "No tour selected";
             info = "---";
         }
 
-        return html`<ff-button icon="bars" ?disabled=${!true} @click=${this.onClickMenu}></ff-button>
+        return html`<ff-button icon="bars" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
             <div class="ff-ellipsis sv-tour-content">
                 <div class="ff-ellipsis sv-tour-title">${title}</div>
                 <div class="ff-ellipsis sv-tour-info">${info}</div>
             </div>
-            <ff-button icon="triangle-left" ?disabled=${!true} @click=${this.onClickPrevious}></ff-button>
-            <ff-button icon="triangle-right" ?disabled=${!true} @click=${this.onClickNext}></ff-button>`;
+            <ff-button icon="triangle-left" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
+            <ff-button icon="triangle-right" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>`;
     }
 
     protected onClickMenu()
     {
-
+        this.tours.ins.enabled.setValue(false);
     }
 
     protected onClickPrevious()
     {
-
+        this.tours.ins.previous.set();
     }
 
     protected onClickNext()
     {
+        this.tours.ins.next.set();
+    }
 
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            this.tours.outs.tourIndex.off("value", this.onUpdate, this);
+            this.tours.outs.stepIndex.off("value", this.onUpdate, this);
+        }
+        if (next) {
+            this.tours = next.setup.tours;
+            this.tours.outs.tourIndex.on("value", this.onUpdate, this);
+            this.tours.outs.stepIndex.on("value", this.onUpdate, this);
+        }
+
+        this.requestUpdate();
     }
 }

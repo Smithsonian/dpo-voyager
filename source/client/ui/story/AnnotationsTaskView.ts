@@ -37,6 +37,18 @@ import { TaskView } from "../../components/CVTask";
 @customElement("sv-annotations-task-view")
 export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 {
+    protected connected()
+    {
+        super.connected();
+        this.task.on("update", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.task.off("update", this.onUpdate, this);
+        super.disconnected();
+    }
+
     protected render()
     {
         const node = this.activeNode;

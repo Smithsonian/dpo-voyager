@@ -34,6 +34,9 @@ export default class PropertyView extends CustomElement
     @property()
     label: string = undefined;
 
+    @property({ type: Boolean })
+    commitonly = false;
+
     protected firstConnected()
     {
         if (!this.property) {
@@ -69,10 +72,11 @@ export default class PropertyView extends CustomElement
         const property = this.property;
         const labels = property.schema.labels || _defaultLabels;
         const labelElement = index >= 0 ? html`<div class="sv-field-label">${labels[index]}</div>` : null;
+        const commitOnly = this.commitonly;
 
         return html`<div class="ff-flex-row sv-field-row">
             ${labelElement}
-            <ff-property-field .property=${property} .index=${index}></ff-property-field>
+            <ff-property-field .property=${property} .index=${index} ?commitonly=${commitOnly}></ff-property-field>
         </div>`;
     }
 }

@@ -111,6 +111,11 @@ export default class CVPoseTask extends CVTask
         });
     }
 
+    update(context)
+    {
+        return true;
+    }
+
     tick()
     {
         if (!this.isActiveTask) {

@@ -155,8 +155,17 @@ export interface ITours
 
 export interface ITour
 {
-    states: any[];
-    title?: string;
+    steps: ITourStep[];
+    title: string;
     lead?: string;
     tags?: string[];
+}
+
+export interface ITourStep
+{
+    title: string;
+    curve: string;
+    duration: number;
+    threshold: number;
+    values: any[];
 }

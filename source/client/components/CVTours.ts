@@ -18,14 +18,29 @@
 import Component, { types } from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
-import CTweenMachine, { IMachineState, ITweenTarget } from "@ff/graph/components/CTweenMachine";
+import CTweenMachine, {
+    EEasingCurve,
+    ITweenState,
+    ITweenTarget
+} from "@ff/graph/components/CTweenMachine";
 
-import { ITours, ITour } from "common/types/setup";
+import { ITour, ITours, ITourStep } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EToursState { Off, Select, Playing }
+interface ITourEntry
+{
+    title: string;
+    lead: string;
+    tags: string[];
+    steps: IStepEntry[];
+}
 
+interface IStepEntry
+{
+    title: string;
+    id: string;
+}
 
 export default class CVTours extends Component
 {
@@ -33,26 +48,43 @@ export default class CVTours extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Tours.Enabled"),
-        index: types.Integer("Tours.Index", -1),
+        tourIndex: types.Integer("Tours.Index"),
+        stepIndex: types.Integer("Step.Index"),
+        next: types.Event("Step.Next"),
+        previous: types.Event("Step.Previous"),
+        first: types.Event("Step.First"),
     };
 
     protected static readonly outs = {
-        state: types.Enum("Tours.State", EToursState),
-        index: types.Integer("Tours.Index", -1),
+        tourIndex: types.Integer("Tour.Index"),
+        tourTitle: types.String("Tour.Title"),
+        tourLead: types.String("Tour.Lead"),
+        stepCount: types.Integer("Tour.Steps"),
+        stepIndex: types.Integer("Step.Index"),
+        stepTitle: types.String("Step.Title"),
     };
 
     ins = this.addInputs(CVTours.ins);
     outs = this.addOutputs(CVTours.outs);
 
-    private _tours: ITour[] = [];
-    private _targets: ITweenTarget[] = [];
+    private _tours: ITourEntry[] = [];
 
-    get targets() {
-        return this._targets;
-    }
     get tours() {
         return this._tours;
     }
+    get activeSteps() {
+        const tour = this.activeTour;
+        return tour ? tour.steps : null;
+    }
+    get activeTour() {
+        return this._tours[this.outs.tourIndex.value];
+    }
+    get activeStep() {
+        const tour = this.activeTour;
+        return tour ? tour.steps[this.outs.stepIndex.value] : null;
+    }
+
+
     get tweenMachine() {
         return this.getComponent(CTweenMachine);
     }
@@ -72,28 +104,62 @@ export default class CVTours extends Component
     {
         const { ins, outs } = this;
 
-        const isEnabled = ins.enabled.value;
-
         const tours = this._tours;
-        const index = Math.min(tours.length - 1, Math.max(-1, ins.index.value));
-        const indexChanged = index !== outs.index.value;
 
-        if (indexChanged) {
-            const currentTour = tours[outs.index.value];
-            if (currentTour) {
-                const state: IMachineState = this.tweenMachine.stateToJSON();
-                currentTour.states = state.states;
-            }
-            const nextTour = tours[index];
-            if (nextTour) {
-                const state = { states: nextTour.states, targets: this._targets };
-                this.tweenMachine.stateFromJSON(state);
-            }
+        if (!ins.enabled.value || tours.length === 0) {
+            return false;
         }
 
-        if (ins.enabled.changed || indexChanged) {
-            outs.index.setValue(index);
-            outs.state.setValue(isEnabled ? (index < 0 ? EToursState.Select : EToursState.Playing) : EToursState.Off);
+        const machine = this.tweenMachine;
+        const tourIndex = Math.min(tours.length - 1, Math.max(-1, ins.tourIndex.value));
+        const tour = tours[tourIndex];
+        const stepCount = tour ? tour.steps.length : 0;
+
+        let nextStepIndex = -1;
+
+        if (ins.tourIndex.changed || ins.enabled.changed) {
+            if (tourIndex !== outs.tourIndex.value) {
+                nextStepIndex = 0;
+            }
+
+            outs.tourIndex.setValue(tourIndex);
+            outs.tourTitle.setValue(tour ? tour.title : "");
+            outs.tourLead.setValue(tour ? tour.lead : "");
+        }
+
+        if (stepCount === 0) {
+            outs.stepIndex.setValue(-1);
+            outs.stepTitle.setValue("");
+            return true;
+        }
+
+        if (ins.stepIndex.changed) {
+            nextStepIndex = Math.min(tour.steps.length - 1, Math.max(-1, ins.stepIndex.value));
+            const step = tour.steps[nextStepIndex];
+            outs.stepIndex.setValue(nextStepIndex);
+            outs.stepCount.setValue(stepCount);
+            outs.stepTitle.setValue(step.title);
+            machine.ins.id.setValue(step.id);
+            machine.ins.recall.set();
+            return true;
+        }
+
+        if (ins.first.changed) {
+            nextStepIndex = 0;
+        }
+        if (ins.next.changed) {
+            nextStepIndex = (outs.stepIndex.value + 1) % stepCount;
+        }
+        if (ins.previous.changed) {
+            nextStepIndex = (outs.stepIndex.value - 1) % stepCount;
+        }
+
+        if (nextStepIndex >= 0) {
+            const step = tour.steps[nextStepIndex];
+            outs.stepIndex.setValue(nextStepIndex);
+            outs.stepTitle.setValue(step.title);
+            machine.ins.id.setValue(step.id);
+            machine.ins.tween.set();
         }
 
         return true;
@@ -101,55 +167,81 @@ export default class CVTours extends Component
 
     addTarget(component: Component, property: Property)
     {
-        this._targets.push({ id: component.id, key: property.key });
+        this.tweenMachine.addTarget(component, property);
     }
 
     fromData(data: ITours)
     {
-        this._targets = data.targets;
+        const machine = this.tweenMachine;
+
+        // TODO: Translate target paths
+        //this._targets = data.targets;
 
         this._tours = data.tours.map(tourData => ({
-            states: tourData.states,
             title: tourData.title || "",
             lead: tourData.lead || "",
             tags: tourData.tags || [],
+            steps: tourData.steps.map(stepData => this.stepToEntry(stepData)),
         }));
 
-        this.ins.index.setValue(-1);
+        this.ins.tourIndex.setValue(0);
     }
 
     toData(): ITours | null
     {
+        const machine = this.tweenMachine;
+
         if (this._tours.length === 0) {
             return null;
         }
 
-        // update current tour states before serialization
-        const currentTour = this._tours[this.outs.index.value];
-        if (currentTour) {
-            const state: IMachineState = this.tweenMachine.stateToJSON();
-            currentTour.states = state.states;
-        }
+        // TODO: Translate target paths
 
         return {
-            targets: this._targets,
+            targets: null, //this._targets,
             tours: this._tours.map(tour => {
-                const data: ITour = {
-                    states: tour.states,
+                const data: Partial<ITour> = {
+                    title: tour.title,
                 };
 
-                if (tour.title) {
-                    data.title = tour.title;
-                }
                 if (tour.lead) {
                     data.lead = tour.lead;
                 }
                 if (tour.tags.length > 0) {
-                    data.tags = tour.tags.slice();
+                    data.tags = tour.tags;
                 }
 
-                return data;
+                data.steps = tour.steps.map(stepEntry => this.entryToStep(stepEntry));
+
+                return data as ITour;
             })
+        };
+    }
+
+    protected entryToStep(entry: IStepEntry)
+    {
+        const tweenState = this.tweenMachine.getState(entry.id);
+        return {
+            title: entry.title,
+            curve: EEasingCurve[tweenState.curve],
+            duration: tweenState.duration,
+            threshold: tweenState.threshold,
+            values: tweenState.values,
+        };
+    }
+
+    protected stepToEntry(step: ITourStep)
+    {
+        const tweenState: ITweenState = {
+            curve: EEasingCurve[step.curve] || 0,
+            duration: step.duration,
+            threshold: step.threshold,
+            values: step.values,
+        };
+
+        return {
+            title: step.title,
+            id: this.tweenMachine.setState(tweenState),
         };
     }
 }

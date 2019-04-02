@@ -23,6 +23,7 @@ import { ITour } from "common/types/setup";
 import CVToursTask from "../../components/CVToursTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+import CVDocument from "../../components/CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +32,8 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 {
     protected render()
     {
+        console.log("TourTaskView.render");
+
         const task = this.task;
         const tours = task.tours;
 
@@ -38,7 +41,8 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             return html`<div class="sv-placeholder">Please select a document to edit its tours.</div>`;
         }
 
-        const activeTour = task.activeTour;
+        const tourList = tours.tours;
+        const activeTour = tours.activeTour;
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label">Title</div>
@@ -59,7 +63,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-tour-list .data=${tours.slice()} .selectedItem=${activeTour} @select=${this.onSelectTour}></sv-tour-list>
+                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} @select=${this.onSelectTour}></sv-tour-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -92,7 +96,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
     protected onSelectTour(event: ISelectTourEvent)
     {
-        this.task.ins.tourIndex.setValue(event.detail.index);
+        this.task.tours.ins.tourIndex.setValue(event.detail.index);
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)
@@ -110,6 +114,18 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         else if (target.name === "tags") {
             task.ins.tourTags.setValue(text);
         }
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            previous.setup.tours.outs.tourIndex.off("value", this.onUpdate, this);
+        }
+        if (next) {
+            next.setup.tours.outs.tourIndex.on("value", this.onUpdate, this);
+        }
+
+        this.requestUpdate();
     }
 }
 

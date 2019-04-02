@@ -15,28 +15,42 @@
  * limitations under the License.
  */
 
+import Subscriber from "@ff/core/Subscriber";
 import { EEasingCurve, ITweenState } from "@ff/graph/components/CTweenMachine";
 
 import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
+import CVDocument from "../../components/CVDocument";
+import CVTours from "../../components/CVTours";
 import CVToursTask from "../../components/CVToursTask";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+interface IStepEntry
+{
+    title: string;
+    curve: string;
+    duration: string;
+    threshold: string;
+}
+
 @customElement("sv-tour-panel")
 export default class TourPanel extends DocumentView
 {
-    protected static tableColumns: ITableColumn<ITweenState>[] = [
+    protected static tableColumns: ITableColumn<IStepEntry>[] = [
         { header: "#", width: 0.05, cell: (row, index) => index.toString() },
-        { header: "Title", width: 0.4, cell: "name" },
-        { header: "Duration", width: 0.15, cell: row => row.duration.toFixed(1) },
-        { header: "Curve", width: 0.25, cell: row => EEasingCurve[row.curve] },
-        { header: "Thres", width: 0.15, cell: row => row.threshold.toFixed(2) }
+        { header: "Title", width: 0.4, cell: "title" },
+        { header: "Curve", width: 0.25, cell: "curve" },
+        { header: "Duration", width: 0.15, cell: "duration" },
+        { header: "Threshold", width: 0.15, cell: "threshold" },
     ];
 
-    protected stateTable: Table<ITweenState>;
+    protected stateTable: Table<IStepEntry> = null;
+    protected subscriber: Subscriber = null;
+    tours: CVTours = null;
+
 
     protected get toursTask() {
         return this.system.getMainComponent(CVToursTask);
@@ -47,24 +61,37 @@ export default class TourPanel extends DocumentView
         super.firstConnected();
         this.classList.add("sv-panel", "sv-tour-panel");
 
-        this.stateTable = new Table<ITweenState>();
+        this.stateTable = new Table();
         this.stateTable.columns = TourPanel.tableColumns;
         this.stateTable.placeholder = "Start by creating a tour step.";
         this.stateTable.addEventListener("rowclick", this.onClickTableRow.bind(this));
+
+        this.subscriber = new Subscriber("value", this.onUpdate, this);
     }
 
     protected connected()
     {
         super.connected();
-        this.toursTask.on("update", this.onUpdate, this);
         this.toursTask.outs.isActive.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.toursTask.off("update", this.onUpdate, this);
         this.toursTask.outs.isActive.off("value", this.onUpdate, this);
         super.disconnected();
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            this.subscriber.off();
+        }
+        if (next) {
+            this.tours = next.setup.tours;
+            this.subscriber.on(this.tours.ins.tourIndex, this.tours.outs.stepIndex);
+        }
+
+        this.requestUpdate();
     }
 
     protected render()
@@ -81,23 +108,35 @@ export default class TourPanel extends DocumentView
             return html`<div class="ff-placeholder">Please select 'Tours' from the task menu to edit tours.</div>`;
         }
 
-        const tour = task.activeTour;
+        const tours = this.tours;
+        const machine = tours.tweenMachine;
+
+        const tour = tours.activeTour;
 
         if (!tour) {
             return html`<div class="ff-placeholder">Please create or select a tour to edit.</div>`;
         }
 
-        const activeStep = task.activeStep;
+        const activeStep = tours.activeStep;
 
         const stepDetailView = activeStep ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${task.ins.stepName}></sv-property-view>
+            <sv-property-view .property=${task.ins.stepTitle}></sv-property-view>
             <sv-property-view .property=${task.ins.stepCurve}></sv-property-view>
-            <sv-property-view .property=${task.ins.stepDuration}></sv-property-view>
-            <sv-property-view .property=${task.ins.stepThreshold}></sv-property-view>
+            <sv-property-view .property=${task.ins.stepDuration} commitonly></sv-property-view>
+            <sv-property-view .property=${task.ins.stepThreshold} commitonly></sv-property-view>
         </div>` : html`<div class="ff-placeholder"><div>Create or select a tour step to edit.</div></div>`;
 
-        this.stateTable.rows = task.activeTourSteps.slice();
-        this.stateTable.selectedRows = activeStep;
+        this.stateTable.rows = tours.activeSteps.map(step => {
+            const state = machine.getState(step.id);
+            return {
+                title: step.title,
+                curve: EEasingCurve[state.curve],
+                duration: state.duration.toFixed(1) + "s",
+                threshold: (state.threshold * 100).toFixed(0) + "%",
+            };
+        });
+
+        this.stateTable.selectedRows = this.stateTable.rows[tours.outs.stepIndex.value];
 
         return html`<div class="sv-panel-header">
             <ff-button text="Update Step" icon="create" @click=${this.onClickUpdate}></ff-button>
@@ -119,7 +158,7 @@ export default class TourPanel extends DocumentView
 
     protected onClickTableRow(event: ITableRowClickEvent<ITweenState>)
     {
-        this.toursTask.ins.stepIndex.setValue(event.detail.index);
+        this.tours.ins.stepIndex.setValue(event.detail.index);
     }
 
     protected onClickUpdate()

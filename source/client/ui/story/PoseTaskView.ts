@@ -32,6 +32,18 @@ import { TaskView } from "../../components/CVTask";
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView<CVPoseTask>
 {
+    protected connected()
+    {
+        super.connected();
+        this.task.on("update", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.task.off("update", this.onUpdate, this);
+        super.disconnected();
+    }
+
     protected render()
     {
         const node = this.activeNode;

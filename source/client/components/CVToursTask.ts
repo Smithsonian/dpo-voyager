@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-import { EEasingCurve } from "@ff/graph/components/CTweenMachine";
+import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
 
 import CVTask, { types } from "./CVTask";
 import ToursTaskView from "../ui/story/ToursTaskView";
 
 import CVDocument from "./CVDocument";
+import CVTours from "./CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-let _INDEX = 0;
+let _nextTourIndex = 0;
+let _nextStepIndex = 0;
 
 export default class CVToursTask extends CVTask
 {
@@ -34,7 +36,6 @@ export default class CVToursTask extends CVTask
     static readonly icon: string = "globe";
 
     protected static readonly ins = {
-        tourIndex: types.Integer("Tours.Index", -1),
         createTour: types.Event("Tours.Create"),
         deleteTour: types.Event("Tours.Delete"),
         moveTourUp: types.Event("Tours.MoveUp"),
@@ -42,124 +43,96 @@ export default class CVToursTask extends CVTask
         tourTitle: types.String("Tour.Title"),
         tourLead: types.String("Tour.Lead"),
         tourTags: types.String("Tour.Tags"),
-        stepIndex: types.Integer("Steps.Index", -1),
-        updateStep: types.Event("Steps.Update"),
-        createStep: types.Event("Steps.Create"),
-        deleteStep: types.Event("Steps.Delete"),
-        moveStepUp: types.Event("Steps.MoveUp"),
-        moveStepDown: types.Event("Steps.MoveDown"),
-        stepName: types.String("Steps.Name"),
+        updateStep: types.Event("Step.Update"),
+        createStep: types.Event("Step.Create"),
+        deleteStep: types.Event("Step.Delete"),
+        moveStepUp: types.Event("Step.MoveUp"),
+        moveStepDown: types.Event("Step.MoveDown"),
+        stepTitle: types.String("Step.Title"),
         stepCurve: types.Enum("Step.Curve", EEasingCurve),
         stepDuration: types.Number("Step.Duration", 1),
         stepThreshold: types.Percent("Step.Threshold", 0.5),
     };
 
     protected static readonly outs = {
-        tourIndex: types.Integer("Task.ActiveTour", -1),
-        stepIndex: types.Integer("Task.ActiveStep", -1),
     };
 
     ins = this.addInputs<CVTask, typeof CVToursTask.ins>(CVToursTask.ins);
     outs = this.addOutputs<CVTask, typeof CVToursTask.outs>(CVToursTask.outs);
 
-    get tours() {
-        const component = this.tourComponent;
-        return component ? component.tours : null;
-    }
-    get activeTour() {
-        const tours = this.tours;
-        return tours ? tours[this.outs.tourIndex.value] : null;
-    }
-    get activeTourSteps() {
-        const component = this.tourComponent;
-        return component ? component.tweenMachine.states : null;
-    }
-    get activeStep() {
-        const steps = this.activeTourSteps;
-        return steps ? steps[this.outs.stepIndex.value] : null;
-    }
-
-    protected get tourComponent() {
-        const document = this.activeDocument;
-        return document ? document.setup.tours : null;
-    }
+    tours: CVTours = null;
+    machine: CTweenMachine = null;
 
     update(context)
     {
-        const { ins, outs } = this;
+        const ins = this.ins;
+        const tours = this.tours;
+        const machine = this.machine;
 
-        const tourComponent = this.tourComponent;
-
-        if (!tourComponent) {
+        if (!tours) {
             return false;
         }
 
-        const tours = tourComponent.tours;
-        const tourIndex = ins.tourIndex.value;
-        const tour = tours[tourIndex];
-
-        if (ins.tourIndex.changed) {
-            tourComponent.ins.index.setValue(tourIndex);
-            outs.tourIndex.setValue(tourIndex);
-            ins.tourTitle.setValue(tour ? tour.title : "", true);
-            ins.tourLead.setValue(tour ? tour.lead : "", true);
-            ins.tourTags.setValue(tour ? tour.tags.join(", ") : "", true);
-        }
-
-        const machineComponent = tourComponent.tweenMachine;
-        const stepIndex = ins.stepIndex.value;
-        const steps = machineComponent.states;
-        const step = steps[stepIndex];
-
-        //console.log("CVToursTask.update - inTourIndex: %s, inStepIndex: %s", ins.tourIndex.value, ins.stepIndex.value);
-
-        if (ins.stepIndex.changed) {
-            outs.stepIndex.setValue(ins.stepIndex.value);
-            ins.stepName.setValue(step ? step.name : "", true);
-            ins.stepCurve.setValue(step ? step.curve : 0, true);
-            ins.stepDuration.setValue(step ? step.duration : 1, true);
-            ins.stepThreshold.setValue(step ? step.threshold : 0.5, true);
-        }
+        const tourList = tours.tours;
+        const tourIndex = tours.outs.tourIndex.value;
+        const tour = tourList[tourIndex];
 
         if (tour) {
+            const stepList = tour.steps;
+            const stepIndex = tours.outs.stepIndex.value;
+            const step = stepList[stepIndex];
+
             // tour step actions
             if (ins.createStep.changed) {
-                steps.splice(stepIndex + 1, 0, {
-                    values: machineComponent.getCurrentValues(),
-                    name: "New Step #" + _INDEX++,
-                    duration: 1,
-                    curve: EEasingCurve.EaseCubic,
-                    threshold: 0.5
+                const id = machine.setState({
+                    values: machine.getCurrentValues(),
+                    curve: EEasingCurve.EaseQuad,
+                    duration: 2,
+                    threshold: 0.5,
                 });
-                machineComponent.ins.index.setValue(stepIndex + 1);
+
+                stepList.splice(stepIndex + 1, 0, {
+                    title: "New Step #" + _nextStepIndex++,
+                    id
+                });
+
+                tours.ins.stepIndex.setValue(stepIndex + 1);
+                return true;
             }
 
             if (step) {
-                if (ins.stepName.changed || ins.stepCurve.changed ||
-                    ins.stepDuration.changed || ins.stepThreshold.changed) {
+                if (ins.stepTitle.changed || ins.stepCurve.changed ||
+                        ins.stepDuration.changed || ins.stepThreshold.changed) {
 
-                    step.name = ins.stepName.value;
-                    step.curve = ins.stepCurve.value;
-                    step.duration = ins.stepDuration.value;
-                    step.threshold = ins.stepThreshold.value;
+                    step.title = ins.stepTitle.value;
+                    machine.ins.curve.setValue(ins.stepCurve.value);
+                    machine.ins.duration.setValue(ins.stepDuration.value);
+                    machine.ins.threshold.setValue(ins.stepThreshold.value);
+                    tours.ins.stepIndex.setValue(stepIndex);
+                    return true;
                 }
 
                 if (ins.updateStep.changed) {
-                    step.values = machineComponent.getCurrentValues();
+                    machine.ins.store.set();
+                    return true;
                 }
                 if (ins.deleteStep.changed) {
-                    steps.splice(stepIndex, 1);
-                    machineComponent.ins.index.setValue(stepIndex);
+                    stepList.splice(stepIndex, 1);
+                    machine.ins.delete.set();
+                    tours.ins.stepIndex.setValue(stepIndex);
+                    return true;
                 }
                 if (stepIndex > 0 && ins.moveStepUp.changed) {
-                    steps[stepIndex] = steps[stepIndex - 1];
-                    steps[stepIndex - 1] = step;
-                    machineComponent.ins.index.setValue(stepIndex - 1);
+                    stepList[stepIndex] = stepList[stepIndex - 1];
+                    stepList[stepIndex - 1] = step;
+                    tours.ins.stepIndex.setValue(stepIndex - 1);
+                    return true;
                 }
-                if (stepIndex < steps.length - 1 && ins.moveStepDown.changed) {
-                    steps[stepIndex] = steps[stepIndex + 1];
-                    steps[stepIndex + 1] = step;
-                    machineComponent.ins.index.setValue(stepIndex + 1);
+                if (stepIndex < stepList.length - 1 && ins.moveStepDown.changed) {
+                    stepList[stepIndex] = stepList[stepIndex + 1];
+                    stepList[stepIndex + 1] = step;
+                    tours.ins.stepIndex.setValue(stepIndex + 1);
+                    return true;
                 }
             }
 
@@ -167,35 +140,39 @@ export default class CVToursTask extends CVTask
             if (ins.tourTitle.changed || ins.tourLead.changed || ins.tourTags.changed) {
                 tour.title = ins.tourTitle.value;
                 tour.lead = ins.tourLead.value;
-                tour.tags = ins.tourTags.value.split(",").map(tag => tag.trim());
+                tour.tags = ins.tourTags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                tours.ins.tourIndex.set();
+                return true;
             }
             if (ins.deleteTour.changed) {
-                tours.splice(tourIndex, 1);
-                tourComponent.ins.index.setValue(tourIndex);
+                tourList.splice(tourIndex, 1);
+                tours.ins.tourIndex.setValue(tourIndex);
+                return true;
             }
             if (tourIndex > 0 && ins.moveTourUp.changed) {
-                tours[tourIndex] = tours[tourIndex - 1];
-                tours[tourIndex - 1] = tour;
-                tourComponent.ins.index.setValue(tourIndex - 1);
+                tourList[tourIndex] = tourList[tourIndex - 1];
+                tourList[tourIndex - 1] = tour;
+                tours.ins.tourIndex.setValue(tourIndex - 1);
+                return true;
             }
-            if (tourIndex < tours.length - 1 && ins.moveTourDown.changed) {
-                tours[tourIndex] = tours[tourIndex + 1];
-                tours[tourIndex + 1] = tour;
-                tourComponent.ins.index.setValue(tourIndex + 1);
+            if (tourIndex < tourList.length - 1 && ins.moveTourDown.changed) {
+                tourList[tourIndex] = tourList[tourIndex + 1];
+                tourList[tourIndex + 1] = tour;
+                tours.ins.tourIndex.setValue(tourIndex + 1);
+                return true;
             }
         }
 
         if (ins.createTour.changed) {
-            tours.splice(tourIndex + 1, 0, {
-                title: "New Tour #" + _INDEX++,
+            tourList.splice(tourIndex + 1, 0, {
+                title: "New Tour #" + _nextTourIndex++,
                 lead: "",
                 tags: [],
-                states: []
+                steps: []
             });
-            tourComponent.ins.index.setValue(tourIndex + 1);
+            tours.ins.tourIndex.setValue(tourIndex + 1);
+            return true;
         }
-
-        //console.log("CVToursTask.update - outTourIndex: %s, outStepIndex: %s", outs.tourIndex.value, outs.stepIndex.value);
 
         return true;
     }
@@ -208,14 +185,41 @@ export default class CVToursTask extends CVTask
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            const tours = previous.setup.tours;
-            tours.outs.index.unlinkFrom(this.ins.tourIndex);
-            tours.tweenMachine.outs.index.unlinkFrom(this.ins.stepIndex);
+            this.tours.outs.tourIndex.off("value", this.onTourChange, this);
+            this.tours.outs.stepIndex.off("value", this.onStepChange, this);
+            this.tours.ins.enabled.setValue(false);
         }
         if (next) {
-            const tours = next.setup.tours;
-            tours.outs.index.linkTo(this.ins.tourIndex);
-            tours.tweenMachine.outs.index.linkTo(this.ins.stepIndex);
+            this.tours = next.setup.tours;
+            this.machine = this.tours.tweenMachine;
+
+            this.tours.outs.tourIndex.on("value", this.onTourChange, this);
+            this.tours.outs.stepIndex.on("value", this.onStepChange, this);
+            this.tours.ins.enabled.setValue(true);
         }
+
+        this.changed = true;
+    }
+
+    protected onTourChange()
+    {
+        const ins = this.ins;
+        const tour = this.tours.activeTour;
+
+        ins.tourTitle.setValue(tour ? tour.title : "", true);
+        ins.tourLead.setValue(tour ? tour.lead : "", true);
+        ins.tourTags.setValue(tour ? tour.tags.join(", ") : "", true);
+    }
+
+    protected onStepChange()
+    {
+        const ins = this.ins;
+        const step = this.tours.activeStep;
+        const state = step ? this.machine.getState(step.id) : null;
+
+        ins.stepTitle.setValue(step ? step.title : "", true);
+        ins.stepCurve.setValue(state ? state.curve : EEasingCurve.Linear, true);
+        ins.stepDuration.setValue(state ? state.duration : 1, true);
+        ins.stepThreshold.setValue(state ? state.threshold : 0.5, true);
     }
 }

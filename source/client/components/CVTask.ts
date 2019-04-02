@@ -174,16 +174,4 @@ export class TaskView<T extends CVTask = CVTask> extends NodeView
     {
         this.classList.add("sv-task-view");
     }
-
-    protected connected()
-    {
-        super.connected();
-        this.task.on("update", this.onUpdate, this);
-    }
-
-    protected disconnected()
-    {
-        this.task.off("update", this.onUpdate, this);
-        super.disconnected();
-    }
 }
