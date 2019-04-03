@@ -67,14 +67,24 @@ export default class ContentView extends DocumentView
         let readerPosition = EReaderPosition.Overlay;
 
         const document = this.activeDocument;
-        if (document) {
-            const reader = document.setup.reader;
+        const reader = document && document.setup.reader;
+        const tours = document && document.setup.tours;
+
+        if (reader) {
             readerVisible = reader.ins.visible.value;
             readerPosition = reader.ins.position.value;
         }
 
         const sceneView = this.sceneView;
         sceneView.classList.remove("sv-blur");
+
+        const blurContent =
+            (readerVisible && readerPosition === EReaderPosition.Overlay) ||
+            (tours && tours.ins.enabled.value && tours.outs.tourIndex.value === -1);
+
+        if (blurContent) {
+            setTimeout(() => sceneView.classList.add("sv-blur"), 1);
+        }
 
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
@@ -86,8 +96,6 @@ export default class ContentView extends DocumentView
 
             }
             if (readerPosition === EReaderPosition.Overlay) {
-
-                setTimeout(() => sceneView.classList.add("sv-blur"), 1);
 
                 return html`<div class="sv-content-reader-overlay">${sceneView}
                     <sv-reader-view .system=${system}></sv-reader-view>
@@ -108,6 +116,7 @@ export default class ContentView extends DocumentView
             this.documentProps.on(
                 next.setup.reader.ins.position,
                 next.setup.reader.ins.visible,
+                next.setup.tours.outs.tourIndex,
             );
         }
 

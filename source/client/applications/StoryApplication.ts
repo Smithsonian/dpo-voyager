@@ -27,15 +27,17 @@ import ExplorerApplication, { IExplorerApplicationProps } from "./ExplorerApplic
 
 import storyTypes from "./storyTypes";
 
-import CVStoryController from "../components/CVStoryController";
+import CVStoryApplication from "../components/CVStoryApplication";
 import CVAssetReader from "../components/CVAssetReader";
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";
 
-import NVPrepTasks from "../nodes/NVPrepTasks";
+import NVTasks from "../nodes/NVTasks";
 import NVoyagerStory from "../nodes/NVoyagerStory";
 
 import MainView from "../ui/story/MainView";
+import CVTaskProvider from "../components/CVTaskProvider";
+import { ETaskMode } from "./taskSets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +88,7 @@ export default class StoryApplication
 
         // add story components
         this.system.graph.createCustomNode(NVoyagerStory, "Story");
-        this.system.graph.createCustomNode(NVPrepTasks, "Tasks");
+        this.system.graph.createCustomNode(NVTasks, "Tasks");
 
         // enable viewport brackets
         this.system.getMainComponent(CPickSelection).ins.viewportBrackets.setValue(true);
@@ -131,9 +133,13 @@ export default class StoryApplication
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
 
-        const story = this.system.components.get(CVStoryController);
-        story.ins.referrer.setValue(props.referrer);
-        story.ins.expertMode.setValue(!!props.expert);
+        const app = this.system.getMainComponent(CVStoryApplication);
+        app.referrer = props.referrer;
+
+        const lcMode = props.mode[0].toLowerCase();
+        const mode = lcMode === "a" ? ETaskMode.Authoring : (lcMode === "e" ? ETaskMode.Expert : ETaskMode.QC);
+        const tasks = this.system.getMainComponent(CVTaskProvider);
+        tasks.ins.mode.setValue(mode);
 
         this.explorer.evaluateProps();
     }

@@ -127,7 +127,10 @@ export default class ExplorerApplication
     loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
         return this.assetReader.getJSON(documentPath)
-            .then(data => this.documentProvider.amendDocument(data, documentPath, merge))
+            .then(data => {
+                merge = merge === undefined ? !data.lights.length && !data.cameras.length : merge;
+                return this.documentProvider.amendDocument(data, documentPath, merge);
+            })
             .catch(error => {
                 console.warn(`error while loading document: ${error.message}`);
                 throw error;

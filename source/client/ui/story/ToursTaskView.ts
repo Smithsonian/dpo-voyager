@@ -40,6 +40,9 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         if (!tours) {
             return html`<div class="sv-placeholder">Please select a document to edit its tours.</div>`;
         }
+        if (!tours.ins.enabled.value) {
+            return html`<div class="sv-placeholder">Please activate the tour button in the main menu.</div>`;
+        }
 
         const tourList = tours.tours;
         const activeTour = tours.activeTour;
@@ -54,10 +57,11 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         </div>` : null;
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button text="Move Up" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
-            <ff-button text="Move Down" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
-            <ff-button text="Delete" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
+            <ff-button title="Create Tour" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button title="Move Tour Up" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
+            <ff-button title="Move Tour Down" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
+            <ff-button title="Delete Tour" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
+            <ff-button title="Snapshot Configuration" icon="bars" @click=${this.onClickConfig}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
@@ -92,6 +96,11 @@ export default class ToursTaskView extends TaskView<CVToursTask>
     protected onClickDown()
     {
         this.task.ins.moveTourDown.set();
+    }
+
+    protected onClickConfig()
+    {
+
     }
 
     protected onSelectTour(event: ISelectTourEvent)

@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-import CRenderer, { IActiveSceneEvent } from "@ff/scene/components/CRenderer";
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import "./DocumentList";
 import "./NodeTreeView";
 
-import CVStoryController, { EStoryMode } from "../../components/CVStoryController";
+import CVTaskProvider from "../../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-navigator-panel")
 export default class NavigatorPanel extends SystemView
 {
-    protected get story() {
-        return this.system.getMainComponent(CVStoryController);
-    }
-    protected get renderer() {
-        return this.system.getMainComponent(CRenderer);
+    protected get taskProvider() {
+        return this.system.getMainComponent(CVTaskProvider);
     }
 
     protected firstConnected()
@@ -42,32 +38,36 @@ export default class NavigatorPanel extends SystemView
 
     protected connected()
     {
-        this.story.ins.mode.on("value", this.performUpdate, this);
-        this.renderer.on<IActiveSceneEvent>("active-scene", this.performUpdate, this);
+        this.taskProvider.ins.mode.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.story.ins.mode.off("value", this.performUpdate, this);
-        this.renderer.off<IActiveSceneEvent>("active-scene", this.performUpdate, this);
+        this.taskProvider.ins.mode.off("value", this.performUpdate, this);
     }
 
     protected render()
     {
         const system = this.system;
-        const authMode = true; // this.story.ins.mode.value === EStoryMode.Authoring;
+        const expertMode = this.taskProvider.expertMode;
 
-        const documentList = authMode ? html`<div class="ff-splitter-section ff-flex-column" style="flex-basis: 30%">
-            <div class="sv-panel-header">Documents</div>
-                <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
-                    <sv-document-list .system=${system}></sv-document-list>
-                </div></div>
+        const documentList = expertMode ? html`<div class="ff-splitter-section ff-flex-column" style="flex-basis: 30%">
+            <div class="sv-panel-header">
+                <ff-icon name="document"></ff-icon>
+                <div class="ff-text">Documents</div>
+            </div>
+            <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
+                <sv-document-list .system=${system}></sv-document-list>
+            </div></div>
             </div>
             <ff-splitter direction="vertical"></ff-splitter>` : null;
 
         return html`${documentList}
             <div class="ff-splitter-section ff-flex-column" style="flex-basis: 70%">
-                <div class="sv-panel-header">Nodes</div>
+                <div class="sv-panel-header">
+                    <ff-icon name="hierarchy"></ff-icon>
+                    <div class="ff-text">Nodes</div>
+                </div>
                 <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
                     <sv-node-tree-view .system=${system}></sv-node-tree-view>
                 </div></div>

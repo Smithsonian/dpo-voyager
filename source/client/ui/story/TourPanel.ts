@@ -16,6 +16,7 @@
  */
 
 import Subscriber from "@ff/core/Subscriber";
+import { IComponentEvent } from "@ff/graph/Component";
 import { EEasingCurve, ITweenState } from "@ff/graph/components/CTweenMachine";
 
 import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
@@ -51,9 +52,8 @@ export default class TourPanel extends DocumentView
     protected subscriber: Subscriber = null;
     tours: CVTours = null;
 
-
     protected get toursTask() {
-        return this.system.getMainComponent(CVToursTask);
+        return this.system.getMainComponent(CVToursTask, true);
     }
 
     protected firstConnected()
@@ -72,12 +72,18 @@ export default class TourPanel extends DocumentView
     protected connected()
     {
         super.connected();
-        this.toursTask.outs.isActive.on("value", this.onUpdate, this);
+        this.system.components.on(CVToursTask, this.onToursTask, this);
+
+        const task = this.toursTask;
+        task && task.outs.isActive.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.toursTask.outs.isActive.off("value", this.onUpdate, this);
+        const task = this.toursTask;
+        task && task.outs.isActive.off("value", this.onUpdate, this);
+
+        this.system.components.off(CVToursTask, this.onToursTask, this);
         super.disconnected();
     }
 
@@ -139,11 +145,11 @@ export default class TourPanel extends DocumentView
         this.stateTable.selectedRows = this.stateTable.rows[tours.outs.stepIndex.value];
 
         return html`<div class="sv-panel-header">
-            <ff-button text="Update Step" icon="create" @click=${this.onClickUpdate}></ff-button>
-            <ff-button text="Add Step" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button text="Move Up" icon="up" ?disabled=${!activeStep} @click=${this.onClickUp}></ff-button>
-            <ff-button text="Move Down" icon="down" ?disabled=${!activeStep} @click=${this.onClickDown}></ff-button>
-            <ff-button text="Delete Step" icon="trash" ?disabled=${!activeStep} @click=${this.onClickDelete}></ff-button>
+            <ff-button text="Update" icon="camera" @click=${this.onClickUpdate}></ff-button>
+            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button text="Up" icon="up" ?disabled=${!activeStep} @click=${this.onClickUp}></ff-button>
+            <ff-button text="Down" icon="down" ?disabled=${!activeStep} @click=${this.onClickDown}></ff-button>
+            <ff-button text="Delete" icon="trash" ?disabled=${!activeStep} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch ff-flex-row">
             <div class="ff-splitter-section" style="flex-basis: 60%">
@@ -184,5 +190,17 @@ export default class TourPanel extends DocumentView
     protected onClickDown()
     {
         this.toursTask.ins.moveStepDown.set();
+    }
+
+    protected onToursTask(event: IComponentEvent<CVToursTask>)
+    {
+        if (event.add) {
+            event.object.outs.isActive.on("value", this.onUpdate, this);
+        }
+        if (event.remove) {
+            event.object.outs.isActive.off("value", this.onUpdate, this);
+        }
+
+        this.requestUpdate();
     }
 }

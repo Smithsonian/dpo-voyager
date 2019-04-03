@@ -16,6 +16,7 @@
  */
 
 import { Node, types } from "@ff/graph/Component";
+import CSelection from "@ff/graph/components/CSelection";
 
 import CNodeProvider, {
     ENodeScope,
@@ -53,6 +54,9 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
     protected get documentProvider() {
         return this.getComponent(CVDocumentProvider);
     }
+    protected get selection() {
+        return this.system.getMainComponent(CSelection);
+    }
 
     create()
     {
@@ -74,6 +78,10 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
         this.outs.activeNode.setValue(next);
+
+        if (next) {
+            this.selection.selectNode(next);
+        }
     }
 
     protected onScopedNodes()

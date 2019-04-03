@@ -15,11 +15,22 @@
  * limitations under the License.
  */
 
-import Component from "@ff/graph/Component";
+import Node from "@ff/graph/Node";
+
+import CVTaskProvider from "../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVoyagerStory
+export default class NVTasks extends Node
 {
-    static readonly typeName: string = "CVoyagerStory";
+    static readonly typeName: string = "NVTasks";
+
+    get taskManager() {
+        return this.getComponent(CVTaskProvider);
+    }
+
+    createComponents()
+    {
+        this.createComponent(CVTaskProvider);
+    }
 }

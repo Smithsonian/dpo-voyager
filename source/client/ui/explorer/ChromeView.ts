@@ -18,16 +18,16 @@
 import Subscriber from "@ff/core/Subscriber";
 
 import "@ff/ui/ButtonGroup";
-import "@ff/ui/PopupButton";
 
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
 
 import "../Logo";
 import "./MainMenu";
-//import "./TourMenu";
-import "./TourNavigator";
 import "./ToolBar";
+import "./TourNavigator";
+import "./TourMenu";
+import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 
@@ -76,15 +76,32 @@ export default class ChromeView extends DocumentView
         const logoVisible = setup.interface.ins.logo.value;
 
         const readerVisible = setup.reader.ins.visible.value;
-        const toursVisible = setup.tours.ins.enabled.value;
+
+        const tours = setup.tours.tours;
+        const toursEnabled = setup.tours.ins.enabled.value;
+        const tourActive = setup.tours.outs.tourIndex.value >= 0;
+
         const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
         if (!interfaceVisible) {
             return html``;
         }
 
-        // TODO: quick hack to retrieve a document title
-        const title = "A quite long and awesome model title";
+        let title;
+
+        if (toursEnabled) {
+            if (!tourActive) {
+                title = "Interactive Tours";
+            }
+            else {
+                title = setup.tours.outs.tourTitle.value;
+            }
+        }
+        else {
+            const info = document.root.info;
+            title = info ? info.meta.get("title") : null;
+            title = title || document.outs.assetPath.value || "Untitled Document";
+        }
 
         return html`
             <div class="sv-chrome-header">
@@ -95,8 +112,15 @@ export default class ChromeView extends DocumentView
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>
-            ${toursVisible ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
+            ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
+            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
+    }
+
+    protected onSelectTour(event: ITourMenuSelectEvent)
+    {
+        const tours = this.activeDocument.setup.tours;
+        tours.ins.tourIndex.setValue(event.detail.index);
     }
 
     protected closeTools()
@@ -112,10 +136,12 @@ export default class ChromeView extends DocumentView
         if (next) {
             const setup = next.setup;
             this.documentProps.on(
+                next.outs.assetPath,
                 setup.interface.ins.visible,
                 setup.interface.ins.logo,
                 setup.reader.ins.visible,
-                setup.tours.ins.enabled
+                setup.tours.ins.enabled,
+                setup.tours.outs.tourIndex,
             );
         }
 

@@ -83,6 +83,12 @@ export default class CVAssetWriter extends Component implements IAssetService
         console.log("ROOT URL: %s", rootUrl);
     }
 
+    getAssetFileName(uri: string)
+    {
+        const base = resolvePathname(".", uri);
+        return base === "/" ? uri : uri.substr(base.length);
+    }
+
     getAssetURL(uri: string)
     {
         return resolvePathname(uri, this.ins.rootUrl.value);

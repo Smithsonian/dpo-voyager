@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CVStoryController from "../components/CVStoryController";
+import CVStoryApplication from "../components/CVStoryApplication";
 import CVAssetWriter from "../components/CVAssetWriter";
 
 import CVTaskProvider from "../components/CVTaskProvider";
@@ -29,14 +29,13 @@ import CVToursTask from "../components/CVToursTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 
 import NVVoyagerStory from "../nodes/NVoyagerStory";
-import NVAuthoringTasks from "../nodes/NVAuthoringTasks";
-import NVPrepTasks from "../nodes/NVPrepTasks";
+import NVTasks from "../nodes/NVTasks";
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const types = [
-    CVStoryController,
+    CVStoryApplication,
     CVAssetWriter,
 
     CVTaskProvider,
@@ -49,8 +48,7 @@ const types = [
     CVDerivativesTask,
 
     NVVoyagerStory,
-    NVAuthoringTasks,
-    NVPrepTasks,
+    NVTasks,
 ];
 
 export default types;

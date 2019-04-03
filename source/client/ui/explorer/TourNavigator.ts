@@ -64,7 +64,7 @@ export default class TourNavigator extends DocumentView
 
     protected onClickMenu()
     {
-        this.tours.ins.enabled.setValue(false);
+        this.tours.ins.tourIndex.setValue(-1);
     }
 
     protected onClickPrevious()

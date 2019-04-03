@@ -22,8 +22,8 @@ import Button, { IButtonClickEvent } from "@ff/ui/Button";
 
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
-import CVStoryController from "../../components/CVStoryController";
-import CVTaskProvider, { IActiveTaskEvent } from "../../components/CVTaskProvider";
+import CVStoryApplication from "../../components/CVStoryApplication";
+import CVTaskProvider, { IActiveTaskEvent, ITaskSetEvent } from "../../components/CVTaskProvider";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,14 +31,14 @@ import CVTaskProvider, { IActiveTaskEvent } from "../../components/CVTaskProvide
 @customElement("sv-task-bar")
 export default class TaskBar extends SystemView
 {
-    protected story: CVStoryController = null;
+    protected story: CVStoryApplication = null;
     protected taskProvider: CVTaskProvider = null;
 
     constructor(system?: System)
     {
         super(system);
 
-        this.story = system.getMainComponent(CVStoryController);
+        this.story = system.getMainComponent(CVStoryApplication);
         this.taskProvider = system.getMainComponent(CVTaskProvider);
     }
 
@@ -49,13 +49,13 @@ export default class TaskBar extends SystemView
 
     protected connected()
     {
-        this.story.ins.expertMode.on("value", this.onUpdate, this);
+        this.taskProvider.on<ITaskSetEvent>("scoped-components", this.onUpdate, this);
         this.taskProvider.on<IActiveTaskEvent>("active-component", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.story.ins.expertMode.off("value", this.onUpdate, this);
+        this.taskProvider.off<ITaskSetEvent>("scoped-components", this.onUpdate, this);
         this.taskProvider.off<IActiveTaskEvent>("active-component", this.onUpdate, this);
     }
 
@@ -63,8 +63,7 @@ export default class TaskBar extends SystemView
     {
         const tasks = this.taskProvider.scopedComponents;
         const activeTask = this.taskProvider.activeComponent;
-        const expertMode = this.story.ins.expertMode.value;
-        const taskMode = this.story.ins.mode.getOptionText();
+        const taskMode = this.taskProvider.ins.mode.getOptionText();
 
         return html`
             <img class="sv-logo" src="images/voyager-75grey.svg" alt="Logo"/>
@@ -81,8 +80,6 @@ export default class TaskBar extends SystemView
                 <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
                 <ff-button text="Download" icon="download" @click=${this.onClickDownload}></ff-button>
                 <ff-button text="Exit" icon="exit" @click=${this.onClickExit}></ff-button>
-                <div class="sv-divider"></div>
-                <ff-button text="Expert Mode" icon="expert" ?selected=${expertMode} @click=${this.onClickExpertMode}></ff-button>
             </div>
         `;
     }
@@ -108,11 +105,5 @@ export default class TaskBar extends SystemView
     protected onClickExit()
     {
         this.story.ins.exit.set();
-    }
-
-    protected onClickExpertMode()
-    {
-        const prop = this.story.ins.expertMode;
-        prop.setValue(!prop.value);
     }
 }

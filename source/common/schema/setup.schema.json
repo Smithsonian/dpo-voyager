@@ -183,41 +183,50 @@
             }
         },
         "tours": {
-            "description": "Animated tours and snapshots.",
-            "type": "object",
-            "properties": {
-                "targets": {
-                    "type": "array",
-                    "items": {
-                        "type": "object"
-                    }
-                },
-                "tours": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "title": {
-                                "type": "string"
-                            },
-                            "lead": {
-                                "type": "string"
-                            },
-                            "tags": {
-                                "description": "Array of tags, categorizing the tour.",
-                                "type": "array",
-                                "items": {
+            "description": "Animated tours.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "lead": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "description": "Array of tags, categorizing the tour.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
                                     "type": "string"
-                                }
-                            },
-                            "states": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object"
+                                },
+                                "id": {
+                                    "type": "string"
                                 }
                             }
                         }
                     }
+                }
+            }
+        },
+        "snapshots": {
+            "description": "Snapshots are animatable scene states.",
+            "type": "object",
+            "properties": {
+                "targets": {
+                    "type": "array"
+                },
+                "states": {
+                    "type": "array"
                 }
             }
         }

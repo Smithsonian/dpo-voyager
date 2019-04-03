@@ -15,20 +15,7 @@
  * limitations under the License.
  */
 
-import Node from "@ff/graph/Node";
-
-import CVAssetWriter from "../components/CVAssetWriter";
-import CVStoryApplication from "../components/CVStoryApplication";
+import Dialog, { customElement, html } from "@ff/ui/Dialog";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class NVoyagerStory extends Node
-{
-    static readonly typeName: string = "NVoyagerStory";
-
-    createComponents()
-    {
-        this.createComponent(CVAssetWriter);
-        this.createComponent(CVStoryApplication);
-    }
-}

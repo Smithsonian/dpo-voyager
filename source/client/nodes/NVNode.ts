@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import Component from "@ff/graph/Component";
 import Node from "@ff/graph/Node";
 
 import { IDocument } from "common/types/document";
@@ -28,19 +29,17 @@ import CVPointLight from "../components/CVPointLight";
 import CVSpotLight from "../components/CVSpotLight";
 
 import CVInfo from "../components/CVInfo";
-import CVSetup from "../components/CVSetup";
 import CVModel2 from "../components/CVModel2";
-import Component from "@ff/graph/Component";
+import CVScene from "../components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface INodeComponents
 {
-    setup: boolean;
-    info: boolean;
-    model: boolean;
-    camera: boolean;
-    light: boolean;
+    scene?: boolean; // scene setup, scene info
+    model?: boolean; // models, model info
+    camera?: boolean; // cameras, camera info
+    light?: boolean; // lights, light info
 }
 
 
@@ -62,6 +61,9 @@ export default class NVNode extends Node
     }
     get light() {
         return this.components.get(CLight, true) as ICVLight;
+    }
+    get scene() {
+        return this.components.get(CVScene, true);
     }
 
     createComponents()
@@ -136,8 +138,7 @@ export default class NVNode extends Node
     toDocument(document: IDocument, pathMap: Map<Component, string>, components?: INodeComponents)
     {
         components = components || {
-            setup: true,
-            info: true,
+            scene: true,
             model: true,
             camera: true,
             light: true,
@@ -152,21 +153,26 @@ export default class NVNode extends Node
             node.name = this.name;
         }
 
-        if (this.info && components.info) {
-            node.info = this.info.toDocument(document, node);
-            pathMap.set(this.info, `info/${node.info}`);
-        }
+        let saveInfo = false;
+
         if (this.model && components.model) {
             node.model = this.model.toDocument(document, node);
             pathMap.set(this.model, `model/${node.model}`);
+            saveInfo = true;
         }
         if (this.camera && components.camera) {
             node.camera = this.camera.toDocument(document, node);
             pathMap.set(this.camera, `camera/${node.camera}`);
+            saveInfo = true;
         }
         if (this.light && components.light) {
             node.light = this.light.toDocument(document, node);
             pathMap.set(this.light, `light/${node.light}`);
+            saveInfo = true;
+        }
+        if (this.info && saveInfo) {
+            node.info = this.info.toDocument(document, node);
+            pathMap.set(this.info, `info/${node.info}`);
         }
 
         const children = this.transform.children
@@ -192,9 +198,6 @@ export default class NVNode extends Node
         const tf = this.transform;
         const comps = this.components;
 
-        if (components.info && (comps.has(CVInfo) || tf.hasChildComponents(CVInfo, true))) {
-            return true;
-        }
         if (components.model && (comps.has(CVModel2) || tf.hasChildComponents(CVModel2, true))) {
             return true;
         }

@@ -21,23 +21,32 @@ import CVCaptureTask from "../components/CVCaptureTask";
 import CVAnnotationsTask from "../components/CVAnnotationsTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 import CVArticlesTask from "../components/CVArticlesTask";
+import CVToursTask from "../components/CVToursTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EStoryMode { QC, Authoring }
+export enum ETaskMode { QC, Authoring, Expert }
 
 export default {
-    "QC": [
+    [ETaskMode.QC]: [
         CVExploreTask,
         CVPoseTask,
         CVCaptureTask,
-        CVAnnotationsTask,
-        CVArticlesTask,
         CVDerivativesTask,
     ],
-    "Authoring": [
+    [ETaskMode.Authoring]: [
         CVExploreTask,
         CVAnnotationsTask,
-        CVArticlesTask
+        CVArticlesTask,
+        CVToursTask,
     ],
+    [ETaskMode.Expert]: [
+        CVExploreTask,
+        CVPoseTask,
+        CVCaptureTask,
+        CVDerivativesTask,
+        CVAnnotationsTask,
+        CVArticlesTask,
+        CVToursTask,
+    ]
 }

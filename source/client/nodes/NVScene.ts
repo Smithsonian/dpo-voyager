@@ -30,9 +30,6 @@ export default class NVScene extends NVNode
 {
     static readonly typeName: string = "NVScene";
 
-    get scene() {
-        return this.components.get(CVScene);
-    }
     get setup() {
         return this.components.get(CVSetup, true);
     }
@@ -96,13 +93,15 @@ export default class NVScene extends NVNode
         });
 
         // serialize additional scene components
-        if (this.info && (!components || components.info)) {
-            scene.info = this.info.toDocument(document, scene);
-            pathMap.set(this.info, `info/${scene.info}`);
-        }
+        if (!components || components.scene) {
+            if (this.info) {
+                scene.info = this.info.toDocument(document, scene);
+                pathMap.set(this.info, `info/${scene.info}`);
+            }
 
-        if (this.setup && (!components || components.setup)) {
-            this.setup.toDocument(document, sceneIndex, pathMap);
+            if (this.setup) {
+                this.setup.toDocument(document, sceneIndex, pathMap);
+            }
         }
 
         return sceneIndex;

@@ -67,7 +67,7 @@ export default class CVDocumentProvider extends CComponentProvider<CVDocument>
             throw new Error("no active document, can't amend");
         }
 
-        document.openDocument(data, path, true);
+        document.openDocument(data, path, merge);
         return document;
     }
 

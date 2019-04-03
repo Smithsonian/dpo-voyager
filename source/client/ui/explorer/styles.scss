@@ -19,6 +19,9 @@
 
 @import "../styles";
 
+$canvas-border-width: 6px;
+$main-menu-button-size: 40px;
+
 ////////////////////////////////////////////////////////////////////////////////
 // CONTENT LAYER
 
@@ -185,7 +188,7 @@
 
   .sv-main-title {
     flex: 1 1 auto;
-    margin: 6px;
+    margin: $canvas-border-width 8px;
     font-weight: normal;
     font-size: 1.2rem;
     white-space: pre;
@@ -202,12 +205,12 @@
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  margin: 6px 0 0 6px;
+  margin: $canvas-border-width 0 0 $canvas-border-width;
 
   .ff-button {
     box-sizing: border-box;
-    width: 40px;
-    height: 40px;
+    width: $main-menu-button-size;
+    height: $main-menu-button-size;
     margin: 3px 0;
     background-color: transparentize(#282828, 0.2);
     border-radius: 20px;
@@ -238,7 +241,49 @@
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TOOL NAVIGATOR
+// TOURS
+
+$tour-entry-indent: 12px;
+
+.sv-document-overlay {
+  position: absolute;
+  left: $canvas-border-width + $main-menu-button-size + 8px;
+  top: $canvas-border-width + $main-menu-button-size + 8px;
+  right: $canvas-border-width;
+  bottom: 0;
+  pointer-events: auto;
+}
+
+.sv-tour-menu-entry {
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 16px;
+  max-width: 600px;
+
+  &:hover {
+    background-color: transparentize(white, 0.9);
+  }
+}
+
+.sv-tour-menu-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: $tour-entry-indent $tour-entry-indent 6px $tour-entry-indent;
+
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background-color: $color-primary;
+  }
+}
+
+.sv-tour-menu-lead {
+  padding: 2px $tour-entry-indent $tour-entry-indent $tour-entry-indent;
+}
 
 .sv-tour-navigator {
   box-sizing: border-box;

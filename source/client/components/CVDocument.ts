@@ -34,7 +34,7 @@ import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { IDocument };
+export { IDocument, INodeComponents };
 
 
 /**
@@ -121,7 +121,11 @@ export default class CVDocument extends CRenderGraph
     clearNodeTree()
     {
         const children = this.root.transform.children.slice();
-        children.forEach(child => child.dispose());
+        children.forEach(child => child.node.dispose());
+        //console.clear();
+        //console.log("----------------- CLEAR ---------------------");
+        //this.dump();
+        //this.object3D.traverse(obj => console.log(obj.type));
     }
 
     openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode | NVScene)

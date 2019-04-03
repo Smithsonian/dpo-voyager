@@ -19,7 +19,6 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../../applications/StoryApplication";
-import CVStoryController from "../../components/CVStoryController";
 
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 import Icon from "@ff/ui/Icon";
@@ -39,6 +38,7 @@ import AssetPanel from "./AssetPanel";
 
 import "./styles.scss";
 import NavigatorPanel from "./NavigatorPanel";
+import CVTaskProvider, { ETaskMode } from "../../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS
@@ -68,13 +68,17 @@ interface IUIState
 @customElement("voyager-story")
 export default class MainView extends CustomElement
 {
-    static readonly stateKey: string = "main-view-1";
+    static readonly stateKey: string = "main-view-2";
 
     protected application: StoryApplication;
     protected dockView: DockView;
 
     protected registry: DockContentRegistry;
     protected state: IUIState;
+
+    protected get taskProvider() {
+        return this.application.system.getMainComponent(CVTaskProvider);
+    }
 
     constructor(application?: StoryApplication)
     {
@@ -106,8 +110,8 @@ export default class MainView extends CustomElement
 
         const system = this.application.system;
 
-        const story = system.components.get(CVStoryController);
-        story.ins.expertMode.on("value", this.onExpertMode, this);
+        const taskProvider = system.components.get(CVTaskProvider);
+        taskProvider.ins.mode.on("value", this.onTaskMode, this);
 
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
@@ -128,10 +132,7 @@ export default class MainView extends CustomElement
         this.state = state || {
             regularLayout: MainView.regularLayout,
             expertLayout: MainView.expertLayout,
-            expertMode: story.ins.expertMode.value
         };
-
-        story.ins.expertMode.setValue(this.state.expertMode);
     }
 
     protected firstConnected()
@@ -161,20 +162,18 @@ export default class MainView extends CustomElement
         localStorage.set("voyager-story", MainView.stateKey, this.state);
     }
 
-    protected onExpertMode(expertMode: boolean)
+    protected onTaskMode(mode: ETaskMode)
     {
-        if (expertMode !== this.state.expertMode) {
-            this.storeLayout();
-            this.state.expertMode = expertMode;
-            this.restoreLayout();
-        }
+        this.storeLayout();
+        this.restoreLayout();
     }
 
     protected storeLayout()
     {
         const state = this.state;
+        const expertMode = this.taskProvider.expertMode;
 
-        if (state.expertMode) {
+        if (expertMode) {
             state.expertLayout = this.dockView.getLayout();
         }
         else {
@@ -185,8 +184,9 @@ export default class MainView extends CustomElement
     protected restoreLayout()
     {
         const state = this.state;
+        const expertMode = this.taskProvider.expertMode;
 
-        this.dockView.setLayout(state.expertMode ? state.expertLayout : state.regularLayout, this.registry);
+        this.dockView.setLayout(expertMode ? state.expertLayout : state.regularLayout, this.registry);
         this.dockView.setPanelsMovable(true)
     }
 
@@ -236,13 +236,13 @@ export default class MainView extends CustomElement
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "article-editor",
-                    text: "Article"
+                    text: "Article Editor"
                 }, {
                     contentId: "tour-editor",
-                    text: "Tour"
+                    text: "Tour Editor"
                 }, {
                     contentId: "notes",
-                    text: "Notes"
+                    text: "Note Editor"
                 }]
             }]
         }]
@@ -294,13 +294,13 @@ export default class MainView extends CustomElement
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "article-editor",
-                    text: "Article"
+                    text: "Article Editor"
                 }, {
                     contentId: "tour-editor",
-                    text: "Tour"
+                    text: "Tour Editor"
                 }, {
                     contentId: "notes",
-                    text: "Notes"
+                    text: "Note Editor"
                 }, {
                     contentId: "console",
                     text: "Console"

@@ -15,18 +15,23 @@
  * limitations under the License.
  */
 
-import { Node } from "@ff/graph/Component";
+import { Node, types } from "@ff/graph/Component";
 
 import CComponentProvider, {
     EComponentScope,
-    IActiveComponentEvent
+    IActiveComponentEvent,
+    IScopedComponentsEvent,
 } from "@ff/graph/components/CComponentProvider";
 
 import CVTask from "./CVTask";
+import taskSets, { ETaskMode } from "../applications/taskSets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { ETaskMode };
+
 export type IActiveTaskEvent = IActiveComponentEvent<CVTask>;
+export type ITaskSetEvent = IScopedComponentsEvent;
 
 /**
  * Manages available tasks and keeps track of the currently active task.
@@ -38,10 +43,34 @@ export default class CVTaskProvider extends CComponentProvider<CVTask>
     static readonly isSystemSingleton = true;
     static readonly componentType = CVTask;
 
+    protected static readonly ins = {
+        mode: types.Enum("Tasks.Mode", ETaskMode),
+    };
+
+    ins = this.addInputs(CVTaskProvider.ins);
+
     constructor(node: Node, id: string)
     {
         super(node, id);
         this.scope = EComponentScope.Node;
+    }
+
+    get expertMode() {
+        return this.ins.mode.getValidatedValue() === ETaskMode.Expert;
+    }
+
+    update(context)
+    {
+        const ins = this.ins;
+
+        if (ins.mode.changed) {
+            this.scopedComponents.forEach(task => task.dispose());
+
+            const taskSet = taskSets[ins.mode.getValidatedValue()];
+            taskSet.forEach(taskType => this.createComponent(taskType));
+        }
+
+        return true;
     }
 
     protected activateComponent(task: CVTask)

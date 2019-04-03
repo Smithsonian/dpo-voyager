@@ -33,7 +33,7 @@ export default class CVTours extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Tours.Enabled", { static: true }),
-        tourIndex: types.Integer("Tours.Index", { static: true }),
+        tourIndex: types.Integer("Tours.Index", { preset: -1, static: true }),
         stepIndex: types.Integer("Step.Index", { static: true }),
         next: types.Event("Step.Next", { static: true }),
         previous: types.Event("Step.Previous", { static: true }),
@@ -41,7 +41,7 @@ export default class CVTours extends Component
     };
 
     protected static readonly outs = {
-        tourIndex: types.Integer("Tour.Index"),
+        tourIndex: types.Integer("Tour.Index", -1),
         tourTitle: types.String("Tour.Title"),
         tourLead: types.String("Tour.Lead"),
         stepCount: types.Integer("Tour.Steps"),
@@ -85,7 +85,10 @@ export default class CVTours extends Component
 
         const tours = this._tours;
 
-        if (!ins.enabled.value || tours.length === 0) {
+        if (!ins.enabled.value) {
+            if (ins.enabled.changed) {
+                outs.tourIndex.set();
+            }
             return false;
         }
 

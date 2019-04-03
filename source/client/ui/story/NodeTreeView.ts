@@ -116,6 +116,22 @@ class NodeTree extends Tree<NVNode>
         return node === this.nodeProvider.activeNode;
     }
 
+    protected getClasses(treeNode: NVNode): string
+    {
+        if (treeNode.scene) {
+            return "sv-node-scene"
+        }
+        if (treeNode.model) {
+            return "sv-node-model";
+        }
+        if (treeNode.light) {
+            return "sv-node-light";
+        }
+        if (treeNode.camera) {
+            return "sv-node-camera";
+        }
+    }
+
     protected getChildren(node: NVNode)
     {
         if (node === this.root) {

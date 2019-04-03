@@ -15,23 +15,69 @@
  * limitations under the License.
  */
 
+import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
-import DocumentView, { customElement, html } from "./DocumentView";
+import { ITour } from "common/types/setup";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-tour-menu")
-export default class TourMenu extends DocumentView
+export interface ITourMenuSelectEvent extends CustomEvent
 {
+    detail: {
+        index: number;
+    }
+}
+
+@customElement("sv-tour-menu")
+export default class TourMenu extends CustomElement
+{
+    @property({ attribute: false })
+    tours: ITour[];
+
+    constructor()
+    {
+        super();
+    }
+
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-tour-menu");
+        this.classList.add("sv-document-overlay", "sv-tour-menu");
+    }
+
+    protected connected()
+    {
+        super.connected();
+    }
+
+    protected disconnected()
+    {
+        super.disconnected();
+    }
+
+    protected renderTour(tour: ITour, index: number)
+    {
+        return html`<div class="sv-tour-menu-entry" @click=${e => this.onClick(e, index)}>
+            <div class="sv-tour-menu-title">${tour.title}</div>
+            <div class="sv-tour-menu-lead">${tour.lead}</div>
+        </div>`;
     }
 
     protected render()
     {
-        return html`tour menu`;
+        return html`<div class="ff-scroll-y">
+            ${this.tours.map((tour, index) => this.renderTour(tour, index))}
+        </div>`;
+    }
+
+    protected onClick(e: MouseEvent, index: number)
+    {
+        e.stopPropagation();
+
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: { index }
+        }));
     }
 }

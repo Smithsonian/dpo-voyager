@@ -100,6 +100,48 @@ ff-dock-view {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NAVIGATOR
+
+.sv-node-tree {
+  .ff-tree-node-container {
+    border-color: darken($color-background-light, 2%);
+  }
+  .ff-tree-node {
+    &.ff-inner, &.ff-leaf {
+      background-color: darken($color-background-dark, 2%);
+      border-left: 1px solid $color-background-light;
+    }
+
+    &.sv-node-scene {
+      background-color: #202329;
+      border-left: 1px solid #334b80;
+    }
+    &.sv-node-model {
+      background-color: #1c2423;
+      border-left: 1px solid #26806c;
+    }
+    &.sv-node-camera {
+      background-color: #2e2424;
+      border-left: 1px solid #802626;
+    }
+    &.sv-node-light {
+      background-color: #2b2922;
+      border-left: 1px solid #806e33;
+    }
+    &[selected] {
+      background-color: $color-primary;
+    }
+
+    .ff-header {
+      line-height: 1.6em;
+    }
+    .ff-content {
+      margin-left: 14px; // indent
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PANELS
 
 .sv-detail-view {
@@ -232,7 +274,7 @@ ff-dock-view {
     height: 1em;
     flex: 1 1 auto;
     padding: 2px;
-    background-color: $color-background;
+    background-color: $color-background-darker;
 
     input {
       padding: 2px;
