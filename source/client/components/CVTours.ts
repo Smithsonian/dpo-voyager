@@ -16,7 +16,6 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
-import Property from "@ff/graph/Property";
 
 import CTweenMachine, {
     EEasingCurve,
@@ -28,31 +27,17 @@ import { ITour, ITours, ITourStep } from "common/types/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface ITourEntry
-{
-    title: string;
-    lead: string;
-    tags: string[];
-    steps: IStepEntry[];
-}
-
-interface IStepEntry
-{
-    title: string;
-    id: string;
-}
-
 export default class CVTours extends Component
 {
     static readonly typeName: string = "CVTours";
 
     protected static readonly ins = {
-        enabled: types.Boolean("Tours.Enabled"),
-        tourIndex: types.Integer("Tours.Index"),
-        stepIndex: types.Integer("Step.Index"),
-        next: types.Event("Step.Next"),
-        previous: types.Event("Step.Previous"),
-        first: types.Event("Step.First"),
+        enabled: types.Boolean("Tours.Enabled", { static: true }),
+        tourIndex: types.Integer("Tours.Index", { static: true }),
+        stepIndex: types.Integer("Step.Index", { static: true }),
+        next: types.Event("Step.Next", { static: true }),
+        previous: types.Event("Step.Previous", { static: true }),
+        first: types.Event("Step.First", { static: true }),
     };
 
     protected static readonly outs = {
@@ -67,7 +52,7 @@ export default class CVTours extends Component
     ins = this.addInputs(CVTours.ins);
     outs = this.addOutputs(CVTours.outs);
 
-    private _tours: ITourEntry[] = [];
+    private _tours: ITour[] = [];
 
     get tours() {
         return this._tours;
@@ -87,12 +72,6 @@ export default class CVTours extends Component
 
     get tweenMachine() {
         return this.getComponent(CTweenMachine);
-    }
-
-    create()
-    {
-        super.create();
-        this.createComponent(CTweenMachine);
     }
 
     dispose()
@@ -165,23 +144,13 @@ export default class CVTours extends Component
         return true;
     }
 
-    addTarget(component: Component, property: Property)
-    {
-        this.tweenMachine.addTarget(component, property);
-    }
-
     fromData(data: ITours)
     {
-        const machine = this.tweenMachine;
-
-        // TODO: Translate target paths
-        //this._targets = data.targets;
-
-        this._tours = data.tours.map(tourData => ({
-            title: tourData.title || "",
-            lead: tourData.lead || "",
-            tags: tourData.tags || [],
-            steps: tourData.steps.map(stepData => this.stepToEntry(stepData)),
+        this._tours = data.map(tour => ({
+            title: tour.title,
+            steps: tour.steps,
+            lead: tour.lead || "",
+            tags: tour.tags || [],
         }));
 
         this.ins.tourIndex.setValue(0);
@@ -189,59 +158,24 @@ export default class CVTours extends Component
 
     toData(): ITours | null
     {
-        const machine = this.tweenMachine;
-
         if (this._tours.length === 0) {
             return null;
         }
 
-        // TODO: Translate target paths
+        return  this._tours.map(tour => {
+            const data: Partial<ITour> = {
+                title: tour.title,
+                steps: tour.steps,
+            };
 
-        return {
-            targets: null, //this._targets,
-            tours: this._tours.map(tour => {
-                const data: Partial<ITour> = {
-                    title: tour.title,
-                };
+            if (tour.lead) {
+                data.lead = tour.lead;
+            }
+            if (tour.tags.length > 0) {
+                data.tags = tour.tags;
+            }
 
-                if (tour.lead) {
-                    data.lead = tour.lead;
-                }
-                if (tour.tags.length > 0) {
-                    data.tags = tour.tags;
-                }
-
-                data.steps = tour.steps.map(stepEntry => this.entryToStep(stepEntry));
-
-                return data as ITour;
-            })
-        };
-    }
-
-    protected entryToStep(entry: IStepEntry)
-    {
-        const tweenState = this.tweenMachine.getState(entry.id);
-        return {
-            title: entry.title,
-            curve: EEasingCurve[tweenState.curve],
-            duration: tweenState.duration,
-            threshold: tweenState.threshold,
-            values: tweenState.values,
-        };
-    }
-
-    protected stepToEntry(step: ITourStep)
-    {
-        const tweenState: ITweenState = {
-            curve: EEasingCurve[step.curve] || 0,
-            duration: step.duration,
-            threshold: step.threshold,
-            values: step.values,
-        };
-
-        return {
-            title: step.title,
-            id: this.tweenMachine.setState(tweenState),
-        };
+            return data as ITour;
+        });
     }
 }

@@ -71,7 +71,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             text = "Tap on model to set start of tape.";
         }
         else if (state === ETapeState.SetStart) {
-            const units = document.setup.ins.units.getOptionText();
+            const units = document.root.scene.ins.units.getOptionText();
             text = `${distance.toFixed(2)} ${units}`;
         }
         else {

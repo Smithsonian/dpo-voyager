@@ -60,6 +60,9 @@ export default class CVTape extends CObject3D
     {
         super(node, id);
 
+        // exclude from animation
+        this.ins.visible.schema.static = true;
+
         this.object3D = new THREE.Group();
 
         this.startPin = new Pin();

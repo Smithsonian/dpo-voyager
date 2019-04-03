@@ -61,6 +61,7 @@ import CVGrid from "../components/CVGrid";
 import CVTape from "../components/CVTape";
 import CVSlicer from "../components/CVSlicer";
 import CVTours from "../components/CVTours";
+import CVSnapshots from "../components/CVSnapshots";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -110,6 +111,7 @@ const types = [
     CVTape,
     CVSlicer,
     CVTours,
+    CVSnapshots,
 
     NVEngine,
     NVDocuments,

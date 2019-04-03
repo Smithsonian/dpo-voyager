@@ -55,7 +55,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
         const modeProp = this.task.ins.mode;
 
-        const globalUnits = this.activeDocument.setup.ins.units;
+        const globalUnits = this.activeDocument.root.scene.ins.units;
         const itemUnits = model.ins.localUnits;
         const position = model.ins.position;
         const rotation = model.ins.rotation;

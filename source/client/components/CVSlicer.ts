@@ -23,7 +23,7 @@ import { ISlicer, ESliceAxis, TSliceAxis } from "common/types/setup";
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
-import CVSetup from "./CVSetup";
+import CVScene from "./CVScene";
 import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ export default class CVSlicer extends Component
         axis: types.Enum("Slice.Axis", ESliceAxis),
         position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
         inverted: types.Boolean("Slice.Inverted"),
-        color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
+        color: types.ColorRGB("Slice.Color", { preset: [ 0, 0.61, 0.87 ], static: true }), // SI blue
     };
 
     ins = this.addInputs(CVSlicer.ins);
@@ -78,7 +78,7 @@ export default class CVSlicer extends Component
         const axisInverted = ins.inverted.value;
         const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const boundingBox = this.getComponent(CVSetup).modelBoundingBox;
+        const boundingBox = this.getComponent(CVScene).modelBoundingBox;
         if (!boundingBox) {
             return true;
         }

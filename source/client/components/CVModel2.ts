@@ -194,7 +194,7 @@ export default class CVModel2 extends CObject3D
         rotation.set();
     }
 
-    fromDocument(document: IDocument, node: INode)
+    fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.model)) {
             throw new Error("model property missing in node");
@@ -242,9 +242,11 @@ export default class CVModel2 extends CObject3D
 
         // automatically display new derivatives if available
         this.ins.autoLoad.set();
+
+        return node.model;
     }
 
-    toDocument(document: IDocument, node: INode)
+    toDocument(document: IDocument, node: INode): number
     {
         const data = {
             units: EUnitType[this.ins.localUnits.getValidatedValue()],
@@ -274,9 +276,9 @@ export default class CVModel2 extends CObject3D
         }
 
         document.models = document.models || [];
-        const index = document.models.length;
+        const modelIndex = document.models.length;
         document.models.push(data);
-        node.model = index;
+        return modelIndex;
     }
 
     protected updateUnitScale()

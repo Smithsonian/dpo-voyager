@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-import { types } from "@ff/graph/propertyTypes";
-import Component from "@ff/graph/Component";
+import Component, { Node, types } from "@ff/graph/Component";
 
 import { IReader, EReaderPosition } from "common/types/setup";
 
@@ -32,8 +31,8 @@ export default class CVReader extends Component
 
     protected static readonly readerIns = {
         visible: types.Boolean("Visible", false),
-        position: types.Enum("Position", EReaderPosition),
-        url: types.String("DocumentURL", ""),
+        position: types.Enum("Position", EReaderPosition, { static: true }),
+        url: types.AssetPath("DocumentURL", { static: true }),
     };
 
     ins = this.addInputs(CVReader.readerIns);

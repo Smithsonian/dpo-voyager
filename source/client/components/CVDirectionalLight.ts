@@ -27,7 +27,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 {
     static readonly typeName: string = "CVDirectionalLight";
 
-    fromDocument(document: IDocument, node: INode)
+    fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
@@ -45,9 +45,11 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             position: [ 0, 0, 0 ],
             target: [ 0, 0, 0 ],
         });
+
+        return node.light;
     }
 
-    toDocument(document: IDocument, node: INode)
+    toDocument(document: IDocument, node: INode): number
     {
         const ins = this.ins;
 
@@ -59,8 +61,8 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         data.type = "directional";
 
         document.lights = document.lights || [];
-        const index = document.lights.length;
+        const lightIndex = document.lights.length;
         document.lights.push(data);
-        node.light = index;
+        return lightIndex;
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CRenderable, { types } from "@ff/scene/components/CRenderable";
+import CRenderable, { Node, types } from "@ff/scene/components/CRenderable";
 
 import { IViewer, EShaderMode, TShaderMode } from "common/types/setup";
 
@@ -37,6 +37,13 @@ export default class CVViewer extends CRenderable
 
     ins = this.addInputs(CVViewer.ins);
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        // exclude from animation
+        this.ins.gamma.schema.static = true;
+    }
 
     update(context)
     {

@@ -30,6 +30,7 @@ import CVSpotLight from "../components/CVSpotLight";
 import CVInfo from "../components/CVInfo";
 import CVSetup from "../components/CVSetup";
 import CVModel2 from "../components/CVModel2";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +77,7 @@ export default class NVNode extends Node
         this.createComponent(CVModel2);
     }
 
-    fromDocument(document: IDocument, nodeIndex: number)
+    fromDocument(document: IDocument, nodeIndex: number,  pathMap: Map<string, Component>)
     {
         const node = document.nodes[nodeIndex];
         this.transform.fromData(node);
@@ -85,14 +86,17 @@ export default class NVNode extends Node
 
         if (isFinite(node.info)) {
             this.createComponent(CVInfo).fromDocument(document, node);
+            pathMap.set(`info/${node.info}`, this.info);
             name = "Info";
         }
         if (isFinite(node.model)) {
             this.createComponent(CVModel2).fromDocument(document, node);
+            pathMap.set(`model/${node.model}`, this.model);
             name = "Model";
         }
         if (isFinite(node.camera)) {
             this.createComponent(CVCamera).fromDocument(document, node);
+            pathMap.set(`camera/${node.camera}`, this.camera);
             name = "Camera";
         }
         if (isFinite(node.light)) {
@@ -113,6 +117,8 @@ export default class NVNode extends Node
                 default:
                     throw new Error(`unknown light type: '${type}'`);
             }
+
+            pathMap.set(`light/${node.light}`, this.light);
         }
 
         this.name = node.name || name;
@@ -122,12 +128,12 @@ export default class NVNode extends Node
             childIndices.forEach(childIndex => {
                 const childNode = this.graph.createCustomNode(NVNode);
                 this.transform.addChild(childNode.transform);
-                childNode.fromDocument(document, childIndex);
+                childNode.fromDocument(document, childIndex, pathMap);
             });
         }
     }
 
-    toDocument(document: IDocument, components?: INodeComponents)
+    toDocument(document: IDocument, pathMap: Map<Component, string>, components?: INodeComponents)
     {
         components = components || {
             setup: true,
@@ -138,7 +144,7 @@ export default class NVNode extends Node
         };
 
         document.nodes = document.nodes || [];
-        const index = document.nodes.length;
+        const nodeIndex = document.nodes.length;
         const node = this.transform.toData();
         document.nodes.push(node);
 
@@ -147,16 +153,20 @@ export default class NVNode extends Node
         }
 
         if (this.info && components.info) {
-            this.info.toDocument(document, node);
+            node.info = this.info.toDocument(document, node);
+            pathMap.set(this.info, `info/${node.info}`);
         }
         if (this.model && components.model) {
-            this.model.toDocument(document, node);
+            node.model = this.model.toDocument(document, node);
+            pathMap.set(this.model, `model/${node.model}`);
         }
         if (this.camera && components.camera) {
-            this.camera.toDocument(document, node);
+            node.camera = this.camera.toDocument(document, node);
+            pathMap.set(this.camera, `camera/${node.camera}`);
         }
         if (this.light && components.light) {
-            this.light.toDocument(document, node);
+            node.light = this.light.toDocument(document, node);
+            pathMap.set(this.light, `light/${node.light}`);
         }
 
         const children = this.transform.children
@@ -164,13 +174,13 @@ export default class NVNode extends Node
 
         children.forEach(child => {
             if (child.hasNodeComponents(components)) {
-                const index = child.toDocument(document, components);
+                const index = child.toDocument(document, pathMap, components);
                 node.children = node.children || [];
                 node.children.push(index);
             }
         });
 
-        return index;
+        return nodeIndex;
     }
 
     hasNodeComponents(components: INodeComponents)

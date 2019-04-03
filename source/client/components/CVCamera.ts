@@ -25,7 +25,7 @@ export default class CVCamera extends CCamera
 {
     static readonly typeName: string = "CVCamera";
 
-    fromDocument(document: IDocument, node: INode)
+    fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.camera)) {
             throw new Error("camera property missing in node");
@@ -49,9 +49,11 @@ export default class CVCamera extends CCamera
                 far: data.orthographic.zfar
             });
         }
+
+        return node.camera;
     }
 
-    toDocument(document: IDocument, node: INode)
+    toDocument(document: IDocument, node: INode): number
     {
         const ins = this.ins;
 
@@ -75,8 +77,8 @@ export default class CVCamera extends CCamera
         }
 
         document.cameras = document.cameras || [];
-        const index = document.cameras.length;
+        const cameraIndex = document.cameras.length;
         document.cameras.push(data);
-        node.camera = index;
+        return cameraIndex;
     }
 }

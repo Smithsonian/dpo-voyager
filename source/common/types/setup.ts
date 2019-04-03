@@ -15,11 +15,6 @@
  * limitations under the License.
  */
 
-import { EUnitType, TUnitType } from "./common";
-
-////////////////////////////////////////////////////////////////////////////////
-
-export { TUnitType, EUnitType };
 
 export type TShaderMode = "Default" | "Clay" | "XRay" | "Normals" | "Wireframe";
 export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe }
@@ -39,7 +34,6 @@ export enum ESliceAxis { X, Y, Z }
 
 export interface ISetup
 {
-    units: TUnitType;
     interface?: IInterface;
     viewer?: IViewer;
     reader?: IReader;
@@ -50,6 +44,7 @@ export interface ISetup
     tape?: ITape;
     slicer?: ISlicer;
     tours?: ITours;
+    snapshots?: ISnapshots;
 }
 
 export interface IInterface
@@ -142,21 +137,24 @@ export interface ISlicer
     position: number;
 }
 
-export interface IAnnotations
-{
-    visible: boolean;
-}
+export type ITours = ITour[];
 
-export interface ITours
+export interface ISnapshots
 {
-    targets: any[];
-    tours: ITour[];
+    targets: string[];
+    states: {
+        id: string;
+        curve: string;
+        duration: number;
+        threshold: number;
+        values: any[];
+    }[];
 }
 
 export interface ITour
 {
-    steps: ITourStep[];
     title: string;
+    steps: ITourStep[];
     lead?: string;
     tags?: string[];
 }
@@ -164,8 +162,5 @@ export interface ITour
 export interface ITourStep
 {
     title: string;
-    curve: string;
-    duration: number;
-    threshold: number;
-    values: any[];
+    id: string;
 }

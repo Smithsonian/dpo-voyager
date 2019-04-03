@@ -27,7 +27,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
 {
     static readonly typeName: string = "CVPointLight";
 
-    fromDocument(document: IDocument, node: INode)
+    fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
@@ -45,9 +45,11 @@ export default class CVPointLight extends CPointLight implements ICVLight
             distance: data.point.distance || 0,
             decay: data.point.decay !== undefined ? data.point.decay : 1,
         });
+
+        return node.light;
     }
 
-    toDocument(document: IDocument, node: INode)
+    toDocument(document: IDocument, node: INode): number
     {
         const ins = this.ins;
 
@@ -63,8 +65,8 @@ export default class CVPointLight extends CPointLight implements ICVLight
         data.type = "point";
 
         document.lights = document.lights || [];
-        const index = document.lights.length;
+        const lightIndex = document.lights.length;
         document.lights.push(data);
-        node.light = index;
+        return lightIndex;
     }
 }

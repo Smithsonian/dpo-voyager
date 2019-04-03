@@ -22,6 +22,7 @@ import NVNode, { INodeComponents } from "./NVNode";
 import CVScene from "../components/CVScene";
 import CVSetup from "../components/CVSetup";
 import CVInfo from "../components/CVInfo";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +34,7 @@ export default class NVScene extends NVNode
         return this.components.get(CVScene);
     }
     get setup() {
-        return this.components.get(CVSetup);
+        return this.components.get(CVSetup, true);
     }
 
     createComponents()
@@ -43,7 +44,7 @@ export default class NVScene extends NVNode
         this.createComponent(CVInfo);
     }
 
-    fromDocument(document: IDocument, sceneIndex: number)
+    fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)
     {
         const scene = document.scenes[sceneIndex];
 
@@ -51,50 +52,59 @@ export default class NVScene extends NVNode
             this.name = scene.name;
         }
 
-        if (isFinite(scene.setup)) {
-            const featureData = document.setups[scene.setup];
-            this.setup.fromData(featureData);
-        }
-        if (isFinite(scene.info)) {
-            this.info.fromDocument(document, scene);
-        }
+        this.scene.fromDocument(document, scene);
 
+        // serialize node tree
         const nodeIndices = scene.nodes;
         if (nodeIndices) {
             nodeIndices.forEach(nodeIndex => {
                 const childNode = this.graph.createCustomNode(NVNode);
                 this.transform.addChild(childNode.transform);
-                childNode.fromDocument(document, nodeIndex);
+                childNode.fromDocument(document, nodeIndex, pathMap);
             });
+        }
+
+        // serialize additional scene components
+        if (isFinite(scene.info)) {
+            this.info.fromDocument(document, scene);
+            pathMap.set(`info/${scene.info}`, this.info);
+        }
+        if (isFinite(scene.setup)) {
+            this.setup.fromDocument(document, sceneIndex, pathMap);
         }
     }
 
-    toDocument(document: IDocument, components?: INodeComponents): number
+    toDocument(document: IDocument, pathMap: Map<Component, string>, components?: INodeComponents): number
     {
         document.scenes = document.scenes || [];
-        const index = document.scenes.length;
-        const scene: IScene = {};
+        const sceneIndex = document.scenes.length;
+        const scene: IScene = { units: "cm" };
+        document.scenes.push(scene);
 
-        if (!components || components.setup) {
-            document.setups = document.setups || [];
-            const setupIndex = document.setups.length;
-            document.setups.push(this.setup.toData());
-            scene.setup = setupIndex;
-        }
+        this.scene.toDocument(document, scene);
 
-        this.info.toDocument(document, scene);
-
+        // serialize node tree
         const children = this.transform.children
             .map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
 
         children.forEach(child => {
             if (child.hasNodeComponents(components)) {
-                const index = child.toDocument(document, components);
+                const index = child.toDocument(document, pathMap, components);
                 scene.nodes = scene.nodes || [];
                 scene.nodes.push(index);
             }
         });
 
-        return index;
+        // serialize additional scene components
+        if (this.info && (!components || components.info)) {
+            scene.info = this.info.toDocument(document, scene);
+            pathMap.set(this.info, `info/${scene.info}`);
+        }
+
+        if (this.setup && (!components || components.setup)) {
+            this.setup.toDocument(document, sceneIndex, pathMap);
+        }
+
+        return sceneIndex;
     }
 }

@@ -17,7 +17,7 @@
 
 import download from "@ff/browser/download";
 
-import { Node, types } from "@ff/graph/Component";
+import Component, { Node, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
 
@@ -27,9 +27,10 @@ import { EDerivativeQuality } from "common/types/model";
 import DocumentValidator from "../io/DocumentValidator";
 
 import NVNode, { INodeComponents } from "../nodes/NVNode";
+import NVScene from "../nodes/NVScene";
+
 import CVSetup from "./CVSetup";
 import CVAssetReader from "./CVAssetReader";
-import NVScene from "../nodes/NVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +102,8 @@ export default class CVDocument extends CRenderGraph
         if (ins.dumpJson.changed) {
             const json = this.deflateDocument();
             console.log("-------------------- VOYAGER DOCUMENT --------------------");
-            console.log(JSON.stringify(json, null, 2));
+            console.log(JSON.stringify(json, (key, value) =>
+                typeof value === "number" ? parseFloat(value.toFixed(5)) : value, 2));
         }
         if (ins.dumpTree.changed) {
             console.log("-------------------- VOYAGER DOCUMENT --------------------");
@@ -144,8 +146,10 @@ export default class CVDocument extends CRenderGraph
             throw new Error("invalid parent node");
         }
 
+        const pathMap = new Map<string, Component>();
+
         if (parent instanceof NVScene) {
-            parent.fromDocument(documentData, documentData.scene);
+            parent.fromDocument(documentData, documentData.scene, pathMap);
         }
         else {
             // if we append to a node, skip the document's root scene and append the scene's child nodes
@@ -153,9 +157,11 @@ export default class CVDocument extends CRenderGraph
             rootIndices.forEach(rootIndex => {
                 const rootNode = this.innerGraph.createCustomNode(NVNode);
                 parent.transform.addChild(rootNode.transform);
-                rootNode.fromDocument(documentData, rootIndex);
+                rootNode.fromDocument(documentData, rootIndex, pathMap);
             });
         }
+
+        pathMap.forEach((comp, path) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)
@@ -211,7 +217,11 @@ export default class CVDocument extends CRenderGraph
             scenes: [],
         };
 
-        document.scene = this.root.toDocument(document, components);
+        const pathMap = new Map<Component, string>();
+        document.scene = this.root.toDocument(document, pathMap, components);
+
+        pathMap.forEach((path, comp) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
+
         return document;
     }
 }

@@ -17,14 +17,14 @@
 
 import { Index } from "@ff/core/types";
 
-import { Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
+import { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
 import { IInfo } from "./info";
 import { IModel } from "./model";
 import { ISetup } from "./setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { Vector3, Quaternion, Matrix4, ColorRGB };
+export { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB };
 
 export type TCameraType = "perspective" | "orthographic";
 export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
@@ -62,6 +62,7 @@ export interface IScene
     nodes?: Index[];
     setup?: Index;
     info?: Index;
+    units: TUnitType;
 }
 
 /**

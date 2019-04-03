@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
-import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import { Dictionary } from "@ff/core/types";
+import Component from "@ff/graph/Component";
 import CTransform from "@ff/scene/components/CTransform";
 
-import { ISetup, EUnitType, TUnitType } from "common/types/setup";
-
-import CVModel2 from "./CVModel2";
+import { IDocument, IScene } from "common/types/document";
+import { ISetup } from "common/types/setup";
 
 import CVInterface from "./CVInterface";
 import CVViewer from "./CVViewer";
@@ -34,201 +32,155 @@ import CVGrid from "./CVGrid";
 import CVTape from "./CVTape";
 import CVSlicer from "./CVSlicer";
 import CVTours from "./CVTours";
+import CVSnapshots from "./CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * At the root of a Voyager scene, this component manages scene features,
  * including tours.
- *
- * ### Events
- * - *"bounding-box*" - emitted after the scene's model bounding box changed.
  */
 export default class CVSetup extends Component
 {
     static readonly typeName: string = "CVSetup";
 
-    protected static readonly ins = {
-        units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
+    protected static readonly featureMap = {
+        "interface": CVInterface,
+        "reader": CVReader,
+        "viewer": CVViewer,
+        "navigation": CVOrbitNavigation,
+        "background": CVBackground,
+        "floor": CVFloor,
+        "grid": CVGrid,
+        "tape": CVTape,
+        "slicer": CVSlicer,
+        "tours": CVTours,
     };
-
-    ins = this.addInputs(CVSetup.ins);
-
-    private _modelBoundingBox = new THREE.Box3();
 
     get transform() {
         return this.getComponent(CTransform);
     }
-    get interface() {
-        return this.getComponent(CVInterface);
-    }
-    get reader() {
-        return this.getComponent(CVReader);
-    }
-    get viewer() {
-        return this.getComponent(CVViewer);
-    }
-    get navigation() {
-        return this.getComponent(CVOrbitNavigation);
-    }
-    get background() {
-        return this.getComponent(CVBackground);
-    }
-    get floor() {
-        return this.getComponent(CVFloor);
-    }
-    get grid() {
-        return this.getComponent(CVGrid);
-    }
-    get tape() {
-        return this.getComponent(CVTape);
-    }
-    get slicer() {
-        return this.getComponent(CVSlicer);
-    }
-    get tours() {
-        return this.getComponent(CVTours);
-    }
-    get models() {
-        return this.getGraphComponents(CVModel2);
-    }
 
-    get modelBoundingBox() {
-        return this._modelBoundingBox;
-    }
+    interface: CVInterface;
+    reader: CVReader;
+    viewer: CVViewer;
+    navigation: CVOrbitNavigation;
+    background: CVBackground;
+    floor: CVFloor;
+    grid: CVGrid;
+    tape: CVTape;
+    slicer: CVSlicer;
+    tours: CVTours;
+    snapshots: CVSnapshots;
 
     create()
     {
         super.create();
 
         const node = this.node;
-        node.createComponent(CVInterface);
-        node.createComponent(CVViewer);
-        node.createComponent(CVReader);
-        node.createComponent(CVOrbitNavigation);
-        node.createComponent(CVBackground);
-        node.createComponent(CVFloor);
-        node.createComponent(CVGrid);
-        node.createComponent(CVTape);
-        node.createComponent(CVSlicer);
-        node.createComponent(CVTours);
+        const features = CVSetup.featureMap;
 
-        this.registerTourTargets();
+        for (const name in features) {
+            this[name] = node.createComponent(features[name]);
+        }
 
-        this.graph.components.on(CVModel2, this.onModelComponent, this);
+        this.snapshots = node.createComponent(CVSnapshots);
 
-        this.models.forEach(model => model.ins.globalUnits.linkFrom(this.ins.units));
+        this.updateTourFeatures({ navigation: true });
     }
 
-    dispose()
+    updateTourFeatures(tourFeatures: Dictionary<boolean>)
     {
-        this.graph.components.off(CVModel2, this.onModelComponent, this);
-        super.dispose();
-    }
+        const features = CVSetup.featureMap;
+        const machine = this.tours.tweenMachine;
 
-    update(context)
-    {
-        const ins = this.ins;
-
-        if (ins.units.changed) {
-            this.updateModelBoundingBox();
-        }
-
-        return true;
-    }
-
-    fromData(data: ISetup)
-    {
-        if (!data) {
-            return;
-        }
-
-        this.ins.units.setValue(EUnitType[data.units] || EUnitType.cm);
-
-        if (data.interface) {
-            this.interface.fromData(data.interface);
-        }
-        if (data.viewer) {
-            this.viewer.fromData(data.viewer);
-        }
-        if (data.reader) {
-            this.reader.fromData(data.reader);
-        }
-        if (data.navigation) {
-            this.navigation.fromData(data.navigation);
-        }
-        if (data.background) {
-            this.background.fromData(data.background);
-        }
-        if (data.floor) {
-            this.floor.fromData(data.floor);
-        }
-        if (data.grid) {
-            this.grid.fromData(data.grid);
-        }
-        if (data.tape) {
-            this.tape.fromData(data.tape);
-        }
-        if (data.slicer) {
-            this.slicer.fromData(data.slicer);
-        }
-        if (data.tours) {
-            this.tours.fromData(data.tours);
+        for (const name in features) {
+            const shouldInclude = tourFeatures[name];
+            const component = this[name];
+            if (component) {
+                const properties = component.ins.properties;
+                properties.forEach(property => {
+                    const schema = property.schema;
+                    if (!schema.static && !schema.event && property.type !== "object") {
+                        const isIncluded = machine.hasTargetProperty(property);
+                        if (shouldInclude && !isIncluded) {
+                            machine.addTargetProperty(property);
+                        }
+                        else if (!shouldInclude && isIncluded) {
+                            machine.removeTargetProperty(property);
+                        }
+                    }
+                })
+            }
         }
     }
 
-    toData()
+    protected dumpAvailableTourFeatures()
     {
-        const data: ISetup = {
-            units: EUnitType[this.ins.units.getValidatedValue()] as TUnitType,
-        };
+        const features = CVSetup.featureMap;
 
-        data.interface = this.interface.toData();
-        data.viewer = this.viewer.toData();
-        data.reader = this.reader.toData();
-        data.navigation = this.navigation.toData();
-        data.background = this.background.toData();
-        data.floor = this.floor.toData();
-        data.grid = this.grid.toData();
-        data.tape = this.tape.toData();
-        data.slicer = this.slicer.toData();
-
-        const tourData = this.tours.toData();
-        if (tourData) {
-            data.tours = tourData;
+        for (const name in features) {
+            const component = this[name] as Component;
+            if (component) {
+                console.log(component.displayName);
+                component.ins.properties
+                .filter(prop => !prop.schema.static)
+                .forEach(prop => console.log("  " + prop.path));
+            }
         }
-
-        return data;
     }
 
-    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)
     {
-        const model = event.object;
+        const scene = document.scenes[sceneIndex];
 
-        if (event.add) {
-            model.on("bounding-box", this.updateModelBoundingBox, this);
-            model.ins.globalUnits.linkFrom(this.ins.units);
-        }
-        if (event.remove) {
-            model.off("bounding-box", this.updateModelBoundingBox, this);
+        if (!isFinite(scene.setup)) {
+            throw new Error("setup property missing in node");
         }
 
-        this.updateModelBoundingBox();
+        const setupData = document.setups[scene.setup];
+        const features = CVSetup.featureMap;
+
+        for (const name in features) {
+            pathMap.set(`scenes/${sceneIndex}/setup/${name}`, this[name]);
+
+            const featureData = setupData[name];
+            if (featureData) {
+                this[name].fromData(featureData);
+            }
+        }
+
+        if (setupData.snapshots) {
+            this.snapshots.fromData(setupData.snapshots, pathMap);
+        }
     }
 
-    protected updateModelBoundingBox()
+    toDocument(document: IDocument, sceneIndex: number, pathMap: Map<Component, string>)
     {
-        const box = this._modelBoundingBox;
-        box.makeEmpty();
+        let setupData: ISetup = null;
+        const features = CVSetup.featureMap;
 
-        this.models.forEach(model => box.expandByObject(model.object3D));
-        this.emit("bounding-box");
-    }
+        for (const name in features) {
+            pathMap.set(this[name], `scenes/${sceneIndex}/setup/${name}`);
 
-    protected registerTourTargets()
-    {
-        const tours = this.tours;
-        tours.addTarget(this.navigation, this.navigation.ins.orbit);
-        tours.addTarget(this.navigation, this.navigation.ins.offset);
+            const featureData = this[name].toData();
+            if (featureData) {
+                setupData = setupData || {};
+                setupData[name] = featureData;
+            }
+        }
+
+        const snapshotData = this.snapshots.toData(pathMap);
+        if (snapshotData) {
+            setupData = setupData || {};
+            setupData.snapshots = snapshotData;
+        }
+
+        if (setupData) {
+            document.setups = document.setups || [];
+            const index = document.setups.length;
+            document.setups.push(setupData);
+            document.scenes[sceneIndex].setup = index;
+        }
     }
 }

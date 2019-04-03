@@ -27,7 +27,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
 {
     static readonly typeName: string = "CVSpotLight";
 
-    fromDocument(document: IDocument, node: INode)
+    fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
@@ -47,9 +47,11 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             angle: data.spot.angle !== undefined ? data.spot.angle : Math.PI / 4,
             penumbra: data.spot.penumbra || 0,
         });
+
+        return node.light;
     }
 
-    toDocument(document: IDocument, node: INode)
+    toDocument(document: IDocument, node: INode): number
     {
         const ins = this.ins;
 
@@ -67,8 +69,8 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         data.type = "spot";
 
         document.lights = document.lights || [];
-        const index = document.lights.length;
+        const lightIndex = document.lights.length;
         document.lights.push(data);
-        node.light = index;
+        return lightIndex;
     }
 }

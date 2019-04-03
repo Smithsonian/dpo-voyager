@@ -23,9 +23,10 @@ import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 import { types } from "@ff/graph/Component";
 import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
-import { IGrid, EUnitType } from "common/types/setup";
+import { IGrid } from "common/types/setup";
+import { EUnitType } from "common/types/common";
 
-import CVSetup from "./CVSetup";
+import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,8 +41,9 @@ export default class CVGrid extends CObject3D
     static readonly typeName: string = "CVGrid";
 
     protected static readonly gridIns = {
-        color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
-        update: types.Event("Grid.Update"),
+        color: types.ColorRGB("Grid.Color", { preset: [ 0.5, 0.7, 0.8 ], static: true }),
+        opacity: types.Percent("Grid.Opacity", 1.0),
+        update: types.Event("Grid.Update", { static: true }),
     };
 
     protected static readonly gridOuts = {
@@ -64,8 +66,8 @@ export default class CVGrid extends CObject3D
     get grid() {
         return this.object3D as ThreeGrid;
     }
-    get setup() {
-        return this.getGraphComponent(CVSetup);
+    get rootScene() {
+        return this.getGraphComponent(CVScene);
     }
 
     create()
@@ -78,12 +80,12 @@ export default class CVGrid extends CObject3D
 
     activate()
     {
-        this.setup.on("bounding-box", this.onModelBoundingBox, this);
+        this.rootScene.on("bounding-box", this.onModelBoundingBox, this);
     }
 
     deactivate()
     {
-        this.setup.off("bounding-box", this.onModelBoundingBox, this);
+        this.rootScene.off("bounding-box", this.onModelBoundingBox, this);
     }
 
     update(): boolean
@@ -103,8 +105,8 @@ export default class CVGrid extends CObject3D
             }
 
             if (ins.update.changed) {
-                const box = this.setup.modelBoundingBox;
-                const units = this.setup.ins.units.value;
+                const box = this.rootScene.modelBoundingBox;
+                const units = this.rootScene.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);

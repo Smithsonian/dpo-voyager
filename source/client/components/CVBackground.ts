@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import Node from "@ff/graph/Node";
 import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
 import { IBackground, TBackgroundStyle } from "common/types/setup";
@@ -26,6 +27,16 @@ export default class CVBackground extends CBackground
 {
     static readonly typeName: string = "CVBackground";
 
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        // exclude from animation
+        this.ins.visible.schema.static = true;
+        this.ins.pickable.schema.static = true;
+        this.ins.style.schema.static = true;
+        this.ins.noise.schema.static = true;
+    }
 
     fromData(data: IBackground)
     {

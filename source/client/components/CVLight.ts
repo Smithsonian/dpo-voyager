@@ -26,5 +26,5 @@ export { CLight };
 export interface ICVLight extends CLight
 {
     fromDocument(document: IDocument, node: INode): void;
-    toDocument(document: IDocument, node: INode): void;
+    toDocument(document: IDocument, node: INode): number;
 }

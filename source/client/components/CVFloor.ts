@@ -30,6 +30,15 @@ export default class CVFloor extends CFloor
     {
         super(node, id);
         this.ins.visible.setValue(false);
+
+        // exclude from animation
+        this.ins.visible.schema.static = true;
+        this.ins.pickable.schema.static = true;
+        this.ins.position.schema.static = true;
+        this.ins.radius.schema.static = true;
+        this.ins.color.schema.static = true;
+        this.ins.castShadow.schema.static = true;
+        this.ins.receiveShadow.schema.static = true;
     }
 
     fromData(data: IFloor)

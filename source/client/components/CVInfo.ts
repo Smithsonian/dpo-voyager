@@ -36,7 +36,7 @@ export default class CVInfo extends Component
     leadArticle: Article = null;
     notes: INote[] = [];
 
-    fromDocument(document: IDocument, node: INode | IScene)
+    fromDocument(document: IDocument, node: INode | IScene): number
     {
         if (!isFinite(node.info)) {
             throw new Error("info property missing in node");
@@ -58,9 +58,10 @@ export default class CVInfo extends Component
         }
 
         this.notes = data.notes || [];
+        return node.info;
     }
 
-    toDocument(document: IDocument, node: INode | IScene)
+    toDocument(document: IDocument, node: INode | IScene): number
     {
         let data: IInfo = null;
 
@@ -90,9 +91,9 @@ export default class CVInfo extends Component
 
         if (data) {
             document.infos = document.infos || [];
-            const index = document.infos.length;
+            const infoIndex = document.infos.length;
             document.infos.push(data);
-            node.info = index;
+            return infoIndex;
         }
     }
 }
