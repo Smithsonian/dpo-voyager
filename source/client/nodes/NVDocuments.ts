@@ -39,7 +39,7 @@ export default class NVDocuments extends Node
 
     createComponents()
     {
-        this.createComponent(CScene);
+        this.createComponent(CScene, "Master Scene");
         this.createComponent(CVDocumentProvider);
         this.createComponent(CVNodeProvider);
     }

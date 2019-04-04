@@ -86,6 +86,9 @@ export default class CVModel2 extends CObject3D
         super(node, id);
 
         this.object3D = new THREE.Group();
+
+        this._boxFrame = new (THREE.Box3Helper as any)(this._boundingBox, "#ffffff");
+        this.addObject3D(this._boxFrame);
     }
 
     get derivatives() {
@@ -127,7 +130,6 @@ export default class CVModel2 extends CObject3D
                 });
             }
         }
-
 
         if (ins.visible.changed) {
             this.object3D.visible = ins.visible.value;
@@ -183,51 +185,47 @@ export default class CVModel2 extends CObject3D
 
     setFromMatrix(matrix: THREE.Matrix4)
     {
-        const { position, rotation } = this.ins;
+        const ins = this.ins;
 
         matrix.decompose(_vec3a, _quat, _vec3b);
-        _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(position.value);
 
-        helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, rotation.value);
+        _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(ins.position.value);
+        ins.position.set();
 
-        position.set();
-        rotation.set();
+        helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
+        ins.rotation.set();
     }
 
     fromDocument(document: IDocument, node: INode): number
     {
+        const ins = this.ins;
+
         if (!isFinite(node.model)) {
             throw new Error("model property missing in node");
         }
 
         const data = document.models[node.model];
 
-        if (data.translation || data.rotation) {
-            const { position, rotation } = this.ins;
+        ins.localUnits.setValue(EUnitType[data.units || "cm"] || EUnitType.cm);
 
-            position.setValue(data.translation ? data.translation.slice() : [0, 0, 0]);
+        ins.position.reset();
+        ins.rotation.reset();
 
-            if (data.rotation) {
-                _quat.fromArray(data.rotation);
-                rotation.setValue(helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder));
-            } else {
-                rotation.setValue([0, 0, 0]);
-            }
+        if (data.translation) {
+            ins.position.copyValue(data.translation);
+        }
 
-            this.updateMatrixFromProps();
+        if (data.rotation) {
+            _quat.fromArray(data.rotation);
+            helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
+            ins.rotation.set();
         }
 
         if (data.boundingBox) {
             this._boundingBox.min.fromArray(data.boundingBox.min);
             this._boundingBox.max.fromArray(data.boundingBox.max);
-
-            this._boxFrame = new (THREE.Box3Helper as any)(this._boundingBox, "#ffffff");
-            this.addObject3D(this._boxFrame);
-
             this.emit("bounding-box");
         }
-
-        this.ins.localUnits.setValue(EUnitType[data.units || "cm"] || EUnitType.cm);
 
         if (data.derivatives) {
             this.derivatives.fromJSON(data.derivatives);
@@ -249,19 +247,13 @@ export default class CVModel2 extends CObject3D
     toDocument(document: IDocument, node: INode): number
     {
         const data = {
-            units: EUnitType[this.ins.localUnits.getValidatedValue()],
-            derivatives: this.derivatives.toJSON(),
+            units: EUnitType[this.ins.localUnits.getValidatedValue()]
         } as IModel;
-
-        data.boundingBox = {
-            min: this._boundingBox.min.toArray() as Vector3,
-            max: this._boundingBox.max.toArray() as Vector3
-        };
 
         const ins = this.ins;
         const position = ins.position.value;
         if (position[0] !== 0 || position[1] !== 0 || position[2] !== 0) {
-            data.translation = _vec3a.toArray();
+            data.translation = ins.position.value;
         }
 
         const rotation = ins.rotation.value;
@@ -269,6 +261,13 @@ export default class CVModel2 extends CObject3D
             helpers.degreesToQuaternion(rotation, CVModel2.rotationOrder, _quat);
             data.rotation = _quat.toArray();
         }
+
+        data.boundingBox = {
+            min: this._boundingBox.min.toArray() as Vector3,
+            max: this._boundingBox.max.toArray() as Vector3
+        };
+
+        data.derivatives = this.derivatives.toJSON();
 
         const annotations = this.getComponent(CVAnnotationView).toData();
         if (annotations.length > 0) {
@@ -283,9 +282,8 @@ export default class CVModel2 extends CObject3D
 
     protected updateUnitScale()
     {
-        const ins = this.ins;
-        const fromUnits = ins.localUnits.getValidatedValue();
-        const toUnits = ins.globalUnits.getValidatedValue();
+        const fromUnits = this.ins.localUnits.getValidatedValue();
+        const toUnits = this.ins.globalUnits.getValidatedValue();
         this.outs.unitScale.setValue(unitScaleFactor(fromUnits, toUnits));
 
         //console.log("Model.updateUnitScale, from: %s, to: %s", fromUnits, toUnits);
@@ -351,17 +349,18 @@ export default class CVModel2 extends CObject3D
             if (this._boxFrame) {
                 this.removeObject3D(this._boxFrame);
                 this._boxFrame.geometry.dispose();
+                this._boxFrame = null;
             }
+
             if (this._activeDerivative) {
                 this.removeObject3D(this._activeDerivative.model);
                 this._activeDerivative.unload();
             }
 
-            helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
-
             this._activeDerivative = derivative;
             this.addObject3D(derivative.model);
 
+            helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
             this.emit("bounding-box");
 
             // TODO: Test

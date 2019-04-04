@@ -37,7 +37,7 @@
             "uri": "article-sample-1.md",
             "mimeType": "text/markdown"
         }],
-        "leadArticle": "1"
+        "leadArticle": 0
     }],
     "setups": [{
         "units": "cm",

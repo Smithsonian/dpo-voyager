@@ -78,6 +78,10 @@ export default class NVScene extends NVNode
         const scene: IScene = { units: "cm" };
         document.scenes.push(scene);
 
+        if (this.name) {
+            scene.name = this.name;
+        }
+
         this.scene.toDocument(document, scene);
 
         // serialize node tree

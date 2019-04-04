@@ -165,6 +165,10 @@ export default class CVPoseTask extends CVTask
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
         this.activeModel = next && next.model;
+
+        if (this.activeModel) {
+            this.selection.selectComponent(this.activeModel);
+        }
     }
 
     protected onPointer(event: IPointerEvent)

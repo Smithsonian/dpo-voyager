@@ -128,7 +128,7 @@ export default class ExplorerApplication
     {
         return this.assetReader.getJSON(documentPath)
             .then(data => {
-                merge = merge === undefined ? !data.lights.length && !data.cameras.length : merge;
+                merge = merge === undefined ? !data.lights && !data.cameras : merge;
                 return this.documentProvider.amendDocument(data, documentPath, merge);
             })
             .catch(error => {

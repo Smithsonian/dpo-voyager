@@ -87,35 +87,21 @@ export default class TourPanel extends DocumentView
         super.disconnected();
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
-    {
-        if (previous) {
-            this.subscriber.off();
-        }
-        if (next) {
-            this.tours = next.setup.tours;
-            this.subscriber.on(this.tours.ins.tourIndex, this.tours.outs.stepIndex);
-        }
-
-        this.requestUpdate();
-    }
-
     protected render()
     {
         console.log("TourPanel.render");
 
         const task = this.toursTask;
+        const tours = this.tours;
+        const machine = tours.tweenMachine;
 
-        if (!task) {
+        if (!task || !tours.ins.enabled.value) {
             return html`<div class="ff-placeholder">Tour edit task not available.</div>`;
         }
 
         if (!task.outs.isActive.value) {
             return html`<div class="ff-placeholder">Please select 'Tours' from the task menu to edit tours.</div>`;
         }
-
-        const tours = this.tours;
-        const machine = tours.tweenMachine;
 
         const tour = tours.activeTour;
 
@@ -190,6 +176,23 @@ export default class TourPanel extends DocumentView
     protected onClickDown()
     {
         this.toursTask.ins.moveStepDown.set();
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            this.subscriber.off();
+        }
+        if (next) {
+            this.tours = next.setup.tours;
+            this.subscriber.on(
+                this.tours.ins.enabled,
+                this.tours.ins.tourIndex,
+                this.tours.outs.stepIndex
+            );
+        }
+
+        this.requestUpdate();
     }
 
     protected onToursTask(event: IComponentEvent<CVToursTask>)

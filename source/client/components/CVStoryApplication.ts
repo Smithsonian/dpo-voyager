@@ -90,15 +90,19 @@ export default class CVStoryApplication extends Component
 
         if (document && ins.save.changed) {
             const data = document.deflateDocument(components);
-            this.assetWriter.putJSON(data, document.assetPath)
+            const json = JSON.stringify(data, null, 2);
+
+            this.assetWriter.putJSON(json, document.assetPath)
                 .then(() => new Notification(`Successfully uploaded file to '${document.assetPath}'`, "info", 4000))
                 .catch(e => new Notification(`Failed to upload file to '${document.assetPath}'`, "error", 8000));
         }
 
         if (document && ins.download.changed) {
             const data = document.deflateDocument(components);
+            const json = JSON.stringify(data, null, 2);
+
             const fileName = this.assetWriter.getAssetFileName(document.assetPath);
-            download.json(data, fileName);
+            download.json(json, fileName);
         }
 
         return false;

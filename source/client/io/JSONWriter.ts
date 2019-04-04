@@ -17,8 +17,6 @@
 
 import * as THREE from "three";
 
-import fetch from "@ff/browser/fetch";
-
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class JSONWriter
@@ -34,11 +32,25 @@ export default class JSONWriter
     {
         this._loadingManager.itemStart(url);
 
-        return fetch.json(url, "PUT", json).then(() => {
-            this._loadingManager.itemEnd(url);
-        }).catch(error => {
-            this._loadingManager.itemError(url);
-            throw error;
+        if (typeof json !== "string") {
+            json = JSON.stringify(json);
+        }
+
+        const params: any = {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "PUT",
+            credentials: "same-origin",
+            body: json
+        };
+
+        return fetch(url, params).then(result => {
+            if (!result.ok) {
+                const message = `fetch PUT at '${url}', error: ${result.status} - ${result.statusText}`;
+                console.warn(message);
+                throw new Error(message);
+            }
         });
     }
 }

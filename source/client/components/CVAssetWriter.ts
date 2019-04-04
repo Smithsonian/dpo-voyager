@@ -23,7 +23,7 @@ import JSONWriter from "../io/JSONWriter";
 import { INodeComponents } from "../nodes/NVNode";
 
 import CVDocument from "./CVDocument";
-import { AssetLoadingManager, IAssetService } from "./CVAssetReader";
+import CVAssetReader, { AssetLoadingManager, IAssetService } from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,6 +55,16 @@ export default class CVAssetWriter extends Component implements IAssetService
         this._loadingManager = new AssetLoadingManager(this);
 
         this.jsonWriter = new JSONWriter(this._loadingManager);
+    }
+
+    get reader() {
+        return this.getMainComponent(CVAssetReader);
+    }
+
+    create()
+    {
+        super.create();
+        this.ins.rootUrl.linkFrom(this.reader.ins.rootUrl);
     }
 
     update(context)

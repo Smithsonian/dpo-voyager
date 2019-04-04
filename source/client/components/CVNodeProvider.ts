@@ -16,7 +16,6 @@
  */
 
 import { Node, types } from "@ff/graph/Component";
-import CSelection from "@ff/graph/components/CSelection";
 
 import CNodeProvider, {
     ENodeScope,
@@ -35,7 +34,9 @@ export type INodesEvent = IScopedNodesEvent;
 export default class CVNodeProvider extends CNodeProvider<NVNode>
 {
     static readonly typeName: string = "CVNodeProvider";
+
     static readonly nodeType = NVNode;
+    static readonly followComponentSelection = true;
 
     protected static readonly outs = {
         activeNode: types.Object("Nodes.Active", NVNode),
@@ -53,9 +54,6 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
 
     protected get documentProvider() {
         return this.getComponent(CVDocumentProvider);
-    }
-    protected get selection() {
-        return this.system.getMainComponent(CSelection);
     }
 
     create()
@@ -79,8 +77,15 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
     {
         this.outs.activeNode.setValue(next);
 
+        const selection = this.selection;
+
         if (next) {
-            this.selection.selectNode(next);
+            if (!selection.nodeContainsSelectedComponent(next)) {
+                selection.selectNode(next);
+            }
+        }
+        else if (previous) {
+            selection.clearSelection();
         }
     }
 

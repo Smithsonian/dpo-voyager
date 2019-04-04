@@ -116,16 +116,8 @@ export default class CVTours extends Component
         }
 
         if (ins.stepIndex.changed) {
-            nextStepIndex = Math.min(tour.steps.length - 1, Math.max(-1, ins.stepIndex.value));
-            const step = tour.steps[nextStepIndex];
-            outs.stepIndex.setValue(nextStepIndex);
-            outs.stepCount.setValue(stepCount);
-            outs.stepTitle.setValue(step.title);
-            machine.ins.id.setValue(step.id);
-            machine.ins.recall.set();
-            return true;
+            nextStepIndex = Math.min(tour.steps.length - 1, Math.max(0, ins.stepIndex.value));
         }
-
         if (ins.first.changed) {
             nextStepIndex = 0;
         }
@@ -139,6 +131,7 @@ export default class CVTours extends Component
         if (nextStepIndex >= 0) {
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
+            outs.stepCount.setValue(stepCount);
             outs.stepTitle.setValue(step.title);
             machine.ins.id.setValue(step.id);
             machine.ins.tween.set();
@@ -156,7 +149,7 @@ export default class CVTours extends Component
             tags: tour.tags || [],
         }));
 
-        this.ins.tourIndex.setValue(0);
+        this.ins.tourIndex.setValue(-1);
     }
 
     toData(): ITours | null

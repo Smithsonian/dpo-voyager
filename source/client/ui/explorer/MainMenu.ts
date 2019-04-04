@@ -78,7 +78,7 @@ export default class MainMenu extends DocumentView
 
         return html`<ff-button icon="document" title="Read more..."
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
-        ${readerVisible ? null : html`<ff-button icon="globe" title="Interactive Tours - NOT YET AVAILABLE"
+        ${readerVisible ? null : html`<ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursVisible} @click=${this.onToggleTours}></ff-button>
         <ff-button icon="comment" title="Toggle Annotations"
             ?selected=${annotationsVisible} @click=${this.onToggleAnnotations}></ff-button>

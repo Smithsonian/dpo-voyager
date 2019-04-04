@@ -67,9 +67,9 @@
             "minLength": 1
         },
         "leadArticle": {
-            "description": "Id of the main article. This is the default article displayed with the item.",
-            "type": "string",
-            "minLength": 1
+            "description": "Index of the main article. This is the default article displayed with the item.",
+            "type": "integer",
+            "minimum": 0
         },
         "notes": {
             "description": "Notes taken during production.",

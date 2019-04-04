@@ -52,7 +52,7 @@ export default class CVInfo extends Component
         }
         if (data.articles) {
             this.articles.items = data.articles.map(article => Article.fromJSON(article));
-            if (data.leadArticle) {
+            if (data.leadArticle !== undefined) {
                 this.leadArticle = this.articles.getAt(data.leadArticle);
             }
         }

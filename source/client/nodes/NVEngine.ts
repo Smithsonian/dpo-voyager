@@ -53,6 +53,6 @@ export default class NVEngine extends Node
         // don't allow selecting multiple nodes or components
         //selection.multiSelect = false;
         // do not display selection brackets
-        selection.ins.viewportBrackets.setValue(false);
+        //selection.ins.viewportBrackets.setValue(false);
     }
 }
