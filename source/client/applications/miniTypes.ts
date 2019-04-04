@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+import CVNodeProvider from "../components/CVNodeProvider";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const types = [
-
+    CVNodeProvider,
 ];
 
 export default types;

@@ -198,6 +198,8 @@ export default class CVAnnotationView extends CObject3D
     {
         this._annotations[annotation.id] = annotation;
         this.createSprite(annotation);
+
+        this.changed = true;
     }
 
     removeAnnotation(annotation: Annotation)
@@ -211,11 +213,14 @@ export default class CVAnnotationView extends CObject3D
             const index = Math.min(keys.indexOf(annotation.id) + 1, keys.length - 1);
             this.activeAnnotation = index < 0 ? null : this._annotations[keys[index]];
         }
+
+        this.changed = true;
     }
 
     updateAnnotation(annotation: Annotation)
     {
-        this.updateSprite(annotation);
+        //this.updateSprite(annotation);
+        this.changed = true;
     }
 
     toJSON()

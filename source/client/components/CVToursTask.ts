@@ -145,6 +145,7 @@ export default class CVToursTask extends CVTask
                 return true;
             }
             if (ins.deleteTour.changed) {
+                tour.steps.forEach(step => machine.deleteState(step.id));
                 tourList.splice(tourIndex, 1);
                 tours.ins.tourIndex.setValue(tourIndex);
                 return true;

@@ -121,13 +121,13 @@ class BeamAnnotation extends AnnotationElement
 
     getOpacity()
     {
-        if (this.currentOpacity > this.targetOpacity) {
-            this.currentOpacity = Math.max(this.currentOpacity - 0.05, 0);
-        }
-        else if (this.currentOpacity < this.targetOpacity) {
-            this.currentOpacity = Math.min(this.currentOpacity + 0.05, 1);
-        }
-
+        // if (this.currentOpacity > this.targetOpacity) {
+        //     this.currentOpacity = Math.max(this.currentOpacity - 0.05, 0);
+        // }
+        // else if (this.currentOpacity < this.targetOpacity) {
+        //     this.currentOpacity = Math.min(this.currentOpacity + 0.05, 1);
+        // }
+        this.currentOpacity = this.targetOpacity;
         return this.currentOpacity;
     }
 

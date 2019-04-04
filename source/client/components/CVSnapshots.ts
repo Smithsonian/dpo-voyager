@@ -15,10 +15,16 @@
  * limitations under the License.
  */
 
+import { Dictionary } from "@ff/core/types";
 import Component from "@ff/graph/Component";
 import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
+import CLight from "@ff/scene/components/CLight";
 
 import { ISnapshots } from "common/types/setup";
+
+import CVSetup from "./CVSetup";
+import CVModel2 from "./CVModel2";
+import Property from "@ff/graph/Property";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,9 +32,81 @@ export default class CVSnapshots extends CTweenMachine
 {
     static readonly typeName: string = "CVSnapshots";
 
+    targetFeatures: Dictionary<boolean> = {};
+
+    create()
+    {
+        super.create();
+
+        const setup = this.getGraphComponent(CVSetup);
+
+        Object.keys(setup.featureMap).forEach(name => {
+            this.targetFeatures[name] = false;
+        });
+
+        this.targetFeatures["navigation"] = true;
+        this.targetFeatures["models"] = false;
+        this.targetFeatures["lights"] = false;
+    }
+
+    updateTargets()
+    {
+        const features = this.targetFeatures;
+        const setup = this.getGraphComponent(CVSetup);
+
+        Object.keys(features).forEach(name => {
+            const component = setup[name];
+            const shouldInclude = features[name];
+
+            if (component) {
+                this.updateComponentTarget(component, shouldInclude);
+            }
+        });
+
+        const models = this.getGraphComponents(CVModel2);
+        models.forEach(model => this.updateComponentTarget(model.transform, !!features["models"]));
+
+        const lights = this.getGraphComponents(CLight);
+        lights.forEach(light => this.updateComponentTarget(light, !!features["lights"]));
+
+        this.targets.forEach((target, index) => {
+            const component = target.property.group.linkable as Component;
+            console.log("CVSnapshot.updateTargets - target #%s, component: %s, property: %s",
+                index, component.displayName, target.property.path);
+        });
+    }
+
+    protected updateComponentTarget(component: Component, include: boolean)
+    {
+        const snapshotKeys = component["snapshotKeys"] as string[];
+        if (!snapshotKeys) {
+            return;
+        }
+
+        snapshotKeys.forEach(key => {
+            const property = component.ins[key] as Property;
+            const schema = property.schema;
+            if (!schema.event && property.type !== "object") {
+                const isIncluded = this.hasTargetProperty(property);
+                if (include && !isIncluded) {
+                    this.addTargetProperty(property);
+                }
+                else if (!include && isIncluded) {
+                    this.removeTargetProperty(property);
+                }
+            }
+        });
+    }
+
     fromData(data: ISnapshots, pathMap: Map<string, Component>)
     {
         this.clear();
+
+        if (data.features) {
+            const features = this.targetFeatures;
+            const keys = Object.keys(features);
+            keys.forEach(key => features[key] = data.features.indexOf(key) >= 0);
+        }
 
         const missingTargets = new Set<number>();
 
@@ -37,10 +115,11 @@ export default class CVSnapshots extends CTweenMachine
             const componentPath = target.substr(0, slashIndex);
             const propertyKey = target.substr(slashIndex + 1);
 
-            const component = pathMap[componentPath];
+            const component = pathMap.get(componentPath);
             const property = component ? component.ins[propertyKey] : null;
 
             if (!property) {
+                console.warn(`missing snapshot target property for '${target}'`);
                 missingTargets.add(index);
             }
             else {
@@ -61,7 +140,11 @@ export default class CVSnapshots extends CTweenMachine
 
     toData(pathMap: Map<Component, string>): ISnapshots | null
     {
+        const features = this.targetFeatures;
+
         const data: ISnapshots = {
+            features: Object.keys(features).filter(key => features[key]),
+
             targets: this.targets.map(target => {
                 const component = target.property.group.linkable as Component;
                 const key = target.property.key;

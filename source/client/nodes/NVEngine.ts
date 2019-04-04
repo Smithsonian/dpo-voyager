@@ -16,10 +16,13 @@
  */
 
 import Node from "@ff/graph/Node";
+
 import CPulse from "@ff/graph/components/CPulse";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CPickSelection from "@ff/scene/components/CPickSelection";
 import CFullscreen from "@ff/scene/components/CFullscreen";
+
+import CVAssetReader from "../components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,12 +42,16 @@ export default class NVEngine extends Node
     get selection() {
         return this.components.get(CPickSelection);
     }
+    get assetReader() {
+        return this.components.get(CVAssetReader);
+    }
 
     createComponents()
     {
         this.createComponent(CPulse);
         this.createComponent(CRenderer);
         this.createComponent(CFullscreen);
+        this.createComponent(CVAssetReader);
 
         const selection = this.createComponent(CPickSelection);
 
@@ -53,6 +60,6 @@ export default class NVEngine extends Node
         // don't allow selecting multiple nodes or components
         //selection.multiSelect = false;
         // do not display selection brackets
-        //selection.ins.viewportBrackets.setValue(false);
+        selection.ins.viewportBrackets.setValue(false);
     }
 }

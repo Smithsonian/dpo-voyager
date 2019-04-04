@@ -57,6 +57,9 @@ export default class CVSetup extends Component
         "tours": CVTours,
     };
 
+    get featureMap() {
+        return (this.constructor as typeof CVSetup).featureMap;
+    }
     get transform() {
         return this.getComponent(CTransform);
     }
@@ -85,49 +88,6 @@ export default class CVSetup extends Component
         }
 
         this.snapshots = node.createComponent(CVSnapshots);
-
-        this.updateTourFeatures({ navigation: true });
-    }
-
-    updateTourFeatures(tourFeatures: Dictionary<boolean>)
-    {
-        const features = CVSetup.featureMap;
-        const machine = this.tours.tweenMachine;
-
-        for (const name in features) {
-            const shouldInclude = tourFeatures[name];
-            const component = this[name];
-            if (component) {
-                const properties = component.ins.properties;
-                properties.forEach(property => {
-                    const schema = property.schema;
-                    if (!schema.static && !schema.event && property.type !== "object") {
-                        const isIncluded = machine.hasTargetProperty(property);
-                        if (shouldInclude && !isIncluded) {
-                            machine.addTargetProperty(property);
-                        }
-                        else if (!shouldInclude && isIncluded) {
-                            machine.removeTargetProperty(property);
-                        }
-                    }
-                })
-            }
-        }
-    }
-
-    protected dumpAvailableTourFeatures()
-    {
-        const features = CVSetup.featureMap;
-
-        for (const name in features) {
-            const component = this[name] as Component;
-            if (component) {
-                console.log(component.displayName);
-                component.ins.properties
-                .filter(prop => !prop.schema.static)
-                .forEach(prop => console.log("  " + prop.path));
-            }
-        }
     }
 
     fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)

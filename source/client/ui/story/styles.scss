@@ -148,6 +148,22 @@ ff-dock-view {
   padding: 6px;
 }
 
+.sv-tour-feature-menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  padding: 12px;
+
+  .ff-button {
+    flex-grow: 0;
+    margin: 4px;
+    padding: 6px 16px;
+    background-color: $color-background;
+  }
+}
+
 .sv-notes-panel {
   .ff-text-edit, .ff-line-edit {
     margin: 2px 0;

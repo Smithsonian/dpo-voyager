@@ -52,6 +52,10 @@ export default class CVTape extends CObject3D
     ins = this.addInputs<CObject3D, typeof CVTape.tapeIns>(CVTape.tapeIns);
     outs = this.addOutputs<CObject3D, typeof CVTape.tapeOuts>(CVTape.tapeOuts);
 
+    get snapshotKeys() {
+        return [ "startPosition", "startDirection", "endPosition", "endDirection" ];
+    }
+
     protected startPin: Pin = null;
     protected endPin: Pin = null;
     protected line: THREE.Line = null;
@@ -59,9 +63,6 @@ export default class CVTape extends CObject3D
     constructor(node: Node, id: string)
     {
         super(node, id);
-
-        // exclude from animation
-        this.ins.visible.schema.static = true;
 
         this.object3D = new THREE.Group();
 

@@ -165,7 +165,7 @@ export default class CVDocument extends CRenderGraph
             });
         }
 
-        pathMap.forEach((comp, path) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
+        //pathMap.forEach((comp, path) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)
@@ -224,7 +224,7 @@ export default class CVDocument extends CRenderGraph
         const pathMap = new Map<Component, string>();
         document.scene = this.root.toDocument(document, pathMap, components);
 
-        pathMap.forEach((path, comp) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
+        //pathMap.forEach((path, comp) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
 
         return document;
     }

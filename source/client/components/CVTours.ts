@@ -32,12 +32,12 @@ export default class CVTours extends Component
     static readonly typeName: string = "CVTours";
 
     protected static readonly ins = {
-        enabled: types.Boolean("Tours.Enabled", { static: true }),
-        tourIndex: types.Integer("Tours.Index", { preset: -1, static: true }),
-        stepIndex: types.Integer("Step.Index", { static: true }),
-        next: types.Event("Step.Next", { static: true }),
-        previous: types.Event("Step.Previous", { static: true }),
-        first: types.Event("Step.First", { static: true }),
+        enabled: types.Boolean("Tours.Enabled"),
+        tourIndex: types.Integer("Tours.Index", -1),
+        stepIndex: types.Integer("Step.Index"),
+        next: types.Event("Step.Next"),
+        previous: types.Event("Step.Previous"),
+        first: types.Event("Step.First"),
     };
 
     protected static readonly outs = {
@@ -115,8 +115,11 @@ export default class CVTours extends Component
             return true;
         }
 
+        let tween = true;
+
         if (ins.stepIndex.changed) {
             nextStepIndex = Math.min(tour.steps.length - 1, Math.max(0, ins.stepIndex.value));
+            tween = false;
         }
         if (ins.first.changed) {
             nextStepIndex = 0;
@@ -134,7 +137,7 @@ export default class CVTours extends Component
             outs.stepCount.setValue(stepCount);
             outs.stepTitle.setValue(step.title);
             machine.ins.id.setValue(step.id);
-            machine.ins.tween.set();
+            tween ? machine.ins.tween.set() : machine.ins.recall.set();
         }
 
         return true;

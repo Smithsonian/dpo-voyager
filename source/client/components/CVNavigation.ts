@@ -36,11 +36,11 @@ export default class CVNavigation extends CObject3D
     static readonly typeName: string = "CVNavigation";
 
     protected static readonly navIns = {
-        enabled: types.Boolean("Navigation.Enabled", { preset: true, static: true }),
-        autoZoom: types.Boolean("Navigation.AutoZoom", { preset: true, static: true }),
-        zoomExtents: types.Event("Navigation.ZoomExtents", { static: true }),
-        preset: types.Enum("Camera.ViewPreset", EViewPreset, { preset: EViewPreset.None, static: true }),
-        projection: types.Enum("Camera.Projection", EProjection, { preset: EProjection.Perspective, static: true }),
+        enabled: types.Boolean("Navigation.Enabled", true),
+        autoZoom: types.Boolean("Navigation.AutoZoom", true),
+        zoomExtents: types.Event("Navigation.ZoomExtents"),
+        preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
+        projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
     };
 
     ins = this.addInputs<CObject3D, typeof CVNavigation.navIns>(CVNavigation.navIns);
@@ -48,15 +48,6 @@ export default class CVNavigation extends CObject3D
 
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
-    }
-
-    constructor(node: Node, id: string)
-    {
-        super(node, id);
-
-        // exclude from animation
-        this.ins.visible.schema.static = true;
-        this.ins.pickable.schema.static = true;
     }
 
     create()

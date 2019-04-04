@@ -21,6 +21,7 @@ import { IViewer, EShaderMode, TShaderMode } from "common/types/setup";
 
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";
+import { IComponentEvent } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,12 +38,20 @@ export default class CVViewer extends CRenderable
 
     ins = this.addInputs(CVViewer.ins);
 
-    constructor(node: Node, id: string)
-    {
-        super(node, id);
+    get snapshotKeys() {
+        return [ "shader", "exposure" ];
+    }
 
-        // exclude from animation
-        this.ins.gamma.schema.static = true;
+    create()
+    {
+        super.create();
+        this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
+    }
+
+    dispose()
+    {
+        this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
+        super.dispose();
     }
 
     update(context)
@@ -88,5 +97,12 @@ export default class CVViewer extends CRenderable
             gamma: ins.gamma.value,
             annotationsVisible: ins.annotationsVisible.value,
         };
+    }
+
+    protected onAnnotationsComponent(event: IComponentEvent<CVAnnotationView>)
+    {
+        if (event.add) {
+            event.object.ins.visible.setValue(this.ins.annotationsVisible.value);
+        }
     }
 }

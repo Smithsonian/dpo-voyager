@@ -90,7 +90,8 @@ export default class CVStoryApplication extends Component
 
         if (document && ins.save.changed) {
             const data = document.deflateDocument(components);
-            const json = JSON.stringify(data, null, 2);
+            const json = JSON.stringify(data, (key, value) =>
+                typeof value === "number" ? parseFloat(value.toFixed(7)) : value);
 
             this.assetWriter.putJSON(json, document.assetPath)
                 .then(() => new Notification(`Successfully uploaded file to '${document.assetPath}'`, "info", 4000))

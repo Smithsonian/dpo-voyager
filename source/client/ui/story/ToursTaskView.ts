@@ -23,13 +23,38 @@ import { ITour } from "common/types/setup";
 import CVToursTask from "../../components/CVToursTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+
 import CVDocument from "../../components/CVDocument";
+import { IButtonClickEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-tours-task-view")
 export default class ToursTaskView extends TaskView<CVToursTask>
 {
+    protected featureConfigMode = false;
+
+    protected get snapshots() {
+        return this.activeDocument.setup.snapshots;
+    }
+
+    protected renderFeatureMenu()
+    {
+        const features = this.snapshots.targetFeatures;
+        const keys = Object.keys(features);
+
+        const buttons = keys.map(key => {
+            const title = key[0].toUpperCase() + key.substr(1);
+            const selected = !!features[key];
+            return html`<ff-button text=${title} name=${key} ?selected=${selected} @click=${this.onClickFeature}></ff-button>`;
+        });
+
+        return html`<div class="sv-commands">
+            <ff-button text="OK" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
+            <ff-button text="Cancel" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
+        </div><div class="ff-flex-item-stretch sv-tour-feature-menu">${buttons}</div>`;
+    }
+
     protected render()
     {
         console.log("TourTaskView.render");
@@ -42,6 +67,10 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         }
         if (!tours.ins.enabled.value) {
             return html`<div class="sv-placeholder">Please activate the tour button in the main menu.</div>`;
+        }
+
+        if (this.featureConfigMode) {
+            return this.renderFeatureMenu();
         }
 
         const tourList = tours.tours;
@@ -100,12 +129,37 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
     protected onClickConfig()
     {
-
+        this.featureConfigMode = true;
+        this.requestUpdate();
     }
 
     protected onSelectTour(event: ISelectTourEvent)
     {
         this.task.tours.ins.tourIndex.setValue(event.detail.index);
+    }
+
+
+    protected onFeatureMenuConfirm()
+    {
+        this.snapshots.updateTargets();
+
+        this.featureConfigMode = false;
+        this.requestUpdate();
+    }
+
+    protected onFeatureMenuCancel()
+    {
+        this.featureConfigMode = false;
+        this.requestUpdate();
+    }
+
+    protected onClickFeature(event: IButtonClickEvent)
+    {
+        const features = this.snapshots.targetFeatures;
+        const key = event.target.name;
+
+        features[key] = !features[key];
+        this.requestUpdate();
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)

@@ -20,26 +20,30 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import TypeRegistry from "@ff/core/TypeRegistry";
 
 import System from "@ff/graph/System";
-import CPulse from "@ff/graph/components/CPulse";
 
 import coreTypes from "./coreTypes";
 import miniTypes from "./miniTypes";
 
-import { EDerivativeQuality} from "../models/Derivative";
+import * as documentTemplate from "common/templates/document.json";
 
+import CVDocumentProvider from "../components/CVDocumentProvider";
+import CVDocument from "../components/CVDocument";
 import CVAssetReader from "../components/CVAssetReader";
 
-import NVMiniExplorer from "../nodes/NVMiniExplorer";
+import NVEngine from "../nodes/NVEngine";
+import NVDocuments from "../nodes/NVDocuments";
 
 import MainView from "../ui/mini/MainView";
-import NVMiniItem from "../nodes/NVMiniItem";
+import NVTools from "../nodes/NVTools";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface IMiniApplicationProps
 {
-    /** URL of the item to load and display at startup. */
-    item?: string;
+    /** URL of the root asset folder. */
+    root?: string;
+    /** URL of the document to load and display at startup. */
+    document?: string;
     /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
     model?: string;
     /** URL of a geometry (supported formats: obj, ply) to load and display at startup. */
@@ -60,11 +64,14 @@ export default class MiniApplication
     readonly props: IMiniApplicationProps;
     readonly system: System;
 
-    protected get item() {
-        return this.system.getMainNode(NVMiniItem);
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
+    }
+    protected get documentProvider() {
+        return this.system.getMainComponent(CVDocumentProvider);
     }
 
-    constructor(element?: HTMLElement, props?: IMiniApplicationProps)
+    constructor(parent?: HTMLElement, props?: IMiniApplicationProps)
     {
         this.props = props;
         console.log(MiniApplication.splashMessage);
@@ -77,57 +84,79 @@ export default class MiniApplication
 
         const system = this.system = new System(registry);
 
-        system.graph.createCustomNode(NVMiniExplorer, "Main");
+        const engine = system.graph.createCustomNode(NVEngine);
+        system.graph.createCustomNode(NVTools);
+        system.graph.createCustomNode(NVDocuments);
 
-        // create main view if not given
-        if (element) {
-            new MainView(this).appendTo(element);
+        if (parent) {
+            // create a view and attach to parent
+            new MainView(this).appendTo(parent);
         }
+
+        this.documentProvider.createDocument(documentTemplate as any);
+        this.evaluateProps();
 
         // start rendering
-        system.getComponent(CPulse).start();
-
-        // start loading from properties
-        this.startup();
+        engine.pulse.start();
     }
 
-    loadItem(itemUrl: string)
+    setRootUrl(url: string)
     {
-        this.item.loadItem(itemUrl);
+        this.assetReader.setRootURL(url);
     }
 
-    loadModel(modelUrl: string)
+    loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
-        this.item.loadModelAsset(EDerivativeQuality.Medium, modelUrl);
+        return this.assetReader.getJSON(documentPath)
+        .then(data => {
+            merge = merge === undefined ? !data.lights && !data.cameras : merge;
+            return this.documentProvider.amendDocument(data, documentPath, merge);
+        })
+        .catch(error => {
+            console.warn(`error while loading document: ${error.message}`);
+            throw error;
+        });
     }
 
-    loadMesh(geoUrl: string, colorMapUrl?: string, occlusionMapUrl?: string, normalMapUrl?: string)
+    loadModel(modelPath: string, quality: string)
     {
-        this.item.loadMeshAsset(EDerivativeQuality.Medium, geoUrl, colorMapUrl, occlusionMapUrl, normalMapUrl);
+        return this.documentProvider.appendModel(modelPath, quality);
+    }
+
+    loadGeometry(geoPath: string, colorMapPath?: string,
+                 occlusionMapPath?: string, normalMapPath?: string, quality?: string)
+    {
+        return this.documentProvider.appendGeometry(
+            geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
 
 
-    protected startup()
+    evaluateProps()
     {
         const props = this.props;
+        const reader = this.assetReader;
 
-        props.item = props.item || parseUrlParameter("item") || parseUrlParameter("i");
+        props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
+        props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
-        props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("tex");
+        props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("t");
 
-        const loaders = this.system.getMainComponent(CVAssetReader);
+        this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
 
+        if (props.document) {
+            props.document = props.root ? props.document : reader.getAssetFileName(props.document);
+            this.loadDocument(props.document);
+        }
         if (props.model) {
-            this.loadModel(props.model);
+            props.model = props.root ? props.model : reader.getAssetFileName(props.model);
+            this.loadModel(props.model, "Medium");
         }
         else if (props.geometry) {
-            this.loadMesh(props.geometry, props.texture);
+            props.geometry = props.root ? props.geometry : reader.getAssetFileName(props.geometry);
+            props.texture = props.root ? props.texture : reader.getAssetFileName(props.texture);
+            this.loadGeometry(props.geometry, props.texture, null, null, "Medium");
         }
-        else if (props.item) {
-            this.loadItem(props.item);
-        }
-
     }
 }
 

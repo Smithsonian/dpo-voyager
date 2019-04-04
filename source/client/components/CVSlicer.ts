@@ -46,13 +46,17 @@ export default class CVSlicer extends Component
         axis: types.Enum("Slice.Axis", ESliceAxis),
         position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
         inverted: types.Boolean("Slice.Inverted"),
-        color: types.ColorRGB("Slice.Color", { preset: [ 0, 0.61, 0.87 ], static: true }), // SI blue
+        color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
     };
 
     ins = this.addInputs(CVSlicer.ins);
 
     protected plane: number[] = null;
     protected axisIndex = -1;
+
+    get snapshotKeys() {
+        return [ "enabled", "axis", "position", "inverted" ];
+    }
 
     update(context)
     {

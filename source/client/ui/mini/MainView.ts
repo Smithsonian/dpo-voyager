@@ -43,10 +43,10 @@ export default class MainView extends CustomElement
         }
         else {
             const props: IMiniApplicationProps = {
-                item: this.getAttribute("item"),
+                document: this.getAttribute("document"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
-                texture: this.getAttribute("texture")
+                texture: this.getAttribute("texture"),
             };
 
             this.application = new MiniApplication(null, props);

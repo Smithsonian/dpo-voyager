@@ -67,8 +67,16 @@ export default class TourMenu extends CustomElement
 
     protected render()
     {
+        const tours = this.tours;
+
+        if (tours.length === 0) {
+            return html`<div class="sv-tour-menu-entry">
+                <div class="sv-tour-menu-title">No tours available.</div>
+            </div>`;
+        }
+
         return html`<div class="ff-scroll-y">
-            ${this.tours.map((tour, index) => this.renderTour(tour, index))}
+            ${tours.map((tour, index) => this.renderTour(tour, index))}
         </div>`;
     }
 

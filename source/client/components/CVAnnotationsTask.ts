@@ -106,7 +106,7 @@ export default class CVAnnotationsTask extends CVTask
             this.emitUpdateEvent();
         }
 
-        return false;
+        return true;
     }
 
     createAnnotation(position: number[], direction: number[])
@@ -159,7 +159,12 @@ export default class CVAnnotationsTask extends CVTask
             return;
         }
 
-        const model = this.activeAnnotations.getComponent(CVModel2);
+        const annotations = this.activeAnnotations;
+        if (!annotations) {
+            return;
+        }
+
+        const model = annotations.getComponent(CVModel2);
 
         // user clicked on model
         if (event.component === model) {

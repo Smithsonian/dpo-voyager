@@ -58,10 +58,10 @@ export default class CVOrbitNavigation extends CVNavigation
     protected static readonly ins = {
         orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
         offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
-        minOrbit: types.Vector3("Manip.Min.Orbit", { preset: [ -90, -Infinity, -Infinity ], static: true }),
-        minOffset: types.Vector3("Manip.Min.Offset", { preset: [ -Infinity, -Infinity, 0.1 ], static: true }),
-        maxOrbit: types.Vector3("Manip.Max.Orbit", { preset: [ 90, Infinity, Infinity ], static: true }),
-        maxOffset: types.Vector3("Manip.Max.Offset", { preset: [ Infinity, Infinity, Infinity ], static: true }),
+        minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
+        minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
+        maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
+        maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ]),
     };
 
     ins = this.addInputs<CVNavigation, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
@@ -74,6 +74,10 @@ export default class CVOrbitNavigation extends CVNavigation
     {
         super(node, id);
         this._scene = this.scene;
+    }
+
+    get snapshotKeys() {
+        return [ "orbit", "offset" ];
     }
 
     update()

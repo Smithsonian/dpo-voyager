@@ -33,7 +33,6 @@ import CVDocument from "../components/CVDocument";
 import CVAssetReader from "../components/CVAssetReader";
 
 import NVEngine from "../nodes/NVEngine";
-import NVoyagerExplorer from "../nodes/NVoyagerExplorer";
 import NVDocuments from "../nodes/NVDocuments";
 import NVTools from "../nodes/NVTools";
 
@@ -99,10 +98,8 @@ export default class ExplorerApplication
         const system = this.system = new System(registry);
 
         const engine = system.graph.createCustomNode(NVEngine);
-        system.graph.createCustomNode(NVoyagerExplorer);
         system.graph.createCustomNode(NVTools);
         system.graph.createCustomNode(NVDocuments);
-
 
         if (parent) {
             // create a view and attach to parent

@@ -24,7 +24,6 @@ import CVLightTool from "../components/CVLightTool";
 import CVTapeTool from "../components/CVTapeTool";
 import CVSliceTool from "../components/CVSliceTool";
 
-import NVoyagerExplorer from "../nodes/NVoyagerExplorer";
 import NVTools from "../nodes/NVTools";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +38,6 @@ const types = [
     CVTapeTool,
     CVSliceTool,
 
-    NVoyagerExplorer,
     NVTools,
 ];
 

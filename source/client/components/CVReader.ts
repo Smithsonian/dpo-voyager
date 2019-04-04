@@ -31,11 +31,15 @@ export default class CVReader extends Component
 
     protected static readonly readerIns = {
         visible: types.Boolean("Visible", false),
-        position: types.Enum("Position", EReaderPosition, { static: true }),
-        url: types.AssetPath("DocumentURL", { static: true }),
+        position: types.Enum("Position", EReaderPosition),
+        url: types.AssetPath("DocumentURL"),
     };
 
     ins = this.addInputs(CVReader.readerIns);
+
+    get snapshotKeys() {
+        return [ "visible" ];
+    }
 
     setArticle(article: Article)
     {

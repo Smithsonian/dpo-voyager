@@ -285,46 +285,107 @@ $tour-entry-indent: 12px;
   padding: 2px $tour-entry-indent $tour-entry-indent $tour-entry-indent;
 }
 
-.sv-tour-navigator {
-  box-sizing: border-box;
-  display: flex;
-  margin: 6px;
-  padding: 4px;
-  height: 40px;
-  min-width: 0;
-  border-radius: 20px;
-  background: transparentize(#282828, 0.2);
-
-  .ff-button {
-    background-color: transparent;
-    pointer-events: auto;
-    border-radius: 32px;
-    height: 32px;
-    width: 32px;
-    margin: 0 2px;
-
-    &:hover, &:focus {
-      outline: none;
-      background-color: $menu-color-background-hover;
-      fill: $color-text;
-    }
-  }
-
-  .sv-tour-content {
-    flex: 1;
-    margin: -3px 8px 0 8px;
-    text-align: center;
-  }
-  .sv-tour-title {
-    font-size: 1.1em;
-  }
-  .sv-tour-info {
-    font-size: 0.9em;
-  }
-}
+//.sv-tour-navigator {
+//  box-sizing: border-box;
+//  display: flex;
+//  margin: 6px;
+//  padding: 4px;
+//  height: 40px;
+//  min-width: 0;
+//  border-radius: 20px;
+//  background: transparentize(#282828, 0.2);
+//
+//  .ff-button {
+//    background-color: transparent;
+//    pointer-events: auto;
+//    border-radius: 32px;
+//    height: 32px;
+//    width: 32px;
+//    margin: 0 2px;
+//
+//    &:hover, &:focus {
+//      outline: none;
+//      background-color: $menu-color-background-hover;
+//      fill: $color-text;
+//    }
+//  }
+//
+//  .sv-tour-content {
+//    flex: 1;
+//    margin: -3px 8px 0 8px;
+//    text-align: center;
+//  }
+//  .sv-tour-title {
+//    font-size: 1.1em;
+//  }
+//  .sv-tour-info {
+//    font-size: 0.9em;
+//  }
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TOOL VIEW
+
+.sv-tour-content {
+  flex: 1;
+  margin: 2px 8px;
+  text-align: center;
+}
+.sv-tour-title {
+  font-size: 1.1em;
+}
+.sv-tour-info {
+  font-size: 0.9em;
+}
+
+.sv-bottom-bar-container {
+  display: flex;
+  justify-content: center;
+}
+
+.sv-bottom-bar {
+  flex: 0 1 960px;
+  display: flex;
+  flex-direction: column;
+  background-color: transparentize(#080808, 0.2);
+  border-left: $section-border;
+  border-right: $section-border;
+  margin: 0 -1px 0 -1px;
+  pointer-events: auto;
+
+  transition: transform $tx-medium ease-out, opacity $tx-short ease-out;
+
+  &.sv-transition {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+
+  .sv-section {
+    display: flex;
+    border-top: $section-border;
+  }
+
+  .sv-section-head {
+    flex: 0 0 auto;
+    padding: 6px;
+    width: 38px;
+    border-right: $section-border;
+  }
+
+  .sv-section-button {
+    flex: 0 1 auto;
+    padding: 6px;
+    border-radius: 2px;
+
+    .ff-text {
+      margin: 1px 2px;
+    }
+    .ff-icon {
+      height: 22px;
+      margin: 1px 2px;
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME TOOL BAR

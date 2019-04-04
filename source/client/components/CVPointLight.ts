@@ -27,6 +27,10 @@ export default class CVPointLight extends CPointLight implements ICVLight
 {
     static readonly typeName: string = "CVPointLight";
 
+    get snapshotKeys() {
+        return [ "color", "intensity" ];
+    }
+
     fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.light)) {

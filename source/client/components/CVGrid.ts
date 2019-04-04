@@ -41,9 +41,9 @@ export default class CVGrid extends CObject3D
     static readonly typeName: string = "CVGrid";
 
     protected static readonly gridIns = {
-        color: types.ColorRGB("Grid.Color", { preset: [ 0.5, 0.7, 0.8 ], static: true }),
+        color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
         opacity: types.Percent("Grid.Opacity", 1.0),
-        update: types.Event("Grid.Update", { static: true }),
+        update: types.Event("Grid.Update"),
     };
 
     protected static readonly gridOuts = {
@@ -62,6 +62,10 @@ export default class CVGrid extends CObject3D
         mainColor: new THREE.Color(0.5, 0.7, 0.8),
         subColor: new THREE.Color(0.25, 0.35, 0.4)
     };
+
+    get snapshotKeys() {
+        return [ "opacity" ];
+    }
 
     get grid() {
         return this.object3D as ThreeGrid;
