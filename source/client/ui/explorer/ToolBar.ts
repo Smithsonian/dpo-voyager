@@ -36,7 +36,8 @@ export default class ToolBar extends SystemView
 
     protected firstConnected()
     {
-        this.classList.add("sv-tool-bar", "sv-transition");
+        super.firstConnected();
+        this.classList.add("sv-bottom-bar-container", "sv-tool-bar", "sv-transition");
         setTimeout(() => this.classList.remove("sv-transition"), 1);
     }
 
@@ -62,15 +63,15 @@ export default class ToolBar extends SystemView
                 ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
 
         const toolView = activeTool ? html`<div class="sv-section">
-            <ff-button class="sv-section-button" transparent icon=${activeTool.icon}></ff-button>
+            <ff-button class="sv-section-lead" transparent icon=${activeTool.icon}></ff-button>
             ${activeTool.createView()}</div>` : null;
 
-        return html`${toolView}
+        return html`<div class="sv-blue-bar">${toolView}
             <div class="sv-section">
-                <ff-button class="sv-section-button" transparent icon="close" @click=${this.onClose}></ff-button>
+                <ff-button class="sv-section-lead" transparent icon="close" @click=${this.onClose}></ff-button>
                 <div class="sv-tool-buttons">${toolButtons}</div>
                 <sv-tool-menu-view .system=${this.system}></sv-tool-menu-view>
-            </div>`;
+            </div></div>`;
     }
 
     protected onSelectTool(tool: CVTool)

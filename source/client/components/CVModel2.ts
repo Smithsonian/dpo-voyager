@@ -78,7 +78,7 @@ export default class CVModel2 extends CObject3D
     private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
-    private _boundingBox = new THREE.Box3();
+    private _boundingBox:THREE.Box3;
     private _boxFrame: THREE.Mesh = null;
 
     constructor(node: Node, id: string)
@@ -86,9 +86,7 @@ export default class CVModel2 extends CObject3D
         super(node, id);
 
         this.object3D = new THREE.Group();
-
-        this._boxFrame = new (THREE.Box3Helper as any)(this._boundingBox, "#ffffff");
-        this.addObject3D(this._boxFrame);
+        this._boundingBox = new THREE.Box3().makeEmpty();
     }
 
     get derivatives() {
@@ -224,6 +222,10 @@ export default class CVModel2 extends CObject3D
         if (data.boundingBox) {
             this._boundingBox.min.fromArray(data.boundingBox.min);
             this._boundingBox.max.fromArray(data.boundingBox.max);
+
+            this._boxFrame = new (THREE.Box3Helper as any)(this._boundingBox, "#ffffff");
+            this.addObject3D(this._boxFrame);
+
             this.emit("bounding-box");
         }
 
@@ -270,7 +272,7 @@ export default class CVModel2 extends CObject3D
         data.derivatives = this.derivatives.toJSON();
 
         const annotations = this.getComponent(CVAnnotationView).toData();
-        if (annotations.length > 0) {
+        if (annotations && annotations.length > 0) {
             data.annotations = annotations;
         }
 

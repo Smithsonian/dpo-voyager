@@ -32,7 +32,8 @@ export default class TourNavigator extends DocumentView
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-bottom-bar-container", "sv-tour-navigator");
+        this.classList.add("sv-bottom-bar-container", "sv-tour-navigator", "sv-transition");
+        setTimeout(() => this.classList.remove("sv-transition"), 1);
     }
 
     protected render()
@@ -53,14 +54,14 @@ export default class TourNavigator extends DocumentView
             info = "---";
         }
 
-        return html`<div class="sv-bottom-bar"><div class="sv-section">
-            <ff-button class="sv-section-head" transparent icon="bars" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
-            <div class="ff-ellipsis sv-tour-content">
-                <div class="ff-ellipsis sv-tour-title">${title}</div>
-                <div class="ff-ellipsis sv-tour-info">${info}</div>
+        return html`<div class="sv-blue-bar"><div class="sv-section">
+            <ff-button class="sv-section-lead" transparent icon="bars" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
+            <div class="ff-ellipsis sv-content">
+                <div class="ff-ellipsis sv-title">${title}</div>
+                <div class="ff-ellipsis sv-text">${info}</div>
             </div>
-            <ff-button class="sv-section-button" transparent icon="triangle-left" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
-            <ff-button class="sv-section-button" transparent icon="triangle-right" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-left" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-right" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
         </div></div>`;
     }
 

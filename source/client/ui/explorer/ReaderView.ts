@@ -29,7 +29,7 @@ export default class ReaderView extends DocumentView
 
     protected render()
     {
-        return html`<div class="sv-article">
+        return html`<div class="sv-left"></div><div class="sv-article">
             <h1>Article Title</h1>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
             dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
@@ -50,6 +50,6 @@ export default class ReaderView extends DocumentView
             egestas ac nec est. Sed et sodales justo. Duis scelerisque arcu quis nunc pretium, a accumsan lacus
             bibendum. Nam malesuada sem elit, eu volutpat tortor lobortis varius. Donec eget lacus id ex lacinia
             consectetur. Sed ornare tristique risus quis luctus. Nam euismod massa in accumsan volutpat.</p>
-        </div>`;
+        </div><div class="sv-right"></div>`;
     }
 }

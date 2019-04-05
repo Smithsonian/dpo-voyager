@@ -78,14 +78,14 @@ export default class MainMenu extends DocumentView
 
         return html`<ff-button icon="document" title="Read more..."
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
-        ${readerVisible ? null : html`<ff-button icon="globe" title="Interactive Tours"
+        <ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursVisible} @click=${this.onToggleTours}></ff-button>
         <ff-button icon="comment" title="Toggle Annotations"
             ?selected=${annotationsVisible} @click=${this.onToggleAnnotations}></ff-button>
         ${showFullscreenButton ? html`<ff-button icon="expand" title="Toggle fullscreen mode"
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
         ${showToolButton ? html`<ff-button icon="tools" title="Tools and Settings"
-            ?selected=${toolsVisible} @click=${this.onToggleTools}></ff-button>` : null}`}`;
+            ?selected=${toolsVisible} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
     protected onToggleReader()
@@ -98,10 +98,6 @@ export default class MainMenu extends DocumentView
     {
         const toursProp = this.activeDocument.setup.tours.ins.enabled;
         toursProp.setValue(!toursProp.value);
-
-        if (toursProp.value) {
-            this.toolProvider.ins.visible.setValue(false);
-        }
     }
 
     protected onToggleAnnotations()
@@ -119,10 +115,6 @@ export default class MainMenu extends DocumentView
     {
         const toolsProp = this.toolProvider.ins.visible;
         toolsProp.setValue(!toolsProp.value);
-
-        if (toolsProp.value) {
-            this.activeDocument.setup.tours.ins.enabled.setValue(false);
-        }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

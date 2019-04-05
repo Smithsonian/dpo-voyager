@@ -17,7 +17,6 @@
 
 
 import CVAssetReader from "../../components/CVAssetReader";
-import CVSetup from "../../components/CVSetup";
 
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 import SceneView from "../SceneView";
@@ -53,13 +52,6 @@ export default class ContentView extends SystemView
     protected render()
     {
         const isLoading = this.assetReader.outs.busy.value;
-
-        // if (!isLoading) {
-        //     const scene = this.system.getComponent(CVScene, true);
-        //     if (scene) {
-        //         scene.ins.zoomExtents.set();
-        //     }
-        // }
 
         return html`${this.sceneView}
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;

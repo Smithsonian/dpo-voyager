@@ -60,8 +60,8 @@ export default class TourMenu extends CustomElement
     protected renderTour(tour: ITour, index: number)
     {
         return html`<div class="sv-tour-menu-entry" @click=${e => this.onClick(e, index)}>
-            <div class="sv-tour-menu-title">${tour.title}</div>
-            <div class="sv-tour-menu-lead">${tour.lead}</div>
+            <h1>${tour.title}</h1>
+            <p>${tour.lead}</p>
         </div>`;
     }
 

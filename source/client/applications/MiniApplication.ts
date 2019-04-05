@@ -34,7 +34,6 @@ import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
 
 import MainView from "../ui/mini/MainView";
-import NVTools from "../nodes/NVTools";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,7 +84,6 @@ export default class MiniApplication
         const system = this.system = new System(registry);
 
         const engine = system.graph.createCustomNode(NVEngine);
-        system.graph.createCustomNode(NVTools);
         system.graph.createCustomNode(NVDocuments);
 
         if (parent) {

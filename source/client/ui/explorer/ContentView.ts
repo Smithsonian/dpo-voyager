@@ -65,45 +65,50 @@ export default class ContentView extends DocumentView
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
+        let tourMenuVisible = false;
 
         const document = this.activeDocument;
         const reader = document && document.setup.reader;
         const tours = document && document.setup.tours;
 
+        if (tours) {
+            tourMenuVisible = tours.ins.enabled.value && tours.outs.tourIndex.value === -1;
+        }
         if (reader) {
-            readerVisible = reader.ins.visible.value;
+            readerVisible = ! tourMenuVisible && reader.ins.visible.value;
             readerPosition = reader.ins.position.value;
         }
 
         const sceneView = this.sceneView;
-        sceneView.classList.remove("sv-blur");
 
         const blurContent =
-            (readerVisible && readerPosition === EReaderPosition.Overlay) ||
-            (tours && tours.ins.enabled.value && tours.outs.tourIndex.value === -1);
+            (readerVisible && readerPosition === EReaderPosition.Overlay) || tourMenuVisible;
 
-        if (blurContent) {
+        if (!blurContent) {
+            sceneView.classList.remove("sv-blur");
+        }
+        else {
             setTimeout(() => sceneView.classList.add("sv-blur"), 1);
         }
 
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
-
-                return html`<div class="sv-content-reader-split">${sceneView}
+                return html`<div class="ff-fullsize sv-content-split">
+                    ${sceneView}
                     <ff-splitter direction="horizontal"></ff-splitter>
                     <sv-reader-view .system=${system} class="sv-reader-split"></sv-reader-view></div>
                     <sv-spinner ?visible=${isLoading}></sv-spinner>`;
-
             }
             if (readerPosition === EReaderPosition.Overlay) {
-
-                return html`<div class="sv-content-reader-overlay">${sceneView}
-                    <sv-reader-view .system=${system}></sv-reader-view>
+                return html`<div class="ff-fullsize sv-content-stack">${sceneView}
+                    <div class="sv-reader-container">
+                        <sv-reader-view .system=${system}></sv-reader-view>
+                    </div>
                     <sv-spinner ?visible=${isLoading}></sv-spinner></div>`;
             }
         }
 
-        return html`<div class="sv-content-reader-off">${sceneView}</div>
+        return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;
     }
 

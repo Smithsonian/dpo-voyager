@@ -16,33 +16,61 @@
  */
 
 ////////////////////////////////////////////////////////////////////////////////
-// BASE COLORS
-
-$color-primary: #0089bf; // Smithsonian primary blue
-$color-secondary: #ffcd00; // Smithsonian secondary yellow
-
-$menu-color-text: #f0f0f0;
-$menu-color-text-dim: #a0a0a0;
-$menu-color-background: transparentize(#404040, 0.4);
-$menu-color-background-hover: transparentize(#606060, 0.5);
-
-$section-border: 1px solid transparentize(#0089bf, 0.5);
-
-////////////////////////////////////////////////////////////////////////////////
 
 @import "../../../libs/ff-ui/source/styles/dark";
 @import "../../../libs/ff-scene/source/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
-// GLOBAL
+// TYPOGRAPHY
 
-body {
-  //@include font-ui-normal;
-  //font-size: 0.9rem;
-  //color: $color-text;
+@import url('https://fonts.googleapis.com/css?family=Amiri:400,700');
+@import url('https://fonts.googleapis.com/css?family=Hind+Siliguri:400,700');
+
+.sv-tour-menu h1, .sv-article h1 {
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 75px; // width of top blue bar
+    height: 5px; // height of top blue bar
+    background-color: $color-primary;
+  }
 }
 
-sv-logo {
+h1 {
+  margin: 0.3em 0;
+  font-family: "Amiri", serif;
+  font-size: 2.3em;
+  font-weight: normal;
+  color: $color-text-light;
+}
+
+p, h2, h3, h4, h5, h6 {
+  font-family: "Hind Siliguri", sans-serif;
+  color: $color-text;
+}
+
+h2, h3, h4, h5, h6 {
+  font-size: 1.3em;
+  margin: 1.2em 0 0.8em 0;
+}
+
+p {
+  font-size: 1.15em;
+  line-height: 1.55em;
+  margin: 0.8em 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GLOBAL
+
+.sv-content-view {
+  @include fullsize;
+  overflow: hidden;
+}
+
+.sv-logo {
   flex: 0 50 180px;
   min-width: 40px;
   display: flex;
@@ -94,16 +122,6 @@ sv-logo {
   animation:spin 5s linear infinite;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// SCENE VIEW
 
 
-.sv-scene-view {
-  @include fullsize;
-  overflow: hidden;
 
-  &.sv-blur {
-    filter: brightness(80%) blur(5px);
-    transition: filter 0.5s;
-  }
-}

@@ -45,6 +45,7 @@ export default class CVSnapshots extends CTweenMachine
         });
 
         this.targetFeatures["navigation"] = true;
+        this.targetFeatures["reader"] = true;
         this.targetFeatures["models"] = false;
         this.targetFeatures["lights"] = false;
     }
@@ -102,10 +103,16 @@ export default class CVSnapshots extends CTweenMachine
     {
         this.clear();
 
+        const features = this.targetFeatures;
+        const keys = Object.keys(features);
+
         if (data.features) {
-            const features = this.targetFeatures;
-            const keys = Object.keys(features);
             keys.forEach(key => features[key] = data.features.indexOf(key) >= 0);
+        }
+        else {
+            keys.forEach(key => features[key] = false);
+            features["navigation"] = true;
+            features["reader"] = true;
         }
 
         const missingTargets = new Set<number>();

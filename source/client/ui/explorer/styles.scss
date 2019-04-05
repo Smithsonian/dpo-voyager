@@ -16,22 +16,90 @@
  */
 
 ////////////////////////////////////////////////////////////////////////////////
+// COLOR
 
-@import "../styles";
+$color-primary: #0089bf; // Smithsonian primary blue
+$color-secondary: #ffcd00; // Smithsonian secondary yellow
+$color-tertiary: #1b2226; // Smithsonian dark blue
+
+$menu-color-text: #f0f0f0;
+$menu-color-text-dim: #a0a0a0;
+$menu-color-background: transparentize(#363d40, 0.4);
+$menu-color-background-dark: transparentize(#1f2426, 0.2);
+$menu-color-background-darker: transparentize(#050708, 0.15);
+$menu-color-background-hover: transparentize(#4a5257, 0.5);
+
+$color-paragraph-background: transparentize($color-tertiary, 0.5);
+$color-paragraph-hover: transparentize(#333b40, 0.5);
+
+$section-border: 1px solid transparentize($color-primary, 0.5);
+
+////////////////////////////////////////////////////////////////////////////////
+// Geometry
 
 $canvas-border-width: 6px;
 $main-menu-button-size: 40px;
 
 ////////////////////////////////////////////////////////////////////////////////
-// CONTENT LAYER
 
-.sv-content-view {
-  @include fullsize;
-  overflow: hidden;
+@import "../styles";
+
+* {
+  scrollbar-color: $color-background-lighter $color-background-darker;
+  scrollbar-width: thin;
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: $color-background-darker;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: $color-background-lighter;
+  }
 }
 
-.sv-content-reader-split {
-  @include fullsize;
+////////////////////////////////////////////////////////////////////////////////
+// CONTENT LAYER
+
+$pad: $canvas-border-width + $main-menu-button-size + 8px;
+
+.sv-content-only, .sv-content-stack {
+  .sv-scene-view {
+    @include fullsize;
+  }
+}
+
+.sv-reader-container {
+  overflow-y: auto;
+}
+
+.sv-content-stack {
+  .sv-reader-container {
+    @include fullsize;
+    margin-top: $pad;
+  }
+
+  .sv-reader-view {
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+
+    .sv-left {
+      flex: 0 0 $pad;
+    }
+    .sv-article {
+      flex: 0 2 720px;
+      background-color: $color-paragraph-background;
+      padding-bottom: 35px; // room for tour navigator overlay
+    }
+    .sv-right {
+      flex: 0 3 16px;
+      background-color: $color-paragraph-background;
+    }
+  }
+}
+
+.sv-content-split {
   display: flex;
 
   .sv-scene-view {
@@ -39,43 +107,29 @@ $main-menu-button-size: 40px;
   }
   .sv-reader-view {
     flex: 1 1 40%;
+    padding: 0 20px;
   }
 }
 
-.sv-content-reader-overlay {
-  @include fullsize;
-
-  .sv-scene-view {
-    @include fullsize;
-  }
-
-  .sv-reader-view {
-    @include fullsize;
-    margin-top: 54px;
-    //background-color: transparentize(white, 0.95);
-    border-top: $section-border;
-    //z-index: 2;
-  }
-}
-
-.sv-content-reader-off {
-  .sv-scene-view {
-    @include fullsize;
-  }
-}
-
-.sv-reader-view {
-  overflow-y: auto;
-
-  .sv-article {
-    margin: 0 20px;
-  }
+.sv-article {
+  position: relative;
+  padding: 5px 0 0 16px;
 }
 
 .sv-content-overlay {
 }
 
 .ff-viewport-overlay {
+}
+
+.sv-scene-view {
+  @include fullsize;
+  overflow: hidden;
+
+  &.sv-blur {
+    filter: brightness(60%) blur(5px);
+    transition: filter 0.5s;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -132,13 +186,14 @@ $main-menu-button-size: 40px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CHROME LAYER
+// CHROME VIEW
 
 .sv-chrome-view {
   @include fullsize;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(to bottom, transparentize(black, 0.7), transparentize(black, 0.85) 10%, transparent 25%);
 
   z-index: 1;
 
@@ -189,9 +244,11 @@ $main-menu-button-size: 40px;
   .sv-main-title {
     flex: 1 1 auto;
     margin: $canvas-border-width 8px;
+    font-family: "Hind Siliguri", sans-serif;;
     font-weight: normal;
     font-size: 1.2rem;
     white-space: pre;
+    color: $color-text-light;
 
     span {
       color: transparent;
@@ -212,7 +269,7 @@ $main-menu-button-size: 40px;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
     margin: 3px 0;
-    background-color: transparentize(#282828, 0.2);
+    background-color: $menu-color-background-dark;
     border-radius: 20px;
     font-size: 18px;
     transition: all $tx-short;
@@ -241,9 +298,7 @@ $main-menu-button-size: 40px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TOURS
-
-$tour-entry-indent: 12px;
+// DOCUMENT OVERLAY
 
 .sv-document-overlay {
   position: absolute;
@@ -254,125 +309,71 @@ $tour-entry-indent: 12px;
   pointer-events: auto;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// TOUR MENU
+
+$tour-entry-indent: 12px;
+
 .sv-tour-menu-entry {
   position: relative;
   cursor: pointer;
+  padding: 5px 0 5px 15px;
   margin-bottom: 16px;
   max-width: 600px;
+  background-color: $color-paragraph-background;
 
   &:hover {
-    background-color: transparentize(white, 0.9);
+    background-color: $color-paragraph-hover;
   }
 }
-
-.sv-tour-menu-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  padding: $tour-entry-indent $tour-entry-indent 6px $tour-entry-indent;
-
-  &:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 60px;
-    height: 4px;
-    background-color: $color-primary;
-  }
-}
-
-.sv-tour-menu-lead {
-  padding: 2px $tour-entry-indent $tour-entry-indent $tour-entry-indent;
-}
-
-//.sv-tour-navigator {
-//  box-sizing: border-box;
-//  display: flex;
-//  margin: 6px;
-//  padding: 4px;
-//  height: 40px;
-//  min-width: 0;
-//  border-radius: 20px;
-//  background: transparentize(#282828, 0.2);
-//
-//  .ff-button {
-//    background-color: transparent;
-//    pointer-events: auto;
-//    border-radius: 32px;
-//    height: 32px;
-//    width: 32px;
-//    margin: 0 2px;
-//
-//    &:hover, &:focus {
-//      outline: none;
-//      background-color: $menu-color-background-hover;
-//      fill: $color-text;
-//    }
-//  }
-//
-//  .sv-tour-content {
-//    flex: 1;
-//    margin: -3px 8px 0 8px;
-//    text-align: center;
-//  }
-//  .sv-tour-title {
-//    font-size: 1.1em;
-//  }
-//  .sv-tour-info {
-//    font-size: 0.9em;
-//  }
-//}
 
 ////////////////////////////////////////////////////////////////////////////////
-// TOOL VIEW
-
-.sv-tour-content {
-  flex: 1;
-  margin: 2px 8px;
-  text-align: center;
-}
-.sv-tour-title {
-  font-size: 1.1em;
-}
-.sv-tour-info {
-  font-size: 0.9em;
-}
+// BLUE BAR
 
 .sv-bottom-bar-container {
+  position: relative;
   display: flex;
   justify-content: center;
-}
-
-.sv-bottom-bar {
-  flex: 0 1 960px;
-  display: flex;
-  flex-direction: column;
-  background-color: transparentize(#080808, 0.2);
-  border-left: $section-border;
-  border-right: $section-border;
-  margin: 0 -1px 0 -1px;
-  pointer-events: auto;
-
   transition: transform $tx-medium ease-out, opacity $tx-short ease-out;
 
   &.sv-transition {
     transform: translateY(40px);
     opacity: 0;
   }
+}
+
+.sv-blue-bar {
+  flex: 0 1 960px;
+  display: flex;
+  flex-direction: column;
+  background-color: $menu-color-background-darker;
+  border-left: $section-border;
+  border-right: $section-border;
+  margin: 0 -1px 0 -1px; // side borders disappear on smaller screens
+  pointer-events: auto;
 
   .sv-section {
     display: flex;
     border-top: $section-border;
   }
 
-  .sv-section-head {
+  .sv-section-lead, .sv-section-trail {
     flex: 0 0 auto;
     padding: 6px;
     width: 38px;
+
+    &:hover {
+      background-color: $menu-color-background-hover;
+    }
+  }
+  .sv-section-lead {
     border-right: $section-border;
   }
+  .sv-section-trail {
+    border-left: $section-border;
+  }
 
-  .sv-section-button {
+  .sv-transparent-button {
     flex: 0 1 auto;
     padding: 6px;
     border-radius: 2px;
@@ -385,50 +386,36 @@ $tour-entry-indent: 12px;
       margin: 1px 2px;
     }
   }
+
+  .sv-blue-button {
+
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CHROME TOOL BAR
+// TOUR NAVIGATOR
 
-.sv-tool-bar-container {
-  display: flex;
-  justify-content: center;
+.sv-tour-navigator {
+  .sv-content {
+    flex: 1;
+    margin: 2px 8px;
+    text-align: center;
+  }
+  .sv-title {
+    font-size: 1.1em;
+  }
+  .sv-text {
+    font-size: 0.9em;
+  }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// TOOL BAR
+
 .sv-tool-bar {
-  flex: 0 1 960px;
-  display: flex;
-  flex-direction: column;
-  background-color: transparentize(#080808, 0.2);
-  border-left: $section-border;
-  border-right: $section-border;
-  margin: 0 -1px 0 -1px;
-  pointer-events: auto;
-
-  transition: transform $tx-medium ease-out, opacity $tx-short ease-out;
-
-  &.sv-transition {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-
-  .sv-section {
-    display: flex;
-    //overflow: auto hidden;
-    border-top: $section-border;
-  }
-
-  .sv-section-button {
-    flex: 0 0 auto;
-    padding: 6px;
-    width: 38px;
-    border-right: $section-border;
-  }
-
   .sv-tool-buttons {
     flex: 1 1 auto;
     display: flex;
-    //flex-wrap: wrap;
     justify-content: center;
     margin: 4px;
   }
