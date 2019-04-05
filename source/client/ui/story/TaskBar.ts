@@ -66,7 +66,7 @@ export default class TaskBar extends SystemView
         const taskMode = this.taskProvider.ins.mode.getOptionText();
 
         return html`
-            <img class="sv-logo" src="images/voyager-75grey.svg" alt="Logo"/>
+            <img class="sv-story-logo" src="images/voyager-75grey.svg" alt="Logo"/>
             <div class="sv-mode ff-text">${taskMode}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
