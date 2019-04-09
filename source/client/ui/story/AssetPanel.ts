@@ -18,7 +18,7 @@
 import System from "@ff/graph/System";
 
 import CAssetManager from "@ff/scene/components/CAssetManager";
-import AssetTree from "@ff/scene/ui/AssetTree";
+import "@ff/scene/ui/AssetTree";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
 
@@ -28,8 +28,7 @@ import DocumentView, { customElement, html } from "../explorer/DocumentView";
 export default class AssetPanel extends DocumentView
 {
     protected get assetManager() {
-        const document = this.documentProvider.activeComponent;
-        return document ? document.getInnerComponent(CAssetManager) : null;
+        return this.system.getMainComponent(CAssetManager);
     }
 
     protected firstConnected()
@@ -45,12 +44,15 @@ export default class AssetPanel extends DocumentView
                 <ff-button icon="pen" title="Rename Item" @click=${this.onClickRename}></ff-button>
                 <ff-button icon="trash" title="Delete Item" @click=${this.onClickDelete}></ff-button>
             </div>
+            <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
+                <ff-asset-tree .system=${this.system}></ff-asset-tree>
+            </div></div>
         </div>`;
     }
 
     protected onClickFolder()
     {
-        this.assetManager.test();
+        this.assetManager.refresh();
     }
 
     protected onClickRename()
