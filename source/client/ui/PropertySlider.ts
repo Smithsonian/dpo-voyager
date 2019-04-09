@@ -17,7 +17,7 @@
 
 import Property from "@ff/graph/Property";
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/LinearSlider";
 import { ILinearSliderChangeEvent } from "@ff/ui/LinearSlider";
@@ -30,28 +30,54 @@ export default class PropertySlider extends CustomElement
     @property({ attribute: false })
     property: Property = null;
 
+    @property({ type: String })
+    name = "";
+
+    @property({ type: Number })
+    min: number = undefined;
+
+    @property({ type: Number })
+    max: number = undefined;
+
     protected firstConnected()
     {
+        super.firstConnected();
         this.classList.add("sv-property-view", "sv-property-slider");
     }
 
-    protected connected()
+    protected update(changedProperties: PropertyValues): void
     {
-        this.property.on("value", this.performUpdate, this);
-    }
+        if (!this.property) {
+            throw new Error("missing property attribute");
+        }
 
-    protected disconnected()
-    {
-        this.property.off("value", this.performUpdate, this);
+        if (this.property.type !== "number") {
+            throw new Error(`not a number property: '${this.property.path}'`);
+        }
+
+        if (changedProperties.has("property")) {
+            const property = changedProperties.get("property") as Property;
+            if (property) {
+                property.off("value", this.onUpdate, this);
+            }
+            if (this.property) {
+                this.property.on("value", this.onUpdate, this);
+            }
+        }
+
+        super.update(changedProperties);
     }
 
     protected render()
     {
         const property = this.property;
-        const name = property.name;
+        const name = this.name || property.name;
         const value = property.getValidatedValue();
-        const schema = property.schema;
-        const v = (value - schema.min) / (schema.max - schema.min);
+
+        const min = isFinite(this.min) ? this.min : property.schema.min;
+        const max = isFinite(this.max) ? this.max : property.schema.max;
+
+        const v = (value - min) / (max - min);
 
         return html`<label class="ff-label ff-off">${name}</label>
             <ff-linear-slider .value=${v} @change=${this.onSliderChange}></ff-linear-slider>`;
@@ -60,9 +86,11 @@ export default class PropertySlider extends CustomElement
     protected onSliderChange(event: ILinearSliderChangeEvent)
     {
         const property = this.property;
-        const schema = property.schema;
 
-        const value = schema.min + event.detail.value * (schema.max - schema.min);
+        const min = isFinite(this.min) ? this.min : property.schema.min;
+        const max = isFinite(this.max) ? this.max : property.schema.max;
+
+        const value = min + event.detail.value * (max - min);
         property.setValue(value);
     }
 }

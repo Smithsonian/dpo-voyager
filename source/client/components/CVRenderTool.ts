@@ -47,11 +47,12 @@ export class RenderToolView extends ToolView<CVRenderTool>
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-render-tool-view");
+        this.classList.add("sv-group", "sv-render-tool-view");
     }
 
     protected render()
     {
+        const tool = this.tool;
 
         const viewer = this.viewer;
         if (!viewer) {
@@ -60,7 +61,11 @@ export class RenderToolView extends ToolView<CVRenderTool>
 
         const shader = viewer.ins.shader;
 
-        return html`<sv-property-options .property=${shader} name="Material"></sv-property-options>`;
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+            <div class="sv-tool-controls">
+                <sv-property-options .property=${shader} name="Material"></sv-property-options>
+            </div>
+        </div>`;
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

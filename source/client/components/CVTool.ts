@@ -92,7 +92,7 @@ export class ToolView<T extends CVTool = CVTool> extends NodeView
 
     protected firstConnected()
     {
-        this.classList.add("sv-tool-view");
+        this.classList.add("sv-group", "sv-tool-view");
     }
 
     protected connected()

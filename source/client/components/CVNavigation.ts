@@ -37,6 +37,7 @@ export default class CVNavigation extends CObject3D
 
     protected static readonly navIns = {
         enabled: types.Boolean("Navigation.Enabled", true),
+        includeLights: types.Boolean("Navigation.IncludeLights", true),
         autoZoom: types.Boolean("Navigation.AutoZoom", true),
         zoomExtents: types.Event("Navigation.ZoomExtents"),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),

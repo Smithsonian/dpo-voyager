@@ -20,6 +20,7 @@ import CVNodeProvider from "../components/CVNodeProvider";
 import CVToolProvider from "../components/CVToolProvider";
 import CVViewTool from "../components/CVViewTool";
 import CVRenderTool from "../components/CVRenderTool";
+import CVEnvironmentTool from "../components/CVEnvironmentTool";
 import CVLightTool from "../components/CVLightTool";
 import CVTapeTool from "../components/CVTapeTool";
 import CVSliceTool from "../components/CVSliceTool";
@@ -34,6 +35,7 @@ const types = [
     CVToolProvider,
     CVViewTool,
     CVRenderTool,
+    CVEnvironmentTool,
     CVLightTool,
     CVTapeTool,
     CVSliceTool,

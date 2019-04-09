@@ -46,7 +46,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-tape-tool-view");
+        this.classList.add("sv-group", "sv-tape-tool-view");
     }
 
     protected render()
@@ -57,6 +57,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             return html``;
         }
 
+        const tool = this.tool;
         const tape = document.setup.tape;
         const visible = tape.ins.visible;
         const state = tape.outs.state.value;
@@ -78,9 +79,12 @@ export class TapeToolView extends ToolView<CVTapeTool>
             text = "Tap on model to set end of tape.";
         }
 
-        return html`<sv-property-boolean .property=${visible} name="Tape Tool"></sv-property-boolean>
-            <div class="sv-property-view"><label class="ff-label ff-off">Measured Distance</label>
-            <div class="ff-string">${text}</div></div>`;
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+            <div class="sv-tool-controls">
+                <sv-property-boolean .property=${visible} name="Tape Tool"></sv-property-boolean>
+                <div class="sv-property-view"><label class="ff-label ff-off">Measured Distance</label>
+                <div class="ff-string">${text}</div></div>
+            </div></div>`;
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

@@ -16,7 +16,7 @@
  */
 
 import Property from "@ff/graph/Property";
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
 
@@ -36,14 +36,27 @@ export default class PropertyString extends CustomElement
         this.classList.add("sv-property-view", "sv-property-string");
     }
 
-    protected connected()
+    protected update(changedProperties: PropertyValues): void
     {
-        this.property.on("value", this.performUpdate, this);
-    }
+        if (!this.property) {
+            throw new Error("missing property attribute");
+        }
 
-    protected disconnected()
-    {
-        this.property.off("value", this.performUpdate, this);
+        if (this.property.type !== "string") {
+            throw new Error(`not a string property: '${this.property.path}'`);
+        }
+
+        if (changedProperties.has("property")) {
+            const property = changedProperties.get("property") as Property;
+            if (property) {
+                property.off("value", this.onUpdate, this);
+            }
+            if (this.property) {
+                this.property.on("value", this.onUpdate, this);
+            }
+        }
+
+        super.update(changedProperties);
     }
 
     protected render()

@@ -17,15 +17,19 @@
         "name": "Lights",
         "children": [2, 3, 4, 5]
     }, {
+        "name": "Front Left",
         "translation": [-3, 1, 2],
         "light": 0
     }, {
+        "name": "Front Right",
         "translation": [2, 0, 3],
         "light": 1
     }, {
+        "name": "Back Top",
         "translation": [0, 2, -0.5],
         "light": 2
     }, {
+        "name": "Back Bottom",
         "translation": [0, -2, -1.2],
         "light": 3
     }],

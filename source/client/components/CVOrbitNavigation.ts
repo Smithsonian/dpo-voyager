@@ -22,6 +22,7 @@ import { Node, types } from "@ff/graph/Component";
 import CameraController from "@ff/three/CameraController";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
+import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
 import { INavigation } from "common/types/setup";
 
@@ -156,6 +157,19 @@ export default class CVOrbitNavigation extends CVNavigation
             }
             else {
                 cameraComponent.setPropertiesFromMatrix();
+            }
+
+            if (ins.includeLights.value) {
+                const lights = this.graph.findNodeByName("Lights");
+                if (lights) {
+                    const lightTransform = lights.getComponent(CTransform, true);
+
+                    if (lightTransform) {
+                        lightTransform.ins.order.setValue(ERotationOrder.YXZ);
+                        controller.orbit.toArray(lightTransform.ins.rotation.value);
+                        lightTransform.ins.rotation.set();
+                    }
+                }
             }
 
             return true;

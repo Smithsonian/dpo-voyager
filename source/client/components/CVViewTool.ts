@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import "@ff/ui/Button";
+
 import "../ui/PropertyOptions";
 import "../ui/PropertyEvent";
 
@@ -22,7 +24,6 @@ import CVDocument from "./CVDocument";
 import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
-import Subscriber from "@ff/core/Subscriber";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +59,7 @@ export class ViewToolView extends ToolView<CVViewTool>
             return html``;
         }
 
+        const tool = this.tool;
         const navigation = document.setup.navigation;
         const zoom = navigation.ins.zoomExtents;
         const projection = navigation.ins.projection;
@@ -66,9 +68,13 @@ export class ViewToolView extends ToolView<CVViewTool>
             EViewPreset.Left, EViewPreset.Right,
             EViewPreset.Top, EViewPreset.Bottom ];
 
-        return html`<sv-property-options .property=${projection}></sv-property-options>
-            <sv-property-options .property=${preset} name="View" .indexMap=${presetMap}></sv-property-options>
-            <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>`;
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+            <div class="sv-tool-controls">
+                <sv-property-options .property=${projection}></sv-property-options>
+                <sv-property-options .property=${preset} name="View" .indexMap=${presetMap}></sv-property-options>
+                <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>
+            </div>
+        </div>`;
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

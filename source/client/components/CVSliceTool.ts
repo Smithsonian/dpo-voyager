@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import Subscriber from "@ff/core/Subscriber";
-
 import "../ui/PropertyBoolean";
 import "../ui/PropertyOptions";
 import "../ui/PropertySlider";
@@ -48,7 +46,7 @@ export class SliceToolView extends ToolView<CVSliceTool>
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-slice-tool-view");
+        this.classList.add("sv-group", "sv-slice-tool-view");
     }
 
     protected render()
@@ -59,14 +57,19 @@ export class SliceToolView extends ToolView<CVSliceTool>
             return html``;
         }
 
+        const tool = this.tool;
         const slicer = document.setup.slicer;
         const enabled = slicer.ins.enabled;
         const axis = slicer.ins.axis;
         const position = slicer.ins.position;
 
-        return html`<sv-property-boolean .property=${enabled} name="Slice Tool"></sv-property-boolean>
-            <sv-property-options .property=${axis}></sv-property-options>
-            <sv-property-slider .property=${position}></sv-property-slider>`;
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+            <div class="sv-tool-controls">
+                <sv-property-boolean .property=${enabled} name="Slice Tool"></sv-property-boolean>
+                <sv-property-options .property=${axis}></sv-property-options>
+                <sv-property-slider .property=${position}></sv-property-slider>
+            </div>
+        </div>`;
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

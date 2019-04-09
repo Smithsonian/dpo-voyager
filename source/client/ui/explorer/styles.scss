@@ -352,8 +352,15 @@ $tour-entry-indent: 12px;
   margin: 0 -1px 0 -1px; // side borders disappear on smaller screens
   pointer-events: auto;
 
-  .sv-section {
+  .sv-group {
     display: flex;
+    flex-direction: column;
+  }
+
+  .sv-section {
+    position: relative;
+    display: flex;
+    flex-direction: row;
     border-top: $section-border;
   }
 
@@ -437,7 +444,7 @@ $tour-entry-indent: 12px;
   }
 }
 
-.sv-tool-view {
+.sv-tool-controls {
   flex: 1 1 auto;
   display: flex;
   justify-content: center;
@@ -450,10 +457,52 @@ $tour-entry-indent: 12px;
     display: flex;
     flex-direction: column;
     margin: 4px;
+
+    label {
+      height: 1.25em;
+    }
+
+    &.sv-nogap {
+      margin: 4px 0 !important;
+    }
   }
 
   .sv-property-slider {
     flex: 0 2 180px;
+
+    .ff-linear-slider {
+      height: 6px;
+      margin: 12px 2px;
+      padding-right: 16px;
+      border-radius: 2px;
+      background-color: $color-background-light;
+
+      .ff-knob {
+        width: 16px;
+        height: 26px;
+        margin: -10px 0 0 0;
+        border-radius: 2px;
+        background-color: $color-primary;
+        box-shadow: 0 0 6px black;
+      }
+    }
+  }
+
+  .sv-property-color {
+
+    & > .ff-button {
+      width: 28px;
+      box-sizing: border-box;
+      border: 1px solid $color-background;
+    }
+
+    .ff-color-edit {
+      position: absolute;
+      width: 200px;
+      height: 180px;
+      right: 8px;
+      top: -188px;
+    }
   }
 
   .sv-options {
@@ -478,31 +527,16 @@ $tour-entry-indent: 12px;
     background: $color-background;
     border-radius: 2px;
   }
-
-  .ff-linear-slider {
-    height: 6px;
-    margin: 12px 2px;
-    padding-right: 16px;
-    border-radius: 2px;
-    background-color: $color-background-light;
-
-    .ff-knob {
-      width: 16px;
-      height: 26px;
-      margin: -10px 0 0 0;
-      border-radius: 2px;
-      background-color: $color-primary;
-      box-shadow: 0 0 6px black;
-    }
-  }
 }
 
-.sv-view-tool-view, .sv-render-tool-view {
+.sv-view-tool-view, .sv-render-tool-view, .sv-light-tool-view {
   .sv-options {
     flex-wrap: wrap;
   }
 }
 
-.sv-tape-tool-view, .sv-slice-tool-view {
-  flex-wrap: wrap;
+.sv-tape-tool-view, .sv-slice-tool-view, .sv-environment-tool-view {
+  .sv-tool-controls {
+    flex-wrap: wrap;
+  }
 }
