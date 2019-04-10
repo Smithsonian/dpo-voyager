@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three/src/math/Box3";
+import * as THREE from "three";
 
 import { Node, types } from "@ff/graph/Component";
 
@@ -30,6 +30,8 @@ import CVScene from "./CVScene";
 import CVNavigation, { EViewPreset } from "./CVNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _vec3 = new THREE.Vector3();
 
 const _orientationPresets = [];
 _orientationPresets[EViewPreset.Left] = [ 0, -90, 0 ];
@@ -69,7 +71,7 @@ export default class CVOrbitNavigation extends CVNavigation
 
     private _controller = new CameraController();
     private _scene: CScene = null;
-    private _modelBoundingBox: Box3 = null;
+    private _modelBoundingBox: THREE.Box3 = null;
 
     constructor(node: Node, id: string)
     {
@@ -106,6 +108,14 @@ export default class CVOrbitNavigation extends CVNavigation
         if (camera && ins.zoomExtents.changed) {
             this._modelBoundingBox = this.getComponent(CVScene).modelBoundingBox;
             controller.zoomExtents(this._modelBoundingBox);
+        }
+
+        // include lights
+        if (ins.includeLights.changed) {
+            const lightTransform = this.getLightTransform();
+            if (lightTransform) {
+                lightTransform.ins.rotation.reset();
+            }
         }
 
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
@@ -160,15 +170,11 @@ export default class CVOrbitNavigation extends CVNavigation
             }
 
             if (ins.includeLights.value) {
-                const lights = this.graph.findNodeByName("Lights");
-                if (lights) {
-                    const lightTransform = lights.getComponent(CTransform, true);
-
-                    if (lightTransform) {
-                        lightTransform.ins.order.setValue(ERotationOrder.YXZ);
-                        controller.orbit.toArray(lightTransform.ins.rotation.value);
-                        lightTransform.ins.rotation.set();
-                    }
+                const lightTransform = this.getLightTransform();
+                if (lightTransform) {
+                    lightTransform.ins.order.setValue(ERotationOrder.YXZ);
+                    controller.orbit.toArray(lightTransform.ins.rotation.value);
+                    lightTransform.ins.rotation.set();
                 }
             }
 
@@ -231,6 +237,12 @@ export default class CVOrbitNavigation extends CVNavigation
         };
 
         return data as INavigation;
+    }
+
+    protected getLightTransform()
+    {
+        const lights = this.graph.findNodeByName("Lights");
+        return lights && lights.getComponent(CTransform, true);
     }
 
     protected onPointer(event: IPointerEvent)

@@ -98,8 +98,9 @@ export default class ModelReader
                 }
 
                 // TODO: Temp to correct test assets
-                uberMat.roughness = 0.6;
-                uberMat.metalness = 0;
+                uberMat.color.set("#ffffff");
+                uberMat.roughness = 0.8;
+                uberMat.metalness = 0.1;
                 uberMat.enableObjectSpaceNormalMap(false);
 
                 if (!uberMat.map) {
