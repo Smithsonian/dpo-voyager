@@ -173,8 +173,9 @@ export default class CVOrbitNavigation extends CVNavigation
                 const lightTransform = this.getLightTransform();
                 if (lightTransform) {
                     lightTransform.ins.order.setValue(ERotationOrder.YXZ);
-                    controller.orbit.toArray(lightTransform.ins.rotation.value);
-                    lightTransform.ins.rotation.set();
+                    const rotation = lightTransform.ins.rotation;
+                    rotation.value[1] = controller.orbit.y;
+                    rotation.set();
                 }
             }
 

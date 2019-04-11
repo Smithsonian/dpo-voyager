@@ -18,6 +18,7 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
+import fetch from "@ff/browser/fetch";
 import Component, { Node, types } from "@ff/graph/Component";
 
 import JSONReader from "../io/JSONReader";
@@ -74,6 +75,24 @@ export default class CVAssetReader extends Component implements IAssetService
         this.textureLoader = new TextureReader(loadingManager);
     }
 
+    get rootUrl() {
+        return this.ins.rootUrl.value;
+    }
+    set rootUrl(url: string) {
+        url = url.split("?")[0];
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+
+        const href = window.location.href.split("?")[0];
+        let rootUrl = resolvePathname(url, href);
+        rootUrl = resolvePathname(".", rootUrl);
+        this.ins.rootUrl.setValue(rootUrl);
+
+        console.log("CVAssetReader - rootUrl: %s", rootUrl);
+    }
+
+
     update(context)
     {
         const ins = this.ins;
@@ -101,16 +120,6 @@ export default class CVAssetReader extends Component implements IAssetService
         }
     }
 
-    setRootURL(url: string)
-    {
-        const href = window.location.href.split("?")[0];
-        let rootUrl = resolvePathname(url, href);
-        rootUrl = resolvePathname(".", rootUrl);
-        this.ins.rootUrl.setValue(rootUrl);
-
-        console.log("CVAssetReader.setRootURL - %s", rootUrl);
-    }
-
     getAssetFileName(uri: string)
     {
         const base = resolvePathname(".", uri);
@@ -126,6 +135,12 @@ export default class CVAssetReader extends Component implements IAssetService
     {
         const url = this.getAssetURL(assetPath);
         return this.jsonLoader.get(url);
+    }
+
+    getText(assetPath: string): Promise<string>
+    {
+        const url = this.getAssetURL(assetPath);
+        return fetch.text(url, "GET");
     }
 
     getModel(assetPath: string): Promise<THREE.Object3D>

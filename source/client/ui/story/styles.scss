@@ -302,40 +302,50 @@ ff-dock-view {
 ////////////////////////////////////////////////////////////////////////////////
 // QUILL RICH TEXT EDITOR
 
-.ql-toolbar.ql-snow, .ql-container.ql-snow, .ql-editor.ql-snow {
-  border: none;
+.sv-article-editor {
+  @include fullsize;
 
-  &:focus {
-    outline: none;
-  }
-}
+  .ql-toolbar, .ql-container, .ql-editor {
+    border: none;
+    font-size: 1em;
 
-.ql-toolbar.ql-snow {
-  background: $color-background;
-
-  .ql-picker-label {
-    color: $color-icon;
+    &:focus {
+      outline: none;
+    }
   }
 
-  .ql-stroke {
-    stroke: $color-icon;
+  .ql-editor {
+    &:before {
+      color: $color-text-dark;
+      text-align: center;
+      font-size: 1.2em;
+    }
   }
-  .ql-fill {
-    fill: $color-icon;
-  }
 
+  .ql-toolbar {
+    background: $color-background;
 
-  .ql-active, *:hover {
-    color: $color-text !important;
-
+    .ql-picker-label {
+      color: $color-icon;
+    }
     .ql-stroke {
-      stroke: $color-text !important;
+      stroke: $color-icon;
     }
     .ql-fill {
-      fill: $color-text !important;
+      fill: $color-icon;
+    }
+
+    .ql-active, *:hover {
+      color: $color-text !important;
+
+      .ql-stroke {
+        stroke: $color-text !important;
+      }
+      .ql-fill {
+        fill: $color-text !important;
+      }
     }
   }
 }
 
-.ql-container.ql-snow {
-}
+

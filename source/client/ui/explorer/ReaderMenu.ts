@@ -18,59 +18,58 @@
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
-import { ITour } from "common/types/setup";
-
+import { IArticleEntry } from "../../components/CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface ITourMenuSelectEvent extends CustomEvent
+export interface IReaderMenuSelectEvent extends CustomEvent
 {
     detail: {
-        index: number;
+        id: string
     }
 }
 
-@customElement("sv-tour-menu")
-export default class TourMenu extends CustomElement
+@customElement("sv-reader-menu")
+export default class ReaderMenu extends CustomElement
 {
     @property({ attribute: false })
-    tours: ITour[];
+    articles: IArticleEntry[];
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-document-overlay", "sv-article", "sv-tour-menu");
+        this.classList.add("sv-document-overlay", "sv-reader-menu");
     }
 
-    protected renderEntry(tour: ITour, index: number)
+    protected renderEntry(entry: IArticleEntry)
     {
-        return html`<div class="sv-entry" @click=${e => this.onClick(e, index)}>
-            <h1>${tour.title}</h1>
-            <p>${tour.lead}</p>
+        return html`<div class="sv-entry" @click=${e => this.onClick(e, entry.article.id)}>
+            <h1>${entry.article.data.title}</h1>
+            <p>${entry.article.data.lead}</p>
         </div>`;
     }
 
     protected render()
     {
-        const tours = this.tours;
+        const articles = this.articles;
 
-        if (tours.length === 0) {
+        if (articles.length === 0) {
             return html`<div class="sv-entry">
-                <h1>No tours available.</h1>
+                <h1>No articles available.</h1>
             </div>`;
         }
 
         return html`<div class="ff-scroll-y">
-            ${tours.map((tour, index) => this.renderEntry(tour, index))}
+            ${articles.map(article => this.renderEntry(article))}
         </div>`;
     }
 
-    protected onClick(e: MouseEvent, index: number)
+    protected onClick(event: MouseEvent, id: string)
     {
-        e.stopPropagation();
+        event.stopPropagation();
 
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { index }
+            detail: { id }
         }));
     }
 }

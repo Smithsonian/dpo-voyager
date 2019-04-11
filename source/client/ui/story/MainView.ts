@@ -26,6 +26,11 @@ import DockView, { DockContentRegistry, IDockElementLayout } from "@ff/ui/DockVi
 
 import HierarchyTreeView from "@ff/scene/ui/HierarchyTreeView";
 
+import CAssetManager, { IAssetOpenEvent } from "@ff/scene/components/CAssetManager";
+
+import NavigatorPanel from "./NavigatorPanel";
+import CVTaskProvider, { ETaskMode } from "../../components/CVTaskProvider";
+
 import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
@@ -37,8 +42,6 @@ import InspectorPanel from "./InspectorPanel";
 import AssetPanel from "./AssetPanel";
 
 import "./styles.scss";
-import NavigatorPanel from "./NavigatorPanel";
-import CVTaskProvider, { ETaskMode } from "../../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS
@@ -115,7 +118,6 @@ export default class MainView extends CustomElement
         const registry = this.registry = new Map();
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
-        registry.set("article-editor", () => new EditorPanel(system));
         registry.set("tour-editor", () => new TourPanel(system));
         registry.set("task", () => new TaskPanel(system));
         registry.set("notes", () => new NotesPanel(system));
@@ -124,6 +126,17 @@ export default class MainView extends CustomElement
         registry.set("hierarchy", () => new HierarchyTreeView(system));
         registry.set("inspector", () => new InspectorPanel(system));
         registry.set("assets", () => new AssetPanel(system));
+
+        registry.set("article-editor", () => {
+            const panel = new EditorPanel(system);
+            system.getMainComponent(CAssetManager).on<IAssetOpenEvent>("asset-open", event => {
+                console.log(event.asset.info.type);
+                if (event.asset.info.type.startsWith("text/html")) {
+                    panel.editor.openArticle(event.asset.path);
+                }
+            });
+            return panel;
+        });
 
         const reset = parseUrlParameter("reset") !== undefined;
         const state = reset ? null : localStorage.get("voyager-story", MainView.stateKey);

@@ -31,14 +31,14 @@
         "reader": {
             "type": "object",
             "properties": {
-                "visible": {
+                "enabled": {
                     "type": "boolean"
                 },
                 "position": {
                     "type": "string"
                 },
-                "documentUri": {
-                    "description": "URI of the document currently displayed in the reader",
+                "articleId": {
+                    "description": "Id of the article currently displayed in the reader.",
                     "type": "string",
                     "minLength": 1
                 }

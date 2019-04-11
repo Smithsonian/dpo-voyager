@@ -18,20 +18,20 @@
         "children": [2, 3, 4, 5]
     }, {
         "name": "Key",
-        "translation": [-1.5, 1, 2],
+        "translation": [-1.5, 2, 2],
         "light": 0
     }, {
-        "name": "Fill",
-        "translation": [3, 0, 2],
+        "name": "Fill #1",
+        "translation": [3, 1, 2],
         "light": 1
     }, {
-        "name": "Rim",
-        "translation": [-2, 2, -1],
-        "light": 2
-    }, {
-        "name": "Back",
-        "translation": [1, -1, -1],
+        "name": "Fill #2",
+        "translation": [1, -2, 1],
         "light": 3
+    }, {
+        "name": "Rim",
+        "translation": [1, 0, -1],
+        "light": 2
     }],
     "infos": [{
         "articles": [{
@@ -58,9 +58,8 @@
             "annotationsVisible": false
         },
         "reader": {
-            "visible": false,
-            "position": "Overlay",
-            "url": ""
+            "enabled": false,
+            "position": "Overlay"
         },
         "navigation": {
             "type": "Orbit",
@@ -120,11 +119,11 @@
         "intensity": 0.9
     }, {
         "type": "directional",
-        "color": [1, 1, 1],
+        "color": [0.9, 0.95, 1],
         "intensity": 0.6
     }, {
         "type": "directional",
-        "color": [0.8, 0.85, 1],
+        "color": [1, 1, 1],
         "intensity": 0.8
     }, {
         "type": "directional",

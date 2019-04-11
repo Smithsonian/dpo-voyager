@@ -21,14 +21,18 @@ import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import * as documentTemplate from "common/templates/document.json";
+import * as documentTemplate from "common/templates/template.vdoc.json";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "./ExplorerApplication";
 
 import storyTypes from "./storyTypes";
 
 import CVStoryApplication from "../components/CVStoryApplication";
+
 import CVAssetReader from "../components/CVAssetReader";
+import CVAssetWriter from "../components/CVAssetWriter";
+import CAssetManager from "@ff/scene/components/CAssetManager";
+
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";
 
@@ -67,6 +71,13 @@ export default class StoryApplication
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
     }
+    protected get assetWriter() {
+        return this.system.getMainComponent(CVAssetWriter);
+    }
+    protected get assetManager() {
+        return this.system.getMainComponent(CAssetManager);
+    }
+
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
     }
@@ -103,6 +114,13 @@ export default class StoryApplication
         this.evaluateProps();
     }
 
+    setRootUrl(url: string)
+    {
+        this.assetReader.rootUrl = url;
+        this.assetManager.rootUrl = url;
+        this.assetWriter.rootUrl = url;
+    }
+
     loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
     {
         return this.assetReader.getJSON(documentPath)
@@ -129,6 +147,9 @@ export default class StoryApplication
     {
         const props = this.props;
 
+        this.explorer.evaluateProps();
+        this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
+
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
@@ -140,8 +161,6 @@ export default class StoryApplication
         const mode = lcMode === "a" ? ETaskMode.Authoring : (lcMode === "e" ? ETaskMode.Expert : ETaskMode.QC);
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);
-
-        this.explorer.evaluateProps();
     }
 }
 

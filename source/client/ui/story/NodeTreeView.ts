@@ -145,7 +145,7 @@ class NodeTree extends Tree<NVNode>
 
     }
 
-    protected onClickNode(event: MouseEvent, node: NVNode)
+    protected onNodeClick(event: MouseEvent, node: NVNode)
     {
         const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
 

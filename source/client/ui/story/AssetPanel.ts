@@ -45,7 +45,7 @@ export default class AssetPanel extends DocumentView
                 <ff-button icon="trash" title="Delete Item" @click=${this.onClickDelete}></ff-button>
             </div>
             <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
-                <ff-asset-tree .system=${this.system}></ff-asset-tree>
+                <ff-asset-tree draggable .system=${this.system}></ff-asset-tree>
             </div></div>
         </div>`;
     }

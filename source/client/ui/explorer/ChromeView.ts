@@ -75,7 +75,7 @@ export default class ChromeView extends DocumentView
         const interfaceVisible = setup.interface.ins.visible.value;
         const logoVisible = setup.interface.ins.logo.value;
 
-        const readerVisible = setup.reader.ins.visible.value;
+        const readerVisible = setup.reader.ins.enabled.value;
 
         const tours = setup.tours.tours;
         const toursEnabled = setup.tours.ins.enabled.value;
@@ -139,7 +139,7 @@ export default class ChromeView extends DocumentView
                 next.outs.assetPath,
                 setup.interface.ins.visible,
                 setup.interface.ins.logo,
-                setup.reader.ins.visible,
+                setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
                 setup.tours.outs.tourIndex,
             );

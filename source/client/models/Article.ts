@@ -33,6 +33,11 @@ export default class Article extends Document<IArticle>
         return new Article(json);
     }
 
+    toString()
+    {
+        return this.data.title;
+    }
+
     protected init()
     {
         return {

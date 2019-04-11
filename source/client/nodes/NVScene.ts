@@ -23,6 +23,8 @@ import CVScene from "../components/CVScene";
 import CVSetup from "../components/CVSetup";
 import CVInfo from "../components/CVInfo";
 import Component from "@ff/graph/Component";
+import CLight from "@ff/scene/components/CLight";
+import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +70,20 @@ export default class NVScene extends NVNode
         }
         if (isFinite(scene.setup)) {
             this.setup.fromDocument(document, sceneIndex, pathMap);
+        }
+
+        // enable shadow casting for first light source
+        const lights = this.getGraphComponents(CLight) as CDirectionalLight[];
+        const light0 = lights[0];
+        const light1 = lights[1];
+
+        if (light0) {
+            light0.ins.shadowEnabled.setValue(true);
+            light0.ins.shadowSize.setValue(1000);
+        }
+        if (light1) {
+            light1.ins.shadowEnabled.setValue(true);
+            light1.ins.shadowSize.setValue(1000);
         }
     }
 

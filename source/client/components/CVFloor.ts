@@ -34,6 +34,7 @@ export default class CVFloor extends CFloor
     {
         super(node, id);
         this.ins.visible.setValue(false);
+        this.ins.receiveShadow.setValue(true);
     }
 
     fromData(data: IFloor)

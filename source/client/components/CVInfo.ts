@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import OrderedCollection from "@ff/core/OrderedCollection";
+import OrderedCollection, { ICollectionUpdateEvent } from "@ff/core/OrderedCollection";
 import UnorderedCollection from "@ff/core/UnorderedCollection";
 import Component from "@ff/graph/Component";
 
@@ -25,6 +25,8 @@ import { IInfo, INote } from "common/types/info";
 import Article from "../models/Article";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export type IArticlesUpdateEvent = ICollectionUpdateEvent<Article>;
 
 export default class CVInfo extends Component
 {

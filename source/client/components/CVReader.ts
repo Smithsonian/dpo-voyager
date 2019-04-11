@@ -15,35 +15,94 @@
  * limitations under the License.
  */
 
-import Component, { Node, types } from "@ff/graph/Component";
+import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 
 import { IReader, EReaderPosition } from "common/types/setup";
 
 import Article from "../models/Article";
+import CVInfo, { IArticlesUpdateEvent } from "./CVInfo";
+import CVModel2 from "./CVModel2";
+import { Dictionary } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { EReaderPosition };
+export { Article, EReaderPosition };
+
+export interface IArticleEntry
+{
+    article: Article;
+    category: string;
+}
 
 export default class CVReader extends Component
 {
     static readonly typeName: string = "CVReader";
 
-    protected static readonly readerIns = {
-        visible: types.Boolean("Visible", false),
-        position: types.Enum("Position", EReaderPosition),
-        url: types.AssetPath("DocumentURL"),
+    protected static readonly ins = {
+        enabled: types.Boolean("Reader.Enabled"),
+        menu: types.Boolean("Reader.Menu"),
+        position: types.Enum("Reader.Position", EReaderPosition),
+        articleId: types.String("Article.ID"),
     };
 
-    ins = this.addInputs(CVReader.readerIns);
+    protected static readonly outs = {
+        article: types.Object("Article.Active", Article),
+        articleTitle: types.String("Article.Title"),
+        articleLead: types.String("Article.Lead"),
+    };
+
+    ins = this.addInputs(CVReader.ins);
+    outs = this.addOutputs(CVReader.outs);
+
+    protected _articles: Dictionary<IArticleEntry>;
 
     get snapshotKeys() {
         return [ "visible" ];
     }
 
-    setArticle(article: Article)
+    get articles() {
+        return this._articles;
+    }
+
+    create()
     {
-        this.ins.url.setValue(article.data.uri);
+        super.create();
+        this.graph.components.on(CVInfo, this.onInfoComponent, this);
+        this.updateArticles();
+    }
+
+    dispose()
+    {
+        this.graph.components.off(CVInfo, this.onInfoComponent, this);
+        super.dispose();
+    }
+
+    protected onInfoComponent(event: IComponentEvent<CVInfo>)
+    {
+        if (event.add) {
+            event.object.articles.on<IArticlesUpdateEvent>("update", this.updateArticles, this);
+        }
+        if (event.remove) {
+            event.object.articles.off<IArticlesUpdateEvent>("update", this.updateArticles, this);
+        }
+
+        this.updateArticles();
+    }
+
+    protected updateArticles()
+    {
+        const infos = this.getGraphComponents(CVInfo);
+        const masterList = this._articles = {};
+
+        infos.forEach(info => {
+            const articles = info.articles;
+            const model = info.getComponent(CVModel2, true);
+            const category = model ? info.node.displayName : "";
+
+            articles.items.forEach(article => {
+                masterList[article.id] = { article, category };
+            });
+        });
     }
 
     fromData(data: IReader)
@@ -51,9 +110,9 @@ export default class CVReader extends Component
         data = data || {} as IReader;
 
         this.ins.setValues({
-            visible: !!data.visible,
+            enabled: !!data.enabled,
             position: EReaderPosition[data.position] || EReaderPosition.Overlay,
-            url: data.url
+            articleId: data.articleId,
         });
     }
 
@@ -62,9 +121,9 @@ export default class CVReader extends Component
         const ins = this.ins;
 
         return {
-            visible: ins.visible.value,
+            enabled: ins.enabled.value,
             position: EReaderPosition[ins.position.value] || "Overlay",
-            url: ins.url.value
+            articleId: ins.articleId.value
         };
     }
 }

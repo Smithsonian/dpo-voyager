@@ -17,6 +17,7 @@
 
 import resolvePathname from "resolve-pathname";
 
+import fetch from "@ff/browser/fetch";
 import Component, { Node, types } from "@ff/graph/Component";
 
 import JSONWriter from "../io/JSONWriter";
@@ -61,6 +62,23 @@ export default class CVAssetWriter extends Component implements IAssetService
         return this.getMainComponent(CVAssetReader);
     }
 
+    get rootUrl() {
+        return this.ins.rootUrl.value;
+    }
+    set rootUrl(url: string) {
+        url = url.split("?")[0];
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+
+        const href = window.location.href.split("?")[0];
+        let rootUrl = resolvePathname(url, href);
+        rootUrl = resolvePathname(".", rootUrl);
+        this.ins.rootUrl.setValue(rootUrl);
+
+        console.log("CVAssetWriter - rootUrl: %s", rootUrl);
+    }
+
     create()
     {
         super.create();
@@ -84,15 +102,6 @@ export default class CVAssetWriter extends Component implements IAssetService
         this.outs.busy.setValue(this.ins.setBusy.value || this._isBusy);
     }
 
-    setRootURL(url: string)
-    {
-        const href = window.location.href.split("?")[0];
-        let rootUrl = resolvePathname(url, href);
-        rootUrl = resolvePathname(".", rootUrl);
-        this.ins.rootUrl.setValue(rootUrl);
-        console.log("ROOT URL: %s", rootUrl);
-    }
-
     getAssetFileName(uri: string)
     {
         const base = resolvePathname(".", uri);
@@ -108,6 +117,12 @@ export default class CVAssetWriter extends Component implements IAssetService
     {
         const url = this.getAssetURL(assetPath);
         return this.jsonWriter.put(json, url);
+    }
+
+    putText(text: string, assetPath: string): Promise<string>
+    {
+        const url = this.getAssetURL(assetPath);
+        return fetch.text(url, "PUT", text);
     }
 
     putDocument(document: CVDocument, components?: INodeComponents, assetPath?: string): Promise<void>

@@ -70,7 +70,7 @@ export default class MainMenu extends DocumentView
         const showFullscreenButton = fullscreen.outs.fullscreenAvailable.value;
 
         const setup = document.setup;
-        const readerVisible = setup.reader.ins.visible.value;
+        const readerVisible = setup.reader.ins.enabled.value;
         const toursVisible = setup.tours.ins.enabled.value;
         const annotationsVisible = setup.viewer.ins.annotationsVisible.value;
         const toolsVisible = this.toolProvider.ins.visible.value;
@@ -90,7 +90,7 @@ export default class MainMenu extends DocumentView
 
     protected onToggleReader()
     {
-        const prop = this.activeDocument.setup.reader.ins.visible;
+        const prop = this.activeDocument.setup.reader.ins.enabled;
         prop.setValue(!prop.value);
     }
 
@@ -127,7 +127,7 @@ export default class MainMenu extends DocumentView
 
             this.documentProps.on(
                 setup.interface.ins.tools,
-                setup.reader.ins.visible,
+                setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
                 setup.viewer.ins.annotationsVisible,
                 this.toolProvider.ins.visible

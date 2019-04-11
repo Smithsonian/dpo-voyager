@@ -127,7 +127,6 @@ export default class CVGrid extends CObject3D
 
                 props.mainDivisions = size;
                 props.subDivisions = 10;
-
             }
 
             if (!this.object3D) {

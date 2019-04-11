@@ -84,6 +84,7 @@ export default class ModelReader
         model.traverse((object: any) => {
             if (object.type === "Mesh") {
                 const mesh: THREE.Mesh = object;
+                mesh.castShadow = true;
                 const material = mesh.material as THREE.MeshStandardMaterial;
 
                 if (material.map) {

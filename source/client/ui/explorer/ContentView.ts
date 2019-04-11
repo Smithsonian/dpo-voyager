@@ -75,7 +75,7 @@ export default class ContentView extends DocumentView
             tourMenuVisible = tours.ins.enabled.value && tours.outs.tourIndex.value === -1;
         }
         if (reader) {
-            readerVisible = ! tourMenuVisible && reader.ins.visible.value;
+            readerVisible = ! tourMenuVisible && reader.ins.enabled.value;
             readerPosition = reader.ins.position.value;
         }
 
@@ -120,7 +120,7 @@ export default class ContentView extends DocumentView
         if (next) {
             this.documentProps.on(
                 next.setup.reader.ins.position,
-                next.setup.reader.ins.visible,
+                next.setup.reader.ins.enabled,
                 next.setup.tours.outs.tourIndex,
             );
         }

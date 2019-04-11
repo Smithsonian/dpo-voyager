@@ -65,9 +65,9 @@ export interface IViewer
 
 export interface IReader
 {
-    visible: boolean;
+    enabled: boolean;
     position: string;
-    url: string;
+    articleId: string;
 }
 
 export interface INavigation
