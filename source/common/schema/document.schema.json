@@ -89,27 +89,22 @@
                 },
 
                 "camera": {
-                    "description": "The index of the camera in this node.",
+                    "description": "The index of the camera component of this node.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "light": {
-                    "description": "The index of the light in this node.",
+                    "description": "The index of the light component of this node.",
                     "type": "integer",
                     "minimum": 0
                 },
-                "entity": {
-                    "description": "The index of the entity attached to this node.",
+                "meta": {
+                    "description": "The index of the meta data component of this node.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "model": {
-                    "description": "The index of the model attached to this node.",
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "scene": {
-                    "description": "The index of the scene attached to this node.",
+                    "description": "The index of the model component of this node.",
                     "type": "integer",
                     "minimum": 0
                 }
@@ -346,8 +341,23 @@
             },
             "minItems": 1
         },
+        "metas": {
+            "description": "An array of meta data components.",
+            "type": "array",
+            "items": {
+                "$ref": "./meta.schema.json"
+            }
+        },
+        "setups": {
+            "description": "An array of setup components.",
+            "type": "array",
+            "items": {
+                "$ref": "./setup.schema.json"
+            },
+            "minItems": 1
+        },
         "cameras": {
-            "description": "An array of cameras.",
+            "description": "An array of camera components.",
             "type": "array",
             "items": {
                 "$ref": "#/definitions/camera"
@@ -355,33 +365,18 @@
             "minItems": 1
         },
         "lights": {
-            "description": "An array of lights.",
+            "description": "An array of light components.",
             "type": "array",
             "items": {
                 "$ref": "#/definitions/light"
             },
             "minItems": 1
         },
-        "infos": {
-            "description": "An array of entities.",
-            "type": "array",
-            "items": {
-                "$ref": "./info.schema.json"
-            }
-        },
         "models": {
-            "description": "An array of models.",
+            "description": "An array of model components.",
             "type": "array",
             "items": {
                 "$ref": "./model.schema.json"
-            },
-            "minItems": 1
-        },
-        "setups": {
-            "description": "An array of setups.",
-            "type": "array",
-            "items": {
-                "$ref": "./setup.schema.json"
             },
             "minItems": 1
         }

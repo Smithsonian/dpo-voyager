@@ -86,7 +86,7 @@ export default class CVDocument extends CRenderGraph
     }
     get assetBaseName() {
         let name = this.assetPath;
-        const index = name.indexOf("vdoc.json");
+        const index = name.indexOf("document.json");
         if (index >= 0) {
             name = name.substr(0, index);
         }
@@ -111,7 +111,7 @@ export default class CVDocument extends CRenderGraph
         }
 
         if (ins.download.changed) {
-            const fileName = outs.assetPath.value.split("/").pop() || "voyager.vdoc.json";
+            const fileName = outs.assetPath.value.split("/").pop() || "voyager-document.json";
             download.json(this.deflateDocument(), fileName);
         }
 

@@ -20,16 +20,28 @@ import { Index, Dictionary } from "@ff/core/types";
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Contains contextual information (articles, meta data) about a hierarchical entity (subject, item, model, etc.)
+ * Contains meta data (articles, collection record, processing information)
+ * about a scene item (scene root, model).
  */
-export interface IInfo
+export interface IMeta
 {
-    meta?: Dictionary<any>;
+    collection?: Dictionary<any>;
     process?: Dictionary<any>;
+    images?: IImage[];
     articles?: IArticle[];
     leadArticle?: Index;
-    notes?: INote[];
 }
+
+export interface IImage
+{
+    quality: TImageQuality,
+    uri: string;
+    byteSize: number;
+    width: number;
+    height: number;
+}
+
+export type TImageQuality = "Thumb" | "Low" | "Medium" | "High";
 
 /**
  * Refers to an external document or a media file (audio, video, image).
@@ -47,6 +59,9 @@ export interface IArticle
     thumbnailUri?: string;
 }
 
+/**
+ * Notes taken during processing. Part of the process section of [[IMeta]].
+ */
 export interface INote
 {
     date: string;

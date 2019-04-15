@@ -22,6 +22,7 @@ import { TaskView } from "../../components/CVTask";
 
 import "./ArticleList";
 import { ISelectArticleEvent } from "./ArticleList";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,16 +32,21 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     protected render()
     {
         const node = this.activeNode;
-        const info = node && node.info;
+        const meta = node && node.meta;
 
-        if (!info) {
+        if (!meta) {
             return html`<div class="sv-placeholder">Please select a node to edit its articles</div>`;
         }
 
-        const articleList = info.articles.items;
+        const articleList = meta.articles.items;
         const article = this.task.activeArticle;
 
-        const detailView = article ? html`` : null;
+        const detailView = article ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <div class="sv-label">Title</div>
+            <ff-line-edit name="title" text=${article.data.title} @change=${this.onTextEdit}></ff-line-edit>
+            <div class="sv-label">Lead</div>
+            <ff-text-edit name="lead" text=${article.data.lead} @change=${this.onTextEdit}></ff-text-edit>
+        </div>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
@@ -48,11 +54,16 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <sv-article-list .data=${articleList} .selectedItem=${article} @select=${this.onSelectArticle}></sv-article-list>
-            </div>
-            <ff-splitter direction="vertical"></ff-splitter>
-            <div class="sv-panel-section sv-dialog sv-scrollable">
-                ${detailView}
+                <div class="ff-splitter-section" style="flex-basis: 30%">
+                    <div class="ff-scroll-y ff-flex-column">
+                        <sv-article-list .data=${articleList} .selectedItem=${article} @select=${this.onSelectArticle}></sv-article-list>
+                    </div>
+                </div>
+                <ff-splitter direction="vertical"></ff-splitter>
+                <div class="sv-panel-section sv-dialog sv-scrollable">
+                <div class="ff-splitter-section" style="flex-basis: 70%">
+                    ${detailView}
+                </div>
             </div>
         </div>`
     }
@@ -63,6 +74,11 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     }
 
     protected onClickDelete()
+    {
+
+    }
+
+    protected onTextEdit(event: ILineEditChangeEvent)
     {
 
     }

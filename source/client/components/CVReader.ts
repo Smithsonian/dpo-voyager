@@ -20,7 +20,7 @@ import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 import { IReader, EReaderPosition } from "common/types/setup";
 
 import Article from "../models/Article";
-import CVInfo, { IArticlesUpdateEvent } from "./CVInfo";
+import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";
 import CVModel2 from "./CVModel2";
 import { Dictionary } from "@ff/core/types";
 
@@ -67,17 +67,17 @@ export default class CVReader extends Component
     create()
     {
         super.create();
-        this.graph.components.on(CVInfo, this.onInfoComponent, this);
+        this.graph.components.on(CVMeta, this.onInfoComponent, this);
         this.updateArticles();
     }
 
     dispose()
     {
-        this.graph.components.off(CVInfo, this.onInfoComponent, this);
+        this.graph.components.off(CVMeta, this.onInfoComponent, this);
         super.dispose();
     }
 
-    protected onInfoComponent(event: IComponentEvent<CVInfo>)
+    protected onInfoComponent(event: IComponentEvent<CVMeta>)
     {
         if (event.add) {
             event.object.articles.on<IArticlesUpdateEvent>("update", this.updateArticles, this);
@@ -91,7 +91,7 @@ export default class CVReader extends Component
 
     protected updateArticles()
     {
-        const infos = this.getGraphComponents(CVInfo);
+        const infos = this.getGraphComponents(CVMeta);
         const masterList = this._articles = {};
 
         infos.forEach(info => {

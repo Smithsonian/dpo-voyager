@@ -42,7 +42,7 @@ import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVScene from "../components/CVScene";
 import CVSetup from "../components/CVSetup";
 import CVNode from "../components/CVNode";
-import CVInfo from "../components/CVInfo";
+import CVMeta from "../components/CVMeta";
 import CVModel2 from "../components/CVModel2";
 import CVAnnotations from "../components/CVAnnotations";
 import CVAnnotationView from "../components/CVAnnotationView";
@@ -92,7 +92,7 @@ const types = [
     CVScene,
     CVSetup,
     CVNode,
-    CVInfo,
+    CVMeta,
     CVModel2,
     CVAnnotations,
     CVAnnotationView,

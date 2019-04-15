@@ -28,7 +28,7 @@ import CVDirectionalLight from "../components/CVDirectionalLight";
 import CVPointLight from "../components/CVPointLight";
 import CVSpotLight from "../components/CVSpotLight";
 
-import CVInfo from "../components/CVInfo";
+import CVMeta from "../components/CVMeta";
 import CVModel2 from "../components/CVModel2";
 import CVScene from "../components/CVScene";
 
@@ -36,10 +36,11 @@ import CVScene from "../components/CVScene";
 
 export interface INodeComponents
 {
-    scene?: boolean; // scene setup, scene info
-    model?: boolean; // models, model info
-    camera?: boolean; // cameras, camera info
-    light?: boolean; // lights, light info
+    meta?: boolean; // meta data
+    setup?: boolean; // scene setup
+    model?: boolean; // models
+    camera?: boolean; // cameras
+    light?: boolean; // lights
 }
 
 
@@ -50,8 +51,8 @@ export default class NVNode extends Node
     get transform() {
         return this.components.get(CVNode);
     }
-    get info() {
-        return this.components.get(CVInfo, true);
+    get meta() {
+        return this.components.get(CVMeta, true);
     }
     get model() {
         return this.components.get(CVModel2, true);
@@ -75,7 +76,7 @@ export default class NVNode extends Node
     createModel()
     {
         this.name = "Model";
-        this.createComponent(CVInfo);
+        this.createComponent(CVMeta);
         this.createComponent(CVModel2);
     }
 
@@ -86,10 +87,10 @@ export default class NVNode extends Node
 
         let name = "Node";
 
-        if (isFinite(node.info)) {
-            this.createComponent(CVInfo).fromDocument(document, node);
-            pathMap.set(`info/${node.info}`, this.info);
-            name = "Info";
+        if (isFinite(node.meta)) {
+            this.createComponent(CVMeta).fromDocument(document, node);
+            pathMap.set(`meta/${node.meta}`, this.meta);
+            name = "Meta";
         }
         if (isFinite(node.model)) {
             this.createComponent(CVModel2).fromDocument(document, node);
@@ -138,7 +139,8 @@ export default class NVNode extends Node
     toDocument(document: IDocument, pathMap: Map<Component, string>, components?: INodeComponents)
     {
         components = components || {
-            scene: true,
+            meta: true,
+            setup: true,
             model: true,
             camera: true,
             light: true,
@@ -153,26 +155,21 @@ export default class NVNode extends Node
             node.name = this.name;
         }
 
-        let saveInfo = false;
-
         if (this.model && components.model) {
             node.model = this.model.toDocument(document, node);
             pathMap.set(this.model, `model/${node.model}`);
-            saveInfo = true;
         }
         if (this.camera && components.camera) {
             node.camera = this.camera.toDocument(document, node);
             pathMap.set(this.camera, `camera/${node.camera}`);
-            saveInfo = true;
         }
         if (this.light && components.light) {
             node.light = this.light.toDocument(document, node);
             pathMap.set(this.light, `light/${node.light}`);
-            saveInfo = true;
         }
-        if (this.info && saveInfo) {
-            node.info = this.info.toDocument(document, node);
-            pathMap.set(this.info, `info/${node.info}`);
+        if (this.meta && components.meta) {
+            node.meta = this.meta.toDocument(document, node);
+            pathMap.set(this.meta, `info/${node.meta}`);
         }
 
         const children = this.transform.children

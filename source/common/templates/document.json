@@ -33,16 +33,6 @@
         "translation": [1, 0, -1],
         "light": 2
     }],
-    "infos": [{
-        "articles": [{
-            "id": "1",
-            "title": "Ululatibus proles",
-            "lead": "Iunonem ter mihi frustraque et vestrae dixit.",
-            "uri": "article-sample-1.md",
-            "mimeType": "text/markdown"
-        }],
-        "leadArticle": 0
-    }],
     "setups": [{
         "units": "cm",
         "interface": {

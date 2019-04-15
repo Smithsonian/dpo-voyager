@@ -25,7 +25,7 @@ export default class InspectorPanel extends SystemView
 {
     firstConnected()
     {
-        this.classList.add("sv-scrollable", "sv-panel", "sv-inspector-panel");
+        this.classList.add("ff-scroll-y", "sv-panel", "sv-inspector-panel");
         this.appendChild(new PropertyTree(this.system));
     }
 }

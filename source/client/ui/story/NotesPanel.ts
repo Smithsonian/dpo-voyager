@@ -31,7 +31,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import "@ff/ui/TextEdit";
 import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
 
-import { INote } from "common/types/info";
+import { INote } from "common/types/meta";
 
 import NodeView, { customElement, html } from "../explorer/NodeView";
 import NVNode from "../../nodes/NVNode";
@@ -160,8 +160,17 @@ export default class NotesPanel extends NodeView
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        this.notes = next && next.info && next.info.notes;
-        this.activeNote = this.notes ? this.notes[0] : null;
+        this.notes = null;
+        this.activeNote = null;
+
+        if (next) {
+            const process = next.meta ? next.meta.process : null;
+
+            if (process) {
+                this.notes = process.getOrCreate("notes", []);
+                this.activeNote = this.notes[0];
+            }
+        }
 
         this.requestUpdate();
     }

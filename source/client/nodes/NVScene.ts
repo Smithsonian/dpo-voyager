@@ -21,7 +21,7 @@ import NVNode, { INodeComponents } from "./NVNode";
 
 import CVScene from "../components/CVScene";
 import CVSetup from "../components/CVSetup";
-import CVInfo from "../components/CVInfo";
+import CVMeta from "../components/CVMeta";
 import Component from "@ff/graph/Component";
 import CLight from "@ff/scene/components/CLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
@@ -40,7 +40,7 @@ export default class NVScene extends NVNode
     {
         this.createComponent(CVScene);
         this.createComponent(CVSetup);
-        this.createComponent(CVInfo);
+        this.createComponent(CVMeta);
     }
 
     fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)
@@ -64,9 +64,9 @@ export default class NVScene extends NVNode
         }
 
         // serialize additional scene components
-        if (isFinite(scene.info)) {
-            this.info.fromDocument(document, scene);
-            pathMap.set(`info/${scene.info}`, this.info);
+        if (isFinite(scene.meta)) {
+            this.meta.fromDocument(document, scene);
+            pathMap.set(`meta/${scene.meta}`, this.meta);
         }
         if (isFinite(scene.setup)) {
             this.setup.fromDocument(document, sceneIndex, pathMap);
@@ -113,10 +113,10 @@ export default class NVScene extends NVNode
         });
 
         // serialize additional scene components
-        if (!components || components.scene) {
-            if (this.info) {
-                scene.info = this.info.toDocument(document, scene);
-                pathMap.set(this.info, `info/${scene.info}`);
+        if (!components || components.setup) {
+            if (this.meta) {
+                scene.meta = this.meta.toDocument(document, scene);
+                pathMap.set(this.meta, `meta/${scene.meta}`);
             }
 
             if (this.setup) {

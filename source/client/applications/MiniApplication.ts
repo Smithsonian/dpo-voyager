@@ -24,7 +24,7 @@ import System from "@ff/graph/System";
 import coreTypes from "./coreTypes";
 import miniTypes from "./miniTypes";
 
-import * as documentTemplate from "common/templates/template.vdoc.json";
+import * as documentTemplate from "common/templates/document.json";
 
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";

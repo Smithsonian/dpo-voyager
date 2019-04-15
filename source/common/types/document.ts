@@ -18,7 +18,7 @@
 import { Index } from "@ff/core/types";
 
 import { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
-import { IInfo } from "./info";
+import { IMeta } from "./meta";
 import { IModel } from "./model";
 import { ISetup } from "./setup";
 
@@ -40,7 +40,7 @@ export interface IDocument
     nodes?: INode[];
     cameras?: ICamera[];
     lights?: ILight[];
-    infos?: IInfo[];
+    metas?: IMeta[];
     models?: IModel[];
     setups?: ISetup[];
 }
@@ -61,7 +61,7 @@ export interface IScene
     name?: string;
     nodes?: Index[];
     setup?: Index;
-    info?: Index;
+    meta?: Index;
     units: TUnitType;
 }
 
@@ -80,8 +80,8 @@ export interface INode
 
     camera?: Index;
     light?: Index;
-    info?: Index;
     model?: Index;
+    meta?: Index;
 }
 
 /**

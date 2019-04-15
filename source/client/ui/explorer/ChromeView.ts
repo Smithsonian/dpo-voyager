@@ -98,8 +98,8 @@ export default class ChromeView extends DocumentView
             }
         }
         else {
-            const info = document.root.info;
-            title = info ? info.meta.get("title") : null;
+            const meta = document.root.meta;
+            title = meta ? meta.collection.get("title") : null;
             title = title || document.outs.assetPath.value || "Untitled Document";
         }
 

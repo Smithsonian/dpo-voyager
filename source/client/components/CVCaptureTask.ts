@@ -29,12 +29,13 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "common/types/model";
 
 import NVNode from "../nodes/NVNode";
-import CVInfo from "./CVInfo";
+import CVMeta from "./CVMeta";
 import CVModel2 from "./CVModel2";
 import CVAssetReader from "./CVAssetReader";
 import CVTask from "./CVTask";
 
 import CaptureTaskView from "../ui/story/CaptureTaskView";
+import { TImageQuality } from "common/types/meta";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +89,7 @@ export default class CVCaptureTask extends CVTask
     ins = this.addInputs<CVTask, typeof CVCaptureTask.ins>(CVCaptureTask.ins);
     outs = this.addOutputs<CVTask, typeof CVCaptureTask.outs>(CVCaptureTask.outs);
 
-    activeInfo: CVInfo = null;
+    activeMeta: CVMeta = null;
     activeModel: CVModel2 = null;
 
     private _imageDataURIs: Dictionary<string> = {};
@@ -119,28 +120,9 @@ export default class CVCaptureTask extends CVTask
         return this._imageElements[quality];
     }
 
-    arePicturesReady()
-    {
-        return this.outs.ready.value;
-    }
-
     createView()
     {
         return new CaptureTaskView(this);
-    }
-
-    activateTask()
-    {
-        //this.selection.selectedComponents.on(CVModel2, this.onSelectModel, this);
-
-        super.activateTask();
-    }
-
-    deactivateTask()
-    {
-        super.deactivateTask();
-
-        //this.selection.selectedComponents.off(CVModel2, this.onSelectModel, this);
     }
 
     update()
@@ -228,7 +210,7 @@ export default class CVCaptureTask extends CVTask
     protected updateImageMeta(quality: EDerivativeQuality, mimeType: string, uri: string)
     {
         const model = this.activeModel;
-        const info = this.activeInfo;
+        const meta = this.activeMeta;
 
         const byteSize = Math.ceil(this._imageDataURIs[quality].length / 4 * 3);
         const width = _sizePresets[quality][0];
@@ -243,14 +225,15 @@ export default class CVCaptureTask extends CVTask
             asset.data.mimeType = mimeType;
             asset.update();
         }
-        if (info) {
-            const images = info.meta.getOrCreate("images", {});
-            images[EDerivativeQuality[quality]] = {
+        if (meta) {
+            const qualityName = EDerivativeQuality[quality];
+            meta.images.insert({
                 uri,
+                quality: qualityName as TImageQuality,
                 byteSize,
                 width,
                 height,
-            };
+            }, qualityName);
         }
     }
 
@@ -272,19 +255,19 @@ export default class CVCaptureTask extends CVTask
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        if (previous && previous.info) {
+        if (previous && previous.meta) {
             this.outs.ready.setValue(false);
             this._imageElements = {};
             this._imageDataURIs = {};
         }
 
         const model = this.activeModel = next && next.model;
-        const info = this.activeInfo = next && next.info;
-        const images = info && info.meta.get("images");
+        const meta = this.activeMeta = next && next.meta;
+        const images = meta && meta.images;
 
         if (images) {
             _qualityLevels.forEach(quality => {
-                const imageMeta = images[EDerivativeQuality[quality]];
+                const imageMeta = images.get(EDerivativeQuality[quality]);
                 if (imageMeta) {
                     const imageElement = document.createElement("img");
                     imageElement.src = this.assetReader.getAssetURL(imageMeta.uri);

@@ -19,7 +19,7 @@ import * as Ajv from "ajv";
 
 import * as documentSchema from "common/schema/document.schema.json";
 import * as commonSchema from "common/schema/common.schema.json";
-import * as infoSchema from "common/schema/info.schema.json";
+import * as metaSchema from "common/schema/meta.schema.json";
 import * as modelSchema from "common/schema/model.schema.json";
 import * as setupSchema from "common/schema/setup.schema.json";
 
@@ -38,7 +38,7 @@ export default class DocumentValidator
             schemas: [
                 documentSchema,
                 commonSchema,
-                infoSchema,
+                metaSchema,
                 modelSchema,
                 setupSchema,
             ],
