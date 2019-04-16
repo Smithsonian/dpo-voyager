@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
-
 import fetch from "@ff/browser/fetch";
 import Component, { Node, types } from "@ff/graph/Component";
 
@@ -33,7 +31,6 @@ export default class CVAssetWriter extends Component implements IAssetService
     static readonly typeName: string = "CVAssetWriter";
 
     protected static readonly ins = {
-        rootUrl: types.String("Writer.RootURL"),
         setBusy: types.Boolean("Reader.SetBusy"),
     };
 
@@ -58,31 +55,8 @@ export default class CVAssetWriter extends Component implements IAssetService
         this.jsonWriter = new JSONWriter(this._loadingManager);
     }
 
-    get reader() {
+    get assetReader() {
         return this.getMainComponent(CVAssetReader);
-    }
-
-    get rootUrl() {
-        return this.ins.rootUrl.value;
-    }
-    set rootUrl(url: string) {
-        url = url.split("?")[0];
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
-
-        const href = window.location.href.split("?")[0];
-        let rootUrl = resolvePathname(url, href);
-        rootUrl = resolvePathname(".", rootUrl);
-        this.ins.rootUrl.setValue(rootUrl);
-
-        console.log("CVAssetWriter - rootUrl: %s", rootUrl);
-    }
-
-    create()
-    {
-        super.create();
-        this.ins.rootUrl.linkFrom(this.reader.ins.rootUrl);
     }
 
     update(context)
@@ -102,15 +76,19 @@ export default class CVAssetWriter extends Component implements IAssetService
         this.outs.busy.setValue(this.ins.setBusy.value || this._isBusy);
     }
 
-    getAssetFileName(uri: string)
+    getAssetName(pathOrUrl: string)
     {
-        const base = resolvePathname(".", uri);
-        return base === "/" ? uri : uri.substr(base.length);
+        return this.assetReader.getAssetName(pathOrUrl);
     }
 
-    getAssetURL(uri: string)
+    getAssetPath(url: string)
     {
-        return resolvePathname(uri, this.ins.rootUrl.value);
+        return this.assetReader.getAssetPath(url);
+    }
+
+    getAssetURL(assetPath: string)
+    {
+        return this.assetReader.getAssetURL(assetPath);
     }
 
     putJSON(json: any, assetPath: string): Promise<void>

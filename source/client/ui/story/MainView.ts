@@ -132,7 +132,7 @@ export default class MainView extends CustomElement
             system.getMainComponent(CAssetManager).on<IAssetOpenEvent>("asset-open", event => {
                 console.log(event.asset.info.type);
                 if (event.asset.info.type.startsWith("text/html")) {
-                    panel.editor.openArticle(event.asset.path);
+                    panel.editor.openArticle(event.asset.info.path);
                 }
             });
             return panel;

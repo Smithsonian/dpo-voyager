@@ -57,7 +57,7 @@ export default class CVReader extends Component
     protected _articles: Dictionary<IArticleEntry>;
 
     get snapshotKeys() {
-        return [ "visible" ];
+        return [ "enabled" ];
     }
 
     get articles() {

@@ -143,16 +143,16 @@ export default class MiniApplication
         this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
 
         if (props.document) {
-            props.document = props.root ? props.document : reader.getAssetFileName(props.document);
+            props.document = props.root ? props.document : reader.getAssetName(props.document);
             this.loadDocument(props.document);
         }
         if (props.model) {
-            props.model = props.root ? props.model : reader.getAssetFileName(props.model);
+            props.model = props.root ? props.model : reader.getAssetName(props.model);
             this.loadModel(props.model, "Medium");
         }
         else if (props.geometry) {
-            props.geometry = props.root ? props.geometry : reader.getAssetFileName(props.geometry);
-            props.texture = props.root ? props.texture : reader.getAssetFileName(props.texture);
+            props.geometry = props.root ? props.geometry : reader.getAssetName(props.geometry);
+            props.texture = props.root ? props.texture : reader.getAssetName(props.texture);
             this.loadGeometry(props.geometry, props.texture, null, null, "Medium");
         }
     }

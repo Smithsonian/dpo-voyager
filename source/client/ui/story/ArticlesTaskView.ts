@@ -15,20 +15,22 @@
  * limitations under the License.
  */
 
-import { customElement, html } from "@ff/ui/CustomElement";
+import { customElement, html, property } from "@ff/ui/CustomElement";
 
 import CVArticlesTask from "../../components/CVArticlesTask";
 import { TaskView } from "../../components/CVTask";
 
-import "./ArticleList";
-import { ISelectArticleEvent } from "./ArticleList";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+import Article from "../../models/Article";
+import List from "@ff/ui/List";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-articles-task-view")
 export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 {
+    protected selectedArticle: Article = null;
+
     protected render()
     {
         const node = this.activeNode;
@@ -38,25 +40,28 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
             return html`<div class="sv-placeholder">Please select a node to edit its articles</div>`;
         }
 
-        const articleList = meta.articles.items;
-        const article = this.task.activeArticle;
+        const articles = meta.articles.items;
+        const article = this.selectedArticle;
 
         const detailView = article ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${article.data.title} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Lead</div>
             <ff-text-edit name="lead" text=${article.data.lead} @change=${this.onTextEdit}></ff-text-edit>
+            <div class="sv-label">URI</div>
+            <ff-line-edit name="uri" text=${article.data.uri} @change=${this.onTextEdit}></ff-line-edit>
         </div>` : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
+            <ff-button text="Edit" icon="pen" ?disabled=${!article} @click=${this.onClickEdit}></ff-button>       
             <ff-button text="Delete" icon="trash" ?disabled=${!article} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-article-list .data=${articleList} .selectedItem=${article} @select=${this.onSelectArticle}></sv-article-list>
+                        <sv-article-list .data=${articles} .selectedItem=${article} @select=${this.onSelectArticle}></sv-article-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -73,6 +78,11 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
     }
 
+    protected onClickEdit()
+    {
+
+    }
+
     protected onClickDelete()
     {
 
@@ -80,11 +90,67 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
     protected onTextEdit(event: ILineEditChangeEvent)
     {
+        const article = this.selectedArticle;
+        if (article) {
+            const field = event.target.name;
+            const text = event.target.text;
 
+            if (field === "title") {
+                article.set(field, text);
+            }
+        }
     }
 
     protected onSelectArticle(event: ISelectArticleEvent)
     {
-        this.task.activeArticle = event.detail.article;
+        this.selectedArticle = event.detail.article;
+        this.requestUpdate();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+export interface ISelectArticleEvent extends CustomEvent
+{
+    target: ArticleList;
+    detail: {
+        article: Article;
+    }
+}
+
+@customElement("sv-article-list")
+export class ArticleList extends List<Article>
+{
+    @property({ attribute: false })
+    selectedItem: Article = null;
+
+    protected firstConnected()
+    {
+        super.firstConnected();
+        this.classList.add("sv-document-list");
+    }
+
+    protected renderItem(item: Article)
+    {
+        return item.data.title;
+    }
+
+    protected isItemSelected(item: Article)
+    {
+        return item === this.selectedItem;
+    }
+
+    protected onClickItem(event: MouseEvent, item: Article)
+    {
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: { article: item }
+        }));
+    }
+
+    protected onClickEmpty(event: MouseEvent)
+    {
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: { article: null }
+        }));
     }
 }

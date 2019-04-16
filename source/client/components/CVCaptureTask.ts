@@ -179,7 +179,7 @@ export default class CVCaptureTask extends CVTask
             const dataURI = this._imageDataURIs[quality];
             const filePath = this.getImageAssetPath(quality, this._extension);
             const fileURL = this.assetReader.getAssetURL(filePath);
-            const fileName = this.assetReader.getAssetFileName(filePath);
+            const fileName = this.assetReader.getAssetName(filePath);
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
@@ -203,7 +203,7 @@ export default class CVCaptureTask extends CVTask
 
         const dataURI = this._imageDataURIs[EDerivativeQuality.High];
         const filePath = this.getImageAssetPath(EDerivativeQuality.High, this._extension);
-        const fileName = this.assetReader.getAssetFileName(filePath);
+        const fileName = this.assetReader.getAssetName(filePath);
         download.url(dataURI, fileName);
     }
 

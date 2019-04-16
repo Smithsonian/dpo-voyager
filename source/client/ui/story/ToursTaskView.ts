@@ -192,6 +192,8 @@ export default class ToursTaskView extends TaskView<CVToursTask>
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 interface ISelectTourEvent extends CustomEvent
 {
     target: TourList;

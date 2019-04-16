@@ -159,19 +159,20 @@ export default class ExplorerApplication
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("t");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
 
-        this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
+        const url = props.root || props.document || props.model || props.geometry;
+        this.setRootUrl(new URL(url || ".", window.location as any).href);
 
         if (props.document) {
-            props.document = props.root ? props.document : reader.getAssetFileName(props.document);
+            props.document = props.root ? props.document : reader.getAssetName(props.document);
             this.loadDocument(props.document);
         }
         if (props.model) {
-            props.model = props.root ? props.model : reader.getAssetFileName(props.model);
+            props.model = props.root ? props.model : reader.getAssetName(props.model);
             this.loadModel(props.model, props.quality);
         }
         else if (props.geometry) {
-            props.geometry = props.root ? props.geometry : reader.getAssetFileName(props.geometry);
-            props.texture = props.root ? props.texture : reader.getAssetFileName(props.texture);
+            props.geometry = props.root ? props.geometry : reader.getAssetName(props.geometry);
+            props.texture = props.root ? props.texture : reader.getAssetName(props.texture);
             this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
     }

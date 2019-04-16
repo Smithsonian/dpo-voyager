@@ -102,7 +102,7 @@ export default class CVStoryApplication extends Component
             const data = document.deflateDocument(components);
             const json = JSON.stringify(data, null, 2);
 
-            const fileName = this.assetWriter.getAssetFileName(document.assetPath);
+            const fileName = this.assetWriter.getAssetName(document.assetPath);
             download.json(json, fileName);
         }
 

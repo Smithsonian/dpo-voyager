@@ -51,12 +51,12 @@ export default class CVDocumentProvider extends CComponentProvider<CVDocument>
     createDocument(data?: IDocument, path?: string)
     {
         const document = this.node.createComponent(CVDocument);
+        this.activeComponent = document;
 
         if (data) {
             document.openDocument(data, path);
         }
 
-        this.activeComponent = document;
         return document;
     }
 

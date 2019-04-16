@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-import System from "@ff/graph/System";
+import Icon from "@ff/ui/Icon";
+import MessageBox from "@ff/ui/MessageBox";
 
 import CAssetManager from "@ff/scene/components/CAssetManager";
 import "@ff/scene/ui/AssetTree";
@@ -52,16 +53,13 @@ export default class AssetPanel extends DocumentView
 
     protected onClickFolder()
     {
-        this.assetManager.refresh();
     }
 
     protected onClickRename()
     {
-
     }
 
     protected onClickDelete()
     {
-
     }
 }

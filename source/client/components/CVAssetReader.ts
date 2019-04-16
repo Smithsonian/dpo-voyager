@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
 import fetch from "@ff/browser/fetch";
@@ -40,13 +39,12 @@ export default class CVAssetReader extends Component implements IAssetService
     static readonly typeName: string = "CVAssetReader";
 
     protected static readonly ins = {
-        rootUrl: types.String("Reader.RootURL"),
         setBusy: types.Boolean("Reader.SetBusy"),
     };
 
     protected static readonly outs = {
         busy: types.Boolean("Reader.IsBusy"),
-        initialCompleted: types.Event("Reader.InitialCompleted"),
+        //initialCompleted: types.Event("Reader.InitialCompleted"),
         completed: types.Event("Reader.Completed"),
     };
 
@@ -59,8 +57,9 @@ export default class CVAssetReader extends Component implements IAssetService
     readonly textureLoader: TextureReader;
 
     private _loadingManager: AssetLoadingManager;
+    private _rootUrl: string;
+    private _rootPath: string;
     private _isBusy = false;
-    private _isFirst = true;
 
 
     constructor(node: Node, id: string)
@@ -73,25 +72,19 @@ export default class CVAssetReader extends Component implements IAssetService
         this.modelLoader = new ModelReader(loadingManager);
         this.geometryLoader = new GeometryReader(loadingManager);
         this.textureLoader = new TextureReader(loadingManager);
+
+        this.rootUrl = window.location.href;
     }
 
     get rootUrl() {
-        return this.ins.rootUrl.value;
+        return this._rootUrl;
     }
     set rootUrl(url: string) {
-        url = url.split("?")[0];
-        if (!url.endsWith("/")) {
-            url += "/";
-        }
-
-        const href = window.location.href.split("?")[0];
-        let rootUrl = resolvePathname(url, href);
-        rootUrl = resolvePathname(".", rootUrl);
-        this.ins.rootUrl.setValue(rootUrl);
-
-        console.log("CVAssetReader - rootUrl: %s", rootUrl);
+        const urlObj = new URL(".", new URL(url, window.location as any).href);
+        this._rootUrl = urlObj.href;
+        this._rootPath = urlObj.pathname;
+        console.log("CVAssetReader - rootUrl: %s, rootPath: %s", this._rootUrl, this._rootPath);
     }
-
 
     update(context)
     {
@@ -114,21 +107,26 @@ export default class CVAssetReader extends Component implements IAssetService
         if (!isBusy) {
             outs.completed.set();
         }
-        if (this._isFirst) {
-            this._isFirst = false;
-            outs.initialCompleted.set();
+    }
+
+    getAssetName(pathOrUrl: string)
+    {
+        return pathOrUrl.split("/").pop();
+    }
+
+    getAssetPath(url: string)
+    {
+        const index = url.indexOf(this._rootPath);
+        if (index >= 0) {
+            return url.substr(index + this._rootPath.length);
         }
+
+        return url;
     }
 
-    getAssetFileName(uri: string)
+    getAssetURL(assetPath: string)
     {
-        const base = resolvePathname(".", uri);
-        return base === "/" ? uri : uri.substr(base.length);
-    }
-
-    getAssetURL(uri: string)
-    {
-        return resolvePathname(uri, this.ins.rootUrl.value);
+        return new URL(assetPath, this._rootUrl).href;
     }
 
     getJSON(assetPath: string): Promise<any>

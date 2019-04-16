@@ -44,10 +44,20 @@ export default class CVSnapshots extends CTweenMachine
             this.targetFeatures[name] = false;
         });
 
-        this.targetFeatures["navigation"] = true;
-        this.targetFeatures["reader"] = true;
         this.targetFeatures["models"] = false;
         this.targetFeatures["lights"] = false;
+
+        this.initializeTargetFeatures();
+    }
+
+    initializeTargetFeatures()
+    {
+        const features = this.targetFeatures;
+        Object.keys(features).forEach(key => features[key] = false);
+        features["navigation"] = true;
+        features["reader"] = true;
+
+        this.updateTargets();
     }
 
     updateTargets()
@@ -86,6 +96,10 @@ export default class CVSnapshots extends CTweenMachine
 
         snapshotKeys.forEach(key => {
             const property = component.ins[key] as Property;
+            if (!property) {
+                throw new Error(`property '${key}' not found in component '${component.displayName}'`);
+            }
+
             const schema = property.schema;
             if (!schema.event && property.type !== "object") {
                 const isIncluded = this.hasTargetProperty(property);
@@ -110,9 +124,7 @@ export default class CVSnapshots extends CTweenMachine
             keys.forEach(key => features[key] = data.features.indexOf(key) >= 0);
         }
         else {
-            keys.forEach(key => features[key] = false);
-            features["navigation"] = true;
-            features["reader"] = true;
+            this.initializeTargetFeatures();
         }
 
         const missingTargets = new Set<number>();

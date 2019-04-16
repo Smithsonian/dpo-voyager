@@ -136,11 +136,6 @@ export default class CVDocument extends CRenderGraph
             throw new Error("document schema validation failed");
         }
 
-        if (assetPath) {
-            this.outs.assetPath.setValue(assetPath);
-            this.name = this.getMainComponent(CVAssetReader).getAssetFileName(assetPath);
-        }
-
         if (!mergeParent) {
             this.clearNodeTree();
         }
@@ -166,6 +161,11 @@ export default class CVDocument extends CRenderGraph
         }
 
         //pathMap.forEach((comp, path) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
+
+        if (assetPath) {
+            this.outs.assetPath.setValue(assetPath);
+            this.name = this.getMainComponent(CVAssetReader).getAssetName(assetPath);
+        }
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)

@@ -61,7 +61,6 @@ export default class MainMenu extends DocumentView
     {
         const document = this.activeDocument;
         if (!document) {
-            console.warn("no active document");
             return html``;
         }
 

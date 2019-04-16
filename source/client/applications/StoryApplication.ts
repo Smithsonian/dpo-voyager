@@ -118,7 +118,6 @@ export default class StoryApplication
     {
         this.assetReader.rootUrl = url;
         this.assetManager.rootUrl = url;
-        this.assetWriter.rootUrl = url;
     }
 
     loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
@@ -148,7 +147,9 @@ export default class StoryApplication
         const props = this.props;
 
         this.explorer.evaluateProps();
-        this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
+
+        const url = props.root || props.document || props.model || props.geometry;
+        this.setRootUrl(new URL(url || ".", window.location as any).href);
 
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";

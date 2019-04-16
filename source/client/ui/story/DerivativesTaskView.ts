@@ -60,6 +60,6 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
     protected onSelectDerivative(event: ISelectDerivativeEvent)
     {
         this.selectedDerivative = event.detail.derivative;
-        this.performUpdate();
+        this.requestUpdate();
     }
 }
