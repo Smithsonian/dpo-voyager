@@ -16,40 +16,83 @@
  */
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import CVDocument from "../../components/CVDocument";
+import CVReader, { IArticleEntry } from "../../components/CVReader";
+import Article from "../../models/Article";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-reader-view")
 export default class ReaderView extends DocumentView
 {
+    protected reader: CVReader = null;
+
     protected firstConnected()
     {
+        super.firstConnected();
         this.classList.add("sv-reader-view");
+    }
+
+    protected renderMenuEntry(entry: IArticleEntry)
+    {
+        const article = entry.article;
+
+        return html`<div class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
+            <h1>${article.data.title}</h1>
+            <p>${article.data.lead}</p>
+        </div>`;
     }
 
     protected render()
     {
+        const reader = this.reader;
+        if (!reader) {
+            return html`<div class="ff-placeholder">No document selected.</div>`;
+        }
+
+        if (!reader.ins.enabled) {
+            return html``;
+        }
+
+        if (!reader.activeArticle) {
+            const articles = reader.articles;
+            return html`<div class="sv-left"></div><div class="sv-article">
+                ${articles.map(entry => this.renderMenuEntry(entry))}
+            </div><div class="sv-right"></div>`;
+        }
+
         return html`<div class="sv-left"></div><div class="sv-article">
-            <h1>Article Title</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-            ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-            nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-            anim id est laborum.</p>
-            <h2>Paragraph</h2>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam
-            rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt
-            explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur
-            magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
-            <h2>Subtitle</h2>
-            <p>Aliquam posuere vel arcu a ullamcorper. Donec ultricies arcu dolor, sed elementum nibh placerat vitae.
-            Aliquam fermentum augue ante, ac ornare sapien lobortis et. Cras eget mauris sit amet nibh viverra euismod
-            in et massa. In luctus velit odio. Vestibulum sed blandit turpis. Proin sagittis ultrices sem, non efficitur
-            ante luctus suscipit.</p>
-            <p>Sed maximus luctus cursus. Nullam eget nulla nunc. Maecenas et turpis nec sem varius
-            egestas ac nec est. Sed et sodales justo. Duis scelerisque arcu quis nunc pretium, a accumsan lacus
-            bibendum. Nam malesuada sem elit, eu volutpat tortor lobortis varius. Donec eget lacus id ex lacinia
-            consectetur. Sed ornare tristique risus quis luctus. Nam euismod massa in accumsan volutpat.</p>
-        </div><div class="sv-right"></div>`;
+            </div><div class="sv-right"></div>`;
+    }
+
+    protected onClickArticle(e: MouseEvent, articleId: string)
+    {
+        this.reader.ins.articleId.setValue(articleId);
+    }
+
+    protected updated(changedProperties): void
+    {
+        super.updated(changedProperties);
+
+        const reader = this.reader;
+
+        if (reader && reader.activeArticle) {
+            const container = this.getElementsByClassName("sv-article").item(0) as HTMLElement;
+            container.innerHTML = reader.outs.content.value;
+        }
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        if (previous) {
+            this.reader.outs.content.off("value", this.onUpdate, this);
+            this.reader.outs.article.off("value", this.onUpdate, this);
+            this.reader = null;
+        }
+        if (next) {
+            this.reader = next.setup.reader;
+            this.reader.outs.content.on("value", this.onUpdate, this);
+            this.reader.outs.article.on("value", this.onUpdate, this);
+        }
     }
 }

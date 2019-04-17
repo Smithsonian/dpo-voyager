@@ -305,7 +305,19 @@ ff-dock-view {
 .sv-article-editor {
   @include fullsize;
 
+  .sv-custom-buttons {
+    float: left;
+    padding-right: 1em;
+    border-right: 1px solid $color-icon;
+
+    .ff-button.ff-transparent {
+      float: left;
+      padding: 0 8px;
+    }
+  }
+
   .ql-toolbar, .ql-container, .ql-editor {
+    @include font-ui-normal;
     border: none;
     font-size: 1em;
 
@@ -345,6 +357,11 @@ ff-dock-view {
         fill: $color-text !important;
       }
     }
+  }
+
+  .sv-overlay {
+    @include fullsize;
+    background-color: transparentize($color-background-dark, 0.5);
   }
 }
 

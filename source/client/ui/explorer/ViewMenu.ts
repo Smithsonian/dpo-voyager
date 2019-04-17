@@ -55,6 +55,18 @@ export default class ViewMenu extends Popup
         return this.system.getMainComponent(CVNavigation);
     }
 
+    protected firstConnected()
+    {
+        super.firstConnected();
+
+        this.setStyle({
+            display: "flex",
+            flexDirection: "column"
+        });
+
+        this.classList.add("sv-popup-menu");
+    }
+
     protected connected()
     {
         super.connected();
@@ -100,18 +112,6 @@ export default class ViewMenu extends Popup
                   text="B" title="Bottom View" style="grid-column-start: 2; grid-row-start: 3;"></ff-button>
             </ff-grid>
         `;
-    }
-
-    protected firstUpdated()
-    {
-        super.firstUpdated();
-
-        this.setStyle({
-            display: "flex",
-            flexDirection: "column"
-        });
-
-        this.classList.add("sv-popup-menu");
     }
 
     protected onClickProjectionType(event: IButtonClickEvent)

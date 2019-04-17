@@ -75,14 +75,15 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
         const tourList = tours.tours;
         const activeTour = tours.activeTour;
+        const props = task.ins;
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label">Title</div>
-            <ff-line-edit name="title" text=${task.ins.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
+            <ff-line-edit name="title" text=${props.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Tags</div>
-            <ff-line-edit name="tags" text=${task.ins.tourTags.value} @change=${this.onTextEdit}></ff-line-edit>
+            <ff-line-edit name="tags" text=${props.tourTags.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Lead</div>
-            <ff-text-edit name="lead" text=${task.ins.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
+            <ff-text-edit name="lead" text=${props.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
 
         return html`<div class="sv-commands">

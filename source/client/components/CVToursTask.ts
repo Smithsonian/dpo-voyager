@@ -189,6 +189,9 @@ export default class CVToursTask extends CVTask
             this.tours.outs.tourIndex.off("value", this.onTourChange, this);
             this.tours.outs.stepIndex.off("value", this.onStepChange, this);
             this.tours.ins.enabled.setValue(false);
+
+            this.tours = null;
+            this.machine = null;
         }
         if (next) {
             this.tours = next.setup.tours;

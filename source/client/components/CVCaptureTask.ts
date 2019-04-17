@@ -102,10 +102,10 @@ export default class CVCaptureTask extends CVTask
         super(node, id);
 
         const configuration = this.configuration;
-        configuration.interfaceVisible = false;
-        configuration.annotationsVisible = false;
+        //configuration.interfaceVisible = false;
+        //configuration.annotationsVisible = false;
         configuration.bracketsVisible = false;
-        configuration.gridVisible = false;
+        //configuration.gridVisible = false;
     }
 
     protected get renderer() {

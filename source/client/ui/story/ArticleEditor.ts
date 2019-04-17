@@ -20,22 +20,25 @@ import ImageResize from 'quill-image-resize-module';
 
 import { html, render } from "@ff/ui/CustomElement";
 
-import CAssetManager from "@ff/scene/components/CAssetManager";
+import CAssetManager, { IAssetOpenEvent } from "@ff/scene/components/CAssetManager";
 
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 import AssetTree from "@ff/scene/ui/AssetTree";
 
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
+import MessageBox from "@ff/ui/MessageBox";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-article-editor")
 export default class ArticleEditor extends SystemView
 {
-    protected container: HTMLDivElement = null;
-    protected editor = null;
-    protected assetPath: string = "";
+    private _container: HTMLDivElement = null;
+    private _overlay: HTMLElement = null;
+    private _editor = null;
+    private _assetPath: string = "";
+    private _changed = false;
 
     protected get assetManager() {
         return this.system.getMainComponent(CAssetManager);
@@ -47,21 +50,72 @@ export default class ArticleEditor extends SystemView
         return this.system.getMainComponent(CVAssetWriter);
     }
 
-    openArticle(assetPath: string)
-    {
-        this.assetReader.getText(assetPath).then(content => {
-            this.editor.root.innerHTML = content.replace(/[\n\r]/g, "");
-            this.assetPath = assetPath;
-        });
+    protected get editorElement() {
+        return this.getElementsByClassName("ql-editor").item(0) as HTMLDivElement;
+    }
+    protected get toolbarElement() {
+        return this.getElementsByClassName("ql-toolbar").item(0) as HTMLDivElement;
     }
 
-    saveArticle(assetPath?: string)
+    openArticle(assetPath: string)
     {
-        if (assetPath) {
-            this.assetPath = assetPath;
+        if (this._assetPath) {
+            return this.closeArticle().then(() => this.readArticle(assetPath));
         }
 
-        this.assetWriter.putText(this.editor.root.innerHTML, this.assetPath);
+        return this.readArticle(assetPath);
+    }
+
+    saveArticle()
+    {
+        if (this._assetPath) {
+            this.writeArticle(this._assetPath);
+        }
+    }
+
+    closeArticle()
+    {
+        if (this._changed && this._assetPath) {
+            return MessageBox.show("Close Article", "Would you like save your changes?", "warning", "yes-no").then(result => {
+                if (result.ok) {
+                    return this.writeArticle(this._assetPath).then(() => this.clearArticle());
+                }
+                else {
+                    return this.clearArticle();
+                }
+            });
+        }
+
+        return this.clearArticle();
+    }
+
+    protected readArticle(assetPath: string)
+    {
+        return this.assetReader.getText(assetPath)
+        .then(content => {
+            this._editor.root.innerHTML = content.replace(/[\n\r]/g, "");
+            this._assetPath = assetPath;
+        }).then(() => {
+            this._changed = false;
+            this.removeChild(this._overlay);
+        })
+    }
+
+    protected writeArticle(assetPath: string)
+    {
+        return this.assetWriter.putText(this._editor.root.innerHTML, assetPath)
+        .then(() => this._changed = false);
+    }
+
+    protected clearArticle()
+    {
+        this._editor.root.innerHTML = "";
+        this._assetPath = "";
+        this._changed = false;
+
+        this.appendChild(this._overlay);
+
+        return Promise.resolve();
     }
 
     protected firstConnected()
@@ -88,8 +142,8 @@ export default class ArticleEditor extends SystemView
             // remove formatting
             ["clean"],
 
-                // links, media
-            ["link", "image", "video"],
+            // links, media
+            //["link", "image", "video"],
         ];
 
         const options = {
@@ -102,22 +156,46 @@ export default class ArticleEditor extends SystemView
             placeholder: "Write, because you have something to say."
         };
 
-        this.container = this.appendElement("div");
-        this.editor = new (QuillEditor as any)(this.container, options);
-        this.editor.root.addEventListener("drop", this.onEditorDrop.bind(this), true);
+        this._container = this.appendElement("div");
+        this._overlay = this.appendElement("div");
+        this._overlay.classList.add("sv-overlay");
 
-        const toolbarElement = this.getElementsByClassName("ql-toolbar").item(0) as HTMLDivElement;
-        const editorElement = this.getElementsByClassName("ql-editor").item(0) as HTMLDivElement;
+        this._editor = new (QuillEditor as any)(this._container, options);
+        this._editor.on("text-change", () => this._changed = true);
+        this._editor.root.addEventListener("drop", this.onEditorDrop.bind(this), true);
+
+        const toolbarElement = this.toolbarElement;
+        const editorElement = this.editorElement;
         editorElement.classList.add("sv-article");
 
         const customButtons = html`
-            <ff-button transparent icon="save" title="Save Article" @click=${e => this.saveArticle()}></ff-button>
+            <ff-button transparent icon="save" text="Save" title="Save Article" @click=${e => this.saveArticle()}></ff-button>
+            <ff-button transparent icon="close" text="Close" title="Close Editor" @click=${e => this.closeArticle()}></ff-button>
         `;
 
         const container = document.createElement("span");
-        container.classList.add("ql-formats");
+        container.classList.add("ql-formats", "sv-custom-buttons");
         toolbarElement.insertBefore(container, toolbarElement.firstChild);
         render(customButtons, container);
+    }
+
+    protected connected()
+    {
+        super.connected();
+        this.assetManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+    }
+
+    protected disconnected()
+    {
+        this.assetManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+        super.disconnected();
+    }
+
+    protected onOpenAsset(event: IAssetOpenEvent)
+    {
+        if (event.asset.info.type.startsWith("text/html")) {
+            this.openArticle(event.asset.info.path);
+        }
     }
 
     protected onEditorDrop(event: DragEvent)
@@ -132,10 +210,10 @@ export default class ArticleEditor extends SystemView
 
                 // wait until text has been dropped, so we can get a valid selection index
                 setTimeout(() => {
-                    const selection = this.editor.getSelection();
+                    const selection = this._editor.getSelection();
                     if (selection) {
-                        this.editor.deleteText(selection.index, selection.length);
-                        this.editor.insertEmbed(selection.index, "image", url);
+                        this._editor.deleteText(selection.index, selection.length);
+                        this._editor.insertEmbed(selection.index, "image", url);
                     }
                 });
             }

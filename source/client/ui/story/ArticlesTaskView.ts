@@ -17,55 +17,70 @@
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
 
+import List from "@ff/ui/List";
+import MessageBox from "@ff/ui/MessageBox";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
+
+import Article from "../../models/Article";
+
 import CVArticlesTask from "../../components/CVArticlesTask";
 import { TaskView } from "../../components/CVTask";
-
-import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
-import Article from "../../models/Article";
-import List from "@ff/ui/List";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-articles-task-view")
 export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 {
-    protected selectedArticle: Article = null;
+    protected connected()
+    {
+        super.connected();
+        this.task.outs.article.on("value", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.task.outs.article.off("value", this.onUpdate, this);
+        super.disconnected();
+    }
 
     protected render()
     {
-        const node = this.activeNode;
-        const meta = node && node.meta;
+        const task = this.task;
+        const articles = task.articles;
+        const activeArticle = task.activeArticle;
 
-        if (!meta) {
+        if (!articles) {
             return html`<div class="sv-placeholder">Please select a node to edit its articles</div>`;
         }
 
-        const articles = meta.articles.items;
-        const article = this.selectedArticle;
+        const props = task.ins;
 
-        const detailView = article ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+        const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label">Title</div>
-            <ff-line-edit name="title" text=${article.data.title} @change=${this.onTextEdit}></ff-line-edit>
+            <ff-line-edit name="title" text=${props.title.value} @change=${this.onTextEdit}></ff-line-edit>
+            <div class="sv-label">Tags</div>
+            <ff-line-edit name="tags" text=${props.tags.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Lead</div>
-            <ff-text-edit name="lead" text=${article.data.lead} @change=${this.onTextEdit}></ff-text-edit>
+            <ff-text-edit name="lead" text=${props.lead.value} @change=${this.onTextEdit}></ff-text-edit>
             <div class="sv-label">URI</div>
-            <ff-line-edit name="uri" text=${article.data.uri} @change=${this.onTextEdit}></ff-line-edit>
+            <ff-line-edit name="uri" text=${props.uri.value} @change=${this.onTextEdit}></ff-line-edit>
         </div>` : null;
+
+        const uri = activeArticle ? activeArticle.data.uri : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
-            <ff-button text="Edit" icon="pen" ?disabled=${!article} @click=${this.onClickEdit}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!article} @click=${this.onClickDelete}></ff-button>  
+            <ff-button text="Edit" icon="pen" ?disabled=${!uri} @click=${this.onClickEdit}></ff-button>       
+            <ff-button text="Delete" icon="trash" ?disabled=${!activeArticle} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-article-list .data=${articles} .selectedItem=${article} @select=${this.onSelectArticle}></sv-article-list>
+                        <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
-                <div class="sv-panel-section sv-dialog sv-scrollable">
                 <div class="ff-splitter-section" style="flex-basis: 70%">
                     ${detailView}
                 </div>
@@ -75,42 +90,66 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
     protected onClickCreate()
     {
-
+        this.task.ins.create.set();
     }
 
     protected onClickEdit()
     {
-
+        this.task.ins.edit.set();
     }
 
     protected onClickDelete()
     {
-
+        MessageBox.show("Delete Article", "Are you sure?", "warning", "ok-cancel").then(result => {
+            if (result.ok) {
+                this.task.ins.delete.set();
+            }
+        });
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)
     {
-        const article = this.selectedArticle;
-        if (article) {
-            const field = event.target.name;
-            const text = event.target.text;
+        const task = this.task;
+        const target = event.target;
+        const text = event.detail.text;
 
-            if (field === "title") {
-                article.set(field, text);
-            }
+        if (target.name === "title") {
+            task.ins.title.setValue(text);
+        }
+        if (target.name === "lead") {
+            task.ins.lead.setValue(text);
+        }
+        if (target.name === "tags") {
+            task.ins.tags.setValue(text);
+        }
+        if (target.name === "uri") {
+            task.ins.uri.setValue(text);
         }
     }
 
     protected onSelectArticle(event: ISelectArticleEvent)
     {
-        this.selectedArticle = event.detail.article;
-        this.requestUpdate();
+        const article = event.detail.article;
+        this.task.reader.ins.articleId.setValue(article ? article.id : "");
+    }
+
+    protected onEditArticle(event: IEditArticleEvent)
+    {
+        this.task.ins.edit.set();
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface ISelectArticleEvent extends CustomEvent
+{
+    target: ArticleList;
+    detail: {
+        article: Article;
+    }
+}
+
+export interface IEditArticleEvent extends CustomEvent
 {
     target: ArticleList;
     detail: {
@@ -143,6 +182,13 @@ export class ArticleList extends List<Article>
     protected onClickItem(event: MouseEvent, item: Article)
     {
         this.dispatchEvent(new CustomEvent("select", {
+            detail: { article: item }
+        }));
+    }
+
+    protected onDblClickItem(event: MouseEvent, item: Article, index: number)
+    {
+        this.dispatchEvent(new CustomEvent("edit", {
             detail: { article: item }
         }));
     }

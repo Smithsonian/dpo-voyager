@@ -23,6 +23,8 @@ import Article from "../models/Article";
 import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";
 import CVModel2 from "./CVModel2";
 import { Dictionary } from "@ff/core/types";
+import NVNode from "../nodes/NVNode";
+import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,7 +33,7 @@ export { Article, EReaderPosition };
 export interface IArticleEntry
 {
     article: Article;
-    category: string;
+    node: NVNode;
 }
 
 export default class CVReader extends Component
@@ -40,15 +42,14 @@ export default class CVReader extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Reader.Enabled"),
-        menu: types.Boolean("Reader.Menu"),
         position: types.Enum("Reader.Position", EReaderPosition),
         articleId: types.String("Article.ID"),
     };
 
     protected static readonly outs = {
         article: types.Object("Article.Active", Article),
-        articleTitle: types.String("Article.Title"),
-        articleLead: types.String("Article.Lead"),
+        content: types.String("Article.Content"),
+        node: types.Object("Article.Node", NVNode),
     };
 
     ins = this.addInputs(CVReader.ins);
@@ -61,23 +62,67 @@ export default class CVReader extends Component
     }
 
     get articles() {
-        return this._articles;
+        return Object.keys(this._articles).map(key => this._articles[key]);
+    }
+    get activeArticle() {
+        return this.outs.article.value;
+    }
+
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
     }
 
     create()
     {
         super.create();
-        this.graph.components.on(CVMeta, this.onInfoComponent, this);
+        this.graph.components.on(CVMeta, this.onMetaComponent, this);
         this.updateArticles();
     }
 
     dispose()
     {
-        this.graph.components.off(CVMeta, this.onInfoComponent, this);
+        this.graph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
 
-    protected onInfoComponent(event: IComponentEvent<CVMeta>)
+    update(context)
+    {
+        const ins = this.ins;
+        const outs = this.outs;
+
+        if (ins.articleId.changed) {
+            const entry = this._articles[ins.articleId.value] || null;
+            const article = entry && entry.article;
+            outs.node.setValue(entry && entry.node);
+            outs.article.setValue(article);
+
+            if (article) {
+                this.readArticle(article);
+            }
+            else {
+                outs.content.setValue("");
+            }
+        }
+
+        return true;
+    }
+
+    protected readArticle(article: Article)
+    {
+        const outs = this.outs;
+        const uri = article.data.uri;
+
+        if (!uri) {
+            outs.content.setValue(`<h2>Can't display article: no URI.</h2>`);
+            return;
+        }
+
+        return this.assetReader.getText(uri)
+        .then(content => outs.content.setValue(content.replace(/[\n\r]/g, "")))
+        .catch(error => outs.content.setValue(`<h2>Article not found at ${uri}</h2>`));
+    }
+
+    protected onMetaComponent(event: IComponentEvent<CVMeta>)
     {
         if (event.add) {
             event.object.articles.on<IArticlesUpdateEvent>("update", this.updateArticles, this);
@@ -91,18 +136,25 @@ export default class CVReader extends Component
 
     protected updateArticles()
     {
-        const infos = this.getGraphComponents(CVMeta);
+        const metas = this.getGraphComponents(CVMeta);
         const masterList = this._articles = {};
 
-        infos.forEach(info => {
-            const articles = info.articles;
-            const model = info.getComponent(CVModel2, true);
-            const category = model ? info.node.displayName : "";
+        metas.forEach(meta => {
+            const articles = meta.articles;
+            const node = meta.node;
 
             articles.items.forEach(article => {
-                masterList[article.id] = { article, category };
+                masterList[article.id] = { article, node };
             });
         });
+
+        const firstMeta = metas[0];
+        if (firstMeta && firstMeta.leadArticle) {
+            this.ins.articleId.setValue(firstMeta.leadArticle.id);
+        }
+        else {
+            this.ins.articleId.setValue("");
+        }
     }
 
     fromData(data: IReader)

@@ -44,7 +44,7 @@ export default class TourMenu extends CustomElement
 
     protected renderEntry(tour: ITour, index: number)
     {
-        return html`<div class="sv-entry" @click=${e => this.onClick(e, index)}>
+        return html`<div class="sv-entry" @click=${e => this.onClickTour(e, index)}>
             <h1>${tour.title}</h1>
             <p>${tour.lead}</p>
         </div>`;
@@ -65,7 +65,7 @@ export default class TourMenu extends CustomElement
         </div>`;
     }
 
-    protected onClick(e: MouseEvent, index: number)
+    protected onClickTour(e: MouseEvent, index: number)
     {
         e.stopPropagation();
 
