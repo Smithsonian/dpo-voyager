@@ -145,6 +145,19 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   cursor: pointer;
   pointer-events: auto;
 
+  p {
+    margin: 0.5em 0;
+  }
+  .ff-button {
+    .ff-icon {
+      fill: $color-icon;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   &.sv-expanded {
     min-width: 120px;
   }
@@ -315,6 +328,17 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 $tour-entry-indent: 12px;
 
 .sv-tour-menu, .sv-reader-view {
+  .sv-article {
+    position: relative;
+
+    .ff-icon {
+      height: 1.5em;
+      float: right;
+      cursor: pointer;
+      margin: 1em 0.5em;
+    }
+  }
+
   .sv-entry {
     position: relative;
     cursor: pointer;

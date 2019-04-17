@@ -191,8 +191,8 @@ export default class CVAnnotationsTask extends CVTask
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        const prevAnnotations = previous ? previous.getComponent(CVAnnotationView) : null;
-        const nextAnnotations = next ? next.getComponent(CVAnnotationView) : null;
+        const prevAnnotations = previous ? previous.getComponent(CVAnnotationView, true) : null;
+        const nextAnnotations = next ? next.getComponent(CVAnnotationView, true) : null;
 
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);

@@ -133,7 +133,7 @@ export class AnnotationElement extends CustomElement
         this.classList.add("sv-annotation");
     }
 
-    protected onClick(event: PointerEvent)
+    protected onClick(event: MouseEvent)
     {
         event.stopPropagation();
         this.sprite.emitClickEvent();

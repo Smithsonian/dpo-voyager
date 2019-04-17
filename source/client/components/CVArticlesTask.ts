@@ -31,6 +31,7 @@ import ArticlesTaskView from "../ui/story/ArticlesTaskView";
 import CAssetManager from "@ff/scene/components/CAssetManager";
 import CVAssetWriter from "./CVAssetWriter";
 import MessageBox from "@ff/ui/MessageBox";
+import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +94,10 @@ export default class CVArticlesTask extends CVTask
         const activeAsset = activeArticle ? this.assetManager.getAssetByPath(activeArticle.data.uri) : null;
 
         if (meta && ins.create.changed) {
-            meta.articles.append(new Article());
+            const article = new Article();
+            article.data.uri = `articles/new-article-${article.id}.html`;
+            meta.articles.append(article);
+            this.reader.ins.articleId.setValue(article.id);
         }
 
         if (activeArticle) {

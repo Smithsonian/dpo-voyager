@@ -68,6 +68,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.style}></sv-property-view>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
+            <sv-property-view .property=${inProps.article}></sv-property-view>
+            <sv-property-view .property=${inProps.image}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Lead</div>

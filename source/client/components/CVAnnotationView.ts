@@ -33,6 +33,8 @@ import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from ".
 
 import PinSprite from "../annotations/PinSprite";
 import BeamSprite from "../annotations/BeamSprite";
+import CVMeta from "./CVMeta";
+import CVReader from "./CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +52,8 @@ const _inputs = {
     style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Default),
     scale: types.Scale("Annotation.Scale", 1),
     offset: types.Number("Annotation.Offset"),
+    article: types.Option("Annotation.Article", []),
+    image: types.String("Annotation.Image"),
     tilt: types.Number("Annotation.Tilt"),
     azimuth: types.Number("Annotation.Azimuth"),
 };
@@ -68,6 +72,16 @@ export default class CVAnnotationView extends CObject3D
 
     protected get model() {
         return this.getComponent(CVModel2);
+    }
+    protected get meta() {
+        return this.getComponent(CVMeta, true);
+    }
+    protected get reader() {
+        return this.getGraphComponent(CVReader);
+    }
+    protected get articles() {
+        const meta = this.meta;
+        return meta ? meta.articles : null;
     }
 
     get activeAnnotation() {
@@ -96,6 +110,21 @@ export default class CVAnnotationView extends CObject3D
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
 
+            const articles = this.articles;
+            if (articles) {
+                const names = articles.items.map(article => article.data.title);
+                names.unshift("(none)");
+                ins.article.setOptions(names);
+                const article = annotation ? articles.getById(annotation.data.articleId) : null;
+                ins.article.setValue(article ? articles.getIndexOf(article) + 1 : 0, true);
+            }
+            else {
+                ins.article.setOptions([ "(none)" ]);
+                ins.article.setValue(0);
+            }
+
+            ins.image.setValue(annotation ? annotation.data.imageUri : "", true);
+
             this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
         }
     }
@@ -109,6 +138,7 @@ export default class CVAnnotationView extends CObject3D
         this.onSpriteLink = this.onSpriteLink.bind(this);
 
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -126,34 +156,31 @@ export default class CVAnnotationView extends CObject3D
             object3D.updateMatrix();
         }
 
-        if (ins.title.changed) {
-            if (annotation) {
+        if (annotation) {
+            if (ins.title.changed) {
                 annotation.set("title", ins.title.value);
             }
-        }
-        if (ins.lead.changed) {
-            if (annotation) {
+            if (ins.lead.changed) {
                 annotation.set("lead", ins.lead.value);
             }
-        }
-        if (ins.style.changed) {
-            if (annotation) {
+            if (ins.style.changed) {
                 annotation.set("style", ins.style.getValidatedValue());
                 this.createSprite(annotation);
             }
-        }
-        if (ins.scale.changed) {
-            if (annotation) {
+            if (ins.scale.changed) {
                 annotation.set("scale", ins.scale.value);
             }
-        }
-        if (ins.offset.changed) {
-            if (annotation) {
+            if (ins.offset.changed) {
                 annotation.set("offset", ins.offset.value);
             }
-        }
+            if (ins.image.changed) {
+                annotation.set("imageUri", ins.image.value);
+            }
+            if (ins.article.changed) {
+                const article = this.articles.getAt(ins.article.getValidatedValue() - 1);
+                annotation.set("articleId", article ? article.id : "");
+            }
 
-        if (annotation) {
             this.updateSprite(annotation);
             this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
         }
@@ -176,7 +203,9 @@ export default class CVAnnotationView extends CObject3D
     dispose()
     {
         (this.object3D as HTMLSpriteGroup).dispose();
+
         this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -269,9 +298,7 @@ export default class CVAnnotationView extends CObject3D
             target = target.parent as AnnotationSprite;
         }
 
-        if (target) {
-            this.activeAnnotation = target.annotation;
-        }
+        this.activeAnnotation = target && target.annotation;
     }
 
     protected onViewportDispose(event: IViewportDisposeEvent)
@@ -287,7 +314,8 @@ export default class CVAnnotationView extends CObject3D
 
     protected onSpriteLink(event: IAnnotationLinkEvent)
     {
-
+        this.reader.ins.articleId.setValue(event.annotation.data.articleId);
+        this.reader.ins.enabled.setValue(true);
     }
 
     protected createSprite(annotation: Annotation)

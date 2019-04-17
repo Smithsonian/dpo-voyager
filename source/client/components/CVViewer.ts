@@ -39,7 +39,7 @@ export default class CVViewer extends CRenderable
     ins = this.addInputs(CVViewer.ins);
 
     get snapshotKeys() {
-        return [ "shader", "exposure" ];
+        return [ "shader", "exposure", "annotationsVisible" ];
     }
 
     create()

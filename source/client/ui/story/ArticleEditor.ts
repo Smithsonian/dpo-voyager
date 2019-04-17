@@ -19,9 +19,9 @@ import * as QuillEditor from "quill";
 import ImageResize from 'quill-image-resize-module';
 
 import { html, render } from "@ff/ui/CustomElement";
+import Notification from "@ff/ui/Notification";
 
 import CAssetManager, { IAssetOpenEvent } from "@ff/scene/components/CAssetManager";
-
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 import AssetTree from "@ff/scene/ui/AssetTree";
 
@@ -104,7 +104,13 @@ export default class ArticleEditor extends SystemView
     protected writeArticle(assetPath: string)
     {
         return this.assetWriter.putText(this._editor.root.innerHTML, assetPath)
-        .then(() => this._changed = false);
+            .then(() => {
+                this._changed = false;
+                new Notification(`Article successfully written to '${assetPath}'`, "info");
+            })
+            .catch(error => {
+                new Notification(`Failed to write article to '${assetPath}': ${error.message}`, "error");
+            });
     }
 
     protected clearArticle()
@@ -157,6 +163,8 @@ export default class ArticleEditor extends SystemView
         };
 
         this._container = this.appendElement("div");
+        this._container.classList.add("sv-container");
+
         this._overlay = this.appendElement("div");
         this._overlay.classList.add("sv-overlay");
 

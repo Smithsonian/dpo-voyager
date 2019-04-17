@@ -27,13 +27,15 @@
                         "type": "string"
                     }
                 },
-                "articles": {
-                    "description": "Array of article ids, listing articles related to the annotation.",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1
-                    }
+                "articleId": {
+                    "description": "Id of an article related to this annotation.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "imageUri": {
+                    "description": "URI of an image resource for this annotation.",
+                    "type": "string",
+                    "minLength": 1
                 },
                 "style": {
                     "type": "string"

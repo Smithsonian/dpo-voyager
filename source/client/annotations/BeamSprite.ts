@@ -19,7 +19,9 @@ import * as THREE from "three";
 
 import math from "@ff/core/math";
 
-import { customElement, PropertyValues } from "@ff/ui/CustomElement";
+import { customElement, PropertyValues, html, render } from "@ff/ui/CustomElement";
+import Button from "@ff/ui/Button";
+
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +101,7 @@ export default class BeamSprite extends AnnotationSprite
 class BeamAnnotation extends AnnotationElement
 {
     protected titleElement: HTMLDivElement;
-    protected leadElement: HTMLDivElement;
+    protected contentElement: HTMLDivElement;
     protected wrapperElement: HTMLDivElement;
     protected handler = 0;
     protected isExpanded = true;
@@ -110,13 +112,15 @@ class BeamAnnotation extends AnnotationElement
     {
         super(sprite);
 
+        this.onClickArticle = this.onClickArticle.bind(this);
+
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-content", "sv-title");
 
         this.wrapperElement = this.appendElement("div");
 
-        this.leadElement = this.createElement("div", null, this.wrapperElement);
-        this.leadElement.classList.add("sv-content", "sv-description");
+        this.contentElement = this.createElement("div", null, this.wrapperElement);
+        this.contentElement.classList.add("sv-content", "sv-description");
     }
 
     getOpacity()
@@ -144,7 +148,11 @@ class BeamAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation.data;
 
         this.titleElement.innerText = annotation.title;
-        this.leadElement.innerText = annotation.lead;
+
+        const contentTemplate = html`<p>${annotation.lead}</p>
+            ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+
+        render(contentTemplate, this.contentElement);
 
         this.targetOpacity = annotation.visible ? 1 : 0;
 
@@ -155,16 +163,22 @@ class BeamAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 this.classList.add("sv-expanded");
-                this.leadElement.style.display = "inherit";
-                this.leadElement.style.height = this.leadElement.scrollHeight + "px";
+                this.contentElement.style.display = "inherit";
+                this.contentElement.style.height = this.contentElement.scrollHeight + "px";
 
             }
             else {
                 this.classList.remove("sv-expanded");
-                this.leadElement.style.height = "0";
-                this.handler = window.setTimeout(() => this.leadElement.style.display = "none", 300);
+                this.contentElement.style.height = "0";
+                this.handler = window.setTimeout(() => this.contentElement.style.display = "none", 300);
 
             }
         }
+    }
+
+    protected onClickArticle(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
     }
 }

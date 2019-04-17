@@ -276,6 +276,7 @@ ff-dock-view {
 
   .sv-property-value {
     flex: 1 1 75%;
+    @include ellipsis;
   }
 
   .sv-field-row {
@@ -304,6 +305,12 @@ ff-dock-view {
 
 .sv-article-editor {
   @include fullsize;
+  display: flex;
+  flex-direction: column;
+
+  .sv-container {
+    overflow: hidden;
+  }
 
   .sv-custom-buttons {
     float: left;

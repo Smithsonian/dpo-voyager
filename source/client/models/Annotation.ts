@@ -78,9 +78,11 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         if (data.tags.length > 0) {
             json.tags = data.tags;
         }
-        if (data.articles.length > 0) {
-            //TODO: Articles/IDs
-            //json.articles = data.articles.slice();
+        if (data.articleId) {
+            json.articleId = data.articleId;
+        }
+        if (data.imageUri) {
+            json.imageUri = data.imageUri;
         }
         if (data.style !== EAnnotationStyle.Default) {
             json.style = EAnnotationStyle[data.style];
@@ -124,9 +126,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         data.title = json.title || "";
         data.lead = json.lead || "";
         data.tags = json.tags || [];
-        //TODO: Articles/IDs
-        data.articles = [];
-        //data.articles = json.articles ? json.articles.slice() : [];
+
+        data.articleId = json.articleId || "";
+        data.imageUri = json.imageUri || "";
 
         data.style = EAnnotationStyle[json.style] || EAnnotationStyle.Default;
         data.visible = json.visible !== undefined ? json.visible : true;

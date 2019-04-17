@@ -57,12 +57,21 @@ export default class ReaderView extends DocumentView
         if (!reader.activeArticle) {
             const articles = reader.articles;
             return html`<div class="sv-left"></div><div class="sv-article">
+                <ff-icon class="sv-close-button" name="close" @click=${this.onClickClose}></ff-icon>
                 ${articles.map(entry => this.renderMenuEntry(entry))}
             </div><div class="sv-right"></div>`;
         }
 
         return html`<div class="sv-left"></div><div class="sv-article">
+                <ff-icon class="sv-close-button" name="close" @click=${this.onClickClose}></ff-icon>
+                <div class="sv-container"></div>
             </div><div class="sv-right"></div>`;
+    }
+
+    protected onClickClose(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent("close"));
     }
 
     protected onClickArticle(e: MouseEvent, articleId: string)
@@ -77,7 +86,7 @@ export default class ReaderView extends DocumentView
         const reader = this.reader;
 
         if (reader && reader.activeArticle) {
-            const container = this.getElementsByClassName("sv-article").item(0) as HTMLElement;
+            const container = this.getElementsByClassName("sv-container").item(0) as HTMLElement;
             container.innerHTML = reader.outs.content.value;
         }
     }

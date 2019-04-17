@@ -58,7 +58,7 @@ export default class CVReader extends Component
     protected _articles: Dictionary<IArticleEntry>;
 
     get snapshotKeys() {
-        return [ "enabled" ];
+        return [ "enabled", "articleId" ];
     }
 
     get articles() {
@@ -95,12 +95,10 @@ export default class CVReader extends Component
             const article = entry && entry.article;
             outs.node.setValue(entry && entry.node);
             outs.article.setValue(article);
+            outs.content.setValue("");
 
             if (article) {
                 this.readArticle(article);
-            }
-            else {
-                outs.content.setValue("");
             }
         }
 

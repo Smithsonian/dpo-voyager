@@ -209,7 +209,7 @@ export default class MainView extends CustomElement
                     text: "Navigator"
                 }, {
                     contentId: "assets",
-                    text: "Assets"
+                    text: "Media"
                 }]
             }, {
                 type: "stack",
@@ -267,7 +267,7 @@ export default class MainView extends CustomElement
                     text: "Navigator"
                 }, {
                     contentId: "assets",
-                    text: "Assets"
+                    text: "Media"
                 }]
             }, {
                 type: "stack",

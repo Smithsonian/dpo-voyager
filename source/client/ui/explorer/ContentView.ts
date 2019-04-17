@@ -39,6 +39,12 @@ export default class ContentView extends DocumentView
     protected get assetLoader() {
         return this.system.getMainComponent(CVAssetReader);
     }
+    protected get reader() {
+        return this.activeDocument ? this.activeDocument.setup.reader : null;
+    }
+    protected get tours() {
+        return this.activeDocument ? this.activeDocument.setup.tours : null;
+    }
 
     protected firstConnected()
     {
@@ -67,9 +73,8 @@ export default class ContentView extends DocumentView
         let readerPosition = EReaderPosition.Overlay;
         let tourMenuVisible = false;
 
-        const document = this.activeDocument;
-        const reader = document && document.setup.reader;
-        const tours = document && document.setup.tours;
+        const reader = this.reader;
+        const tours = this.tours;
 
         if (tours) {
             tourMenuVisible = tours.ins.enabled.value && tours.outs.tourIndex.value === -1;
@@ -102,7 +107,7 @@ export default class ContentView extends DocumentView
             if (readerPosition === EReaderPosition.Overlay) {
                 return html`<div class="ff-fullsize sv-content-stack">${sceneView}
                     <div class="sv-reader-container">
-                        <sv-reader-view .system=${system}></sv-reader-view>
+                        <sv-reader-view .system=${system} @close=${this.onReaderClose}></sv-reader-view>
                     </div>
                     <sv-spinner ?visible=${isLoading}></sv-spinner></div>`;
             }
@@ -110,6 +115,11 @@ export default class ContentView extends DocumentView
 
         return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
             <sv-spinner ?visible=${isLoading}></sv-spinner>`;
+    }
+
+    protected onReaderClose()
+    {
+        this.reader.ins.enabled.setValue(false);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

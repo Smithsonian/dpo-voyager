@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import { Node } from "@ff/graph/Component";
 import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
 
 import CVTask, { types } from "./CVTask";
@@ -62,6 +63,14 @@ export default class CVToursTask extends CVTask
 
     tours: CVTours = null;
     machine: CTweenMachine = null;
+
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+
+        const configuration = this.configuration;
+        configuration.bracketsVisible = false;
+    }
 
     update(context)
     {

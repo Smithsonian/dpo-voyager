@@ -50,7 +50,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const activeArticle = task.activeArticle;
 
         if (!articles) {
-            return html`<div class="sv-placeholder">Please select a node to edit its articles</div>`;
+            return html`<div class="sv-placeholder">Please select a scene or model node to edit its articles.</div>`;
         }
 
         const props = task.ins;
