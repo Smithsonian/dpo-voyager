@@ -16,17 +16,14 @@ properties object as an argument to the application constructor.
 
 | Property     | Type/Values       | Description                                                                                               |
 |--------------|-------------------|-----------------------------------------------------------------------------------------------------------|
-| presentation | String/URL        | URL of the presentation to load and display at startup.                                                   |
-| item         | String/URL        | URL of the item to load and display at startup.                                                           |
-| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup.                             |
-| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup.                           |
-| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry.                     |
+| root         | String/URL        | Path to the root folder (base folder for all assets)                                                                |
+| document     | String/URL        | Path to the JSON document to load (relative to the root folder).                                                    |
+| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
+| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
+| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
 | quality      | "Thumb", "Low", "Medium", "High", "Highest" | For a model/geometry/texture: The quality level of the generated derivative.                              |
-| template     | String/URL        | If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. |
-| base         | String            | Base name to use when generating new items or assets.                                                     |
 | referrer     | String/URL        | The page URL to navigate to when the user exits the story tool. |
-| mode         | "QC", "Author"    | Launch in "qc" mode to edit/QC an item. Launch in "author" mode to author items and presentations. |
-| expert       | boolean           | In expert mode, additional developer tools are available. |
+| mode         | "QC", "Author", "Expert" | Launch in "qc" mode to edit/QC an item. Launch in "author" mode to author items and presentations. Launch in "expert" mode to get access to all tasks/for debugging |
 
 ### Example 1: launching the Story tool via custom HTML element
 ```html

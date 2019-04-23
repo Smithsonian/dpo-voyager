@@ -14,16 +14,13 @@ properties object as an argument to the application constructor.
 
 ### Properties
 
-| Property     | Type/Values       | Description                                                                                               |
-|--------------|-------------------|-----------------------------------------------------------------------------------------------------------|
-| presentation | String/URL        | URL of the presentation to load and display at startup.                                                   |
-| item         | String/URL        | URL of the item to load and display at startup.                                                           |
-| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup.                             |
-| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup.                           |
-| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry.                     |
-| quality      | "Thumb", "Low", "Medium", "High", "Highest" | For a model/geometry/texture: The quality level of the generated derivative.                              |
-| template     | String/URL        | If an item, model or geometry URL is given, optional URL of a presentation template to use with the item. |
-| base         | String            | Base name to use when generating new items or assets.                                                     |
+| Property     | Type/Values       | Description                                                                                                         |
+|--------------|-------------------|---------------------------------------------------------------------------------------------------------------------|
+| root         | String/URL        | Path to the root folder (base folder for all assets)                                                                |
+| document     | String/URL        | Path to the JSON document to load (relative to the root folder).                                                    |
+| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
+| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
+| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
 
 ### Example 1: launching the Explorer via custom HTML element
 ```html
@@ -38,12 +35,12 @@ properties object as an argument to the application constructor.
         <link rel="shortcut icon" type="image/png" href="favicon.png"/>
         
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/100/three.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/103/three.js"></script>
 
         <link rel="stylesheet" href="css/voyager-explorer.dev.css">
     </head>
     <body>
-        <voyager-explorer presentation="my_presentation.json"></voyager-explorer>
+        <voyager-explorer root="/data/" document="my_document.json"></voyager-explorer>
         <script type="text/javascript" src="js/voyager-explorer.dev.js"></script>
     </body>
 </html>
@@ -60,7 +57,8 @@ properties object as an argument to the application constructor.
         <script type="text/javascript" src="js/voyager-explorer.dev.js"></script>
         <script>
            new VoyagerExplorer(document.body, {
-               presentation: "my_presentation.json"
+               root: "/data/",
+               document: "my_document.json"
            }); 
         </script>
     </body>
