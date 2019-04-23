@@ -148,8 +148,9 @@ export default class StoryApplication
 
         this.explorer.evaluateProps();
 
-        const url = props.root || props.document || props.model || props.geometry;
-        this.setRootUrl(new URL(url || ".", window.location as any).href);
+        this.assetManager.rootUrl = this.assetReader.rootUrl;
+        //const url = props.root || props.document || props.model || props.geometry;
+        //this.setRootUrl(new URL(url || ".", window.location as any).href);
 
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";

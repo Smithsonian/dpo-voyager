@@ -22,6 +22,7 @@ import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import ShareMenu from "./ShareMenu";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +30,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 export default class MainMenu extends DocumentView
 {
     protected documentProps = new Subscriber("value", this.onUpdate, this);
+    protected shareButtonSelected = false;
 
     protected get fullscreen() {
         return this.system.getMainComponent(CFullscreen);
@@ -79,9 +81,11 @@ export default class MainMenu extends DocumentView
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
         <ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursVisible} @click=${this.onToggleTours}></ff-button>
-        <ff-button icon="comment" title="Toggle Annotations"
+        <ff-button icon="comment" title="Show/Hide Annotations"
             ?selected=${annotationsVisible} @click=${this.onToggleAnnotations}></ff-button>
-        ${showFullscreenButton ? html`<ff-button icon="expand" title="Toggle fullscreen mode"
+        <ff-button icon="share" title="Share Experience"
+            ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
+        ${showFullscreenButton ? html`<ff-button icon="expand" title="Fullscreen"
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
         ${showToolButton ? html`<ff-button icon="tools" title="Tools and Settings"
             ?selected=${toolsVisible} @click=${this.onToggleTools}></ff-button>` : null}`;
@@ -103,6 +107,19 @@ export default class MainMenu extends DocumentView
     {
         const prop = this.activeDocument.setup.viewer.ins.annotationsVisible;
         prop.setValue(!prop.value);
+    }
+
+    protected onToggleShare()
+    {
+        this.shareButtonSelected = !this.shareButtonSelected;
+        this.requestUpdate();
+
+        if (this.shareButtonSelected) {
+            ShareMenu.show(document.body).then(() => {
+                this.shareButtonSelected = false;
+                this.requestUpdate()
+            });
+        }
     }
 
     protected onToggleFullscreen()

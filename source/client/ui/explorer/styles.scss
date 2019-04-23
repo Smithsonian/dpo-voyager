@@ -38,7 +38,7 @@ $section-border: 1px solid transparentize($color-primary, 0.5);
 // Geometry
 
 $canvas-border-width: 6px;
-$main-menu-button-size: 40px;
+$main-menu-button-size: 38px;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -281,10 +281,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     box-sizing: border-box;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
-    margin: 3px 0;
+    margin: 2px 0;
     background-color: $menu-color-background-dark;
     border-radius: 20px;
-    font-size: 18px;
+    font-size: 17px;
     transition: all $tx-short;
     pointer-events: auto;
 
@@ -307,6 +307,53 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
         background-color: $color-primary-light;
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SHARE MENU
+
+.sv-share-menu {
+  position: relative;
+  width: 450px;
+  padding: 8px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+
+  .ff-title {
+    margin: 0.5em 0 1em 0;
+  }
+  .ff-button {
+    flex: 0 0 auto;
+  }
+  .ff-text-edit {
+    height: 5em;
+  }
+
+  .sv-share-buttons .ff-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 40px;
+    margin: 0 1em 1em 0;
+
+    .ff-icon {
+      height: 30px;
+      fill: #f0f0f0;
+    }
+  }
+
+  .sv-share-button-twitter {
+    background-color: #00aced;
+  }
+  .sv-share-button-facebook {
+    background-color: #3c5a99;
+  }
+  .sv-share-button-instagram {
+    background-color: #c13584;
+  }
+  .sv-share-button-email {
+    background-color: #d28842;
   }
 }
 
