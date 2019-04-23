@@ -85,7 +85,7 @@ export default class ExplorerApplication
 
     constructor(parent: HTMLElement, props?: IExplorerApplicationProps, embedded?: boolean)
     {
-        this.props = props;
+        this.props = props || {};
         console.log(ExplorerApplication.splashMessage);
 
         // register components
