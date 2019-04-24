@@ -35,6 +35,7 @@ import { INote } from "common/types/meta";
 
 import NodeView, { customElement, html } from "../explorer/NodeView";
 import NVNode from "../../nodes/NVNode";
+import CVMeta from "../../components/CVMeta";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +165,11 @@ export default class NotesPanel extends NodeView
         this.activeNote = null;
 
         if (next) {
-            const process = next.meta ? next.meta.process : null;
+            if (!next.meta) {
+                next.createComponent(CVMeta);
+            }
+
+            const process = next.meta.process;
 
             if (process) {
                 this.notes = process.getOrCreate("notes", []);

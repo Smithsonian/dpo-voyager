@@ -28,6 +28,7 @@ import "@ff/ui/Splitter";
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
+import Annotation from "../../models/Annotation";
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
@@ -61,8 +62,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const inProps = annotations.ins;
         const modeProp = this.task.ins.mode;
         const annotationList = annotations.getAnnotations();
-        const annotation = annotations.activeAnnotation;
 
+        const annotation = annotations.activeAnnotation;
 
         const detailView = annotation ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${inProps.style}></sv-property-view>

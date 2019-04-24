@@ -19,6 +19,9 @@ import * as filenamify from "filenamify";
 
 import { Node, types } from "@ff/graph/Component";
 
+import MessageBox from "@ff/ui/MessageBox";
+import Notification from "@ff/ui/Notification";
+
 import Article from "../models/Article";
 
 import NVNode from "../nodes/NVNode";
@@ -28,10 +31,8 @@ import CVMeta from "./CVMeta";
 import CVTask from "./CVTask";
 
 import ArticlesTaskView from "../ui/story/ArticlesTaskView";
-import CAssetManager from "@ff/scene/components/CAssetManager";
+import CVMediaManager from "./CVMediaManager";
 import CVAssetWriter from "./CVAssetWriter";
-import MessageBox from "@ff/ui/MessageBox";
-import uniqueId from "@ff/core/uniqueId";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +42,7 @@ export default class CVArticlesTask extends CVTask
 
     static readonly text: string = "Articles";
     static readonly icon: string = "document";
+
 
     protected static readonly ins = {
         create: types.Event("Articles.Create"),
@@ -69,8 +71,8 @@ export default class CVArticlesTask extends CVTask
         return this.outs.article.value;
     }
 
-    protected get assetManager() {
-        return this.getMainComponent(CAssetManager);
+    protected get mediaManager() {
+        return this.getMainComponent(CVMediaManager);
     }
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
@@ -91,11 +93,12 @@ export default class CVArticlesTask extends CVTask
         const outs = this.outs;
         const meta = this.meta;
         const activeArticle = this.activeArticle;
-        const activeAsset = activeArticle ? this.assetManager.getAssetByPath(activeArticle.data.uri) : null;
+        const activeAsset = activeArticle ? this.mediaManager.getAssetByPath(activeArticle.data.uri) : null;
 
         if (meta && ins.create.changed) {
             const article = new Article();
-            article.data.uri = `articles/new-article-${article.id}.html`;
+            const defaultFolder = CVMediaManager.articleFolder;
+            article.data.uri = `${defaultFolder}/new-article-${article.id}.html`;
             meta.articles.append(article);
             this.reader.ins.articleId.setValue(article.id);
         }
@@ -103,7 +106,7 @@ export default class CVArticlesTask extends CVTask
         if (activeArticle) {
             if (ins.edit.changed) {
                 if (activeAsset) {
-                    this.assetManager.open(activeAsset);
+                    this.mediaManager.open(activeAsset);
                 }
                 else if (activeArticle.data.uri) {
                     this.createEditArticle(activeArticle);
@@ -142,9 +145,9 @@ export default class CVArticlesTask extends CVTask
     protected deleteArticle(article: Article)
     {
         this.meta.articles.removeItem(article);
-        const asset = this.assetManager.getAssetByPath(article.data.uri);
+        const asset = this.mediaManager.getAssetByPath(article.data.uri);
         if (asset) {
-            this.assetManager.delete(asset);
+            this.mediaManager.delete(asset);
         }
     }
 
@@ -153,11 +156,11 @@ export default class CVArticlesTask extends CVTask
         const uri = article.data.uri;
 
         this.assetWriter.putText(`<h1>${article.data.title}</h1>`, uri)
-        .then(() => this.assetManager.refresh())
+        .then(() => this.mediaManager.refresh())
         .then(() => {
-            const asset = this.assetManager.getAssetByPath(uri);
+            const asset = this.mediaManager.getAssetByPath(uri);
             if (asset) {
-                this.assetManager.open(asset);
+                this.mediaManager.open(asset);
             }
         })
         .catch(error => MessageBox.show("Error", `Failed to create article at '${uri}'`, "error"));
@@ -169,8 +172,10 @@ export default class CVArticlesTask extends CVTask
             return "";
         }
 
-        const path = filenamify(title, { replacement: "-" });
-        return "articles/" + path.replace(/\s/g, "-").toLowerCase() + ".html";
+        const path = filenamify(title, { replacement: "-" }).replace(/\s/g, "-").toLowerCase();
+        const defaultFolder = CVMediaManager.articleFolder;
+
+        return defaultFolder + "/" + path + ".html";
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
@@ -191,6 +196,10 @@ export default class CVArticlesTask extends CVTask
             this.meta = null;
         }
         if (next) {
+            if (!next.meta) {
+                next.createComponent(CVMeta);
+            }
+
             this.meta = next.meta;
         }
 

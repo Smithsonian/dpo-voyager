@@ -67,7 +67,7 @@ export interface IReader
 {
     enabled: boolean;
     position: string;
-    articleId: string;
+    articleId?: string;
 }
 
 export interface INavigation

@@ -41,14 +41,15 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         return new Annotation(json);
     }
 
-    protected init()
+    protected init(): IAnnotation
     {
         return {
             id: this.generateId(),
             title: "New Annotation",
             lead: "",
             tags: [],
-            articles: [],
+            articleId: "",
+            imageUri: "",
 
             style: EAnnotationStyle.Default,
             visible: true,

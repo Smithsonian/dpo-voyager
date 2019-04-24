@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import CAssetManager from "@ff/scene/components/CAssetManager";
-
 import CVStoryApplication from "../components/CVStoryApplication";
 import CVAssetWriter from "../components/CVAssetWriter";
+import CVMediaManager from "../components/CVMediaManager";
 
 import CVTaskProvider from "../components/CVTaskProvider";
 
@@ -38,8 +37,8 @@ import NVTasks from "../nodes/NVTasks";
 
 const types = [
     CVStoryApplication,
-    CAssetManager,
     CVAssetWriter,
+    CVMediaManager,
 
     CVTaskProvider,
     CVExploreTask,

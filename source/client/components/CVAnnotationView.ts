@@ -109,6 +109,8 @@ export default class CVAnnotationView extends CObject3D
             ins.style.setValue(annotation ? annotation.data.style : EAnnotationStyle.Default, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
+            ins.tilt.setValue(annotation ? annotation.data.tilt : 0, true);
+            ins.azimuth.setValue(annotation ? annotation.data.azimuth : 0, true);
 
             const articles = this.articles;
             if (articles) {
@@ -173,11 +175,18 @@ export default class CVAnnotationView extends CObject3D
             if (ins.offset.changed) {
                 annotation.set("offset", ins.offset.value);
             }
+            if (ins.tilt.changed) {
+                annotation.set("tilt", ins.tilt.value);
+            }
+            if (ins.azimuth.changed) {
+                annotation.set("azimuth", ins.azimuth.value);
+            }
             if (ins.image.changed) {
                 annotation.set("imageUri", ins.image.value);
             }
             if (ins.article.changed) {
-                const article = this.articles.getAt(ins.article.getValidatedValue() - 1);
+                const articles = this.articles;
+                const article = articles && articles.getAt(ins.article.getValidatedValue() - 1);
                 annotation.set("articleId", article ? article.id : "");
             }
 

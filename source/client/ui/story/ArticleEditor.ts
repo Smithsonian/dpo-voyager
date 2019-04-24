@@ -20,14 +20,15 @@ import ImageResize from 'quill-image-resize-module';
 
 import { html, render } from "@ff/ui/CustomElement";
 import Notification from "@ff/ui/Notification";
+import MessageBox from "@ff/ui/MessageBox";
 
-import CAssetManager, { IAssetOpenEvent } from "@ff/scene/components/CAssetManager";
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 import AssetTree from "@ff/scene/ui/AssetTree";
 
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
-import MessageBox from "@ff/ui/MessageBox";
+import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,8 +41,8 @@ export default class ArticleEditor extends SystemView
     private _assetPath: string = "";
     private _changed = false;
 
-    protected get assetManager() {
-        return this.system.getMainComponent(CAssetManager);
+    protected get mediaManager() {
+        return this.system.getMainComponent(CVMediaManager);
     }
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
@@ -190,12 +191,12 @@ export default class ArticleEditor extends SystemView
     protected connected()
     {
         super.connected();
-        this.assetManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+        this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
     }
 
     protected disconnected()
     {
-        this.assetManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+        this.mediaManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
         super.disconnected();
     }
 
@@ -209,7 +210,7 @@ export default class ArticleEditor extends SystemView
     protected onEditorDrop(event: DragEvent)
     {
         const assetPath = event.dataTransfer.getData(AssetTree.dragDropMimeType);
-        const asset = assetPath && this.assetManager.getAssetByPath(assetPath);
+        const asset = assetPath && this.mediaManager.getAssetByPath(assetPath);
 
         if (asset) {
             const mimeType = asset.info.type;

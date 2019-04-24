@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import Icon from "@ff/ui/Icon";
 import MessageBox from "@ff/ui/MessageBox";
+import Notification from "@ff/ui/Notification";
 
-import CAssetManager from "@ff/scene/components/CAssetManager";
 import "@ff/scene/ui/AssetTree";
 
+import CVMediaManager from "../../components/CVMediaManager";
 import CVTaskProvider, { ETaskMode } from "../../components/CVTaskProvider";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
@@ -32,8 +32,8 @@ export default class AssetPanel extends DocumentView
 {
     protected basePath = "";
 
-    protected get assetManager() {
-        return this.system.getMainComponent(CAssetManager);
+    protected get mediaManager() {
+        return this.system.getMainComponent(CVMediaManager);
     }
     protected get taskProvider() {
         return this.system.getMainComponent(CVTaskProvider);
@@ -49,26 +49,27 @@ export default class AssetPanel extends DocumentView
         const mode = this.taskProvider.ins.mode.value;
         this.basePath = mode === ETaskMode.Expert ? "" : "articles";
 
-        return html`<div class="sv-panel-section">
-            <div class="sv-panel-header">
+        return html`<div class="sv-panel-header">
                 <ff-button icon="folder" title="Create Folder" @click=${this.onClickFolder}></ff-button>
                 <ff-button icon="pen" title="Rename Item" @click=${this.onClickRename}></ff-button>
                 <ff-button icon="trash" title="Delete Item" @click=${this.onClickDelete}></ff-button>
                 <ff-button icon="redo" title="Refresh View" @click=${this.onClickRefresh}></ff-button>
             </div>
-            <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
-                <ff-asset-tree draggable .system=${this.system} path=${this.basePath}></ff-asset-tree>
-            </div></div>
-        </div>`;
+            <ff-asset-tree class="ff-flex-item-stretch" draggable .system=${this.system} path=${this.basePath}>
+            </ff-asset-tree>`;
     }
 
     protected onClickFolder()
     {
-        const assets = this.assetManager.selectedAssets;
-        if (assets.length === 1 && assets[0].info.folder) {
+        const parentAsset = this.mediaManager.selectedAssets[0] || this.mediaManager.root;
+
+        if (parentAsset && parentAsset.info.folder) {
             MessageBox.show("Create Folder", "Folder name:", "prompt", "ok-cancel", "New Folder").then(result => {
                 if (result.ok && result.text) {
-                    this.assetManager.createFolder(assets[0], result.text);
+                    const infoText = `folder '${result.text}' in '${parentAsset.info.path}'`;
+                    this.mediaManager.createFolder(parentAsset, result.text)
+                        .then(() => Notification.show(`Created ${infoText}`))
+                        .catch(error => Notification.show(`Failed to create ${infoText}`, "error"));
                 }
             });
         }
@@ -76,12 +77,15 @@ export default class AssetPanel extends DocumentView
 
     protected onClickRename()
     {
-        const assets = this.assetManager.selectedAssets;
+        const assets = this.mediaManager.selectedAssets;
         if (assets.length === 1) {
             const asset = assets[0];
             MessageBox.show("Rename Asset", "New name:", "prompt", "ok-cancel", asset.info.name).then(result => {
                 if (result.ok && result.text) {
-                    this.assetManager.rename(asset, result.text);
+                    const infoText = `asset '${asset.info.path}' to '${result.text}.'`;
+                    this.mediaManager.rename(asset, result.text)
+                        .then(() => Notification.show(`Renamed ${infoText}`))
+                        .catch(error => Notification.show(`Failed to rename ${infoText}`, "error"));
                 }
             });
         }
@@ -91,13 +95,15 @@ export default class AssetPanel extends DocumentView
     {
         MessageBox.show("Delete Assets", "Are you sure?", "warning", "ok-cancel").then(result => {
             if (result.ok) {
-                this.assetManager.deleteSelected();
+                this.mediaManager.deleteSelected()
+                    .then(() => Notification.show("Deleted selected assets."))
+                    .catch(() => Notification.show("Failed to delete selected assets.", "error"));
             }
         });
     }
 
     protected onClickRefresh()
     {
-        this.assetManager.refresh();
+        this.mediaManager.refresh();
     }
 }

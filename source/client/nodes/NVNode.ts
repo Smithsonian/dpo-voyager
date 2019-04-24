@@ -88,7 +88,7 @@ export default class NVNode extends Node
         let name = "Node";
 
         if (isFinite(node.meta)) {
-            this.createComponent(CVMeta).fromDocument(document, node);
+           this.createComponent(CVMeta).fromDocument(document, node);
             pathMap.set(`meta/${node.meta}`, this.meta);
             name = "Meta";
         }

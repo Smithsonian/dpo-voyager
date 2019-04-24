@@ -18,7 +18,7 @@
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import "./DocumentList";
-import "./NodeTreeView";
+import "./NodeTree";
 
 import CVTaskProvider from "../../components/CVTaskProvider";
 
@@ -68,9 +68,7 @@ export default class NavigatorPanel extends SystemView
                     <ff-icon name="hierarchy"></ff-icon>
                     <div class="ff-text">Nodes</div>
                 </div>
-                <div class="ff-flex-item-stretch"><div class="ff-scroll-y">
-                    <sv-node-tree-view .system=${system}></sv-node-tree-view>
-                </div></div>
+                <sv-node-tree class="ff-flex-item-stretch" .system=${system}></sv-node-tree>
             </div>`;
     }
 }

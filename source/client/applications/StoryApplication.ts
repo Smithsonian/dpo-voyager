@@ -31,7 +31,7 @@ import CVStoryApplication from "../components/CVStoryApplication";
 
 import CVAssetReader from "../components/CVAssetReader";
 import CVAssetWriter from "../components/CVAssetWriter";
-import CAssetManager from "@ff/scene/components/CAssetManager";
+import CVMediaManager from "../components/CVMediaManager";
 
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";
@@ -74,8 +74,8 @@ export default class StoryApplication
     protected get assetWriter() {
         return this.system.getMainComponent(CVAssetWriter);
     }
-    protected get assetManager() {
-        return this.system.getMainComponent(CAssetManager);
+    protected get mediaManager() {
+        return this.system.getMainComponent(CVMediaManager);
     }
 
     protected get documentProvider() {
@@ -117,7 +117,7 @@ export default class StoryApplication
     setRootUrl(url: string)
     {
         this.assetReader.rootUrl = url;
-        this.assetManager.rootUrl = url;
+        this.mediaManager.rootUrl = url;
     }
 
     loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
@@ -148,9 +148,7 @@ export default class StoryApplication
 
         this.explorer.evaluateProps();
 
-        this.assetManager.rootUrl = this.assetReader.rootUrl;
-        //const url = props.root || props.document || props.model || props.geometry;
-        //this.setRootUrl(new URL(url || ".", window.location as any).href);
+        this.mediaManager.rootUrl = this.assetReader.rootUrl;
 
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";

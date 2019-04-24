@@ -17,10 +17,7 @@
 
 import System from "@ff/graph/System";
 
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
-import Tree from "@ff/ui/Tree";
-
-import SystemView from "@ff/scene/ui/SystemView";
+import Tree, { customElement, property, PropertyValues, html } from "@ff/ui/Tree";
 
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
@@ -28,32 +25,6 @@ import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-@customElement("sv-node-tree-view")
-class NodeTreeView extends SystemView
-{
-    constructor(system?: System)
-    {
-        super(system);
-        this.addEventListener("click", this.onClick.bind(this));
-    }
-
-    protected firstConnected()
-    {
-        super.firstConnected();
-        this.classList.add("ff-scroll-y", "sv-node-tree-view");
-    }
-
-    protected render()
-    {
-        return html`<sv-node-tree .system=${this.system}></sv-node-tree>`;
-    }
-
-    protected onClick()
-    {
-        this.system.getMainComponent(CVNodeProvider).activeNode = null;
-    }
-}
 
 @customElement("sv-node-tree")
 class NodeTree extends Tree<NVNode>
@@ -68,6 +39,8 @@ class NodeTree extends Tree<NVNode>
     {
         super.firstConnected();
         this.classList.add("sv-node-tree");
+
+        this.addEventListener("click", this.onContainerClick.bind(this));
 
         this.documentProvider = this.system.getMainComponent(CVDocumentProvider);
         this.nodeProvider = this.system.getMainComponent(CVNodeProvider);
@@ -155,6 +128,11 @@ class NodeTree extends Tree<NVNode>
         else {
             this.nodeProvider.activeNode = node;
         }
+    }
+
+    protected onContainerClick()
+    {
+        this.nodeProvider.activeNode = null;
     }
 
     protected onActiveNode(event: IActiveNodeEvent)

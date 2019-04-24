@@ -162,7 +162,7 @@ export default class CVReader extends Component
         this.ins.setValues({
             enabled: !!data.enabled,
             position: EReaderPosition[data.position] || EReaderPosition.Overlay,
-            articleId: data.articleId,
+            articleId: data.articleId || "",
         });
     }
 
@@ -170,10 +170,15 @@ export default class CVReader extends Component
     {
         const ins = this.ins;
 
-        return {
+        const data: Partial<IReader> = {
             enabled: ins.enabled.value,
             position: EReaderPosition[ins.position.value] || "Overlay",
-            articleId: ins.articleId.value
         };
+
+        if (ins.articleId.value) {
+            data.articleId = ins.articleId.value;
+        }
+
+        return data as IReader;
     }
 }

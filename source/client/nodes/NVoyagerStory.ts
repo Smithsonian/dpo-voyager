@@ -16,8 +16,8 @@
  */
 
 import Node from "@ff/graph/Node";
-import CAssetManager from "@ff/scene/components/CAssetManager";
 
+import CVMediaManager from "../components/CVMediaManager";
 import CVAssetWriter from "../components/CVAssetWriter";
 import CVStoryApplication from "../components/CVStoryApplication";
 
@@ -29,7 +29,7 @@ export default class NVoyagerStory extends Node
 
     createComponents()
     {
-        this.createComponent(CAssetManager);
+        this.createComponent(CVMediaManager);
         this.createComponent(CVAssetWriter);
         this.createComponent(CVStoryApplication);
     }
