@@ -165,7 +165,8 @@ export default class NotesPanel extends NodeView
         this.activeNote = null;
 
         if (next) {
-            if (!next.meta) {
+            // if selection is scene or model, create a meta component
+            if (!next.meta && (next.scene || next.model)) {
                 next.createComponent(CVMeta);
             }
 

@@ -41,7 +41,7 @@ export default class CVArticlesTask extends CVTask
     static readonly typeName: string = "CVArticlesTask";
 
     static readonly text: string = "Articles";
-    static readonly icon: string = "document";
+    static readonly icon: string = "article";
 
 
     protected static readonly ins = {

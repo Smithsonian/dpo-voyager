@@ -77,7 +77,7 @@ export default class MainMenu extends DocumentView
         const toolsVisible = this.toolProvider.ins.visible.value;
         const showToolButton = setup.interface.ins.tools.value;
 
-        return html`<ff-button icon="document" title="Read more..."
+        return html`<ff-button icon="article" title="Read more..."
             ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
         <ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursVisible} @click=${this.onToggleTours}></ff-button>

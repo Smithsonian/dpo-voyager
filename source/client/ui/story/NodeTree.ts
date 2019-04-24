@@ -81,7 +81,25 @@ class NodeTree extends Tree<NVNode>
 
     protected renderNodeHeader(node: NVNode)
     {
-        return html`<div class="ff-text ff-ellipsis">${node.displayName}</div>`;
+        let icons = [];
+        if (node.scene) {
+            icons.push(html`<ff-icon class="sv-icon-scene" name="hierarchy"></ff-icon>`);
+        }
+        if (node.model) {
+            icons.push(html`<ff-icon class="sv-icon-model" name="cube"></ff-icon>`);
+        }
+        if (node.light) {
+            icons.push(html`<ff-icon class="sv-icon-light" name="bulb"></ff-icon>`);
+        }
+        if (node.camera) {
+            icons.push(html`<ff-icon class="sv-icon-camera" name="video"></ff-icon>`);
+        }
+        if (node.meta) {
+            icons.push(html`<ff-icon class="sv-icon-meta" name="document"></ff-icon>`);
+        }
+
+
+        return html`${icons}<div class="ff-text ff-ellipsis">${node.displayName}</div>`;
     }
 
     protected isNodeSelected(node: NVNode): boolean

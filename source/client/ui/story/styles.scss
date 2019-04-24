@@ -102,6 +102,20 @@ ff-dock-view {
 ////////////////////////////////////////////////////////////////////////////////
 // NAVIGATOR
 
+$color-component-scene-dark: #202329;
+$color-component-scene: #334b80;
+$color-component-scene-light: #5278cc;
+$color-component-model-dark: #1c2423;
+$color-component-model: #26806c;
+$color-component-model-light: #3dccab;
+$color-component-camera-dark: #2e2424;
+$color-component-camera: #802626;
+$color-component-camera-light: #cc3d3d;
+$color-component-light-dark: #2b2922;
+$color-component-light: #806e33;
+$color-component-light-light: #ccad52;
+$color-component-meta-light: #d9d998;
+
 .sv-node-tree {
   .ff-tree-node-container {
     border-color: darken($color-background-light, 2%);
@@ -113,27 +127,47 @@ ff-dock-view {
     }
 
     &.sv-node-scene {
-      background-color: #202329;
-      border-left: 1px solid #334b80;
+      background-color: $color-component-scene-dark;
+      border-left: 1px solid $color-component-scene;
     }
     &.sv-node-model {
-      background-color: #1c2423;
-      border-left: 1px solid #26806c;
+      background-color: $color-component-model-dark;
+      border-left: 1px solid $color-component-model;
     }
     &.sv-node-camera {
-      background-color: #2e2424;
-      border-left: 1px solid #802626;
+      background-color: $color-component-camera-dark;
+      border-left: 1px solid $color-component-camera;
     }
     &.sv-node-light {
-      background-color: #2b2922;
-      border-left: 1px solid #806e33;
+      background-color: $color-component-light-dark;
+      border-left: 1px solid $color-component-light;
     }
     &[selected] {
       background-color: $color-primary;
     }
 
     .ff-header {
+      display: flex;
       line-height: 1.6em;
+      .ff-icon {
+        height: 1.1em;
+        margin: 2px 4px 0 0;
+      }
+      .sv-icon-scene {
+        fill: $color-component-scene-light;
+      }
+      .sv-icon-model {
+        fill: $color-component-model-light;
+      }
+      .sv-icon-light {
+        fill: $color-component-light-light;
+      }
+      .sv-icon-camera {
+        fill: $color-component-camera-light;
+      }
+      .sv-icon-meta {
+        fill: $color-component-meta-light;
+      }
     }
     .ff-content {
       margin-left: 14px; // indent
