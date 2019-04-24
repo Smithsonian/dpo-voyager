@@ -170,7 +170,7 @@ export default class NotesPanel extends NodeView
                 next.createComponent(CVMeta);
             }
 
-            const process = next.meta.process;
+            const process = next.meta && next.meta.process;
 
             if (process) {
                 this.notes = process.getOrCreate("notes", []);
