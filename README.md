@@ -6,11 +6,12 @@ Suite of browser-based 3D tools, consisting of
  * Voyager Story - quality control, authoring of presentations, annotations, articles, tours
  * Voyager Explorer - feature-rich 3D viewer component
  * Voyager Mini - bare-bone 3D viewer component, optimized for size and loading speed
- * Voyager Inspector - quick mesh inspection tool
 
 ### Installation
 
 #### Prerequisites
+
+Important: currently we only support building the tool suite on **Linux** environments.
 
 Before cloning the Github project, please install the following tools
  * [Node.js](https://nodejs.org/en/) - required
@@ -68,7 +69,7 @@ voyager-story-dev.html
 This software is pre-release and provided "as is". Breaking changes can and will happen during development.
 
 ### License Information
-Copyright 2018 Smithsonian Institution.
+Copyright 2019 Smithsonian Institution.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use the content of this repository except in compliance with the License. You may obtain a copy of the License at
 
@@ -78,4 +79,10 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 #### 3rd Party Components
 
-To do.
+[License overview](./3RD_PARTY_LICENSES.txt) of included 3rd party libraries.
+
+##### Font Awesome
+
+This project embeds both free and pro icons from the [Font Awesome](https://fontawesome.com) icon collection.  
+Applicable license: https://fontawesome.com/license.
+
