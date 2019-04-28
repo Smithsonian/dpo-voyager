@@ -1,9 +1,6 @@
 [submodule "libs/ff-core"]
 	path = libs/ff-core
 	url = https://github.com/framelab/ff-core
-[submodule "libs/ff-react"]
-	path = libs/ff-react
-	url = https://github.com/framelab/ff-react
 [submodule "libs/ff-browser"]
 	path = libs/ff-browser
 	url = https://github.com/framelab/ff-browser
@@ -12,10 +9,10 @@
 	url = https://github.com/framelab/ff-three
 [submodule "libs/ff-ui"]
 	path = libs/ff-ui
-	url = git@github.com:framelab/ff-ui.git
+	url = https://github.com/framelab/ff-ui
 [submodule "libs/ff-graph"]
 	path = libs/ff-graph
-	url = git@github.com:framelab/ff-graph.git
+	url = https://github.com/framelab/ff-graph
 [submodule "libs/ff-scene"]
 	path = libs/ff-scene
-	url = git@github.com:framelab/ff-scene.git
+	url = https://github.com/framelab/ff-scene

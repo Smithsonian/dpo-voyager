@@ -35,7 +35,7 @@ export default class CVLightTool extends CVTool
     static readonly text = "Lights";
     static readonly icon = "bulb";
 
-    lights: CLight[] = [];
+    lights: Readonly<CLight[]> = [];
 
     protected static readonly ins = {
         light: types.Option("Tool.Light", []),
