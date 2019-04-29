@@ -77,7 +77,7 @@ export default class CVAnnotationView extends CObject3D
         return this.getComponent(CVMeta, true);
     }
     protected get reader() {
-        return this.getGraphComponent(CVReader);
+        return this.getGraphComponent(CVReader, true);
     }
     protected get articles() {
         const meta = this.meta;
@@ -323,8 +323,11 @@ export default class CVAnnotationView extends CObject3D
 
     protected onSpriteLink(event: IAnnotationLinkEvent)
     {
-        this.reader.ins.articleId.setValue(event.annotation.data.articleId);
-        this.reader.ins.enabled.setValue(true);
+        const reader = this.reader;
+        if (reader) {
+            this.reader.ins.articleId.setValue(event.annotation.data.articleId);
+            this.reader.ins.enabled.setValue(true);
+        }
     }
 
     protected createSprite(annotation: Annotation)

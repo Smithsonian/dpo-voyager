@@ -62,12 +62,16 @@ export default class CVOrbitNavigation extends CVNavigation
     static readonly icon: string = "";
 
     protected static readonly ins = {
-        orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
-        offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
-        minOrbit: types.Vector3("Manip.Min.Orbit", [ -90, -Infinity, -Infinity ]),
-        minOffset: types.Vector3("Manip.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
-        maxOrbit: types.Vector3("Manip.Max.Orbit", [ 90, Infinity, Infinity ]),
-        maxOffset: types.Vector3("Manip.Max.Offset", [ Infinity, Infinity, Infinity ]),
+        lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
+        zoomExtents: types.Event("Settings.ZoomExtents"),
+        autoZoom: types.Boolean("Settings.AutoZoom", true),
+        autoRotation: types.Boolean("Navigation.AutoRotation", false),
+        orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
+        offset: types.Vector3("Current.Offset", [ 0, 0, 100 ]),
+        minOrbit: types.Vector3("Limits.Min.Orbit", [ -90, -Infinity, -Infinity ]),
+        minOffset: types.Vector3("Limits.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
+        maxOrbit: types.Vector3("Limits.Max.Orbit", [ 90, Infinity, Infinity ]),
+        maxOffset: types.Vector3("Limits.Max.Offset", [ Infinity, Infinity, Infinity ]),
     };
 
     ins = this.addInputs<CVNavigation, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
@@ -84,6 +88,10 @@ export default class CVOrbitNavigation extends CVNavigation
 
     get settingProperties() {
         return [
+            this.ins.enabled,
+            this.ins.autoZoom,
+            this.ins.autoRotation,
+            this.ins.lightsFollowCamera,
             this.ins.minOrbit,
             this.ins.minOffset,
             this.ins.maxOrbit,
@@ -126,10 +134,16 @@ export default class CVOrbitNavigation extends CVNavigation
         }
 
         // include lights
-        if (ins.includeLights.changed) {
+        if (ins.lightsFollowCamera.changed) {
             const lightTransform = this.getLightTransform();
             if (lightTransform) {
-                lightTransform.ins.rotation.reset();
+                if (ins.lightsFollowCamera.value) {
+                    lightTransform.ins.rotation.linkFrom(orbit, 1, 1);
+                }
+                else {
+                    lightTransform.ins.rotation.unlinkFrom(orbit, 1, 1);
+                    lightTransform.ins.rotation.reset();
+                }
             }
         }
 
@@ -184,16 +198,6 @@ export default class CVOrbitNavigation extends CVNavigation
                 cameraComponent.setPropertiesFromMatrix();
             }
 
-            if (ins.includeLights.value) {
-                const lightTransform = this.getLightTransform();
-                if (lightTransform) {
-                    lightTransform.ins.order.setValue(ERotationOrder.YXZ);
-                    const rotation = lightTransform.ins.rotation;
-                    rotation.value[1] = controller.orbit.y;
-                    rotation.set();
-                }
-            }
-
             return true;
         }
 
@@ -228,6 +232,9 @@ export default class CVOrbitNavigation extends CVNavigation
         };
 
         this.ins.copyValues({
+            autoZoom: !!data.autoZoom,
+            autoRotation: !!data.autoRotation,
+            lightsFollowCamera: !!data.lightsFollowCamera,
             orbit: orbit.orbit,
             offset: orbit.offset,
             minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
@@ -242,7 +249,12 @@ export default class CVOrbitNavigation extends CVNavigation
         const ins = this.ins;
         const data = super.toData();
 
+        data.autoZoom = ins.autoZoom.value;
+        data.autoRotation = ins.autoRotation.value;
+        data.lightsFollowCamera = ins.lightsFollowCamera.value;
+
         data.type = "Orbit";
+
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
             offset: ins.offset.cloneValue(),
@@ -293,5 +305,10 @@ export default class CVOrbitNavigation extends CVNavigation
         }
     }
 
-
+    protected onLoadingCompleted(isLoading: boolean)
+    {
+        if (this.ins.autoZoom.value) {
+            this.ins.zoomExtents.set();
+        }
+    }
 }

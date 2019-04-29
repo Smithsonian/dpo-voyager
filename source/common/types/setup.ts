@@ -75,6 +75,8 @@ export interface INavigation
     type: TNavigationType;
     enabled: boolean;
     autoZoom: boolean;
+    autoRotation: boolean;
+    lightsFollowCamera: boolean;
     orbit?: IOrbitNavigation;
     walk?: IWalkNavigation;
 }

@@ -111,7 +111,7 @@ export class LightToolView extends ToolView<CVLightTool>
         const lightDetails = activeLight ? html`<div class="sv-section">
             <ff-button class="sv-section-lead" transparent icon="cog"></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean>
+                <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                 <sv-property-slider .property=${activeLight.ins.intensity} name="Intensity" min="0" max="2"></sv-property-slider>
                 <sv-property-color .property=${activeLight.ins.color} name="Color"></sv-property-color>
             </div>
@@ -119,8 +119,8 @@ export class LightToolView extends ToolView<CVLightTool>
 
         return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-boolean .property=${navigation.ins.includeLights} name="Follow Camera"></sv-property-boolean>
-                <sv-property-options .property=${tool.ins.light} name="Scene lights"></sv-property-options>
+                <!-- <sv-property-boolean .property=${navigation.ins.lightsFollowCamera} name="Follow Camera"></sv-property-boolean> -->
+                <sv-property-options .property=${tool.ins.light} name="Select Scene Light"></sv-property-options>
             </div>
         </div>`;
     }
@@ -128,10 +128,10 @@ export class LightToolView extends ToolView<CVLightTool>
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.setup.navigation.ins.includeLights.off("value", this.onUpdate, this);
+            previous.setup.navigation.ins.lightsFollowCamera.off("value", this.onUpdate, this);
         }
         if (next) {
-            next.setup.navigation.ins.includeLights.on("value", this.onUpdate, this);
+            next.setup.navigation.ins.lightsFollowCamera.on("value", this.onUpdate, this);
         }
 
         this.requestUpdate();

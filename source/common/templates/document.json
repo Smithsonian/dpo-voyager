@@ -55,6 +55,8 @@
             "type": "Orbit",
             "enabled": true,
             "autoZoom": true,
+            "lightsFollowCamera": true,
+            "autoRotation": false,
             "orbit": {
                 "orbit": [-24, -26, 0],
                 "offset": [0, 0, 150],
@@ -106,11 +108,13 @@
     "lights": [{
         "type": "directional",
         "color": [1, 0.95, 0.9],
-        "intensity": 0.9
+        "intensity": 0.9,
+        "shadowEnabled": true
     }, {
         "type": "directional",
         "color": [0.9, 0.95, 1],
-        "intensity": 0.6
+        "intensity": 0.6,
+        "shadowEnabled": true
     }, {
         "type": "directional",
         "color": [1, 1, 1],

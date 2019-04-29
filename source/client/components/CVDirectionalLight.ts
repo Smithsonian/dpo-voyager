@@ -20,6 +20,7 @@ import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 import { IDocument, INode, ILight, ColorRGB } from "common/types/document";
 
 import { ICVLight } from "./CVLight";
+import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +35,10 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         return [
             this.ins.color,
             this.ins.intensity,
+            this.ins.shadowEnabled,
+            this.ins.shadowSize,
+            this.ins.shadowResolution,
+            this.ins.shadowBlur,
         ];
     }
 
@@ -51,16 +56,22 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         }
 
         const data = document.lights[node.light];
+        const ins = this.ins;
 
         if (data.type !== "directional") {
             throw new Error("light type mismatch: not a directional light");
         }
 
-        this.ins.copyValues({
-            color: data.color !== undefined ? data.color : [ 1, 1, 1 ],
-            intensity: data.intensity !== undefined ? data.intensity : 1,
-            position: [ 0, 0, 0 ],
-            target: [ 0, 0, 0 ],
+        ins.copyValues({
+            color: data.color !== undefined ? data.color : ins.color.schema.preset,
+            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            position: ins.position.schema.preset,
+            target: ins.target.schema.preset,
+
+            shadowEnabled: data.shadowEnabled || false,
+            shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
+            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
+            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
         });
 
         return node.light;
@@ -76,6 +87,20 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         } as ILight;
 
         data.type = "directional";
+
+        if (ins.shadowEnabled.value) {
+            data.shadowEnabled = true;
+
+            if (!ins.shadowSize.isDefault()) {
+                data.shadowSize = ins.shadowSize.value;
+            }
+            if (!ins.shadowBlur.isDefault()) {
+                data.shadowBlur = ins.shadowBlur.value;
+            }
+            if (!ins.shadowResolution.isDefault()) {
+                data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+        }
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

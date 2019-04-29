@@ -20,6 +20,7 @@ import CPointLight from "@ff/scene/components/CPointLight";
 import { IDocument, INode, ILight, ColorRGB } from "common/types/document";
 
 import { ICVLight } from "./CVLight";
+import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +35,11 @@ export default class CVPointLight extends CPointLight implements ICVLight
         return [
             this.ins.color,
             this.ins.intensity,
+            this.ins.distance,
+            this.ins.decay,
+            this.ins.shadowEnabled,
+            this.ins.shadowResolution,
+            this.ins.shadowBlur,
         ];
     }
 
@@ -51,16 +57,21 @@ export default class CVPointLight extends CPointLight implements ICVLight
         }
 
         const data = document.lights[node.light];
+        const ins = this.ins;
 
         if (data.type !== "point") {
             throw new Error("light type mismatch: not a point light");
         }
 
-        this.ins.copyValues({
-            color: data.color !== undefined ? data.color : [ 1, 1, 1 ],
-            intensity: data.intensity !== undefined ? data.intensity : 1,
-            distance: data.point.distance || 0,
-            decay: data.point.decay !== undefined ? data.point.decay : 1,
+        ins.copyValues({
+            color: data.color !== undefined ? data.color : ins.color.schema.preset,
+            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            distance: data.point.distance || ins.distance.schema.preset,
+            decay: data.point.decay !== undefined ? data.point.decay : ins.decay.schema.preset,
+
+            shadowEnabled: data.shadowEnabled || false,
+            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
+            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
         });
 
         return node.light;
@@ -80,6 +91,17 @@ export default class CVPointLight extends CPointLight implements ICVLight
         } as ILight;
 
         data.type = "point";
+
+        if (ins.shadowEnabled.value) {
+            data.shadowEnabled = true;
+
+            if (!ins.shadowBlur.isDefault()) {
+                data.shadowBlur = ins.shadowBlur.value;
+            }
+            if (!ins.shadowResolution.isDefault()) {
+                data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+        }
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

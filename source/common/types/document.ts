@@ -122,18 +122,14 @@ export interface ILight
     type: TLightType;
     color?: ColorRGB;
     intensity?: number;
-    castShadow?: boolean;
-    hemisphere?: IHemisphereLightProps;
+
+    shadowEnabled?: boolean;
+    shadowSize?: number;
+    shadowResolution?: string;
+    shadowBlur?: number;
+
     point?: IPointLightProps;
     spot?: ISpotLightProps;
-}
-
-/**
- * Properties for hemisphere lights.
- */
-export interface IHemisphereLightProps
-{
-    groundColor: ColorRGB;
 }
 
 /**

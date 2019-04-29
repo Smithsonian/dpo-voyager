@@ -36,10 +36,7 @@ export default class CVNavigation extends CObject3D
     static readonly typeName: string = "CVNavigation";
 
     protected static readonly navIns = {
-        enabled: types.Boolean("Navigation.Enabled", true),
-        includeLights: types.Boolean("Navigation.IncludeLights", true),
-        autoZoom: types.Boolean("Navigation.AutoZoom", true),
-        zoomExtents: types.Event("Navigation.ZoomExtents"),
+        enabled: types.Boolean("Settings.Enabled", true),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
         projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
     };
@@ -76,7 +73,6 @@ export default class CVNavigation extends CObject3D
     {
         this.ins.copyValues({
             enabled: !!data.enabled,
-            autoZoom: !!data.autoZoom,
         });
     }
 
@@ -84,7 +80,6 @@ export default class CVNavigation extends CObject3D
     {
         return {
             enabled: this.ins.enabled.value,
-            autoZoom: this.ins.autoZoom.value,
         };
     }
 
@@ -98,6 +93,5 @@ export default class CVNavigation extends CObject3D
 
     protected onLoadingCompleted(isLoading: boolean)
     {
-        this.ins.zoomExtents.set();
     }
 }

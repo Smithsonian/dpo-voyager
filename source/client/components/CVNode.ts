@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import CTransform from "@ff/scene/components/CTransform";
+import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
 import { INode } from "common/types/document";
 
@@ -33,7 +33,7 @@ export default class CVNode extends CTransform
 {
     static readonly typeName: string = "CVNode";
 
-    static readonly text: string = "Node";
+    static readonly text: string = "Transform";
     static readonly icon: string = "";
 
     get settingProperties() {
@@ -52,13 +52,13 @@ export default class CVNode extends CTransform
     {
         const { position, rotation, order, scale } = this.ins;
 
-        order.setValue(0);
+        const orderTag = ERotationOrder[order.getValidatedValue()];
 
         if (data.matrix) {
             _mat4.fromArray(data.matrix);
             _mat4.decompose(_vec3a, _quat, _vec3b);
             _vec3a.toArray(position.value);
-            _euler.setFromQuaternion(_quat, "XYZ");
+            _euler.setFromQuaternion(_quat, orderTag);
             _euler.toVector3(_vec3a).multiplyScalar(THREE.Math.RAD2DEG).toArray(rotation.value);
             _vec3b.toArray(scale.value);
 
@@ -72,7 +72,7 @@ export default class CVNode extends CTransform
             }
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
-                _euler.setFromQuaternion(_quat, "XYZ");
+                _euler.setFromQuaternion(_quat, orderTag);
                 _euler.toVector3(_vec3a).multiplyScalar(THREE.Math.RAD2DEG).toArray(rotation.value);
                 rotation.set();
             }

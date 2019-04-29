@@ -20,6 +20,7 @@ import CSpotLight from "@ff/scene/components/CSpotLight";
 import { IDocument, INode, ILight, ColorRGB } from "common/types/document";
 
 import { ICVLight } from "./CVLight";
+import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +34,14 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
     get settingProperties() {
         return [
             this.ins.color,
-            this.ins.intensity
+            this.ins.intensity,
+            this.ins.distance,
+            this.ins.decay,
+            this.ins.angle,
+            this.ins.penumbra,
+            this.ins.shadowEnabled,
+            this.ins.shadowResolution,
+            this.ins.shadowBlur,
         ];
     }
 
@@ -51,18 +59,23 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         }
 
         const data = document.lights[node.light];
+        const ins = this.ins;
 
         if (data.type !== "point") {
             throw new Error("light type mismatch: not a point light");
         }
 
-        this.ins.copyValues({
-            color: data.color !== undefined ? data.color : [ 1, 1, 1 ],
-            intensity: data.intensity !== undefined ? data.intensity : 1,
-            distance: data.spot.distance || 0,
-            decay: data.spot.decay !== undefined ? data.spot.decay : 1,
-            angle: data.spot.angle !== undefined ? data.spot.angle : Math.PI / 4,
-            penumbra: data.spot.penumbra || 0,
+        ins.copyValues({
+            color: data.color !== undefined ? data.color : ins.color.schema.preset,
+            intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            distance: data.spot.distance || ins.distance.schema.preset,
+            decay: data.spot.decay !== undefined ? data.spot.decay : ins.decay.schema.preset,
+            angle: data.spot.angle !== undefined ? data.spot.angle : ins.angle.schema.preset,
+            penumbra: data.spot.penumbra || ins.penumbra.schema.preset,
+
+            shadowEnabled: data.shadowEnabled || false,
+            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
+            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
         });
 
         return node.light;
@@ -84,6 +97,17 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         } as ILight;
 
         data.type = "spot";
+
+        if (ins.shadowEnabled.value) {
+            data.shadowEnabled = true;
+
+            if (!ins.shadowBlur.isDefault()) {
+                data.shadowBlur = ins.shadowBlur.value;
+            }
+            if (!ins.shadowResolution.isDefault()) {
+                data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+        }
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;
