@@ -86,6 +86,7 @@ export default class CVAnnotationsTask extends CVTask
 
     activateTask()
     {
+        this.startObserving();
         super.activateTask();
 
         //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
@@ -97,6 +98,7 @@ export default class CVAnnotationsTask extends CVTask
         //this.selection.selectedComponents.off(CVAnnotationView, this.onSelectAnnotations, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
+        this.stopObserving();
         super.deactivateTask();
     }
 

@@ -57,7 +57,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
     protected render()
     {
-        console.log("TourTaskView.render");
+        //console.log("TourTaskView.render");
 
         const task = this.task;
         const tours = task.tours;

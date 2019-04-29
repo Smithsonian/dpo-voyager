@@ -55,13 +55,13 @@ export default class TourNavigator extends DocumentView
         }
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
-            <ff-button class="sv-section-lead" transparent icon="bars" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
+            <ff-button class="sv-section-lead" transparent icon="bars" title="Tour Menu" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
             <div class="ff-ellipsis sv-content">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
-            <ff-button class="sv-section-trail" transparent icon="triangle-left" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
-            <ff-button class="sv-section-trail" transparent icon="triangle-right" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-left" title="Forward" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-right" title="Backward" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
         </div></div>`;
     }
 

@@ -87,7 +87,6 @@ export default class CVTask extends CVNodeObserver
     activateTask()
     {
         this._isActiveTask = true;
-        this.startObserving();
 
         this.outs.isActive.setValue(true);
 
@@ -113,7 +112,6 @@ export default class CVTask extends CVNodeObserver
         }
 
         this._isActiveTask = false;
-        this.stopObserving();
 
         this.outs.isActive.setValue(false);
     }

@@ -28,6 +28,8 @@ import Property from "@ff/graph/Property";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export { EEasingCurve };
+
 export default class CVSnapshots extends CTweenMachine
 {
     static readonly typeName: string = "CVSnapshots";

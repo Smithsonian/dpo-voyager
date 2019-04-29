@@ -125,6 +125,18 @@ export default class CVCaptureTask extends CVTask
         return new CaptureTaskView(this);
     }
 
+    activateTask()
+    {
+        this.startObserving();
+        super.activateTask();
+    }
+
+    deactivateTask()
+    {
+        this.stopObserving();
+        super.deactivateTask();
+    }
+
     update()
     {
         const ins = this.ins;

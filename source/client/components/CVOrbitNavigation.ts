@@ -138,6 +138,8 @@ export default class CVOrbitNavigation extends CVNavigation
             const lightTransform = this.getLightTransform();
             if (lightTransform) {
                 if (ins.lightsFollowCamera.value) {
+                    lightTransform.ins.order.setValue(ERotationOrder.ZXY);
+                    lightTransform.ins.rotation.reset();
                     lightTransform.ins.rotation.linkFrom(orbit, 1, 1);
                 }
                 else {

@@ -17,19 +17,18 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import CTweenMachine, {
-    EEasingCurve,
-    ITweenState,
-    ITweenTarget
-} from "@ff/graph/components/CTweenMachine";
+import { ITour, ITours } from "common/types/setup";
 
-import { ITour, ITours, ITourStep } from "common/types/setup";
+import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
+import { ITweenState } from "@ff/graph/components/CTweenMachine";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class CVTours extends Component
 {
     static readonly typeName: string = "CVTours";
+    static readonly sceneSnapshotId = "scene-default";
 
     protected static readonly ins = {
         enabled: types.Boolean("Tours.Enabled"),
@@ -54,6 +53,9 @@ export default class CVTours extends Component
 
     private _tours: ITour[] = [];
 
+    get snapshots() {
+        return this.getComponent(CVSnapshots);
+    }
     get tours() {
         return this._tours;
     }
@@ -69,33 +71,46 @@ export default class CVTours extends Component
         return tour ? tour.steps[this.outs.stepIndex.value] : null;
     }
 
-
-    get tweenMachine() {
-        return this.getComponent(CTweenMachine);
-    }
-
     dispose()
     {
         super.dispose();
     }
 
-    update()
+    update(context: IPulseContext)
     {
         const { ins, outs } = this;
 
         const tours = this._tours;
+        const machine = this.snapshots;
 
-        if (!ins.enabled.value) {
-            if (ins.enabled.changed) {
-                outs.tourIndex.set();
+        if (ins.enabled.changed) {
+
+            if (ins.enabled.value) {
+                // store pre-tour scene state
+                const state: ITweenState = {
+                    id: CVTours.sceneSnapshotId,
+                    curve: EEasingCurve.EaseOutQuad,
+                    duration: 1,
+                    threshold: 0.5,
+                    values: machine.getCurrentValues(),
+                };
+                machine.setState(state);
             }
-            return false;
+            else {
+                outs.tourIndex.set();
+
+                // recall pre-tour scene state
+                machine.tweenTo(CVTours.sceneSnapshotId, context.secondsElapsed);
+                machine.deleteState(CVTours.sceneSnapshotId);
+
+                return true;
+            }
         }
 
-        const machine = this.tweenMachine;
         const tourIndex = Math.min(tours.length - 1, Math.max(-1, ins.tourIndex.value));
         const tour = tours[tourIndex];
         const stepCount = tour ? tour.steps.length : 0;
+        outs.stepCount.setValue(stepCount);
 
         let nextStepIndex = -1;
 
@@ -117,6 +132,9 @@ export default class CVTours extends Component
 
         let tween = true;
 
+        if (ins.enabled.changed) {
+            nextStepIndex = outs.stepIndex.value;
+        }
         if (ins.stepIndex.changed) {
             nextStepIndex = Math.min(tour.steps.length - 1, Math.max(0, ins.stepIndex.value));
             tween = false;
@@ -134,7 +152,6 @@ export default class CVTours extends Component
         if (nextStepIndex >= 0) {
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
-            outs.stepCount.setValue(stepCount);
             outs.stepTitle.setValue(step.title);
             machine.ins.id.setValue(step.id);
             tween ? machine.ins.tween.set() : machine.ins.recall.set();

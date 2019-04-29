@@ -49,6 +49,18 @@ export default class CVDerivativesTask extends CVTask
         configuration.annotationsVisible = false;
     }
 
+    activateTask()
+    {
+        this.startObserving();
+        super.activateTask();
+    }
+
+    deactivateTask()
+    {
+        this.stopObserving();
+        super.deactivateTask();
+    }
+
     createView()
     {
         return new DerivativesTaskView(this);

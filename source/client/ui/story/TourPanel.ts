@@ -89,19 +89,19 @@ export default class TourPanel extends DocumentView
 
     protected render()
     {
-        console.log("TourPanel.render");
+        //console.log("TourPanel.render");
 
         const task = this.toursTask;
         const tours = this.tours;
-        const machine = tours.tweenMachine;
+        const machine = tours.snapshots;
 
         if (!task || !tours.ins.enabled.value) {
             return html`<div class="ff-placeholder">Tour edit task not available.</div>`;
         }
 
-        if (!task.outs.isActive.value) {
-            return html`<div class="ff-placeholder">Please select 'Tours' from the task menu to edit tours.</div>`;
-        }
+        //if (!task.outs.isActive.value) {
+        //    return html`<div class="ff-placeholder">Please select 'Tours' from the task menu to edit tours.</div>`;
+        //}
 
         const tour = tours.activeTour;
 

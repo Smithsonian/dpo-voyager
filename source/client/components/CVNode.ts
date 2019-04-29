@@ -45,7 +45,11 @@ export default class CVNode extends CTransform
     }
 
     get snapshotProperties() {
-        return null;
+        return [
+            this.ins.position,
+            this.ins.rotation,
+            this.ins.scale,
+        ];
     }
 
     fromData(data: INode)

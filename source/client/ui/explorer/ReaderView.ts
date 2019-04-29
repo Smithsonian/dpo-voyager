@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+import "@ff/ui/Button";
+import { IButtonClickEvent } from "@ff/ui/Button";
+
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVDocument from "../../components/CVDocument";
 import CVReader, { IArticleEntry } from "../../components/CVReader";
-import Article from "../../models/Article";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,29 +48,33 @@ export default class ReaderView extends DocumentView
     protected render()
     {
         const reader = this.reader;
-        if (!reader) {
-            return html`<div class="ff-placeholder">No document selected.</div>`;
-        }
 
-        if (!reader.ins.enabled) {
-            return html``;
+        if (!reader) {
+            return html`<div class="ff-placeholder">Please select a document to display its articles.</div>`;
         }
 
         if (!reader.activeArticle) {
             const articles = reader.articles;
             return html`<div class="sv-left"></div><div class="sv-article">
-                <ff-icon class="sv-close-button" name="close" @click=${this.onClickClose}></ff-icon>
+                <ff-button class="sv-nav-button" inline title="Close Article Reader" icon="close" @click=${this.onClickClose}></ff-button>
                 ${articles.map(entry => this.renderMenuEntry(entry))}
             </div><div class="sv-right"></div>`;
         }
 
         return html`<div class="sv-left"></div><div class="sv-article">
-                <ff-icon class="sv-close-button" name="close" @click=${this.onClickClose}></ff-icon>
+                <ff-button class="sv-nav-button" inline title="Close Article Reader" icon="close" @click=${this.onClickClose}></ff-button>
+                <ff-button class="sv-nav-button" inline title="Article Menu" icon="bars" @click=${this.onClickMenu}></ff-button>
                 <div class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }
 
-    protected onClickClose(event: MouseEvent)
+    protected onClickMenu(event: IButtonClickEvent)
+    {
+        event.stopPropagation();
+        this.reader.ins.articleId.setValue("");
+    }
+
+    protected onClickClose(event: IButtonClickEvent)
     {
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent("close"));

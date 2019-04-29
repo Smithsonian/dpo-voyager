@@ -29,24 +29,24 @@ export enum ETaskMode { QC, Authoring, Expert }
 
 export default {
     [ETaskMode.QC]: [
-        CVSettingsTask,
         CVPoseTask,
         CVCaptureTask,
         CVDerivativesTask,
+        CVSettingsTask,
     ],
     [ETaskMode.Authoring]: [
-        CVSettingsTask,
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVSettingsTask,
     ],
     [ETaskMode.Expert]: [
-        CVSettingsTask,
         CVPoseTask,
         CVCaptureTask,
         CVDerivativesTask,
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVSettingsTask,
     ]
 }

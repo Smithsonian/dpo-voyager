@@ -378,11 +378,13 @@ $tour-entry-indent: 12px;
   .sv-article {
     position: relative;
 
-    .ff-icon {
-      height: 1.5em;
+    .sv-nav-button {
       float: right;
-      cursor: pointer;
       margin: 1em 0.5em;
+      padding: 2px;
+      .ff-icon {
+        height: 1.5em;
+      }
     }
   }
 

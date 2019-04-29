@@ -93,12 +93,14 @@ export default class CVPoseTask extends CVTask
             }
         });
 
+        this.startObserving();
         super.activateTask();
     }
 
     deactivateTask()
     {
         super.deactivateTask();
+        this.stopObserving();
 
         //this.selection.selectedComponents.off(CVModel2, this.onSelectModel, this);
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);

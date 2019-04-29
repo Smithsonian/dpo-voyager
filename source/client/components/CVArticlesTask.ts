@@ -87,6 +87,18 @@ export default class CVArticlesTask extends CVTask
         configuration.bracketsVisible = true;
     }
 
+    activateTask()
+    {
+        this.startObserving();
+        super.activateTask();
+    }
+
+    deactivateTask()
+    {
+        this.stopObserving();
+        super.deactivateTask();
+    }
+
     update(context)
     {
         const ins = this.ins;

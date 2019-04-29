@@ -16,13 +16,13 @@
  */
 
 import { Node } from "@ff/graph/Component";
-import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
 
 import CVTask, { types } from "./CVTask";
 import ToursTaskView from "../ui/story/ToursTaskView";
 
 import CVDocument from "./CVDocument";
 import CVTours from "./CVTours";
+import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,7 +62,7 @@ export default class CVToursTask extends CVTask
     outs = this.addOutputs<CVTask, typeof CVToursTask.outs>(CVToursTask.outs);
 
     tours: CVTours = null;
-    machine: CTweenMachine = null;
+    machine: CVSnapshots = null;
 
     constructor(node: Node, id: string)
     {
@@ -70,6 +70,18 @@ export default class CVToursTask extends CVTask
 
         const configuration = this.configuration;
         configuration.bracketsVisible = false;
+    }
+
+    create()
+    {
+        super.create();
+        this.startObserving();
+    }
+
+    dispose()
+    {
+        this.stopObserving();
+        super.dispose();
     }
 
     update(context)
@@ -197,18 +209,18 @@ export default class CVToursTask extends CVTask
         if (previous) {
             this.tours.outs.tourIndex.off("value", this.onTourChange, this);
             this.tours.outs.stepIndex.off("value", this.onStepChange, this);
-            this.tours.ins.enabled.setValue(false);
+            //this.tours.ins.enabled.setValue(false);
 
             this.tours = null;
             this.machine = null;
         }
         if (next) {
             this.tours = next.setup.tours;
-            this.machine = this.tours.tweenMachine;
+            this.machine = this.tours.getComponent(CVSnapshots);
 
             this.tours.outs.tourIndex.on("value", this.onTourChange, this);
             this.tours.outs.stepIndex.on("value", this.onStepChange, this);
-            this.tours.ins.enabled.setValue(true);
+            //this.tours.ins.enabled.setValue(true);
         }
 
         this.changed = true;
