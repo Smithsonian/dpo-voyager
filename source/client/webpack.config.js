@@ -75,8 +75,8 @@ module.exports = function(env, argv) {
 
     // copy static assets and license files
     fs.copy(dirs.assets, dirs.output, { overwrite: true });
-    fs.copy(path.resolve(dirs.project, "LICENSE.md"), dirs.output, { overwrite: true });
-    fs.copy(path.resolve(dirs.project, "3RD_PARTY_LICENSES.md"), dirs.output, { overwrite: true });
+    fs.copy(path.resolve(dirs.project, "LICENSE.md"), path.resolve(dirs.output, "LICENSE.md"), { overwrite: true });
+    fs.copy(path.resolve(dirs.project, "3RD_PARTY_LICENSES.txt"), path.resolve(dirs.output, "3RD_PARTY_LICENSES.txt"), { overwrite: true });
 
     if (appKey === "all") {
         return [

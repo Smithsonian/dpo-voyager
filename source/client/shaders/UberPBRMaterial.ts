@@ -17,8 +17,8 @@
 
 import * as THREE from "three";
 
-import * as fragmentShader from "!raw-loader!./uberPBRShader.frag";
-import * as vertexShader from "!raw-loader!./uberPBRShader.vert";
+const fragmentShader = require("./uberPBRShader.frag").default;
+const vertexShader = require("./uberPBRShader.vert").default;
 
 import { EShaderMode } from "common/types/setup";
 
