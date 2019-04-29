@@ -40,6 +40,9 @@ export default class CVReader extends Component
 {
     static readonly typeName: string = "CVReader";
 
+    static readonly text: string = "Reader";
+    static readonly icon: string = "";
+
     protected static readonly ins = {
         enabled: types.Boolean("Reader.Enabled"),
         position: types.Enum("Reader.Position", EReaderPosition),
@@ -55,10 +58,18 @@ export default class CVReader extends Component
     ins = this.addInputs(CVReader.ins);
     outs = this.addOutputs(CVReader.outs);
 
-    protected _articles: Dictionary<IArticleEntry>;
+    get settingProperties() {
+        return [
+            this.ins.enabled,
+            this.ins.position,
+        ];
+    }
 
-    get snapshotKeys() {
-        return [ "enabled", "articleId" ];
+    get snapshotProperties() {
+        return [
+            this.ins.enabled,
+            this.ins.articleId,
+        ];
     }
 
     get articles() {
@@ -71,6 +82,8 @@ export default class CVReader extends Component
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
+
+    protected _articles: Dictionary<IArticleEntry>;
 
     create()
     {

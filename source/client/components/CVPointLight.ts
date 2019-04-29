@@ -27,8 +27,21 @@ export default class CVPointLight extends CPointLight implements ICVLight
 {
     static readonly typeName: string = "CVPointLight";
 
-    get snapshotKeys() {
-        return [ "color", "intensity" ];
+    static readonly text: string = "Point Light";
+    static readonly icon: string = "bulb";
+
+    get settingProperties() {
+        return [
+            this.ins.color,
+            this.ins.intensity,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.color,
+            this.ins.intensity,
+        ];
     }
 
     fromDocument(document: IDocument, node: INode): number

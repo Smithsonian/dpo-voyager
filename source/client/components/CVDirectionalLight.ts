@@ -27,8 +27,21 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 {
     static readonly typeName: string = "CVDirectionalLight";
 
-    get snapshotKeys() {
-        return [ "color", "intensity" ];
+    static readonly text: string = "Directional Light";
+    static readonly icon: string = "bulb";
+
+    get settingProperties() {
+        return [
+            this.ins.color,
+            this.ins.intensity,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.color,
+            this.ins.intensity,
+        ];
     }
 
     fromDocument(document: IDocument, node: INode): number

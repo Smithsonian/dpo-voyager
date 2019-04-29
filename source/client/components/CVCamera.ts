@@ -25,6 +25,9 @@ export default class CVCamera extends CCamera
 {
     static readonly typeName: string = "CVCamera";
 
+    static readonly text: string = "Camera";
+    static readonly icon: string = "video";
+
     fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.camera)) {

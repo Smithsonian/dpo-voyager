@@ -53,6 +53,9 @@ export default class CVModel2 extends CObject3D
 {
     static readonly typeName: string = "CVModel2";
 
+    static readonly text: string = "Model";
+    static readonly icon: string = "cube";
+
     static readonly rotationOrder = "ZYX";
 
     protected static readonly ins = {
@@ -73,6 +76,12 @@ export default class CVModel2 extends CObject3D
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
     outs = this.addOutputs<CObject3D, typeof CVModel2.outs>(CVModel2.outs);
+
+    get settingProperties() {
+        return [
+            this.ins.quality,
+        ];
+    }
 
 
     private _derivatives = new DerivativeList();

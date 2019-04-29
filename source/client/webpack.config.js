@@ -73,8 +73,10 @@ module.exports = function(env, argv) {
     const appKey = argv.app || "explorer";
     const version = argv.vers || "x.x.x";
 
-    // copy static assets
+    // copy static assets and license files
     fs.copy(dirs.assets, dirs.output, { overwrite: true });
+    fs.copy(path.resolve(dirs.project, "LICENSE.md"), dirs.output, { overwrite: true });
+    fs.copy(path.resolve(dirs.project, "3RD_PARTY_LICENSES.md"), dirs.output, { overwrite: true });
 
     if (appKey === "all") {
         return [

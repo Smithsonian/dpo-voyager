@@ -29,6 +29,9 @@ export default class CVViewer extends CRenderable
 {
     static readonly typeName: string = "CVViewer";
 
+    static readonly text: string = "Viewer";
+    static readonly icon: string = "";
+
     protected static readonly ins = {
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
@@ -38,8 +41,20 @@ export default class CVViewer extends CRenderable
 
     ins = this.addInputs(CVViewer.ins);
 
-    get snapshotKeys() {
-        return [ "shader", "exposure", "annotationsVisible" ];
+    get settingProperties() {
+        return [
+            this.ins.shader,
+            this.ins.exposure,
+            this.ins.annotationsVisible,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.shader,
+            this.ins.exposure,
+            this.ins.annotationsVisible,
+        ];
     }
 
     create()

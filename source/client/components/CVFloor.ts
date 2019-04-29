@@ -26,8 +26,24 @@ export default class CVFloor extends CFloor
 {
     static readonly typeName: string = "CVFloor";
 
-    get snapshotKeys() {
-        return [ "opacity" ];
+    static readonly text: string = "Floor";
+    static readonly icon: string = "";
+
+    get settingProperties() {
+        return [
+            this.ins.visible,
+            this.ins.position,
+            this.ins.radius,
+            this.ins.color,
+            this.ins.opacity,
+            this.ins.receiveShadow,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.opacity,
+        ];
     }
 
     constructor(node: Node, id: string)

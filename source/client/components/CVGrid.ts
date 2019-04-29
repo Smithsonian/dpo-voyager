@@ -40,6 +40,9 @@ export default class CVGrid extends CObject3D
 {
     static readonly typeName: string = "CVGrid";
 
+    static readonly text: string = "Grid";
+    static readonly icon: string = "";
+
     protected static readonly gridIns = {
         color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
         opacity: types.Percent("Grid.Opacity", 1.0),
@@ -54,17 +57,18 @@ export default class CVGrid extends CObject3D
     ins = this.addInputs<CObject3D, typeof CVGrid.gridIns>(CVGrid.gridIns);
     outs = this.addOutputs<CObject3D, typeof CVGrid.gridOuts>(CVGrid.gridOuts);
 
-    private _lastViewport: Viewport = null;
-    private _gridProps: IGridProps = {
-        size: 20,
-        mainDivisions: 2,
-        subDivisions: 10,
-        mainColor: new THREE.Color(0.5, 0.7, 0.8),
-        subColor: new THREE.Color(0.25, 0.35, 0.4)
-    };
+    get settingProperties() {
+        return [
+            this.ins.visible,
+            this.ins.color,
+            this.ins.opacity,
+        ];
+    }
 
-    get snapshotKeys() {
-        return [ "opacity" ];
+    get snapshotProperties() {
+        return [
+            this.ins.opacity,
+        ];
     }
 
     get grid() {
@@ -73,6 +77,15 @@ export default class CVGrid extends CObject3D
     get rootScene() {
         return this.getGraphComponent(CVScene);
     }
+
+    private _lastViewport: Viewport = null;
+    private _gridProps: IGridProps = {
+        size: 20,
+        mainDivisions: 2,
+        subDivisions: 10,
+        mainColor: new THREE.Color(0.5, 0.7, 0.8),
+        subColor: new THREE.Color(0.25, 0.35, 0.4)
+    };
 
     create()
     {

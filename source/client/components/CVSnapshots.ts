@@ -89,17 +89,12 @@ export default class CVSnapshots extends CTweenMachine
 
     protected updateComponentTarget(component: Component, include: boolean)
     {
-        const snapshotKeys = component["snapshotKeys"] as string[];
-        if (!snapshotKeys) {
+        const snapshotProperties = component["snapshotProperties"] as Property[];
+        if (!snapshotProperties) {
             return;
         }
 
-        snapshotKeys.forEach(key => {
-            const property = component.ins[key] as Property;
-            if (!property) {
-                throw new Error(`property '${key}' not found in component '${component.displayName}'`);
-            }
-
+        snapshotProperties.forEach(property => {
             const schema = property.schema;
             if (!schema.event && property.type !== "object") {
                 const isIncluded = this.hasTargetProperty(property);

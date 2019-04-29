@@ -58,6 +58,9 @@ export default class CVOrbitNavigation extends CVNavigation
 {
     static readonly typeName: string = "CVOrbitNavigation";
 
+    static readonly text: string = "Orbit Navigation";
+    static readonly icon: string = "";
+
     protected static readonly ins = {
         orbit: types.Vector3("Manip.Orbit", [ -25, -25, 0 ]),
         offset: types.Vector3("Manip.Offset", [ 0, 0, 100 ]),
@@ -79,8 +82,20 @@ export default class CVOrbitNavigation extends CVNavigation
         this._scene = this.scene;
     }
 
-    get snapshotKeys() {
-        return [ "orbit", "offset" ];
+    get settingProperties() {
+        return [
+            this.ins.minOrbit,
+            this.ins.minOffset,
+            this.ins.maxOrbit,
+            this.ins.maxOffset,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.orbit,
+            this.ins.offset,
+        ];
     }
 
     update()

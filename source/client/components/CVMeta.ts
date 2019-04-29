@@ -32,6 +32,9 @@ export default class CVMeta extends Component
 {
     static readonly typeName: string = "CVMeta";
 
+    static readonly text: string = "Meta";
+    static readonly icon: string = "document";
+
     collection = new UnorderedCollection<any>();
     process = new UnorderedCollection<any>();
     images = new UnorderedCollection<IImage>();

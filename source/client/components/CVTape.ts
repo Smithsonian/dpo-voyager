@@ -37,6 +37,9 @@ export default class CVTape extends CObject3D
 {
     static readonly typeName: string = "CVTape";
 
+    static readonly text: string = "Tape";
+    static readonly icon: string = "";
+
     protected static readonly tapeIns = {
         startPosition: types.Vector3("Start.Position"),
         startDirection: types.Vector3("Start.Direction"),
@@ -52,8 +55,20 @@ export default class CVTape extends CObject3D
     ins = this.addInputs<CObject3D, typeof CVTape.tapeIns>(CVTape.tapeIns);
     outs = this.addOutputs<CObject3D, typeof CVTape.tapeOuts>(CVTape.tapeOuts);
 
-    get snapshotKeys() {
-        return [ "startPosition", "startDirection", "endPosition", "endDirection" ];
+    get settingProperties() {
+        return [
+            this.ins.visible,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.visible,
+            this.ins.startPosition,
+            this.ins.startDirection,
+            this.ins.endPosition,
+            this.ins.endDirection,
+        ];
     }
 
     protected startPin: Pin = null;

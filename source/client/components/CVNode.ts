@@ -33,8 +33,19 @@ export default class CVNode extends CTransform
 {
     static readonly typeName: string = "CVNode";
 
-    get snapshotKeys() {
-        return [ "position", "rotation", "scale" ];
+    static readonly text: string = "Node";
+    static readonly icon: string = "";
+
+    get settingProperties() {
+        return [
+            this.ins.position,
+            this.ins.rotation,
+            this.ins.scale,
+        ];
+    }
+
+    get snapshotProperties() {
+        return null;
     }
 
     fromData(data: INode)

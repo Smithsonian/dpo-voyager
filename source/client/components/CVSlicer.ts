@@ -41,6 +41,9 @@ export default class CVSlicer extends Component
 {
     static readonly typeName: string = "CVSlicer";
 
+    static readonly text: string = "Slicer";
+    static readonly icon: string = "";
+
     protected static ins = {
         enabled: types.Boolean("Slice.Enabled"),
         axis: types.Enum("Slice.Axis", ESliceAxis),
@@ -51,12 +54,23 @@ export default class CVSlicer extends Component
 
     ins = this.addInputs(CVSlicer.ins);
 
+    get settingProperties() {
+        return [
+            this.ins.enabled,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.enabled,
+            this.ins.axis,
+            this.ins.position,
+            this.ins.inverted,
+        ];
+    }
+
     protected plane: number[] = null;
     protected axisIndex = -1;
-
-    get snapshotKeys() {
-        return [ "enabled", "axis", "position", "inverted" ];
-    }
 
     update(context)
     {

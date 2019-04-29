@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CVExploreTask from "../components/CVExploreTask";
+import CVSettingsTask from "../components/CVSettingsTask";
 import CVPoseTask from "../components/CVPoseTask";
 import CVCaptureTask from "../components/CVCaptureTask";
 import CVAnnotationsTask from "../components/CVAnnotationsTask";
@@ -29,19 +29,19 @@ export enum ETaskMode { QC, Authoring, Expert }
 
 export default {
     [ETaskMode.QC]: [
-        CVExploreTask,
+        CVSettingsTask,
         CVPoseTask,
         CVCaptureTask,
         CVDerivativesTask,
     ],
     [ETaskMode.Authoring]: [
-        CVExploreTask,
+        CVSettingsTask,
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
     ],
     [ETaskMode.Expert]: [
-        CVExploreTask,
+        CVSettingsTask,
         CVPoseTask,
         CVCaptureTask,
         CVDerivativesTask,

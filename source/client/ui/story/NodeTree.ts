@@ -83,19 +83,19 @@ class NodeTree extends Tree<NVNode>
     {
         let icons = [];
         if (node.scene) {
-            icons.push(html`<ff-icon class="sv-icon-scene" name="hierarchy"></ff-icon>`);
+            icons.push(html`<ff-icon class="sv-icon-scene" name=${node.scene.icon}></ff-icon>`);
         }
         if (node.model) {
-            icons.push(html`<ff-icon class="sv-icon-model" name="cube"></ff-icon>`);
+            icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
         }
         if (node.light) {
-            icons.push(html`<ff-icon class="sv-icon-light" name="bulb"></ff-icon>`);
+            icons.push(html`<ff-icon class="sv-icon-light" name=${node.light.icon}></ff-icon>`);
         }
         if (node.camera) {
-            icons.push(html`<ff-icon class="sv-icon-camera" name="video"></ff-icon>`);
+            icons.push(html`<ff-icon class="sv-icon-camera" name=${node.camera.icon}></ff-icon>`);
         }
         if (node.meta) {
-            icons.push(html`<ff-icon class="sv-icon-meta" name="document"></ff-icon>`);
+            icons.push(html`<ff-icon class="sv-icon-meta" name=${node.meta.icon}></ff-icon>`);
         }
 
 

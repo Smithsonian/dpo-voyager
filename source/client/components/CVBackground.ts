@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import Node from "@ff/graph/Node";
 import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
 import { IBackground, TBackgroundStyle } from "common/types/setup";
@@ -27,8 +26,19 @@ export default class CVBackground extends CBackground
 {
     static readonly typeName: string = "CVBackground";
 
-    get snapshotKeys() {
-        return [ "color0", "color1" ];
+    get settingProperties() {
+        return [
+            this.ins.style,
+            this.ins.color0,
+            this.ins.color1,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.color0,
+            this.ins.color1,
+        ];
     }
 
     fromData(data: IBackground)

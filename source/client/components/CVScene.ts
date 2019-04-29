@@ -37,13 +37,23 @@ export default class CVScene extends CVNode
 {
     static readonly typeName: string = "CVScene";
 
+    static readonly text: string = "Scene";
+    static readonly icon: string = "hierarchy";
+
     protected static readonly ins = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
     };
 
     ins = this.addInputs<CVNode, typeof CVScene.ins>(CVScene.ins);
 
-    private _modelBoundingBox = new THREE.Box3();
+
+    get settingProperties() {
+        return null;
+    }
+
+    get snapshotProperties() {
+        return null;
+    }
 
     get modelBoundingBox() {
         return this._modelBoundingBox;
@@ -51,6 +61,8 @@ export default class CVScene extends CVNode
     get models() {
         return this.getGraphComponents(CVModel2);
     }
+
+    private _modelBoundingBox = new THREE.Box3();
 
     create()
     {

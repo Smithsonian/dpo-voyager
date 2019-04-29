@@ -15,18 +15,31 @@
  * limitations under the License.
  */
 
-import { customElement, html } from "@ff/ui/CustomElement";
+import { Node } from "@ff/graph/Component";
 
-import CVExploreTask from "../../components/CVExploreTask";
-import { TaskView } from "../../components/CVTask";
+import CVTask from "./CVTask";
+import SettingsTaskView from "../ui/story/SettingsTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-explore-task-view")
-export default class ExploreTaskView extends TaskView<CVExploreTask>
+export default class CVSettingsTask extends CVTask
 {
-    protected render()
+    static readonly typeName: string = "CVSettingsTask";
+
+    static readonly text: string = "Settings";
+    static readonly icon: string = "eye";
+
+    constructor(node: Node, id: string)
     {
-        return html`<div class="sv-placeholder">Preview mode.</div>`;
+        super(node, id);
+
+        const configuration = this.configuration;
+        configuration.interfaceVisible = true;
+        configuration.bracketsVisible = true;
+    }
+
+    createView()
+    {
+        return new SettingsTaskView(this);
     }
 }
