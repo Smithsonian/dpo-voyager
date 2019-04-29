@@ -164,7 +164,12 @@ export default class CVSnapshots extends CTweenMachine
             targets: this.targets.map(target => {
                 const component = target.property.group.linkable as Component;
                 const key = target.property.key;
-                return pathMap.get(component) + "/" + key;
+                const componentPath = pathMap.get(component);
+                if (!componentPath) {
+                    //Array.from(pathMap).forEach(entry => console.log(entry[1], entry[0].displayName));
+                    throw new Error(`snapshot path not registered for component '${component.displayName}'`);
+                }
+                return componentPath + "/" + key;
             }),
             states: Object.keys(this.states).map(key => {
                 const state = this.states[key];

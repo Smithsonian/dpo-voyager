@@ -209,6 +209,11 @@ export default class CVAnnotationView extends CObject3D
         spriteGroup.render(viewport.overlay, context.camera);
     }
 
+    tock()
+    {
+        return this.updated;
+    }
+
     dispose()
     {
         (this.object3D as HTMLSpriteGroup).dispose();

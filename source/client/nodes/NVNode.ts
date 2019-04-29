@@ -85,6 +85,8 @@ export default class NVNode extends Node
         const node = document.nodes[nodeIndex];
         this.transform.fromData(node);
 
+        pathMap.set(`node/${nodeIndex}`, this.transform);
+
         let name = "Node";
 
         if (isFinite(node.meta)) {
@@ -150,6 +152,8 @@ export default class NVNode extends Node
         const nodeIndex = document.nodes.length;
         const node = this.transform.toData();
         document.nodes.push(node);
+
+        pathMap.set(this.transform, `node/${nodeIndex}`);
 
         if (this.name) {
             node.name = this.name;

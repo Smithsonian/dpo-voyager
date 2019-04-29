@@ -216,6 +216,7 @@ export default class CVOrbitNavigation extends CVNavigation
     tock()
     {
         this._modelBoundingBox = null;
+        return false;
     }
 
     fromData(data: INavigation)
