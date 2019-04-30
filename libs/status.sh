@@ -12,6 +12,5 @@ status ff-core
 status ff-browser
 status ff-graph
 status ff-ui
-status ff-react
 status ff-scene
 status ff-three

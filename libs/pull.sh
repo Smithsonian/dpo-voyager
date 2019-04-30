@@ -12,6 +12,5 @@ pull ff-core
 pull ff-browser
 pull ff-graph
 pull ff-ui
-pull ff-react
 pull ff-scene
 pull ff-three
