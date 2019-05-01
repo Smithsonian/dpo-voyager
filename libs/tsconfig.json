@@ -4,7 +4,6 @@
         { "path": "ff-browser/tsconfig.module.json" },
         { "path": "ff-graph/tsconfig.module.json" },
         { "path": "ff-ui/tsconfig.module.json" },
-        { "path": "ff-react/tsconfig.module.json" },
         { "path": "ff-three/tsconfig.module.json" },
         { "path": "ff-scene/tsconfig.module.json" }
     ],
