@@ -19,8 +19,8 @@ import * as THREE from "three";
 
 import { IComponentEvent, types } from "@ff/graph/Component";
 
-import { EUnitType, TUnitType } from "common/types/common";
-import { IDocument, IScene } from "common/types/document";
+import { EUnitType, TUnitType } from "client/schema/common";
+import { IDocument, IScene } from "client/schema/document";
 
 import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";

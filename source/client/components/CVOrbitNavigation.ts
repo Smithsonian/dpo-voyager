@@ -24,7 +24,7 @@ import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
-import { INavigation } from "common/types/setup";
+import { INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
 import CVNavigation, { EViewPreset } from "./CVNavigation";

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { IDocument, IScene } from "common/types/document";
+import { IDocument, IScene } from "client/schema/document";
 
 import NVNode, { INodeComponents } from "./NVNode";
 

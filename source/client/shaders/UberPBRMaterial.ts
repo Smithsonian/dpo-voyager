@@ -20,7 +20,7 @@ import * as THREE from "three";
 const fragmentShader = require("./uberPBRShader.frag").default;
 const vertexShader = require("./uberPBRShader.vert").default;
 
-import { EShaderMode } from "common/types/setup";
+import { EShaderMode } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

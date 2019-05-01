@@ -17,7 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 
-import { ITour, ITours } from "common/types/setup";
+import { ITour, ITours } from "client/schema/setup";
 
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 import { ITweenState } from "@ff/graph/components/CTweenMachine";

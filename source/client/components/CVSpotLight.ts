@@ -17,7 +17,7 @@
 
 import CSpotLight from "@ff/scene/components/CSpotLight";
 
-import { IDocument, INode, ILight, ColorRGB } from "common/types/document";
+import { IDocument, INode, ILight, ColorRGB } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";

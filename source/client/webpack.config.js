@@ -102,6 +102,7 @@ function createAppConfig(app, version, dirs, isDevMode)
     console.log("application = %s", appName);
     console.log("mode = %s", devMode);
     console.log("version = %s", version);
+    console.log("source directory = %s", dirs.source);
     console.log("output directory = %s", dirs.output);
 
     const config = {
@@ -120,7 +121,7 @@ function createAppConfig(app, version, dirs, isDevMode)
             ],
             // Aliases for FF Foundation Library components
             alias: {
-                "common": path.resolve(dirs.source, "common"),
+                "client": path.resolve(dirs.source, "client"),
                 "@ff/core": path.resolve(dirs.libs, "ff-core/source"),
                 "@ff/graph": path.resolve(dirs.libs, "ff-graph/source"),
                 "@ff/ui": path.resolve(dirs.libs, "ff-ui/source"),

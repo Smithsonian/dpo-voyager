@@ -17,7 +17,7 @@
 
 import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 
-import { IReader, EReaderPosition } from "common/types/setup";
+import { IReader, EReaderPosition } from "client/schema/setup";
 
 import Article from "../models/Article";
 import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";

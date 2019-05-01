@@ -20,7 +20,7 @@ import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 
 import { EProjection } from "@ff/three/UniversalCamera";
 
-import { INavigation } from "common/types/setup";
+import { INavigation } from "client/schema/setup";
 
 import CVAssetReader from "./CVAssetReader";
 

@@ -9,7 +9,7 @@
 
         "baseUrl": ".",
         "paths": {
-            "common/*": [ "../common/*" ],
+            "client/*": [ "./*" ],
             "@ff/core/*": [ "../../libs/ff-core/source/*" ],
             "@ff/graph/*": [ "../../libs/ff-graph/source/*" ],
             "@ff/browser/*": [ "../../libs/ff-browser/source/*" ],

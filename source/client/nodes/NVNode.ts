@@ -18,7 +18,7 @@
 import Component from "@ff/graph/Component";
 import Node from "@ff/graph/Node";
 
-import { IDocument } from "common/types/document";
+import { IDocument } from "client/schema/document";
 
 import CVNode from "../components/CVNode";
 

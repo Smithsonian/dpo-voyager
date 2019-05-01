@@ -31,7 +31,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import "@ff/ui/TextEdit";
 import { ITextEditChangeEvent } from "@ff/ui/TextEdit";
 
-import { INote } from "common/types/meta";
+import { INote } from "client/schema/meta";
 
 import NodeView, { customElement, html } from "../explorer/NodeView";
 import NVNode from "../../nodes/NVNode";

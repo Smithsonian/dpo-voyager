@@ -20,7 +20,7 @@ import Component from "@ff/graph/Component";
 import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
 import CLight from "@ff/scene/components/CLight";
 
-import { ISnapshots } from "common/types/setup";
+import { ISnapshots } from "client/schema/setup";
 
 import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";

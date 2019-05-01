@@ -17,7 +17,7 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import { EAssetType, EMapType, IAsset as IAssetJSON, TAssetType, TMapType } from "common/types/model";
+import { EAssetType, EMapType, IAsset as IAssetJSON, TAssetType, TMapType } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 

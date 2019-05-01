@@ -21,7 +21,7 @@ import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
 
-import * as documentTemplate from "common/templates/document.json";
+import * as documentTemplate from "client/templates/document.json";
 
 import ExplorerApplication, { IExplorerApplicationProps } from "./ExplorerApplication";
 

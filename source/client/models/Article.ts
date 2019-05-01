@@ -17,7 +17,7 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import { IArticle } from "common/types/meta";
+import { IArticle } from "client/schema/meta";
 
 ////////////////////////////////////////////////////////////////////////////////
 

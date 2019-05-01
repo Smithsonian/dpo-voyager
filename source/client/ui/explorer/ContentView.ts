@@ -17,7 +17,7 @@
 
 import Subscriber from "@ff/core/Subscriber";
 
-import { EReaderPosition } from "common/types/setup";
+import { EReaderPosition } from "client/schema/setup";
 
 import CVAssetReader from "../../components/CVAssetReader";
 import CVDocument from "../../components/CVDocument";

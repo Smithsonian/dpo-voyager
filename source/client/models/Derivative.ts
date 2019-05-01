@@ -27,7 +27,7 @@ import {
     TDerivativeQuality,
     EDerivativeUsage,
     TDerivativeUsage,
-} from "common/types/model";
+} from "client/schema/model";
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CVAssetReader from "../components/CVAssetReader";

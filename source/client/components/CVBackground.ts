@@ -17,7 +17,7 @@
 
 import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
-import { IBackground, TBackgroundStyle } from "common/types/setup";
+import { IBackground, TBackgroundStyle } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

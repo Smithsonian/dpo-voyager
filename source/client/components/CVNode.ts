@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
-import { INode } from "common/types/document";
+import { INode } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 

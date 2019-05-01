@@ -19,8 +19,8 @@ import OrderedCollection, { ICollectionUpdateEvent } from "@ff/core/OrderedColle
 import UnorderedCollection from "@ff/core/UnorderedCollection";
 import Component from "@ff/graph/Component";
 
-import { IDocument, INode, IScene } from "common/types/document";
-import { IMeta, IImage, INote } from "common/types/meta";
+import { IDocument, INode, IScene } from "client/schema/document";
+import { IMeta, IImage, INote } from "client/schema/meta";
 
 import Article from "../models/Article";
 

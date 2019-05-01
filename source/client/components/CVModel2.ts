@@ -22,8 +22,8 @@ import CObject3D from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
 
-import { IDocument, INode } from "common/types/document";
-import { IModel, EUnitType, EDerivativeUsage, EDerivativeQuality } from "common/types/model";
+import { IDocument, INode } from "client/schema/document";
+import { IModel, EUnitType, EDerivativeUsage, EDerivativeQuality } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
@@ -32,7 +32,7 @@ import DerivativeList from "../models/DerivativeList";
 
 import CVAnnotationView from "./CVAnnotationView";
 import CVAssetReader from "./CVAssetReader";
-import { Vector3 } from "common/types/common";
+import { Vector3 } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 

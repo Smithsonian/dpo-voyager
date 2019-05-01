@@ -18,7 +18,7 @@
 
 import List from "@ff/ui/List";
 
-import { ITour } from "common/types/setup";
+import { ITour } from "client/schema/setup";
 
 import CVToursTask from "../../components/CVToursTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";

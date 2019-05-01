@@ -21,8 +21,8 @@ import Component, { Node, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
 
-import { IDocument } from "common/types/document";
-import { EDerivativeQuality } from "common/types/model";
+import { IDocument } from "client/schema/document";
+import { EDerivativeQuality } from "client/schema/model";
 
 import DocumentValidator from "../io/DocumentValidator";
 

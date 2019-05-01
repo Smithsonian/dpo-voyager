@@ -1,3 +1,11 @@
+---
+layout: default
+title: Home
+nav_order: 1
+description: "Smithsonian Voyager - Next Generation 3D editing and viewing tool suite."
+permalink: /
+---
+
 # Voyager
 ### Next Generation 3D editing and viewing tool suite
 

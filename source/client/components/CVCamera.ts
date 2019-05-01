@@ -17,7 +17,7 @@
 
 import CCamera, { EProjection } from "@ff/scene/components/CCamera";
 
-import { IDocument, INode, ICamera } from "common/types/document";
+import { IDocument, INode, ICamera } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 

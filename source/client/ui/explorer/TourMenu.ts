@@ -18,7 +18,7 @@
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
-import { ITour } from "common/types/setup";
+import { ITour } from "client/schema/setup";
 
 
 ////////////////////////////////////////////////////////////////////////////////

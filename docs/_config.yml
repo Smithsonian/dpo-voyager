@@ -1,4 +1,12 @@
-theme: jekyll-theme-cayman
+remote_theme: pmarsceill/just-the-docs
 
 title: Smithsonian Voyager
 description: Next Generation 3D Editing and Viewing Tool Suite
+
+#color_scheme: "dark"
+
+search_enabled: false
+
+aux_links:
+  "Voyager on Github":
+    - "//github.com/Smithsonian/dpo-voyager"

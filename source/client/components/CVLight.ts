@@ -17,7 +17,7 @@
 
 import CLight from "@ff/scene/components/CLight";
 
-import { IDocument, INode } from "common/types/document";
+import { IDocument, INode } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 

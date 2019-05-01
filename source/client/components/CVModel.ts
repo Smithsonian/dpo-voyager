@@ -18,8 +18,8 @@
 import { types } from "@ff/graph/propertyTypes";
 import CModel from "@ff/scene/components/CModel";
 
-import { IDocument, INode } from "common/types/document";
-import { IModel, EUnitType, EDerivativeUsage, EDerivativeQuality } from "common/types/model";
+import { IDocument, INode } from "client/schema/document";
+import { IModel, EUnitType, EDerivativeUsage, EDerivativeQuality } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";

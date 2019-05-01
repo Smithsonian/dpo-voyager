@@ -1,7 +1,4 @@
 {
-    "references": [
-        { "path": "../common" }
-    ],
     "compilerOptions": {
         "target": "ES6",
         "module": "commonjs",

@@ -26,7 +26,7 @@ import { Node, types } from "@ff/graph/Component";
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
 
-import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "common/types/model";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 
 import NVNode from "../nodes/NVNode";
 import CVMeta from "./CVMeta";
@@ -35,7 +35,7 @@ import CVAssetReader from "./CVAssetReader";
 import CVTask from "./CVTask";
 
 import CaptureTaskView from "../ui/story/CaptureTaskView";
-import { TImageQuality } from "common/types/meta";
+import { TImageQuality } from "client/schema/meta";
 
 ////////////////////////////////////////////////////////////////////////////////
 

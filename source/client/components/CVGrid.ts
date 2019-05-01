@@ -23,8 +23,8 @@ import ThreeGrid, { IGridProps } from "@ff/three/Grid";
 import { types } from "@ff/graph/Component";
 import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
-import { IGrid } from "common/types/setup";
-import { EUnitType } from "common/types/common";
+import { IGrid } from "client/schema/setup";
+import { EUnitType } from "client/schema/common";
 
 import CVScene from "./CVScene";
 

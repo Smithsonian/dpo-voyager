@@ -12,20 +12,12 @@
         "build-prod": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=production --app=all --vers=$APP_VERSION; cd ../..",
         "build-server": "tsc -b source/server",
         "build-libs": "tsc -b libs",
-        "build-core": "tsc -p libs/ff-core/tsconfig.module.json",
-        "build-graph": "tsc -p libs/ff-graph/tsconfig.module.json",
-        "build-browser": "tsc -p libs/ff-browser/tsconfig.module.json",
-        "build-ui": "tsc -p libs/ff-ui/tsconfig.module.json",
-        "build-react": "tsc -p libs/ff-react/tsconfig.module.json",
-        "build-three": "tsc -p libs/ff-three/tsconfig.module.json",
-        "build-scene": "tsc -p libs/ff-scene/tsconfig.module.json",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/code/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
         "up": "docker-compose up -d; docker-compose logs -f",
         "down": "docker-compose stop; docker-compose rm -f -v",
         "restart": "docker-compose stop; docker-compose rm -f -v; docker-compose up -d; docker-compose logs -f",
-        "bash": "docker-compose exec server bash",
-        "reset": "./scripts/reset.sh"
+        "bash": "docker-compose exec server bash"
     },
     "nodemonConfig": {
         "delay": "1000",

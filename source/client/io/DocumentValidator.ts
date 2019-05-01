@@ -17,13 +17,13 @@
 
 import * as Ajv from "ajv";
 
-import * as documentSchema from "common/schema/document.schema.json";
-import * as commonSchema from "common/schema/common.schema.json";
-import * as metaSchema from "common/schema/meta.schema.json";
-import * as modelSchema from "common/schema/model.schema.json";
-import * as setupSchema from "common/schema/setup.schema.json";
+import * as documentSchema from "client/schema/json/document.schema.json";
+import * as commonSchema from "client/schema/json/common.schema.json";
+import * as metaSchema from "client/schema/json/meta.schema.json";
+import * as modelSchema from "client/schema/json/model.schema.json";
+import * as setupSchema from "client/schema/json/setup.schema.json";
 
-import { IDocument } from "common/types/document";
+import { IDocument } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 

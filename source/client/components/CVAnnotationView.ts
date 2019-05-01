@@ -26,7 +26,7 @@ import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/C
 
 import CVModel2 from "./CVModel2";
 
-import { IAnnotation } from "common/types/model";
+import { IAnnotation } from "client/schema/model";
 import Annotation, { EAnnotationStyle } from "../models/Annotation";
 
 import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";

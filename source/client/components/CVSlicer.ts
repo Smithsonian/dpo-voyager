@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
-import { ISlicer, ESliceAxis, TSliceAxis } from "common/types/setup";
+import { ISlicer, ESliceAxis, TSliceAxis } from "client/schema/setup";
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 

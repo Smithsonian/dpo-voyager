@@ -17,7 +17,7 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import { IAnnotation as IAnnotationJSON } from "common/types/model";
+import { IAnnotation as IAnnotationJSON } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -19,8 +19,8 @@ import { Dictionary } from "@ff/core/types";
 import Component from "@ff/graph/Component";
 import CTransform from "@ff/scene/components/CTransform";
 
-import { IDocument, IScene } from "common/types/document";
-import { ISetup } from "common/types/setup";
+import { IDocument, IScene } from "client/schema/document";
+import { ISetup } from "client/schema/setup";
 
 import CVInterface from "./CVInterface";
 import CVViewer from "./CVViewer";

@@ -19,9 +19,11 @@ import * as sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
 
 import * as path from "path";
-import * as express from "express";
+import * as http from "http";
 
-import ExpressServer, { IExpressServerConfiguration } from "./ExpressServer";
+import * as express from "express";
+import * as morgan from "morgan";
+import { v2 as webdav } from "webdav-server";
 
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
@@ -32,37 +34,85 @@ const localMode = process.env.NODE_SERVER_LOCAL === "true";
 const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
 const staticDir = path.resolve(rootDir, "../../dist/");
 const fileDir = path.resolve(rootDir, "../../files/");
-const docDir = path.resolve(rootDir, "../../doc/code/");
+const docDir = path.resolve(rootDir, "../../docs/_site/");
 
 ////////////////////////////////////////////////////////////////////////////////
-// CONFIGURE, START SERVER
+// GREETING
 
-console.log([
-    "",
-    "------------------------------------------",
-    "3D Foundation Project - Development Server",
-    "------------------------------------------",
-    "Port: " + port,
-    "Root Directory: " + rootDir,
-    "Static File Directory: " + staticDir,
-    "WebDAV File Directory: " + fileDir,
-    "Development Mode: " + devMode,
-    "Local Mode: " + localMode
-].join("\n"));
+console.log(`
+  _________       .__  __  .__                        .__                ________ ________   
+ /   _____/ _____ |__|/  |_|  |__   __________   ____ |__|____    ____   \\_____  \\\\______ \\  
+ \\_____  \\ /     \\|  \\   __\\  |  \\ /  ___/  _ \\ /    \\|  \\__  \\  /    \\    _(__  < |    |  \\ 
+ /        \\  Y Y  \\  ||  | |   Y  \\\\___ (  <_> )   |  \\  |/ __ \\|   |  \\  /       \\|    \`   \\
+/_______  /__|_|  /__||__| |___|  /____  >____/|___|  /__(____  /___|  / /______  /_______  /
+        \\/      \\/              \\/     \\/           \\/        \\/     \\/         \\/        \\/ 
 
+------------------------------------------------------
+Smithsonian 3D Foundation Project - Development Server
+------------------------------------------------------
+Port:                    ${port}
+Local Mode:              ${localMode}
+Development Mode:        ${devMode}
+Root Directory:          ${rootDir}
+Static File Directory:   ${staticDir}
+WebDAV File Directory:   ${fileDir}
+Documentation Directory: ${docDir}
+------------------------------------------------------
+`);
 
-const expressServerConfig: IExpressServerConfiguration = {
-    port,
-    enableDevMode: devMode,
-    enableLogging: devMode,
-    staticRoute: "/",
-    staticDir,
-    fileDir,
-    docDir
-};
+////////////////////////////////////////////////////////////////////////////////
 
-const expressServer = new ExpressServer(expressServerConfig);
+const app = express();
+app.disable('x-powered-by');
 
-expressServer.start().then(() => {
-    console.info(`\nServer ready and listening on port ${port}`);
+// logging
+if (devMode) {
+    app.use(morgan("tiny"));
+}
+
+// static file server
+app.use("/", express.static(staticDir));
+
+// documentation server
+app.use("/doc", express.static(docDir));
+
+// WebDAV file server
+const webDAVServer = new webdav.WebDAVServer();
+webDAVServer.setFileSystem("/", new webdav.PhysicalFileSystem(fileDir), success => {
+    if (!success) {
+        console.error(`failed to mount WebDAV file system at '${fileDir}'`);
+    }
+    else {
+        webDAVServer.afterRequest((req, next) => {
+            // Display the method, the URI, the returned status code and the returned message
+            //console.log(`WebDAV ${req.request.method} ${req.request.url} ` +
+            //    `${req.response.statusCode} ${req.response.statusMessage}`);
+            next();
+        });
+
+        app.use(webdav.extensions.express("/", webDAVServer));
+    }
+});
+
+// error handling
+app.use((error, req, res, next) => {
+    console.error(error);
+
+    if (res.headersSent) {
+        return next(error);
+    }
+
+    if (req.accepts("json")) {
+        // send JSON formatted error
+        res.status(500).send({ error: `${error.name}: ${error.message}` });
+    }
+    else {
+        // send error page
+        res.status(500).render("errors/500", { error });
+    }
+});
+
+const server = new http.Server(app);
+server.listen(port, () => {
+    console.info(`Server ready and listening on port ${port}\n`);
 });

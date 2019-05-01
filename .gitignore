@@ -6,10 +6,10 @@ node_modules/
 dist/
 test/
 files/
-doc/code
-services/server/bin
-services/server/static/app
-services/server/static/libs
+docs/.sass-cache/
+docs/_site/
+doc/code/
+services/server/bin/
 
 # FILES
 *.log
