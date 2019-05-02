@@ -63,9 +63,14 @@ export default class CVPointLight extends CPointLight implements ICVLight
             throw new Error("light type mismatch: not a point light");
         }
 
+        data.point = data.point || {} as any;
+
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+
+            position: ins.position.schema.preset,
+
             distance: data.point.distance || ins.distance.schema.preset,
             decay: data.point.decay !== undefined ? data.point.decay : ins.decay.schema.preset,
 

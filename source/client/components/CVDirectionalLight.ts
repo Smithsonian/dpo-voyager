@@ -65,6 +65,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
 
@@ -83,7 +84,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
-            intensity: ins.intensity.value,
+            intensity: ins.intensity.value
         } as ILight;
 
         data.type = "directional";

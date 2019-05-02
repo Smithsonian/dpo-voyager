@@ -62,7 +62,7 @@ export default class CVModel2 extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         shader: types.Enum("Model.Shader", EShaderMode, EShaderMode.Default),
-        quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
+        quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.Medium),
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),

@@ -61,13 +61,19 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "point") {
-            throw new Error("light type mismatch: not a point light");
+        if (data.type !== "spot") {
+            throw new Error("light type mismatch: not a spot light");
         }
+
+        data.spot = data.spot || {} as any;
 
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+
+            position: ins.position.schema.preset,
+            target: ins.target.schema.preset,
+
             distance: data.spot.distance || ins.distance.schema.preset,
             decay: data.spot.decay !== undefined ? data.spot.decay : ins.decay.schema.preset,
             angle: data.spot.angle !== undefined ? data.spot.angle : ins.angle.schema.preset,
