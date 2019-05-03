@@ -46,7 +46,7 @@ export interface IModel
     translation?: Vector3;
     rotation?: Vector4;
     boundingBox?: IBoundingBox;
-    material?: IMaterial;
+    material?: IPBRMaterialSettings;
     annotations?: IAnnotation[];
 }
 
@@ -114,25 +114,16 @@ export interface IAsset
     mapType?: TMapType;
 }
 
-export interface IMaterial
+export interface IPBRMaterialSettings
 {
-    pbrMetallicRoughness?: IPBRMetallicRoughness;
-    normalTexture?: any;
+    color?: ColorRGBA
+    opacity?: number;
+    roughness?: number;
+    metalness?: number;
+    occlusion?: number;
+    //emissiveFactor?: ColorRGB;
+    //alphaMode?: any; // TODO
+    //alphaCutoff?: number;
+    //doubleSided?: boolean;
     normalSpace?: TNormalSpaceType;
-    occlusionTexture?: any;
-    occlusionStrength?: number;
-    emissiveTexture?: any;
-    emissiveFactor?: ColorRGB;
-    alphaMode?: any; // TODO
-    alphaCutoff?: number;
-    doubleSided?: boolean;
-}
-
-export interface IPBRMetallicRoughness
-{
-    baseColorFactor?: ColorRGBA;
-    baseColorTexture?: any;
-    metallicFactor?: number;
-    roughnessFactor?: number;
-    metallicRoughnessTexture?: any;
 }

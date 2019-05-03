@@ -140,7 +140,7 @@ export default class CVAnnotationView extends CObject3D
         this.onSpriteLink = this.onSpriteLink.bind(this);
 
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -219,7 +219,7 @@ export default class CVAnnotationView extends CObject3D
         (this.object3D as HTMLSpriteGroup).dispose();
 
         this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.system.off<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -312,7 +312,15 @@ export default class CVAnnotationView extends CObject3D
             target = target.parent as AnnotationSprite;
         }
 
-        this.activeAnnotation = target && target.annotation;
+        const annotation = target && target.annotation;
+        if (annotation) {
+            this.activeAnnotation = annotation;
+        }
+    }
+
+    protected onSystemPointerUp(event: IPointerEvent)
+    {
+        this.activeAnnotation = null;
     }
 
     protected onViewportDispose(event: IViewportDisposeEvent)

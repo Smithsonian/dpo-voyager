@@ -33,6 +33,7 @@ import DerivativeList from "../models/DerivativeList";
 import CVAnnotationView from "./CVAnnotationView";
 import CVAssetReader from "./CVAssetReader";
 import { Vector3 } from "client/schema/common";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,12 +62,18 @@ export default class CVModel2 extends CObject3D
     protected static readonly ins = {
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
-        shader: types.Enum("Model.Shader", EShaderMode, EShaderMode.Default),
-        quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.Medium),
+        quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
+        shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
+        override: types.Boolean("Material.Override"),
+        color: types.ColorRGB("Material.BaseColor"),
+        opacity: types.Percent("Material.Opacity", 1.0),
+        roughness: types.Percent("Material.Roughness", 0.8),
+        metalness: types.Percent("Material.Metalness", 0.1),
+        occlusion: types.Percent("Material.Occlusion", 0.3),
         dumpDerivatives: types.Event("Derivatives.Dump"),
     };
 
@@ -80,6 +87,13 @@ export default class CVModel2 extends CObject3D
     get settingProperties() {
         return [
             this.ins.quality,
+            this.ins.shader,
+            this.ins.override,
+            this.ins.color,
+            this.ins.opacity,
+            this.ins.roughness,
+            this.ins.metalness,
+            this.ins.occlusion,
         ];
     }
 
@@ -116,8 +130,21 @@ export default class CVModel2 extends CObject3D
     {
         super.create();
 
+        // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
+
+        // set quality based on max texture size
+        const maxTextureSize = this.getMainComponent(CRenderer).outs.maxTextureSize.value;
+        if (maxTextureSize <= 1024) {
+            this.ins.quality.setValue(EDerivativeQuality.Low);
+        }
+        else if (maxTextureSize <= 2048) {
+            this.ins.quality.setValue(EDerivativeQuality.Medium);
+        }
+        else {
+            this.ins.quality.setValue(EDerivativeQuality.High);
+        }
     }
 
     update()
@@ -146,14 +173,15 @@ export default class CVModel2 extends CObject3D
             this.updateUnitScale();
             this.emit("bounding-box");
         }
+
         if (ins.shader.changed) {
-            const shader = ins.shader.getValidatedValue();
-            this.object3D.traverse(object => {
-                const material = object["material"] as UberPBRMaterial;
-                if (material && material.isUberPBRMaterial) {
-                    material.setShaderMode(shader);
-                }
-            });
+            this.updateShader();
+        }
+
+        if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
+            ins.color.changed || ins.opacity.changed ||
+                ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
+            this.updateMaterial();
         }
         if (ins.center.changed) {
             this.center();
@@ -242,14 +270,22 @@ export default class CVModel2 extends CObject3D
             this.derivatives.fromJSON(data.derivatives);
         }
         if (data.material) {
-            // TODO: Implement
+            const material = data.material;
+            ins.copyValues({
+                override: true,
+                color: material.color || ins.color.schema.preset,
+                opacity: material.opacity !== undefined ? material.opacity : ins.opacity.schema.preset,
+                roughness: material.roughness !== undefined ? material.roughness : ins.roughness.schema.preset,
+                metalness: material.metalness !== undefined ? material.metalness : ins.metalness.schema.preset,
+                occlusion: material.occlusion !== undefined ? material.occlusion : ins.occlusion.schema.preset,
+            });
         }
 
         if (data.annotations) {
             this.getComponent(CVAnnotationView).fromData(data.annotations);
         }
 
-        // automatically display new derivatives if available
+        // trigger automatic loading of derivatives if active
         this.ins.autoLoad.set();
 
         return node.model;
@@ -273,6 +309,16 @@ export default class CVModel2 extends CObject3D
             data.rotation = _quat.toArray();
         }
 
+        if (ins.override.value) {
+            data.material = {
+                color: ins.color.value,
+                opacity: ins.opacity.value,
+                roughness: ins.roughness.value,
+                metalness: ins.metalness.value,
+                occlusion: ins.occlusion.value,
+            };
+        }
+
         data.boundingBox = {
             min: this._boundingBox.min.toArray() as Vector3,
             max: this._boundingBox.max.toArray() as Vector3
@@ -289,6 +335,35 @@ export default class CVModel2 extends CObject3D
         const modelIndex = document.models.length;
         document.models.push(data);
         return modelIndex;
+    }
+
+    protected updateShader()
+    {
+        const shader = this.ins.shader.getValidatedValue();
+        this.object3D.traverse(object => {
+            const material = object["material"] as UberPBRMaterial;
+            if (material && material.isUberPBRMaterial) {
+                material.setShaderMode(shader);
+            }
+        });
+    }
+
+    protected updateMaterial()
+    {
+        const ins = this.ins;
+
+        this.object3D.traverse(object => {
+            const material = object["material"] as UberPBRMaterial;
+            if (material && material.isUberPBRMaterial) {
+                material.aoMapMix.setScalar(ins.occlusion.value);
+                material.color.fromArray(ins.color.value);
+                material.opacity = ins.opacity.value;
+                material.transparent = material.opacity < 1 || !!material.alphaMap;
+                material.roughness = ins.roughness.value;
+                material.metalness = ins.metalness.value;
+            }
+        });
+
     }
 
     protected updateUnitScale()
@@ -371,13 +446,17 @@ export default class CVModel2 extends CObject3D
             this._activeDerivative = derivative;
             this.addObject3D(derivative.model);
 
+            // update bounding box based on loaded derivative
             helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
             this.emit("bounding-box");
 
-            // TODO: Test
-            //const bb = derivative.boundingBox;
-            //const box = { min: bb.min.toArray(), max: bb.max.toArray() };
-            //console.log("derivative bounding box: ", box);
+            // test output bounding box
+            const box = { min: this._boundingBox.min.toArray(), max: this._boundingBox.max.toArray() };
+            console.log("CVModel.onLoad - bounding box: ", box);
+
+            if (this.ins.override) {
+                this.updateMaterial();
+            }
         });
     }
 }

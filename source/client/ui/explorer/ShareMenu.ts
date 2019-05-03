@@ -67,6 +67,7 @@ export default class ShareMenu extends Popup
 
         const twitterShareUrl = `http://twitter.com/share?text=${title}&url=${url}`;
         const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        const linkedInShareUrl = `https://www.linkedin.com/shareArticle?url=${url}&mini=true&title=${title}`;
         const iFrameEmbedCode = `<iframe name="Smithsonian Voyager" src="${url}"></iframe>`;
 
         const emailUrl = `mailto:?subject=${title}&body=${url}`;
@@ -79,7 +80,7 @@ export default class ShareMenu extends Popup
         <div class="ff-flex-row sv-share-buttons">
             <a href=${twitterShareUrl} target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-twitter" icon="twitter" title="Twitter"></ff-button></a>
             <a href=${facebookShareUrl} target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-facebook" icon="facebook" title="Facebook"></ff-button></a>
-            <ff-button class="sv-share-button-instagram" icon="instagram" title="Instagram" @click=${this.onClickInstagram}></ff-button>
+            <a href=${linkedInShareUrl} target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-linkedin" icon="linkedin" title="LinkedIn"></ff-button></a>
             <a href=${emailUrl} target="_blank"><ff-button class="sv-share-button-email" icon="email" title="Email"></ff-button></a>
         </div>
         <div class="ff-title">Embed Link</div>
@@ -88,11 +89,6 @@ export default class ShareMenu extends Popup
             <ff-button icon="copy" title="Copy to Clipboard" @click=${this.onClickCopy}></ff-button>
         </div>
         `;
-    }
-
-    protected onClickInstagram()
-    {
-
     }
 
     protected onClickCopy()

@@ -47,6 +47,8 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     fragmentShader: string;
 
     private _clayColor = new THREE.Color("#a67a6c");
+    private _wireColor = new THREE.Color("#004966");
+    private _wireEmissiveColor = new THREE.Color("#004966");
     private _paramCopy: any = {};
     private _sideCopy: THREE.Side = THREE.FrontSide;
 
@@ -154,7 +156,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
                 this._paramCopy = {
                     blending: this.blending,
                     transparent: this.transparent,
-                    depthWrite: this.depthWrite
+                    depthWrite: this.depthWrite,
                 };
                 this.defines["MODE_NORMALS"] = true;
                 this.blending = THREE.NoBlending;
@@ -167,7 +169,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
                     side: this.side,
                     blending: this.blending,
                     transparent: this.transparent,
-                    depthWrite: this.depthWrite
+                    depthWrite: this.depthWrite,
                 };
                 this.defines["MODE_XRAY"] = true;
                 this.side = THREE.DoubleSide;
@@ -178,9 +180,19 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
 
             case EShaderMode.Wireframe:
                 this._paramCopy = {
-                    wireframe: this.wireframe
+                    color: this.color,
+                    emissive: this.emissive,
+                    roughness: this.roughness,
+                    metalness: this.metalness,
+                    wireframe: this.wireframe,
+                    map: this.map,
                 };
+                this.color = this._wireColor;
+                this.emissive = this._wireEmissiveColor;
+                this.roughness = 0.8;
+                this.metalness = 0.1;
                 this.wireframe = true;
+                this.map = undefined;
                 break;
         }
     }

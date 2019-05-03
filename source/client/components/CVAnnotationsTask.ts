@@ -90,13 +90,13 @@ export default class CVAnnotationsTask extends CVTask
         super.activateTask();
 
         //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
-        this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        //this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     deactivateTask()
     {
         //this.selection.selectedComponents.off(CVAnnotationView, this.onSelectAnnotations, this);
-        this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        //this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         this.stopObserving();
         super.deactivateTask();
@@ -184,9 +184,11 @@ export default class CVAnnotationsTask extends CVTask
 
             if (mode === EAnnotationsTaskMode.Create) {
                 this.createAnnotation(position, normal);
+                event.stopPropagation = true;
             }
             else if (mode === EAnnotationsTaskMode.Move) {
                 this.moveAnnotation(position, normal);
+                event.stopPropagation = true;
             }
         }
     }
@@ -201,6 +203,16 @@ export default class CVAnnotationsTask extends CVTask
         }
         if (nextAnnotations) {
             nextAnnotations.on<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
+        }
+
+        const prevModel = previous ? previous.getComponent(CVModel2, true) : null;
+        const nextModel = next ? next.getComponent(CVModel2, true) : null;
+
+        if (prevModel) {
+            prevModel.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        }
+        if (nextModel) {
+            nextModel.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
         }
 
         this.activeAnnotations = nextAnnotations;
