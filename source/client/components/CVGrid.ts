@@ -74,7 +74,8 @@ export default class CVGrid extends CObject3D
     get grid() {
         return this.object3D as ThreeGrid;
     }
-    get rootScene() {
+
+    protected get rootScene() {
         return this.getGraphComponent(CVScene);
     }
 

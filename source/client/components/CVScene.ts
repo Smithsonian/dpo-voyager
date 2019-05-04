@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import { IComponentEvent, types } from "@ff/graph/Component";
+import { IComponentEvent, ITypedEvent, types } from "@ff/graph/Component";
 
 import { EUnitType, TUnitType } from "client/schema/common";
 import { IDocument, IScene } from "client/schema/document";
@@ -26,6 +26,11 @@ import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export interface IBoundingBoxEvent extends ITypedEvent<"bounding-box">
+{
+    boundingBox: THREE.Box3;
+}
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -119,6 +124,6 @@ export default class CVScene extends CVNode
         box.makeEmpty();
 
         this.models.forEach(model => box.expandByObject(model.object3D));
-        this.emit("bounding-box");
+        this.emit<IBoundingBoxEvent>({ type: "bounding-box", boundingBox: box });
     }
 }

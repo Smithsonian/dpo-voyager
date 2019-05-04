@@ -22,7 +22,7 @@ import { IAnnotation as IAnnotationJSON } from "client/schema/model";
 ////////////////////////////////////////////////////////////////////////////////
 
 export type Vector3 = number[];
-export enum EAnnotationStyle { Default, Line, Balloon }
+export enum EAnnotationStyle { Standard, Extended, Balloon, Pin }
 
 export type IAnnotationUpdateEvent = IDocumentUpdateEvent<Annotation>;
 export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
@@ -51,7 +51,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
             articleId: "",
             imageUri: "",
 
-            style: EAnnotationStyle.Default,
+            style: EAnnotationStyle.Standard,
             visible: true,
             expanded: false,
 
@@ -85,7 +85,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         if (data.imageUri) {
             json.imageUri = data.imageUri;
         }
-        if (data.style !== EAnnotationStyle.Default) {
+        if (data.style !== EAnnotationStyle.Standard) {
             json.style = EAnnotationStyle[data.style];
         }
         if (data.visible === false) {
@@ -131,7 +131,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         data.articleId = json.articleId || "";
         data.imageUri = json.imageUri || "";
 
-        data.style = EAnnotationStyle[json.style] || EAnnotationStyle.Default;
+        data.style = EAnnotationStyle[json.style] || EAnnotationStyle.Standard;
         data.visible = json.visible !== undefined ? json.visible : true;
         data.expanded = json.expanded || false;
 

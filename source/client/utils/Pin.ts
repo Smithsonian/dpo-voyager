@@ -69,10 +69,6 @@ export default class Pin extends THREE.Group
 
         handle.matrixAutoUpdate = false;
         this.add(handle);
-
-        this.matrixAutoUpdate = false;
-        this.scale.setScalar(0.1);
-        this.updateMatrix();
     }
 
     dispose()

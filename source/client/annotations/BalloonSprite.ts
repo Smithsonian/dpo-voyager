@@ -22,7 +22,7 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class PinSprite extends AnnotationSprite
+export default class BalloonSprite extends AnnotationSprite
 {
     protected pin: THREE.Mesh;
 
@@ -58,19 +58,19 @@ export default class PinSprite extends AnnotationSprite
         return null; //super.renderHTMLElement(container, camera, this.pin);
     }
 
-    updateHTMLElement(element: PinAnnotation)
+    updateHTMLElement(element: BalloonAnnotation)
     {
         //element.performUpdate();
     }
 
-    protected createHTMLElement(): PinAnnotation
+    protected createHTMLElement(): BalloonAnnotation
     {
         return null; //new PinAnnotation(this);
     }
 }
 
-@customElement("sv-pin-annotation")
-class PinAnnotation extends AnnotationElement
+@customElement("sv-balloon-annotation")
+class BalloonAnnotation extends AnnotationElement
 {
     protected firstConnected()
     {

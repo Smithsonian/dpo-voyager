@@ -29,7 +29,7 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 const _quadrantClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
 
 
-export default class BeamSprite extends AnnotationSprite
+export default class StandardSprite extends AnnotationSprite
 {
     protected beam: THREE.Line;
     protected quadrant = -1;
@@ -64,7 +64,7 @@ export default class BeamSprite extends AnnotationSprite
 
     renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
     {
-        const element = super.renderHTMLElement(container, camera, this.beam) as BeamAnnotation;
+        const element = super.renderHTMLElement(container, camera, this.beam) as StandardAnnotation;
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = angleOpacity * element.getOpacity();
@@ -84,27 +84,23 @@ export default class BeamSprite extends AnnotationSprite
         return element;
     }
 
-    updateHTMLElement(element: BeamAnnotation)
+    updateHTMLElement(element: StandardAnnotation)
     {
         element.performUpdate();
     }
 
-    protected createHTMLElement(): BeamAnnotation
+    protected createHTMLElement(): StandardAnnotation
     {
-        return new BeamAnnotation(this);
+        return new StandardAnnotation(this);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-beam-annotation")
-class BeamAnnotation extends AnnotationElement
+@customElement("sv-standard-annotation")
+class StandardAnnotation extends AnnotationElement
 {
     protected titleElement: HTMLDivElement;
-    protected contentElement: HTMLDivElement;
-    protected wrapperElement: HTMLDivElement;
-    protected handler = 0;
-    protected isExpanded = true;
     protected currentOpacity = 0;
     protected targetOpacity = 0;
 
@@ -112,25 +108,12 @@ class BeamAnnotation extends AnnotationElement
     {
         super(sprite);
 
-        this.onClickArticle = this.onClickArticle.bind(this);
-
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-content", "sv-title");
-
-        this.wrapperElement = this.appendElement("div");
-
-        this.contentElement = this.createElement("div", null, this.wrapperElement);
-        this.contentElement.classList.add("sv-content", "sv-description");
     }
 
     getOpacity()
     {
-        // if (this.currentOpacity > this.targetOpacity) {
-        //     this.currentOpacity = Math.max(this.currentOpacity - 0.05, 0);
-        // }
-        // else if (this.currentOpacity < this.targetOpacity) {
-        //     this.currentOpacity = Math.min(this.currentOpacity + 0.05, 1);
-        // }
         this.currentOpacity = this.targetOpacity;
         return this.currentOpacity;
     }
@@ -148,37 +131,6 @@ class BeamAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation.data;
 
         this.titleElement.innerText = annotation.title;
-
-        const contentTemplate = html`<p>${annotation.lead}</p>
-            ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
-
-        render(contentTemplate, this.contentElement);
-
         this.targetOpacity = annotation.visible ? 1 : 0;
-
-        if (this.isExpanded !== annotation.expanded) {
-
-            this.isExpanded = annotation.expanded;
-            window.clearTimeout(this.handler);
-
-            if (this.isExpanded) {
-                this.classList.add("sv-expanded");
-                this.contentElement.style.display = "inherit";
-                this.contentElement.style.height = this.contentElement.scrollHeight + "px";
-
-            }
-            else {
-                this.classList.remove("sv-expanded");
-                this.contentElement.style.height = "0";
-                this.handler = window.setTimeout(() => this.contentElement.style.display = "none", 300);
-
-            }
-        }
-    }
-
-    protected onClickArticle(event: MouseEvent)
-    {
-        event.stopPropagation();
-        this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
     }
 }

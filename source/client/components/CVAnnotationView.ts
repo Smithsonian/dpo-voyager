@@ -17,7 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 
-import { Node, ITypedEvent, types } from "@ff/graph/Component";
+import { ITypedEvent, Node, types } from "@ff/graph/Component";
 
 import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
 import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
@@ -25,16 +25,16 @@ import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
 import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/CObject3D";
 
 import CVModel2 from "./CVModel2";
+import CVMeta from "./CVMeta";
+import CVReader from "./CVReader";
 
 import { IAnnotation } from "client/schema/model";
 import Annotation, { EAnnotationStyle } from "../models/Annotation";
 
 import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
-
-import PinSprite from "../annotations/PinSprite";
-import BeamSprite from "../annotations/BeamSprite";
-import CVMeta from "./CVMeta";
-import CVReader from "./CVReader";
+import StandardSprite from "../annotations/StandardSprite";
+import ExtendedSprite from "../annotations/ExtendedSprite";
+import BalloonSprite from "../annotations/BalloonSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +49,7 @@ const _inputs = {
     unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 }),
     title: types.String("Annotation.Title"),
     lead: types.String("Annotation.Lead"),
-    style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Default),
+    style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Standard),
     scale: types.Scale("Annotation.Scale", 1),
     offset: types.Number("Annotation.Offset"),
     article: types.Option("Annotation.Article", []),
@@ -106,7 +106,7 @@ export default class CVAnnotationView extends CObject3D
             const ins = this.ins;
             ins.title.setValue(annotation ? annotation.data.title : "", true);
             ins.lead.setValue(annotation ? annotation.data.lead : "", true);
-            ins.style.setValue(annotation ? annotation.data.style : EAnnotationStyle.Default, true);
+            ins.style.setValue(annotation ? annotation.data.style : EAnnotationStyle.Standard, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
             ins.tilt.setValue(annotation ? annotation.data.tilt : 0, true);
@@ -349,12 +349,18 @@ export default class CVAnnotationView extends CObject3D
 
         let sprite;
         switch(annotation.data.style) {
-            case EAnnotationStyle.Balloon:
-                sprite = new PinSprite(annotation);
+            case EAnnotationStyle.Pin:
+                sprite = new BalloonSprite(annotation);
                 break;
-            case EAnnotationStyle.Line:
+            case EAnnotationStyle.Balloon:
+                sprite = new BalloonSprite(annotation);
+                break;
+            case EAnnotationStyle.Extended:
+                sprite = new ExtendedSprite(annotation);
+                break;
+            case EAnnotationStyle.Standard:
             default:
-                sprite = new BeamSprite(annotation);
+                sprite = new StandardSprite(annotation);
                 break;
         }
 

@@ -102,14 +102,16 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         const annotations = this.task.activeAnnotations;
 
-        const target = event.target;
-        const text = event.detail.text;
+        if (annotations) {
+            const target = event.target;
+            const text = event.detail.text;
 
-        if (target.name === "title") {
-            annotations.ins.title.setValue(text);
-        }
-        else if (target.name === "lead") {
-            annotations.ins.lead.setValue(text);
+            if (target.name === "title") {
+                annotations.ins.title.setValue(text);
+            }
+            else if (target.name === "lead") {
+                annotations.ins.lead.setValue(text);
+            }
         }
     }
 

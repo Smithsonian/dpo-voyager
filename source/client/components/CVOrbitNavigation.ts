@@ -89,6 +89,8 @@ export default class CVOrbitNavigation extends CVNavigation
     get settingProperties() {
         return [
             this.ins.enabled,
+            this.ins.orbit,
+            this.ins.offset,
             this.ins.autoZoom,
             this.ins.autoRotation,
             this.ins.lightsFollowCamera,

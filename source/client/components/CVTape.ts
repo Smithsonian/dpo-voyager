@@ -23,6 +23,7 @@ import { ITape } from "client/schema/setup";
 
 import Pin from "../utils/Pin";
 import CVModel2 from "./CVModel2";
+import CVScene, { IBoundingBoxEvent } from "client/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +72,10 @@ export default class CVTape extends CObject3D
         ];
     }
 
+    protected get rootScene() {
+        return this.getGraphComponent(CVScene);
+    }
+
     protected startPin: Pin = null;
     protected endPin: Pin = null;
     protected line: THREE.Line = null;
@@ -82,9 +87,11 @@ export default class CVTape extends CObject3D
         this.object3D = new THREE.Group();
 
         this.startPin = new Pin();
+        this.startPin.matrixAutoUpdate = false;
         this.startPin.visible = false;
 
         this.endPin = new Pin();
+        this.endPin.matrixAutoUpdate = false;
         this.endPin.visible = false;
 
         const lineGeometry = new THREE.Geometry();
@@ -96,6 +103,16 @@ export default class CVTape extends CObject3D
         this.line.visible = false;
 
         this.object3D.add(this.startPin, this.endPin, this.line);
+    }
+
+    activate()
+    {
+        this.rootScene.on("bounding-box", this.onModelBoundingBox, this);
+    }
+
+    deactivate()
+    {
+        this.rootScene.off("bounding-box", this.onModelBoundingBox, this);
     }
 
     update(context)
@@ -213,5 +230,17 @@ export default class CVTape extends CObject3D
 
             outs.state.setValue(ETapeState.SetStart);
         }
+    }
+
+    protected onModelBoundingBox(event: IBoundingBoxEvent)
+    {
+        event.boundingBox.getSize(_vec3a);
+        const avgSize = 0.3 * (_vec3a.x + _vec3a.y + _vec3a.z);
+
+        this.startPin.scale.setScalar(avgSize * 0.001);
+        this.startPin.updateMatrix();
+
+        this.endPin.scale.setScalar(avgSize * 0.001);
+        this.endPin.updateMatrix();
     }
 }
