@@ -7,6 +7,7 @@
     <title>{{htmlWebpackPlugin.options.title}}</title>
 
     <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+    <link href="/fonts/fonts.css" rel="stylesheet">
 
     <style>
         body { background: #303030; }
@@ -24,8 +25,6 @@
         {{#if htmlWebpackPlugin.options.isLocal}}
             <script src="/libs/pep.min.js"></script>
             <script src="/libs/three.min.js"></script>
-            <link href="/libs/quill.snow.css" rel="stylesheet">
-            <script src="/libs/quill.min.js"></script>
         {{else}}
             <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
