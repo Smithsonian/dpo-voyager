@@ -23,7 +23,7 @@ import CObject3D from "@ff/scene/components/CObject3D";
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "client/schema/document";
-import { IModel, EUnitType, EDerivativeUsage, EDerivativeQuality } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
@@ -39,10 +39,8 @@ import CRenderer from "@ff/scene/components/CRenderer";
 
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
-const _vec3c = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _box = new THREE.Box3();
-
 
 /**
  * Graph component rendering a model or model part.
@@ -241,7 +239,8 @@ export default class CVModel2 extends CObject3D
 
         const data = document.models[node.model];
 
-        ins.localUnits.setValue(EUnitType[data.units || "cm"] || EUnitType.cm);
+        const units = EUnitType[data.units || "cm"];
+        ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);
 
         ins.position.reset();
         ins.rotation.reset();
