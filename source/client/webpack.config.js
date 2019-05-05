@@ -70,6 +70,7 @@ const apps = {
 module.exports = function(env, argv) {
 
     const isDevMode = argv.mode !== "production";
+    const isLocal = !!argv.local;
     const appKey = argv.app || "explorer";
     const version = argv.vers || "x.x.x";
 
@@ -80,27 +81,28 @@ module.exports = function(env, argv) {
 
     if (appKey === "all") {
         return [
-            createAppConfig(apps.explorer, version, dirs, isDevMode),
-            createAppConfig(apps.mini, version, dirs, isDevMode),
-            createAppConfig(apps.story, version, dirs, isDevMode),
-            createAppConfig(apps.demo, version, dirs, isDevMode),
+            createAppConfig(apps.explorer, version, dirs, isDevMode, isLocal),
+            createAppConfig(apps.mini, version, dirs, isDevMode, isLocal),
+            createAppConfig(apps.story, version, dirs, isDevMode, isLocal),
+            createAppConfig(apps.demo, version, dirs, isDevMode, isLocal),
         ];
     }
     else {
-        return createAppConfig(apps[appKey], version, dirs, isDevMode);
+        return createAppConfig(apps[appKey], version, dirs, isDevMode, isLocal);
     }
 };
 
-function createAppConfig(app, version, dirs, isDevMode)
+function createAppConfig(app, version, dirs, isDevMode, isLocal)
 {
     const devMode = isDevMode ? "development" : "production";
-
+    const localTag = isLocal ? "-local" : "";
     const appName = app.name;
     const appTitle = `${app.title} ${version} ${isDevMode ? " DEV" : " PROD"}`;
 
     console.log("VOYAGER - WEBPACK BUILD SCRIPT");
     console.log("application = %s", appName);
     console.log("mode = %s", devMode);
+    console.log("local = %s", isLocal);
     console.log("version = %s", version);
     console.log("source directory = %s", dirs.source);
     console.log("output directory = %s", dirs.output);
@@ -149,11 +151,12 @@ function createAppConfig(app, version, dirs, isDevMode)
                 allChunks: true
             }),
             new HTMLWebpackPlugin({
-                filename: isDevMode ? `${appName}-dev.html` : `${appName}.html`,
+                filename: isDevMode ? `${appName}-dev${localTag}.html` : `${appName}${localTag}.html`,
                 template: app.template,
                 title: appTitle,
                 version: version,
                 isDevelopment: isDevMode,
+                isLocal: isLocal,
                 element: `<${appName}></${appName}>`,
                 chunks: [ appName ]
             })
