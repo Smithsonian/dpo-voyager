@@ -21,9 +21,9 @@ import "../ui/PropertyOptions";
 import "../ui/PropertyEvent";
 
 import CVDocument from "./CVDocument";
-import CVNavigation, { EViewPreset } from "./CVNavigation";
+import { EViewPreset } from "./CVOrbitNavigation";
 
-import CVTool, { types, customElement, html, ToolView } from "./CVTool";
+import CVTool, { customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,9 +61,11 @@ export class ViewToolView extends ToolView<CVViewTool>
 
         const tool = this.tool;
         const navigation = document.setup.navigation;
-        const zoom = navigation.ins.zoomExtents;
+
         const projection = navigation.ins.projection;
         const preset = navigation.ins.preset;
+        const zoom = navigation.ins.zoomExtents;
+
         const presetMap = [ EViewPreset.Front, EViewPreset.Back,
             EViewPreset.Left, EViewPreset.Right,
             EViewPreset.Top, EViewPreset.Bottom ];

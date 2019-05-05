@@ -17,7 +17,7 @@
 
 import download from "@ff/browser/download";
 
-import Component, { Node, types } from "@ff/graph/Component";
+import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
 
@@ -29,6 +29,7 @@ import DocumentValidator from "../io/DocumentValidator";
 import NVNode, { INodeComponents } from "../nodes/NVNode";
 import NVScene from "../nodes/NVScene";
 
+import CVMeta from "./CVMeta";
 import CVSetup from "./CVSetup";
 import CVAssetReader from "./CVAssetReader";
 
@@ -58,6 +59,7 @@ export default class CVDocument extends CRenderGraph
 
     protected static readonly outs = {
         assetPath: types.AssetPath("Asset.Path"),
+        title: types.String("Document.Title"),
     };
 
     ins = this.addInputs<CRenderGraph, typeof CVDocument.ins>(CVDocument.ins);
@@ -93,6 +95,18 @@ export default class CVDocument extends CRenderGraph
         return name;
     }
 
+    create()
+    {
+        super.create();
+        this.innerGraph.components.on(CVMeta, this.onMetaComponent, this);
+    }
+
+    dispose()
+    {
+        this.innerGraph.components.off(CVMeta, this.onMetaComponent, this);
+        super.dispose();
+    }
+
     update(context)
     {
         super.update(context);
@@ -122,10 +136,6 @@ export default class CVDocument extends CRenderGraph
     {
         const children = this.root.transform.children.slice();
         children.forEach(child => child.node.dispose());
-        //console.clear();
-        //console.log("----------------- CLEAR ---------------------");
-        //this.dump();
-        //this.object3D.traverse(obj => console.log(obj.type));
     }
 
     openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode | NVScene)
@@ -139,6 +149,9 @@ export default class CVDocument extends CRenderGraph
         if (!mergeParent) {
             this.clearNodeTree();
         }
+
+        // listen to load events on scene meta component
+        this.onMetaComponent({ type: "CVMeta", object: this.root.meta, add: true, remove: false });
 
         let parent = (typeof mergeParent === "object" ? mergeParent : this.root);
         if (parent.graph !== this.innerGraph) {
@@ -227,5 +240,17 @@ export default class CVDocument extends CRenderGraph
         //pathMap.forEach((path, comp) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
 
         return document;
+    }
+
+    protected onMetaComponent(event: IComponentEvent<CVMeta>)
+    {
+        const meta = event.object;
+        const propTitle = this.outs.title;
+
+        if (event.add && !propTitle.value) {
+            meta.once("load", () => {
+                propTitle.setValue(meta.collection.get("title") || "");
+            });
+        }
     }
 }

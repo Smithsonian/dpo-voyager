@@ -75,6 +75,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
                 <sv-property-boolean .property=${grid.ins.visible} name="Grid"></sv-property-boolean>
                 <sv-property-color class="sv-nogap" .property=${grid.ins.color} name=" "></sv-property-color>
                 <sv-property-boolean .property=${floor.ins.visible} name="Floor"></sv-property-boolean>
+                <sv-property-color class="sv-nogap" .property=${floor.ins.color} name=" "></sv-property-color>
             </div>
         </div>`;
     }

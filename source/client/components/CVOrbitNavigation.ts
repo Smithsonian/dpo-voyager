@@ -17,19 +17,25 @@
 
 import * as THREE from "three";
 
-import { Node, types } from "@ff/graph/Component";
+import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
 import CameraController from "@ff/three/CameraController";
 import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
+import { EProjection } from "@ff/three/UniversalCamera";
 
 import { INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
-import CVNavigation, { EViewPreset } from "./CVNavigation";
+import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export { EProjection };
+
+export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
+
 
 const _vec3 = new THREE.Vector3();
 
@@ -54,7 +60,7 @@ const _replaceNull = function(vector: number[], replacement: number)
  * Voyager explorer orbit navigation.
  * Controls manipulation and parameters of the camera.
  */
-export default class CVOrbitNavigation extends CVNavigation
+export default class CVOrbitNavigation extends CObject3D
 {
     static readonly typeName: string = "CVOrbitNavigation";
 
@@ -62,10 +68,13 @@ export default class CVOrbitNavigation extends CVNavigation
     static readonly icon: string = "";
 
     protected static readonly ins = {
+        enabled: types.Boolean("Settings.Enabled", true),
+        preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
+        projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
+        autoRotation: types.Boolean("Navigation.AutoRotation", false),
         zoomExtents: types.Event("Settings.ZoomExtents"),
         autoZoom: types.Boolean("Settings.AutoZoom", true),
-        autoRotation: types.Boolean("Navigation.AutoRotation", false),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
         offset: types.Vector3("Current.Offset", [ 0, 0, 100 ]),
         minOrbit: types.Vector3("Limits.Min.Orbit", [ -90, -Infinity, -Infinity ]),
@@ -74,7 +83,7 @@ export default class CVOrbitNavigation extends CVNavigation
         maxOffset: types.Vector3("Limits.Max.Offset", [ Infinity, Infinity, Infinity ]),
     };
 
-    ins = this.addInputs<CVNavigation, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
+    ins = this.addInputs<CObject3D, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
 
     private _controller = new CameraController();
     private _scene: CScene = null;
@@ -106,6 +115,30 @@ export default class CVOrbitNavigation extends CVNavigation
             this.ins.orbit,
             this.ins.offset,
         ];
+    }
+
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
+    }
+
+    create()
+    {
+        super.create();
+
+        this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        this.assetReader.outs.completed.on("value", this.onLoadingCompleted, this);
+    }
+
+    dispose()
+    {
+        this.assetReader.outs.completed.off("value", this.onLoadingCompleted, this);
+
+        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
+
+        super.dispose();
     }
 
     update()
@@ -225,8 +258,6 @@ export default class CVOrbitNavigation extends CVNavigation
     {
         data = data || {} as INavigation;
 
-        super.fromData(data);
-
         const orbit = data.orbit || {
             orbit: [ -25, -25, 0 ],
             offset: [ 0, 0, 100 ],
@@ -237,6 +268,7 @@ export default class CVOrbitNavigation extends CVNavigation
         };
 
         this.ins.copyValues({
+            enabled: !!data.enabled,
             autoZoom: !!data.autoZoom,
             autoRotation: !!data.autoRotation,
             lightsFollowCamera: !!data.lightsFollowCamera,
@@ -252,8 +284,9 @@ export default class CVOrbitNavigation extends CVNavigation
     toData(): INavigation
     {
         const ins = this.ins;
-        const data = super.toData();
+        const data: Partial<INavigation> = {};
 
+        data.enabled = ins.enabled.value;
         data.autoZoom = ins.autoZoom.value;
         data.autoRotation = ins.autoRotation.value;
         data.lightsFollowCamera = ins.lightsFollowCamera.value;

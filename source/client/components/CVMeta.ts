@@ -68,6 +68,7 @@ export default class CVMeta extends Component
             }
         }
 
+        this.emit("load");
         return node.meta;
     }
 

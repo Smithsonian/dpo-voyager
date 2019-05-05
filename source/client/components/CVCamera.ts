@@ -28,6 +28,16 @@ export default class CVCamera extends CCamera
     static readonly text: string = "Camera";
     static readonly icon: string = "video";
 
+    get settingProperties() {
+        return [
+            this.ins.projection,
+            this.ins.fov,
+            this.ins.size,
+            this.ins.near,
+            this.ins.far,
+        ]
+    }
+
     fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.camera)) {

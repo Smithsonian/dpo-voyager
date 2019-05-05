@@ -23,8 +23,6 @@ import CVScene from "../components/CVScene";
 import CVSetup from "../components/CVSetup";
 import CVMeta from "../components/CVMeta";
 import Component from "@ff/graph/Component";
-import CLight from "@ff/scene/components/CLight";
-import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 

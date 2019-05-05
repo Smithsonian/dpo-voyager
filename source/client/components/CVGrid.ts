@@ -31,6 +31,7 @@ import CVScene from "./CVScene";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
 
 const _matRotationOffset = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
 const _matIdentity = new THREE.Matrix4();
@@ -62,6 +63,7 @@ export default class CVGrid extends CObject3D
             this.ins.visible,
             this.ins.color,
             this.ins.opacity,
+            this.ins.update,
         ];
     }
 
@@ -141,6 +143,8 @@ export default class CVGrid extends CObject3D
 
                 props.mainDivisions = size;
                 props.subDivisions = 10;
+
+                _vec3b.set(0, box.min.y, 0);
             }
 
             if (!this.object3D) {
@@ -148,6 +152,11 @@ export default class CVGrid extends CObject3D
             }
             else {
                 this.grid.update(props);
+            }
+
+            if (ins.update.changed) {
+                this.grid.position.copy(_vec3b);
+                this.grid.updateMatrix();
             }
         }
 

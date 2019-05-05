@@ -98,9 +98,7 @@ export default class ChromeView extends DocumentView
             }
         }
         else {
-            const meta = document.root.meta;
-            title = meta ? meta.collection.get("title") : null;
-            title = title || document.outs.assetPath.value || "Untitled Document";
+            title = document.outs.title.value || document.name || "Untitled Document";
         }
 
         return html`
@@ -136,6 +134,7 @@ export default class ChromeView extends DocumentView
         if (next) {
             const setup = next.setup;
             this.documentProps.on(
+                next.outs.title,
                 next.outs.assetPath,
                 setup.interface.ins.visible,
                 setup.interface.ins.logo,

@@ -91,18 +91,19 @@ export default class NotesPanel extends NodeView
 
     protected render()
     {
-        const notes = this.notes;
+        const node = this.activeNode;
 
-        if (!notes) {
+        if (!node || !(node.scene || node.model)) {
             return html`<div class="ff-placeholder">
                 <div>Please select a scene or model to display its notes.</div>
             </div>`;
         }
 
-        const activeNote = this.activeNote;
+        this.getNotes();
 
+        const activeNote = this.activeNote;
         const noteTable = this.noteTable;
-        noteTable.rows = notes;
+        noteTable.rows = this.notes || [];
         noteTable.selectedRows = activeNote;
         noteTable.requestUpdate();
 
@@ -143,6 +144,8 @@ export default class NotesPanel extends NodeView
 
     protected onClickCreate()
     {
+        this.getOrCreateNotes();
+
         const note: INote = { date: new Date().toISOString(), user: "", text: "" };
         this.notes.push(note);
         this.activeNote = note;
@@ -164,20 +167,44 @@ export default class NotesPanel extends NodeView
         this.notes = null;
         this.activeNote = null;
 
-        if (next) {
-            // if selection is scene or model, create a meta component
-            if (!next.meta && (next.scene || next.model)) {
-                next.createComponent(CVMeta);
-            }
+        this.requestUpdate();
+    }
 
-            const process = next.meta && next.meta.process;
+    protected getNotes()
+    {
+        const node = this.activeNode;
+        if (!node) {
+            return;
+        }
 
-            if (process) {
-                this.notes = process.getOrCreate("notes", []);
+        const process = node.meta && node.meta.process;
+
+        if (process) {
+            this.notes = process.get("notes");
+            if (this.notes && !this.activeNote) {
                 this.activeNote = this.notes[0];
             }
         }
+    }
 
-        this.requestUpdate();
+    protected getOrCreateNotes()
+    {
+        this.notes = null;
+        this.activeNote = null;
+
+        const node = this.activeNode;
+        if (!node) {
+            return;
+        }
+
+        if (!node.meta && (node.scene || node.model)) {
+            node.createComponent(CVMeta);
+        }
+
+        const process = node.meta && node.meta.process;
+
+        if (process) {
+            this.notes = process.getOrCreate("notes", []);
+        }
     }
 }
