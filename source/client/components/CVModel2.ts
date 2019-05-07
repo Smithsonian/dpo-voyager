@@ -131,18 +131,6 @@ export default class CVModel2 extends CObject3D
         // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
-
-        // set quality based on max texture size
-        const maxTextureSize = this.getMainComponent(CRenderer).outs.maxTextureSize.value;
-        if (maxTextureSize <= 1024) {
-            this.ins.quality.setValue(EDerivativeQuality.Low);
-        }
-        else if (maxTextureSize <= 2048) {
-            this.ins.quality.setValue(EDerivativeQuality.Medium);
-        }
-        else {
-            this.ins.quality.setValue(EDerivativeQuality.High);
-        }
     }
 
     update()
@@ -440,6 +428,7 @@ export default class CVModel2 extends CObject3D
             if (this._activeDerivative) {
                 this.removeObject3D(this._activeDerivative.model);
                 this._activeDerivative.unload();
+                //this.getMainComponent(CRenderer).logInfo();
             }
 
             this._activeDerivative = derivative;

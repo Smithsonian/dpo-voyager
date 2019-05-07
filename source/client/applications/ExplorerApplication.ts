@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import Commander from "@ff/core/Commander";
@@ -37,6 +36,7 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVTools from "../nodes/NVTools";
 
 import MainView from "../ui/explorer/MainView";
+import { EDerivativeQuality } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -121,14 +121,22 @@ export default class ExplorerApplication
         this.assetReader.rootUrl = url;
     }
 
-    loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
     {
+        const dq = EDerivativeQuality[quality];
+
         return this.assetReader.getJSON(documentPath)
             .then(data => {
                 merge = merge === undefined ? !data.lights && !data.cameras : merge;
                 return this.documentProvider.amendDocument(data, documentPath, merge);
             })
-            .catch(error => {
+        .then(document => {
+            if (isFinite(dq)) {
+                document.setup.viewer.ins.quality.setValue(dq);
+            }
+            return document;
+        })
+        .catch(error => {
                 console.warn(`error while loading document: ${error.message}`);
                 throw error;
             });
@@ -164,7 +172,7 @@ export default class ExplorerApplication
 
         if (props.document) {
             props.document = props.root ? props.document : reader.getAssetName(props.document);
-            this.loadDocument(props.document);
+            this.loadDocument(props.document, undefined, props.quality);
         }
         if (props.model) {
             props.model = props.root ? props.model : reader.getAssetName(props.model);
@@ -178,5 +186,4 @@ export default class ExplorerApplication
     }
 }
 
-window["resolvePathname"] = resolvePathname;
 window["VoyagerExplorer"] = ExplorerApplication;

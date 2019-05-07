@@ -34,6 +34,7 @@ import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
 
 import MainView from "../ui/mini/MainView";
+import { EDerivativeQuality } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +50,9 @@ export interface IMiniApplicationProps
     geometry?: string;
     /** If a geometry URL is given, optional URL of a color texture to use with the geometry. */
     texture?: string;
+    /** When loading a model or geometry, the quality level to set for the asset.
+     Valid options: "thumb", "low", "medium", "high". */
+    quality?: string;
 }
 
 export default class MiniApplication
@@ -103,12 +107,20 @@ export default class MiniApplication
         this.assetReader.rootUrl = url;
     }
 
-    loadDocument(documentPath: string, merge?: boolean): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
     {
+        const dq = EDerivativeQuality[quality];
+
         return this.assetReader.getJSON(documentPath)
         .then(data => {
             merge = merge === undefined ? !data.lights && !data.cameras : merge;
             return this.documentProvider.amendDocument(data, documentPath, merge);
+        })
+        .then(document => {
+            if (isFinite(dq)) {
+                document.setup.viewer.ins.quality.setValue(dq);
+            }
+            return document;
         })
         .catch(error => {
             console.warn(`error while loading document: ${error.message}`);
@@ -139,21 +151,23 @@ export default class MiniApplication
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("t");
+        props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
 
-        this.setRootUrl(props.root || props.document || props.model || props.geometry || "");
+        const url = props.root || props.document || props.model || props.geometry;
+        this.setRootUrl(new URL(url || ".", window.location as any).href);
 
         if (props.document) {
             props.document = props.root ? props.document : reader.getAssetName(props.document);
-            this.loadDocument(props.document);
+            this.loadDocument(props.document, undefined, props.quality);
         }
         if (props.model) {
             props.model = props.root ? props.model : reader.getAssetName(props.model);
-            this.loadModel(props.model, "Medium");
+            this.loadModel(props.model, props.quality);
         }
         else if (props.geometry) {
             props.geometry = props.root ? props.geometry : reader.getAssetName(props.geometry);
             props.texture = props.root ? props.texture : reader.getAssetName(props.texture);
-            this.loadGeometry(props.geometry, props.texture, null, null, "Medium");
+            this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
     }
 }

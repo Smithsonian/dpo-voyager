@@ -82,11 +82,13 @@ export default class CVSnapshots extends CTweenMachine
         const lights = this.getGraphComponents(CLight);
         lights.forEach(light => this.updateComponentTarget(light, !!features["lights"]));
 
+        /*
         this.targets.forEach((target, index) => {
             const component = target.property.group.linkable as Component;
             console.log("CVSnapshot.updateTargets - target #%s, component: %s, property: %s",
                 index, component.displayName, target.property.path);
         });
+         */
     }
 
     protected updateComponentTarget(component: Component, include: boolean)

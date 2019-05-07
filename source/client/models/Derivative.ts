@@ -116,6 +116,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
     {
         if (this.model) {
             disposeObject(this.model);
+            this.model = null;
         }
     }
 

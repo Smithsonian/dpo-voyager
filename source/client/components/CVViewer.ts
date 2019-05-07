@@ -22,6 +22,8 @@ import { IViewer, EShaderMode, TShaderMode } from "client/schema/setup";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";
 import { IComponentEvent } from "@ff/graph/Component";
+import { EDerivativeQuality } from "client/schema/model";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,6 +38,7 @@ export default class CVViewer extends CRenderable
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 1),
+        quality: types.Enum("Models.Quality", EDerivativeQuality, EDerivativeQuality.High),
         annotationsVisible: types.Boolean("Annotations.Visible"),
     };
 
@@ -61,6 +64,18 @@ export default class CVViewer extends CRenderable
     {
         super.create();
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
+
+        // set quality based on max texture size
+        const maxTextureSize = this.getMainComponent(CRenderer).outs.maxTextureSize.value;
+        if (maxTextureSize <= 1024) {
+            this.ins.quality.setValue(EDerivativeQuality.Low);
+        }
+        else if (maxTextureSize <= 2048) {
+            this.ins.quality.setValue(EDerivativeQuality.Medium);
+        }
+        else {
+            this.ins.quality.setValue(EDerivativeQuality.High);
+        }
     }
 
     dispose()
@@ -76,6 +91,10 @@ export default class CVViewer extends CRenderable
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.shader.setValue(shader));
+        }
+        if (ins.quality.changed) {
+            const quality = ins.quality.getValidatedValue();
+            this.getGraphComponents(CVModel2).forEach(model => model.ins.quality.setValue(quality));
         }
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;

@@ -72,7 +72,7 @@ Icon.add("cube", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 5
 @customElement("voyager-explorer")
 export default class MainView extends CustomElement
 {
-    readonly application: ExplorerApplication;
+    application: ExplorerApplication = null;
 
     constructor(application?: ExplorerApplication)
     {
@@ -81,7 +81,17 @@ export default class MainView extends CustomElement
         if (application) {
             this.application = application;
         }
-        else {
+    }
+
+    protected get fullscreen() {
+        return this.application.system.getMainComponent(CFullscreen);
+    }
+
+    protected firstConnected()
+    {
+        super.firstConnected();
+
+        if (!this.application) {
             const props: IExplorerApplicationProps = {
                 root: this.getAttribute("root"),
                 document: this.getAttribute("document"),
@@ -93,17 +103,6 @@ export default class MainView extends CustomElement
 
             this.application = new ExplorerApplication(null, props);
         }
-
-        window["voyagerExplorer"] = this.application;
-    }
-
-    protected get fullscreen() {
-        return this.application.system.getMainComponent(CFullscreen);
-    }
-
-    protected firstConnected()
-    {
-        super.firstConnected();
 
         const system = this.application.system;
         new ContentView(system).appendTo(this);

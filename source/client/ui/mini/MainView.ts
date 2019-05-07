@@ -20,6 +20,7 @@ import CustomElement, { customElement } from "@ff/ui/CustomElement";
 import ContentView from "./ContentView";
 
 import MiniApplication, { IMiniApplicationProps } from "../../applications/MiniApplication";
+import CVDocumentProvider from "client/components/CVDocumentProvider";
 
 import "./styles.scss";
 
@@ -32,7 +33,12 @@ import "./styles.scss";
 @customElement("voyager-mini")
 export default class MainView extends CustomElement
 {
-    readonly application: MiniApplication;
+    application: MiniApplication;
+
+    get document() {
+        const system = this.application.system;
+        return system.getMainComponent(CVDocumentProvider).activeComponent;
+    }
 
     constructor(application?: MiniApplication)
     {
@@ -41,23 +47,24 @@ export default class MainView extends CustomElement
         if (application) {
             this.application = application;
         }
-        else {
-            const props: IMiniApplicationProps = {
-                document: this.getAttribute("document"),
-                model: this.getAttribute("model"),
-                geometry: this.getAttribute("geometry"),
-                texture: this.getAttribute("texture"),
-            };
-
-            this.application = new MiniApplication(null, props);
-        }
-
-        window["voyagerMini"] = this.application;
     }
 
     protected firstConnected()
     {
         super.firstConnected();
+
+        if (!this.application) {
+            const props: IMiniApplicationProps = {
+                root: this.getAttribute("root"),
+                document: this.getAttribute("document"),
+                model: this.getAttribute("model"),
+                geometry: this.getAttribute("geometry"),
+                texture: this.getAttribute("texture"),
+                quality: this.getAttribute("quality"),
+            };
+
+            this.application = new MiniApplication(null, props);
+        }
 
         const system = this.application.system;
         new ContentView(system).appendTo(this);
