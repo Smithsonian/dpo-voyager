@@ -58,7 +58,10 @@ export default class DocumentValidator
             return false;
         }
 
-        console.log("JSONValidator.validateDocument - OK");
+        if (ENV_DEVELOPMENT) {
+            console.log("JSONValidator.validateDocument - OK");
+        }
+
         return true;
     }
 }

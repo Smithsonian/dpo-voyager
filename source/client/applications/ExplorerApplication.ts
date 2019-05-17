@@ -65,12 +65,25 @@ export interface IExplorerApplicationProps
  */
 export default class ExplorerApplication
 {
-    protected static splashMessage = [
-        "Voyager - 3D Explorer and Tool Suite",
-        "3D Foundation Project",
-        "(c) 2018 Smithsonian Institution",
-        "https://3d.si.edu"
-    ].join("\n");
+    protected static splashMessage = `
+  _________       .__  __  .__                        .__                ________ ________   
+ /   _____/ _____ |__|/  |_|  |__   __________   ____ |__|____    ____   \\_____  \\\\______ \\  
+ \\_____  \\ /     \\|  \\   __\\  |  \\ /  ___/  _ \\ /    \\|  \\__  \\  /    \\    _(__  < |    |  \\ 
+ /        \\  Y Y  \\  ||  | |   Y  \\\\___ (  <_> )   |  \\  |/ __ \\|   |  \\  /       \\|    \`   \\
+/_______  /__|_|  /__||__| |___|  /____  >____/|___|  /__(____  /___|  / /______  /_______  /
+        \\/      \\/              \\/     \\/           \\/        \\/     \\/         \\/        \\/ 
+    
+Voyager - 3D Explorer and Tool Suite
+3D Foundation Project
+(c) 2019 Smithsonian Institution
+
+https://3d.si.edu
+https://github.com/smithsonian/dpo-voyager
+
+-----------------------------------------------------
+Version: ${ENV_VERSION}
+-----------------------------------------------------
+    `;
 
     readonly props: IExplorerApplicationProps;
     readonly system: System;
@@ -130,15 +143,11 @@ export default class ExplorerApplication
                 merge = merge === undefined ? !data.lights && !data.cameras : merge;
                 return this.documentProvider.amendDocument(data, documentPath, merge);
             })
-        .then(document => {
-            if (isFinite(dq)) {
-                document.setup.viewer.ins.quality.setValue(dq);
-            }
-            return document;
-        })
-        .catch(error => {
-                console.warn(`error while loading document: ${error.message}`);
-                throw error;
+            .then(document => {
+                if (isFinite(dq)) {
+                    document.setup.viewer.ins.quality.setValue(dq);
+                }
+                return document;
             });
     }
 
@@ -153,7 +162,6 @@ export default class ExplorerApplication
         return this.documentProvider.appendGeometry(
             geoPath, colorMapPath, occlusionMapPath, normalMapPath, quality);
     }
-
 
     evaluateProps()
     {
@@ -171,17 +179,24 @@ export default class ExplorerApplication
         this.setRootUrl(new URL(url || ".", window.location as any).href);
 
         if (props.document) {
+            // first loading priority: document
             props.document = props.root ? props.document : reader.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality);
+            this.loadDocument(props.document, undefined, props.quality).catch(() => {});
         }
-        if (props.model) {
+        else if (props.model) {
+            // second loading priority: model
             props.model = props.root ? props.model : reader.getAssetName(props.model);
             this.loadModel(props.model, props.quality);
         }
         else if (props.geometry) {
+            // third loading priority: geometry (plus optional color texture)
             props.geometry = props.root ? props.geometry : reader.getAssetName(props.geometry);
             props.texture = props.root ? props.texture : reader.getAssetName(props.texture);
             this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
+        }
+        else {
+            // if nothing else specified, try to read "document.json" from the current folder
+            this.loadDocument("document.json", undefined).catch(() => {});
         }
     }
 }

@@ -140,7 +140,9 @@ export default class CVDocument extends CRenderGraph
 
     openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode | NVScene)
     {
-        console.log("CVDocument.openDocument - assetPath: %s, mergeParent: %s", assetPath, mergeParent);
+        if (ENV_DEVELOPMENT) {
+            console.log("CVDocument.openDocument - assetPath: %s, mergeParent: %s", assetPath, mergeParent);
+        }
 
         if (!CVDocument.validator.validate(documentData)) {
             throw new Error("document schema validation failed");

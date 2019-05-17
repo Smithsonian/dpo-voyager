@@ -27,8 +27,6 @@ import TextureReader from "../io/TextureReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _VERBOSE = true;
-
 export interface IAssetService
 {
     setBusy: (isBusy: boolean) => void;
@@ -83,7 +81,10 @@ export default class CVAssetReader extends Component implements IAssetService
         const urlObj = new URL(".", new URL(url, window.location as any).href);
         this._rootUrl = urlObj.href;
         this._rootPath = urlObj.pathname;
-        console.log("CVAssetReader - rootUrl: %s, rootPath: %s", this._rootUrl, this._rootPath);
+
+        if (ENV_DEVELOPMENT) {
+            console.log("CVAssetReader - rootUrl: %s, rootPath: %s", this._rootUrl, this._rootPath);
+        }
     }
 
     update(context)
@@ -179,7 +180,7 @@ export class AssetLoadingManager extends THREE.LoadingManager
 
     protected onLoadingStart()
     {
-        if (_VERBOSE) {
+        if (ENV_DEVELOPMENT) {
             console.log("Loading files...");
         }
 
@@ -188,14 +189,14 @@ export class AssetLoadingManager extends THREE.LoadingManager
 
     protected onLoadingProgress(url, itemsLoaded, itemsTotal)
     {
-        if (_VERBOSE) {
+        if (ENV_DEVELOPMENT) {
             console.log(`Loaded ${itemsLoaded} of ${itemsTotal} files: ${url}`);
         }
     }
 
     protected onLoadingCompleted()
     {
-        if (_VERBOSE) {
+        if (ENV_DEVELOPMENT) {
             console.log("Loading completed");
         }
 
@@ -204,7 +205,7 @@ export class AssetLoadingManager extends THREE.LoadingManager
 
     protected onLoadingError()
     {
-        if (_VERBOSE) {
+        if (ENV_DEVELOPMENT) {
             console.error(`Loading error`);
         }
 

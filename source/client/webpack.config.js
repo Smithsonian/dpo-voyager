@@ -17,6 +17,7 @@
 
 "use strict";
 
+const webpack = require("webpack");
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -35,7 +36,7 @@ const dirs = {
     assets: path.resolve(project, "assets"),
     output: path.resolve(project, "dist"),
     modules: path.resolve(project, "node_modules"),
-    libs: path.resolve(project, "libs")
+    libs: path.resolve(project, "libs"),
 };
 
 const apps = {
@@ -141,11 +142,17 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
 
             minimizer: [
                 new TerserPlugin({ parallel: true }),
-                new OptimizeCSSAssetsPlugin({})
+                new OptimizeCSSAssetsPlugin({}),
             ]
         },
 
         plugins: [
+            new webpack.DefinePlugin({
+                ENV_PRODUCTION: JSON.stringify(!isDevMode),
+                ENV_DEVELOPMENT: JSON.stringify(isDevMode),
+                ENV_LOCAL: JSON.stringify(isLocal),
+                ENV_VERSION: JSON.stringify(appTitle),
+            }),
             new MiniCssExtractPlugin({
                 filename: isDevMode ? "css/[name].dev.css" : "css/[name].min.css",
                 allChunks: true
@@ -158,7 +165,7 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
                 isDevelopment: isDevMode,
                 isLocal: isLocal,
                 element: `<${appName}></${appName}>`,
-                chunks: [ appName ]
+                chunks: [ appName ],
             })
         ],
 
@@ -202,7 +209,7 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
                 {
                     test: /\.hbs$/,
                     loader: "handlebars-loader"
-                }
+                },
             ]
         },
 
@@ -210,7 +217,7 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
         // assume a corresponding global variable exists and use that instead.
         externals: {
             "three": "THREE",
-            "quill": "Quill"
+            "quill": "Quill",
         }
     };
 
