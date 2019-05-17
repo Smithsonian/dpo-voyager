@@ -19,6 +19,7 @@
 
 @import "../../../libs/ff-ui/source/styles/dark";
 @import "../../../libs/ff-scene/source/ui/styles";
+@import "../../../libs/ff-three/source/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
 // TYPOGRAPHY
@@ -72,6 +73,9 @@
   ol {
     padding-left: 0.5em;
     list-style: decimal inside;
+  }
+  a:link, a:visited, a:hover, a:active {
+    color: $color-primary;
   }
 }
 

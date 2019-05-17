@@ -121,7 +121,10 @@ export default class CVModel2 extends CObject3D
     }
 
     protected get assetReader() {
-        return this.system.getMainComponent(CVAssetReader);
+        return this.getMainComponent(CVAssetReader);
+    }
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
     }
 
     create()
@@ -131,6 +134,23 @@ export default class CVModel2 extends CObject3D
         // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
+
+        // set quality based on max texture size
+        const maxTextureSize = this.renderer.outs.maxTextureSize.value;
+
+        if (ENV_DEVELOPMENT) {
+            console.log("CVModel2.create - max texture size: %s", maxTextureSize);
+        }
+
+        if (maxTextureSize <= 1024) {
+            this.ins.quality.setValue(EDerivativeQuality.Low);
+        }
+        else if (maxTextureSize <= 2048) {
+            this.ins.quality.setValue(EDerivativeQuality.Medium);
+        }
+        else {
+            this.ins.quality.setValue(EDerivativeQuality.High);
+        }
     }
 
     update()

@@ -316,6 +316,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-share-menu {
   position: relative;
   width: 450px;
+  max-width: 85%;
   padding: 8px;
   background: $color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
@@ -328,14 +329,15 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     flex: 0 0 auto;
   }
   .ff-text-edit {
-    height: 5em;
+    height: 6em;
   }
 
   .sv-share-buttons .ff-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 40px;
+    width: 48px;
+    height: 48px;
+    border-radius: 48px;
     margin: 0 1em 1em 0;
+    padding: 0;
 
     .ff-icon {
       height: 30px;
@@ -345,15 +347,19 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   .sv-share-button-twitter {
     background-color: #00aced;
+    &:hover { background-color: lighten(#00aced, 10%) }
   }
   .sv-share-button-facebook {
     background-color: #3c5a99;
+    &:hover { background-color: lighten(#3c5a99, 10%) }
   }
   .sv-share-button-linkedin {
     background-color: #0077B5;
+    &:hover { background-color: lighten(#0077B5, 10%) }
   }
   .sv-share-button-email {
     background-color: #d28842;
+    &:hover { background-color: lighten(#d28842, 10%) }
   }
 }
 

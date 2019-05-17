@@ -16,6 +16,7 @@
  */
 
 import * as THREE from "three";
+import hotkeys from "hotkeys-js";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 

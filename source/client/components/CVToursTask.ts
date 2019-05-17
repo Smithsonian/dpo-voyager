@@ -169,6 +169,7 @@ export default class CVToursTask extends CVTask
                 tour.steps.forEach(step => machine.deleteState(step.id));
                 tourList.splice(tourIndex, 1);
                 tours.ins.tourIndex.setValue(tourIndex);
+                tours.outs.count.setValue(tourList.length);
                 return true;
             }
             if (tourIndex > 0 && ins.moveTourUp.changed) {
@@ -193,6 +194,7 @@ export default class CVToursTask extends CVTask
                 steps: []
             });
             tours.ins.tourIndex.setValue(tourIndex + 1);
+            tours.outs.count.setValue(tourList.length);
             return true;
         }
 
@@ -204,12 +206,33 @@ export default class CVToursTask extends CVTask
         return new ToursTaskView(this);
     }
 
+    activateTask()
+    {
+        super.activateTask();
+
+        if (this.tours) {
+            this.tours.ins.enabled.setValue(true);
+        }
+    }
+
+    deactivateTask()
+    {
+        if (this.tours && this.tours.outs.count.value === 0) {
+            this.tours.ins.enabled.setValue(false);
+        }
+
+        super.deactivateTask();
+    }
+
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
+            if (this.isActiveTask) {
+                this.tours.ins.enabled.setValue(false);
+            }
+
             this.tours.outs.tourIndex.off("value", this.onTourChange, this);
             this.tours.outs.stepIndex.off("value", this.onStepChange, this);
-            //this.tours.ins.enabled.setValue(false);
 
             this.tours = null;
             this.machine = null;
@@ -220,7 +243,10 @@ export default class CVToursTask extends CVTask
 
             this.tours.outs.tourIndex.on("value", this.onTourChange, this);
             this.tours.outs.stepIndex.on("value", this.onStepChange, this);
-            //this.tours.ins.enabled.setValue(true);
+
+            if (this.isActiveTask) {
+                this.tours.ins.enabled.setValue(true);
+            }
         }
 
         this.changed = true;

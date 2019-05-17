@@ -66,29 +66,35 @@ export default class MainMenu extends DocumentView
             return html``;
         }
 
-        const fullscreen = this.fullscreen;
-        const fullscreenActive = fullscreen.outs.fullscreenActive.value;
-        const showFullscreenButton = fullscreen.outs.fullscreenAvailable.value;
-
         const setup = document.setup;
-        const readerVisible = setup.reader.ins.enabled.value;
-        const toursVisible = setup.tours.ins.enabled.value;
-        const annotationsVisible = setup.viewer.ins.annotationsVisible.value;
-        const toolsVisible = this.toolProvider.ins.visible.value;
-        const showToolButton = setup.interface.ins.tools.value;
+
+        const readerActive = setup.reader.ins.enabled.value;
+
+        const tourButtonVisible = setup.tours.outs.count.value > 0;
+        const toursActive = setup.tours.ins.enabled.value;
+
+        const annotationsButtonVisible = true;
+        const annotationsActive = setup.viewer.ins.annotationsVisible.value;
+
+        const fullscreen = this.fullscreen;
+        const fullscreenButtonVisible = fullscreen.outs.fullscreenAvailable.value;
+        const fullscreenActive = fullscreen.outs.fullscreenActive.value;
+
+        const toolButtonVisible = setup.interface.ins.tools.value;
+        const toolsActive = this.toolProvider.ins.visible.value;
 
         return html`<ff-button icon="article" title="Read more..."
-            ?selected=${readerVisible} @click=${this.onToggleReader}></ff-button>
-        <ff-button icon="globe" title="Interactive Tours"
-            ?selected=${toursVisible} @click=${this.onToggleTours}></ff-button>
-        <ff-button icon="comment" title="Show/Hide Annotations"
-            ?selected=${annotationsVisible} @click=${this.onToggleAnnotations}></ff-button>
+            ?selected=${readerActive} @click=${this.onToggleReader}></ff-button>
+        ${tourButtonVisible ? html`<ff-button icon="globe" title="Interactive Tours"
+            ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
+        ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
+            ?selected=${annotationsActive} @click=${this.onToggleAnnotations}></ff-button>` : null}
         <ff-button icon="share" title="Share Experience"
             ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
-        ${showFullscreenButton ? html`<ff-button icon="expand" title="Fullscreen"
+        ${fullscreenButtonVisible ? html`<ff-button icon="expand" title="Fullscreen"
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        ${showToolButton ? html`<ff-button icon="tools" title="Tools and Settings"
-            ?selected=${toolsVisible} @click=${this.onToggleTools}></ff-button>` : null}`;
+        ${toolButtonVisible ? html`<ff-button icon="tools" title="Tools and Settings"
+            ?selected=${toolsActive} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
     protected onToggleReader()
@@ -115,7 +121,7 @@ export default class MainMenu extends DocumentView
         this.requestUpdate();
 
         if (this.shareButtonSelected) {
-            ShareMenu.show(document.body).then(() => {
+            ShareMenu.show(this.parentElement).then(() => {
                 this.shareButtonSelected = false;
                 this.requestUpdate()
             });
@@ -145,6 +151,7 @@ export default class MainMenu extends DocumentView
                 setup.interface.ins.tools,
                 setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
+                setup.tours.outs.count,
                 setup.viewer.ins.annotationsVisible,
                 this.toolProvider.ins.visible
             );

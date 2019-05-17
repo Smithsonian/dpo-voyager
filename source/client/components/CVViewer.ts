@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-import CRenderable, { Node, types } from "@ff/scene/components/CRenderable";
+import { IComponentEvent } from "@ff/graph/Component";
+import CRenderable, { types } from "@ff/scene/components/CRenderable";
+import CRenderer from "@ff/scene/components/CRenderer";
+import { ELocation } from "@ff/three/ui/ViewportOverlay";
 
-import { IViewer, EShaderMode, TShaderMode } from "client/schema/setup";
+import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
+import { EDerivativeQuality } from "client/schema/model";
 
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";
-import { IComponentEvent } from "@ff/graph/Component";
-import { EDerivativeQuality } from "client/schema/model";
-import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,18 +65,6 @@ export default class CVViewer extends CRenderable
     {
         super.create();
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
-
-        // set quality based on max texture size
-        const maxTextureSize = this.getMainComponent(CRenderer).outs.maxTextureSize.value;
-        if (maxTextureSize <= 1024) {
-            this.ins.quality.setValue(EDerivativeQuality.Low);
-        }
-        else if (maxTextureSize <= 2048) {
-            this.ins.quality.setValue(EDerivativeQuality.Medium);
-        }
-        else {
-            this.ins.quality.setValue(EDerivativeQuality.High);
-        }
     }
 
     dispose()
@@ -108,6 +97,9 @@ export default class CVViewer extends CRenderable
     {
         if (this.updated) {
             context.renderer.toneMappingExposure = this.ins.exposure.value;
+
+            //const qualityName = this.ins.quality.getOptionText();
+            //context.viewport.overlay.setLabel(ELocation.BottomRight, "quality", `Quality: ${qualityName}`);
         }
     }
 

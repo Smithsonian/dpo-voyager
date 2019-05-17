@@ -40,6 +40,7 @@ export default class CVTours extends Component
     };
 
     protected static readonly outs = {
+        count: types.Integer("Tours.Count"),
         tourIndex: types.Integer("Tour.Index", -1),
         tourTitle: types.String("Tour.Title"),
         tourLead: types.String("Tour.Lead"),
@@ -170,6 +171,7 @@ export default class CVTours extends Component
         }));
 
         this.ins.tourIndex.setValue(-1);
+        this.outs.count.setValue(this._tours.length);
     }
 
     toData(): ITours | null

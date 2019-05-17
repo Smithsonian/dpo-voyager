@@ -68,7 +68,7 @@ export default class ShareMenu extends Popup
         const twitterShareUrl = `http://twitter.com/share?text=${title}&url=${url}`;
         const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
         const linkedInShareUrl = `https://www.linkedin.com/shareArticle?url=${url}&mini=true&title=${title}`;
-        const iFrameEmbedCode = `<iframe name="Smithsonian Voyager" src="${url}"></iframe>`;
+        const iFrameEmbedCode = `<iframe name="Smithsonian Voyager" src="${url}" width="800" height="450" allowfullscreen="true"></iframe>`;
 
         const emailUrl = `mailto:?subject=${title}&body=${url}`;
 
