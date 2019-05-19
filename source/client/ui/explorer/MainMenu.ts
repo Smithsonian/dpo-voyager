@@ -18,6 +18,7 @@
 import Subscriber from "@ff/core/Subscriber";
 import CFullscreen from "@ff/scene/components/CFullscreen";
 
+import CVAnalytics from "../../components/CVAnalytics";
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
 
@@ -37,6 +38,9 @@ export default class MainMenu extends DocumentView
     }
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
+    }
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
     }
 
     protected firstConnected()
@@ -105,8 +109,8 @@ export default class MainMenu extends DocumentView
 
     protected onToggleTours()
     {
-        const toursProp = this.activeDocument.setup.tours.ins.enabled;
-        toursProp.setValue(!toursProp.value);
+        const prop = this.activeDocument.setup.tours.ins.enabled;
+        prop.setValue(!prop.value);
     }
 
     protected onToggleAnnotations()
@@ -125,18 +129,21 @@ export default class MainMenu extends DocumentView
                 this.shareButtonSelected = false;
                 this.requestUpdate()
             });
+
+            this.analytics.sendProperty("Menu.Share");
         }
     }
 
     protected onToggleFullscreen()
     {
         this.fullscreen.toggle();
+        this.analytics.sendProperty("Menu.Fullscreen");
     }
 
     protected onToggleTools()
     {
-        const toolsProp = this.toolProvider.ins.visible;
-        toolsProp.setValue(!toolsProp.value);
+        const prop = this.toolProvider.ins.visible;
+        prop.setValue(!prop.value);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

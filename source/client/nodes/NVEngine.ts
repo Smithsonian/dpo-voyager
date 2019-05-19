@@ -23,6 +23,7 @@ import CPickSelection from "@ff/scene/components/CPickSelection";
 import CFullscreen from "@ff/scene/components/CFullscreen";
 
 import CVAssetReader from "../components/CVAssetReader";
+import CVAnalytics from "../components/CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,9 @@ export default class NVEngine extends Node
     get assetReader() {
         return this.components.get(CVAssetReader);
     }
+    get analytics() {
+        return this.components.get(CVAnalytics);
+    }
 
     createComponents()
     {
@@ -52,6 +56,7 @@ export default class NVEngine extends Node
         this.createComponent(CRenderer);
         this.createComponent(CFullscreen);
         this.createComponent(CVAssetReader);
+        this.createComponent(CVAnalytics);
 
         const selection = this.createComponent(CPickSelection);
 

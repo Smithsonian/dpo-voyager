@@ -164,6 +164,7 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
                 version: version,
                 isDevelopment: isDevMode,
                 isLocal: isLocal,
+                analyticsId: process.env.ANALYTICS_ID || "",
                 element: `<${appName}></${appName}>`,
                 chunks: [ appName ],
             })

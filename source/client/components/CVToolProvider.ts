@@ -23,6 +23,7 @@ import CComponentProvider, {
 } from "@ff/graph/components/CComponentProvider";
 
 import CVTool from "./CVTool";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +41,10 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
 
     ins = this.addInputs(CVToolProvider.ins);
 
+    protected get analytics() {
+        return this.getMainComponent(CVAnalytics);
+    }
+
     constructor(node: Node, id: string)
     {
         super(node, id);
@@ -54,6 +59,8 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
             if (ins.visible.value && !this.activeComponent) {
                 this.activeComponent = this.scopedComponents[0];
             }
+
+            this.analytics.sendProperty("Tools.Visible", ins.visible.value);
         }
 
         return true;
@@ -62,6 +69,7 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
     protected activateComponent(tool: CVTool)
     {
         tool.activateTool();
+        this.analytics.sendProperty("Tools.ActiveTool", tool.text);
     }
 
     protected deactivateComponent(tool: CVTool)

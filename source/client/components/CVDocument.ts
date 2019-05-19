@@ -32,6 +32,7 @@ import NVScene from "../nodes/NVScene";
 import CVMeta from "./CVMeta";
 import CVSetup from "./CVSetup";
 import CVAssetReader from "./CVAssetReader";
+import CVAnalytics from "client/components/CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +94,10 @@ export default class CVDocument extends CRenderGraph
             name = name.substr(0, index);
         }
         return name;
+    }
+
+    protected get analytics() {
+        return this.getMainComponent(CVAnalytics);
     }
 
     create()
@@ -251,7 +256,9 @@ export default class CVDocument extends CRenderGraph
 
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
-                propTitle.setValue(meta.collection.get("title") || "");
+                const title = meta.collection.get("title") || "";
+                propTitle.setValue(title);
+                this.analytics.setTitle(title);
             });
         }
     }

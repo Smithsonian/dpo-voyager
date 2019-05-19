@@ -18,7 +18,7 @@
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVToolProvider, { IActiveToolEvent } from "../../components/CVToolProvider";
-import CVTool, { ToolView } from "../../components/CVTool";
+import CVTool from "../../components/CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 

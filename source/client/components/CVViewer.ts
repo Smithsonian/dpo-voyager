@@ -17,14 +17,13 @@
 
 import { IComponentEvent } from "@ff/graph/Component";
 import CRenderable, { types } from "@ff/scene/components/CRenderable";
-import CRenderer from "@ff/scene/components/CRenderer";
-import { ELocation } from "@ff/three/ui/ViewportOverlay";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
 
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,6 +60,10 @@ export default class CVViewer extends CRenderable
         ];
     }
 
+    protected get analytics() {
+        return this.getMainComponent(CVAnalytics);
+    }
+
     create()
     {
         super.create();
@@ -88,6 +91,8 @@ export default class CVViewer extends CRenderable
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
+
+            this.analytics.sendProperty("Annotations.Visible", ins.annotationsVisible.value);
         }
 
         return true;

@@ -11,3 +11,6 @@ declare const ENV_DEVELOPMENT: boolean;
 declare const ENV_PRODUCTION: boolean;
 // Webpack constant: true during local build
 declare const ENV_LOCAL: boolean;
+
+// Google Analytics global variable
+declare const ga: any;

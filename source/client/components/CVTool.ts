@@ -18,6 +18,7 @@
 import { types } from "@ff/graph/Component";
 
 import CVNodeObserver from "./CVNodeObserver";
+import CVAnalytics from "./CVAnalytics";
 
 import NodeView, { customElement, property, html } from "../ui/explorer/NodeView";
 
@@ -83,6 +84,10 @@ export class ToolView<T extends CVTool = CVTool> extends NodeView
 {
     @property({ attribute: false })
     tool: T = null;
+
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
+    }
 
     constructor(tool?: T)
     {

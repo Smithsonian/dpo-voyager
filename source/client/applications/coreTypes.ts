@@ -35,6 +35,8 @@ import Node from "@ff/graph/Node";
 
 // PROJECT COMPONENTS //////////////////////////////////////////////////////////
 
+import CVAnalytics from "../components/CVAnalytics";
+
 import CVAssetReader from "../components/CVAssetReader";
 import CVDocument from "../components/CVDocument";
 import CVDocumentProvider from "../components/CVDocumentProvider";
@@ -85,6 +87,7 @@ const types = [
 
     Node,
 
+    CVAnalytics,
     CVAssetReader,
     CVDocument,
     CVDocumentProvider,

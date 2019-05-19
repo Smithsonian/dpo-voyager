@@ -16,12 +16,13 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
+import { ITweenState } from "@ff/graph/components/CTweenMachine";
+import { IPulseContext } from "@ff/graph/components/CPulse";
 
 import { ITour, ITours } from "client/schema/setup";
 
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
-import { ITweenState } from "@ff/graph/components/CTweenMachine";
-import { IPulseContext } from "@ff/graph/components/CPulse";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +55,10 @@ export default class CVTours extends Component
 
     private _tours: ITour[] = [];
 
+    protected get analytics() {
+        return this.getMainComponent(CVAnalytics);
+    }
+
     get snapshots() {
         return this.getComponent(CVSnapshots);
     }
@@ -85,6 +90,7 @@ export default class CVTours extends Component
         const machine = this.snapshots;
 
         if (ins.enabled.changed) {
+            this.analytics.sendProperty("Tours.Enabled", ins.enabled.value);
 
             if (ins.enabled.value) {
                 // store pre-tour scene state

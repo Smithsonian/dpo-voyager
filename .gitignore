@@ -10,6 +10,7 @@ docs/.sass-cache/
 docs/_site/
 doc/code/
 services/server/bin/
+services/secrets.env
 
 # FILES
 *.log

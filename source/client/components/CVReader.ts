@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
+import { Dictionary } from "@ff/core/types";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
 
 import { IReader, EReaderPosition } from "client/schema/setup";
 
 import Article from "../models/Article";
-import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";
-import CVModel2 from "./CVModel2";
-import { Dictionary } from "@ff/core/types";
+
 import NVNode from "../nodes/NVNode";
+
+import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";
 import CVAssetReader from "./CVAssetReader";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +84,9 @@ export default class CVReader extends Component
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
+    protected get analytics() {
+        return this.getMainComponent(CVAnalytics);
+    }
 
     protected _articles: Dictionary<IArticleEntry>;
 
@@ -103,6 +108,9 @@ export default class CVReader extends Component
         const ins = this.ins;
         const outs = this.outs;
 
+        if (ins.enabled.changed) {
+            this.analytics.sendProperty("Reader.Enabled", ins.enabled.value);
+        }
         if (ins.articleId.changed) {
             const entry = this._articles[ins.articleId.value] || null;
             const article = entry && entry.article;
@@ -112,6 +120,7 @@ export default class CVReader extends Component
 
             if (article) {
                 this.readArticle(article);
+                this.analytics.sendProperty("Reader.ArticleId", article.data.title);
             }
         }
 
