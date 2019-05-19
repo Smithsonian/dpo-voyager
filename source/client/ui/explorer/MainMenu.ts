@@ -117,11 +117,11 @@ export default class MainMenu extends DocumentView
 
     protected onToggleShare()
     {
-        this.shareButtonSelected = !this.shareButtonSelected;
-        this.requestUpdate();
+        if (!this.shareButtonSelected) {
+            this.shareButtonSelected = true;
+            this.requestUpdate();
 
-        if (this.shareButtonSelected) {
-            ShareMenu.show(this.parentElement).then(() => {
+            ShareMenu.show(this).then(() => {
                 this.shareButtonSelected = false;
                 this.requestUpdate()
             });

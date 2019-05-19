@@ -49,8 +49,12 @@ export default class CVFloor extends CFloor
     constructor(node: Node, id: string)
     {
         super(node, id);
+
         this.ins.visible.setValue(false);
         this.ins.receiveShadow.setValue(true);
+
+        // make sure floor is rendered behind other transparent scene objects
+        this.floor.renderOrder = -1;
     }
 
     fromData(data: IFloor)

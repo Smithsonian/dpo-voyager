@@ -277,7 +277,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   flex-direction: column;
   margin: $canvas-border-width 0 0 $canvas-border-width;
 
-  .ff-button {
+  & > .ff-button {
     box-sizing: border-box;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
@@ -329,7 +329,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     flex: 0 0 auto;
   }
   .ff-text-edit {
-    height: 6em;
+    height: 6.5em;
   }
 
   .sv-share-buttons .ff-button {
