@@ -5,7 +5,7 @@
     "scripts": {
         "start": "npm run server",
         "server": "nodemon services/server/bin/index.js",
-        "watch": "APP_VERSION=$(git describe --tags); concurrently \"cd source/client && webpack --watch --app=all --vers=$APP_VERSION\", \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+        "watch": "APP_VERSION=$(git describe --tags); concurrently \"cd source/client && webpack --watch --app=all --vers=$APP_VERSION\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
         "build": "concurrently \"npm run build-server\" \"npm run build-dev\"",
         "build-all": "npm run build-dev; npm run build-prod",
         "build-dev": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=development --app=all --vers=$APP_VERSION; cd ../..",
@@ -14,6 +14,7 @@
         "build-prod-local": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=production --app=all --local=true --vers=$APP_VERSION; cd ../..",
         "build-server": "tsc -b source/server",
         "build-libs": "tsc -b libs",
+        "docs": "cd docs && jekyll build",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/code/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
         "up": "docker-compose up -d; docker-compose logs -f",

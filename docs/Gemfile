@@ -1,3 +1,4 @@
 source 'https://rubygems.org'
-gem 'github-pages', group: :jekyll_plugins
+
+# Installs the Just-The-Docs theme.
 gem "just-the-docs"

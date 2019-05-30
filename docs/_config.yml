@@ -1,10 +1,10 @@
-remote_theme: pmarsceill/just-the-docs
-
-title: Smithsonian Voyager
+title: Voyager
 description: Next Generation 3D Editing and Viewing Tool Suite
 
-#color_scheme: "dark"
+theme: just-the-docs
+remote_theme: pmarsceill/just-the-docs
 
+#color_scheme: "dark"
 search_enabled: false
 
 aux_links:
