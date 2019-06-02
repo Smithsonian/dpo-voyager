@@ -16,3 +16,7 @@
 [submodule "libs/ff-scene"]
 	path = libs/ff-scene
 	url = https://github.com/framelab/ff-scene
+[submodule "docs/public"]
+	path = docs/public
+	url = git@github.com:smithsonian/dpo-voyager
+	branch = gh-pages

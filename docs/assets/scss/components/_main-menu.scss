@@ -1,0 +1,38 @@
+.main-menu {
+  display: none;
+  @include media-breakpoint-up(md) {
+    display: block;
+  }
+  > ul {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: $font-family-base;
+    > li {
+      list-style: none;
+      font-size: 14px;
+      > a {
+        padding: 10px 14px 10px 14px;
+        display: inline-block;
+        font-weight: normal;
+        text-decoration: none;
+        color: white;
+        &:hover {
+          text-decoration: underline;
+          color: white;
+        }
+      }
+      &.active {
+        > a {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .menu-item-github {
+    img {
+      height: 1.5rem;
+      fill: white;
+    }
+  }
+}

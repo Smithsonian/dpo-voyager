@@ -1,0 +1,44 @@
+baseURL = "https://smithsonian.github.io/dpo-voyager"
+languageCode = "en-us"
+title = "Voyager Documentation"
+
+pygmentsCodeFences = true
+pygmentsCodefencesGuessSyntax = true
+pygmentsUseClasses = true
+
+[[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = 1
+
+[[menu.main]]
+    name = "Documentation"
+    url = "/docs/"
+    weight = 2
+
+[params]
+    mainSections = ["docs"]
+    github_link = "https://github.com/smithsonian/dpo-voyager"
+    github_logo = "/images/github.svg"
+    smithsonian_logo = "/images/si-digitization-logo-neg.svg"
+    google_analytics_id=""
+    homepage_button_link = "/docs/getting-started"
+    homepage_button_text = "Getting Started"
+    homepage_intro = "Next Generation 3D editing and viewing tool suite."
+    homepage_image = "/images/voyager-screen-1.png"
+
+[params.homepage_meta_tags]
+    meta_description = "Next Generation 3D editing and viewing tool suite."
+    meta_og_title = "Smithsonian Cook"
+    meta_og_type = "website"
+    meta_og_url = "https://3d.si.edu"
+    # meta_og_image = "https://raw.githubusercontent.com/smithsonian/dpo-cook/master/docs/....png"
+    meta_og_description = "Next Generation 3D editing and viewing tool suite."
+    meta_twitter_card = "summary"
+    meta_twitter_site = "@3D_Digi_SI"
+    meta_twitter_creator = "@3D_Digi_SI"
+
+[params.logo]
+    mobile = "/images/voyager-neg.svg"
+    standard  = "/images/voyager-neg.svg"
+

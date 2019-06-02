@@ -1,4 +1,0 @@
-source 'https://rubygems.org'
-
-# Installs the Just-The-Docs theme.
-gem "just-the-docs"

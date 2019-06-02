@@ -1,0 +1,15 @@
+<div id="main-menu-mobile" class="main-menu-mobile">
+  <ul>
+    {{ $currentPage := . }}
+    {{ range .Site.Menus.main }}
+    <li class="menu-item-{{ .Name | lower }}{{ if $currentPage.IsMenuCurrent "main" . }} active{{ end }}">
+      <a href="{{ .URL }}">
+        <span>{{ .Name }}</span>
+      </a>
+    </li>
+    {{end}}
+    <li class="menu-item-github" title="Smithsonian Cook on Github">
+      <a href="{{ .Site.Params.github_link }}"><img src="{{ .Site.Params.github_logo | relURL}}" alt="Github"></a>
+    </li>
+  </ul>
+</div>
