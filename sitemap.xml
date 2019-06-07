@@ -3,13 +3,55 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://smithsonian.github.io/dpo-voyager/</loc>
-    <priority>0</priority>
+    <loc>https://smithsonian.github.io/dpo-voyager/docs/getting-started/</loc>
   </url>
   
   <url>
-    <loc>https://smithsonian.github.io/dpo-voyager/docs/getting-started/</loc>
-    <priority>0</priority>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/overview/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/overview/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/usage/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/usage/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/pose-task/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/capture-task/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/derivatives-task/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/settings-task/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/annotations-task/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/docs/license/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/articles-task/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/tours-task/</loc>
   </url>
   
   <url>
@@ -19,7 +61,18 @@
   
   <url>
     <loc>https://smithsonian.github.io/dpo-voyager/docs/</loc>
-    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/</loc>
+  </url>
+  
+  <url>
+    <loc>https://smithsonian.github.io/dpo-voyager/story/</loc>
   </url>
   
   <url>

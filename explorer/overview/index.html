@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Getting started - Voyager Documentation</title>
+  <title>Overview - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -106,9 +106,9 @@
     
     
       
-        
-      
     
+      
+        
       
     
       
@@ -125,7 +125,7 @@
   <h4>Documentation</h4>
   <ul>
     
-    <li class="active ">
+    <li class="">
       <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
     </li>
     
@@ -140,7 +140,7 @@
   <h4>Explorer</h4>
   <ul>
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/explorer/overview/">Overview</a>
     </li>
     
@@ -199,64 +199,39 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Getting started</h1>
+<h1 class="title">Overview</h1>
 <div class="content">
   
 
-<h2 id="installation">Installation</h2>
+<p>The Smithsonian Voyager web explorer has been created specifically for displaying, exploring, and sharing rich 3D data and models from museum collections and cultural heritage.</p>
 
-<h4 id="prerequisites">Prerequisites</h4>
+<p>With a focus on storytelling, Voyager&rsquo;s interactive engine offers a wide range of features and tools.</p>
 
-<p>Important: currently we only support building the tool suite on <strong>Linux</strong>.</p>
+<h4 id="features">Features</h4>
 
-<p>Before cloning the Github project, please install the following tools</p>
+<p>These features are already available:</p>
 
 <ul>
-<li><a href="https://nodejs.org/en/">Node.js</a> - required</li>
-<li><a href="https://www.docker.com/">Docker</a> - optional</li>
-<li><a href="https://docs.docker.com/compose/install/">Docker Compose</a> - optional</li>
+<li>Fully customizable 3D annotations</li>
+<li>A customizable reader for documents, articles, images and videos</li>
+<li>A very flexible lighting setup</li>
+<li>A full featured animation engine for guided tours</li>
+<li>A hierarchical scene model with an unlimited number of cameras, lights, props, and models</li>
+<li>Support for a wide range of 3D formats including <code>obj</code>, <code>ply</code>, and <code>gltf</code>, <code>glb</code> with Draco mesh compression.</li>
+<li>Tools for taking measurements and making cuts through objects</li>
+<li>The software is based on an entity/component model which is very easy to extend</li>
 </ul>
 
-<p>Now clone the project from Github. Make sure not to forget the <code>--recurse-subomdules</code> option,
-this also clones the dependent repositories.</p>
-<div class="highlight"><pre class="chroma">git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager</pre></div>
-<h4 id="dockerized-environment">Dockerized environment</h4>
+<h4 id="what-we-re-working-on">What we&rsquo;re working on</h4>
 
-<p>For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
-To build the Docker image and start the container with the development server, run</p>
-<div class="highlight"><pre class="chroma">npm run up</pre></div>
-<p>This also watches all source folders for changes and triggers the Typescript compilation and Webpack build whenever
-source code changes are detected.</p>
+<p>Currently we&rsquo;ve plans for, or are working on the following features:</p>
 
-<p>Once you are done, shut down the development server.</p>
-<div class="highlight"><pre class="chroma">npm run down</pre></div>
-<h4 id="installation-without-docker">Installation without Docker</h4>
+<ul>
+<li>Support for <code>X3D</code> scene format and <code>IIIF</code> image documents</li>
+<li>Post-render effects and HDRI based lighting</li>
+<li>Additional annotation styles</li>
+</ul>
 
-<p>Without Docker, you need to install the NPM package dependencies manually.</p>
-<div class="highlight"><pre class="chroma">npm install</pre></div>
-<h2 id="distribution-build">Distribution Build</h2>
-
-<p>Now you are ready to build the project.</p>
-
-<p>The following commands create a <code>dist</code> folder with all required assets, scripts and sample HTML documents that show
-how to embed the explorer in a custom page.</p>
-
-<p>To create a production build, with minified scripts and CSS:</p>
-<div class="highlight"><pre class="chroma">npm run build-prod</pre></div>
-<p>To create a development build, with source code comments and source maps:</p>
-<div class="highlight"><pre class="chroma">npm run build-dev</pre></div>
-<p>Content of the <code>dist</code> folder after both <code>prod</code> and <code>dev</code> builds have been run</p>
-<div class="highlight"><pre class="chroma">css/
-fonts/
-images/
-js/
-favicon.png
-voyager-explorer.html
-voyager-explorer-dev.html
-voyager-mini.html
-voyager-mini-dev.html
-voyager-story.html
-voyager-story-dev.html</pre></div>
 </div>
 
         </div>

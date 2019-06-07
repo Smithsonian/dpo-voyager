@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Getting started - Voyager Documentation</title>
+  <title>Overview - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -106,11 +106,11 @@
     
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
 
@@ -125,7 +125,7 @@
   <h4>Documentation</h4>
   <ul>
     
-    <li class="active ">
+    <li class="">
       <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
     </li>
     
@@ -155,7 +155,7 @@
   <h4>Story</h4>
   <ul>
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/story/overview/">Overview</a>
     </li>
     
@@ -199,64 +199,40 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Getting started</h1>
+<h1 class="title">Overview</h1>
 <div class="content">
   
 
-<h2 id="installation">Installation</h2>
+<p><em>Voyager Story</em> is the creation and authoring application of the Voyager tool suite. The application can be used to create and author <em>Voyager Documents</em>. Documents are files in JSON format containing the description of a Voyager scene or experience.</p>
 
-<h4 id="prerequisites">Prerequisites</h4>
+<p><em>Voyager Story</em> can be operated in two different modes. Each mode offers a number of tasks.</p>
 
-<p>Important: currently we only support building the tool suite on <strong>Linux</strong>.</p>
+<h2 id="qc-mode">QC Mode</h2>
 
-<p>Before cloning the Github project, please install the following tools</p>
+<p>This mode is aimed at 3D technicians. After a model has been digitized and processed into derivative assets ready for web consumption, QC gives you the following tasks and tools:</p>
 
 <ul>
-<li><a href="https://nodejs.org/en/">Node.js</a> - required</li>
-<li><a href="https://www.docker.com/">Docker</a> - optional</li>
-<li><a href="https://docs.docker.com/compose/install/">Docker Compose</a> - optional</li>
+<li>Pose task: center the model and put it into upright position</li>
+<li>Capture task: take a 2D snapshot of the model</li>
+<li>Derivative inspection task: inspect the quality of the meshes and textures at various levels of detail</li>
+<li>Settings task: adjust parameters such as material settings<br /></li>
 </ul>
 
-<p>Now clone the project from Github. Make sure not to forget the <code>--recurse-subomdules</code> option,
-this also clones the dependent repositories.</p>
-<div class="highlight"><pre class="chroma">git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager</pre></div>
-<h4 id="dockerized-environment">Dockerized environment</h4>
+<h2 id="authoring-mode">Authoring Mode</h2>
 
-<p>For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
-To build the Docker image and start the container with the development server, run</p>
-<div class="highlight"><pre class="chroma">npm run up</pre></div>
-<p>This also watches all source folders for changes and triggers the Typescript compilation and Webpack build whenever
-source code changes are detected.</p>
+<p>The authoring tools can be used by curators to stage the model(s) using lights, cameras and props, and to add content (annotations, articles, and tours) to the experience. The following tasks are available in authoring mode:</p>
 
-<p>Once you are done, shut down the development server.</p>
-<div class="highlight"><pre class="chroma">npm run down</pre></div>
-<h4 id="installation-without-docker">Installation without Docker</h4>
+<ul>
+<li>Annotations task: add annotations to specific 3D locations on a model</li>
+<li>Articles task: write and edit articles (documents with text and media), and connect them with annotations and models</li>
+<li>Tours task: create guided tours which guide through the experience in multiple steps</li>
+<li>Settings task: adjust parameters such as material settings</li>
+</ul>
 
-<p>Without Docker, you need to install the NPM package dependencies manually.</p>
-<div class="highlight"><pre class="chroma">npm install</pre></div>
-<h2 id="distribution-build">Distribution Build</h2>
+<h2 id="expert-mode">Expert Mode</h2>
 
-<p>Now you are ready to build the project.</p>
+<p><em>Voyager Story</em> actually offers a third mode, called expert mode, which shows all available tasks at once. It also provides a detailed view of all document elements and settings. The expert mode is aimed at - well - experts and developers.</p>
 
-<p>The following commands create a <code>dist</code> folder with all required assets, scripts and sample HTML documents that show
-how to embed the explorer in a custom page.</p>
-
-<p>To create a production build, with minified scripts and CSS:</p>
-<div class="highlight"><pre class="chroma">npm run build-prod</pre></div>
-<p>To create a development build, with source code comments and source maps:</p>
-<div class="highlight"><pre class="chroma">npm run build-dev</pre></div>
-<p>Content of the <code>dist</code> folder after both <code>prod</code> and <code>dev</code> builds have been run</p>
-<div class="highlight"><pre class="chroma">css/
-fonts/
-images/
-js/
-favicon.png
-voyager-explorer.html
-voyager-explorer-dev.html
-voyager-mini.html
-voyager-mini-dev.html
-voyager-story.html
-voyager-story-dev.html</pre></div>
 </div>
 
         </div>
