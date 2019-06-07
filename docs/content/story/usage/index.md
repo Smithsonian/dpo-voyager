@@ -1,6 +1,10 @@
-# Voyager Story
+---
+title: Usage
+summary: Embed and use Voyager Story in your own production pipeline.
+weight: 110
+---
 
-## Getting Started
+## Web Component
 
 The Voyager 3D Story tool is designed to be used as a single page client-side application.
 Sample HTML documents are provided as part of the distributable package.
@@ -26,7 +30,7 @@ properties object as an argument to the application constructor.
 | mode         | "QC", "Author", "Expert" | Launch in "qc" mode to edit/QC an item. Launch in "author" mode to author items and presentations. Launch in "expert" mode to get access to all tasks/for debugging |
 
 ### Example 1: launching the Story tool via custom HTML element
-```html
+{{<highlight html>}}
 <!DOCTYPE html>
 <html>
     <head>
@@ -37,24 +41,24 @@ properties object as an argument to the application constructor.
 
         <link rel="shortcut icon" type="image/png" href="favicon.png"/>
         
-        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/99/three.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
 
-        <link rel="stylesheet" href="css/voyager-story.dev.css">
+        <link rel="stylesheet" href="css/voyager-story.min.css">
     </head>
     <body>
         <voyager-story presentation="my_presentation.json"></voyager-story>
-        <script type="text/javascript" src="js/voyager-story.dev.js"></script>
+        <script type="text/javascript" src="js/voyager-story.min.js"></script>
     </body>
 </html>
-```
+{{</highlight>}}
 
 ### Example 2: launching the Story tool via application class
-```html
+{{<highlight html>}}
 <!DOCTYPE html>
 <html>
     <head>
-        ...see above...
+        ...same as above...
     </head>
     <body>
         <script type="text/javascript" src="js/voyager-story.dev.js"></script>
@@ -65,4 +69,4 @@ properties object as an argument to the application constructor.
         </script>
     </body>
 </html>
-```
+{{</highlight>}}
