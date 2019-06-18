@@ -35,8 +35,8 @@ import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
+const _position = new THREE.Vector3();
+const _scaling = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _mat4 = new THREE.Matrix4();
 const _mat3 = new THREE.Matrix3();
@@ -172,12 +172,13 @@ export default class CVAnnotationsTask extends CVTask
         if (event.component === model) {
 
             // get click position and normal in annotation space = pose transform * model space
-            _vec3a.fromArray(model.ins.position.value);
+            _position.fromArray(model.ins.position.value);
             helpers.degreesToQuaternion(model.ins.rotation.value, CVModel2.rotationOrder, _quat);
-            _vec3b.setScalar(1);
-            _mat4.compose(_vec3a, _quat, _vec3b);
+            _scaling.setScalar(1);
+            _mat4.compose(_position, _quat, _scaling);
             _mat3.getNormalMatrix(_mat4);
-            const position = event.view.pickPosition(event).applyMatrix4(_mat4).toArray();
+
+            const position = event.view.pickPosition(event, model.boundingBox).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
 
             const mode = this.ins.mode.getValidatedValue();
