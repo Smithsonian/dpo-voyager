@@ -20,6 +20,8 @@ import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import Commander from "@ff/core/Commander";
 import TypeRegistry from "@ff/core/TypeRegistry";
 
+import Notification from "@ff/ui/Notification";
+
 import System from "@ff/graph/System";
 
 import coreTypes from "./coreTypes";
@@ -181,7 +183,8 @@ Version: ${ENV_VERSION}
         if (props.document) {
             // first loading priority: document
             props.document = props.root ? props.document : reader.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality).catch(() => {});
+            this.loadDocument(props.document, undefined, props.quality)
+            .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
             // second loading priority: model

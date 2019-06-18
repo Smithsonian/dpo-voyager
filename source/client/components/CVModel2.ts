@@ -17,6 +17,8 @@
 
 import * as THREE from "three";
 
+import Notification from "@ff/ui/Notification";
+
 import { Node, types } from "@ff/graph/Component";
 import CObject3D from "@ff/scene/components/CObject3D";
 
@@ -420,6 +422,7 @@ export default class CVModel2 extends CObject3D
         }
 
         if (sequence.length === 0) {
+            Notification.show(`No 3D derivatives available for '${this.displayName}'.`);
             return Promise.resolve();
         }
 
@@ -436,40 +439,41 @@ export default class CVModel2 extends CObject3D
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
         return derivative.load(this.assetReader)
-        .then(() => {
-            if (!derivative.model) {
-                return;
-            }
+            .then(() => {
+                if (!derivative.model) {
+                    return;
+                }
 
-            if (this._boxFrame) {
-                this.removeObject3D(this._boxFrame);
-                this._boxFrame.geometry.dispose();
-                this._boxFrame = null;
-            }
+                if (this._boxFrame) {
+                    this.removeObject3D(this._boxFrame);
+                    this._boxFrame.geometry.dispose();
+                    this._boxFrame = null;
+                }
 
-            if (this._activeDerivative) {
-                this.removeObject3D(this._activeDerivative.model);
-                this._activeDerivative.unload();
-                //this.getMainComponent(CRenderer).logInfo();
-            }
+                if (this._activeDerivative) {
+                    this.removeObject3D(this._activeDerivative.model);
+                    this._activeDerivative.unload();
+                    //this.getMainComponent(CRenderer).logInfo();
+                }
 
-            this._activeDerivative = derivative;
-            this.addObject3D(derivative.model);
+                this._activeDerivative = derivative;
+                this.addObject3D(derivative.model);
 
-            // update bounding box based on loaded derivative
-            helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
-            this.emit("bounding-box");
+                // update bounding box based on loaded derivative
+                helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
+                this.emit("bounding-box");
 
-            // test output bounding box
-            const box = { min: this._boundingBox.min.toArray(), max: this._boundingBox.max.toArray() };
+                // test output bounding box
+                const box = { min: this._boundingBox.min.toArray(), max: this._boundingBox.max.toArray() };
 
-            if (ENV_DEVELOPMENT) {
-                console.log("CVModel.onLoad - bounding box: ", box);
-            }
+                if (ENV_DEVELOPMENT) {
+                    console.log("CVModel.onLoad - bounding box: ", box);
+                }
 
-            if (this.ins.override) {
-                this.updateMaterial();
-            }
-        });
+                if (this.ins.override) {
+                    this.updateMaterial();
+                }
+            })
+            .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }
 }

@@ -20,7 +20,6 @@ import * as filenamify from "filenamify";
 import { Node, types } from "@ff/graph/Component";
 
 import MessageBox from "@ff/ui/MessageBox";
-import Notification from "@ff/ui/Notification";
 
 import Article from "../models/Article";
 
