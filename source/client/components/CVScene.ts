@@ -60,14 +60,20 @@ export default class CVScene extends CVNode
         return null;
     }
 
-    get modelBoundingBox() {
-        return this._modelBoundingBox;
-    }
     get models() {
         return this.getGraphComponents(CVModel2);
     }
 
     private _modelBoundingBox = new THREE.Box3();
+
+    getModelBoundingBox(forceUpdate: boolean)
+    {
+        if (forceUpdate) {
+            this.updateModelBoundingBox();
+        }
+
+        return this._modelBoundingBox;
+    }
 
     create()
     {

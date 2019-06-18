@@ -125,7 +125,7 @@ export default class CVGrid extends CObject3D
             }
 
             if (ins.update.changed) {
-                const box = this.rootScene.modelBoundingBox;
+                const box = this.rootScene.getModelBoundingBox(false);
                 const units = this.rootScene.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);

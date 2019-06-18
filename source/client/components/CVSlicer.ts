@@ -28,6 +28,9 @@ import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Slicing plane vectors (X+, Y+, Z+, X-, Y-, Z-).
+ */
 const _planes = [
     [-1, 0, 0, 0 ],
     [ 0,-1, 0, 0 ],
@@ -37,6 +40,9 @@ const _planes = [
     [ 0, 0, 1, 0 ],
 ];
 
+/**
+ * Component controlling global slicing parameters for all [[CVModel2]] components in a scene.
+ */
 export default class CVSlicer extends Component
 {
     static readonly typeName: string = "CVSlicer";
@@ -80,6 +86,7 @@ export default class CVSlicer extends Component
             const axisIndex = ins.axis.getValidatedValue();
 
             if (axisIndex === this.axisIndex) {
+                // if same axis is selected again, invert its orientation
                 ins.inverted.setValue(!ins.inverted.value);
             }
             else {
@@ -96,11 +103,12 @@ export default class CVSlicer extends Component
         const axisInverted = ins.inverted.value;
         const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const boundingBox = this.getComponent(CVScene).modelBoundingBox;
+        const boundingBox = this.getComponent(CVScene).getModelBoundingBox(false);
         if (!boundingBox) {
             return true;
         }
 
+        // set components of slicing plane vector
         this.plane = _planes[planeIndex];
         const min = boundingBox.min.getComponent(axisIndex);
         const max = boundingBox.max.getComponent(axisIndex);
@@ -109,6 +117,7 @@ export default class CVSlicer extends Component
 
         const models = this.getGraphComponents(CVModel2);
 
+        // set the slicing plane in the Uber materials of each scene model
         models.forEach(model => {
             const object = model.object3D;
             object.traverse((mesh: THREE.Mesh) => {
@@ -148,7 +157,7 @@ export default class CVSlicer extends Component
         };
     }
 
-    protected updateMaterial(material: UberPBRMaterial)
+    private updateMaterial(material: UberPBRMaterial)
     {
         const ins = this.ins;
 

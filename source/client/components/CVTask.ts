@@ -27,6 +27,12 @@ import NodeView, { customElement, property, html } from "../ui/explorer/NodeView
 
 export { types, customElement, property, html };
 
+/**
+ * Base class for tasks in the Voyager Story authoring environment. A task provides a number of tools. The tools operate
+ * in the context of the currently selected node or component.
+ *
+ * In order to be aware of the currently selected node, CVTask inherits from CVNodeObserver.
+ */
 export default class CVTask extends CVNodeObserver
 {
     static readonly typeName: string = "CVTask";
@@ -157,6 +163,9 @@ export default class CVTask extends CVNodeObserver
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Base class for task view components.
+ */
 export class TaskView<T extends CVTask = CVTask> extends NodeView
 {
     @property({ attribute: false })

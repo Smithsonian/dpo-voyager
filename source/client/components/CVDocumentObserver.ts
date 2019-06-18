@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
-import Component, { types } from "@ff/graph/Component";
+import Component from "@ff/graph/Component";
 
 import CVDocument from "./CVDocument";
 import CVDocumentProvider, { IActiveDocumentEvent } from "./CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Inherit from this class to observe changes of the currently active document.
+ * Call startObserving() to begin receiving change events. Override onActiveDocument() to react on active document changes.
+ */
 export default class CVDocumentObserver extends Component
 {
     static readonly typeName: string = "CVDocumentObserver";
@@ -32,6 +36,10 @@ export default class CVDocumentObserver extends Component
         return this.getGraphComponent(CVDocumentProvider);
     }
 
+    /**
+     * Starts observing changes of the active document. Must be called explicitly by descendant classes
+     * in order to start observation.
+     */
     protected startObserving()
     {
         const provider = this.documentProvider;
@@ -43,6 +51,9 @@ export default class CVDocumentObserver extends Component
         }
     }
 
+    /**
+     * Stops observing changes of the active node.
+     */
     protected stopObserving()
     {
         const provider = this.documentProvider;
@@ -54,11 +65,16 @@ export default class CVDocumentObserver extends Component
         }
     }
 
+    /**
+     * Called after the active document has changed. Override to react on the change.
+     * @param previous The previous active document.
+     * @param next The next active document.
+     */
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
     }
 
-    protected onActiveDocumentEvent(event: IActiveDocumentEvent)
+    private onActiveDocumentEvent(event: IActiveDocumentEvent)
     {
         this.activeDocument = event.next;
         this.onActiveDocument(event.previous, event.next);

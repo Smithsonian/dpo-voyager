@@ -165,7 +165,7 @@ export default class CVOrbitNavigation extends CObject3D
 
         // zoom extents
         if (camera && ins.zoomExtents.changed) {
-            this._modelBoundingBox = this.getComponent(CVScene).modelBoundingBox;
+            this._modelBoundingBox = this.getComponent(CVScene).getModelBoundingBox(true);
             controller.zoomExtents(this._modelBoundingBox);
         }
 

@@ -41,7 +41,12 @@ const _quat1 = new THREE.Quaternion();
 
 export enum EPoseManipMode { Off, Translate, Rotate }
 
-
+/**
+ * Provides tools for editing the pose of a model or part.
+ * Corresponding view: [[PoseTaskView]].
+ *
+ * Listens to viewport pointer events to provide interactive move and rotate tools.
+ */
 export default class CVPoseTask extends CVTask
 {
     static readonly typeName: string = "CVPoseTask";
@@ -83,7 +88,7 @@ export default class CVPoseTask extends CVTask
 
     activateTask()
     {
-        //this.selection.selectedComponents.on(CVModel2, this.onSelectModel, this);
+        // start listening to pointer events for interactive move/rotate tools
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
 
         // switch to quad view layout
@@ -93,17 +98,18 @@ export default class CVPoseTask extends CVTask
             }
         });
 
+        // start observing active node and active document changes
         this.startObserving();
+
         super.activateTask();
     }
 
     deactivateTask()
     {
         super.deactivateTask();
-        this.stopObserving();
 
-        //this.selection.selectedComponents.off(CVModel2, this.onSelectModel, this);
-        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        // stop observing active node and active document changes
+        this.stopObserving();
 
         // switch back to single view layout
         this.renderer.views.forEach(view => {
@@ -111,10 +117,14 @@ export default class CVPoseTask extends CVTask
                 view.layout = EQuadViewLayout.Single;
             }
         });
+
+        // stop listening to pointer events for interactive move/rotate tools
+        this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
     }
 
     update(context)
     {
+        // mode property has changed
         return true;
     }
 
@@ -125,7 +135,8 @@ export default class CVPoseTask extends CVTask
         }
 
         const mode = this.ins.mode.value;
-        if (mode === EPoseManipMode.Off || !this.activeNode.model) {
+
+        if (mode === EPoseManipMode.Off || !this.activeModel) {
             return false;
         }
 
@@ -138,27 +149,32 @@ export default class CVPoseTask extends CVTask
 
         this._deltaX = this._deltaY = 0;
 
-        const object3D = this.activeModel.object3D;
         const camera = this._viewport.camera;
-        if (!camera) {
+
+        if (!camera || !camera.isOrthographicCamera) {
             return false;
         }
 
         camera.matrixWorld.decompose(_vec3a, _quat0, _vec3a);
 
         if (mode === EPoseManipMode.Rotate) {
+            // convert accumulated pointer movement to rotation angle
             const angle = (deltaX - deltaY) * 0.002;
+
+            // generate rotation matrix
             _axis.set(0, 0, -1).applyQuaternion(_quat0);
             _quat1.setFromAxisAngle(_axis, angle);
             _mat4.makeRotationFromQuaternion(_quat1);
         }
         else {
+            // transform pointer movement to world scale, generate translation matrix
             const f = camera.size / this._viewport.height;
             _axis.set(deltaX * f, -deltaY * f, 0).applyQuaternion(_quat0);
             _mat4.identity().setPosition(_axis);
         }
 
-        _mat4.multiply(object3D.matrix);
+        // multiply delta transform with current model pose transform
+        _mat4.multiply(this.activeModel.object3D.matrix);
         this.activeModel.setFromMatrix(_mat4);
 
         return true;
@@ -179,12 +195,21 @@ export default class CVPoseTask extends CVTask
             return;
         }
 
-        if (event.type === "pointer-move" && event.originalEvent.buttons === 1) {
-            const speed = event.ctrlKey ? 0.1 : (event.shiftKey ? 10 : 1);
-            this._deltaX += event.movementX * speed;
-            this._deltaY += event.movementY * speed;
-            this._viewport = event.viewport;
-            event.stopPropagation = true;
+        // check pointer events if left button is down
+        if (event.originalEvent.buttons === 1) {
+
+            if (event.type === "pointer-move") {
+                // modify speed multiplier according to modifier keys pressed (ctrl = 0.1, shift = 10)
+                const speed = event.ctrlKey ? 0.1 : (event.shiftKey ? 10 : 1);
+
+                // accumulate motion in deltaX/deltaY
+                this._deltaX += event.movementX * speed;
+                this._deltaY += event.movementY * speed;
+                this._viewport = event.viewport;
+
+                // mark event as handled
+                event.stopPropagation = true;
+            }
         }
     }
 }

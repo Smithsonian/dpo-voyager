@@ -29,6 +29,12 @@ import { TaskView } from "../../components/CVTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * View component for [[CVPoseTask]].
+ *
+ * Allows selecting the pose edit mode (select, rotate, move) and provides commands for centering the model
+ * and zoom/center the view to the extents of the scene.
+ */
 @customElement("sv-pose-task-view")
 export default class PoseTaskView extends TaskView<CVPoseTask>
 {

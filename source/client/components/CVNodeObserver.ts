@@ -16,12 +16,17 @@
  */
 
 import NVNode from "../nodes/NVNode";
-import CVNodeProvider, { IActiveNodeEvent } from "./CVNodeProvider";
 
+import CVNodeProvider, { IActiveNodeEvent } from "./CVNodeProvider";
 import CVDocumentObserver from "./CVDocumentObserver";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Inherit from this class to observe changes of the currently active node and document.
+ * Call startObserving() to begin receiving change events. Override onActiveNode() to react on active node changes.
+ * Override onActiveDocument() to react on active document changes.
+ */
 export default class CVNodeObserver extends CVDocumentObserver
 {
     static readonly typeName: string = "CVNodeObserver";
@@ -32,6 +37,10 @@ export default class CVNodeObserver extends CVDocumentObserver
         return this.getGraphComponent(CVNodeProvider);
     }
 
+    /**
+     * Starts observing changes of the active node. Must be called explicitly by descendant classes
+     * in order to start observation.
+     */
     protected startObserving()
     {
         super.startObserving();
@@ -45,11 +54,15 @@ export default class CVNodeObserver extends CVDocumentObserver
         }
     }
 
+    /**
+     * Stops observing changes of the active node.
+     */
     protected stopObserving()
     {
         const provider = this.nodeProvider;
         provider.off<IActiveNodeEvent>("active-node", this.onActiveNodeEvent, this);
 
+        // if a node is active,
         if (provider.activeNode) {
             this.activeNode = null;
             this.onActiveNode(provider.activeNode, null);
@@ -58,11 +71,16 @@ export default class CVNodeObserver extends CVDocumentObserver
         super.stopObserving();
     }
 
+    /**
+     * Called after the active node has changed. Override to react on the change.
+     * @param previous The previous active node.
+     * @param next The next active node.
+     */
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
     }
 
-    protected onActiveNodeEvent(event: IActiveNodeEvent)
+    private onActiveNodeEvent(event: IActiveNodeEvent)
     {
         this.activeNode = event.next;
         this.onActiveNode(event.previous, event.next);
