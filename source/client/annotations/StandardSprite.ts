@@ -101,8 +101,8 @@ export default class StandardSprite extends AnnotationSprite
 class StandardAnnotation extends AnnotationElement
 {
     protected titleElement: HTMLDivElement;
-    protected currentOpacity = 0;
-    protected targetOpacity = 0;
+    protected currentOpacity = 1;
+    protected targetOpacity = 1;
 
     constructor(sprite: AnnotationSprite)
     {
