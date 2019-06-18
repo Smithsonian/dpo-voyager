@@ -96,9 +96,4 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
     {
         this.activeDocument.setup.navigation.ins.zoomExtents.set();
     }
-
-    protected onActiveNode(previous: NVNode, next: NVNode)
-    {
-        this.requestUpdate();
-    }
 }

@@ -89,7 +89,13 @@ export default class DerivativeList
     getByUsage(usage: EDerivativeUsage): Derivative[]
     {
         const key = EDerivativeUsage[usage];
-        return this.derivatives[key] || _EMPTY_ARRAY;
+        const derivatives = this.derivatives[key] || _EMPTY_ARRAY;
+
+        return derivatives.sort((a, b) => {
+            if (a.data.quality < b.data.quality) return -1;
+            if (a.data.quality > b.data.quality) return 1;
+            return 0;
+        });
     }
 
     getArray(): Derivative[]

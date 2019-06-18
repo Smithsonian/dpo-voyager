@@ -89,6 +89,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _controller = new CameraController();
     private _scene: CScene = null;
     private _modelBoundingBox: THREE.Box3 = null;
+    private _hasChanged = false;
 
     constructor(node: Node, id: string)
     {
@@ -326,6 +327,8 @@ export default class CVOrbitNavigation extends CObject3D
             this._controller.onPointer(event);
             event.stopPropagation = true;
         }
+
+        this._hasChanged = true;
     }
 
     protected onTrigger(event: ITriggerEvent)
@@ -342,11 +345,13 @@ export default class CVOrbitNavigation extends CObject3D
             this._controller.onTrigger(event);
             event.stopPropagation = true;
         }
+
+        this._hasChanged = true;
     }
 
     protected onLoadingCompleted(isLoading: boolean)
     {
-        if (this.ins.autoZoom.value) {
+        if (this.ins.autoZoom.value && !this._hasChanged) {
             this.ins.zoomExtents.set();
         }
     }

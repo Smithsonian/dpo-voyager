@@ -22,8 +22,7 @@ import DerivativesTaskView from "../ui/story/DerivativesTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EDerivativesTaskMode { Off }
-
+//export enum EDerivativesTaskMode { Off }
 
 export default class CVDerivativesTask extends CVTask
 {
@@ -33,10 +32,11 @@ export default class CVDerivativesTask extends CVTask
     static readonly icon: string = "hierarchy";
 
     protected static readonly ins = {
-        mode: types.Enum("Mode", EDerivativesTaskMode, EDerivativesTaskMode.Off),
+        //mode: types.Enum("Mode", EDerivativesTaskMode, EDerivativesTaskMode.Off),
     };
 
     ins = this.addInputs<CVTask, typeof CVDerivativesTask.ins>(CVDerivativesTask.ins);
+
 
     constructor(node: Node, id: string)
     {
@@ -47,18 +47,6 @@ export default class CVDerivativesTask extends CVTask
         configuration.bracketsVisible = false;
         configuration.gridVisible = false;
         configuration.annotationsVisible = false;
-    }
-
-    activateTask()
-    {
-        this.startObserving();
-        super.activateTask();
-    }
-
-    deactivateTask()
-    {
-        this.stopObserving();
-        super.deactivateTask();
     }
 
     createView()

@@ -20,23 +20,20 @@ import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
 
-import Derivative from "../../models/Derivative";
+import { EDerivativeUsage } from "client/schema/model";
 
 import CVDerivativesTask from "../../components/CVDerivativesTask";
 import { TaskView } from "../../components/CVTask";
 
 import "./DerivativeList";
 import { ISelectDerivativeEvent } from "./DerivativeList";
-
+import NVNode from "client/nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-derivatives-task-view")
 export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 {
-    protected selectedDerivative: Derivative = null;
-
-
     protected render()
     {
         const node = this.activeNode;
@@ -46,20 +43,40 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
             return html`<div class="sv-placeholder">Please select a model node to inspect its derivatives</div>`;
         }
 
-        const derivatives = model.derivatives.getArray();
-        const derivative = this.selectedDerivative;
+        const derivatives = model.derivatives.getByUsage(EDerivativeUsage.Web3D);
 
-        const detailView = derivative ? html`` : null;
+        const requestedQuality = model.ins.quality.value;
+        const activeDerivative = model.derivatives.get(EDerivativeUsage.Web3D, requestedQuality);
+
+        const loadedQuality = model.outs.quality.value;
+        const loadedDerivative = model.derivatives.get(EDerivativeUsage.Web3D, loadedQuality);
+
+        const detailView = activeDerivative ? html`` : null;
 
         return html`<div class="ff-flex-row ff-flex-wrap">
         </div>
-        <sv-derivative-list .data=${derivatives} .selectedItem=${derivative} @select=${this.onSelectDerivative}></sv-derivative-list>
+        <sv-derivative-list .data=${derivatives} .selectedItem=${activeDerivative} .loadedItem=${loadedDerivative} @select=${this.onSelectDerivative}></sv-derivative-list>
         ${detailView}`
     }
 
     protected onSelectDerivative(event: ISelectDerivativeEvent)
     {
-        this.selectedDerivative = event.detail.derivative;
-        this.requestUpdate();
+        const model = this.activeNode.model;
+        model.ins.quality.setValue(event.detail.derivative.data.quality);
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+        // listen to changes on active model's quality property
+        if (previous && previous.model) {
+            previous.model.ins.quality.off("value", this.onUpdate, this);
+            previous.model.outs.quality.off("value", this.onUpdate, this);
+        }
+        if (next && next.model) {
+            next.model.ins.quality.on("value", this.onUpdate, this);
+            next.model.outs.quality.on("value", this.onUpdate, this);
+        }
+
+        super.onActiveNode(previous, next);
     }
 }

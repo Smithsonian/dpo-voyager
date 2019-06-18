@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { customElement, property } from "@ff/ui/CustomElement";
+import { customElement, property, html } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
 import Derivative, { EDerivativeUsage, EDerivativeQuality } from "../../models/Derivative";
@@ -36,6 +36,9 @@ class DerivativeList extends List<Derivative>
     @property({ attribute: false })
     selectedItem: Derivative = null;
 
+    @property({ attribute: false })
+    loadedItem: Derivative = null;
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -44,7 +47,10 @@ class DerivativeList extends List<Derivative>
 
     protected renderItem(item: Derivative)
     {
-        return `${EDerivativeUsage[item.data.usage]} / ${EDerivativeQuality[item.data.quality]}`;
+        const isLoaded = item === this.loadedItem;
+
+        return html`<ff-icon name=${isLoaded ? "check" : "empty"}></ff-icon>
+            <span>${EDerivativeUsage[item.data.usage]} - ${EDerivativeQuality[item.data.quality]}</span>`;
     }
 
     protected isItemSelected(item: Derivative)

@@ -79,6 +79,7 @@ export default class CVModel2 extends CObject3D
 
     protected static readonly outs = {
         unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
+        quality: types.Enum("LoadedQuality", EDerivativeQuality),
     };
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
@@ -101,7 +102,7 @@ export default class CVModel2 extends CObject3D
     private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
-    private _boundingBox:THREE.Box3;
+    private _boundingBox: THREE.Box3;
     private _boxFrame: THREE.Mesh = null;
 
     constructor(node: Node, id: string)
@@ -444,12 +445,6 @@ export default class CVModel2 extends CObject3D
                     return;
                 }
 
-                if (this._boxFrame) {
-                    this.removeObject3D(this._boxFrame);
-                    this._boxFrame.geometry.dispose();
-                    this._boxFrame = null;
-                }
-
                 if (this._activeDerivative) {
                     this.removeObject3D(this._activeDerivative.model);
                     this._activeDerivative.unload();
@@ -458,6 +453,12 @@ export default class CVModel2 extends CObject3D
 
                 this._activeDerivative = derivative;
                 this.addObject3D(derivative.model);
+
+                if (this._boxFrame) {
+                    this.removeObject3D(this._boxFrame);
+                    this._boxFrame.geometry.dispose();
+                    this._boxFrame = null;
+                }
 
                 // update bounding box based on loaded derivative
                 helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
@@ -469,6 +470,9 @@ export default class CVModel2 extends CObject3D
                 if (ENV_DEVELOPMENT) {
                     console.log("CVModel.onLoad - bounding box: ", box);
                 }
+
+                // update loaded quality property
+                this.outs.quality.setValue(derivative.data.quality);
 
                 if (this.ins.override) {
                     this.updateMaterial();

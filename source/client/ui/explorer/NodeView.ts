@@ -65,7 +65,7 @@ export default class NodeView extends DocumentView
         this.requestUpdate();
     }
 
-    protected onActiveNodeEvent(event: IActiveNodeEvent)
+    private onActiveNodeEvent(event: IActiveNodeEvent)
     {
         this.activeNode = event.next;
         this.onActiveNode(event.previous, event.next);
