@@ -187,6 +187,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     padding: 2px 0;
     font-size: 0.9rem;
     font-weight: bold;
+    @include noselect;
   }
 
   .sv-description {
@@ -196,6 +197,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     overflow: hidden;
     transition: height 0.2s;
   }
+}
+
+.sv-standard-annotation {
+  pointer-events: none;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -262,6 +267,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     font-size: 1.2rem;
     white-space: pre;
     color: $color-text-light;
+    @include noselect;
 
     span {
       color: transparent;
@@ -431,7 +437,9 @@ $tour-entry-indent: 12px;
   border-left: $section-border;
   border-right: $section-border;
   margin: 0 -1px 0 -1px; // side borders disappear on smaller screens
+
   pointer-events: auto;
+  @include noselect;
 
   .sv-group {
     display: flex;

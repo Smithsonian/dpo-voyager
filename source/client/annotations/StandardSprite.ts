@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import math from "@ff/core/math";
 
-import { customElement, PropertyValues, html, render } from "@ff/ui/CustomElement";
+import { customElement, PropertyValues } from "@ff/ui/CustomElement";
 import Button from "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
@@ -121,7 +121,7 @@ class StandardAnnotation extends AnnotationElement
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-beam-annotation");
+        this.classList.add("sv-standard-annotation");
     }
 
     protected update(changedProperties: PropertyValues): void
