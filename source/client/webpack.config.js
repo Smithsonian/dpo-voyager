@@ -52,6 +52,12 @@ const apps = {
         title: "Voyager Mini",
         template: "viewer.hbs",
     },
+    "launcher": {
+        name: "voyager-launcher",
+        entryPoint: "client/ui/launcher/MainView.ts",
+        title: "Voyager Launcher",
+        template: "viewer.hbs",
+    },
     "story": {
         name: "voyager-story",
         entryPoint: "client/ui/story/MainView.ts",
@@ -84,6 +90,7 @@ module.exports = function(env, argv) {
         return [
             createAppConfig(apps.explorer, version, dirs, isDevMode, isLocal),
             createAppConfig(apps.mini, version, dirs, isDevMode, isLocal),
+            createAppConfig(apps.launcher, version, dirs, isDevMode, isLocal),
             createAppConfig(apps.story, version, dirs, isDevMode, isLocal),
             createAppConfig(apps.demo, version, dirs, isDevMode, isLocal),
         ];
