@@ -186,13 +186,19 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
                     metalness: this.metalness,
                     wireframe: this.wireframe,
                     map: this.map,
+                    aoMap: this.aoMap,
+                    emissiveMap: this.emissiveMap,
+                    normalMap: this.normalMap,
                 };
                 this.color = this._wireColor;
                 this.emissive = this._wireEmissiveColor;
                 this.roughness = 0.8;
                 this.metalness = 0.1;
                 this.wireframe = true;
-                this.map = undefined;
+                this.map = null;
+                this.aoMap = null;
+                this.emissiveMap = null;
+                this.normalMap = null;
                 break;
         }
     }
