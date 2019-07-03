@@ -74,6 +74,7 @@ export interface IAnnotation
     offset?: number;
     tilt?: number;
     azimuth?: number;
+    color?: number[];
 
     zoneIndex?: number;
 }

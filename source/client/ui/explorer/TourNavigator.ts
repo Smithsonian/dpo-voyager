@@ -32,6 +32,7 @@ export default class TourNavigator extends DocumentView
     protected firstConnected()
     {
         super.firstConnected();
+
         this.classList.add("sv-bottom-bar-container", "sv-tour-navigator", "sv-transition");
         setTimeout(() => this.classList.remove("sv-transition"), 1);
     }

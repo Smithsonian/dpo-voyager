@@ -62,6 +62,8 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
             tilt: 0,
             azimuth: 0,
 
+            color: [ 1, 1, 1 ],
+
             zoneIndex: -1,
         };
     }
@@ -113,6 +115,12 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         if (data.azimuth !== 0) {
             json.azimuth = data.azimuth;
         }
+
+        const color = data.color;
+        if (color && (color[0] !== 1 || color[1] !== 1 || color[2] !== 1)) {
+            json.color = color.slice();
+        }
+
         if (data.zoneIndex > -1) {
             json.zoneIndex = data.zoneIndex;
         }
@@ -141,6 +149,8 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         data.offset = json.offset || 0;
         data.tilt = json.tilt || 0;
         data.azimuth = json.azimuth || 0;
+
+        data.color = json.color || [ 1, 1, 1 ];
 
         data.zoneIndex = json.zoneIndex !== undefined ? json.zoneIndex : -1;
     }

@@ -70,6 +70,15 @@
                     "type": "number",
                     "default": 0
                 },
+                "color": {
+                    "description": "Color of the annotation",
+                    "type": "array",
+                    "minLength": 3,
+                    "maxLength": 3,
+                    "items": {
+                        "type": "number"
+                    }
+                },
                 "position": {
                     "description": "Position where the annotation is anchored, in local item coordinates.",
                     "$ref": "./common.schema.json#/definitions/vector3"

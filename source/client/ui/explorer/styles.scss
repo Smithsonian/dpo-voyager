@@ -164,22 +164,26 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   &.sv-q0 {
     transform: translate(0, -100%);
-    border-bottom: 1px solid $color-primary;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
     text-align: left;
   }
   &.sv-q1 {
     transform: translate(-100%, -100%);
-    border-bottom: 1px solid $color-primary;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
     text-align: right;
   }
   &.sv-q2 {
     transform: translate(-100%, 0);
-    border-top: 1px solid $color-primary;
+    border-top-style: solid;
+    border-top-width: 1px;
     text-align: right;
   }
   &.sv-q3 {
     transform: translate(0, 0);
-    border-top: 1px solid $color-primary;
+    border-top-style: solid;
+    border-top-width: 1px;
     text-align: left;
   }
 
@@ -502,6 +506,36 @@ $tour-entry-indent: 12px;
   }
   .sv-text {
     font-size: 0.9em;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TAG CLOUD
+
+.sv-tag-cloud {
+  .sv-tag-buttons {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 4px;
+  }
+
+  .sv-tag-button {
+    flex: 0 1 auto;
+    margin: 2px 4px;
+    padding: 1px 4px;
+    background: $color-background;
+    border-radius: 3px;
+    font-size: 0.75rem;
+
+    .ff-text {
+      margin: 1px 2px;
+    }
+    .ff-icon {
+      height: 22px;
+      margin: 1px 2px;
+    }
   }
 }
 

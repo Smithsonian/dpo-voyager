@@ -27,6 +27,7 @@ import "./MainMenu";
 import "./ToolBar";
 import "./TourNavigator";
 import "./TourMenu";
+import "./TagCloud";
 import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
@@ -81,6 +82,7 @@ export default class ChromeView extends DocumentView
         const toursEnabled = setup.tours.ins.enabled.value;
         const tourActive = setup.tours.outs.tourIndex.value >= 0;
 
+        const tagsVisible = setup.viewer.ins.annotationsVisible.value;
         const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
         if (!interfaceVisible) {
@@ -112,6 +114,7 @@ export default class ChromeView extends DocumentView
             <div class="ff-flex-spacer"></div>
             ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
             ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
+            ${tagsVisible ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
             ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
     }
 
@@ -138,6 +141,7 @@ export default class ChromeView extends DocumentView
                 next.outs.assetPath,
                 setup.interface.ins.visible,
                 setup.interface.ins.logo,
+                setup.viewer.ins.annotationsVisible,
                 setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
                 setup.tours.outs.tourIndex,

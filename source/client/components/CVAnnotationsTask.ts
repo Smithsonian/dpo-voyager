@@ -200,10 +200,10 @@ export default class CVAnnotationsTask extends CVTask
         const nextAnnotations = next ? next.getComponent(CVAnnotationView, true) : null;
 
         if (prevAnnotations) {
-            prevAnnotations.off<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
+            prevAnnotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
         }
         if (nextAnnotations) {
-            nextAnnotations.on<IAnnotationsUpdateEvent>("update", this.emitUpdateEvent, this);
+            nextAnnotations.on<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
         }
 
         const prevModel = previous ? previous.getComponent(CVModel2, true) : null;

@@ -22,7 +22,7 @@ import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
 
 import CVModel2 from "./CVModel2";
-import CVAnnotationView from "./CVAnnotationView";
+import CVAnnotationView, { ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,6 +35,7 @@ export default class CVViewer extends CRenderable
     static readonly icon: string = "";
 
     protected static readonly ins = {
+        selectedTags: types.String("Tags.Selected"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 1),
@@ -42,7 +43,12 @@ export default class CVViewer extends CRenderable
         annotationsVisible: types.Boolean("Annotations.Visible"),
     };
 
+    protected static readonly outs = {
+        tagCloud: types.String("Tags.Cloud"),
+    };
+
     ins = this.addInputs(CVViewer.ins);
+    outs = this.addOutputs(CVViewer.outs);
 
     get settingProperties() {
         return [
@@ -94,6 +100,10 @@ export default class CVViewer extends CRenderable
 
             this.analytics.sendProperty("Annotations.Visible", ins.annotationsVisible.value);
         }
+        if (ins.selectedTags.changed) {
+            const tags = ins.selectedTags.value;
+            this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
+        }
 
         return true;
     }
@@ -130,10 +140,37 @@ export default class CVViewer extends CRenderable
         };
     }
 
+    protected refreshTagCloud()
+    {
+        const tagCloud = new Set<string>();
+        const components = this.getGraphComponents(CVAnnotationView);
+
+        components.forEach(component => {
+            const annotations = component.getAnnotations();
+            annotations.forEach(annotation => {
+                const tags = annotation.data.tags;
+                tags.forEach(tag => tagCloud.add(tag));
+            });
+        });
+
+        const tagArray = Array.from(tagCloud);
+        this.outs.tagCloud.setValue(tagArray.join(", "));
+
+        if (ENV_DEVELOPMENT) {
+            console.log("CVViewer.refreshTagCloud - %s", tagArray.join(", "));
+        }
+    }
+
     protected onAnnotationsComponent(event: IComponentEvent<CVAnnotationView>)
     {
+        const component = event.object;
+
         if (event.add) {
-            event.object.ins.visible.setValue(this.ins.annotationsVisible.value);
+            component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.ins.visible.setValue(this.ins.annotationsVisible.value);
+        }
+        else if (event.remove) {
+            component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
         }
     }
 }

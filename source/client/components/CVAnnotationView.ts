@@ -40,15 +40,21 @@ import BalloonSprite from "../annotations/BalloonSprite";
 
 export { Annotation };
 
-export interface IAnnotationsUpdateEvent extends ITypedEvent<"update">
+export interface IAnnotationsUpdateEvent extends ITypedEvent<"annotation-update">
 {
     annotation: Annotation;
 }
 
+export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
+{
+}
+
 const _inputs = {
     unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 }),
+    activeTags: types.String("Tags.Active"),
     title: types.String("Annotation.Title"),
     lead: types.String("Annotation.Lead"),
+    tags: types.String("Annotation.Tags"),
     style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Standard),
     scale: types.Scale("Annotation.Scale", { preset: 1, precision: 3 }),
     offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
@@ -56,6 +62,7 @@ const _inputs = {
     image: types.String("Annotation.Image"),
     tilt: types.Number("Annotation.Tilt"),
     azimuth: types.Number("Annotation.Azimuth"),
+    color: types.ColorRGB("Annotation.Color"),
 };
 
 export default class CVAnnotationView extends CObject3D
@@ -106,11 +113,13 @@ export default class CVAnnotationView extends CObject3D
             const ins = this.ins;
             ins.title.setValue(annotation ? annotation.data.title : "", true);
             ins.lead.setValue(annotation ? annotation.data.lead : "", true);
+            ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "", true);
             ins.style.setValue(annotation ? annotation.data.style : EAnnotationStyle.Standard, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
             ins.tilt.setValue(annotation ? annotation.data.tilt : 0, true);
             ins.azimuth.setValue(annotation ? annotation.data.azimuth : 0, true);
+            ins.color.setValue(annotation ? annotation.data.color.slice() : [ 1, 1, 1 ], true);
 
             const articles = this.articles;
             if (articles) {
@@ -127,7 +136,7 @@ export default class CVAnnotationView extends CObject3D
 
             ins.image.setValue(annotation ? annotation.data.imageUri : "", true);
 
-            this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
+            this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
     }
 
@@ -157,6 +166,22 @@ export default class CVAnnotationView extends CObject3D
             object3D.scale.setScalar(ins.unitScale.value);
             object3D.updateMatrix();
         }
+        if (ins.activeTags.changed) {
+            const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim());
+            for (const key in this._annotations) {
+                const annotation = this._annotations[key];
+                const tags = annotation.data.tags;
+                let visible = activeTags.length === 0;
+                activeTags.forEach(tag => {
+                    if (tags.indexOf(tag) >= 0) {
+                        visible = true;
+                    }
+                });
+
+                annotation.set("visible", visible);
+                this.updateSprite(annotation);
+            }
+        }
 
         if (annotation) {
             if (ins.title.changed) {
@@ -164,6 +189,10 @@ export default class CVAnnotationView extends CObject3D
             }
             if (ins.lead.changed) {
                 annotation.set("lead", ins.lead.value);
+            }
+            if (ins.tags.changed) {
+                annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()));
+                this.emit<ITagUpdateEvent>({ type: "tag-update" });
             }
             if (ins.style.changed) {
                 annotation.set("style", ins.style.getValidatedValue());
@@ -181,6 +210,9 @@ export default class CVAnnotationView extends CObject3D
             if (ins.azimuth.changed) {
                 annotation.set("azimuth", ins.azimuth.value);
             }
+            if (ins.color.changed) {
+                annotation.set("color", ins.color.value.slice());
+            }
             if (ins.image.changed) {
                 annotation.set("imageUri", ins.image.value);
             }
@@ -191,7 +223,7 @@ export default class CVAnnotationView extends CObject3D
             }
 
             this.updateSprite(annotation);
-            this.emit<IAnnotationsUpdateEvent>({ type: "update", annotation });
+            this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
 
         return true;
@@ -293,6 +325,7 @@ export default class CVAnnotationView extends CObject3D
     fromData(data: IAnnotation[])
     {
         data.forEach(annotationJson => this.addAnnotation(new Annotation(annotationJson)));
+        this.emit<ITagUpdateEvent>({ type: "tag-update" });
     }
 
     protected onPointerUp(event: IPointerEvent)
