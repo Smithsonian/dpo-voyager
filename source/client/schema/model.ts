@@ -40,6 +40,7 @@ export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "Metallic
 export interface IModel
 {
     units: TUnitType;
+    tags?: string;
     derivatives: IDerivative[];
 
     visible?: boolean;
@@ -119,6 +120,7 @@ export interface IPBRMaterialSettings
 {
     color?: ColorRGBA
     opacity?: number;
+    hiddenOpacity?: number;
     roughness?: number;
     metalness?: number;
     occlusion?: number;

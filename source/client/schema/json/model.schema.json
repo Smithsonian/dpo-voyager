@@ -201,6 +201,12 @@
         "units": {
             "$ref": "./common.schema.json#/definitions/units"
         },
+        "tags": {
+            "type": "string"
+        },
+        "visible": {
+            "type": "boolean"
+        },
         "derivatives": {
             "type": "array",
             "items": {

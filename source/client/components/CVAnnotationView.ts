@@ -167,11 +167,11 @@ export default class CVAnnotationView extends CObject3D
             object3D.updateMatrix();
         }
         if (ins.activeTags.changed) {
-            const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim());
+            const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
             for (const key in this._annotations) {
                 const annotation = this._annotations[key];
                 const tags = annotation.data.tags;
-                let visible = activeTags.length === 0;
+                let visible = tags.length === 0; // annotation is visible by default if no tags
                 activeTags.forEach(tag => {
                     if (tags.indexOf(tag) >= 0) {
                         visible = true;
@@ -191,7 +191,7 @@ export default class CVAnnotationView extends CObject3D
                 annotation.set("lead", ins.lead.value);
             }
             if (ins.tags.changed) {
-                annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()));
+                annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
                 this.emit<ITagUpdateEvent>({ type: "tag-update" });
             }
             if (ins.style.changed) {
@@ -227,6 +227,14 @@ export default class CVAnnotationView extends CObject3D
         }
 
         return true;
+    }
+
+    tock()
+    {
+        // if updated, render a second frame to properly update annotation sprites
+        if (this.updated) {
+            return true;
+        }
     }
 
     postRender(context: IRenderContext)

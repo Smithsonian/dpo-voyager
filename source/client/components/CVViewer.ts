@@ -35,7 +35,8 @@ export default class CVViewer extends CRenderable
     static readonly icon: string = "";
 
     protected static readonly ins = {
-        selectedTags: types.String("Tags.Selected"),
+        activeTags: types.String("Tags.Active"),
+        radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 1),
@@ -55,6 +56,8 @@ export default class CVViewer extends CRenderable
             this.ins.shader,
             this.ins.exposure,
             this.ins.annotationsVisible,
+            this.ins.activeTags,
+            this.ins.radioTags,
         ];
     }
 
@@ -63,6 +66,7 @@ export default class CVViewer extends CRenderable
             this.ins.shader,
             this.ins.exposure,
             this.ins.annotationsVisible,
+            this.ins.activeTags,
         ];
     }
 
@@ -73,11 +77,13 @@ export default class CVViewer extends CRenderable
     create()
     {
         super.create();
+        this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
     }
 
     dispose()
     {
+        this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
         super.dispose();
     }
@@ -100,9 +106,10 @@ export default class CVViewer extends CRenderable
 
             this.analytics.sendProperty("Annotations.Visible", ins.annotationsVisible.value);
         }
-        if (ins.selectedTags.changed) {
-            const tags = ins.selectedTags.value;
+        if (ins.activeTags.changed) {
+            const tags = ins.activeTags.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
+            this.getGraphComponents(CVModel2).forEach(model => model.ins.activeTags.setValue(tags));
         }
 
         return true;
@@ -125,6 +132,8 @@ export default class CVViewer extends CRenderable
             exposure: data.exposure !== undefined ? data.exposure : 1,
             gamma: data.gamma !== undefined ? data.gamma : 1,
             annotationsVisible: !!data.annotationsVisible,
+            activeTags: data.activeTags || "",
+            radioTags: data.radioTags || false,
         });
     }
 
@@ -132,20 +141,37 @@ export default class CVViewer extends CRenderable
     {
         const ins = this.ins;
 
-        return {
+        const data: Partial<IViewer> = {
             shader: EShaderMode[ins.shader.value] as TShaderMode,
             exposure: ins.exposure.value,
             gamma: ins.gamma.value,
-            annotationsVisible: ins.annotationsVisible.value,
         };
+
+        if (ins.annotationsVisible.value) {
+            data.annotationsVisible = true;
+        }
+        if (ins.activeTags.value) {
+            data.activeTags = ins.activeTags.value;
+        }
+        if (ins.radioTags.value) {
+            data.radioTags = ins.radioTags.value;
+        }
+
+        return data as IViewer;
     }
 
     protected refreshTagCloud()
     {
         const tagCloud = new Set<string>();
-        const components = this.getGraphComponents(CVAnnotationView);
 
-        components.forEach(component => {
+        const models = this.getGraphComponents(CVModel2);
+        models.forEach(model => {
+            const tags = model.ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+            tags.forEach(tag => tagCloud.add(tag));
+        });
+
+        const views = this.getGraphComponents(CVAnnotationView);
+        views.forEach(component => {
             const annotations = component.getAnnotations();
             annotations.forEach(annotation => {
                 const tags = annotation.data.tags;
@@ -158,6 +184,18 @@ export default class CVViewer extends CRenderable
 
         if (ENV_DEVELOPMENT) {
             console.log("CVViewer.refreshTagCloud - %s", tagArray.join(", "));
+        }
+    }
+
+    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+        }
+        else if (event.remove) {
+            component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
         }
     }
 

@@ -431,6 +431,10 @@ $tour-entry-indent: 12px;
     transform: translateY(40px);
     opacity: 0;
   }
+
+  .ff-button {
+    transition: all $tx-short;
+  }
 }
 
 .sv-blue-bar {
@@ -523,11 +527,18 @@ $tour-entry-indent: 12px;
 
   .sv-tag-button {
     flex: 0 1 auto;
-    margin: 2px 4px;
-    padding: 1px 4px;
-    background: $color-background;
+    margin: 3px 3px;
+    padding: 2px 4px;
+    background-color: $menu-color-background-dark;
     border-radius: 3px;
     font-size: 0.75rem;
+
+    &:hover {
+      background-color: $menu-color-background-hover;
+    }
+    &[selected] {
+      background-color: $color-primary;
+    }
 
     .ff-text {
       margin: 1px 2px;

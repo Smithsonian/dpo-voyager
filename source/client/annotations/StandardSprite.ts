@@ -58,11 +58,10 @@ export default class StandardSprite extends AnnotationSprite
 
         this.beam.scale.setScalar(5 * annotation.scale);
         this.beam.position.y = annotation.offset;
+        this.beam.updateMatrix();
 
         const material = this.beam.material as THREE.LineBasicMaterial;
         material.color.fromArray(annotation.color);
-
-        this.beam.updateMatrix();
 
         super.update();
     }

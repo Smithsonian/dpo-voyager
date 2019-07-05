@@ -19,7 +19,7 @@ import * as THREE from "three";
 
 import Notification from "@ff/ui/Notification";
 
-import { Node, types } from "@ff/graph/Component";
+import { ITypedEvent, Node, types } from "@ff/graph/Component";
 import CObject3D from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
@@ -44,6 +44,10 @@ const _vec3b = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _box = new THREE.Box3();
 
+export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
+{
+}
+
 /**
  * Graph component rendering a model or model part.
  *
@@ -63,6 +67,8 @@ export default class CVModel2 extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
+        tags: types.String("Tags.Tags"),
+        activeTags: types.String("Tags.ActiveTags"),
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
@@ -71,6 +77,7 @@ export default class CVModel2 extends CObject3D
         override: types.Boolean("Material.Override"),
         color: types.ColorRGB("Material.BaseColor"),
         opacity: types.Percent("Material.Opacity", 1.0),
+        hiddenOpacity: types.Percent("Material.HiddenOpacity", 0.0),
         roughness: types.Percent("Material.Roughness", 0.8),
         metalness: types.Percent("Material.Metalness", 0.1),
         occlusion: types.Percent("Material.Occlusion", 0.3),
@@ -87,21 +94,23 @@ export default class CVModel2 extends CObject3D
 
     get settingProperties() {
         return [
+            this.ins.tags,
             this.ins.quality,
             this.ins.shader,
             this.ins.override,
             this.ins.color,
             this.ins.opacity,
+            this.ins.hiddenOpacity,
             this.ins.roughness,
             this.ins.metalness,
             this.ins.occlusion,
         ];
     }
 
-
     private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
+    private _visible: boolean = true;
     private _boundingBox: THREE.Box3;
     private _boxFrame: THREE.Mesh = null;
 
@@ -160,6 +169,43 @@ export default class CVModel2 extends CObject3D
     {
         const ins = this.ins;
 
+        if (ins.tags.changed || ins.activeTags.changed || ins.visible.changed) {
+            let visible = ins.visible.value;
+
+            if (visible) {
+                const tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+                const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+
+                visible = !tags.length;
+                activeTags.forEach(activeTag => {
+                    if (tags.indexOf(activeTag) >= 0) {
+                        visible = true;
+                    }
+                });
+            }
+
+            const overrideActive = this.ins.override.value;
+            this._visible = visible;
+
+            if (visible) {
+                this.object3D.visible = true;
+                if (overrideActive) {
+                    this.updateMaterial();
+                }
+            }
+            else if (ins.visible.value && overrideActive && this.ins.hiddenOpacity.value > 0) {
+                this.object3D.visible = true;
+                this.updateMaterial();
+            }
+            else {
+                this.object3D.visible = false;
+            }
+        }
+
+        if (ins.tags.changed) {
+            this.emit<ITagUpdateEvent>({ type: "tag-update" });
+        }
+
         if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
             this.autoLoad(ins.quality.value);
         }
@@ -172,10 +218,6 @@ export default class CVModel2 extends CObject3D
                     console.warn(error);
                 });
             }
-        }
-
-        if (ins.visible.changed) {
-            this.object3D.visible = ins.visible.value;
         }
 
         if (ins.localUnits.changed || ins.globalUnits.changed) {
@@ -253,6 +295,9 @@ export default class CVModel2 extends CObject3D
         const units = EUnitType[data.units || "cm"];
         ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);
 
+        ins.visible.setValue(data.visible !== undefined ? data.visible : true);
+        ins.tags.setValue(data.tags || "");
+
         ins.position.reset();
         ins.rotation.reset();
 
@@ -285,6 +330,7 @@ export default class CVModel2 extends CObject3D
                 override: true,
                 color: material.color || ins.color.schema.preset,
                 opacity: material.opacity !== undefined ? material.opacity : ins.opacity.schema.preset,
+                hiddenOpacity: material.hiddenOpacity !== undefined ? material.hiddenOpacity : ins.hiddenOpacity.schema.preset,
                 roughness: material.roughness !== undefined ? material.roughness : ins.roughness.schema.preset,
                 metalness: material.metalness !== undefined ? material.metalness : ins.metalness.schema.preset,
                 occlusion: material.occlusion !== undefined ? material.occlusion : ins.occlusion.schema.preset,
@@ -294,6 +340,9 @@ export default class CVModel2 extends CObject3D
         if (data.annotations) {
             this.getComponent(CVAnnotationView).fromData(data.annotations);
         }
+
+        // emit tag update event
+        this.emit<ITagUpdateEvent>({ type: "tag-update" });
 
         // trigger automatic loading of derivatives if active
         this.ins.autoLoad.set();
@@ -308,6 +357,14 @@ export default class CVModel2 extends CObject3D
         } as IModel;
 
         const ins = this.ins;
+
+        if (!ins.visible.value) {
+            data.visible = false;
+        }
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
+
         const position = ins.position.value;
         if (position[0] !== 0 || position[1] !== 0 || position[2] !== 0) {
             data.translation = ins.position.value;
@@ -323,6 +380,7 @@ export default class CVModel2 extends CObject3D
             data.material = {
                 color: ins.color.value,
                 opacity: ins.opacity.value,
+                hiddenOpacity: ins.hiddenOpacity.value,
                 roughness: ins.roughness.value,
                 metalness: ins.metalness.value,
                 occlusion: ins.occlusion.value,
@@ -367,13 +425,12 @@ export default class CVModel2 extends CObject3D
             if (material && material.isUberPBRMaterial) {
                 material.aoMapMix.setScalar(ins.occlusion.value);
                 material.color.fromArray(ins.color.value);
-                material.opacity = ins.opacity.value;
+                material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
                 material.transparent = material.opacity < 1 || !!material.alphaMap;
                 material.roughness = ins.roughness.value;
                 material.metalness = ins.metalness.value;
             }
         });
-
     }
 
     protected updateUnitScale()

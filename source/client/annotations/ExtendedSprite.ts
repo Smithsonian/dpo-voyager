@@ -18,6 +18,7 @@
 import * as THREE from "three";
 
 import math from "@ff/core/math";
+import Color from "@ff/core/Color";
 
 import { customElement, PropertyValues, html, render } from "@ff/ui/CustomElement";
 import Button from "@ff/ui/Button";
@@ -27,6 +28,7 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 ////////////////////////////////////////////////////////////////////////////////
 
 const _quadrantClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
+const _color = new Color();
 
 
 export default class ExtendedSprite extends AnnotationSprite
@@ -58,6 +60,9 @@ export default class ExtendedSprite extends AnnotationSprite
         this.beam.scale.setScalar(5 * annotation.scale);
         this.beam.position.y = annotation.offset;
         this.beam.updateMatrix();
+
+        const material = this.beam.material as THREE.LineBasicMaterial;
+        material.color.fromArray(annotation.color);
 
         super.update();
     }
@@ -155,6 +160,9 @@ class ExtendedAnnotation extends AnnotationElement
         render(contentTemplate, this.contentElement);
 
         this.targetOpacity = annotation.visible ? 1 : 0;
+
+        _color.fromArray(annotation.color);
+        this.style.borderColor = _color.toString();
 
         if (this.isExpanded !== annotation.expanded) {
 

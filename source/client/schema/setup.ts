@@ -60,7 +60,9 @@ export interface IViewer
     shader: TShaderMode;
     exposure: number;
     gamma: number;
-    annotationsVisible: boolean;
+    annotationsVisible?: boolean;
+    activeTags?: string;
+    radioTags?: boolean;
 }
 
 export interface IReader

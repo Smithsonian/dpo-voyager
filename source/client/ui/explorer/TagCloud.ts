@@ -29,6 +29,16 @@ export default class TagCloud extends DocumentView
 {
     protected viewer: CVViewer;
 
+    protected get activeTags() {
+        return this.viewer ? this.viewer.ins.activeTags.value.split(",")
+            .map(tag => tag.trim()).filter(tag => !!tag) : [];
+    }
+
+    protected get tagCloud() {
+        return this.viewer ? this.viewer.outs.tagCloud.value.split(",")
+            .map(tag => tag.trim()).filter(tag => !!tag) : [];
+    }
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -39,14 +49,12 @@ export default class TagCloud extends DocumentView
 
     protected render()
     {
-        const viewer = this.viewer;
+        const activeTags = this.activeTags;
+        const tagCloud = this.tagCloud;
 
-        const selectedTags = viewer ? viewer.ins.selectedTags.value.split(",").map(tag => tag.trim()) : [];
-        const tags = viewer ? viewer.outs.tagCloud.value.split(",").map(tag => tag.trim()) : [];
-
-        const tagButtons = tags.map(tag =>
+        const tagButtons = tagCloud.map(tag =>
             html`<ff-button class="sv-tag-button" transparent text=${tag}
-                ?selected=${selectedTags.indexOf(tag) >= 0}
+                ?selected=${activeTags.indexOf(tag) >= 0}
                 @click=${e => this.onSelectTag(tag)}></ff-button>`);
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
@@ -57,27 +65,35 @@ export default class TagCloud extends DocumentView
 
     protected onSelectTag(tag: string)
     {
-        const selectedTags = this.viewer.ins.selectedTags.value.split(",").map(tag => tag.trim());
-        const index = selectedTags.indexOf(tag);
-        if (index > 0) {
-            selectedTags.splice(index, 1);
+        let activeTags = this.activeTags;
+        const radioTags = this.viewer.ins.radioTags.value;
+
+        const index = activeTags.indexOf(tag);
+
+        if (index >= 0 && !radioTags) {
+            activeTags.splice(index, 1);
         }
-        else {
-            selectedTags.push(tag);
+        else if (index < 0) {
+            if (radioTags) {
+                activeTags = [ tag ];
+            }
+            else {
+                activeTags.push(tag);
+            }
         }
 
-        this.viewer.ins.selectedTags.setValue(selectedTags.join(", "));
+        this.viewer.ins.activeTags.setValue(activeTags.join(", "));
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            this.viewer.ins.selectedTags.off("value", this.onUpdate, this);
+            this.viewer.ins.activeTags.off("value", this.onUpdate, this);
             this.viewer.outs.tagCloud.off("value", this.onUpdate, this);
         }
         if (next) {
             this.viewer = next.setup.viewer;
-            this.viewer.ins.selectedTags.on("value", this.onUpdate, this);
+            this.viewer.ins.activeTags.on("value", this.onUpdate, this);
             this.viewer.outs.tagCloud.on("value", this.onUpdate, this);
         }
     }

@@ -20,6 +20,12 @@
                 },
                 "annotationsVisible": {
                     "type": "boolean"
+                },
+                "activeTags": {
+                    "type": "string"
+                },
+                "radioTags": {
+                    "type": "boolean"
                 }
             },
             "required": [
