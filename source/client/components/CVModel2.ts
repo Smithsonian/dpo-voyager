@@ -114,6 +114,9 @@ export default class CVModel2 extends CObject3D
     private _boundingBox: THREE.Box3;
     private _boxFrame: THREE.Mesh = null;
 
+    private _currentOpacity = 1;
+    private _targetOpacity = -1;
+
     constructor(node: Node, id: string)
     {
         super(node, id);
@@ -245,6 +248,18 @@ export default class CVModel2 extends CObject3D
         }
 
         return true;
+    }
+
+    tick(context)
+    {
+        if (this._targetOpacity !== -1) {
+
+
+
+            return true;
+        }
+
+        return false;
     }
 
     dispose()
@@ -427,6 +442,7 @@ export default class CVModel2 extends CObject3D
                 material.color.fromArray(ins.color.value);
                 material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
                 material.transparent = material.opacity < 1 || !!material.alphaMap;
+                material.depthWrite = material.opacity === 1;
                 material.roughness = ins.roughness.value;
                 material.metalness = ins.metalness.value;
             }

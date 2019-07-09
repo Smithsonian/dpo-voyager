@@ -22,7 +22,7 @@ import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
 
 import CVModel2 from "./CVModel2";
-import CVAnnotationView, { ITagUpdateEvent } from "./CVAnnotationView";
+import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,13 +35,14 @@ export default class CVViewer extends CRenderable
     static readonly icon: string = "";
 
     protected static readonly ins = {
+        annotationsVisible: types.Boolean("Annotations.Visible"),
+        activeAnnotation: types.String("Annotations.ActiveId"),
         activeTags: types.String("Tags.Active"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 1),
         quality: types.Enum("Models.Quality", EDerivativeQuality, EDerivativeQuality.High),
-        annotationsVisible: types.Boolean("Annotations.Visible"),
     };
 
     protected static readonly outs = {
@@ -53,20 +54,21 @@ export default class CVViewer extends CRenderable
 
     get settingProperties() {
         return [
-            this.ins.shader,
-            this.ins.exposure,
             this.ins.annotationsVisible,
             this.ins.activeTags,
             this.ins.radioTags,
+            this.ins.shader,
+            this.ins.exposure,
         ];
     }
 
     get snapshotProperties() {
         return [
+            this.ins.annotationsVisible,
+            this.ins.activeAnnotation,
+            this.ins.activeTags,
             this.ins.shader,
             this.ins.exposure,
-            this.ins.annotationsVisible,
-            this.ins.activeTags,
         ];
     }
 
@@ -99,6 +101,10 @@ export default class CVViewer extends CRenderable
         if (ins.quality.changed) {
             const quality = ins.quality.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.quality.setValue(quality));
+        }
+        if (ins.activeAnnotation.changed) {
+            const id = ins.activeAnnotation.value;
+            this.getGraphComponents(CVAnnotationView).forEach(view => view.setActiveAnnotationById(id));
         }
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
@@ -187,6 +193,12 @@ export default class CVViewer extends CRenderable
         }
     }
 
+    protected onAnnotationClick(event: IAnnotationClickEvent)
+    {
+        const id = event.annotation ? event.annotation.id : "";
+        this.ins.activeAnnotation.setValue(id);
+    }
+
     protected onModelComponent(event: IComponentEvent<CVModel2>)
     {
         const component = event.object;
@@ -205,10 +217,12 @@ export default class CVViewer extends CRenderable
 
         if (event.add) {
             component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
             component.ins.visible.setValue(this.ins.annotationsVisible.value);
         }
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
         }
     }
 }

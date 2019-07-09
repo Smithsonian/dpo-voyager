@@ -107,8 +107,8 @@ export default class CVToursTask extends CVTask
             if (ins.createStep.changed) {
                 const id = machine.setState({
                     values: machine.getCurrentValues(),
-                    curve: EEasingCurve.EaseQuad,
-                    duration: 2,
+                    curve: EEasingCurve.EaseOutQuad,
+                    duration: 1.5,
                     threshold: 0.5,
                 });
 

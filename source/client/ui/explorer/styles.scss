@@ -141,7 +141,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   max-width: 20%;
   box-sizing: border-box;
   padding: 0 4px;
-  background: transparentize(black, 0.4);
+  background-color: transparentize(black, 0.5);
+  color: $color-text;
   cursor: pointer;
   pointer-events: auto;
 
@@ -160,6 +161,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   &.sv-expanded {
     min-width: 120px;
+    background-color: transparentize(black, 0.2);
   }
 
   &.sv-q0 {
@@ -409,7 +411,7 @@ $tour-entry-indent: 12px;
     cursor: pointer;
     padding: 5px 0 5px 15px;
     margin-bottom: 16px;
-    max-width: 600px;
+    max-width: 960px;
     background-color: $color-paragraph-background;
 
     &:hover {

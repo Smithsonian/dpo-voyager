@@ -114,8 +114,8 @@ export default class ChromeView extends DocumentView
             <div class="ff-flex-spacer"></div>
             ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
             ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
-            ${tagsVisible ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
-            ${toolsVisible ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
+            ${tagsVisible && !toursEnabled ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
+            ${toolsVisible && !toursEnabled ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
     }
 
     protected onSelectTour(event: ITourMenuSelectEvent)

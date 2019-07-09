@@ -38,7 +38,7 @@ import BalloonSprite from "../annotations/BalloonSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export { Annotation };
+export { Annotation, IAnnotationClickEvent };
 
 export interface IAnnotationsUpdateEvent extends ITypedEvent<"annotation-update">
 {
@@ -49,27 +49,27 @@ export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
 }
 
-const _inputs = {
-    unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 }),
-    activeTags: types.String("Tags.Active"),
-    title: types.String("Annotation.Title"),
-    lead: types.String("Annotation.Lead"),
-    tags: types.String("Annotation.Tags"),
-    style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Standard),
-    scale: types.Scale("Annotation.Scale", { preset: 1, precision: 3 }),
-    offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
-    article: types.Option("Annotation.Article", []),
-    image: types.String("Annotation.Image"),
-    tilt: types.Number("Annotation.Tilt"),
-    azimuth: types.Number("Annotation.Azimuth"),
-    color: types.ColorRGB("Annotation.Color"),
-};
-
 export default class CVAnnotationView extends CObject3D
 {
     static readonly typeName: string = "CVAnnotationView";
 
-    ins = this.addInputs<CObject3D, typeof _inputs>(_inputs);
+    static readonly ins = {
+        unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 }),
+        activeTags: types.String("Tags.Active"),
+        title: types.String("Annotation.Title"),
+        lead: types.String("Annotation.Lead"),
+        tags: types.String("Annotation.Tags"),
+        style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Standard),
+        scale: types.Scale("Annotation.Scale", { preset: 1, precision: 3 }),
+        offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
+        article: types.Option("Annotation.Article", []),
+        image: types.String("Annotation.Image"),
+        tilt: types.Number("Annotation.Tilt"),
+        azimuth: types.Number("Annotation.Azimuth"),
+        color: types.ColorRGB("Annotation.Color"),
+    };
+
+    ins = this.addInputs<CObject3D, typeof CVAnnotationView.ins>(CVAnnotationView.ins);
 
     private _activeAnnotation: Annotation = null;
     private _annotations: Dictionary<Annotation> = {};
@@ -152,6 +152,11 @@ export default class CVAnnotationView extends CObject3D
         this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.object3D = new HTMLSpriteGroup();
+    }
+
+    setActiveAnnotationById(id: string)
+    {
+        this.activeAnnotation = this._annotations[id];
     }
 
     update(context)
@@ -350,13 +355,15 @@ export default class CVAnnotationView extends CObject3D
 
         const annotation = target && target.annotation;
         if (annotation) {
-            this.activeAnnotation = annotation;
+            // click on annotation: activate annotation
+            this.emit<IAnnotationClickEvent>({ type: "click", sprite: target, annotation });
         }
     }
 
     protected onSystemPointerUp(event: IPointerEvent)
     {
-        this.activeAnnotation = null;
+        // click on model/background: deactivate active annotation
+        this.emit<IAnnotationClickEvent>({ type: "click", sprite: null, annotation: null });
     }
 
     protected onViewportDispose(event: IViewportDisposeEvent)
@@ -367,7 +374,7 @@ export default class CVAnnotationView extends CObject3D
 
     protected onSpriteClick(event: IAnnotationClickEvent)
     {
-        this.activeAnnotation = event.annotation;
+        this.emit(event);
     }
 
     protected onSpriteLink(event: IAnnotationLinkEvent)

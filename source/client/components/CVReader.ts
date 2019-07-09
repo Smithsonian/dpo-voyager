@@ -127,7 +127,7 @@ export default class CVReader extends Component
         return true;
     }
 
-    protected readArticle(article: Article)
+    protected readArticle(article: Article): Promise<void>
     {
         const outs = this.outs;
         const uri = article.data.uri;
@@ -138,8 +138,24 @@ export default class CVReader extends Component
         }
 
         return this.assetReader.getText(uri)
-        .then(content => outs.content.setValue(content.replace(/[\n\r]/g, "")))
+        .then(content => this.parseArticle(content))
+        .then(content => outs.content.setValue(content))
         .catch(error => outs.content.setValue(`<h2>Article not found at ${uri}</h2>`));
+    }
+
+    protected parseArticle(content: string): Promise<string>
+    {
+        // remove line breaks
+        content = content.replace(/[\n\r]/g, "");
+
+        // transform relative to absolute URLs
+        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
+            const assetUrl = this.assetReader.getAssetURL(assetPath);
+            console.log(assetUrl);
+            return pre + assetUrl + post;
+        });
+
+        return Promise.resolve(content);
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
