@@ -62,6 +62,7 @@ export interface IViewer
     gamma: number;
     annotationsVisible?: boolean;
     activeTags?: string;
+    sortedTags?: string;
     radioTags?: boolean;
 }
 

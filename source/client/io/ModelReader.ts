@@ -99,14 +99,16 @@ export default class ModelReader
                 }
 
                 // TODO: Temp to correct test assets
-                uberMat.color.set("#ffffff");
-                uberMat.roughness = 0.8;
-                uberMat.metalness = 0.1;
+                //uberMat.color.set("#ffffff");
+                //uberMat.roughness = 0.8;
+                //uberMat.metalness = 0.1;
                 uberMat.enableObjectSpaceNormalMap(false);
 
-                if (!uberMat.map) {
-                    uberMat.color.set("#c0c0c0");
-                }
+                //if (!uberMat.map) {
+                //    uberMat.color.set("#c0c0c0");
+                //}
+
+                console.log(uberMat.color.toString());
 
                 mesh.material = uberMat;
             }

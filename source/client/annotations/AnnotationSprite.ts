@@ -85,7 +85,7 @@ export default class AnnotationSprite extends HTMLSprite
 
     updateHTMLElement(element: AnnotationElement)
     {
-        element.performUpdate();
+        element.requestUpdate();
     }
 
     emitClickEvent()
@@ -120,11 +120,6 @@ export class AnnotationElement extends CustomElement
         this.addEventListener("pointerup", this.onEvent);
         this.addEventListener("pointercancel", this.onEvent);
         this.addEventListener("click", this.onClick);
-    }
-
-    performUpdate()
-    {
-        super.performUpdate();
     }
 
     protected firstConnected()

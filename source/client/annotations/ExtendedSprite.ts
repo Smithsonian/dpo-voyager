@@ -89,11 +89,6 @@ export default class ExtendedSprite extends AnnotationSprite
         return element;
     }
 
-    updateHTMLElement(element: ExtendedAnnotation)
-    {
-        element.performUpdate();
-    }
-
     protected createHTMLElement(): ExtendedAnnotation
     {
         return new ExtendedAnnotation(this);
@@ -109,7 +104,7 @@ class ExtendedAnnotation extends AnnotationElement
     protected contentElement: HTMLDivElement;
     protected wrapperElement: HTMLDivElement;
     protected handler = 0;
-    protected isExpanded = true;
+    protected isExpanded = false;
     protected currentOpacity = 0;
     protected targetOpacity = 0;
 

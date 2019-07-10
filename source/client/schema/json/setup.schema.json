@@ -24,6 +24,9 @@
                 "activeTags": {
                     "type": "string"
                 },
+                "sortedTags": {
+                    "type": "string"
+                },
                 "radioTags": {
                     "type": "boolean"
                 }

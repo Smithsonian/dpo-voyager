@@ -98,7 +98,7 @@ export default class CVTours extends Component
                     id: CVTours.sceneSnapshotId,
                     curve: EEasingCurve.EaseOutQuad,
                     duration: 1,
-                    threshold: 0.5,
+                    threshold: 0,
                     values: machine.getCurrentValues(),
                 };
                 machine.setState(state);

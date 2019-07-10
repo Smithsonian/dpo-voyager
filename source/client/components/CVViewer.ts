@@ -38,6 +38,7 @@ export default class CVViewer extends CRenderable
         annotationsVisible: types.Boolean("Annotations.Visible"),
         activeAnnotation: types.String("Annotations.ActiveId"),
         activeTags: types.String("Tags.Active"),
+        sortedTags: types.String("Tags.Sorted"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
@@ -56,6 +57,7 @@ export default class CVViewer extends CRenderable
         return [
             this.ins.annotationsVisible,
             this.ins.activeTags,
+            this.ins.sortedTags,
             this.ins.radioTags,
             this.ins.shader,
             this.ins.exposure,
@@ -117,6 +119,9 @@ export default class CVViewer extends CRenderable
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
             this.getGraphComponents(CVModel2).forEach(model => model.ins.activeTags.setValue(tags));
         }
+        if (ins.sortedTags.changed) {
+            this.refreshTagCloud();
+        }
 
         return true;
     }
@@ -139,6 +144,7 @@ export default class CVViewer extends CRenderable
             gamma: data.gamma !== undefined ? data.gamma : 1,
             annotationsVisible: !!data.annotationsVisible,
             activeTags: data.activeTags || "",
+            sortedTags: data.sortedTags || "",
             radioTags: data.radioTags || false,
         });
     }
@@ -158,6 +164,9 @@ export default class CVViewer extends CRenderable
         }
         if (ins.activeTags.value) {
             data.activeTags = ins.activeTags.value;
+        }
+        if (ins.sortedTags.value) {
+            data.sortedTags = ins.sortedTags.value;
         }
         if (ins.radioTags.value) {
             data.radioTags = ins.radioTags.value;
@@ -186,6 +195,14 @@ export default class CVViewer extends CRenderable
         });
 
         const tagArray = Array.from(tagCloud);
+        const sortedTags = this.ins.sortedTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+
+        tagArray.sort((a, b) => {
+           const aIndex = sortedTags.indexOf(a);
+           const bIndex = sortedTags.indexOf(b);
+           return aIndex < bIndex ? -1 : (aIndex > bIndex ? 1 : 0);
+        });
+
         this.outs.tagCloud.setValue(tagArray.join(", "));
 
         if (ENV_DEVELOPMENT) {

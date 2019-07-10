@@ -88,11 +88,6 @@ export default class StandardSprite extends AnnotationSprite
         return element;
     }
 
-    updateHTMLElement(element: StandardAnnotation)
-    {
-        element.performUpdate();
-    }
-
     protected createHTMLElement(): StandardAnnotation
     {
         return new StandardAnnotation(this);

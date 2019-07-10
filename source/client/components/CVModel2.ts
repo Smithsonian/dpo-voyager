@@ -157,10 +157,10 @@ export default class CVModel2 extends CObject3D
             console.log("CVModel2.create - max texture size: %s", maxTextureSize);
         }
 
-        if (maxTextureSize <= 1024) {
+        if (maxTextureSize < 2048) {
             this.ins.quality.setValue(EDerivativeQuality.Low);
         }
-        else if (maxTextureSize <= 2048) {
+        else if (maxTextureSize < 4096) {
             this.ins.quality.setValue(EDerivativeQuality.Medium);
         }
         else {
