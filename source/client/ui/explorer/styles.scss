@@ -138,7 +138,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-annotation {
   position: absolute;
   z-index: 1;
-  width: 20%;
   max-width: 350px;
   box-sizing: border-box;
   padding: 0 4px;
@@ -161,6 +160,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 
   &.sv-expanded {
+    width: 20%;
     min-width: 180px;
     background-color: transparentize(black, 0.2);
   }

@@ -72,12 +72,10 @@ export default class ExtendedSprite extends AnnotationSprite
         const element = super.renderHTMLElement(container, camera, this.beam) as ExtendedAnnotation;
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
-        const opacity = angleOpacity * element.getOpacity();
+        const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
-        element.style.opacity = opacity.toString();
         this.beam.material["opacity"] = opacity;
-
-        element.style.visibility = opacity ? "visible" : "hidden";
+        element.setOpacity(opacity);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {
@@ -104,9 +102,7 @@ class ExtendedAnnotation extends AnnotationElement
     protected contentElement: HTMLDivElement;
     protected wrapperElement: HTMLDivElement;
     protected handler = 0;
-    protected isExpanded = false;
-    protected currentOpacity = 0;
-    protected targetOpacity = 0;
+    protected isExpanded = undefined;
 
     constructor(sprite: AnnotationSprite)
     {
@@ -123,16 +119,10 @@ class ExtendedAnnotation extends AnnotationElement
         this.contentElement.classList.add("sv-content", "sv-description");
     }
 
-    getOpacity()
+    setOpacity(opacity: number)
     {
-        // if (this.currentOpacity > this.targetOpacity) {
-        //     this.currentOpacity = Math.max(this.currentOpacity - 0.05, 0);
-        // }
-        // else if (this.currentOpacity < this.targetOpacity) {
-        //     this.currentOpacity = Math.min(this.currentOpacity + 0.05, 1);
-        // }
-        this.currentOpacity = this.targetOpacity;
-        return this.currentOpacity;
+        this.style.opacity = opacity.toString();
+        this.style.visibility = opacity ? "visible" : "hidden";
     }
 
     protected firstConnected()
@@ -147,18 +137,20 @@ class ExtendedAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation.data;
 
+        // update title
         this.titleElement.innerText = annotation.title;
 
+        // update content
         const contentTemplate = html`<p>${annotation.lead}</p>
             ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
 
         render(contentTemplate, this.contentElement);
 
-        this.targetOpacity = annotation.visible ? 1 : 0;
-
+        // update color
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();
 
+        // update expanded/collapsed
         if (this.isExpanded !== annotation.expanded) {
 
             this.isExpanded = annotation.expanded;

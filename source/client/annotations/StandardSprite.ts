@@ -71,12 +71,10 @@ export default class StandardSprite extends AnnotationSprite
         const element = super.renderHTMLElement(container, camera, this.beam) as StandardAnnotation;
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
-        const opacity = angleOpacity * element.getOpacity();
+        const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
-        element.style.opacity = opacity.toString();
         this.beam.material["opacity"] = opacity;
-
-        element.style.visibility = opacity ? "visible" : "hidden";
+        element.setOpacity(opacity);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {
@@ -100,8 +98,6 @@ export default class StandardSprite extends AnnotationSprite
 class StandardAnnotation extends AnnotationElement
 {
     protected titleElement: HTMLDivElement;
-    protected currentOpacity = 1;
-    protected targetOpacity = 1;
 
     constructor(sprite: AnnotationSprite)
     {
@@ -111,10 +107,10 @@ class StandardAnnotation extends AnnotationElement
         this.titleElement.classList.add("sv-content", "sv-title");
     }
 
-    getOpacity()
+    setOpacity(opacity: number)
     {
-        this.currentOpacity = this.targetOpacity;
-        return this.currentOpacity;
+        this.style.opacity = opacity.toString();
+        this.style.visibility = opacity ? "visible" : "hidden";
     }
 
     protected firstConnected()
@@ -130,7 +126,6 @@ class StandardAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation.data;
 
         this.titleElement.innerText = annotation.title;
-        this.targetOpacity = annotation.visible ? 1 : 0;
 
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();
