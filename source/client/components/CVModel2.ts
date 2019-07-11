@@ -250,18 +250,6 @@ export default class CVModel2 extends CObject3D
         return true;
     }
 
-    tick(context)
-    {
-        if (this._targetOpacity !== -1) {
-
-
-
-            return true;
-        }
-
-        return false;
-    }
-
     dispose()
     {
         this.derivatives.clear();
