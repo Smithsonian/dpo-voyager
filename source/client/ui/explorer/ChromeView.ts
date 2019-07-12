@@ -96,7 +96,7 @@ export default class ChromeView extends DocumentView
                 title = "Interactive Tours";
             }
             else {
-                title = setup.tours.outs.tourTitle.value;
+                title = "Tour: " + setup.tours.outs.tourTitle.value;
             }
         }
         else {

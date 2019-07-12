@@ -56,28 +56,38 @@ export default class TourNavigator extends DocumentView
         }
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
-            <ff-button class="sv-section-lead" transparent icon="bars" title="Show Tour Menu" ?disabled=${!activeTour} @click=${this.onClickMenu}></ff-button>
+            <ff-button class="sv-section-lead" transparent icon="close" title="Exit Tour" ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
             <div class="ff-ellipsis sv-content">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
+            <ff-button class="sv-section-trail" transparent icon="bars" title="Show Tour Menu" @click=${this.onClickMenu}></ff-button>
             <ff-button class="sv-section-trail" transparent icon="triangle-left" title="Go Backward" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
             <ff-button class="sv-section-trail" transparent icon="triangle-right" title="Go Forward" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
         </div></div>`;
     }
 
+    protected onClickExit()
+    {
+        // disable tours
+        this.tours.ins.enabled.setValue(false);
+    }
+
     protected onClickMenu()
     {
+        // enter tour menu
         this.tours.ins.tourIndex.setValue(-1);
     }
 
     protected onClickPrevious()
     {
+        // go to previous tour step
         this.tours.ins.previous.set();
     }
 
     protected onClickNext()
     {
+        // go to next tour step
         this.tours.ins.next.set();
     }
 

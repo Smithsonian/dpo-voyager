@@ -58,9 +58,14 @@ export default class TagCloud extends DocumentView
                 @click=${e => this.onSelectTag(tag)}></ff-button>`);
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
-                <ff-button class="sv-section-lead" transparent icon="comment" title="Tag Menu"></ff-button>
+                <ff-button class="sv-section-lead" transparent icon="close" title="Close Tag Menu" @click=${this.onClickClose}></ff-button>
                 <div class="sv-tag-buttons">${tagButtons}</div>
         </div></div>`;
+    }
+
+    protected onClickClose()
+    {
+        this.viewer.ins.annotationsVisible.setValue(false);
     }
 
     protected onSelectTag(tag: string)

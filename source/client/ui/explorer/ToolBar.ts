@@ -64,7 +64,7 @@ export default class ToolBar extends SystemView
 
         return html`<div class="sv-blue-bar">${activeTool ? activeTool.createView() : null}
             <div class="sv-section">
-                <ff-button class="sv-section-lead" transparent icon="close" @click=${this.onClose}></ff-button>
+                <ff-button class="sv-section-lead" transparent icon="close" title="Close Tools" @click=${this.onClose}></ff-button>
                 <div class="sv-tool-buttons">${toolButtons}</div>
                 <sv-tool-menu-view .system=${this.system}></sv-tool-menu-view>
             </div></div>`;

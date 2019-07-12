@@ -150,13 +150,22 @@ export default class CVTours extends Component
             nextStepIndex = 0;
         }
         if (ins.next.changed) {
-            nextStepIndex = (outs.stepIndex.value + 1) % stepCount;
+            nextStepIndex = outs.stepIndex.value + 1;
+            // after last step, show tour menu
+            if (nextStepIndex >= stepCount) {
+                outs.tourIndex.setValue(-1);
+                outs.tourTitle.setValue("");
+                outs.tourLead.setValue("");
+                nextStepIndex = -1;
+            }
         }
         if (ins.previous.changed) {
-            nextStepIndex = (outs.stepIndex.value - 1) % stepCount;
+            // previous step, wrap around when reaching first step
+            nextStepIndex = (outs.stepIndex.value + stepCount - 1) % stepCount;
         }
 
         if (nextStepIndex >= 0) {
+            // tween to the next step
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
             outs.stepTitle.setValue(step.title);
