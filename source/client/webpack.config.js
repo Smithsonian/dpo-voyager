@@ -201,7 +201,7 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
                     test: /\.scss$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        { loader: "css-loader", options: { minimize: !isDevMode } },
+                        "css-loader",
                         "sass-loader"
                     ]
                 },
@@ -210,8 +210,8 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
                     test: /\.css$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        'style-loader',
-                        { loader: "css-loader", options: { minimize: !isDevMode } },
+                        "style-loader",
+                        "css-loader",
                     ]
                 },
                 {
