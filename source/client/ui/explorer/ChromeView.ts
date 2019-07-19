@@ -82,7 +82,8 @@ export default class ChromeView extends DocumentView
         const toursEnabled = setup.tours.ins.enabled.value;
         const tourActive = setup.tours.outs.tourIndex.value >= 0;
 
-        const tagsVisible = setup.viewer.ins.annotationsVisible.value;
+        // tag cloud is visible if annotations are enabled and there is at least one tag in the cloud
+        const tagCloudVisible = setup.viewer.ins.annotationsVisible.value && setup.viewer.outs.tagCloud.value;
         const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
         if (!interfaceVisible) {
@@ -114,7 +115,7 @@ export default class ChromeView extends DocumentView
             <div class="ff-flex-spacer"></div>
             ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
             ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
-            ${tagsVisible && !toursEnabled ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
+            ${tagCloudVisible && !toursEnabled ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
             ${toolsVisible && !toursEnabled ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
     }
 

@@ -363,7 +363,9 @@ export default class CVAnnotationView extends CObject3D
     protected onSystemPointerUp(event: IPointerEvent)
     {
         // click on model/background: deactivate active annotation
-        this.emit<IAnnotationClickEvent>({ type: "click", sprite: null, annotation: null });
+        if (!event.isDragging) {
+            this.emit<IAnnotationClickEvent>({ type: "click", sprite: null, annotation: null });
+        }
     }
 
     protected onViewportDispose(event: IViewportDisposeEvent)

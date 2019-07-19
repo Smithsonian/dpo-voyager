@@ -36,6 +36,8 @@ export interface IAnnotation extends IAnnotationJSON
 
 export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
 {
+    static readonly defaultColor = [ 0, 0.61, 0.87 ];
+
     static fromJSON(json: IAnnotationJSON)
     {
         return new Annotation(json);
@@ -150,7 +152,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         data.tilt = json.tilt || 0;
         data.azimuth = json.azimuth || 0;
 
-        data.color = json.color || [ 1, 1, 1 ];
+        data.color = json.color || Annotation.defaultColor.slice();
 
         data.zoneIndex = json.zoneIndex !== undefined ? json.zoneIndex : -1;
     }
