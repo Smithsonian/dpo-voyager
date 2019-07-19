@@ -28,13 +28,13 @@ import { v2 as webdav } from "webdav-server";
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
 
-const port = parseInt(process.env["NODE_SERVER_PORT"]) || 8000;
-const devMode = process.env.NODE_ENV !== "production";
-const localMode = process.env.NODE_SERVER_LOCAL === "true";
-const rootDir = process.env["NODE_SERVER_ROOT"] || path.resolve(__dirname, "../../..");
-const staticDir = path.resolve(rootDir, "../../dist/");
-const fileDir = path.resolve(rootDir, "../../files/");
-const docDir = path.resolve(rootDir, "../../docs/_site/");
+const port = parseInt(process.env["VOYAGER_SERVER_PORT"]) || 8000;
+const devMode = process.env["NODE_ENV"] !== "production";
+const localMode = process.env["VOYAGER_SERVER_LOCAL"] === "true";
+const rootDir = process.env["VOYAGER_PROJECT_ROOT"] || path.resolve(__dirname, "../../..");
+const staticDir = path.resolve(rootDir, "dist/");
+const fileDir = path.resolve(rootDir, "files/");
+const docDir = path.resolve(rootDir, "docs/_site/");
 
 ////////////////////////////////////////////////////////////////////////////////
 // GREETING
