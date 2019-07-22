@@ -257,7 +257,7 @@ export default class CVCaptureTask extends CVTask
         }
 
         const qualityName = EDerivativeQuality[quality].toLowerCase();
-        return `${assetBaseName}image-${qualityName}.${extension}`;
+        return `${assetBaseName}-image-${qualityName}.${extension}`;
     }
 
     protected removePictures()

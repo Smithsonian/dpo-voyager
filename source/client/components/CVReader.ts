@@ -150,8 +150,10 @@ export default class CVReader extends Component
 
         // transform relative to absolute URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
-            const assetUrl = this.assetReader.getAssetURL(assetPath);
-            console.log(assetUrl);
+            let assetUrl: string = assetPath;
+            if (!assetUrl.startsWith("/") && !assetUrl.startsWith("http")) {
+                assetUrl = this.assetReader.getAssetURL(assetPath);
+            }
             return pre + assetUrl + post;
         });
 

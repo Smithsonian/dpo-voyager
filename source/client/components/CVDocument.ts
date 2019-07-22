@@ -89,7 +89,7 @@ export default class CVDocument extends CRenderGraph
     }
     get assetBaseName() {
         let name = this.assetPath;
-        const index = name.indexOf("document.json");
+        const index = name.indexOf(".svx.json");
         if (index >= 0) {
             name = name.substr(0, index);
         }

@@ -93,18 +93,43 @@ export default class ArticleEditor extends SystemView
     protected readArticle(assetPath: string)
     {
         return this.assetReader.getText(assetPath)
+        .then(content => this.parseArticle(content))
         .then(content => {
-            this._editor.root.innerHTML = content.replace(/[\n\r]/g, "");
+            this._editor.root.innerHTML = content;
             this._assetPath = assetPath;
         }).then(() => {
             this._changed = false;
             this.removeChild(this._overlay);
-        })
+        });
+    }
+
+    protected parseArticle(content: string): Promise<string>
+    {
+        // remove line breaks
+        content = content.replace(/[\n\r]/g, "");
+
+        // transform relative to absolute URLs
+        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
+            let assetUrl: string = assetPath;
+            if (!assetUrl.startsWith("/") && !assetUrl.startsWith("http")) {
+                assetUrl = this.assetReader.getAssetURL(assetPath);
+            }
+            return pre + assetUrl + post;
+        });
+
+        return Promise.resolve(content);
     }
 
     protected writeArticle(assetPath: string)
     {
-        return this.assetWriter.putText(this._editor.root.innerHTML, assetPath)
+        let content = this._editor.root.innerHTML;
+
+        // transform absolute to relative URLs
+        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
+            return pre + this.assetReader.getAssetPath(assetUrl) + post;
+        });
+
+        return this.assetWriter.putText(content, assetPath)
             .then(() => {
                 this._changed = false;
                 new Notification(`Article successfully written to '${assetPath}'`, "info");
@@ -202,6 +227,7 @@ export default class ArticleEditor extends SystemView
 
     protected onOpenAsset(event: IAssetOpenEvent)
     {
+        // if opened asset is of type text/html, open it in the editor
         if (event.asset.info.type.startsWith("text/html")) {
             this.openArticle(event.asset.info.path);
         }
@@ -209,20 +235,22 @@ export default class ArticleEditor extends SystemView
 
     protected onEditorDrop(event: DragEvent)
     {
+        // get the dropped asset path and then the asset from the media manager
         const assetPath = event.dataTransfer.getData(AssetTree.dragDropMimeType);
         const asset = assetPath && this.mediaManager.getAssetByPath(assetPath);
 
         if (asset) {
+            // only jpeg and png images can be dropped
             const mimeType = asset.info.type;
             if (mimeType === "image/jpeg" || mimeType === "image/png") {
-                const url = this.assetReader.getAssetURL(assetPath);
-
+                const assetUrl = this.assetReader.getAssetURL(assetPath);
                 // wait until text has been dropped, so we can get a valid selection index
                 setTimeout(() => {
                     const selection = this._editor.getSelection();
                     if (selection) {
+                        // replace text with image asset
                         this._editor.deleteText(selection.index, selection.length);
-                        this._editor.insertEmbed(selection.index, "image", url);
+                        this._editor.insertEmbed(selection.index, "image", assetUrl);
                     }
                 });
             }

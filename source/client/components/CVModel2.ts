@@ -67,8 +67,8 @@ export default class CVModel2 extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
-        tags: types.String("Tags.Tags"),
-        activeTags: types.String("Tags.ActiveTags"),
+        tags: types.String("Model.Tags"),
+        activeTags: types.String("Model.ActiveTags"),
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
@@ -94,8 +94,10 @@ export default class CVModel2 extends CObject3D
 
     get settingProperties() {
         return [
-            this.ins.tags,
+            this.ins.visible,
             this.ins.quality,
+            this.ins.localUnits,
+            this.ins.tags,
             this.ins.shader,
             this.ins.override,
             this.ins.color,
@@ -113,9 +115,6 @@ export default class CVModel2 extends CObject3D
     private _visible: boolean = true;
     private _boundingBox: THREE.Box3;
     private _boxFrame: THREE.Mesh = null;
-
-    private _currentOpacity = 1;
-    private _targetOpacity = -1;
 
     constructor(node: Node, id: string)
     {
@@ -152,10 +151,6 @@ export default class CVModel2 extends CObject3D
 
         // set quality based on max texture size
         const maxTextureSize = this.renderer.outs.maxTextureSize.value;
-
-        if (ENV_DEVELOPMENT) {
-            console.log("CVModel2.create - max texture size: %s", maxTextureSize);
-        }
 
         if (maxTextureSize < 2048) {
             this.ins.quality.setValue(EDerivativeQuality.Low);
