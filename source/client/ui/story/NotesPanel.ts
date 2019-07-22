@@ -158,8 +158,11 @@ export default class NotesPanel extends NodeView
     {
         const index = this.notes.indexOf(this.activeNote);
         if (index >= 0) {
-            this.notes.slice(index, 1);
+            this.notes.splice(index, 1);
         }
+
+        this.activeNote = this.notes[index] || null;
+        this.requestUpdate();
     }
 
     protected onActiveNode(previous: NVNode, next: NVNode)
