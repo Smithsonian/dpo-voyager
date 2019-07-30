@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Story - Voyager Documentation</title>
+  <title>Demo Assets - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -18,7 +18,7 @@
 
 </head>
 
-<body class='page page-default-list'>
+<body class='page page-default-single'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -41,7 +41,7 @@
       </a>
     </li>
     
-    <li class="menu-item-story active">
+    <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
       </a>
@@ -83,7 +83,7 @@
       </a>
     </li>
     
-    <li class="menu-item-story active">
+    <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
       </a>
@@ -106,11 +106,11 @@
     
     
       
-    
-      
-    
-      
         
+      
+    
+      
+    
       
     
 
@@ -129,7 +129,7 @@
       <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
     </li>
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/docs/demo-assets/">Demo Assets</a>
     </li>
     
@@ -203,69 +203,51 @@
         </div>
         <div class="col-12 col-md-9">
           
-
-  
-  <h1 class="title">Story</h1>
-  <div class="content">
-    
-  </div>
-
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/overview/">Overview</a></h2>
-  <p>Voyager Story - authoring tool for 3D experiences</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/usage/">Usage</a></h2>
-  <p>Embed and use Voyager Story in your own production pipeline.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/pose-task/">Pose Task</a></h2>
-  <p>Center models and adjust their pose.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/capture-task/">Capture Task</a></h2>
-  <p>Create 2D snapshots of a 3D model.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/derivatives-task/">Derivatives Task</a></h2>
-  <p>Inspect a model&rsquo;s mesh and textures at various quality levels.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/settings-task/">Settings Task</a></h2>
-  <p>Adjust scene, environment, lights, and material settings.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/annotations-task/">Annotations Task</a></h2>
-  <p>Attach hotspots and annotations to a 3D models.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/articles-task/">Articles Task</a></h2>
-  <p>Write rich documents, add media, and connect them with annotations and models.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/story/tours-task/">Tours Task</a></h2>
-  <p>Create interactive, guided tours.</p>
-</div>
+<h1 class="title">Demo Assets</h1>
+<div class="content">
   
 
+<h2 id="demo-assets">Demo Assets</h2>
+
+<p>For getting you started easily, Voyager comes with a set of demo assets.
+Please have a look at the enclosed readme, the disclaimer and the terms of use before using the assets.</p>
+
+<p>The following installation guide assumes you&rsquo;ve already installed and started the Voyager development server.</p>
+
+<h4 id="installation">Installation</h4>
+
+<p>In your Voyager project folder, create a new folder named <code>files</code> and navigate into it.</p>
+<div class="highlight"><pre class="chroma">cd &lt;my_project_dir&gt;
+mkdir files
+cd files</pre></div>
+<p>Now fetch the demo assets from GitHub and unzip them:</p>
+<div class="highlight"><pre class="chroma">curl -L -o assets.zip https://github.com/Smithsonian/dpo-voyager/releases/download/v0.7.0/voyager-demo-assets.zip
+unzip assets.zip</pre></div>
+<p>Your <code>files</code> folder should now contain the following:</p>
+<div class="highlight"><pre class="chroma">assets.zip
+DISCLAIMER.txt
+models           &lt;- this folder contains the demo models
+README.txt
+TERMS_OF_USE.txt</pre></div>
+<p>Next, open your web browser (Chrome preferred) and navigate to one of the following URLs. Note that the host and port
+may be different depending on where you installed the Voyager development server.</p>
+
+<h6 id="voyager-exlorer-the-viewer">Voyager Exlorer (the viewer)</h6>
+<div class="highlight"><pre class="chroma">http://localhost:8000/voyager-explorer-dev.html?root=models/tusk/&amp;document=tusk.svx.json
+http://localhost:8000/voyager-explorer-dev.html?root=models/vase/&amp;document=vase.svx.json
+http://localhost:8000/voyager-explorer-dev.html?root=models/chair/&amp;document=chair.svx.json
+http://localhost:8000/voyager-explorer-dev.html?root=models/ewer/&amp;document=ewer.svx.json</pre></div>
+<h6 id="voyager-story-the-authoring-tool-quality-inspection-mode">Voyager Story (the authoring tool), quality inspection mode</h6>
+<div class="highlight"><pre class="chroma">http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/tusk/&amp;document=tusk.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/vase/&amp;document=vase.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/chair/&amp;document=chair.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/ewer/&amp;document=ewer.svx.json</pre></div>
+<h6 id="voyager-story-the-authoring-tool-authoring-mode">Voyager Story (the authoring tool), authoring mode</h6>
+<div class="highlight"><pre class="chroma">http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/tusk/&amp;document=tusk.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/vase/&amp;document=vase.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/chair/&amp;document=chair.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/ewer/&amp;document=ewer.svx.json</pre></div>
+</div>
 
         </div>
       </div>

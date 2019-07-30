@@ -38,6 +38,15 @@
     </item>
     
     <item>
+      <title>Demo Assets</title>
+      <link>https://smithsonian.github.io/dpo-voyager/docs/demo-assets/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://smithsonian.github.io/dpo-voyager/docs/demo-assets/</guid>
+      <description>Installation of the provided Voyager demo assets</description>
+    </item>
+    
+    <item>
       <title>Usage</title>
       <link>https://smithsonian.github.io/dpo-voyager/explorer/usage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
