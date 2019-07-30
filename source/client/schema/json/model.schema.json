@@ -147,6 +147,7 @@
                         "Model",
                         "Geometry",
                         "Image",
+                        "Texture",
                         "Points",
                         "Volume"
                     ]
