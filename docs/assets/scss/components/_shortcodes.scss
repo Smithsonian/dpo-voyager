@@ -1,0 +1,37 @@
+.sc-box {
+  &.sc-info { background: #d9d9d9; }
+  &.sc-warning { background: #e6ac73; }
+  &.sc-error { background: #e67373; }
+
+  padding: 12px;
+  margin: 24px 0;
+
+  .sc-icon {
+    font-size: 2rem;
+    padding-right: 8px;
+    vertical-align: middle;
+    color: #5993b3;
+  }
+
+  .sc-text {
+    vertical-align: middle;
+  }
+}
+
+.sc-button {
+  padding: 0 3px;
+  background: #d9d9d9;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  color: #555;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.sc-param {
+  padding: 0 3px;
+  background: #d9d9d9;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-weight: 500;
+}

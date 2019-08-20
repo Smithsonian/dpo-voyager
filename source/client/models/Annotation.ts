@@ -64,7 +64,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
             tilt: 0,
             azimuth: 0,
 
-            color: [ 1, 1, 1 ],
+            color: [ 0, 0.61, 0.87 ],
 
             zoneIndex: -1,
         };

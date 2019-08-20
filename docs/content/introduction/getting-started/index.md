@@ -1,0 +1,96 @@
+---
+title: Getting started
+summary: Installation and configuration
+weight: 100
+---
+
+## Installation
+
+This document describes how to install a local development server, and build the source code for development and production.
+
+The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 18.04),
+or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.
+
+#### Prerequisites
+
+Operating system for direct installation: **Linux only** (tested on Ubuntu server 18.04).
+
+Before cloning the Github project, please install the following tools
+
+ * [Node.js](https://nodejs.org/en/) - required
+ * [Docker](https://www.docker.com/) - required for installation in a Docker container
+ * [Docker Compose](https://docs.docker.com/compose/install/) - required for installation in a Docker container
+
+Now create a project folder and clone the project from Github. Make sure not to forget the `--recurse-subomdules` option,
+this also clones the required submodules.
+
+```
+mkdir <my_project_dir>
+cd <my_project_dir>
+git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .
+```
+
+Copy and rename the `secrets.template.env` file:
+
+```
+cp services/secrets.template.env services/secrets.env
+```
+
+#### Dockerized environment
+
+For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
+To build the Docker image and start the container with the development server, run
+```
+npm run up
+```
+This also watches all source folders for changes and triggers the Typescript compilation and Webpack build whenever
+source code changes are detected.
+
+Once you are done, shut down the development server.
+```
+npm run down
+```
+
+
+#### Installation on Linux, without Docker
+
+Without Docker, you need to install the NPM package dependencies manually.
+
+```
+npm install
+```
+
+Now you are ready to build the project. The following command builds the development server, and the development
+version of the Voyager tools.
+
+```
+npm run build
+```
+
+If you want to specifically create a development or production build, use the following commands.
+
+```
+npm run build-dev
+npm run build-prod
+```
+
+- The development build preserves source code comments and comes with source code maps
+- The production build generates minified scripts and CSS
+
+#### Location of build output
+
+Build output can be found in the project's `dist` folder. It's content after both `prod` and `dev` builds have been run:
+
+```
+css/                       # style sheets
+fonts/                     # web fonts
+images/                    # images and logos
+js/                        # client-side Javascript for all applications
+favicon.png
+voyager-explorer.html      # HTML page displaying Voyager Explorer, production build
+voyager-explorer-dev.html  # HTML page displaying Voyager Explorer, development build
+voyager-mini.html          # HTML page displaying Voyager Explorer Mini, production build
+voyager-mini-dev.html      # HTML page displaying Voyager Explorer Mini, development build
+voyager-story.html         # HTML page displaying Voyager Story authoring tool, production build
+voyager-story-dev.html     # HTML page displaying Voyager Story authoring tool, development build
+```

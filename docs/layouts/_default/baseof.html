@@ -9,6 +9,8 @@
   {{ block "meta_tags" . }}{{end}}
   <link rel="icon" href="{{ "favicon.ico" | absURL}}">
 
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
   {{ if .Site.IsServer }}
   {{ $style := resources.Get "scss/style.scss" | toCSS (dict "targetPath" "css/style.css" "enableSourceMap" true) }}
   <link rel="stylesheet" href="{{ ($style).RelPermalink }}">

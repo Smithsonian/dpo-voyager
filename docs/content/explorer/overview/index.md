@@ -4,7 +4,8 @@ summary: Voyager Explorer - 3D interactive web viewer
 weight: 100
 ---
 
-The Smithsonian Voyager web explorer has been created specifically for displaying, exploring, and sharing rich 3D data and models from museum collections and cultural heritage.
+The Smithsonian Voyager web explorer has been created specifically for displaying, exploring, and sharing rich 3D data
+and models from museum collections and cultural heritage.
 
 With a focus on storytelling, Voyager's interactive engine offers a wide range of features and tools.
 
