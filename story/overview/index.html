@@ -9,6 +9,8 @@
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
 
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
   
   
   <link rel="stylesheet" href="/dpo-voyager/css/style.min.css">
@@ -29,9 +31,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -44,6 +46,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -71,9 +79,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -86,6 +94,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -113,6 +127,8 @@
         
       
     
+      
+    
 
     
     <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
@@ -122,26 +138,26 @@
             
 
 <div class="docs-menu">
-  <h4>Documentation</h4>
+  <h4><a href="/dpo-voyager/introduction/">Introduction</a></h4>
   <ul>
     
     <li class="">
-      <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
+      <a href="/dpo-voyager/introduction/getting-started/">Getting started</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/demo-assets/">Demo Assets</a>
+      <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/license/">License</a>
+      <a href="/dpo-voyager/introduction/license/">License</a>
     </li>
     
   </ul>
 </div>
 
 <div class="docs-menu">
-  <h4>Explorer</h4>
+  <h4><a href="/dpo-voyager/explorer/">Explorer</a></h4>
   <ul>
     
     <li class="">
@@ -156,7 +172,7 @@
 </div>
 
 <div class="docs-menu">
-  <h4>Story</h4>
+  <h4><a href="/dpo-voyager/story/">Story</a></h4>
   <ul>
     
     <li class="active ">
@@ -198,6 +214,21 @@
   </ul>
 </div>
 
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/document/">SVX Document Format</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/overview/">Overview</a>
+    </li>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/example/">Examples</a>
+    </li>
+    
+  </ul>
+</div>
+
 
           </div>
         </div>
@@ -207,7 +238,7 @@
 <div class="content">
   
 
-<p><em>Voyager Story</em> is the creation and authoring application of the Voyager tool suite. The application can be used to create and author <em>Voyager Documents</em>. Documents are files in JSON format containing the description of a Voyager scene or experience.</p>
+<p><em>Voyager Story</em> is the creation and authoring application of the Voyager tool suite. The application can be used to create and author <em>Voyager SVX Documents</em>. Documents are files in JSON format containing the description of a Voyager scene or experience.</p>
 
 <p><em>Voyager Story</em> can be operated in two different modes. Each mode offers a number of tasks.</p>
 
@@ -219,7 +250,9 @@
 <li>Pose task: center the model and put it into upright position</li>
 <li>Capture task: take a 2D snapshot of the model</li>
 <li>Derivative inspection task: inspect the quality of the meshes and textures at various levels of detail</li>
-<li>Settings task: adjust parameters such as material settings<br /></li>
+
+<li><p>Settings task: adjust parameters such as material settings</p>
+<div class="highlight"><pre class="chroma">QC mode is enabled by supplying the mode=qc URL parameter.</pre></div></li>
 </ul>
 
 <h2 id="authoring-mode">Authoring Mode</h2>
@@ -230,13 +263,15 @@
 <li>Annotations task: add annotations to specific 3D locations on a model</li>
 <li>Articles task: write and edit articles (documents with text and media), and connect them with annotations and models</li>
 <li>Tours task: create guided tours which guide through the experience in multiple steps</li>
-<li>Settings task: adjust parameters such as material settings</li>
+
+<li><p>Settings task: adjust parameters such as material settings</p>
+<div class="highlight"><pre class="chroma">Authoring mode is enabled by supplying the mode=author URL parameter.</pre></div></li>
 </ul>
 
 <h2 id="expert-mode">Expert Mode</h2>
 
 <p><em>Voyager Story</em> actually offers a third mode, called expert mode, which shows all available tasks at once. It also provides a detailed view of all document elements and settings. The expert mode is aimed at - well - experts and developers.</p>
-
+<div class="highlight"><pre class="chroma">Expert mode is enabled by supplying the mode=expert URL parameter.</pre></div>
 </div>
 
         </div>

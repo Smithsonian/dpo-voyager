@@ -9,6 +9,8 @@
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
 
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
   
   
   <link rel="stylesheet" href="/dpo-voyager/css/style.min.css">
@@ -29,9 +31,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -44,6 +46,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -71,9 +79,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -86,6 +94,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -113,6 +127,8 @@
         
       
     
+      
+    
 
     
     <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
@@ -122,26 +138,26 @@
             
 
 <div class="docs-menu">
-  <h4>Documentation</h4>
+  <h4><a href="/dpo-voyager/introduction/">Introduction</a></h4>
   <ul>
     
     <li class="">
-      <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
+      <a href="/dpo-voyager/introduction/getting-started/">Getting started</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/demo-assets/">Demo Assets</a>
+      <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/license/">License</a>
+      <a href="/dpo-voyager/introduction/license/">License</a>
     </li>
     
   </ul>
 </div>
 
 <div class="docs-menu">
-  <h4>Explorer</h4>
+  <h4><a href="/dpo-voyager/explorer/">Explorer</a></h4>
   <ul>
     
     <li class="">
@@ -156,7 +172,7 @@
 </div>
 
 <div class="docs-menu">
-  <h4>Story</h4>
+  <h4><a href="/dpo-voyager/story/">Story</a></h4>
   <ul>
     
     <li class="">
@@ -198,6 +214,21 @@
   </ul>
 </div>
 
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/document/">SVX Document Format</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/overview/">Overview</a>
+    </li>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/example/">Examples</a>
+    </li>
+    
+  </ul>
+</div>
+
 
           </div>
         </div>
@@ -205,7 +236,57 @@
           
 <h1 class="title">Pose Task</h1>
 <div class="content">
-  <p>We&rsquo;re working on it!</p>
+  <p>Often, after digitizing an object, the resulting 3D model is arbitrarily positioned in space. The Pose Task provides
+tools to bring a model into its initial, upright position.</p>
+
+<div class="sc-box sc-info">
+    <span class="sc-icon fa fa-info-circle"></span>
+    <span class="sc-text">The Pose Task is only available if Voyager Story is started in QC mode.</span>
+</div>
+
+<ol>
+<li>Select the <span class="sc-button">Pose</span>
+Task in the task bar. The viewer now displays a quad view with a perspective view
+in the top left quadrant, and an orthographic top, left, and front view in the three other quadrants.</li>
+<li>Click on the model you want to position. A yellow selection marker appears around the model.</li>
+<li>Select one of the pose tools and start positioning.</li>
+</ol>
+
+<p><img src="pose-task.jpg" alt="Pose Task" /></p>
+
+<p><strong>Position the model</strong></p>
+
+<ul>
+<li><span class="sc-button">Rotate</span>
+Drag with the left mouse button in one of the orthographic views to rotate the model.</li>
+<li><span class="sc-button">Move</span>
+Drag with the left mouse button in one of the orthographic views to move the model.</li>
+<li>Click the <span class="sc-button">Center</span>
+button to position the model on the origin.</li>
+</ul>
+
+<p>While dragging with the left mouse button, you can press the <span class="sc-button">Shift</span>
+ key to move 10 times faster and
+the <span class="sc-button">Control</span>
+ key to move 10 times slower.</p>
+
+<p><strong>Adjust the view</strong></p>
+
+<ul>
+<li>Right click and drag in any view to pan the view</li>
+<li>Use the scroll wheel in any view to zoom the view</li>
+<li>Click <span class="sc-button">Zoom Extent</span>
+to show the full model in all four views.</li>
+</ul>
+
+<p><strong>Set model and global units</strong></p>
+
+<ul>
+<li>Choose which units to use globally by adjusting the <span class="sc-param">Global Units</span>
+parameter.</li>
+<li>Choose the units of the selected model by adjusting the <span class="sc-param">Item Units</span>
+parameter.</li>
+</ul>
 
 </div>
 

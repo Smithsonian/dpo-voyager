@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Explorer - Voyager Documentation</title>
+  <title>Overview - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-list'>
+<body class='page page-default-single'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -37,7 +37,7 @@
       </a>
     </li>
     
-    <li class="menu-item-explorer active">
+    <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
       </a>
@@ -85,7 +85,7 @@
       </a>
     </li>
     
-    <li class="menu-item-explorer active">
+    <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
       </a>
@@ -122,11 +122,11 @@
       
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
 
@@ -218,7 +218,7 @@
   <h4><a href="/dpo-voyager/document/">SVX Document Format</a></h4>
   <ul>
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/document/overview/">Overview</a>
     </li>
     
@@ -234,27 +234,47 @@
         </div>
         <div class="col-12 col-md-9">
           
+<h1 class="title">Overview</h1>
+<div class="content">
+  
 
-  
-  <h1 class="title">Explorer</h1>
-  <div class="content">
-    
-  </div>
+<h3 id="the-voyager-json-document-format-svx">The Voyager JSON Document Format (SVX)</h3>
 
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/overview/">Overview</a></h2>
-  <p>Voyager Explorer - 3D interactive web viewer</p>
+<p>Voyager Explorer (the viewer) and Voyager Story (the authoring tool) work with JSON scene description files.
+The structure of this custom file format is very similar to the well known and widespread glTF format. glTF is an industry
+standard for the transmission of 3D scenes on the web, including mesh, material, texture and animation data. While Voyager
+document files are not directly compatible with glTF, their data structure is similar enough to make it easy to read
+for developers experienced with glTF.</p>
+
+<ul>
+<li>More information about GLTF: <a href="https://github.com/KhronosGroup/glTF">https://github.com/KhronosGroup/glTF</a></li>
+</ul>
+
+<p>Voyager documents use the specific extension <code>.svx.json</code> so they can be easily recognized and distinguished from other
+<code>.json</code> files.</p>
+
+<p><em>SVX</em> stands for <em>Smithsonian Voyager eXperience</em>.</p>
+
+<h3 id="scenes-nodes-and-components">Scenes, Nodes, and Components</h3>
+
+<p>Both glTF and SVX describe 3D scenes using nodes. Each node has a name, and a location and orientation in 3D space.
+In SVX, each node contains a number of components. A component gives a node specific properties. SVX documents support
+the following component types:</p>
+
+<ul>
+<li><strong>Camera</strong></li>
+<li><strong>Light</strong> (a light source; directional, point, and spot lights are supported)</li>
+<li><strong>Model</strong> (an entity displayable in 3D space, including annotations)</li>
+<li><strong>Meta</strong> (model and collection meta data, articles, media, etc.)</li>
+<li><strong>Setup</strong> (scene setup information)</li>
+</ul>
+
+<p>A node may contain multiple components. For example, a node may have both a <strong>model</strong> component (describing the 3D data
+to be displayed) and a <strong>meta</strong> component (describing the meta data for the model).</p>
+
+<p><img src="scene-tree-1.jpg" alt="Node Tree" /></p>
+
 </div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/usage/">Usage</a></h2>
-  <p>Embed the Voyager Explorer in your own website.</p>
-</div>
-  
-
 
         </div>
       </div>

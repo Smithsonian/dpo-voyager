@@ -9,6 +9,8 @@
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
 
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
   
   
   <link rel="stylesheet" href="/dpo-voyager/css/style.min.css">
@@ -29,9 +31,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -44,6 +46,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -71,9 +79,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -86,6 +94,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -113,6 +127,8 @@
         
       
     
+      
+    
 
     
     <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
@@ -122,26 +138,26 @@
             
 
 <div class="docs-menu">
-  <h4>Documentation</h4>
+  <h4><a href="/dpo-voyager/introduction/">Introduction</a></h4>
   <ul>
     
     <li class="">
-      <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
+      <a href="/dpo-voyager/introduction/getting-started/">Getting started</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/demo-assets/">Demo Assets</a>
+      <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/license/">License</a>
+      <a href="/dpo-voyager/introduction/license/">License</a>
     </li>
     
   </ul>
 </div>
 
 <div class="docs-menu">
-  <h4>Explorer</h4>
+  <h4><a href="/dpo-voyager/explorer/">Explorer</a></h4>
   <ul>
     
     <li class="">
@@ -156,7 +172,7 @@
 </div>
 
 <div class="docs-menu">
-  <h4>Story</h4>
+  <h4><a href="/dpo-voyager/story/">Story</a></h4>
   <ul>
     
     <li class="">
@@ -198,6 +214,21 @@
   </ul>
 </div>
 
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/document/">SVX Document Format</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/overview/">Overview</a>
+    </li>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/example/">Examples</a>
+    </li>
+    
+  </ul>
+</div>
+
 
           </div>
         </div>
@@ -205,7 +236,32 @@
           
 <h1 class="title">Capture Task</h1>
 <div class="content">
-  <p>We&rsquo;re working on it!</p>
+  <p>Use the Capture Task to create 2D snapshots of your 3D scene.</p>
+
+<div class="sc-box sc-info">
+    <span class="sc-icon fa fa-info-circle"></span>
+    <span class="sc-text">The Capture Task is only available if Voyager Story is started in QC mode.</span>
+</div>
+
+<ol>
+<li>Select the <span class="sc-button">Capture</span>
+Task in the task bar.</li>
+<li>Drag the view (orientation: left mouse button, pan: right mouse button, zoom: scroll wheel) until you&rsquo;re happy
+with the scene view.</li>
+<li>Click <span class="sc-button">Take</span>
+to take a snapshot. The snapshot appears in the task panel.</li>
+<li>Click <span class="sc-button">Save</span>
+to save the snapshot back to the server.</li>
+<li>Click <span class="sc-button">Save</span>
+in the top right to save the scene.</li>
+</ol>
+
+<p>You can use the <span class="sc-button">Download</span>
+ button next to the <span class="sc-button">Save</span>
+ button to save a local copy
+of the captured image.</p>
+
+<p><img src="capture-task.jpg" alt="Capture Task" /></p>
 
 </div>
 

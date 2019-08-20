@@ -9,6 +9,8 @@
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
 
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
   
   
   <link rel="stylesheet" href="/dpo-voyager/css/style.min.css">
@@ -29,9 +31,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -44,6 +46,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -71,9 +79,9 @@
       </a>
     </li>
     
-    <li class="menu-item-documentation">
-      <a href="/dpo-voyager/docs/">
-        <span>Documentation</span>
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
       </a>
     </li>
     
@@ -86,6 +94,12 @@
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
       </a>
     </li>
     
@@ -113,6 +127,8 @@
         
       
     
+      
+    
 
     
     <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
@@ -122,26 +138,26 @@
             
 
 <div class="docs-menu">
-  <h4>Documentation</h4>
+  <h4><a href="/dpo-voyager/introduction/">Introduction</a></h4>
   <ul>
     
     <li class="">
-      <a href="/dpo-voyager/docs/getting-started/">Getting started</a>
+      <a href="/dpo-voyager/introduction/getting-started/">Getting started</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/demo-assets/">Demo Assets</a>
+      <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/docs/license/">License</a>
+      <a href="/dpo-voyager/introduction/license/">License</a>
     </li>
     
   </ul>
 </div>
 
 <div class="docs-menu">
-  <h4>Explorer</h4>
+  <h4><a href="/dpo-voyager/explorer/">Explorer</a></h4>
   <ul>
     
     <li class="">
@@ -156,7 +172,7 @@
 </div>
 
 <div class="docs-menu">
-  <h4>Story</h4>
+  <h4><a href="/dpo-voyager/story/">Story</a></h4>
   <ul>
     
     <li class="">
@@ -198,6 +214,21 @@
   </ul>
 </div>
 
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/document/">SVX Document Format</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/overview/">Overview</a>
+    </li>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/example/">Examples</a>
+    </li>
+    
+  </ul>
+</div>
+
 
           </div>
         </div>
@@ -205,7 +236,63 @@
           
 <h1 class="title">Derivatives Task</h1>
 <div class="content">
-  <p>We&rsquo;re working on it!</p>
+  <p>Use the Derivatives Task to inspect the various web derivatives your model consists of. Depending on your processing
+pipeline, each model in a scene consists of multiple levels of detail.</p>
+
+<div class="sc-box sc-info">
+    <span class="sc-icon fa fa-info-circle"></span>
+    <span class="sc-text">The Derivatives Task is only available if Voyager Story is started in QC mode.</span>
+</div>
+
+<ol>
+<li>Select the <span class="sc-button">Derivatives</span>
+Task in the task bar.</li>
+<li>Select the model you want to inspect. A list of available derivatives appears in the task panel.</li>
+<li>Select the derivative level you would like to inspect.</li>
+</ol>
+
+<p><img src="derivatives-task.jpg" alt="Derivatives Task" /></p>
+
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Thumb</td>
+<td>The lowest available representation. Always loaded first, with the goal of displaying a first representation of the model as quickly as possible. We recommend using a compressed GLB file with a total size of less than 200k.</td>
+</tr>
+
+<tr>
+<td>Low</td>
+<td>Used on older mobile devices. Maximum texture size: 1024 x 1024 pixels. Recommended mesh size: ~150k faces.</td>
+</tr>
+
+<tr>
+<td>Medium</td>
+<td>Used on newer mobile devices. Maximum texture size: 2048 x 2048 pixels. Recommended mesh size: ~150k faces.</td>
+</tr>
+
+<tr>
+<td>High</td>
+<td>Used on desktop devices. Maximum texture size: 4096 x 4096 pixels. Recommended mesh size: ~150k faces.</td>
+</tr>
+
+<tr>
+<td>Highest</td>
+<td>Used for quality inspection. Texture size: 4k or 8k. Mesh size: ~500k faces.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="sc-box sc-info">
+    <span class="sc-icon fa fa-info-circle"></span>
+    <span class="sc-text">Depending on how your model was processed, not all derivative levels might be available. It is possible to use just one derivative for each model. In this case, features such as device-dependent and progressive loading are not available.</span>
+</div>
 
 </div>
 

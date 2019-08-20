@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Explorer - Voyager Documentation</title>
+  <title>Getting started - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-list'>
+<body class='page page-default-single'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -37,7 +37,7 @@
       </a>
     </li>
     
-    <li class="menu-item-explorer active">
+    <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
       </a>
@@ -85,7 +85,7 @@
       </a>
     </li>
     
-    <li class="menu-item-explorer active">
+    <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
       </a>
@@ -120,9 +120,9 @@
     
     
       
-    
-      
         
+      
+    
       
     
       
@@ -141,7 +141,7 @@
   <h4><a href="/dpo-voyager/introduction/">Introduction</a></h4>
   <ul>
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/introduction/getting-started/">Getting started</a>
     </li>
     
@@ -234,27 +234,76 @@
         </div>
         <div class="col-12 col-md-9">
           
+<h1 class="title">Getting started</h1>
+<div class="content">
+  
 
-  
-  <h1 class="title">Explorer</h1>
-  <div class="content">
-    
-  </div>
+<h2 id="installation">Installation</h2>
 
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/overview/">Overview</a></h2>
-  <p>Voyager Explorer - 3D interactive web viewer</p>
+<p>This document describes how to install a local development server, and build the source code for development and production.</p>
+
+<p>The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 18.04),
+or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.</p>
+
+<h4 id="prerequisites">Prerequisites</h4>
+
+<p>Operating system for direct installation: <strong>Linux only</strong> (tested on Ubuntu server 18.04).</p>
+
+<p>Before cloning the Github project, please install the following tools</p>
+
+<ul>
+<li><a href="https://nodejs.org/en/">Node.js</a> - required</li>
+<li><a href="https://www.docker.com/">Docker</a> - required for installation in a Docker container</li>
+<li><a href="https://docs.docker.com/compose/install/">Docker Compose</a> - required for installation in a Docker container</li>
+</ul>
+
+<p>Now create a project folder and clone the project from Github. Make sure not to forget the <code>--recurse-subomdules</code> option,
+this also clones the required submodules.</p>
+<div class="highlight"><pre class="chroma">mkdir &lt;my_project_dir&gt;
+cd &lt;my_project_dir&gt;
+git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .</pre></div>
+<p>Copy and rename the <code>secrets.template.env</code> file:</p>
+<div class="highlight"><pre class="chroma">cp services/secrets.template.env services/secrets.env</pre></div>
+<h4 id="dockerized-environment">Dockerized environment</h4>
+
+<p>For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
+To build the Docker image and start the container with the development server, run</p>
+<div class="highlight"><pre class="chroma">npm run up</pre></div>
+<p>This also watches all source folders for changes and triggers the Typescript compilation and Webpack build whenever
+source code changes are detected.</p>
+
+<p>Once you are done, shut down the development server.</p>
+<div class="highlight"><pre class="chroma">npm run down</pre></div>
+<h4 id="installation-on-linux-without-docker">Installation on Linux, without Docker</h4>
+
+<p>Without Docker, you need to install the NPM package dependencies manually.</p>
+<div class="highlight"><pre class="chroma">npm install</pre></div>
+<p>Now you are ready to build the project. The following command builds the development server, and the development
+version of the Voyager tools.</p>
+<div class="highlight"><pre class="chroma">npm run build</pre></div>
+<p>If you want to specifically create a development or production build, use the following commands.</p>
+<div class="highlight"><pre class="chroma">npm run build-dev
+npm run build-prod</pre></div>
+<ul>
+<li>The development build preserves source code comments and comes with source code maps</li>
+<li>The production build generates minified scripts and CSS</li>
+</ul>
+
+<h4 id="location-of-build-output">Location of build output</h4>
+
+<p>Build output can be found in the project&rsquo;s <code>dist</code> folder. It&rsquo;s content after both <code>prod</code> and <code>dev</code> builds have been run:</p>
+<div class="highlight"><pre class="chroma">css/                       # style sheets
+fonts/                     # web fonts
+images/                    # images and logos
+js/                        # client-side Javascript for all applications
+favicon.png
+voyager-explorer.html      # HTML page displaying Voyager Explorer, production build
+voyager-explorer-dev.html  # HTML page displaying Voyager Explorer, development build
+voyager-mini.html          # HTML page displaying Voyager Explorer Mini, production build
+voyager-mini-dev.html      # HTML page displaying Voyager Explorer Mini, development build
+voyager-story.html         # HTML page displaying Voyager Story authoring tool, production build
+voyager-story-dev.html     # HTML page displaying Voyager Story authoring tool, development build</pre></div>
 </div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/usage/">Usage</a></h2>
-  <p>Embed the Voyager Explorer in your own website.</p>
-</div>
-  
-
 
         </div>
       </div>
