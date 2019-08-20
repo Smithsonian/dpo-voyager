@@ -1,7 +1,7 @@
 {{$currentNode := .}}
 {{ range .Site.Sections }}
 <div class="docs-menu">
-  <h4>{{ .Title | humanize }}</h4>
+  <h4><a href="{{ .RelPermalink }}">{{ .Title }}</a></h4>
   <ul>
     {{ range .Pages }}
     <li class="{{ if eq .File.UniqueID $currentNode.File.UniqueID }}active {{ end }}">

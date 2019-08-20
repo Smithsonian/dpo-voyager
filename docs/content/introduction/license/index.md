@@ -18,5 +18,5 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ##### Font Awesome
 
-This project embeds both free and pro icons from the [Font Awesome](https://fontawesome.com) icon collection.  
+This project makes use of both free and pro icons from the [Font Awesome](https://fontawesome.com) icon collection.  
 Applicable license: https://fontawesome.com/license.
