@@ -220,7 +220,6 @@ export default class CVModel2 extends CObject3D
 
         if (ins.localUnits.changed || ins.globalUnits.changed) {
             this.updateUnitScale();
-            this.emit("bounding-box");
         }
 
         if (ins.shader.changed) {
@@ -265,6 +264,8 @@ export default class CVModel2 extends CObject3D
         _box.getCenter(_vec3a);
         _vec3a.multiplyScalar(-1).toArray(position.value);
         position.set();
+
+        this.emit("bounding-box");
     }
 
     setFromMatrix(matrix: THREE.Matrix4)
@@ -456,6 +457,8 @@ export default class CVModel2 extends CObject3D
         _vec3b.setScalar(unitScale);
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;
+
+        this.emit("bounding-box");
     }
 
     /**

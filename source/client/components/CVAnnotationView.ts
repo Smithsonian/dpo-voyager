@@ -357,6 +357,7 @@ export default class CVAnnotationView extends CObject3D
         if (annotation) {
             // click on annotation: activate annotation
             this.emit<IAnnotationClickEvent>({ type: "click", sprite: target, annotation });
+            event.stopPropagation = true;
         }
     }
 
@@ -394,9 +395,6 @@ export default class CVAnnotationView extends CObject3D
 
         let sprite;
         switch(annotation.data.style) {
-            case EAnnotationStyle.Pin:
-                sprite = new BalloonSprite(annotation);
-                break;
             case EAnnotationStyle.Balloon:
                 sprite = new BalloonSprite(annotation);
                 break;

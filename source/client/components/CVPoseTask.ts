@@ -28,8 +28,10 @@ import NVNode from "../nodes/NVNode";
 
 import CVModel2 from "./CVModel2";
 import CVTask from "./CVTask";
+import CVScene, { IBoundingBoxEvent } from "./CVScene";
 
 import PoseTaskView from "../ui/story/PoseTaskView";
+import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +40,8 @@ const _axis = new THREE.Vector3();
 const _mat4 = new THREE.Matrix4();
 const _quat0 = new THREE.Quaternion();
 const _quat1 = new THREE.Quaternion();
+const _boundingBox = new THREE.Box3();
+const _size = new THREE.Vector3();
 
 export enum EPoseManipMode { Off, Translate, Rotate }
 
@@ -57,8 +61,12 @@ export default class CVPoseTask extends CVTask
     protected static readonly ins = {
         mode: types.Enum("Pose.Mode", EPoseManipMode, EPoseManipMode.Off)
     };
+    protected static readonly outs = {
+        size: types.Vector3("Model.Size")
+    };
 
     ins = this.addInputs<CVTask, typeof CVPoseTask.ins>(CVPoseTask.ins);
+    outs = this.addOutputs<CVTask, typeof CVPoseTask.outs>(CVPoseTask.outs);
 
     private _viewport: Viewport = null;
     private _deltaX = 0;
@@ -180,13 +188,38 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        super.onActiveDocument(previous, next);
+
+        if (previous) {
+            previous.innerGraph.getComponent(CVScene).off("bounding-box", this.onModelBoundingBox, this);
+        }
+        if (next) {
+            next.innerGraph.getComponent(CVScene).on("bounding-box", this.onModelBoundingBox, this);
+        }
+    }
+
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
         this.activeModel = next && next.model;
 
         if (this.activeModel) {
             this.selection.selectComponent(this.activeModel);
+            this.onModelBoundingBox();
         }
+    }
+
+    protected onModelBoundingBox()
+    {
+        if (this.activeModel) {
+            _boundingBox.makeEmpty();
+            _boundingBox.expandByObject(this.activeModel.object3D);
+            _boundingBox.getSize(_size);
+            _size.toArray(this.outs.size.value);
+            this.outs.size.set();
+        }
+        console.log("on bounding box");
     }
 
     protected onPointer(event: IPointerEvent)

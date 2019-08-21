@@ -130,18 +130,23 @@ export default class CVGrid extends CObject3D
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
-                size = Math.ceil(size) * 2;
+                let f = 1;
+
+                while (size / f > 5) {
+                    f = f * 10;
+                }
+
+                size = Math.ceil(size / f) * f * 2;
+
+                if (ENV_DEVELOPMENT) {
+                    console.log("CVGrid.update - grid size = %s %s", size, EUnitType[units]);
+                }
 
                 props.size = size;
-
                 this.outs.size.setValue(size);
                 this.outs.units.setValue(units);
 
-                while(size > 100) {
-                    size = size * 0.1;
-                }
-
-                props.mainDivisions = size;
+                props.mainDivisions = size / f;
                 props.subDivisions = 10;
 
                 _vec3b.set(0, box.min.y, 0);
@@ -162,6 +167,9 @@ export default class CVGrid extends CObject3D
 
         if (ins.visible.changed) {
             this.grid.visible = ins.visible.value;
+        }
+        if (ins.opacity.changed) {
+            this.grid.opacity = ins.opacity.value;
         }
 
         return true;
@@ -215,6 +223,7 @@ export default class CVGrid extends CObject3D
 
     protected onModelBoundingBox()
     {
+        // scene change, update grid properties
         this.ins.update.set();
     }
 }

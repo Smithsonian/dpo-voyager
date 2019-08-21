@@ -41,7 +41,7 @@ export default class Article extends Document<IArticle>
     protected init()
     {
         return {
-            id: this.generateId(),
+            id: Document.generateId(),
             title: "New Article",
             lead: "",
             tags: [],

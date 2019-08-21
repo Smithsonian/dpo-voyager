@@ -136,10 +136,20 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 // ANNOTATIONS
 
 .sv-annotation {
+  box-sizing: border-box;
   position: absolute;
   z-index: 1;
+}
+
+.sv-balloon-annotation {
+  padding: 0 4px;
+  background-color: transparentize(black, 0.5);
+  color: $color-text;
+  transform: translate(-50%, -150%);
+}
+
+.sv-standard-annotation, .sv-extended-annotation {
   max-width: 350px;
-  box-sizing: border-box;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;

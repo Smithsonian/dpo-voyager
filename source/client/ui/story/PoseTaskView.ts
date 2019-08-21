@@ -23,9 +23,9 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 
 import "./PropertyView";
 
-import NVNode from "../../nodes/NVNode";
 import CVPoseTask, { EPoseManipMode } from "../../components/CVPoseTask";
 import { TaskView } from "../../components/CVTask";
+import { EUnitType } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,10 +42,12 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
     {
         super.connected();
         this.task.on("update", this.onUpdate, this);
+        this.task.outs.size.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.task.outs.size.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
         super.disconnected();
     }
@@ -58,6 +60,9 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
         if (!model) {
             return html`<div class="sv-placeholder">Please select a model to edit its pose</div>`;
         }
+
+        const size = this.task.outs.size.value;
+        const dimensions = `${size[0].toFixed(2)} x ${size[1].toFixed(2)} x ${size[2].toFixed(2)} ${EUnitType[model.ins.globalUnits.value]}`;
 
         const modeProp = this.task.ins.mode;
 
@@ -72,9 +77,10 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
                 <ff-button icon="rotate" text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button icon="move" text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
                 <ff-button icon="compress" text="Center" @click=${this.onClickCenter}></ff-button>
-                <ff-button icon="expand" text="Zoom Extent" @click=${this.onClickZoomViews}></ff-button>
+                <ff-button icon="expand" text="Zoom Extents" @click=${this.onClickZoomExtents}></ff-button>
             </div>
             <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
+                <div class="sv-label-right">${dimensions}</div>
                 <sv-property-view .property=${globalUnits} label="Global Units"></sv-property-view>    
                 <sv-property-view .property=${itemUnits} label="Item Units"></sv-property-view>
                 <sv-property-view .property=${position}></sv-property-view>
@@ -92,7 +98,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
         this.activeNode.model.ins.center.set();
     }
 
-    protected onClickZoomViews()
+    protected onClickZoomExtents()
     {
         this.activeDocument.setup.navigation.ins.zoomExtents.set();
     }

@@ -22,7 +22,7 @@ import { IAnnotation as IAnnotationJSON } from "client/schema/model";
 ////////////////////////////////////////////////////////////////////////////////
 
 export type Vector3 = number[];
-export enum EAnnotationStyle { Standard, Extended, Balloon, Pin }
+export enum EAnnotationStyle { Standard, Extended, Balloon }
 
 export type IAnnotationUpdateEvent = IDocumentUpdateEvent<Annotation>;
 export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
@@ -46,7 +46,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
     protected init(): IAnnotation
     {
         return {
-            id: this.generateId(),
+            id: Document.generateId(),
             title: "New Annotation",
             lead: "",
             tags: [],

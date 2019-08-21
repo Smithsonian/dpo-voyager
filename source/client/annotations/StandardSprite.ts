@@ -29,6 +29,7 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 
 const _quadrantClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
 const _color = new Color();
+const _offset = new THREE.Vector3(0, 1, 0);
 
 export default class StandardSprite extends AnnotationSprite
 {
@@ -68,7 +69,7 @@ export default class StandardSprite extends AnnotationSprite
 
     renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
     {
-        const element = super.renderHTMLElement(container, camera, this.beam) as StandardAnnotation;
+        const element = super.renderHTMLElement(container, camera, this.beam, _offset) as StandardAnnotation;
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;

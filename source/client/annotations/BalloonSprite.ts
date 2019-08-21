@@ -19,8 +19,11 @@ import * as THREE from "three";
 
 import { customElement, html } from "@ff/ui/CustomElement";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
+import math from "@ff/core/math";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _offset = new THREE.Vector3(0, 10, 0);
 
 export default class BalloonSprite extends AnnotationSprite
 {
@@ -31,10 +34,10 @@ export default class BalloonSprite extends AnnotationSprite
         super(annotation);
 
         this.pin = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.5, 0.02, 3, 16, 1),
-            new THREE.MeshPhongMaterial({ color: "#f21818" })
+            new THREE.CylinderBufferGeometry(2, 0.02, 10, 16, 1),
+            new THREE.MeshPhongMaterial({ color: "white" })
         );
-        this.pin.geometry.translate(0, 1.5, 0);
+        this.pin.geometry.translate(0, 5, 0);
         this.pin.frustumCulled = false;
         this.pin.matrixAutoUpdate = false;
         this.add(this.pin);
@@ -50,32 +53,44 @@ export default class BalloonSprite extends AnnotationSprite
         this.pin.position.y = annotation.offset;
         this.pin.updateMatrix();
 
+        const c = annotation.color;
+        (this.pin.material as THREE.MeshPhongMaterial).color.setRGB(c[0], c[1], c[2]);
+
         super.update();
     }
 
     renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
     {
-        return null; //super.renderHTMLElement(container, camera, this.pin);
-    }
+        const element = super.renderHTMLElement(container, camera, this.pin, _offset) as BalloonAnnotation;
 
-    updateHTMLElement(element: BalloonAnnotation)
-    {
-        //element.performUpdate();
+        const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
+        const opacity = this.annotation.data.visible ? angleOpacity : 0;
+
+        (this.pin.material as THREE.MeshPhongMaterial).opacity = opacity;
+        element.setOpacity(opacity);
+
+        return element;
     }
 
     protected createHTMLElement(): BalloonAnnotation
     {
-        return null; //new PinAnnotation(this);
+        return new BalloonAnnotation(this);
     }
 }
 
 @customElement("sv-balloon-annotation")
 class BalloonAnnotation extends AnnotationElement
 {
+    setOpacity(opacity: number)
+    {
+        this.style.opacity = opacity.toString();
+        this.style.visibility = opacity ? "visible" : "hidden";
+    }
+
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-pin-annotation");
+        this.classList.add("sv-balloon-annotation");
     }
 
     protected render()

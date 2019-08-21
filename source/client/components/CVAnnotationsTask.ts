@@ -27,16 +27,19 @@ import Annotation from "../models/Annotation";
 
 import NVNode from "../nodes/NVNode";
 
+import CVDocument from "./CVDocument";
 import CVTask from "./CVTask";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView, { IAnnotationsUpdateEvent } from "./CVAnnotationView";
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
+import CVScene from "client/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _position = new THREE.Vector3();
 const _scaling = new THREE.Vector3();
+const _size = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _mat4 = new THREE.Matrix4();
 const _mat3 = new THREE.Matrix3();
@@ -57,6 +60,7 @@ export default class CVAnnotationsTask extends CVTask
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
 
     private _activeAnnotations: CVAnnotationView = null;
+    private _defaultScale = 1;
 
     constructor(node: Node, id: string)
     {
@@ -114,12 +118,25 @@ export default class CVAnnotationsTask extends CVTask
     createAnnotation(position: number[], direction: number[])
     {
         const annotations = this.activeAnnotations;
+        const activeAnnotation = annotations.activeAnnotation;
+        let template = null;
+
+        if (activeAnnotation) {
+            template = activeAnnotation.toJSON();
+            template.id = Annotation.generateId();
+        }
 
         if (annotations) {
-            const annotation = new Annotation();
+            const annotation = new Annotation(template);
+
             const data = annotation.data;
             data.position = position;
             data.direction = direction;
+
+            if (!template) {
+                data.scale = this._defaultScale;
+            }
+
             annotations.addAnnotation(annotation);
             annotations.activeAnnotation = annotation;
         }
@@ -191,6 +208,19 @@ export default class CVAnnotationsTask extends CVTask
                 this.moveAnnotation(position, normal);
                 event.stopPropagation = true;
             }
+        }
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        super.onActiveDocument(previous, next);
+
+        if (next) {
+            const scene = next.getInnerComponent(CVScene);
+            const bb = scene.getModelBoundingBox(true);
+            bb.getSize(_size);
+            const max = Math.max(_size.x, _size.y, _size.z);
+            this._defaultScale = max * 0.1;
         }
     }
 
