@@ -145,7 +145,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
-  transform: translate(-50%, -150%);
+  transform: translate(-50%, -100%);
 }
 
 .sv-standard-annotation, .sv-extended-annotation {

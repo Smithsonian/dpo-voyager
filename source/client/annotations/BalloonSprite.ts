@@ -23,7 +23,7 @@ import math from "@ff/core/math";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _offset = new THREE.Vector3(0, 10, 0);
+const _offset = new THREE.Vector3(0, 1.5, 0);
 
 export default class BalloonSprite extends AnnotationSprite
 {
@@ -34,10 +34,10 @@ export default class BalloonSprite extends AnnotationSprite
         super(annotation);
 
         this.pin = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(2, 0.02, 10, 16, 1),
+            new THREE.CylinderBufferGeometry(0.25, 0.02, 1, 16, 1),
             new THREE.MeshPhongMaterial({ color: "white" })
         );
-        this.pin.geometry.translate(0, 5, 0);
+        this.pin.geometry.translate(0, 0.5, 0);
         this.pin.frustumCulled = false;
         this.pin.matrixAutoUpdate = false;
         this.add(this.pin);

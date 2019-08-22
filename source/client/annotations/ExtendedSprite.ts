@@ -57,7 +57,7 @@ export default class ExtendedSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
 
-        this.beam.scale.setScalar(5 * annotation.scale);
+        this.beam.scale.setScalar(annotation.scale);
         this.beam.position.y = annotation.offset;
         this.beam.updateMatrix();
 

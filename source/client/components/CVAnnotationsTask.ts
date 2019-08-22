@@ -127,6 +127,7 @@ export default class CVAnnotationsTask extends CVTask
         }
 
         if (annotations) {
+            const model = annotations.getComponent(CVModel2);
             const annotation = new Annotation(template);
 
             const data = annotation.data;
@@ -134,7 +135,7 @@ export default class CVAnnotationsTask extends CVTask
             data.direction = direction;
 
             if (!template) {
-                data.scale = this._defaultScale;
+                data.scale = this._defaultScale * (1 / model.outs.unitScale.value);
             }
 
             annotations.addAnnotation(annotation);
@@ -220,7 +221,7 @@ export default class CVAnnotationsTask extends CVTask
             const bb = scene.getModelBoundingBox(true);
             bb.getSize(_size);
             const max = Math.max(_size.x, _size.y, _size.z);
-            this._defaultScale = max * 0.1;
+            this._defaultScale = max * 0.05;
         }
     }
 
