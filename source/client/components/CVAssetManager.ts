@@ -85,6 +85,14 @@ export default class CVAssetManager extends Component
         return url;
     }
 
+    getAssetBasePath(pathOrUrl: string)
+    {
+        const parts = this.getAssetPath(pathOrUrl).split("/");
+        parts.pop();
+        const basePath = parts.join("/");
+        return basePath ? basePath + "/" : basePath;
+    }
+
     getRelativeAssetPath(assetPathOrUrl: string, basePathOrUrl: string)
     {
         const assetUrl = this.getAssetUrl(assetPathOrUrl);

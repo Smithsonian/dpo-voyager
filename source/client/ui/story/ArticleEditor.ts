@@ -98,7 +98,7 @@ export default class ArticleEditor extends SystemView
     protected readArticle(assetPath: string)
     {
         return this.assetReader.getText(assetPath)
-        .then(content => this.parseArticle(content))
+        .then(content => this.parseArticle(content, assetPath))
         .then(content => {
             this._editor.root.innerHTML = content;
             this._assetPath = assetPath;
@@ -108,16 +108,17 @@ export default class ArticleEditor extends SystemView
         });
     }
 
-    protected parseArticle(content: string): Promise<string>
+    protected parseArticle(content: string, articlePath: string): Promise<string>
     {
         // remove line breaks
         content = content.replace(/[\n\r]/g, "");
 
-        // transform relative to absolute URLs
-        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
-            let assetUrl: string = assetPath;
+        // transform article-relative to absolute URLs
+        const articleBasePath = this.assetManager.getAssetBasePath(articlePath);
+
+        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
             if (!assetUrl.startsWith("/") && !assetUrl.startsWith("http")) {
-                assetUrl = this.assetManager.getAssetUrl(assetPath);
+                assetUrl = this.assetManager.getAssetUrl(articleBasePath + assetUrl);
             }
             return pre + assetUrl + post;
         });
@@ -125,22 +126,22 @@ export default class ArticleEditor extends SystemView
         return Promise.resolve(content);
     }
 
-    protected writeArticle(assetPath: string)
+    protected writeArticle(articlePath: string)
     {
         let content = this._editor.root.innerHTML;
 
-        // transform absolute to relative URLs
+        // transform absolute to article-relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
-            return pre + this.assetManager.getAssetPath(assetUrl) + post;
+            return pre + this.assetManager.getRelativeAssetPath(assetUrl, articlePath) + post;
         });
 
-        return this.assetWriter.putText(content, assetPath)
+        return this.assetWriter.putText(content, articlePath)
             .then(() => {
                 this._changed = false;
-                new Notification(`Article successfully written to '${assetPath}'`, "info");
+                new Notification(`Article successfully written to '${articlePath}'`, "info");
             })
             .catch(error => {
-                new Notification(`Failed to write article to '${assetPath}': ${error.message}`, "error");
+                new Notification(`Failed to write article to '${articlePath}': ${error.message}`, "error");
             });
     }
 

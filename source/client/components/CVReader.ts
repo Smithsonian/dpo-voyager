@@ -142,21 +142,22 @@ export default class CVReader extends Component
         }
 
         return this.assetReader.getText(uri)
-        .then(content => this.parseArticle(content))
+        .then(content => this.parseArticle(content, uri))
         .then(content => outs.content.setValue(content))
         .catch(error => outs.content.setValue(`<h2>Article not found at ${uri}</h2>`));
     }
 
-    protected parseArticle(content: string): Promise<string>
+    protected parseArticle(content: string, articlePath: string): Promise<string>
     {
         // remove line breaks
         content = content.replace(/[\n\r]/g, "");
 
-        // transform relative to absolute URLs
-        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
-            let assetUrl: string = assetPath;
+        // transform article-relative to absolute URLs
+        const articleBasePath = this.assetManager.getAssetBasePath(articlePath);
+
+        content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
             if (!assetUrl.startsWith("/") && !assetUrl.startsWith("http")) {
-                assetUrl = this.assetManager.getAssetUrl(assetPath);
+                assetUrl = this.assetManager.getAssetUrl(articleBasePath + assetUrl);
             }
             return pre + assetUrl + post;
         });

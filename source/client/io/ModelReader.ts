@@ -94,21 +94,16 @@ export default class ModelReader
                 mesh.geometry.computeBoundingBox();
 
                 const uberMat = new UberPBRMaterial();
+
+                // copy properties from previous material
                 if (material.type === "MeshStandardMaterial") {
                     uberMat.copyStandardMaterial(material);
                 }
 
-                // TODO: Temp to correct test assets
-                //uberMat.color.set("#ffffff");
-                //uberMat.roughness = 0.8;
-                //uberMat.metalness = 0.1;
-                uberMat.enableObjectSpaceNormalMap(false);
-
-                //if (!uberMat.map) {
-                //    uberMat.color.set("#c0c0c0");
-                //}
-
-                console.log(uberMat.color.toString());
+                // check if the material's normal map uses object space (indicated in glTF extras)
+                if (material.userData["objectSpaceNormals"]) {
+                    uberMat.enableObjectSpaceNormalMap(true);
+                }
 
                 mesh.material = uberMat;
             }

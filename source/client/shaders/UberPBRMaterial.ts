@@ -219,10 +219,9 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     enableObjectSpaceNormalMap(useObjectSpace: boolean)
     {
         if (this.defines["OBJECTSPACE_NORMALMAP"] !== useObjectSpace) {
+            this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
             this.needsUpdate = true;
         }
-
-        this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
     }
 
     copyStandardMaterial(material: THREE.MeshStandardMaterial): this
