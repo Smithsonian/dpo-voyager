@@ -28,6 +28,7 @@ import * as documentTemplate from "client/templates/document.json";
 
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";
+import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
 
 import NVEngine from "../nodes/NVEngine";
@@ -67,6 +68,9 @@ export default class MiniApplication
     readonly props: IMiniApplicationProps;
     readonly system: System;
 
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
     }
@@ -102,9 +106,9 @@ export default class MiniApplication
         engine.pulse.start();
     }
 
-    setRootUrl(url: string)
+    setBaseUrl(url: string)
     {
-        this.assetReader.rootUrl = url;
+        this.assetManager.baseUrl = url;
     }
 
     loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
@@ -144,7 +148,7 @@ export default class MiniApplication
     evaluateProps()
     {
         const props = this.props;
-        const reader = this.assetReader;
+        const manager = this.assetManager;
 
         props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
         props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
@@ -154,19 +158,19 @@ export default class MiniApplication
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
 
         const url = props.root || props.document || props.model || props.geometry;
-        this.setRootUrl(new URL(url || ".", window.location as any).href);
+        this.setBaseUrl(new URL(url || ".", window.location as any).href);
 
         if (props.document) {
-            props.document = props.root ? props.document : reader.getAssetName(props.document);
+            props.document = props.root ? props.document : manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality);
         }
         if (props.model) {
-            props.model = props.root ? props.model : reader.getAssetName(props.model);
+            props.model = props.root ? props.model : manager.getAssetName(props.model);
             this.loadModel(props.model, props.quality);
         }
         else if (props.geometry) {
-            props.geometry = props.root ? props.geometry : reader.getAssetName(props.geometry);
-            props.texture = props.root ? props.texture : reader.getAssetName(props.texture);
+            props.geometry = props.root ? props.geometry : manager.getAssetName(props.geometry);
+            props.texture = props.root ? props.texture : manager.getAssetName(props.texture);
             this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
     }

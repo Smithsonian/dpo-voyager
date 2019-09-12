@@ -29,7 +29,7 @@ import { EProjection } from "@ff/three/UniversalCamera";
 import { INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
-import CVAssetReader from "client/components/CVAssetReader";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -119,8 +119,8 @@ export default class CVOrbitNavigation extends CObject3D
         ];
     }
 
-    protected get assetReader() {
-        return this.getMainComponent(CVAssetReader);
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
     }
 
     create()
@@ -130,12 +130,12 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
 
-        this.assetReader.outs.completed.on("value", this.onLoadingCompleted, this);
+        this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
     }
 
     dispose()
     {
-        this.assetReader.outs.completed.off("value", this.onLoadingCompleted, this);
+        this.assetManager.outs.completed.off("value", this.onLoadingCompleted, this);
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);

@@ -31,7 +31,7 @@ import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "client/schema/
 import NVNode from "../nodes/NVNode";
 import CVMeta from "./CVMeta";
 import CVModel2 from "./CVModel2";
-import CVAssetReader from "./CVAssetReader";
+import CVAssetManager from "./CVAssetManager";
 import CVTask from "./CVTask";
 
 import CaptureTaskView from "../ui/story/CaptureTaskView";
@@ -111,8 +111,8 @@ export default class CVCaptureTask extends CVTask
     protected get renderer() {
         return this.getMainComponent(CRenderer);
     }
-    protected get assetReader() {
-        return this.getMainComponent(CVAssetReader);
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
     }
 
     getImageElement(quality: EDerivativeQuality = EDerivativeQuality.Low)
@@ -190,8 +190,8 @@ export default class CVCaptureTask extends CVTask
         _qualityLevels.forEach(quality => {
             const dataURI = this._imageDataURIs[quality];
             const filePath = this.getImageAssetPath(quality, this._extension);
-            const fileURL = this.assetReader.getAssetURL(filePath);
-            const fileName = this.assetReader.getAssetName(filePath);
+            const fileURL = this.assetManager.getAssetUrl(filePath);
+            const fileName = this.assetManager.getAssetName(filePath);
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
@@ -215,7 +215,7 @@ export default class CVCaptureTask extends CVTask
 
         const dataURI = this._imageDataURIs[EDerivativeQuality.High];
         const filePath = this.getImageAssetPath(EDerivativeQuality.High, this._extension);
-        const fileName = this.assetReader.getAssetName(filePath);
+        const fileName = this.assetManager.getAssetName(filePath);
         download.url(dataURI, fileName);
     }
 
@@ -282,7 +282,7 @@ export default class CVCaptureTask extends CVTask
                 const imageMeta = images.get(EDerivativeQuality[quality]);
                 if (imageMeta) {
                     const imageElement = document.createElement("img");
-                    imageElement.src = this.assetReader.getAssetURL(imageMeta.uri);
+                    imageElement.src = this.assetManager.getAssetUrl(imageMeta.uri);
                     this._imageElements[quality] = imageElement;
                 }
             })
@@ -294,7 +294,7 @@ export default class CVCaptureTask extends CVTask
                     const imageAsset = derivative.findAsset(EAssetType.Image);
                     if (imageAsset) {
                         const imageElement = document.createElement("img");
-                        imageElement.src = this.assetReader.getAssetURL(imageAsset.data.uri);
+                        imageElement.src = this.assetManager.getAssetUrl(imageAsset.data.uri);
                         this._imageElements[quality] = imageElement;
                     }
                 }

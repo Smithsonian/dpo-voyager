@@ -23,6 +23,9 @@ export default class CVAnalytics extends Component
 {
     static readonly typeName: string = "CVAnalytics";
 
+    static readonly text: string = "Analytics";
+    static readonly icon: string = "";
+
     static readonly isSystemSingleton = true;
 
     private _title: string = "Untitled";

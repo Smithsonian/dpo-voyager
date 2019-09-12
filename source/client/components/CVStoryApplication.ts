@@ -21,10 +21,11 @@ import Component, { Node, types } from "@ff/graph/Component";
 
 import Notification from "@ff/ui/Notification";
 
+import CVAssetManager from "./CVAssetManager";
 import CVAssetWriter from "./CVAssetWriter";
 import CVTaskProvider from "./CVTaskProvider";
 import CVDocumentProvider from "./CVDocumentProvider";
-import CVDocument, { INodeComponents } from "./CVDocument";
+import { INodeComponents } from "./CVDocument";
 
 import { ETaskMode } from "../applications/taskSets";
 
@@ -52,6 +53,9 @@ export default class CVStoryApplication extends Component
     }
     protected get documentProvider() {
         return this.getMainComponent(CVDocumentProvider);
+    }
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
     }
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
@@ -102,7 +106,7 @@ export default class CVStoryApplication extends Component
             const data = document.deflateDocument(components);
             const json = JSON.stringify(data, null, 2);
 
-            const fileName = this.assetWriter.getAssetName(document.assetPath);
+            const fileName = this.assetManager.getAssetName(document.assetPath);
             download.json(json, fileName);
         }
 

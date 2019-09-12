@@ -25,6 +25,7 @@ import Article from "../models/Article";
 import NVNode from "../nodes/NVNode";
 
 import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";
+import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import CVAnalytics from "./CVAnalytics";
 
@@ -81,6 +82,9 @@ export default class CVReader extends Component
         return this.outs.article.value;
     }
 
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
@@ -152,7 +156,7 @@ export default class CVReader extends Component
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
             let assetUrl: string = assetPath;
             if (!assetUrl.startsWith("/") && !assetUrl.startsWith("http")) {
-                assetUrl = this.assetReader.getAssetURL(assetPath);
+                assetUrl = this.assetManager.getAssetUrl(assetPath);
             }
             return pre + assetUrl + post;
         });

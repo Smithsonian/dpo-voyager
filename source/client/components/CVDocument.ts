@@ -31,7 +31,7 @@ import NVScene from "../nodes/NVScene";
 
 import CVMeta from "./CVMeta";
 import CVSetup from "./CVSetup";
-import CVAssetReader from "./CVAssetReader";
+import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ export default class CVDocument extends CRenderGraph
 
         if (assetPath) {
             this.outs.assetPath.setValue(assetPath);
-            this.name = this.getMainComponent(CVAssetReader).getAssetName(assetPath);
+            this.name = this.getMainComponent(CVAssetManager).getAssetName(assetPath);
         }
     }
 

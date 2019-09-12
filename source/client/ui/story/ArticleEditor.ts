@@ -25,8 +25,10 @@ import MessageBox from "@ff/ui/MessageBox";
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 import AssetTree from "@ff/scene/ui/AssetTree";
 
+import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
+
 import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
 
 
@@ -43,6 +45,9 @@ export default class ArticleEditor extends SystemView
 
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
+    }
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
     }
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
@@ -112,7 +117,7 @@ export default class ArticleEditor extends SystemView
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetPath, post) => {
             let assetUrl: string = assetPath;
             if (!assetUrl.startsWith("/") && !assetUrl.startsWith("http")) {
-                assetUrl = this.assetReader.getAssetURL(assetPath);
+                assetUrl = this.assetManager.getAssetUrl(assetPath);
             }
             return pre + assetUrl + post;
         });
@@ -126,7 +131,7 @@ export default class ArticleEditor extends SystemView
 
         // transform absolute to relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
-            return pre + this.assetReader.getAssetPath(assetUrl) + post;
+            return pre + this.assetManager.getAssetPath(assetUrl) + post;
         });
 
         return this.assetWriter.putText(content, assetPath)
@@ -243,7 +248,7 @@ export default class ArticleEditor extends SystemView
             // only jpeg and png images can be dropped
             const mimeType = asset.info.type;
             if (mimeType === "image/jpeg" || mimeType === "image/png") {
-                const assetUrl = this.assetReader.getAssetURL(assetPath);
+                const assetUrl = this.assetManager.getAssetUrl(assetPath);
                 // wait until text has been dropped, so we can get a valid selection index
                 setTimeout(() => {
                     const selection = this._editor.getSelection();

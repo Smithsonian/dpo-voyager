@@ -22,90 +22,50 @@ import JSONWriter from "../io/JSONWriter";
 import { INodeComponents } from "../nodes/NVNode";
 
 import CVDocument from "./CVDocument";
-import CVAssetReader, { AssetLoadingManager, IAssetService } from "./CVAssetReader";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVAssetWriter extends Component implements IAssetService
+export default class CVAssetWriter extends Component
 {
     static readonly typeName: string = "CVAssetWriter";
 
-    protected static readonly ins = {
-        setBusy: types.Boolean("Reader.SetBusy"),
-    };
+    static readonly text: string = "AssetWriter";
+    static readonly icon: string = "";
 
-    protected static readonly outs = {
-        busy: types.Boolean("Writer.IsBusy"),
-    };
+    static readonly isSystemSingleton = true;
 
-    ins = this.addInputs(CVAssetWriter.ins);
-    outs = this.addOutputs(CVAssetWriter.outs);
+    protected jsonWriter: JSONWriter;
 
-    readonly jsonWriter: JSONWriter;
-
-    private _loadingManager: AssetLoadingManager;
-    private _isBusy = false;
 
     constructor(node: Node, id: string)
     {
         super(node, id);
 
-        this._loadingManager = new AssetLoadingManager(this);
+        const loadingManager = this.assetManager.loadingManager;
 
-        this.jsonWriter = new JSONWriter(this._loadingManager);
+        this.jsonWriter = new JSONWriter(loadingManager);
     }
 
-    get assetReader() {
-        return this.getMainComponent(CVAssetReader);
-    }
-
-    update(context)
-    {
-        const ins = this.ins;
-
-        if (ins.setBusy.changed) {
-            this.outs.busy.setValue(ins.setBusy.value || this._isBusy);
-        }
-
-        return true;
-    }
-
-    setBusy(isBusy: boolean)
-    {
-        this._isBusy = isBusy;
-        this.outs.busy.setValue(this.ins.setBusy.value || this._isBusy);
-    }
-
-    getAssetName(pathOrUrl: string)
-    {
-        return this.assetReader.getAssetName(pathOrUrl);
-    }
-
-    getAssetPath(url: string)
-    {
-        return this.assetReader.getAssetPath(url);
-    }
-
-    getAssetURL(assetPath: string)
-    {
-        return this.assetReader.getAssetURL(assetPath);
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
     }
 
     putJSON(json: any, assetPath: string): Promise<void>
     {
-        const url = this.getAssetURL(assetPath);
+        const url = this.assetManager.getAssetUrl(assetPath);
         return this.jsonWriter.put(json, url);
     }
 
     putText(text: string, assetPath: string): Promise<string>
     {
-        const url = this.getAssetURL(assetPath);
+        const url = this.assetManager.getAssetUrl(assetPath);
         return fetch.text(url, "PUT", text);
     }
 
     putDocument(document: CVDocument, components?: INodeComponents, assetPath?: string): Promise<void>
     {
-        const url = this.getAssetURL(assetPath || document.outs.assetPath.value);
+        const url = this.assetManager.getAssetUrl(assetPath || document.outs.assetPath.value);
         const documentData = document.deflateDocument(components);
 
         return this.jsonWriter.put(documentData, url)

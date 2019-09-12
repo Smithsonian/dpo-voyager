@@ -19,7 +19,7 @@ import Subscriber from "@ff/core/Subscriber";
 
 import { EReaderPosition } from "client/schema/setup";
 
-import CVAssetReader from "../../components/CVAssetReader";
+import CVAssetManager from "../../components/CVAssetManager";
 import CVDocument from "../../components/CVDocument";
 
 import SceneView from "../SceneView";
@@ -36,8 +36,8 @@ export default class ContentView extends DocumentView
     protected sceneView: SceneView = null;
     protected documentProps = new Subscriber("value", this.onUpdate, this);
 
-    protected get assetLoader() {
-        return this.system.getMainComponent(CVAssetReader);
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
     }
     protected get reader() {
         return this.activeDocument ? this.activeDocument.setup.reader : null;
@@ -55,19 +55,19 @@ export default class ContentView extends DocumentView
     protected connected()
     {
         super.connected();
-        this.assetLoader.outs.busy.on("value", this.performUpdate, this);
+        this.assetManager.outs.busy.on("value", this.performUpdate, this);
     }
 
     protected disconnected()
     {
-        this.assetLoader.outs.busy.off("value", this.performUpdate, this);
+        this.assetManager.outs.busy.off("value", this.performUpdate, this);
         super.disconnected();
     }
 
     protected render()
     {
         const system = this.system;
-        const isLoading = this.assetLoader.outs.busy.value;
+        const isLoading = this.assetManager.outs.busy.value;
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;

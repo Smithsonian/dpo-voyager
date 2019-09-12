@@ -30,7 +30,7 @@ import storyTypes from "./storyTypes";
 import CVStoryApplication from "../components/CVStoryApplication";
 
 import CVAssetReader from "../components/CVAssetReader";
-import CVAssetWriter from "../components/CVAssetWriter";
+import CVAssetManager from "../components/CVAssetManager";
 import CVMediaManager from "../components/CVMediaManager";
 
 import CVDocumentProvider from "../components/CVDocumentProvider";
@@ -71,8 +71,8 @@ export default class StoryApplication
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
     }
-    protected get assetWriter() {
-        return this.system.getMainComponent(CVAssetWriter);
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
     }
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
@@ -114,9 +114,9 @@ export default class StoryApplication
         this.evaluateProps();
     }
 
-    setRootUrl(url: string)
+    setBaseUrl(url: string)
     {
-        this.assetReader.rootUrl = url;
+        this.assetManager.baseUrl = url;
         this.mediaManager.rootUrl = url;
     }
 
@@ -148,7 +148,7 @@ export default class StoryApplication
 
         this.explorer.evaluateProps();
 
-        this.mediaManager.rootUrl = this.assetReader.rootUrl;
+        this.mediaManager.rootUrl = this.assetManager.baseUrl;
 
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
