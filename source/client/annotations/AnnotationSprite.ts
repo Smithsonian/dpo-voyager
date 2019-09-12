@@ -112,14 +112,14 @@ export class AnnotationElement extends CustomElement
         super();
         this.sprite = sprite;
 
-        this.onClick = this.onClick.bind(this);
-        this.onEvent = this.onEvent.bind(this);
+        //this.onClick = this.onClick.bind(this);
+        this.discardEvent = this.discardEvent.bind(this);
 
-        this.addEventListener("pointerdown", this.onEvent);
-        this.addEventListener("pointermove", this.onEvent);
-        this.addEventListener("pointerup", this.onEvent);
-        this.addEventListener("pointercancel", this.onEvent);
-        this.addEventListener("click", this.onClick);
+        this.addEventListener("pointerdown", this.discardEvent);
+        this.addEventListener("pointermove", this.discardEvent);
+        this.addEventListener("pointerup", this.discardEvent);
+        this.addEventListener("pointercancel", this.discardEvent);
+        this.addEventListener("click", this.discardEvent);
     }
 
     protected firstConnected()
@@ -128,13 +128,7 @@ export class AnnotationElement extends CustomElement
         this.classList.add("sv-annotation");
     }
 
-    protected onClick(event: MouseEvent)
-    {
-        event.stopPropagation();
-        this.sprite.emitClickEvent();
-    }
-
-    protected onEvent(event: Event)
+    protected discardEvent(event: Event)
     {
         event.stopPropagation();
     }

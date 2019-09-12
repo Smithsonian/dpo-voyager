@@ -139,6 +139,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   box-sizing: border-box;
   position: absolute;
   z-index: 1;
+  @include noselect;
 }
 
 .sv-balloon-annotation {
@@ -153,21 +154,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
-  cursor: pointer;
   pointer-events: auto;
-
-  p {
-    margin: 0.5em 0;
-  }
-  .ff-button {
-    .ff-icon {
-      fill: $color-icon;
-    }
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 
   &.sv-expanded {
     width: 20%;
@@ -205,15 +192,30 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     padding: 1px 0 2px 0;
     font-size: 0.85rem;
     font-weight: bold;
-    @include noselect;
+    cursor: pointer;
   }
 
-  .sv-description {
+  .sv-content {
     padding: 2px 0;
     font-size: 0.8rem;
     height: 0;
     overflow: hidden;
     transition: height 0.2s;
+  }
+
+  p {
+    margin: 0.5em 0;
+  }
+  .ff-button {
+    background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+    .ff-icon {
+      fill: $color-icon;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 

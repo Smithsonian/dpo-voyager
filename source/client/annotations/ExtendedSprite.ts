@@ -21,7 +21,7 @@ import math from "@ff/core/math";
 import Color from "@ff/core/Color";
 
 import { customElement, PropertyValues, html, render } from "@ff/ui/CustomElement";
-import Button from "@ff/ui/Button";
+import "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 
@@ -108,15 +108,17 @@ class ExtendedAnnotation extends AnnotationElement
     {
         super(sprite);
 
+        this.onClickTitle = this.onClickTitle.bind(this);
         this.onClickArticle = this.onClickArticle.bind(this);
 
         this.titleElement = this.appendElement("div");
-        this.titleElement.classList.add("sv-content", "sv-title");
+        this.titleElement.classList.add("sv-title");
+        this.titleElement.addEventListener("click", this.onClickTitle);
 
         this.wrapperElement = this.appendElement("div");
 
         this.contentElement = this.createElement("div", null, this.wrapperElement);
-        this.contentElement.classList.add("sv-content", "sv-description");
+        this.contentElement.classList.add("sv-content");
     }
 
     setOpacity(opacity: number)
@@ -169,6 +171,12 @@ class ExtendedAnnotation extends AnnotationElement
 
             }
         }
+    }
+
+    protected onClickTitle(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitClickEvent();
     }
 
     protected onClickArticle(event: MouseEvent)
