@@ -49,6 +49,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     private _clayColor = new THREE.Color("#a67a6c");
     private _wireColor = new THREE.Color("#004966");
     private _wireEmissiveColor = new THREE.Color("#004966");
+    private _objectSpaceNormalMap = false;
     private _paramCopy: any = {};
     private _sideCopy: THREE.Side = THREE.FrontSide;
 
@@ -72,7 +73,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
             "OBJECTSPACE_NORMALMAP": false,
             "MODE_NORMALS": false,
             "MODE_XRAY": false,
-            "CUT_PLANE": false
+            "CUT_PLANE": false,
         };
 
         this.uniforms = THREE.UniformsUtils.merge([
@@ -80,7 +81,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
             {
                 aoMapMix: { value: new THREE.Vector3(0.25, 0.25, 0.25) },
                 cutPlaneDirection: { value: new THREE.Vector4(0, 0, -1, 0) },
-                cutPlaneColor: { value: new THREE.Vector3(1, 0, 0) }
+                cutPlaneColor: { value: new THREE.Vector3(1, 0, 0) },
             }
         ]);
 
@@ -126,8 +127,11 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     setShaderMode(mode: EShaderMode)
     {
         Object.assign(this, this._paramCopy);
+
         this.defines["MODE_NORMALS"] = false;
         this.defines["MODE_XRAY"] = false;
+        this.defines["OBJECTSPACE_NORMALMAP"] = this.normalMap && this._objectSpaceNormalMap;
+
         this.needsUpdate = true;
 
         switch(mode) {
@@ -140,7 +144,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
                     aoMapIntensity: this.aoMapIntensity,
                     blending: this.blending,
                     transparent: this.transparent,
-                    depthWrite: this.depthWrite
+                    depthWrite: this.depthWrite,
                 };
                 this.color = this._clayColor;
                 this.map = null;
@@ -199,6 +203,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
                 this.aoMap = null;
                 this.emissiveMap = null;
                 this.normalMap = null;
+                this.defines["OBJECTSPACE_NORMALMAP"] = false;
                 break;
         }
     }
@@ -218,7 +223,11 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
 
     enableObjectSpaceNormalMap(useObjectSpace: boolean)
     {
-        if (this.defines["OBJECTSPACE_NORMALMAP"] !== useObjectSpace) {
+        if (useObjectSpace !== this._objectSpaceNormalMap) {
+            this._objectSpaceNormalMap = useObjectSpace;
+        }
+
+        if (this.normalMap) {
             this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
             this.needsUpdate = true;
         }

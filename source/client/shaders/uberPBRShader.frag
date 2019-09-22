@@ -1,4 +1,11 @@
 //#define PHYSICAL
+//#define STANDARD
+
+#ifdef PHYSICAL
+    #define REFLECTIVITY
+    #define CLEARCOAT
+    #define TRANSPARENCY
+#endif
 
 uniform vec3 diffuse;
 uniform vec3 emissive;
@@ -6,15 +13,37 @@ uniform float roughness;
 uniform float metalness;
 uniform float opacity;
 
-#ifndef STANDARD
-	uniform float clearCoat;
-	uniform float clearCoatRoughness;
+#ifdef TRANSPARENCY
+    uniform float transparency;
 #endif
+
+#ifdef REFLECTIVITY
+    uniform float reflectivity;
+#endif
+
+#ifdef CLEARCOAT
+    uniform float clearcoat;
+    uniform float clearcoatRoughness;
+#endif
+
+#ifdef USE_SHEEN
+    uniform vec3 sheen;
+#endif
+
+//#ifndef STANDARD
+//	uniform float clearCoat;
+//	uniform float clearCoatRoughness;
+//#endif
 
 varying vec3 vViewPosition;
 
 #ifndef FLAT_SHADED
 	varying vec3 vNormal;
+
+    #ifdef USE_TANGENT
+        varying vec3 vTangent;
+        varying vec3 vBitangent;
+    #endif
 #endif
 
 #include <common>
@@ -44,6 +73,7 @@ varying vec3 vViewPosition;
 #include <shadowmap_pars_fragment>
 #include <bumpmap_pars_fragment>
 #include <normalmap_pars_fragment>
+#include <clearcoat_normalmap_pars_fragment>
 #include <roughnessmap_pars_fragment>
 #include <metalnessmap_pars_fragment>
 #include <logdepthbuf_pars_fragment>
@@ -94,7 +124,9 @@ void main() {
         }
 	#endif
 
-	#include <emissivemap_fragment>
+    #include <clearcoat_normal_fragment_begin>
+    #include <clearcoat_normal_fragment_maps>
+    #include <emissivemap_fragment>
 
 	// accumulation
     #if defined(USE_LIGHTMAP) || defined(USE_AOMAP)
@@ -135,6 +167,11 @@ void main() {
     #endif
 
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
+
+    // this is a stub for the transparency model
+    #ifdef TRANSPARENCY
+        diffuseColor.a *= saturate( 1. - transparency + linearToRelativeLuminance( reflectedLight.directSpecular + reflectedLight.indirectSpecular ) );
+    #endif
 
 	gl_FragColor = vec4(outgoingLight, diffuseColor.a);
 

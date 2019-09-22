@@ -27,7 +27,7 @@ import System from "@ff/graph/System";
 import coreTypes from "./coreTypes";
 import explorerTypes from "./explorerTypes";
 
-import * as documentTemplate from "client/templates/document.json";
+import * as documentTemplate from "client/templates/default.svx.json";
 
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";

@@ -92,7 +92,7 @@ export default class ModelReader
                 const material = mesh.material as THREE.MeshStandardMaterial;
 
                 if (material.map) {
-                    material.map.encoding = THREE.LinearEncoding;
+                   material.map.encoding = THREE.sRGBEncoding;
                 }
 
                 mesh.geometry.computeBoundingBox();

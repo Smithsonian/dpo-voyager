@@ -51,6 +51,8 @@ export default class JSONWriter
                 console.warn(message);
                 throw new Error(message);
             }
+
+            this._loadingManager.itemEnd(url);
         });
     }
 }

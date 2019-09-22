@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import * as THREE from "three";
+
 import { IComponentEvent } from "@ff/graph/Component";
 import CRenderable, { types } from "@ff/scene/components/CRenderable";
 
@@ -42,7 +44,7 @@ export default class CVViewer extends CRenderable
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         exposure: types.Number("Renderer.Exposure", 1),
-        gamma: types.Number("Renderer.Gamma", 1),
+        gamma: types.Number("Renderer.Gamma", 2),
         quality: types.Enum("Models.Quality", EDerivativeQuality, EDerivativeQuality.High),
     };
 
@@ -53,6 +55,9 @@ export default class CVViewer extends CRenderable
     ins = this.addInputs(CVViewer.ins);
     outs = this.addOutputs(CVViewer.outs);
 
+    private _updateExposure = false;
+    private _updateGamma = false;
+
     get settingProperties() {
         return [
             this.ins.annotationsVisible,
@@ -61,6 +66,7 @@ export default class CVViewer extends CRenderable
             this.ins.radioTags,
             this.ins.shader,
             this.ins.exposure,
+            this.ins.gamma,
         ];
     }
 
@@ -96,6 +102,9 @@ export default class CVViewer extends CRenderable
     {
         const ins = this.ins;
 
+        this._updateExposure = ins.exposure.changed;
+        this._updateGamma = ins.gamma.changed;
+
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.shader.setValue(shader));
@@ -126,26 +135,50 @@ export default class CVViewer extends CRenderable
         return true;
     }
 
+    tock(context)
+    {
+        this._updateExposure = false;
+        this._updateGamma = false;
+        return false;
+    }
+
     preRender(context)
     {
-        if (this.updated) {
-            context.renderer.toneMappingExposure = this.ins.exposure.value;
+        const ins = this.ins;
 
-            //const qualityName = this.ins.quality.getOptionText();
-            //context.viewport.overlay.setLabel(ELocation.BottomRight, "quality", `Quality: ${qualityName}`);
+        if (this._updateExposure) {
+            context.renderer.toneMappingExposure = ins.exposure.value;
         }
+
+        if (this._updateGamma) {
+            context.renderer.gammaFactor = ins.gamma.value;
+
+            // gamma will only be updated if `needsUpdate` flag on all materials is set
+            context.scene.traverse(obj => {
+                const mesh = obj as THREE.Mesh;
+                if (mesh.isMesh) {
+                    const materials = Array.isArray(mesh.material) ? mesh.material : [ mesh.material ];
+                    materials.forEach(material => material.needsUpdate = true);
+                }
+            });
+        }
+
+        //const qualityName = this.ins.quality.getOptionText();
+        //context.viewport.overlay.setLabel(ELocation.BottomRight, "quality", `Quality: ${qualityName}`);
     }
 
     fromData(data: IViewer)
     {
-        this.ins.copyValues({
+        const ins = this.ins;
+
+        ins.copyValues({
             shader: EShaderMode[data.shader] || EShaderMode.Default,
-            exposure: data.exposure !== undefined ? data.exposure : 1,
-            gamma: data.gamma !== undefined ? data.gamma : 1,
+            exposure: data.exposure !== undefined ? data.exposure : ins.exposure.schema.preset,
+            gamma: data.gamma !== undefined ? data.gamma : ins.gamma.schema.preset,
             annotationsVisible: !!data.annotationsVisible,
             activeTags: data.activeTags || "",
             sortedTags: data.sortedTags || "",
-            radioTags: data.radioTags || false,
+            radioTags: data.radioTags !== undefined ? !!data.radioTags : ins.radioTags.schema.preset,
         });
     }
 

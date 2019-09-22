@@ -50,7 +50,7 @@
         "viewer": {
             "shader": "Default",
             "exposure": 1,
-            "gamma": 1,
+            "gamma": 2,
             "annotationsVisible": false
         },
         "reader": {
