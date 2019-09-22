@@ -143,6 +143,13 @@ export default class CVDocument extends CRenderGraph
         children.forEach(child => child.node.dispose());
     }
 
+    /**
+     * Loads the document from the given document data. The data is validated first.
+     * If a parent node/scene is given, the data is attached to the given parent.
+     * @param documentData The document data to be loaded.
+     * @param assetPath The path to the document asset to be loaded.
+     * @param mergeParent If true or a scene or node, appends to the root or the given scene/node.
+     */
     openDocument(documentData: IDocument, assetPath?: string, mergeParent?: boolean | NVNode | NVScene)
     {
         if (ENV_DEVELOPMENT) {

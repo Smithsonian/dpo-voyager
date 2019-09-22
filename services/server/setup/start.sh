@@ -9,10 +9,6 @@ source /root/.nvm/nvm.sh
 cd /app
 npm install
 
-# Install Ruby Gems for Jekyll
-cd /app/docs
-bundle
-
 # build server code in services/server/bin/
 if [ ! -d "services/server/bin" ]; then
     npm run build-server

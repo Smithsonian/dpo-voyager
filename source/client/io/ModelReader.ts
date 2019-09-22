@@ -24,10 +24,6 @@ import "three/examples/js/loaders/DRACOLoader";
 const GLTFLoader = (THREE as any).GLTFLoader;
 const DRACOLoader = (THREE as any).DRACOLoader;
 
-const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
-DRACOLoader.setDecoderPath(dracoPath);
-console.log("DRACOLoader.setDracoPath - %s", dracoPath);
-
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,8 +40,16 @@ export default class ModelReader
     {
         this.loadingManager = loadingManager;
 
+        const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
+        if (ENV_DEVELOPMENT) {
+            console.log("ModelReader.constructor - DRACO path: %s", dracoPath);
+        }
+
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath(dracoPath);
+
         this.gltfLoader = new GLTFLoader(loadingManager);
-        this.gltfLoader.setDRACOLoader(new DRACOLoader());
+        this.gltfLoader.setDRACOLoader(dracoLoader);
     }
 
     isValid(url: string): boolean
@@ -103,6 +107,10 @@ export default class ModelReader
                 // check if the material's normal map uses object space (indicated in glTF extras)
                 if (material.userData["objectSpaceNormals"]) {
                     uberMat.enableObjectSpaceNormalMap(true);
+
+                    if (ENV_DEVELOPMENT) {
+                        console.log("ModelReader.createModelGroup - objectSpaceNormals: ", true);
+                    }
                 }
 
                 mesh.material = uberMat;
