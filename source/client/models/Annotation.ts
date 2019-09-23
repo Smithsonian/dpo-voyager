@@ -22,7 +22,7 @@ import { IAnnotation as IAnnotationJSON } from "client/schema/model";
 ////////////////////////////////////////////////////////////////////////////////
 
 export type Vector3 = number[];
-export enum EAnnotationStyle { Standard, Extended, Balloon }
+export enum EAnnotationStyle { Standard, Extended, Balloon, Marker, Pin }
 
 export type IAnnotationUpdateEvent = IDocumentUpdateEvent<Annotation>;
 export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
@@ -49,6 +49,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
             id: Document.generateId(),
             title: "New Annotation",
             lead: "",
+            marker: "",
             tags: [],
             articleId: "",
             imageUri: "",
@@ -79,6 +80,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         }
         if (data.lead) {
             json.lead = data.lead;
+        }
+        if (data.marker) {
+            json.marker = data.marker;
         }
         if (data.tags.length > 0) {
             json.tags = data.tags;
@@ -136,6 +140,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
 
         data.title = json.title || "";
         data.lead = json.lead || "";
+        data.marker = json.marker || "";
         data.tags = json.tags || [];
 
         data.articleId = json.articleId || "";

@@ -22,6 +22,7 @@ import JSONReader from "../io/JSONReader";
 import ModelReader from "../io/ModelReader";
 import GeometryReader from "../io/GeometryReader";
 import TextureReader from "../io/TextureReader";
+import FontReader, { IBitmapFont } from "../io/FontReader";
 
 import CVAssetManager from "./CVAssetManager";
 
@@ -36,10 +37,11 @@ export default class CVAssetReader extends Component
 
     static readonly isSystemSingleton = true;
 
-    protected jsonLoader: JSONReader;
-    protected modelLoader: ModelReader;
-    protected geometryLoader: GeometryReader;
-    protected textureLoader: TextureReader;
+    readonly jsonLoader: JSONReader;
+    readonly modelLoader: ModelReader;
+    readonly geometryLoader: GeometryReader;
+    readonly textureLoader: TextureReader;
+    readonly fontReader: FontReader;
 
 
     constructor(node: Node, id: string)
@@ -52,39 +54,46 @@ export default class CVAssetReader extends Component
         this.modelLoader = new ModelReader(loadingManager);
         this.geometryLoader = new GeometryReader(loadingManager);
         this.textureLoader = new TextureReader(loadingManager);
+        this.fontReader = new FontReader(loadingManager);
     }
 
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
 
-    getJSON(assetPath: string): Promise<any>
+    async getJSON(assetPath: string): Promise<any>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.jsonLoader.get(url);
     }
 
-    getText(assetPath: string): Promise<string>
+    async getText(assetPath: string): Promise<string>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return fetch.text(url, "GET");
     }
 
-    getModel(assetPath: string): Promise<THREE.Object3D>
+    async getModel(assetPath: string): Promise<THREE.Object3D>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.modelLoader.get(url);
     }
 
-    getGeometry(assetPath: string): Promise<THREE.Geometry>
+    async getGeometry(assetPath: string): Promise<THREE.Geometry>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.geometryLoader.get(url);
     }
 
-    getTexture(assetPath: string): Promise<THREE.Texture>
+    async getTexture(assetPath: string): Promise<THREE.Texture>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.textureLoader.get(url);
+    }
+
+    async getFont(assetPath: string): Promise<IBitmapFont>
+    {
+        const url = this.assetManager.getAssetUrl(assetPath);
+        return this.fontReader.load(url);
     }
 }

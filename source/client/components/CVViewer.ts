@@ -17,8 +17,9 @@
 
 import * as THREE from "three";
 
-import { IComponentEvent } from "@ff/graph/Component";
-import CRenderable, { types } from "@ff/scene/components/CRenderable";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import CRenderer from "@ff/scene/components/CRenderer";
+import CRenderable from "@ff/scene/components/CRenderable";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
@@ -29,7 +30,7 @@ import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVViewer extends CRenderable
+export default class CVViewer extends Component
 {
     static readonly typeName: string = "CVViewer";
 
@@ -54,9 +55,6 @@ export default class CVViewer extends CRenderable
 
     ins = this.addInputs(CVViewer.ins);
     outs = this.addOutputs(CVViewer.outs);
-
-    private _updateExposure = false;
-    private _updateGamma = false;
 
     get settingProperties() {
         return [
@@ -83,6 +81,9 @@ export default class CVViewer extends CRenderable
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
+    }
 
     create()
     {
@@ -102,13 +103,17 @@ export default class CVViewer extends CRenderable
     {
         const ins = this.ins;
 
-        this._updateExposure = ins.exposure.changed;
-        this._updateGamma = ins.gamma.changed;
-
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.shader.setValue(shader));
         }
+        if (ins.exposure.changed) {
+            this.renderer.ins.exposure.setValue(ins.exposure.value);
+        }
+        if (ins.gamma.changed) {
+            this.renderer.ins.gamma.setValue(ins.gamma.value);
+        }
+
         if (ins.quality.changed) {
             const quality = ins.quality.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.quality.setValue(quality));
@@ -135,37 +140,11 @@ export default class CVViewer extends CRenderable
         return true;
     }
 
-    tock(context)
-    {
-        this._updateExposure = false;
-        this._updateGamma = false;
-        return false;
-    }
-
-    preRender(context)
-    {
-        const ins = this.ins;
-
-        if (this._updateExposure) {
-            context.renderer.toneMappingExposure = ins.exposure.value;
-        }
-
-        if (this._updateGamma) {
-            context.renderer.gammaFactor = ins.gamma.value;
-
-            // gamma will only be updated if `needsUpdate` flag on all materials is set
-            context.scene.traverse(obj => {
-                const mesh = obj as THREE.Mesh;
-                if (mesh.isMesh) {
-                    const materials = Array.isArray(mesh.material) ? mesh.material : [ mesh.material ];
-                    materials.forEach(material => material.needsUpdate = true);
-                }
-            });
-        }
-
-        //const qualityName = this.ins.quality.getOptionText();
-        //context.viewport.overlay.setLabel(ELocation.BottomRight, "quality", `Quality: ${qualityName}`);
-    }
+    // preRender(context)
+    // {
+    //     const qualityName = this.ins.quality.getOptionText();
+    //     context.viewport.overlay.setLabel(ELocation.BottomRight, "quality", `Quality: ${qualityName}`);
+    // }
 
     fromData(data: IViewer)
     {

@@ -142,7 +142,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   @include noselect;
 }
 
-.sv-balloon-annotation {
+.sv-pin-annotation {
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;

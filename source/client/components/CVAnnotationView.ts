@@ -35,6 +35,8 @@ import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from ".
 import StandardSprite from "../annotations/StandardSprite";
 import ExtendedSprite from "../annotations/ExtendedSprite";
 import BalloonSprite from "../annotations/BalloonSprite";
+import MarkerSprite from "../annotations/MarkerSprite";
+import PinSprite from "../annotations/PinSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +60,7 @@ export default class CVAnnotationView extends CObject3D
         activeTags: types.String("Tags.Active"),
         title: types.String("Annotation.Title"),
         lead: types.String("Annotation.Lead"),
+        marker: types.String("Annotation.Marker"),
         tags: types.String("Annotation.Tags"),
         style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Standard),
         scale: types.Scale("Annotation.Scale", { preset: 1, precision: 3 }),
@@ -111,6 +114,7 @@ export default class CVAnnotationView extends CObject3D
             }
 
             const ins = this.ins;
+            ins.marker.setValue(annotation ? annotation.data.marker : "", true);
             ins.title.setValue(annotation ? annotation.data.title : "", true);
             ins.lead.setValue(annotation ? annotation.data.lead : "", true);
             ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "", true);
@@ -189,6 +193,9 @@ export default class CVAnnotationView extends CObject3D
         }
 
         if (annotation) {
+            if (ins.marker.changed) {
+                annotation.set("marker", ins.marker.value);
+            }
             if (ins.title.changed) {
                 annotation.set("title", ins.title.value);
             }
@@ -395,6 +402,12 @@ export default class CVAnnotationView extends CObject3D
 
         let sprite;
         switch(annotation.data.style) {
+            case EAnnotationStyle.Pin:
+                sprite = new PinSprite(annotation);
+                break;
+            case EAnnotationStyle.Marker:
+                sprite = new MarkerSprite(annotation);
+                break;
             case EAnnotationStyle.Balloon:
                 sprite = new BalloonSprite(annotation);
                 break;

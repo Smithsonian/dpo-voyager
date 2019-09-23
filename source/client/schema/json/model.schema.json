@@ -20,6 +20,9 @@
                 "lead": {
                     "type": "string"
                 },
+                "marker": {
+                    "type": "string"
+                },
                 "tags": {
                     "description": "Array of tags, categorizing the annotation.",
                     "type": "array",

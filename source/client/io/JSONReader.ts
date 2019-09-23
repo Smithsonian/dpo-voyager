@@ -28,7 +28,7 @@ export default class JSONReader
         this._loadingManager = loadingManager;
     }
 
-    get(url: string): Promise<any>
+    async get(url: string): Promise<any>
     {
         this._loadingManager.itemStart(url);
 
@@ -39,7 +39,7 @@ export default class JSONReader
         }).then(result => {
             if (!result.ok) {
                 this._loadingManager.itemError(url);
-                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`)
+                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
             }
 
             this._loadingManager.itemEnd(url);

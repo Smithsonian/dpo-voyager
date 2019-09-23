@@ -61,6 +61,7 @@ export interface IAnnotation
 
     title?: string;
     lead?: string;
+    marker?: string;
     tags?: string[];
     articleId?: string;
     imageUri?: string;

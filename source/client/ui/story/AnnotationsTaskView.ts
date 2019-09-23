@@ -65,6 +65,11 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 
         const annotation = annotations.activeAnnotation;
 
+        // <div class="sv-label">Title</div>
+        // <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
+        // <div class="sv-label">Tags</div>
+        // <ff-line-edit name="tags" text=${inProps.tags.value} @change=${this.onTextEdit}></ff-line-edit>
+
         const detailView = annotation ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${inProps.style}></sv-property-view>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
@@ -72,10 +77,9 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.color}></sv-property-view>
             <sv-property-view .property=${inProps.article}></sv-property-view>
             <sv-property-view .property=${inProps.image}></sv-property-view>
-            <div class="sv-label">Title</div>
-            <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
-            <div class="sv-label">Tags</div>
-            <ff-line-edit name="tags" text=${inProps.tags.value} @change=${this.onTextEdit}></ff-line-edit>
+            <sv-property-view .property=${inProps.tags}></sv-property-view>
+            <sv-property-view .property=${inProps.marker}></sv-property-view>
+            <sv-property-view .property=${inProps.title}></sv-property-view>
             <div class="sv-label">Lead</div>
             <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
@@ -109,13 +113,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             const target = event.target;
             const text = event.detail.text;
 
-            if (target.name === "title") {
-                annotations.ins.title.setValue(text);
-            }
-            else if (target.name === "tags") {
-                annotations.ins.tags.setValue(text);
-            }
-            else if (target.name === "lead") {
+            if (target.name === "lead") {
                 annotations.ins.lead.setValue(text);
             }
         }
