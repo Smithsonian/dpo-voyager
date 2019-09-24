@@ -379,7 +379,7 @@ export default class CVAnnotationView extends CObject3D
     protected onViewportDispose(event: IViewportDisposeEvent)
     {
         const group = this.object3D as HTMLSpriteGroup;
-        group.disposeHTMLContainer(event.viewport.overlay);
+        group.disposeHTMLElements(event.viewport.overlay);
     }
 
     protected onSpriteClick(event: IAnnotationClickEvent)

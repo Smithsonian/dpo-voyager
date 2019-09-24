@@ -28,38 +28,52 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 
 // TODO: Temporary
 const _fontReader = new FontReader(new THREE.LoadingManager());
-const _vec3 = new THREE.Vector3();
+
+const _vec3a = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
+const _vec3c = new THREE.Vector3();
+const _quat = new THREE.Quaternion();
 
 export default class MarkerSprite extends AnnotationSprite
 {
-    protected balloon: THREE.Mesh;
-    protected circle: THREE.Mesh;
-    protected marker: THREE.Mesh;
+    protected offset: THREE.Group;
+    protected circleMaterial: THREE.MeshBasicMaterial;
+    protected markerGeometry: any;
 
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        const shape = new THREE.Shape();
-        const o1 = 30 * math.DEG2RAD;
-        shape.absarc(0, 1, 0.5, -o1, math.PI + o1, false);
-        shape.lineTo(-0.05, 0);
-        const o2 = 20 * math.DEG2RAD;
-        shape.absarc(0, 0, 0.05, math.PI + o2, -o2, false);
-        //shape.lineTo(0.5, 1);
+        // const shape = new THREE.Shape();
+        // const o1 = 30 * math.DEG2RAD;
+        // shape.absarc(0, 1, 0.5, -o1, math.PI + o1, false);
+        // shape.lineTo(-0.05, 0);
+        // const o2 = 20 * math.DEG2RAD;
+        // shape.absarc(0, 0, 0.05, math.PI + o2, -o2, false);
 
-        this.balloon = new THREE.Mesh(
-            new THREE.ShapeBufferGeometry(shape),
-            new THREE.MeshBasicMaterial({ color: "red" }),
+        // this.balloon = new THREE.Mesh(
+        //     new THREE.ShapeBufferGeometry(shape),
+        //     new THREE.MeshBasicMaterial({ color: "red" }),
+        // );
+
+        this.offset = new THREE.Group();
+        this.add(this.offset);
+
+        this.circleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+        const outerCircle = new THREE.Mesh(
+            new THREE.CircleBufferGeometry(0.4, 32),
+            this.circleMaterial,
         );
 
-        this.circle = new THREE.Mesh(
-            new THREE.CircleBufferGeometry(0.45, 32),
-            new THREE.MeshBasicMaterial({ color: "black" }),
+        const innerCircle = new THREE.Mesh(
+            new THREE.CircleBufferGeometry(0.35, 32),
+            new THREE.MeshBasicMaterial({ color: 0 }),
         );
-        this.circle.position.set(0, 1, 0.01);
 
-        this.add(this.balloon, this.circle);
+        innerCircle.position.set(0, 0, 0.01);
+
+        this.offset.add(outerCircle, innerCircle);
 
         _fontReader.load("fonts/Roboto-Bold").then(font => {
             const material = new THREE.RawShaderMaterial(createTextShader({
@@ -68,19 +82,19 @@ export default class MarkerSprite extends AnnotationSprite
                 transparent: true,
                 color: 0xffffff,
             }));
-            const geometry = createTextGeometry({
+            this.markerGeometry = createTextGeometry({
                 font: font.descriptor,
                 align: "center",
                 width: 100,
             });
 
-            geometry.update(annotation.data.marker);
-            this.marker = new THREE.Mesh(geometry, material);
-            this.marker.scale.set(0.015, -0.015, -1);
+            this.markerGeometry.update(annotation.data.marker);
+
+            const marker = new THREE.Mesh(this.markerGeometry, material);
+            marker.scale.set(0.015, -0.015, -1);
             //this.marker.position.set(-1.05, 0.05, 0.02);
-            this.marker.position.set(-0.77, 0.27, 0.02);
-            this.add(this.marker);
-            console.log("TEXT GEOMETRY UPDATED");
+            marker.position.set(-0.77, -0.67, 0.02);
+            this.offset.add(marker);
         });
 
         this.update();
@@ -90,12 +104,15 @@ export default class MarkerSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
         const c = annotation.color;
-        (this.balloon.material as THREE.MeshPhongMaterial).color.setRGB(c[0], c[1], c[2]);
+        this.circleMaterial.color.setRGB(c[0], c[1], c[2]);
 
         this.scale.setScalar(annotation.scale);
+        this.updateMatrix();
 
-        if (this.marker) {
-            (this.marker.geometry as any).update(annotation.marker);
+        this.offset.position.set(0, 1, 0);
+
+        if (this.markerGeometry) {
+            this.markerGeometry.update(annotation.marker);
         }
 
         super.update();
@@ -103,9 +120,10 @@ export default class MarkerSprite extends AnnotationSprite
 
     renderHTMLElement(container: HTMLElement, camera: THREE.Camera, anchor?: THREE.Object3D, offset?: THREE.Vector3): HTMLElement | null
     {
-        camera.matrixWorld.decompose(_vec3, this.quaternion, _vec3);
-        this.updateMatrix();
-        console.log("onBeforeRender");
+        this.offset.matrixWorld.decompose(_vec3a, _quat, _vec3b);
+        camera.matrixWorld.decompose(_vec3c, _quat, _vec3c);
+        this.offset.matrixWorld.compose(_vec3a, _quat, _vec3b);
+        this.offset.matrixWorldNeedsUpdate = false;
 
         return null;
     }
