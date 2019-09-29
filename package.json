@@ -1,29 +1,30 @@
 {
     "name": "voyager",
-    "version": "0.1.1",
+    "version": "0.8.0",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
         "server": "nodemon services/server/bin/index.js",
-        "watch": "APP_VERSION=$(git describe --tags); concurrently \"cd source/client && webpack --watch --app=story --vers=$APP_VERSION\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
-        "build": "concurrently \"npm run build-server\" \"npm run build-dev\"",
-        "build-all": "npm run build-dev; npm run build-prod",
-        "build-dev": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=development --app=all --vers=$APP_VERSION; cd ../..",
-        "build-dev-local": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=development --app=all --local=true --vers=$APP_VERSION; cd ../..",
-        "build-prod": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=production --app=all --vers=$APP_VERSION; cd ../..",
-        "build-prod-local": "APP_VERSION=$(git describe --tags); cd source/client; webpack --mode=production --app=all --local=true --vers=$APP_VERSION; cd ../..",
+        "watch": "concurrently \"cd source/client && webpack --watch --app=story\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+
+        "build-dev": "cd source/client; webpack --mode=development --app=all; cd ../..",
+        "build-dev-local": "cd source/client; webpack --mode=development --app=all --local=true; cd ../..",
+        "build-prod": "cd source/client; webpack --mode=production --app=all; cd ../..",
+        "build-prod-local": "cd source/client; webpack --mode=production --app=all --local=true; cd ../..",
         "build-server": "tsc -b source/server",
         "build-libs": "tsc -b libs",
+
         "docs": "cd docs && jekyll build",
-        "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/code/ source/",
+        "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
+
         "up": "docker-compose up -d; docker-compose logs -f",
         "down": "docker-compose stop; docker-compose rm -f -v",
         "restart": "docker-compose stop; docker-compose rm -f -v; docker-compose up -d; docker-compose logs -f",
         "bash": "docker-compose exec server bash"
     },
     "nodemonConfig": {
-        "delay": "1000",
+        "delay": 1000,
         "watch": [
             "services/server/bin",
             "node_modules/@ff/core",
@@ -53,7 +54,6 @@
         "hotkeys-js": "^3.7.2",
         "lit-element": "^2.2.1",
         "lit-html": "^1.1.2",
-        "madge": "^3.4.4",
         "moment": "^2.24.0",
         "morgan": "^1.9.1",
         "nodemon": "^1.19.2",
@@ -69,14 +69,16 @@
     "devDependencies": {
         "@types/chai": "^4.2.3",
         "@types/mocha": "^5.2.7",
-        "@types/node": "^12.7.5",
+        "@types/node": "^12.7.8",
         "awesome-typescript-loader": "^5.2.1",
         "chai": "^4.2.0",
         "concurrently": "^4.1.2",
         "css-loader": "^3.2.0",
+        "dotenv": "^8.1.0",
         "handlebars-loader": "^1.7.1",
         "html-webpack-plugin": "^3.2.0",
         "license-checker": "^25.0.1",
+        "madge": "^3.4.4",
         "mini-css-extract-plugin": "^0.8.0",
         "mocha": "^6.2.0",
         "node-sass": "^4.12.0",
@@ -84,11 +86,11 @@
         "raw-loader": "^3.1.0",
         "sass-loader": "^8.0.0",
         "source-map-loader": "^0.2.4",
-        "terser-webpack-plugin": "^2.1.0",
+        "terser-webpack-plugin": "^2.1.2",
         "typedoc": "^0.15.0",
         "typescript": "^3.6.3",
         "typescript-json-schema": "^0.40.0",
-        "webpack": "^4.40.2",
+        "webpack": "^4.41.0",
         "webpack-cli": "^3.3.9"
     }
 }

@@ -1,3 +1,9 @@
+# creates a Docker image and launches a container
+# with a simple development server built with Node.js and Express.
+#
+# The server provides unsecured read access to dist/ and
+# read/write access through WebDAV to files/
+
 version: '3'
 
 services:
@@ -8,9 +14,8 @@ services:
       context: ./services/server/setup
       dockerfile: Dockerfile
     env_file:
-      - services/config.env
-      - services/secrets.env
+      - .env
     ports: #host:container
-      - "9050:8000"
+      - $VOYAGER_SERVER_PORT:$VOYAGER_SERVER_PORT
     volumes:
       - .:/app

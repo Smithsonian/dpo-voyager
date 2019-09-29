@@ -28,10 +28,10 @@ import { v2 as webdav } from "webdav-server";
 ////////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
 
-const port = parseInt(process.env["VOYAGER_SERVER_PORT"]) || 8000;
-const devMode = process.env["NODE_ENV"] !== "production";
-const localMode = process.env["VOYAGER_SERVER_LOCAL"] === "true";
-const rootDir = process.env["VOYAGER_PROJECT_ROOT"] || path.resolve(__dirname, "../../..");
+const port: number = parseInt(process.env["VOYAGER_SERVER_PORT"]) || 8000;
+const devMode: boolean = process.env["NODE_ENV"] !== "production";
+
+const rootDir = path.resolve(__dirname, "../../..");
 const staticDir = path.resolve(rootDir, "dist/");
 const fileDir = path.resolve(rootDir, "files/");
 const docDir = path.resolve(rootDir, "docs/_site/");
@@ -51,7 +51,6 @@ console.log(`
 Smithsonian 3D Foundation Project - Development Server
 ------------------------------------------------------
 Port:                    ${port}
-Local Mode:              ${localMode}
 Development Mode:        ${devMode}
 Root Directory:          ${rootDir}
 Static File Directory:   ${staticDir}

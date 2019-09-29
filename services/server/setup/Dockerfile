@@ -11,7 +11,7 @@ RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y apt-utils \
  && apt-get install -y dos2unix \
- && dos2unix *
+ && dos2unix *.sh
 
 # Run provisioning scripts
 RUN bash -C './provision.sh'

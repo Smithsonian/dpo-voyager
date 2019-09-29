@@ -15,11 +15,25 @@
  * limitations under the License.
  */
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// Environment variables used
+//
+// NODE_ENV               development | production
+// VOYAGER_OFFLINE        True for an offline build (no external dependencies)
+// VOYAGER_ANALYTICS_ID   Google Analytics ID
+//
+////////////////////////////////////////////////////////////////////////////////
+
+
 "use strict";
 
-const webpack = require("webpack");
+require('dotenv').config();
+
 const fs = require("fs-extra");
 const path = require("path");
+const childProcess = require("child_process");
+const webpack = require("webpack");
 
 const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -44,19 +58,19 @@ const apps = {
         name: "voyager-explorer",
         entryPoint: "client/ui/explorer/MainView.ts",
         title: "Voyager Explorer",
-        template: "viewer.hbs",
+        template: "explorer.hbs",
     },
     "mini": {
         name: "voyager-mini",
         entryPoint: "client/ui/mini/MainView.ts",
         title: "Voyager Mini",
-        template: "viewer.hbs",
+        template: "explorer.hbs",
     },
     "launcher": {
         name: "voyager-launcher",
         entryPoint: "client/ui/launcher/MainView.ts",
         title: "Voyager Launcher",
-        template: "viewer.hbs",
+        template: "explorer.hbs",
     },
     "story": {
         name: "voyager-story",
@@ -64,22 +78,18 @@ const apps = {
         title: "Voyager Story",
         template: "story.hbs",
     },
-    "demo": {
-        name: "voyager-demo",
-        entryPoint: "client/demo.js",
-        title: "Voyager Tools",
-        template: "demo.hbs",
-    },
 };
+
+const version = childProcess.exec("git describe --tags");
+const analyticsId = process.env["VOYAGER_ANALYTICS_ID"];
 
 ////////////////////////////////////////////////////////////////////////////////
 
-module.exports = function(env, argv) {
-
-    const isDevMode = argv.mode !== "production";
-    const isLocal = !!argv.local;
+module.exports = function(env, argv)
+{
     const appKey = argv.app || "explorer";
-    const version = argv.vers || "x.x.x";
+    const isDevMode = argv.mode !== undefined ? argv.mode !== "production" : process.env["NODE_ENV"] !== "production";
+    const isOffline = argv.offline !== undefined ? true : process.env["VOYAGER_OFFLINE"] === "true";
 
     // copy static assets and license files
     fs.copy(dirs.assets, dirs.output, { overwrite: true });
@@ -88,32 +98,34 @@ module.exports = function(env, argv) {
 
     if (appKey === "all") {
         return [
-            createAppConfig(apps.explorer, version, dirs, isDevMode, isLocal),
-            createAppConfig(apps.mini, version, dirs, isDevMode, isLocal),
-            createAppConfig(apps.launcher, version, dirs, isDevMode, isLocal),
-            createAppConfig(apps.story, version, dirs, isDevMode, isLocal),
-            createAppConfig(apps.demo, version, dirs, isDevMode, isLocal),
+            createAppConfig(apps.explorer, isDevMode, isOffline),
+            createAppConfig(apps.mini, isDevMode, isOffline),
+            createAppConfig(apps.launcher, isDevMode, isOffline),
+            createAppConfig(apps.story, isDevMode, isOffline),
         ];
     }
+    else if (apps[appKey]) {
+        return createAppConfig(apps[appKey], isDevMode, isOffline);
+    }
     else {
-        return createAppConfig(apps[appKey], version, dirs, isDevMode, isLocal);
+        throw new Error(`can't build, app '${appKey}' not found.`);
     }
 };
 
-function createAppConfig(app, version, dirs, isDevMode, isLocal)
+function createAppConfig(app, isDevMode, isOffline)
 {
     const devMode = isDevMode ? "development" : "production";
-    const localTag = isLocal ? "-local" : "";
+    const localTag = isOffline ? "-offline" : "";
     const appName = app.name;
     const appTitle = `${app.title} ${version} ${isDevMode ? " DEV" : " PROD"}`;
 
-    console.log("VOYAGER - WEBPACK BUILD SCRIPT");
-    console.log("application = %s", appName);
-    console.log("mode = %s", devMode);
-    console.log("local = %s", isLocal);
-    console.log("version = %s", version);
-    console.log("source directory = %s", dirs.source);
-    console.log("output directory = %s", dirs.output);
+    console.log("\nVOYAGER - WEBPACK BUILD SCRIPT");
+    console.log("  application = %s", appName);
+    console.log("  mode = %s", devMode);
+    console.log("  offline = %s", isOffline);
+    console.log("  version = %s", version);
+    console.log("  source directory = %s", dirs.source);
+    console.log("  output directory = %s", dirs.output);
 
     const config = {
         mode: devMode,
@@ -157,7 +169,7 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
             new webpack.DefinePlugin({
                 ENV_PRODUCTION: JSON.stringify(!isDevMode),
                 ENV_DEVELOPMENT: JSON.stringify(isDevMode),
-                ENV_LOCAL: JSON.stringify(isLocal),
+                ENV_OFFLINE: JSON.stringify(isOffline),
                 ENV_VERSION: JSON.stringify(appTitle),
             }),
             new MiniCssExtractPlugin({
@@ -170,8 +182,8 @@ function createAppConfig(app, version, dirs, isDevMode, isLocal)
                 title: appTitle,
                 version: version,
                 isDevelopment: isDevMode,
-                isLocal: isLocal,
-                analyticsId: process.env.ANALYTICS_ID || "",
+                isOffline: isOffline,
+                analyticsId: analyticsId,
                 element: `<${appName}></${appName}>`,
                 chunks: [ appName ],
             })

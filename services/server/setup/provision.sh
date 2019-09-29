@@ -20,9 +20,9 @@ export NVM_DIR="/root/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # install node.js
-nvm install 12.10.0
-nvm use 12.10.0
-nvm alias default 12.10.0
+nvm install 12.11.0
+nvm use 12.11.0
+nvm alias default 12.11.0
 
 # update npm
 npm i -g npm

@@ -1,21 +1,21 @@
 [submodule "libs/ff-core"]
 	path = libs/ff-core
-	url = https://github.com/framelab/ff-core
+	url = https://github.com/framefactory/ff-core
 [submodule "libs/ff-browser"]
 	path = libs/ff-browser
-	url = https://github.com/framelab/ff-browser
+	url = https://github.com/framefactory/ff-browser
 [submodule "libs/ff-three"]
 	path = libs/ff-three
-	url = https://github.com/framelab/ff-three
+	url = https://github.com/framefactory/ff-three
 [submodule "libs/ff-ui"]
 	path = libs/ff-ui
-	url = https://github.com/framelab/ff-ui
+	url = https://github.com/framefactory/ff-ui
 [submodule "libs/ff-graph"]
 	path = libs/ff-graph
-	url = https://github.com/framelab/ff-graph
+	url = https://github.com/framefactory/ff-graph
 [submodule "libs/ff-scene"]
 	path = libs/ff-scene
-	url = https://github.com/framelab/ff-scene
+	url = https://github.com/framefactory/ff-scene
 [submodule "docs/public"]
 	path = docs/public
 	url = git@github.com:smithsonian/dpo-voyager

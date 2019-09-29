@@ -9,10 +9,11 @@ files/
 services/server/bin/
 services/secrets.env
 
-doc/code/
+doc/
 docs/resources/
 
 # FILES
+.env
 *.log
 .DS_Store
 secrets.env
