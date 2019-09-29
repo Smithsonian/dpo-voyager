@@ -1,23 +1,20 @@
 {
     "name": "voyager",
-    "version": "0.8.0",
+    "version": "0.7.0",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
         "server": "nodemon services/server/bin/index.js",
         "watch": "concurrently \"cd source/client && webpack --watch --app=story\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
-
         "build-dev": "cd source/client; webpack --mode=development --app=all; cd ../..",
         "build-dev-local": "cd source/client; webpack --mode=development --app=all --local=true; cd ../..",
         "build-prod": "cd source/client; webpack --mode=production --app=all; cd ../..",
         "build-prod-local": "cd source/client; webpack --mode=production --app=all --local=true; cd ../..",
         "build-server": "tsc -b source/server",
         "build-libs": "tsc -b libs",
-
         "docs": "cd docs && jekyll build",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
-
         "up": "docker-compose up -d; docker-compose logs -f",
         "down": "docker-compose stop; docker-compose rm -f -v",
         "restart": "docker-compose stop; docker-compose rm -f -v; docker-compose up -d; docker-compose logs -f",
@@ -33,19 +30,19 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/framelab/voyager.git"
+        "url": "git+https://github.com/Smithsonian/dpo-voyager.git"
     },
     "contributors": [
         {
             "name": "Ralph Wiedemeier",
-            "url": "https://github.com/framelab"
+            "url": "https://github.com/framefactory"
         }
     ],
     "license": "Apache-2.0",
     "bugs": {
-        "url": "https://github.com/framelab/voyager/issues"
+        "url": "https://github.com/Smithsonian/dpo-voyager/issues"
     },
-    "homepage": "https://github.com/framelab/voyager#readme",
+    "homepage": "https://github.com/Smithsonian/dpo-voyager#readme",
     "dependencies": {
         "ajv": "^6.10.2",
         "express": "^4.17.1",

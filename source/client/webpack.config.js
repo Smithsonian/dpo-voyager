@@ -80,7 +80,7 @@ const apps = {
     },
 };
 
-const version = childProcess.exec("git describe --tags");
+const version = childProcess.execSync("git describe --tags");
 const analyticsId = process.env["VOYAGER_ANALYTICS_ID"];
 
 ////////////////////////////////////////////////////////////////////////////////
