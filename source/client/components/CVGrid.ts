@@ -47,7 +47,7 @@ export default class CVGrid extends CObject3D
     protected static readonly gridIns = {
         color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
         opacity: types.Percent("Grid.Opacity", 1.0),
-        update: types.Event("Grid.Update"),
+        boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
     };
 
     protected static readonly gridOuts = {
@@ -63,7 +63,6 @@ export default class CVGrid extends CObject3D
             this.ins.visible,
             this.ins.color,
             this.ins.opacity,
-            this.ins.update,
         ];
     }
 
@@ -75,10 +74,6 @@ export default class CVGrid extends CObject3D
 
     get grid() {
         return this.object3D as ThreeGrid;
-    }
-
-    protected get rootScene() {
-        return this.getGraphComponent(CVScene);
     }
 
     private _lastViewport: Viewport = null;
@@ -100,19 +95,15 @@ export default class CVGrid extends CObject3D
 
     activate()
     {
-        this.rootScene.on("bounding-box", this.onModelBoundingBox, this);
-    }
-
-    deactivate()
-    {
-        this.rootScene.off("bounding-box", this.onModelBoundingBox, this);
+        const scene = this.getGraphComponent(CVScene);
+        scene.outs.boundingBox.linkTo(this.ins.boundingBox);
     }
 
     update(): boolean
     {
         const ins = this.ins;
 
-        if (ins.color.changed || ins.update.changed) {
+        if (ins.color.changed || ins.boundingBox.changed) {
             const props = this._gridProps;
 
             if (ins.color.changed) {
@@ -124,9 +115,10 @@ export default class CVGrid extends CObject3D
                 subColor.b = mainColor.b * 0.5;
             }
 
-            if (ins.update.changed) {
-                const box = this.rootScene.getModelBoundingBox(false);
-                const units = this.rootScene.ins.units.value;
+            if (ins.boundingBox.changed) {
+                const scene = this.getGraphComponent(CVScene);
+                const box = scene.outs.boundingBox.value;
+                const units = scene.ins.units.value;
 
                 box.getSize(_vec3a as unknown as THREE.Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
@@ -159,7 +151,7 @@ export default class CVGrid extends CObject3D
                 this.grid.update(props);
             }
 
-            if (ins.update.changed) {
+            if (ins.boundingBox.changed) {
                 this.grid.position.copy(_vec3b);
                 this.grid.updateMatrix();
             }
@@ -219,11 +211,5 @@ export default class CVGrid extends CObject3D
             visible: ins.visible.cloneValue(),
             color: ins.color.cloneValue(),
         };
-    }
-
-    protected onModelBoundingBox()
-    {
-        // scene change, update grid properties
-        this.ins.update.set();
     }
 }

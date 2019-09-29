@@ -19,82 +19,128 @@ import * as THREE from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
 
-import math from "@ff/core/math";
+import { customElement, PropertyValues, html } from "@ff/ui/CustomElement";
+import "@ff/ui/Button";
+
+import GPUPicker from "@ff/three/GPUPicker";
 
 import FontReader from "client/io/FontReader";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
+import UniversalCamera from "@ff/three/UniversalCamera";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _quadrantClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
 
 // TODO: Temporary
 const _fontReader = new FontReader(new THREE.LoadingManager());
 
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
-const _vec3c = new THREE.Vector3();
-const _quat = new THREE.Quaternion();
+const _quat1 = new THREE.Quaternion();
+const _mat4 = new THREE.Matrix4();
+const _offset = new THREE.Vector3(0, 1, 0);
 
 export default class MarkerSprite extends AnnotationSprite
 {
+    protected static readonly behindOpacity = 0.2;
+
     protected offset: THREE.Group;
-    protected circleMaterial: THREE.MeshBasicMaterial;
-    protected markerGeometry: any;
+    protected dummyMesh: THREE.Mesh;
+
+    protected ringMesh: THREE.Mesh;
+    protected ringGeometry: THREE.RingBufferGeometry;
+    protected ringMaterialA: THREE.MeshBasicMaterial;
+    protected ringMaterialB: THREE.MeshBasicMaterial;
+
+    protected markerGeometry: THREE.BufferGeometry;
+    protected markerMaterialA: THREE.RawShaderMaterial;
+    protected markerMaterialB: THREE.RawShaderMaterial;
+    protected markerA: THREE.Mesh;
+    protected markerB: THREE.Mesh;
+
+    private _quadrant = -1;
 
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        // const shape = new THREE.Shape();
-        // const o1 = 30 * math.DEG2RAD;
-        // shape.absarc(0, 1, 0.5, -o1, math.PI + o1, false);
-        // shape.lineTo(-0.05, 0);
-        // const o2 = 20 * math.DEG2RAD;
-        // shape.absarc(0, 0, 0.05, math.PI + o2, -o2, false);
-
-        // this.balloon = new THREE.Mesh(
-        //     new THREE.ShapeBufferGeometry(shape),
-        //     new THREE.MeshBasicMaterial({ color: "red" }),
-        // );
-
         this.offset = new THREE.Group();
+        this.offset.matrixAutoUpdate = false;
+
         this.add(this.offset);
 
-        this.circleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        this.ringGeometry = new THREE.RingBufferGeometry(0.35, 0.4, 32);
 
-        const outerCircle = new THREE.Mesh(
-            new THREE.CircleBufferGeometry(0.4, 32),
-            this.circleMaterial,
+        this.ringMaterialA = new THREE.MeshBasicMaterial();
+        this.ringMaterialB = new THREE.MeshBasicMaterial({
+            depthFunc: THREE.GreaterDepth,
+            depthWrite: false,
+            opacity: MarkerSprite.behindOpacity,
+            transparent: true
+        });
+
+        this.ringMesh = new THREE.Mesh(
+            this.ringGeometry,
+            this.ringMaterialA,
+        );
+
+        const ringMeshB = new THREE.Mesh(
+            this.ringGeometry,
+            this.ringMaterialB,
         );
 
         const innerCircle = new THREE.Mesh(
             new THREE.CircleBufferGeometry(0.35, 32),
-            new THREE.MeshBasicMaterial({ color: 0 }),
+            new THREE.MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
         );
 
-        innerCircle.position.set(0, 0, 0.01);
+        innerCircle.matrixAutoUpdate = false;
+        innerCircle.position.set(0, 0, 0.005);
+        innerCircle.updateMatrix();
 
-        this.offset.add(outerCircle, innerCircle);
+        this.dummyMesh = new THREE.Mesh(
+            new THREE.BufferGeometry(),
+            new THREE.MeshBasicMaterial()
+        );
+
+        this.add(this.dummyMesh);
+        this.offset.add(this.ringMesh, ringMeshB, innerCircle);
+
+        this.markerGeometry = null;
+        this.markerA = null;
+        this.markerB = null;
 
         _fontReader.load("fonts/Roboto-Bold").then(font => {
-            const material = new THREE.RawShaderMaterial(createTextShader({
+            this.markerMaterialA = new THREE.RawShaderMaterial(createTextShader({
                 map: font.texture,
-                //side: THREE.DoubleSide,
                 transparent: true,
                 color: 0xffffff,
             }));
-            this.markerGeometry = createTextGeometry({
-                font: font.descriptor,
-                align: "center",
-                width: 100,
-            });
 
-            this.markerGeometry.update(annotation.data.marker);
+            this.markerMaterialB = new THREE.RawShaderMaterial(createTextShader({
+                map: font.texture,
+                transparent: true,
+                opacity: MarkerSprite.behindOpacity,
+                color: 0xffffff,
+                depthFunc: THREE.GreaterDepth,
+                depthWrite: false
+            }));
 
-            const marker = new THREE.Mesh(this.markerGeometry, material);
-            marker.scale.set(0.015, -0.015, -1);
-            //this.marker.position.set(-1.05, 0.05, 0.02);
-            marker.position.set(-0.77, -0.67, 0.02);
-            this.offset.add(marker);
+            this.markerGeometry = createTextGeometry({ font: font.descriptor });
+
+            this.markerA = new THREE.Mesh(this.markerGeometry, this.markerMaterialA);
+            this.markerA.matrixAutoUpdate = false;
+
+            this.markerB = new THREE.Mesh(this.markerGeometry, this.markerMaterialB);
+            this.markerB.matrixAutoUpdate = false;
+
+            // we're async here, register marker for picking manually
+            GPUPicker.add(this.markerA, false);
+            GPUPicker.add(this.markerB, false);
+            this.offset.add(this.markerA, this.markerB);
+
+            this.update();
         });
 
         this.update();
@@ -103,28 +149,113 @@ export default class MarkerSprite extends AnnotationSprite
     update()
     {
         const annotation = this.annotation.data;
+
         const c = annotation.color;
-        this.circleMaterial.color.setRGB(c[0], c[1], c[2]);
+        this.ringMaterialA.color.setRGB(c[0], c[1], c[2]);
+        this.ringMaterialB.color.setRGB(c[0], c[1], c[2]);
 
-        this.scale.setScalar(annotation.scale);
-        this.updateMatrix();
+        if (this.markerA) {
+            const length = annotation.marker.length;
+            const scale = length > 1 ? 0.011 : 0.013;
 
-        this.offset.position.set(0, 1, 0);
+            const geometry = this.markerGeometry;
+            (geometry as any).update(annotation.marker);
+            geometry.computeBoundingBox();
+            geometry.boundingBox.getCenter(_vec3a);
 
-        if (this.markerGeometry) {
-            this.markerGeometry.update(annotation.marker);
+            this.markerA.position.set(-scale * (_vec3a.x + 1), scale * _vec3a.y, 0.01);
+            this.markerA.scale.set(scale, -scale, -1);
+            this.markerA.updateMatrix();
+
+            this.markerB.position.set(-scale * (_vec3a.x + 1), scale * _vec3a.y, 0.01);
+            this.markerB.scale.set(scale, -scale, -1);
+            this.markerB.updateMatrix();
         }
 
         super.update();
     }
 
-    renderHTMLElement(container: HTMLElement, camera: THREE.Camera, anchor?: THREE.Object3D, offset?: THREE.Vector3): HTMLElement | null
+    renderHTMLElement(container: HTMLElement, camera: UniversalCamera): HTMLElement | null
     {
-        this.offset.matrixWorld.decompose(_vec3a, _quat, _vec3b);
-        camera.matrixWorld.decompose(_vec3c, _quat, _vec3c);
-        this.offset.matrixWorld.compose(_vec3a, _quat, _vec3b);
-        this.offset.matrixWorldNeedsUpdate = false;
+        const annotation = this.annotation.data;
 
-        return null;
+        // billboard rotation
+        _mat4.getInverse(this.matrixWorld, false);
+        _mat4.multiply(camera.matrixWorld);
+        _mat4.decompose(_vec3a, _quat1, _vec3b);
+        this.offset.quaternion.copy(_quat1);
+
+        // scale annotation with respect to camera distance
+        const annotationScale = annotation.scale;
+        let scaleFactor = 1;
+
+        if (camera.isPerspectiveCamera) {
+            _vec3a.set(0, 0, 0).applyMatrix4(_mat4);
+            scaleFactor = Math.tan(camera.fov * THREE.Math.DEG2RAD * 0.5) * _vec3a.length() * annotationScale / 150;
+        }
+        else {
+            scaleFactor = camera.size * annotationScale / 30;
+        }
+
+        this.offset.scale.setScalar(scaleFactor);
+        this.offset.position.set(0, (annotation.offset + 1) * scaleFactor * 0.5, 0);
+
+        this.offset.updateMatrix();
+
+
+        const element = super.renderHTMLElement(container, camera, this.dummyMesh, _offset) as MarkerAnnotation;
+
+        // update quadrant/orientation
+        if (this.orientationQuadrant !== this._quadrant) {
+            element.classList.remove(_quadrantClasses[this._quadrant]);
+            element.classList.add(_quadrantClasses[this.orientationQuadrant]);
+            this._quadrant = this.orientationQuadrant;
+        }
+
+        return element;
+    }
+
+    protected createHTMLElement(): HTMLElement
+    {
+        return new MarkerAnnotation(this);
+    }
+
+    protected setHTMLElementVisible(element: AnnotationElement, visible: boolean)
+    {
+        // visibility handled by the element's render method
+        element.requestUpdate();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+@customElement("sv-marker-annotation")
+class MarkerAnnotation extends AnnotationElement
+{
+    constructor(sprite: MarkerSprite)
+    {
+        super(sprite);
+    }
+
+    protected firstConnected()
+    {
+        super.firstConnected();
+        this.classList.add("sv-marker-annotation");
+    }
+
+    protected render()
+    {
+        const annotation = this.sprite.annotation.data;
+        this.style.display = annotation.expanded && this.sprite.visible ? "block" : "none";
+
+        return html`<div class="sv-title">${annotation.title}</div>
+            <p>${annotation.lead}</p>
+            ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+    }
+
+    protected onClickArticle(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
     }
 }

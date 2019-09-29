@@ -27,10 +27,7 @@ import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface IBoundingBoxEvent extends ITypedEvent<"bounding-box">
-{
-    boundingBox: THREE.Box3;
-}
+const _vec3 = new THREE.Vector3();
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -47,9 +44,16 @@ export default class CVScene extends CVNode
 
     protected static readonly ins = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
+        modelUpdated: types.Event("Scene.ModelUpdated"),
+    };
+
+    protected static readonly outs = {
+        boundingBox: types.Object("Models.BoundingBox", THREE.Box3),
+        boundingRadius: types.Number("Models.BoundingRadius"),
     };
 
     ins = this.addInputs<CVNode, typeof CVScene.ins>(CVScene.ins);
+    outs = this.addOutputs<CVNode, typeof CVScene.outs>(CVScene.outs);
 
 
     get settingProperties() {
@@ -64,22 +68,18 @@ export default class CVScene extends CVNode
         return this.getGraphComponents(CVModel2);
     }
 
-    private _modelBoundingBox = new THREE.Box3();
-
-    getModelBoundingBox(forceUpdate: boolean)
-    {
-        if (forceUpdate) {
-            this.updateModelBoundingBox();
-        }
-
-        return this._modelBoundingBox;
-    }
-
     create()
     {
         super.create();
+
+        this.outs.boundingBox.setValue(new THREE.Box3());
+
         this.graph.components.on(CVModel2, this.onModelComponent, this);
-        this.models.forEach(model => model.ins.globalUnits.linkFrom(this.ins.units));
+
+        this.models.forEach(model => {
+            model.ins.globalUnits.linkFrom(this.ins.units);
+            this.ins.modelUpdated.linkFrom(model.outs.updated);
+        });
     }
 
     update(context)
@@ -87,6 +87,9 @@ export default class CVScene extends CVNode
         const ins = this.ins;
 
         if (ins.units.changed) {
+            this.updateModelBoundingBox();
+        }
+        if (ins.modelUpdated.changed) {
             this.updateModelBoundingBox();
         }
 
@@ -114,11 +117,8 @@ export default class CVScene extends CVNode
         const model = event.object;
 
         if (event.add) {
-            model.on("bounding-box", this.updateModelBoundingBox, this);
             model.ins.globalUnits.linkFrom(this.ins.units);
-        }
-        if (event.remove) {
-            model.off("bounding-box", this.updateModelBoundingBox, this);
+            this.ins.modelUpdated.linkFrom(model.outs.updated);
         }
 
         this.updateModelBoundingBox();
@@ -126,10 +126,17 @@ export default class CVScene extends CVNode
 
     protected updateModelBoundingBox()
     {
-        const box = this._modelBoundingBox;
+        if (ENV_DEVELOPMENT) {
+            console.log("CVScene.updateModelBoundingBox");
+        }
+
+        const box = this.outs.boundingBox.value;
         box.makeEmpty();
 
         this.models.forEach(model => box.expandByObject(model.object3D));
-        this.emit<IBoundingBoxEvent>({ type: "bounding-box", boundingBox: box });
+        box.getSize(_vec3);
+
+        this.outs.boundingBox.set();
+        this.outs.boundingRadius.setValue(_vec3.length() * 0.5);
     }
 }

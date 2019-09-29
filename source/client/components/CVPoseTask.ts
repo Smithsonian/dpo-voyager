@@ -28,7 +28,7 @@ import NVNode from "../nodes/NVNode";
 
 import CVModel2 from "./CVModel2";
 import CVTask from "./CVTask";
-import CVScene, { IBoundingBoxEvent } from "./CVScene";
+import CVScene from "./CVScene";
 
 import PoseTaskView from "../ui/story/PoseTaskView";
 import CVDocument from "./CVDocument";
@@ -59,7 +59,8 @@ export default class CVPoseTask extends CVTask
     static readonly icon: string = "move";
 
     protected static readonly ins = {
-        mode: types.Enum("Pose.Mode", EPoseManipMode, EPoseManipMode.Off)
+        mode: types.Enum("Pose.Mode", EPoseManipMode, EPoseManipMode.Off),
+        modelUpdated: types.Event("Model.Updated"),
     };
     protected static readonly outs = {
         size: types.Vector3("Model.Size")
@@ -132,6 +133,18 @@ export default class CVPoseTask extends CVTask
 
     update(context)
     {
+        if (this.ins.modelUpdated && this.activeModel) {
+            _boundingBox.makeEmpty();
+            _boundingBox.expandByObject(this.activeModel.object3D);
+            _boundingBox.getSize(_size);
+            _size.toArray(this.outs.size.value);
+            this.outs.size.set();
+
+            if (ENV_DEVELOPMENT) {
+                console.log("CVPoseTask.update - model updated");
+            }
+        }
+
         // mode property has changed
         return true;
     }
@@ -188,38 +201,20 @@ export default class CVPoseTask extends CVTask
         return true;
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
-    {
-        super.onActiveDocument(previous, next);
-
-        if (previous) {
-            previous.innerGraph.getComponent(CVScene).off("bounding-box", this.onModelBoundingBox, this);
-        }
-        if (next) {
-            next.innerGraph.getComponent(CVScene).on("bounding-box", this.onModelBoundingBox, this);
-        }
-    }
-
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
+        if (this.activeModel) {
+            this.ins.modelUpdated.unlinkFrom(this.activeModel.outs.updated);
+        }
+
         this.activeModel = next && next.model;
 
         if (this.activeModel) {
-            this.selection.selectComponent(this.activeModel);
-            this.onModelBoundingBox();
-        }
-    }
+            this.ins.modelUpdated.linkFrom(this.activeModel.outs.updated);
+            this.ins.modelUpdated.set();
 
-    protected onModelBoundingBox()
-    {
-        if (this.activeModel) {
-            _boundingBox.makeEmpty();
-            _boundingBox.expandByObject(this.activeModel.object3D);
-            _boundingBox.getSize(_size);
-            _size.toArray(this.outs.size.value);
-            this.outs.size.set();
+            this.selection.selectComponent(this.activeModel);
         }
-        console.log("on bounding box");
     }
 
     protected onPointer(event: IPointerEvent)

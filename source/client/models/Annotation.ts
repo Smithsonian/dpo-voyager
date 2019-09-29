@@ -99,10 +99,6 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         if (data.visible === false) {
             json.visible = data.visible;
         }
-        // TODO: Decide whether to serialize
-        // if (data.expanded) {
-        //     json.expanded = data.expanded;
-        // }
         if (data.position) {
             json.position = data.position.slice();
         }
@@ -148,7 +144,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
 
         data.style = EAnnotationStyle[json.style] || EAnnotationStyle.Standard;
         data.visible = json.visible !== undefined ? json.visible : true;
-        data.expanded = json.expanded || false;
+        data.expanded = false;
 
         data.position = json.position.slice();
         data.direction = json.direction.slice();

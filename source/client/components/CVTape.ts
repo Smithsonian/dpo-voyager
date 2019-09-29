@@ -23,7 +23,7 @@ import { ITape } from "client/schema/setup";
 
 import Pin from "../utils/Pin";
 import CVModel2 from "./CVModel2";
-import CVScene, { IBoundingBoxEvent } from "client/components/CVScene";
+import CVScene from "client/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +46,7 @@ export default class CVTape extends CObject3D
         startDirection: types.Vector3("Start.Direction"),
         endPosition: types.Vector3("End.Position"),
         endDirection: types.Vector3("End.Direction"),
+        boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
     };
 
     protected static readonly tapeOuts = {
@@ -70,10 +71,6 @@ export default class CVTape extends CObject3D
             this.ins.endPosition,
             this.ins.endDirection,
         ];
-    }
-
-    protected get rootScene() {
-        return this.getGraphComponent(CVScene);
     }
 
     protected startPin: Pin = null;
@@ -105,14 +102,12 @@ export default class CVTape extends CObject3D
         this.object3D.add(this.startPin, this.endPin, this.line);
     }
 
-    activate()
+    create()
     {
-        this.rootScene.on("bounding-box", this.onModelBoundingBox, this);
-    }
+        super.create();
 
-    deactivate()
-    {
-        this.rootScene.off("bounding-box", this.onModelBoundingBox, this);
+        const scene = this.getGraphComponent(CVScene);
+        this.ins.boundingBox.linkFrom(scene.outs.boundingBox);
     }
 
     update(context)
@@ -121,6 +116,18 @@ export default class CVTape extends CObject3D
 
         const ins = this.ins;
         const lineGeometry = this.line.geometry as THREE.Geometry;
+
+        // determine pin scale based on scene/model bounding box
+        if (ins.boundingBox.changed && ins.boundingBox.value) {
+            ins.boundingBox.value.getSize(_vec3a);
+            const radius = _vec3a.length() * 0.5;
+
+            this.startPin.scale.setScalar(radius * 0.003);
+            this.startPin.updateMatrix();
+
+            this.endPin.scale.setScalar(radius * 0.003);
+            this.endPin.updateMatrix();
+        }
 
         // if tape is visible, listen for pointer events to set tape start/end
         if (ins.visible.changed) {
@@ -230,17 +237,5 @@ export default class CVTape extends CObject3D
 
             outs.state.setValue(ETapeState.SetStart);
         }
-    }
-
-    protected onModelBoundingBox(event: IBoundingBoxEvent)
-    {
-        event.boundingBox.getSize(_vec3a);
-        const avgSize = 0.3 * (_vec3a.x + _vec3a.y + _vec3a.z);
-
-        this.startPin.scale.setScalar(avgSize * 0.001);
-        this.startPin.updateMatrix();
-
-        this.endPin.scale.setScalar(avgSize * 0.001);
-        this.endPin.updateMatrix();
     }
 }

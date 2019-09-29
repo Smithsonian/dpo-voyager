@@ -56,6 +56,7 @@ export default class CVSlicer extends Component
         position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
         inverted: types.Boolean("Slice.Inverted"),
         color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
+        boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
     };
 
     ins = this.addInputs(CVSlicer.ins);
@@ -77,6 +78,14 @@ export default class CVSlicer extends Component
 
     protected plane: number[] = null;
     protected axisIndex = -1;
+
+    create()
+    {
+        super.create();
+
+        const scene = this.getGraphComponent(CVScene);
+        this.ins.boundingBox.linkFrom(scene.outs.boundingBox);
+    }
 
     update(context)
     {
@@ -103,7 +112,7 @@ export default class CVSlicer extends Component
         const axisInverted = ins.inverted.value;
         const planeIndex = axisIndex + (axisInverted ? 3 : 0);
 
-        const boundingBox = this.getComponent(CVScene).getModelBoundingBox(false);
+        const boundingBox = this.ins.boundingBox.value;
         if (!boundingBox) {
             return true;
         }

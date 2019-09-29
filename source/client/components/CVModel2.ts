@@ -87,6 +87,7 @@ export default class CVModel2 extends CObject3D
     protected static readonly outs = {
         unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
         quality: types.Enum("LoadedQuality", EDerivativeQuality),
+        updated: types.Event("Updated"),
     };
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
@@ -113,25 +114,24 @@ export default class CVModel2 extends CObject3D
     private _activeDerivative: Derivative = null;
 
     private _visible: boolean = true;
-    private _boundingBox: THREE.Box3;
     private _boxFrame: THREE.Mesh = null;
+    private _localBoundingBox = new THREE.Box3();
 
     constructor(node: Node, id: string)
     {
         super(node, id);
 
         this.object3D = new THREE.Group();
-        this._boundingBox = new THREE.Box3().makeEmpty();
     }
 
     get derivatives() {
         return this._derivatives;
     }
-    get boundingBox() {
-        return this._boundingBox;
-    }
     get activeDerivative() {
         return this._activeDerivative;
+    }
+    get localBoundingBox(): Readonly<THREE.Box3> {
+        return this._localBoundingBox;
     }
 
     protected get assetReader() {
@@ -257,15 +257,18 @@ export default class CVModel2 extends CObject3D
         const object3D = this.object3D;
         const position = this.ins.position;
 
+        // remove position and scaling, but preserve rotation
         object3D.matrix.decompose(_vec3a, _quat, _vec3b);
         object3D.matrix.makeRotationFromQuaternion(_quat);
+
+        // compute local bounding box and set position offset
         _box.makeEmpty();
         helpers.computeLocalBoundingBox(object3D, _box, object3D.parent);
         _box.getCenter(_vec3a);
         _vec3a.multiplyScalar(-1).toArray(position.value);
-        position.set();
 
-        this.emit("bounding-box");
+        // trigger matrix update
+        position.set();
     }
 
     setFromMatrix(matrix: THREE.Matrix4)
@@ -283,7 +286,7 @@ export default class CVModel2 extends CObject3D
 
     fromDocument(document: IDocument, node: INode): number
     {
-        const ins = this.ins;
+        const { ins, outs } = this;
 
         if (!isFinite(node.model)) {
             throw new Error("model property missing in node");
@@ -311,13 +314,14 @@ export default class CVModel2 extends CObject3D
         }
 
         if (data.boundingBox) {
-            this._boundingBox.min.fromArray(data.boundingBox.min);
-            this._boundingBox.max.fromArray(data.boundingBox.max);
+            const boundingBox = this._localBoundingBox;
+            boundingBox.min.fromArray(data.boundingBox.min);
+            boundingBox.max.fromArray(data.boundingBox.max);
 
-            this._boxFrame = new (THREE.Box3Helper as any)(this._boundingBox, "#009cde");
+            this._boxFrame = new (THREE.Box3Helper as any)(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
 
-            this.emit("bounding-box");
+            outs.updated.set();
         }
 
         if (data.derivatives) {
@@ -387,8 +391,8 @@ export default class CVModel2 extends CObject3D
         }
 
         data.boundingBox = {
-            min: this._boundingBox.min.toArray() as Vector3,
-            max: this._boundingBox.max.toArray() as Vector3
+            min: this._localBoundingBox.min.toArray() as Vector3,
+            max: this._localBoundingBox.max.toArray() as Vector3
         };
 
         data.derivatives = this.derivatives.toJSON();
@@ -458,7 +462,7 @@ export default class CVModel2 extends CObject3D
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;
 
-        this.emit("bounding-box");
+        this.outs.updated.set();
     }
 
     /**
@@ -507,7 +511,6 @@ export default class CVModel2 extends CObject3D
                 if (this._activeDerivative) {
                     this.removeObject3D(this._activeDerivative.model);
                     this._activeDerivative.unload();
-                    //this.getMainComponent(CRenderer).logInfo();
                 }
 
                 this._activeDerivative = derivative;
@@ -520,13 +523,12 @@ export default class CVModel2 extends CObject3D
                 }
 
                 // update bounding box based on loaded derivative
-                helpers.computeLocalBoundingBox(derivative.model, this._boundingBox);
-                this.emit("bounding-box");
-
-                // test output bounding box
-                const box = { min: this._boundingBox.min.toArray(), max: this._boundingBox.max.toArray() };
+                helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
+                this.outs.updated.set();
 
                 if (ENV_DEVELOPMENT) {
+                    // log bounding box to console
+                    const box = { min: this._localBoundingBox.min.toArray(), max: this._localBoundingBox.max.toArray() };
                     console.log("CVModel.onLoad - bounding box: ", box);
                 }
 

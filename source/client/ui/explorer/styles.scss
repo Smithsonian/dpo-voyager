@@ -142,6 +142,46 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   @include noselect;
 }
 
+.sv-marker-annotation {
+  max-width: 350px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+
+  &.sv-q0 {
+    transform: translate(0, -100%);
+  }
+  &.sv-q1 {
+    transform: translate(-100%, -100%);
+  }
+  &.sv-q2 {
+    transform: translate(-100%, 0);
+  }
+  &.sv-q3 {
+    transform: translate(0, 0);
+  }
+
+  .sv-title {
+    padding: 0 0 2px 0;
+    font-size: 0.85rem;
+    font-weight: bold;
+  }
+  p {
+    margin: 0.5em 0;
+  }
+  .ff-button {
+    background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+    .ff-icon {
+      fill: $color-icon;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 .sv-pin-annotation {
   padding: 0 4px;
   background-color: transparentize(black, 0.5);

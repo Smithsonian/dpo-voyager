@@ -18,7 +18,7 @@
 import * as THREE from "three";
 
 import { ITypedEvent } from "@ff/core/Publisher";
-import CustomElement from "@ff/ui/CustomElement";
+import CustomElement, { html } from "@ff/ui/CustomElement";
 import HTMLSprite from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
@@ -28,7 +28,7 @@ import Annotation from "../models/Annotation";
 const _vec3up = new THREE.Vector3(0, 1, 0);
 const _vec3dir = new THREE.Vector3();
 
-export { Annotation };
+export { Annotation, html };
 
 /**
  * Emitted by [[AnnotationSprite]] if the user clicks on the annotation.
@@ -75,9 +75,9 @@ export default class AnnotationSprite extends HTMLSprite
     {
         super.update();
 
-        const annotation = this.annotation;
-        this.position.fromArray(annotation.data.position);
-        _vec3dir.fromArray(annotation.data.direction).normalize();
+        const annotation = this.annotation.data;
+        this.position.fromArray(annotation.position);
+        _vec3dir.fromArray(annotation.direction).normalize();
         this.quaternion.setFromUnitVectors(_vec3up, _vec3dir);
 
         this.updateMatrix();

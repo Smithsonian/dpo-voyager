@@ -39,7 +39,6 @@ import CVScene from "client/components/CVScene";
 
 const _position = new THREE.Vector3();
 const _scaling = new THREE.Vector3();
-const _size = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _mat4 = new THREE.Matrix4();
 const _mat3 = new THREE.Matrix3();
@@ -115,51 +114,6 @@ export default class CVAnnotationsTask extends CVTask
         return true;
     }
 
-    createAnnotation(position: number[], direction: number[])
-    {
-        const annotations = this.activeAnnotations;
-        const activeAnnotation = annotations.activeAnnotation;
-        let template = null;
-
-        if (activeAnnotation) {
-            template = activeAnnotation.toJSON();
-            template.id = Annotation.generateId();
-        }
-
-        if (annotations) {
-            const model = annotations.getComponent(CVModel2);
-            const annotation = new Annotation(template);
-
-            const data = annotation.data;
-            data.position = position;
-            data.direction = direction;
-
-            if (!template) {
-                data.scale = this._defaultScale * (1 / model.outs.unitScale.value);
-            }
-
-            annotations.addAnnotation(annotation);
-            annotations.activeAnnotation = annotation;
-        }
-    }
-
-    moveAnnotation(position: number[], direction: number[])
-    {
-        const annotations = this.activeAnnotations;
-        if (annotations) {
-            const annotation = annotations.activeAnnotation;
-
-            if (annotation) {
-                annotation.data.position = position;
-                annotation.data.direction = direction;
-                annotation.update();
-
-                annotations.updateAnnotation(annotation);
-                this.emitUpdateEvent();
-            }
-        }
-    }
-
     removeAnnotation()
     {
         const annotations = this.activeAnnotations;
@@ -196,7 +150,7 @@ export default class CVAnnotationsTask extends CVTask
             _mat4.compose(_position, _quat, _scaling);
             _mat3.getNormalMatrix(_mat4);
 
-            const position = event.view.pickPosition(event, model.boundingBox).applyMatrix4(_mat4).toArray();
+            const position = event.view.pickPosition(event, model.localBoundingBox).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
 
             const mode = this.ins.mode.getValidatedValue();
@@ -212,16 +166,60 @@ export default class CVAnnotationsTask extends CVTask
         }
     }
 
+    protected createAnnotation(position: number[], direction: number[])
+    {
+        const annotations = this.activeAnnotations;
+        if (!annotations) {
+            return;
+        }
+
+        const activeAnnotation = annotations.activeAnnotation;
+        let template = undefined;
+
+        if (activeAnnotation) {
+            template = activeAnnotation.toJSON();
+            template.id = Annotation.generateId();
+        }
+
+        const model = annotations.getComponent(CVModel2);
+        const annotation = new Annotation(template);
+
+        const data = annotation.data;
+        data.position = position;
+        data.direction = direction;
+
+        if (!template) {
+            data.scale = this._defaultScale * (1 / model.outs.unitScale.value);
+        }
+
+        annotations.addAnnotation(annotation);
+        annotations.activeAnnotation = annotation;
+    }
+
+    protected moveAnnotation(position: number[], direction: number[])
+    {
+        const annotations = this.activeAnnotations;
+        if (annotations) {
+            const annotation = annotations.activeAnnotation;
+
+            if (annotation) {
+                annotation.data.position = position;
+                annotation.data.direction = direction;
+                annotation.update();
+
+                annotations.updateAnnotation(annotation);
+                this.emitUpdateEvent();
+            }
+        }
+    }
+
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         super.onActiveDocument(previous, next);
 
         if (next) {
             const scene = next.getInnerComponent(CVScene);
-            const bb = scene.getModelBoundingBox(true);
-            bb.getSize(_size);
-            const max = Math.max(_size.x, _size.y, _size.z);
-            this._defaultScale = max * 0.05;
+            this._defaultScale = scene.outs.boundingRadius.value * 0.05;
         }
     }
 

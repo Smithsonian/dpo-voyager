@@ -279,10 +279,10 @@ export default class CVAnnotationView extends CObject3D
         return Object.keys(this._annotations).map(key => this._annotations[key]);
     }
 
-    getAnnotationById(id: string)
-    {
-        return this._annotations[id];
-    }
+    // getAnnotationById(id: string)
+    // {
+    //     return this._annotations[id];
+    // }
 
     addAnnotation(annotation: Annotation)
     {
@@ -361,7 +361,12 @@ export default class CVAnnotationView extends CObject3D
         }
 
         const annotation = target && target.annotation;
+
         if (annotation) {
+            if (ENV_DEVELOPMENT) {
+                console.log(`CVAnnotationView.onPointerUp - title: ${annotation.data.title}, marker: ${annotation.data.marker}, id: ${annotation.id}`);
+            }
+
             // click on annotation: activate annotation
             this.emit<IAnnotationClickEvent>({ type: "click", sprite: target, annotation });
             event.stopPropagation = true;
