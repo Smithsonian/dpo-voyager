@@ -48,9 +48,9 @@ export default class LabelSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
+    renderHTMLElement(element: LabelAnnotation, container: HTMLElement, camera: THREE.Camera)
     {
-        return super.renderHTMLElement(container, camera, this.cone);
+        super.renderHTMLElement(element, container, camera, this.cone);
     }
 
     createHTMLElement(): LabelAnnotation

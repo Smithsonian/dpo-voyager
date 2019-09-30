@@ -142,23 +142,19 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   @include noselect;
 }
 
-.sv-marker-annotation {
-  max-width: 350px;
+.sv-circle-annotation {
+  width: 16%;
+  min-width: 160px;
+  max-width: 260px;
   padding: 4px 8px;
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 4px;
 
-  &.sv-q0 {
-    transform: translate(0, -100%);
+  &.sv-align-right {
+    transform: translateX(-100%);
   }
-  &.sv-q1 {
-    transform: translate(-100%, -100%);
-  }
-  &.sv-q2 {
-    transform: translate(-100%, 0);
-  }
-  &.sv-q3 {
-    transform: translate(0, 0);
+  &.sv-align-bottom {
+    transform: translateY(-100%);
   }
 
   .sv-title {
@@ -232,7 +228,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     padding: 1px 0 2px 0;
     font-size: 0.85rem;
     font-weight: bold;
-    cursor: pointer;
   }
 
   .sv-content {
@@ -256,6 +251,12 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+.sv-extended-annotation {
+  .sv-title {
+    cursor: pointer;
   }
 }
 

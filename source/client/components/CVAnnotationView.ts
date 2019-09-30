@@ -36,7 +36,7 @@ import AnnotationFactory from "../annotations/AnnotationFactory";
 
 import "../annotations/StandardSprite";
 import "../annotations/ExtendedSprite";
-import "../annotations/MarkerSprite";
+import "../annotations/CircleSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 

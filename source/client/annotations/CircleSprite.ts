@@ -19,7 +19,7 @@ import * as THREE from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
 
-import { customElement, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
 import GPUPicker from "@ff/three/GPUPicker";
@@ -31,25 +31,22 @@ import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _quadrantClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
-
-// TODO: Temporary
+// TODO: Temporary until the framework has centralized font management
 const _fontReader = new FontReader(new THREE.LoadingManager());
 
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();
 const _quat1 = new THREE.Quaternion();
 const _mat4 = new THREE.Matrix4();
-const _offset = new THREE.Vector3(0, 1, 0);
 
-export default class MarkerSprite extends AnnotationSprite
+export default class CircleSprite extends AnnotationSprite
 {
-    static readonly typeName: string = "Marker";
+    static readonly typeName: string = "Circle";
 
     protected static readonly behindOpacity = 0.2;
 
     protected offset: THREE.Group;
-    protected dummyMesh: THREE.Mesh;
+    protected anchorMesh: THREE.Mesh;
 
     protected ringMesh: THREE.Mesh;
     protected ringGeometry: THREE.RingBufferGeometry;
@@ -62,7 +59,6 @@ export default class MarkerSprite extends AnnotationSprite
     protected markerA: THREE.Mesh;
     protected markerB: THREE.Mesh;
 
-    private _quadrant = -1;
 
     constructor(annotation: Annotation)
     {
@@ -73,13 +69,13 @@ export default class MarkerSprite extends AnnotationSprite
 
         this.add(this.offset);
 
-        this.ringGeometry = new THREE.RingBufferGeometry(0.35, 0.4, 32);
+        this.ringGeometry = new THREE.RingBufferGeometry(0.45, 0.5, 32);
 
         this.ringMaterialA = new THREE.MeshBasicMaterial();
         this.ringMaterialB = new THREE.MeshBasicMaterial({
             depthFunc: THREE.GreaterDepth,
             depthWrite: false,
-            opacity: MarkerSprite.behindOpacity,
+            opacity: CircleSprite.behindOpacity,
             transparent: true
         });
 
@@ -94,7 +90,7 @@ export default class MarkerSprite extends AnnotationSprite
         );
 
         const innerCircle = new THREE.Mesh(
-            new THREE.CircleBufferGeometry(0.35, 32),
+            new THREE.CircleBufferGeometry(0.45, 32),
             new THREE.MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
         );
 
@@ -102,13 +98,13 @@ export default class MarkerSprite extends AnnotationSprite
         innerCircle.position.set(0, 0, 0.005);
         innerCircle.updateMatrix();
 
-        this.dummyMesh = new THREE.Mesh(
+        this.anchorMesh = new THREE.Mesh(
             new THREE.BufferGeometry(),
             new THREE.MeshBasicMaterial()
         );
+        this.anchorMesh.frustumCulled = false;
 
-        this.add(this.dummyMesh);
-        this.offset.add(this.ringMesh, ringMeshB, innerCircle);
+        this.offset.add(this.anchorMesh, this.ringMesh, ringMeshB, innerCircle);
 
         this.markerGeometry = null;
         this.markerA = null;
@@ -124,7 +120,7 @@ export default class MarkerSprite extends AnnotationSprite
             this.markerMaterialB = new THREE.RawShaderMaterial(createTextShader({
                 map: font.texture,
                 transparent: true,
-                opacity: MarkerSprite.behindOpacity,
+                opacity: CircleSprite.behindOpacity,
                 color: 0xffffff,
                 depthFunc: THREE.GreaterDepth,
                 depthWrite: false
@@ -157,9 +153,11 @@ export default class MarkerSprite extends AnnotationSprite
         this.ringMaterialA.color.setRGB(c[0], c[1], c[2]);
         this.ringMaterialB.color.setRGB(c[0], c[1], c[2]);
 
+        //this.anchorMesh.position.set(0, 0, annotation.scale * 0.1);
+
         if (this.markerA) {
             const length = annotation.marker.length;
-            const scale = length > 1 ? 0.011 : 0.013;
+            const scale = length > 1 ? 0.013 : 0.016;
 
             const geometry = this.markerGeometry;
             (geometry as any).update(annotation.marker);
@@ -178,26 +176,28 @@ export default class MarkerSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(container: HTMLElement, camera: UniversalCamera): HTMLElement | null
+    renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
     {
         const annotation = this.annotation.data;
 
         // billboard rotation
-        _mat4.getInverse(this.matrixWorld, false);
-        _mat4.multiply(camera.matrixWorld);
+        _mat4.copy(camera.matrixWorldInverse);
+        _mat4.multiply(this.matrixWorld);
         _mat4.decompose(_vec3a, _quat1, _vec3b);
-        this.offset.quaternion.copy(_quat1);
+        this.offset.quaternion.copy(_quat1.inverse());
 
         // scale annotation with respect to camera distance
-        const annotationScale = annotation.scale;
+        const vpHeight = container.offsetHeight + 250;
+        const vpScale = annotation.scale * 55 / vpHeight;
         let scaleFactor = 1;
 
         if (camera.isPerspectiveCamera) {
-            _vec3a.set(0, 0, 0).applyMatrix4(_mat4);
-            scaleFactor = Math.tan(camera.fov * THREE.Math.DEG2RAD * 0.5) * _vec3a.length() * annotationScale / 150;
+            const distZ = -_vec3a.set(0, 0, 0).applyMatrix4(_mat4).z;
+            const theta = camera.fov * THREE.Math.DEG2RAD * 0.5;
+            scaleFactor = Math.tan(theta) * distZ * vpScale;
         }
         else {
-            scaleFactor = camera.size * annotationScale / 30;
+            scaleFactor = camera.size * 0.5 * vpScale;
         }
 
         this.offset.scale.setScalar(scaleFactor);
@@ -205,53 +205,71 @@ export default class MarkerSprite extends AnnotationSprite
 
         this.offset.updateMatrix();
 
+        if (annotation.expanded) {
+            // calculate screen position of HTML sprite element
+            _vec3a.set(0, 0, 0).applyMatrix4(this.anchorMesh.modelViewMatrix).applyMatrix4(camera.projectionMatrix);
+            _vec3b.set(0.6, 0.5, 0).applyMatrix4(this.anchorMesh.modelViewMatrix).applyMatrix4(camera.projectionMatrix);
+            const centerX = (_vec3a.x + 1) * 0.5 * container.clientWidth;
+            const centerY = (1 - _vec3a.y) * 0.5 * container.clientHeight;
+            const offsetX = (_vec3b.x + 1) * 0.5 * container.clientWidth - centerX;
+            const offsetY = (1 - _vec3b.y) * 0.5 * container.clientHeight - centerY;
 
-        const element = super.renderHTMLElement(container, camera, this.dummyMesh, _offset) as MarkerAnnotation;
+            let x = centerX + offsetX;
+            let y = centerY + offsetY;
+            element.classList.remove("sv-align-right", "sv-align-bottom");
 
-        // update quadrant/orientation
-        if (this.orientationQuadrant !== this._quadrant) {
-            element.classList.remove(_quadrantClasses[this._quadrant]);
-            element.classList.add(_quadrantClasses[this.orientationQuadrant]);
-            this._quadrant = this.orientationQuadrant;
+            if (x + element.offsetWidth >= container.offsetWidth) {
+                x = centerX - offsetX;
+                element.classList.add("sv-align-right");
+            }
+            if (y + element.offsetHeight >= container.offsetHeight) {
+                y = centerY - offsetY;
+                element.classList.add("sv-align-bottom");
+            }
+
+            element.setPosition(x, y);
         }
-
-        return element;
     }
 
-    protected createHTMLElement(): HTMLElement
+    protected createHTMLElement()
     {
-        return new MarkerAnnotation(this);
+        return new CircleAnnotation(this);
     }
 
-    protected setHTMLElementVisible(element: AnnotationElement, visible: boolean)
+    protected updateHTMLElement(element: AnnotationElement)
     {
-        // visibility handled by the element's render method
+        element.setVisible(this.visible);
         element.requestUpdate();
     }
 }
 
-AnnotationFactory.registerType(MarkerSprite);
+AnnotationFactory.registerType(CircleSprite);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-marker-annotation")
-class MarkerAnnotation extends AnnotationElement
+@customElement("sv-circle-annotation")
+class CircleAnnotation extends AnnotationElement
 {
-    constructor(sprite: MarkerSprite)
+    constructor(sprite: CircleSprite)
     {
         super(sprite);
+    }
+
+    setVisible(visible: boolean)
+    {
+        // element is visible only if the annotation is in expanded state
+        super.setVisible(visible && this.sprite.annotation.data.expanded);
     }
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-marker-annotation");
+        this.classList.add("sv-circle-annotation");
     }
 
     protected render()
     {
         const annotation = this.sprite.annotation.data;
-        this.style.display = annotation.expanded && this.sprite.visible ? "block" : "none";
 
         return html`<div class="sv-title">${annotation.title}</div>
             <p>${annotation.lead}</p>

@@ -21,7 +21,7 @@ import math from "@ff/core/math";
 import Color from "@ff/core/Color";
 
 import { customElement, PropertyValues } from "@ff/ui/CustomElement";
-import Button from "@ff/ui/Button";
+import "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import AnnotationFactory from "./AnnotationFactory";
@@ -36,22 +36,21 @@ export default class StandardSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Standard";
 
-    protected beam: THREE.Line;
+    protected stemLine: THREE.Line;
     protected quadrant = -1;
 
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        const geo = new THREE.Geometry();
-        geo.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
-        const mat = new THREE.LineBasicMaterial({ color: "#009cde" });
-        mat.transparent = true;
+        const geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+        const material = new THREE.LineBasicMaterial({ color: "#009cde", transparent: true });
 
-        this.beam = new THREE.Line(geo, mat);
-        this.beam.frustumCulled = false;
-        this.beam.matrixAutoUpdate = false;
-        this.add(this.beam);
+        this.stemLine = new THREE.Line(geometry, material);
+        this.stemLine.frustumCulled = false;
+        this.stemLine.matrixAutoUpdate = false;
+        this.add(this.stemLine);
 
         this.update();
     }
@@ -60,24 +59,24 @@ export default class StandardSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
 
-        this.beam.scale.setScalar(annotation.scale);
-        this.beam.position.y = annotation.offset;
-        this.beam.updateMatrix();
+        this.stemLine.scale.setScalar(annotation.scale);
+        this.stemLine.position.y = annotation.offset;
+        this.stemLine.updateMatrix();
 
-        const material = this.beam.material as THREE.LineBasicMaterial;
+        const material = this.stemLine.material as THREE.LineBasicMaterial;
         material.color.fromArray(annotation.color);
 
         super.update();
     }
 
-    renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
+    renderHTMLElement(element: StandardAnnotation, container: HTMLElement, camera: THREE.Camera)
     {
-        const element = super.renderHTMLElement(container, camera, this.beam, _offset) as StandardAnnotation;
+        super.renderHTMLElement(element, container, camera, this.stemLine, _offset);
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
-        this.beam.material["opacity"] = opacity;
+        this.stemLine.material["opacity"] = opacity;
         element.setOpacity(opacity);
 
         // update quadrant/orientation
@@ -86,8 +85,6 @@ export default class StandardSprite extends AnnotationSprite
             element.classList.add(_quadrantClasses[this.orientationQuadrant]);
             this.quadrant = this.orientationQuadrant;
         }
-
-        return element;
     }
 
     protected createHTMLElement(): StandardAnnotation
@@ -108,15 +105,11 @@ class StandardAnnotation extends AnnotationElement
     constructor(sprite: AnnotationSprite)
     {
         super(sprite);
+        this.onClickTitle = this.onClickTitle.bind(this);
 
         this.titleElement = this.appendElement("div");
-        this.titleElement.classList.add("sv-content", "sv-title");
-    }
-
-    setOpacity(opacity: number)
-    {
-        this.style.opacity = opacity.toString();
-        this.style.visibility = opacity ? "visible" : "hidden";
+        this.titleElement.classList.add("sv-title");
+        this.titleElement.addEventListener("click", this.onClickTitle);
     }
 
     protected firstConnected()
@@ -135,5 +128,11 @@ class StandardAnnotation extends AnnotationElement
 
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();
+    }
+
+    protected onClickTitle(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitClickEvent();
     }
 }

@@ -63,17 +63,15 @@ export default class PinSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(container: HTMLElement, camera: THREE.Camera)
+    renderHTMLElement(element: PinAnnotation, container: HTMLElement, camera: THREE.Camera)
     {
-        const element = super.renderHTMLElement(container, camera, this.pin, _offset) as PinAnnotation;
+        super.renderHTMLElement(element, container, camera, this.pin, _offset);
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
         (this.pin.material as THREE.MeshPhongMaterial).opacity = opacity;
         element.setOpacity(opacity);
-
-        return element;
     }
 
     protected createHTMLElement(): PinAnnotation

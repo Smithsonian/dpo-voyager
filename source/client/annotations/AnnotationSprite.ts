@@ -18,8 +18,7 @@
 import * as THREE from "three";
 
 import { ITypedEvent } from "@ff/core/Publisher";
-import CustomElement, { html } from "@ff/ui/CustomElement";
-import HTMLSprite from "@ff/three/HTMLSprite";
+import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
 
@@ -93,11 +92,6 @@ export default class AnnotationSprite extends HTMLSprite
         this.updateMatrix();
     }
 
-    updateHTMLElement(element: AnnotationElement)
-    {
-        element.requestUpdate();
-    }
-
     emitClickEvent()
     {
         const event: IAnnotationClickEvent = { type: "click", annotation: this.annotation, sprite: this };
@@ -113,7 +107,7 @@ export default class AnnotationSprite extends HTMLSprite
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class AnnotationElement extends CustomElement
+export class AnnotationElement extends SpriteElement
 {
     protected sprite: AnnotationSprite;
 
