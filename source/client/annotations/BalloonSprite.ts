@@ -18,11 +18,14 @@
 import * as THREE from "three";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
+import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class BalloonSprite extends AnnotationSprite
 {
+    static readonly typeName: string = "Balloon";
+
     constructor(annotation: Annotation)
     {
         super(annotation);
@@ -35,3 +38,5 @@ export default class BalloonSprite extends AnnotationSprite
         super.update();
     }
 }
+
+AnnotationFactory.registerType(BalloonSprite);

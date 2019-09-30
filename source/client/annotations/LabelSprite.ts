@@ -18,12 +18,16 @@
 import * as THREE from "three";
 
 import { customElement, html } from "@ff/ui/CustomElement";
+
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
+import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class LabelSprite extends AnnotationSprite
 {
+    static readonly typeName: string = "Label";
+
     protected cone: THREE.Mesh;
 
     constructor(annotation: Annotation)
@@ -54,6 +58,10 @@ export default class LabelSprite extends AnnotationSprite
         return new LabelAnnotation(this);
     }
 }
+
+AnnotationFactory.registerType(LabelSprite);
+
+////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-label-annotation")
 class LabelAnnotation extends AnnotationElement

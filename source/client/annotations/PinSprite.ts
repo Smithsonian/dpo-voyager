@@ -17,9 +17,11 @@
 
 import * as THREE from "three";
 
-import { customElement, html } from "@ff/ui/CustomElement";
-import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import math from "@ff/core/math";
+import { customElement, html } from "@ff/ui/CustomElement";
+
+import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
+import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,6 +29,8 @@ const _offset = new THREE.Vector3(0, 1.5, 0);
 
 export default class PinSprite extends AnnotationSprite
 {
+    static readonly typeName: string = "Pin";
+
     protected pin: THREE.Mesh;
 
     constructor(annotation: Annotation)
@@ -77,6 +81,10 @@ export default class PinSprite extends AnnotationSprite
         return new PinAnnotation(this);
     }
 }
+
+AnnotationFactory.registerType(PinSprite);
+
+////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-pin-annotation")
 class PinAnnotation extends AnnotationElement

@@ -17,28 +17,22 @@
 
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
-import { IAnnotation as IAnnotationJSON } from "client/schema/model";
+import { IAnnotation } from "client/schema/model";
+import AnnotationFactory from "client/annotations/AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export type Vector3 = number[];
-export enum EAnnotationStyle { Standard, Extended, Balloon, Marker, Pin }
 
 export type IAnnotationUpdateEvent = IDocumentUpdateEvent<Annotation>;
 export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 
-// @ts-ignore: change property type from string to enum
-export interface IAnnotation extends IAnnotationJSON
-{
-    style: EAnnotationStyle;
-}
 
-
-export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
+export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
     static readonly defaultColor = [ 0, 0.61, 0.87 ];
 
-    static fromJSON(json: IAnnotationJSON)
+    static fromJSON(json: IAnnotation)
     {
         return new Annotation(json);
     }
@@ -54,7 +48,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
             articleId: "",
             imageUri: "",
 
-            style: EAnnotationStyle.Standard,
+            style: AnnotationFactory.defaultTypeName,
             visible: true,
             expanded: false,
 
@@ -71,7 +65,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         };
     }
 
-    protected deflate(data: IAnnotation, json: IAnnotationJSON)
+    protected deflate(data: IAnnotation, json: IAnnotation)
     {
         json.id = data.id;
 
@@ -93,8 +87,8 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         if (data.imageUri) {
             json.imageUri = data.imageUri;
         }
-        if (data.style !== EAnnotationStyle.Standard) {
-            json.style = EAnnotationStyle[data.style];
+        if (data.style !== AnnotationFactory.defaultTypeName) {
+            json.style = data.style;
         }
         if (data.visible === false) {
             json.visible = data.visible;
@@ -130,7 +124,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         return data as IAnnotation;
     }
 
-    protected inflate(json: IAnnotationJSON, data: IAnnotation)
+    protected inflate(json: IAnnotation, data: IAnnotation)
     {
         data.id = json.id;
 
@@ -142,7 +136,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotationJSON>
         data.articleId = json.articleId || "";
         data.imageUri = json.imageUri || "";
 
-        data.style = EAnnotationStyle[json.style] || EAnnotationStyle.Standard;
+        data.style = json.style || AnnotationFactory.defaultTypeName;
         data.visible = json.visible !== undefined ? json.visible : true;
         data.expanded = false;
 

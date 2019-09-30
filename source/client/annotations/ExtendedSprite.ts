@@ -24,6 +24,7 @@ import { customElement, PropertyValues, html, render } from "@ff/ui/CustomElemen
 import "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
+import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +34,8 @@ const _offset = new THREE.Vector3(0, 1, 0);
 
 export default class ExtendedSprite extends AnnotationSprite
 {
+    static readonly typeName: string = "Extended";
+
     protected beam: THREE.Line;
     protected quadrant = -1;
 
@@ -92,6 +95,8 @@ export default class ExtendedSprite extends AnnotationSprite
         return new ExtendedAnnotation(this);
     }
 }
+
+AnnotationFactory.registerType(ExtendedSprite);
 
 ////////////////////////////////////////////////////////////////////////////////
 

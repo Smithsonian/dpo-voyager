@@ -53,7 +53,7 @@ export interface IAnnotationLinkEvent extends ITypedEvent<"link">
 
 /**
  * Defines the visual appearance of an annotation.
- * A sprite consists of a 3D (WebGL) part and a 2D (HTML) part.
+ * An annotation consists of a 3D (WebGL) part and a 2D (HTML) part.
  *
  * ### Events
  * - *"click"* Emitted if the user clicks on the annotation.
@@ -61,6 +61,16 @@ export interface IAnnotationLinkEvent extends ITypedEvent<"link">
  */
 export default class AnnotationSprite extends HTMLSprite
 {
+    static readonly typeName: string = "Annotation";
+
+    /**
+     * Returns the type name of this annotation object.
+     * @returns {string}
+     */
+    get typeName() {
+        return (this.constructor as typeof AnnotationSprite).typeName;
+    }
+
     readonly annotation: Annotation;
 
     constructor(annotation: Annotation)

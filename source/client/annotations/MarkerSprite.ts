@@ -27,6 +27,7 @@ import GPUPicker from "@ff/three/GPUPicker";
 import FontReader from "client/io/FontReader";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
+import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +44,8 @@ const _offset = new THREE.Vector3(0, 1, 0);
 
 export default class MarkerSprite extends AnnotationSprite
 {
+    static readonly typeName: string = "Marker";
+
     protected static readonly behindOpacity = 0.2;
 
     protected offset: THREE.Group;
@@ -226,6 +229,8 @@ export default class MarkerSprite extends AnnotationSprite
         element.requestUpdate();
     }
 }
+
+AnnotationFactory.registerType(MarkerSprite);
 
 ////////////////////////////////////////////////////////////////////////////////
 

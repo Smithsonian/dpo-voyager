@@ -29,14 +29,14 @@ import CVMeta from "./CVMeta";
 import CVReader from "./CVReader";
 
 import { IAnnotation } from "client/schema/model";
-import Annotation, { EAnnotationStyle } from "../models/Annotation";
+import Annotation from "../models/Annotation";
 
 import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
-import StandardSprite from "../annotations/StandardSprite";
-import ExtendedSprite from "../annotations/ExtendedSprite";
-import BalloonSprite from "../annotations/BalloonSprite";
-import MarkerSprite from "../annotations/MarkerSprite";
-import PinSprite from "../annotations/PinSprite";
+import AnnotationFactory from "../annotations/AnnotationFactory";
+
+import "../annotations/StandardSprite";
+import "../annotations/ExtendedSprite";
+import "../annotations/MarkerSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,7 +62,7 @@ export default class CVAnnotationView extends CObject3D
         lead: types.String("Annotation.Lead"),
         marker: types.String("Annotation.Marker"),
         tags: types.String("Annotation.Tags"),
-        style: types.Enum("Annotation.Style", EAnnotationStyle, EAnnotationStyle.Standard),
+        style: types.Option("Annotation.Style", AnnotationFactory.typeNames),
         scale: types.Scale("Annotation.Scale", { preset: 1, precision: 3 }),
         offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
         article: types.Option("Annotation.Article", []),
@@ -118,7 +118,7 @@ export default class CVAnnotationView extends CObject3D
             ins.title.setValue(annotation ? annotation.data.title : "", true);
             ins.lead.setValue(annotation ? annotation.data.lead : "", true);
             ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "", true);
-            ins.style.setValue(annotation ? annotation.data.style : EAnnotationStyle.Standard, true);
+            ins.style.setOption(annotation ? annotation.data.style : AnnotationFactory.defaultTypeName, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
             ins.tilt.setValue(annotation ? annotation.data.tilt : 0, true);
@@ -207,7 +207,7 @@ export default class CVAnnotationView extends CObject3D
                 this.emit<ITagUpdateEvent>({ type: "tag-update" });
             }
             if (ins.style.changed) {
-                annotation.set("style", ins.style.getValidatedValue());
+                annotation.set("style", ins.style.getOptionText());
                 this.createSprite(annotation);
             }
             if (ins.scale.changed) {
@@ -405,25 +405,7 @@ export default class CVAnnotationView extends CObject3D
     {
         this.removeSprite(annotation);
 
-        let sprite;
-        switch(annotation.data.style) {
-            case EAnnotationStyle.Pin:
-                sprite = new PinSprite(annotation);
-                break;
-            case EAnnotationStyle.Marker:
-                sprite = new MarkerSprite(annotation);
-                break;
-            case EAnnotationStyle.Balloon:
-                sprite = new BalloonSprite(annotation);
-                break;
-            case EAnnotationStyle.Extended:
-                sprite = new ExtendedSprite(annotation);
-                break;
-            case EAnnotationStyle.Standard:
-            default:
-                sprite = new StandardSprite(annotation);
-                break;
-        }
+        const sprite = AnnotationFactory.createInstance(annotation);
 
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);
