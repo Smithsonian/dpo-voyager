@@ -202,8 +202,8 @@ Version: ${ENV_VERSION}
             this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
         }
         else {
-            // if nothing else specified, try to read "document.json" from the current folder
-            this.loadDocument("document.json", undefined).catch(() => {});
+            // if nothing else specified, try to read "document.svx.json" from the current folder
+            this.loadDocument("document.svx.json", undefined).catch(() => {});
         }
     }
 }
