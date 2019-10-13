@@ -40,8 +40,7 @@ import NVTasks from "../nodes/NVTasks";
 import NVoyagerStory from "../nodes/NVoyagerStory";
 
 import MainView from "../ui/story/MainView";
-import CVTaskProvider from "../components/CVTaskProvider";
-import { ETaskMode } from "./taskSets";
+import CVTaskProvider, { ETaskMode } from "../components/CVTaskProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -157,8 +156,19 @@ export default class StoryApplication
         const app = this.system.getMainComponent(CVStoryApplication);
         app.referrer = props.referrer;
 
-        const lcMode = props.mode[0].toLowerCase();
-        const mode = lcMode === "a" ? ETaskMode.Authoring : (lcMode === "e" ? ETaskMode.Expert : ETaskMode.QC);
+        const modeText = props.mode.toLowerCase();
+        let mode = ETaskMode.Edit;
+
+        if (modeText.startsWith("au")) {
+            mode = ETaskMode.Authoring;
+        }
+        else if (modeText.startsWith("qc")) {
+            mode = ETaskMode.QC;
+        }
+        else if (modeText.startsWith("ex")) {
+            mode = ETaskMode.Expert;
+        }
+
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);
     }

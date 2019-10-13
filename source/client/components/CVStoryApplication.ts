@@ -83,36 +83,44 @@ export default class CVStoryApplication extends Component
     {
         const ins = this.ins;
 
-
         if (ins.exit.changed && this.referrer) {
             location.assign(this.referrer);
         }
 
         const document = this.documentProvider.activeComponent;
-        const mode = this.taskProvider.ins.mode.getValidatedValue();
-        const components: INodeComponents = mode === ETaskMode.QC ? { model: true } : null;
 
-        if (document && ins.save.changed) {
-            const data = document.deflateDocument(components);
-            const json = JSON.stringify(data, (key, value) =>
-                typeof value === "number" ? parseFloat(value.toFixed(7)) : value);
+        if (document) {
+            // in QC mode, only save the model, but no scene data, in all other modes, save everything
+            const storyMode = this.taskProvider.ins.mode.getValidatedValue();
+            const components: INodeComponents = storyMode === ETaskMode.QC ? { model: true } : null;
 
-            this.assetWriter.putJSON(json, document.assetPath)
+            if (ins.save.changed) {
+                const data = document.deflateDocument(components);
+                const json = JSON.stringify(data, (key, value) =>
+                    typeof value === "number" ? parseFloat(value.toFixed(7)) : value);
+
+                this.assetWriter.putJSON(json, document.assetPath)
                 .then(() => new Notification(`Successfully uploaded file to '${document.assetPath}'`, "info", 4000))
                 .catch(e => new Notification(`Failed to upload file to '${document.assetPath}'`, "error", 8000));
+            }
+
+            if (ins.download.changed) {
+                const data = document.deflateDocument(components);
+                const json = JSON.stringify(data, null, 2);
+
+                const fileName = this.assetManager.getAssetName(document.assetPath);
+                download.json(json, fileName);
+            }
         }
 
-        if (document && ins.download.changed) {
-            const data = document.deflateDocument(components);
-            const json = JSON.stringify(data, null, 2);
-
-            const fileName = this.assetManager.getAssetName(document.assetPath);
-            download.json(json, fileName);
-        }
 
         return false;
     }
 
+    /**
+     * Provoke a user prompt before unloading the page
+     * @param event
+     */
     protected beforeUnload(event)
     {
         event.returnValue = "x";
