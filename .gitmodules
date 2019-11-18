@@ -18,5 +18,5 @@
 	url = https://github.com/framefactory/ff-scene
 [submodule "docs/public"]
 	path = docs/public
-	url = git@github.com:smithsonian/dpo-voyager
+	url = https://github.com/Smithsonian/dpo-voyager
 	branch = gh-pages
