@@ -30,10 +30,17 @@ cd <my_project_dir>
 git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .
 ```
 
-Copy and rename the `secrets.template.env` file:
+Copy and rename the `.env.template` file:
 
 ```
-cp services/secrets.template.env services/secrets.env
+cp .env.template .env
+```
+
+Now edit the environment variables in `.env` in your editor of choice to reflect your local configuration. To edit using
+vim enter:
+
+```
+vim .env
 ```
 
 #### Dockerized environment
