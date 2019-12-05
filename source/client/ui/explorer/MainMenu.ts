@@ -77,9 +77,11 @@ export default class MainMenu extends DocumentView
         const tourButtonVisible = setup.tours.outs.count.value > 0;
         const toursActive = setup.tours.ins.enabled.value;
 
+        const isEditing = !!this.system.getComponent("CVStoryApplication", true);
+        const modeButtonsDisabled = toursActive && !isEditing;
+
         const annotationsButtonVisible = true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
-        const annotationsButtonActive = annotationsActive && !toursActive;
 
         const fullscreen = this.fullscreen;
         const fullscreenButtonVisible = fullscreen.outs.fullscreenAvailable.value;
@@ -87,20 +89,19 @@ export default class MainMenu extends DocumentView
 
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
-        const toolButtonActive = toolsActive && !toursActive;
 
         return html`${tourButtonVisible ? html`<ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         <ff-button icon="article" title="Read more..."
-            ?selected=${readerActive} ?disabled=${toursActive} @click=${this.onToggleReader}></ff-button>
+            ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>
         ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
-            ?selected=${annotationsButtonActive} ?disabled=${toursActive} @click=${this.onToggleAnnotations}></ff-button>` : null}
+            ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
         <ff-button icon="share" title="Share Experience"
             ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
         ${fullscreenButtonVisible ? html`<ff-button icon="expand" title="Fullscreen"
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
         ${toolButtonVisible ? html`<ff-button icon="tools" title="Tools and Settings"
-            ?selected=${toolButtonActive} ?disabled=${toursActive} @click=${this.onToggleTools}></ff-button>` : null}`;
+            ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
     protected onToggleReader()
@@ -129,17 +130,14 @@ export default class MainMenu extends DocumentView
 
     protected onToggleAnnotations()
     {
-        const tourIns = this.activeDocument.setup.tours.ins;
         const toolIns = this.toolProvider.ins;
         const viewerIns = this.activeDocument.setup.viewer.ins;
 
-        if (!tourIns.enabled.value) {
-            if (toolIns.visible.value) {
-                toolIns.visible.setValue(false);
-            }
-
-            viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+        if (toolIns.visible.value) {
+            toolIns.visible.setValue(false);
         }
+
+        viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
     }
 
     protected onToggleShare()
@@ -165,17 +163,14 @@ export default class MainMenu extends DocumentView
 
     protected onToggleTools()
     {
-        const tourIns = this.activeDocument.setup.tours.ins;
         const toolIns = this.toolProvider.ins;
         const viewerIns = this.activeDocument.setup.viewer.ins;
 
-        if (!tourIns.enabled.value) {
-            if (viewerIns.annotationsVisible.value) {
-                viewerIns.annotationsVisible.setValue(false);
-            }
-
-            toolIns.visible.setValue(!toolIns.visible.value);
+        if (viewerIns.annotationsVisible.value) {
+            viewerIns.annotationsVisible.setValue(false);
         }
+
+        toolIns.visible.setValue(!toolIns.visible.value);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

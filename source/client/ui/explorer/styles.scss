@@ -291,6 +291,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &[selected] {
       background-color: $color-primary;
 
+      &[disabled] {
+        background-color: $color-background-light;
+      }
+
       & > .ff-icon {
         filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
         fill: $color-text;
