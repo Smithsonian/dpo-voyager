@@ -75,7 +75,7 @@ export default class ArticleEditor extends SystemView
     saveArticle()
     {
         if (this._assetPath) {
-            this.writeArticle(this._assetPath);
+            this.writeArticle();
         }
     }
 
@@ -84,7 +84,7 @@ export default class ArticleEditor extends SystemView
         if (this._changed && this._assetPath) {
             return MessageBox.show("Close Article", "Would you like save your changes?", "warning", "yes-no").then(result => {
                 if (result.ok) {
-                    return this.writeArticle(this._assetPath).then(() => this.clearArticle());
+                    return this.writeArticle().then(() => this.clearArticle());
                 }
                 else {
                     return this.clearArticle();
@@ -126,22 +126,24 @@ export default class ArticleEditor extends SystemView
         return Promise.resolve(content);
     }
 
-    protected writeArticle(articlePath: string)
+    protected writeArticle()
     {
+        const basePath = this.assetManager.getAssetBasePath(this._assetPath);
+
         let content = this._editor.root.innerHTML;
 
         // transform absolute to article-relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
-            return pre + this.assetManager.getRelativeAssetPath(assetUrl, articlePath) + post;
+            return pre + this.assetManager.getRelativeAssetPath(assetUrl, basePath) + post;
         });
 
-        return this.assetWriter.putText(content, articlePath)
+        return this.assetWriter.putText(content, this._assetPath)
             .then(() => {
                 this._changed = false;
-                new Notification(`Article successfully written to '${articlePath}'`, "info");
+                new Notification(`Article successfully written to '${this._assetPath}'`, "info");
             })
             .catch(error => {
-                new Notification(`Failed to write article to '${articlePath}': ${error.message}`, "error");
+                new Notification(`Failed to write article to '${this._assetPath}': ${error.message}`, "error");
             });
     }
 
