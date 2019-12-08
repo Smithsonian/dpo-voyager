@@ -58,6 +58,10 @@ export interface IExplorerApplicationProps
     geometry?: string;
     /** If a geometry URL is given, optional URL of a color texture to use with the geometry. */
     texture?: string;
+    /** If a geometry URL is given, optional URL of a occlusion texture to use with the geometry. */
+    occlusion?: string;
+    /** If a geometry URL is given, optional URL of a normal texture to use with the geometry. */
+    normals?: string;
     /** When loading a model or geometry, the quality level to set for the asset.
         Valid options: "thumb", "low", "medium", "high". */
     quality?: string;
@@ -179,6 +183,8 @@ Version: ${ENV_VERSION}
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
         props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("t");
+        props.occlusion = props.occlusion || parseUrlParameter("occlusion") || parseUrlParameter("o");
+        props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
 
         const url = props.root || props.document || props.model || props.geometry;
@@ -199,7 +205,9 @@ Version: ${ENV_VERSION}
             // third loading priority: geometry (plus optional color texture)
             props.geometry = props.root ? props.geometry : manager.getAssetName(props.geometry);
             props.texture = props.root ? props.texture : manager.getAssetName(props.texture);
-            this.loadGeometry(props.geometry, props.texture, null, null, props.quality);
+            props.occlusion = props.root ? props.occlusion : manager.getAssetName(props.occlusion);
+            props.normals = props.root ? props.normals : manager.getAssetName(props.normals);
+            this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
         }
         else {
             // if nothing else specified, try to read "document.svx.json" from the current folder
