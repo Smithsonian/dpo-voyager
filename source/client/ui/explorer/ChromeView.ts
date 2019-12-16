@@ -75,6 +75,7 @@ export default class ChromeView extends DocumentView
 
         const interfaceVisible = setup.interface.ins.visible.value;
         const logoVisible = setup.interface.ins.logo.value;
+        const menuVisible = setup.interface.ins.menu.value;
 
         const readerVisible = setup.reader.ins.enabled.value;
 
@@ -109,7 +110,7 @@ export default class ChromeView extends DocumentView
 
         return html`
             <div class="sv-chrome-header">
-                <sv-main-menu .system=${this.system}></sv-main-menu>
+                ${menuVisible ? html`<sv-main-menu .system=${this.system}></sv-main-menu>` : null}
                 <div class="sv-top-bar">
                     <div class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
@@ -145,6 +146,7 @@ export default class ChromeView extends DocumentView
                 next.outs.assetPath,
                 setup.interface.ins.visible,
                 setup.interface.ins.logo,
+                setup.interface.ins.menu,
                 setup.viewer.ins.annotationsVisible,
                 setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
