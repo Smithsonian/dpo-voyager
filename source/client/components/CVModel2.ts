@@ -171,6 +171,7 @@ export default class CVModel2 extends CObject3D
             let visible = ins.visible.value;
 
             if (visible) {
+                // determine visibility based on whether a tag of this model is selected
                 const tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
                 const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
 

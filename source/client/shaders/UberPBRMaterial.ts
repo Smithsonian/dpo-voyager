@@ -130,7 +130,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
 
         this.defines["MODE_NORMALS"] = false;
         this.defines["MODE_XRAY"] = false;
-        this.defines["OBJECTSPACE_NORMALMAP"] = this.normalMap && this._objectSpaceNormalMap;
+        this.defines["OBJECTSPACE_NORMALMAP"] = !!(this.normalMap && this._objectSpaceNormalMap);
 
         this.needsUpdate = true;
 
