@@ -97,6 +97,7 @@ export default class CVReader extends Component
     create()
     {
         super.create();
+        this.getGraphComponents(CVMeta).forEach(meta => meta.on<IArticlesUpdateEvent>("update", this.updateArticles, this));
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
         this.updateArticles();
     }
@@ -104,6 +105,7 @@ export default class CVReader extends Component
     dispose()
     {
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
+        this.getGraphComponents(CVMeta).forEach(meta => meta.off<IArticlesUpdateEvent>("update", this.updateArticles, this));
         super.dispose();
     }
 

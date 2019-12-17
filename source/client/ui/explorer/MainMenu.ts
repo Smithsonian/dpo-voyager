@@ -70,15 +70,17 @@ export default class MainMenu extends DocumentView
             return html``;
         }
 
-        const setup = document.setup;
+        const isEditing = !!this.system.getComponent("CVStoryApplication", true);
 
-        const readerActive = setup.reader.ins.enabled.value;
+        const setup = document.setup;
 
         const tourButtonVisible = setup.tours.outs.count.value > 0;
         const toursActive = setup.tours.ins.enabled.value;
 
-        const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const modeButtonsDisabled = toursActive && !isEditing;
+
+        const readerButtonVisible = true; //setup.reader.articles.length > 0 && !isEditing;
+        const readerActive = setup.reader.ins.enabled.value;
 
         const annotationsButtonVisible = true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
@@ -92,8 +94,8 @@ export default class MainMenu extends DocumentView
 
         return html`${tourButtonVisible ? html`<ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        <ff-button icon="article" title="Read more..."
-            ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>
+        ${readerButtonVisible ? html`<ff-button icon="article" title="Read more..."
+            ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
         ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
             ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
         <ff-button icon="share" title="Share Experience"
