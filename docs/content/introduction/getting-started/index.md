@@ -43,6 +43,9 @@ vim enter:
 vim .env
 ```
 
+Make sure you change the server port if necessary.
+
+
 #### Dockerized environment
 
 For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
@@ -58,20 +61,40 @@ Once you are done, shut down the development server.
 npm run down
 ```
 
+To open a shell on the running server container, enter
+```
+npm run bash
+```
+
+##### Manual builds for development and production
+
+First start the development server with `npm run up`, then connect to the container with `npm run bash`. On the
+container shell, enter
+``` 
+npm run build-dev       # triggers a development build
+npm run build-prod      # triggers a production build
+```
+- The development build preserves source code comments and comes with source code maps
+- The production build generates minified scripts and CSS
+
+Note that you must run the build commands from within the docker container.  
+Build output can be found in the project's `dist` folder, see below.
 
 #### Installation on Linux, without Docker
 
-Without Docker, you need to install the NPM package dependencies manually.
+_Note: Due to the variety of  operating systems, we strongly recommend to run the dockerized environment.
+This guarantees a standardized development environment._
+
+Without Docker, you need to install the NPM package dependencies manually. 
 
 ```
 npm install
 ```
 
-Now you are ready to build the project. The following command builds the development server, and the development
-version of the Voyager tools.
+Now you are ready to build the project. The following command builds the development server.
 
 ```
-npm run build
+npm run build-server
 ```
 
 If you want to specifically create a development or production build, use the following commands.
@@ -80,9 +103,6 @@ If you want to specifically create a development or production build, use the fo
 npm run build-dev
 npm run build-prod
 ```
-
-- The development build preserves source code comments and comes with source code maps
-- The production build generates minified scripts and CSS
 
 #### Location of build output
 
