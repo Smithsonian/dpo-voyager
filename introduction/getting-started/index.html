@@ -223,7 +223,7 @@
     </li>
     
     <li class="">
-      <a href="/dpo-voyager/document/example/">Examples</a>
+      <a href="/dpo-voyager/document/example/">Example</a>
     </li>
     
   </ul>
@@ -267,6 +267,8 @@ git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .</pre
 <p>Now edit the environment variables in <code>.env</code> in your editor of choice to reflect your local configuration. To edit using
 vim enter:</p>
 <div class="highlight"><pre class="chroma">vim .env</pre></div>
+<p>Make sure you change the server port if necessary.</p>
+
 <h4 id="dockerized-environment">Dockerized environment</h4>
 
 <p>For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
@@ -277,21 +279,34 @@ source code changes are detected.</p>
 
 <p>Once you are done, shut down the development server.</p>
 <div class="highlight"><pre class="chroma">npm run down</pre></div>
-<h4 id="installation-on-linux-without-docker">Installation on Linux, without Docker</h4>
+<p>To open a shell on the running server container, enter</p>
+<div class="highlight"><pre class="chroma">npm run bash</pre></div>
+<h5 id="manual-builds-for-development-and-production">Manual builds for development and production</h5>
 
-<p>Without Docker, you need to install the NPM package dependencies manually.</p>
-<div class="highlight"><pre class="chroma">npm install</pre></div>
-<p>Now you are ready to build the project. The following command builds the development server, and the development
-version of the Voyager tools.</p>
-<div class="highlight"><pre class="chroma">npm run build</pre></div>
-<p>If you want to specifically create a development or production build, use the following commands.</p>
-<div class="highlight"><pre class="chroma">npm run build-dev
-npm run build-prod</pre></div>
+<p>First start the development server with <code>npm run up</code>, then connect to the container with <code>npm run bash</code>. On the
+container shell, enter</p>
+<div class="highlight"><pre class="chroma">npm run build-dev       # triggers a development build
+npm run build-prod      # triggers a production build</pre></div>
 <ul>
 <li>The development build preserves source code comments and comes with source code maps</li>
 <li>The production build generates minified scripts and CSS</li>
 </ul>
 
+<p>Note that you must run the build commands from within the docker container.<br />
+Build output can be found in the project&rsquo;s <code>dist</code> folder, see below.</p>
+
+<h4 id="installation-on-linux-without-docker">Installation on Linux, without Docker</h4>
+
+<p><em>Note: Due to the variety of  operating systems, we strongly recommend to run the dockerized environment.
+This guarantees a standardized development environment.</em></p>
+
+<p>Without Docker, you need to install the NPM package dependencies manually.</p>
+<div class="highlight"><pre class="chroma">npm install</pre></div>
+<p>Now you are ready to build the project. The following command builds the development server.</p>
+<div class="highlight"><pre class="chroma">npm run build-server</pre></div>
+<p>If you want to specifically create a development or production build, use the following commands.</p>
+<div class="highlight"><pre class="chroma">npm run build-dev
+npm run build-prod</pre></div>
 <h4 id="location-of-build-output">Location of build output</h4>
 
 <p>Build output can be found in the project&rsquo;s <code>dist</code> folder. It&rsquo;s content after both <code>prod</code> and <code>dev</code> builds have been run:</p>
