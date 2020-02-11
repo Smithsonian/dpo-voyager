@@ -38,7 +38,7 @@ export default class CVAnalytics extends Component
     sendProperty(property: string, value?: any)
     {
         // track custom event
-        if (ENV_PRODUCTION && ga) {
+        if (typeof ga === "function" && ENV_PRODUCTION) {
             const text = value !== undefined ? value.toString() : undefined;
             ga("send", "event", this._title, property, text);
         }
