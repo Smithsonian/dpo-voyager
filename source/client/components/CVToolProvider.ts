@@ -59,8 +59,6 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
             if (ins.visible.value && !this.activeComponent) {
                 this.activeComponent = this.scopedComponents[0];
             }
-
-            this.analytics.sendProperty("Tools.Visible", ins.visible.value);
         }
 
         return true;
@@ -69,6 +67,7 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
     protected activateComponent(tool: CVTool)
     {
         tool.activateTool();
+
         this.analytics.sendProperty("Tools.ActiveTool", tool.text);
     }
 

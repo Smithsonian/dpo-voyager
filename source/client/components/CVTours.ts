@@ -90,7 +90,6 @@ export default class CVTours extends Component
         const machine = this.snapshots;
 
         if (ins.enabled.changed) {
-            this.analytics.sendProperty("Tours.Enabled", ins.enabled.value);
 
             if (ins.enabled.value) {
                 // store pre-tour scene state

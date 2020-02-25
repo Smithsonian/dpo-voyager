@@ -110,6 +110,8 @@ export default class MainMenu extends DocumentView
     {
         const readerIns = this.activeDocument.setup.reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
+
+        this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
     }
 
     protected onToggleTours()
@@ -128,6 +130,8 @@ export default class MainMenu extends DocumentView
             tourIns.enabled.setValue(true); // enable tours
             tourIns.tourIndex.setValue(-1); // show tour menu
         }
+
+        this.analytics.sendProperty("Tours.Enabled", tourIns.enabled.value);
     }
 
     protected onToggleAnnotations()
@@ -140,6 +144,7 @@ export default class MainMenu extends DocumentView
         }
 
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+        this.analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
     }
 
     protected onToggleShare()
@@ -173,6 +178,7 @@ export default class MainMenu extends DocumentView
         }
 
         toolIns.visible.setValue(!toolIns.visible.value);
+        this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
