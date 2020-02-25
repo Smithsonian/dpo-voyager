@@ -125,8 +125,6 @@ export default class CVViewer extends Component
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
-
-            this.analytics.sendProperty("Annotations.Visible", ins.annotationsVisible.value);
         }
         if (ins.activeTags.changed) {
             const tags = ins.activeTags.value;
