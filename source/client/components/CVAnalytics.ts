@@ -29,6 +29,23 @@ export default class CVAnalytics extends Component
     static readonly isSystemSingleton = true;
 
     private _title: string = "Untitled";
+    private _timerStart: number = 0;
+    
+    startTimer()
+    {
+        if(this._timerStart === 0)
+            this._timerStart = Date.now();
+    }
+
+    resetTimer()
+    {
+        this._timerStart = 0;
+    }
+
+    getTimerTime()
+    {
+        return this._timerStart > 0 ? Date.now() - this._timerStart : 0;
+    }
 
     setTitle(title: string)
     {
@@ -37,6 +54,10 @@ export default class CVAnalytics extends Component
 
     sendProperty(property: string, value?: any)
     {
+        if (ENV_DEVELOPMENT) {
+            console.log("GA Event %s %s", property, value.toString());
+        }
+
         // track custom event
         if (typeof ga === "function" && ENV_PRODUCTION) {
             const text = value !== undefined ? value.toString() : undefined;

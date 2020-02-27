@@ -33,6 +33,7 @@ import Derivative from "../models/Derivative";
 import DerivativeList from "../models/DerivativeList";
 
 import CVAnnotationView from "./CVAnnotationView";
+import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { Vector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -134,6 +135,9 @@ export default class CVModel2 extends CObject3D
         return this._localBoundingBox;
     }
 
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
@@ -493,7 +497,7 @@ export default class CVModel2 extends CObject3D
 
         // load sequence of derivatives one by one
         return sequence.reduce((promise, derivative) => {
-            return promise.then(() => this.loadDerivative(derivative));
+            return promise.then(() => this.loadDerivative(derivative)); 
         }, Promise.resolve());
     }
 
@@ -538,6 +542,11 @@ export default class CVModel2 extends CObject3D
 
                 if (this.ins.override) {
                     this.updateMaterial();
+                }
+
+                // set asset manager flag for initial model load
+                if(!this.assetManager.initialLoad) {
+                    this.assetManager.initialLoad = true; 
                 }
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
