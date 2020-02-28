@@ -75,7 +75,7 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
-        override: types.Boolean("Material.Override"),
+        override: types.Boolean("Material.Override", false),
         color: types.ColorRGB("Material.BaseColor"),
         opacity: types.Percent("Material.Opacity", 1.0),
         hiddenOpacity: types.Percent("Material.HiddenOpacity", 0.0),
@@ -292,7 +292,7 @@ export default class CVModel2 extends CObject3D
     fromDocument(document: IDocument, node: INode): number
     {
         const { ins, outs } = this;
-
+        
         if (!isFinite(node.model)) {
             throw new Error("model property missing in node");
         }
@@ -333,7 +333,7 @@ export default class CVModel2 extends CObject3D
             this.derivatives.fromJSON(data.derivatives);
         }
         if (data.material) {
-            const material = data.material;
+            const material = data.material; 
             ins.copyValues({
                 override: true,
                 color: material.color || ins.color.schema.preset,
@@ -540,7 +540,7 @@ export default class CVModel2 extends CObject3D
                 // update loaded quality property
                 this.outs.quality.setValue(derivative.data.quality);
 
-                if (this.ins.override) {
+                if (this.ins.override.value) {
                     this.updateMaterial();
                 }
 

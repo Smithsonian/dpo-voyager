@@ -236,6 +236,8 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     copyStandardMaterial(material: THREE.MeshStandardMaterial): this
     {
         this.color = material.color;
+        this.opacity = material.opacity;
+        this.transparent = material.opacity < 1 || !!material.alphaMap;
 
         this.roughness = material.roughness;
         this.roughnessMap = material.roughnessMap;
