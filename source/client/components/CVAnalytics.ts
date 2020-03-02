@@ -54,7 +54,7 @@ export default class CVAnalytics extends Component
 
     sendProperty(property: string, value?: any)
     {
-        if (ENV_DEVELOPMENT) {
+        if (ENV_DEVELOPMENT && value !== undefined) {
             console.log("GA Event %s %s", property, value.toString());
         }
 
