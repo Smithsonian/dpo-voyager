@@ -102,12 +102,31 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-content-split {
   display: flex;
 
+  .sv-reader-container {
+    @include fullsize;
+    margin-top: $pad;
+  }
+
   .sv-scene-view {
     flex: 1 1 60%;
   }
   .sv-reader-view {
+    pointer-events: auto;
     flex: 1 1 40%;
     padding: 0 20px;
+
+    .sv-left {
+      flex: 0 0 $pad;
+    }
+    .sv-article {
+      flex: 0 2 720px;
+      background-color: $color-paragraph-background;
+      padding-bottom: 35px; // room for tour navigator overlay
+    }
+    .sv-right {
+      flex: 0 3 16px;
+      background-color: $color-paragraph-background;
+    }
   }
 }
 
