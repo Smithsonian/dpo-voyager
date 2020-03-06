@@ -125,11 +125,11 @@ export default class ContentView extends DocumentView
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
                 return html`<div class="ff-fullsize sv-content-split">
-                    <div class="ff-splitter-section" style="flex-basis: 70%">
+                    <div class="ff-splitter-section" style="flex-basis: 60%">
                         ${sceneView}
                     </div>
                     <ff-splitter direction="horizontal"></ff-splitter>
-                        <div class="ff-splitter-section" style="flex-basis: 30%;">
+                        <div class="ff-splitter-section" style="flex-basis: 40%; max-width: 500px;">
                             <div class="sv-reader-container">
                                 <sv-reader-view .system=${system} @close=${this.onReaderClose} ></sv-reader-view>
                             </div>
