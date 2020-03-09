@@ -44,6 +44,7 @@ export interface IModel
     derivatives: IDerivative[];
 
     visible?: boolean;
+    renderOrder?: number;
     translation?: Vector3;
     rotation?: Vector4;
     boundingBox?: IBoundingBox;

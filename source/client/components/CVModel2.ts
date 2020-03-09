@@ -69,13 +69,14 @@ export default class CVModel2 extends CObject3D
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
         tags: types.String("Model.Tags"),
+        renderOrder: types.Number("Model.RenderOrder", 0),
         activeTags: types.String("Model.ActiveTags"),
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
-        override: types.Boolean("Material.Override"),
+        override: types.Boolean("Material.Override", false),
         color: types.ColorRGB("Material.BaseColor"),
         opacity: types.Percent("Material.Opacity", 1.0),
         hiddenOpacity: types.Percent("Material.HiddenOpacity", 0.0),
@@ -100,6 +101,7 @@ export default class CVModel2 extends CObject3D
             this.ins.quality,
             this.ins.localUnits,
             this.ins.tags,
+            this.ins.renderOrder,
             this.ins.shader,
             this.ins.override,
             this.ins.color,
@@ -223,6 +225,10 @@ export default class CVModel2 extends CObject3D
             }
         }
 
+        if(ins.renderOrder.changed) {
+            this.updateRenderOrder(this.object3D, ins.renderOrder.value);
+        }
+
         if (ins.localUnits.changed || ins.globalUnits.changed) {
             this.updateUnitScale();
         }
@@ -292,7 +298,7 @@ export default class CVModel2 extends CObject3D
     fromDocument(document: IDocument, node: INode): number
     {
         const { ins, outs } = this;
-
+        
         if (!isFinite(node.model)) {
             throw new Error("model property missing in node");
         }
@@ -304,6 +310,7 @@ export default class CVModel2 extends CObject3D
 
         ins.visible.setValue(data.visible !== undefined ? data.visible : true);
         ins.tags.setValue(data.tags || "");
+        ins.renderOrder.setValue(data.renderOrder !== undefined ? data.renderOrder : 0);
 
         ins.position.reset();
         ins.rotation.reset();
@@ -333,7 +340,7 @@ export default class CVModel2 extends CObject3D
             this.derivatives.fromJSON(data.derivatives);
         }
         if (data.material) {
-            const material = data.material;
+            const material = data.material; 
             ins.copyValues({
                 override: true,
                 color: material.color || ins.color.schema.preset,
@@ -371,6 +378,9 @@ export default class CVModel2 extends CObject3D
         }
         if (ins.tags.value) {
             data.tags = ins.tags.value;
+        }
+        if (ins.renderOrder.value !== 0) {
+            data.renderOrder = ins.renderOrder.value;
         }
 
         const position = ins.position.value;
@@ -435,7 +445,7 @@ export default class CVModel2 extends CObject3D
                 material.color.fromArray(ins.color.value);
                 material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
                 material.transparent = material.opacity < 1 || !!material.alphaMap;
-                material.depthWrite = material.opacity === 1;
+                //material.depthWrite = material.opacity === 1;
                 material.roughness = ins.roughness.value;
                 material.metalness = ins.metalness.value;
             }
@@ -468,6 +478,12 @@ export default class CVModel2 extends CObject3D
         object3D.matrixWorldNeedsUpdate = true;
 
         this.outs.updated.set();
+    }
+
+    protected updateRenderOrder(model: THREE.Object3D, value: number)
+    {
+        model.renderOrder = value;
+        model.children.forEach(child => this.updateRenderOrder(child, value));
     }
 
     /**
@@ -540,9 +556,13 @@ export default class CVModel2 extends CObject3D
                 // update loaded quality property
                 this.outs.quality.setValue(derivative.data.quality);
 
-                if (this.ins.override) {
+                if (this.ins.override.value) {
                     this.updateMaterial();
                 }
+
+                // make sure render order is correct
+                if(this.ins.renderOrder.value !== 0)
+                    this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
                 // set asset manager flag for initial model load
                 if(!this.assetManager.initialLoad) {

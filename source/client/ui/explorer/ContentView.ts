@@ -86,7 +86,20 @@ export default class ContentView extends DocumentView
         }
         if (reader) {
             readerVisible = ! tourMenuVisible && reader.ins.enabled.value;
+
             readerPosition = reader.ins.position.value;
+
+            // do not use right reader position on mobile
+            if (readerPosition === EReaderPosition.Right && (navigator.platform.indexOf("iPhone")!=-1 || navigator.platform.indexOf("Android")!=-1)) {
+                readerPosition = EReaderPosition.Overlay;
+            }
+
+            /*if(document.documentElement.clientWidth < 1200) {
+                readerPosition = EReaderPosition.Overlay;
+            }
+            else {
+                readerPosition = EReaderPosition.Right;
+            }*/
         }
 
         const sceneView = this.sceneView;
@@ -112,9 +125,16 @@ export default class ContentView extends DocumentView
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
                 return html`<div class="ff-fullsize sv-content-split">
-                    ${sceneView}
+                    <div class="ff-splitter-section" style="flex-basis: 60%">
+                        ${sceneView}
+                    </div>
                     <ff-splitter direction="horizontal"></ff-splitter>
-                    <sv-reader-view .system=${system} class="sv-reader-split"></sv-reader-view></div>
+                        <div class="ff-splitter-section" style="flex-basis: 40%; max-width: 500px;">
+                            <div class="sv-reader-container">
+                                <sv-reader-view .system=${system} @close=${this.onReaderClose} ></sv-reader-view>
+                            </div>
+                        </div>
+                    </div>
                     <sv-spinner ?visible=${isLoading}></sv-spinner>`;
             }
             if (readerPosition === EReaderPosition.Overlay) {

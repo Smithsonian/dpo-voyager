@@ -211,6 +211,9 @@
         "visible": {
             "type": "boolean"
         },
+        "renderOrder": {
+            "type": "number"
+        },
         "derivatives": {
             "type": "array",
             "items": {
