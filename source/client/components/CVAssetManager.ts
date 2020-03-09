@@ -52,6 +52,7 @@ export default class CVAssetManager extends Component
 
     private _loadingManager = new AssetLoadingManager(this);
     private _baseUrl: string = window.location.href;
+    private _initialLoad: boolean = false;
 
     get loadingManager() {
         return this._loadingManager;
@@ -61,6 +62,12 @@ export default class CVAssetManager extends Component
     }
     set baseUrl(url: string) {
         this._baseUrl = new URL(url, window.location.href).href;
+    }
+    get initialLoad() {
+        return this._initialLoad;
+    }
+    set initialLoad(value: boolean) {
+        this._initialLoad = value;
     }
 
     getAssetName(pathOrUrl: string)

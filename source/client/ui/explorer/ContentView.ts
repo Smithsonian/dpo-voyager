@@ -19,6 +19,7 @@ import Subscriber from "@ff/core/Subscriber";
 
 import { EReaderPosition } from "client/schema/setup";
 
+import CVAnalytics from "../../components/CVAnalytics";
 import CVAssetManager from "../../components/CVAssetManager";
 import CVDocument from "../../components/CVDocument";
 
@@ -36,6 +37,9 @@ export default class ContentView extends DocumentView
     protected sceneView: SceneView = null;
     protected documentProps = new Subscriber("value", this.onUpdate, this);
 
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
+    }
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
     }
@@ -68,6 +72,7 @@ export default class ContentView extends DocumentView
     {
         const system = this.system;
         const isLoading = this.assetManager.outs.busy.value;
+        const isInitialLoad = this.assetManager.initialLoad;
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
@@ -94,6 +99,14 @@ export default class ContentView extends DocumentView
         }
         else {
             setTimeout(() => sceneView.classList.add("sv-blur"), 1);
+        }
+
+        if(!isLoading && isInitialLoad) { 
+            // send load timer event
+            this.analytics.sendProperty("Loading.Time", this.analytics.getTimerTime()/1000);
+            this.analytics.resetTimer();
+
+            this.assetManager.initialLoad = false;
         }
 
         if (readerVisible) {

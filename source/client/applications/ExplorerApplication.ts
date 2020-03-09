@@ -33,6 +33,7 @@ import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";
 import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
+import CVAnalytics from "../components/CVAnalytics";
 
 import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
@@ -105,6 +106,9 @@ Version: ${ENV_VERSION}
     protected get documentProvider() {
         return this.system.getMainComponent(CVDocumentProvider);
     }
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
+    }
 
     constructor(parent: HTMLElement, props?: IExplorerApplicationProps, embedded?: boolean)
     {
@@ -124,6 +128,9 @@ Version: ${ENV_VERSION}
         system.graph.createCustomNode(NVTools);
         system.graph.createCustomNode(NVDocuments);
 
+        // start timing load
+        this.analytics.startTimer(); 
+
         if (parent) {
             // create a view and attach to parent
             new MainView(this).appendTo(parent);
@@ -141,7 +148,7 @@ Version: ${ENV_VERSION}
 
     setBaseUrl(url: string)
     {
-        this.assetManager.baseUrl = url;
+        this.assetManager.baseUrl = url; 
     }
 
     loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
