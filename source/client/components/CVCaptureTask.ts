@@ -36,6 +36,7 @@ import CVTask from "./CVTask";
 
 import CaptureTaskView from "../ui/story/CaptureTaskView";
 import { TImageQuality } from "client/schema/meta";
+import CVNodeProvider from "./CVNodeProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +92,7 @@ export default class CVCaptureTask extends CVTask
 
     activeMeta: CVMeta = null;
     activeModel: CVModel2 = null;
+    isActiveScene: boolean = false;
 
     private _imageDataURIs: Dictionary<string> = {};
     private _imageElements: Dictionary<HTMLImageElement> = {};
@@ -114,6 +116,9 @@ export default class CVCaptureTask extends CVTask
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get nodeProvider() {
+        return this.getMainComponent(CVNodeProvider);
+    } 
 
     getImageElement(quality: EDerivativeQuality = EDerivativeQuality.Low)
     {
@@ -127,6 +132,9 @@ export default class CVCaptureTask extends CVTask
 
     activateTask()
     {
+        // automatically select scene node
+        this.nodeProvider.activeNode = this.nodeProvider.scopedNodes[0];
+        
         this.startObserving();
         super.activateTask();
     }
@@ -272,6 +280,8 @@ export default class CVCaptureTask extends CVTask
             this._imageElements = {};
             this._imageDataURIs = {};
         }
+
+        this.isActiveScene = next && next.scene ? true : false;
 
         const model = this.activeModel = next && next.model;
         const meta = this.activeMeta = next && next.meta;
