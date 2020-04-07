@@ -28,6 +28,7 @@ import ContentView from "./ContentView";
 import ChromeView from "./ChromeView";
 
 import "./styles.scss";
+import ModelViewerView from "../ModelViewerView";
 
 ////////////////////////////////////////////////////////////////////////////////
 // EXPLORER ICONS
@@ -99,13 +100,14 @@ export default class MainView extends CustomElement
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
                 quality: this.getAttribute("quality"),
+                sceneViewer: this.getAttribute("sceneViewer")
             };
 
             this.application = new ExplorerApplication(null, props);
         }
 
         const system = this.application.system;
-        new ContentView(system).appendTo(this);
+        new ContentView(system, this.application.props.sceneViewer).appendTo(this);
         new ChromeView(system).appendTo(this);
 
         const notifications = document.createElement("div");

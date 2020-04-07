@@ -211,17 +211,19 @@ export default class CVModel2 extends CObject3D
             this.emit<ITagUpdateEvent>({ type: "tag-update" });
         }
 
-        if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
-            this.autoLoad(ins.quality.value);
-        }
-        else if (ins.quality.changed) {
-            const derivative = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
-            if (derivative && derivative !== this.activeDerivative) {
-                this.loadDerivative(derivative)
-                .catch(error => {
-                    console.warn("Model.update - failed to load derivative");
-                    console.warn(error);
-                });
+        if (this.assetManager.isEnabled) {
+            if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
+                this.autoLoad(ins.quality.value);
+            }
+            else if (ins.quality.changed) {
+                const derivative = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
+                if (derivative && derivative !== this.activeDerivative) {
+                    this.loadDerivative(derivative)
+                    .catch(error => {
+                        console.warn("Model.update - failed to load derivative");
+                        console.warn(error);
+                    });
+                }
             }
         }
 

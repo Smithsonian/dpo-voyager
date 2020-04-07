@@ -34,6 +34,7 @@ import CVDocument from "../components/CVDocument";
 import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
 import CVAnalytics from "../components/CVAnalytics";
+import CVToolProvider from "../components/CVToolProvider";
 
 import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
@@ -41,6 +42,7 @@ import NVTools from "../nodes/NVTools";
 
 import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
+import MainMenu from "client/ui/explorer/MainMenu";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,6 +68,10 @@ export interface IExplorerApplicationProps
     /** When loading a model or geometry, the quality level to set for the asset.
         Valid options: "thumb", "low", "medium", "high". */
     quality?: string;
+    /** Mode string starts Explorer in a specific ui configuration, i.e. no UI. */
+    uiMode?: string;
+    /** Name of module being used for scenegraph rendering and control. */
+    sceneViewer?: string;
 }
 
 /**
@@ -130,15 +136,15 @@ Version: ${ENV_VERSION}
 
         // start timing load
         this.analytics.startTimer(); 
-
+        
         if (parent) {
             // create a view and attach to parent
             new MainView(this).appendTo(parent);
         }
-
+        
         if (!embedded) {
             // initialize default document
-            this.documentProvider.createDocument(documentTemplate as any);
+            this.documentProvider.createDocument(documentTemplate as any); 
             this.evaluateProps();
         }
 
@@ -151,12 +157,16 @@ Version: ${ENV_VERSION}
         this.assetManager.baseUrl = url; 
     }
 
-    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string, uiMode?: string, sceneViewer?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
 
         return this.assetReader.getJSON(documentPath)
             .then(data => {
+                if (sceneViewer === "model-viewer") {
+                    this.assetManager.isEnabled = false;
+                }
+
                 merge = merge === undefined ? !data.lights && !data.cameras : merge;
                 return this.documentProvider.amendDocument(data, documentPath, merge);
             })
@@ -164,6 +174,20 @@ Version: ${ENV_VERSION}
                 if (isFinite(dq)) {
                     document.setup.viewer.ins.quality.setValue(dq);
                 }
+
+                if (uiMode) {
+                    if (uiMode === "None") {
+                        //document.setup.interface.ins.visible.setValue(false);
+                        document.setup.interface.ins.logo.setValue(false);
+                        document.setup.interface.ins.menu.setValue(false);
+                    }
+                }
+
+                if (sceneViewer === "model-viewer") {
+                    // trigger update
+                    this.assetManager.ins.busy.setValue(false);
+                }
+
                 return document;
             });
     }
@@ -193,14 +217,25 @@ Version: ${ENV_VERSION}
         props.occlusion = props.occlusion || parseUrlParameter("occlusion") || parseUrlParameter("o");
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
+        props.uiMode = props.uiMode || parseUrlParameter("ui") || parseUrlParameter("u");
+        props.sceneViewer = props.uiMode || parseUrlParameter("sceneView") || parseUrlParameter("sv");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
 
+        // Due to initializtion order, need to set ui prop here as well as after load to avoid flashing UI changes
+        if (props.uiMode) {
+            if (props.uiMode === "None") {
+                //this.documentProvider.activeComponent.setup.interface.ins.visible.setValue(false);
+                this.documentProvider.activeComponent.setup.interface.ins.logo.setValue(false);
+                this.documentProvider.activeComponent.setup.interface.ins.menu.setValue(false);
+            }
+        }
+
         if (props.document) {
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality)
+            this.loadDocument(props.document, undefined, props.quality, props.uiMode, props.sceneViewer)
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {

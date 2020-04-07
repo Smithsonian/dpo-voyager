@@ -28,13 +28,24 @@ import "../Spinner";
 import "./ReaderView";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import ModelViewerView from "../ModelViewerView";
+import SystemView, { System } from "client/../../libs/ff-scene/source/ui/SystemView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-content-view")
 export default class ContentView extends DocumentView
 {
-    protected sceneView: SceneView = null;
+    constructor(system?: System, sceneViewName?: string)
+    {
+        super(system);
+
+        this.sceneViewName = sceneViewName !== undefined ? sceneViewName : this.sceneViewName;
+    }
+    
+    //protected sceneView: SceneView = null;
+    protected sceneView: SystemView = null;
+    protected sceneViewName: string = "voyager";
     protected documentProps = new Subscriber("value", this.onUpdate, this);
 
     protected get analytics() {
@@ -53,7 +64,13 @@ export default class ContentView extends DocumentView
     protected firstConnected()
     {
         this.classList.add("sv-content-view");
-        this.sceneView = new SceneView(this.system);
+
+        if (this.sceneViewName === "model-viewer") { 
+            this.sceneView = new ModelViewerView(this.system);
+        }
+        else {
+            this.sceneView = new SceneView(this.system);
+        }
     }
 
     protected connected()
