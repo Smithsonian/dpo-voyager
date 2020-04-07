@@ -94,7 +94,6 @@ export default class ModelViewerView extends DocumentView
 
         if(this.activeDocument)
         {
-            console.log("DOCUMENT");
             const viewerIns = this.activeDocument.setup.viewer.ins;
             if(viewerIns.annotationsVisible.value)
                 console.log("ANNOTATIONS ON");
