@@ -99,6 +99,7 @@ export default class MainView extends CustomElement
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
                 quality: this.getAttribute("quality"),
+                uiMode: this.getAttribute("uiMode")
             };
 
             this.application = new ExplorerApplication(null, props);

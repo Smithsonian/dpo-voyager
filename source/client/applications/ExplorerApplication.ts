@@ -34,6 +34,7 @@ import CVDocument from "../components/CVDocument";
 import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
 import CVAnalytics from "../components/CVAnalytics";
+import CVToolProvider from "../components/CVToolProvider";
 
 import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
@@ -66,6 +67,8 @@ export interface IExplorerApplicationProps
     /** When loading a model or geometry, the quality level to set for the asset.
         Valid options: "thumb", "low", "medium", "high". */
     quality?: string;
+    /** Mode string starts Explorer in a specific ui configuration, i.e. no UI. */
+    uiMode?: string;
 }
 
 /**
@@ -142,6 +145,77 @@ Version: ${ENV_VERSION}
             this.evaluateProps();
         }
 
+        //*** Support message passing over channel 2 ***//
+        {
+            // Add listener for the intial port transfer message
+            var port2;
+            window.addEventListener('message', initPort);
+
+            // Setup port for message passing
+            function initPort(e) {
+                port2 = e.ports[0];
+                if(port2) {
+                    port2.onmessage = onMessage;
+                }
+            }
+
+            // Handle messages received on port2
+            function onMessage(e) {
+                if (ENV_DEVELOPMENT) {
+                    console.log('Message received by VoyagerExplorer: "' + e.data + '"');
+                }
+
+                const analytics = system.getMainComponent(CVAnalytics);
+
+                if (e.data === "Toggle Annotations") {
+                    const viewerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+                    const toolIns = system.getMainComponent(CVToolProvider).ins;
+
+                    if (toolIns.visible.value) {
+                        toolIns.visible.setValue(false);
+                    }
+
+                    viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+                    analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
+                }
+                else if (e.data === "Toggle Reader") {
+                    const readerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+                    
+                    readerIns.enabled.setValue(!readerIns.enabled.value);
+                    analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
+                }
+                else if (e.data === "Toggle Tours") {
+                    const tourIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+                    const readerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+
+                    if (tourIns.enabled.value) {
+                        tourIns.enabled.setValue(false);
+                    }
+                    else {
+                        if (readerIns.enabled.value) {
+                            readerIns.enabled.setValue(false); // disable reader
+                        }
+
+                        tourIns.enabled.setValue(true); // enable tours
+                        tourIns.tourIndex.setValue(-1); // show tour menu
+                    }
+
+                    analytics.sendProperty("Tours.Enabled", tourIns.enabled.value);
+                }
+                else if (e.data === "Toggle Tools") {
+                    const toolIns = system.getMainComponent(CVToolProvider).ins;
+                    const viewerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+
+                    if (viewerIns.annotationsVisible.value) {
+                        viewerIns.annotationsVisible.setValue(false);
+                    }
+            
+                    toolIns.visible.setValue(!toolIns.visible.value);
+                    analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+                }
+            }
+        }
+
         // start rendering
         engine.pulse.start();
     }
@@ -151,7 +225,7 @@ Version: ${ENV_VERSION}
         this.assetManager.baseUrl = url; 
     }
 
-    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string, uiMode?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
 
@@ -164,6 +238,15 @@ Version: ${ENV_VERSION}
                 if (isFinite(dq)) {
                     document.setup.viewer.ins.quality.setValue(dq);
                 }
+
+                if (uiMode) {
+                    if (uiMode === "None") {
+                        //document.setup.interface.ins.visible.setValue(false);
+                        document.setup.interface.ins.logo.setValue(false);
+                        document.setup.interface.ins.menu.setValue(false);
+                    }
+                }
+
                 return document;
             });
     }
@@ -193,14 +276,24 @@ Version: ${ENV_VERSION}
         props.occlusion = props.occlusion || parseUrlParameter("occlusion") || parseUrlParameter("o");
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
+        props.uiMode = props.uiMode || parseUrlParameter("ui") || parseUrlParameter("u");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
 
+        // Due to initializtion order, need to set ui prop here as well as after load to avoid flashing UI changes
+        if (props.uiMode) {
+            if (props.uiMode === "None") {
+                //this.documentProvider.activeComponent.setup.interface.ins.visible.setValue(false);
+                this.documentProvider.activeComponent.setup.interface.ins.logo.setValue(false);
+                this.documentProvider.activeComponent.setup.interface.ins.menu.setValue(false);
+            }
+        }
+
         if (props.document) {
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality)
+            this.loadDocument(props.document, undefined, props.quality, props.uiMode)
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
