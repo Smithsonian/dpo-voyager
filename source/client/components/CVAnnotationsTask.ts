@@ -148,6 +148,10 @@ export default class CVAnnotationsTask extends CVTask
             helpers.degreesToQuaternion(model.ins.rotation.value, CVModel2.rotationOrder, _quat);
             _scaling.setScalar(1);
             _mat4.compose(_position, _quat, _scaling);
+
+            // add mesh parent transforms in this branch
+            _mat4.copy(_mat4.multiply(this.getMeshTransform(model.object3D)));  
+            
             _mat3.getNormalMatrix(_mat4);
 
             const position = event.view.pickPosition(event, model.localBoundingBox).applyMatrix4(_mat4).toArray();
@@ -251,5 +255,31 @@ export default class CVAnnotationsTask extends CVTask
     protected emitUpdateEvent()
     {
         this.emit("update");
+    }
+
+    /** Accumulates transforms from root until multiple children are encountered. 
+     *  If there are multiple non-Mesh children in the branch picking will break anyways.
+    */
+    protected getMeshTransform(root : THREE.Object3D)
+    {
+        var result = new THREE.Matrix4();
+        var tempMatrix = new THREE.Matrix4();
+
+        result.identity();
+
+        do {
+            tempMatrix.compose(root.position, root.quaternion, root.scale);
+            result.multiply(tempMatrix);
+
+            if(root.children && root.children.length > 0) {
+                root = root.children[0];
+            }
+            else {
+                break;
+            }
+        }
+        while (root.parent.children.length === 1)
+
+        return result;
     }
 }
