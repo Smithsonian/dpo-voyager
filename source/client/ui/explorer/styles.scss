@@ -526,6 +526,7 @@ $tour-entry-indent: 12px;
   border-left: $section-border;
   border-right: $section-border;
   margin: 0 -1px 0 -1px; // side borders disappear on smaller screens
+  min-width: 0px;
 
   pointer-events: auto;
   @include noselect;
@@ -591,6 +592,20 @@ $tour-entry-indent: 12px;
   }
   .sv-text {
     font-size: 0.9em;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TARGET NAVIGATOR
+
+.sv-target-navigator {
+  .sv-content {
+    flex: 1;
+    margin: 2px 8px;
+    text-align: center;
+  }
+  .sv-title {
+    font-size: 1.1em;
   }
 }
 
