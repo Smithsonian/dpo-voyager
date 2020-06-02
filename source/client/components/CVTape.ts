@@ -206,7 +206,7 @@ export default class CVTape extends CObject3D
         const worldMatrix = model.object3D.matrixWorld;
         _mat3.getNormalMatrix(worldMatrix);
 
-        const position = event.view.pickPosition(event).applyMatrix4(worldMatrix);
+        const position = event.view.pickPosition(event, model.localBoundingBox).applyMatrix4(worldMatrix); 
         const normal = event.view.pickNormal(event).applyMatrix3(_mat3).normalize();
 
         // update pins and measurement line
