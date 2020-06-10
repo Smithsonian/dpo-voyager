@@ -33,6 +33,7 @@ import CVTape from "./CVTape";
 import CVSlicer from "./CVSlicer";
 import CVTours from "./CVTours";
 import CVSnapshots from "./CVSnapshots";
+import CVTargetManager from "./CVTargetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +76,7 @@ export default class CVSetup extends Component
     slicer: CVSlicer;
     tours: CVTours;
     snapshots: CVSnapshots;
+    targets: CVTargetManager;
 
     create()
     {
@@ -88,6 +90,7 @@ export default class CVSetup extends Component
         }
 
         this.snapshots = node.createComponent(CVSnapshots);
+        this.targets = node.createComponent(CVTargetManager);
     }
 
     fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)

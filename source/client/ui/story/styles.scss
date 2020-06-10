@@ -309,6 +309,21 @@ $color-component-meta-light: #d9d998;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TARGETS
+
+$color-component-active-target: rgb(10, 128, 10);
+
+.ff-list .sv-target-list-header {
+  //background-color: $color-background-darker;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.sv-icon-active-target {
+  fill: $color-component-model;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PROPERTY VIEW
 
 .sv-property-view {

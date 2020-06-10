@@ -33,6 +33,7 @@ import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
 import TourPanel from "./TourPanel";
+import TargetPanel from "./TargetPanel";
 import TaskPanel from "./TaskPanel";
 import NotesPanel from "./NotesPanel";
 import ConsolePanel from "./ConsolePanel";
@@ -57,6 +58,7 @@ Icon.add("expert", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640
 Icon.add("pen", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M290.74 93.24l128.02 128.02-277.99 277.99-114.14 12.6C11.35 513.54-1.56 500.62.14 485.34l12.7-114.22 277.9-277.88zm207.2-19.06l-60.11-60.11c-18.75-18.75-49.16-18.75-67.91 0l-56.55 56.55 128.02 128.02 56.55-56.55c18.75-18.76 18.75-49.16 0-67.91z"/></svg>`);
 Icon.add("undo", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M255.545 8c-66.269.119-126.438 26.233-170.86 68.685L48.971 40.971C33.851 25.851 8 36.559 8 57.941V192c0 13.255 10.745 24 24 24h134.059c21.382 0 32.09-25.851 16.971-40.971l-41.75-41.75c30.864-28.899 70.801-44.907 113.23-45.273 92.398-.798 170.283 73.977 169.484 169.442C423.236 348.009 349.816 424 256 424c-41.127 0-79.997-14.678-110.63-41.556-4.743-4.161-11.906-3.908-16.368.553L89.34 422.659c-4.872 4.872-4.631 12.815.482 17.433C133.798 479.813 192.074 504 256 504c136.966 0 247.999-111.033 248-247.998C504.001 119.193 392.354 7.755 255.545 8z"/></svg>`);
 Icon.add("redo", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256.455 8c66.269.119 126.437 26.233 170.859 68.685l35.715-35.715C478.149 25.851 504 36.559 504 57.941V192c0 13.255-10.745 24-24 24H345.941c-21.382 0-32.09-25.851-16.971-40.971l41.75-41.75c-30.864-28.899-70.801-44.907-113.23-45.273-92.398-.798-170.283 73.977-169.484 169.442C88.764 348.009 162.184 424 256 424c41.127 0 79.997-14.678 110.629-41.556 4.743-4.161 11.906-3.908 16.368.553l39.662 39.662c4.872 4.872 4.631 12.815-.482 17.433C378.202 479.813 319.926 504 256 504 119.034 504 8.001 392.967 8 256.002 7.999 119.193 119.646 7.755 256.455 8z"/></svg>`);
+Icon.add("target", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 135 135"><path d="M 67.645247,1.6743484 A 66.145703,66.145703 0 0 0 1.5,67.820658 66.145703,66.145703 0 0 0 67.645247,133.96667 66.145703,66.145703 0 0 0 133.791,67.820658 66.145703,66.145703 0 0 0 67.645247,1.6743484 Z m 0,12.7005696 A 53.445726,53.445726 0 0 1 121.09123,67.820658 53.445726,53.445726 0 0 1 67.645247,121.26617 53.445726,53.445726 0 0 1 14.199769,67.820658 53.445726,53.445726 0 0 1 67.645247,14.374918 ZM 67.645247,24.957868 A 42.862413,42.862413 0 0 0 24.78339,67.820658 42.862413,42.862413 0 0 0 67.645247,110.68329 42.862413,42.862413 0 0 0 110.50763,67.820658 42.862413,42.862413 0 0 0 67.645247,24.957868 Z m 0,12.70057 a 30.162438,30.162438 0 0 1 30.162685,30.16222 30.162438,30.162438 0 0 1 -30.162685,30.16213 30.162438,30.162438 0 0 1 -30.162088,-30.16213 30.162438,30.162438 0 0 1 30.162088,-30.16222 z"/><circle cx="67.873672" cy="68.118736" r="18.854462" /></svg>`);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -119,6 +121,7 @@ export default class MainView extends CustomElement
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
         registry.set("tour-editor", () => new TourPanel(system));
+        registry.set("target-editor", () => new TargetPanel(system));
         registry.set("task", () => new TaskPanel(system));
         registry.set("notes", () => new NotesPanel(system));
         registry.set("console", () => new ConsolePanel(system));
@@ -243,6 +246,9 @@ export default class MainView extends CustomElement
                     contentId: "tour-editor",
                     text: "Tour Editor"
                 }, {
+                    contentId: "target-editor",
+                    text: "Target Editor"
+                }, {
                     contentId: "notes",
                     text: "Note Editor"
                 }]
@@ -300,6 +306,9 @@ export default class MainView extends CustomElement
                 }, {
                     contentId: "tour-editor",
                     text: "Tour Editor"
+                }, {
+                    contentId: "target-editor",
+                    text: "Target Editor"
                 }, {
                     contentId: "notes",
                     text: "Note Editor"

@@ -65,6 +65,8 @@ import CVTape from "../components/CVTape";
 import CVSlicer from "../components/CVSlicer";
 import CVTours from "../components/CVTours";
 import CVSnapshots from "../components/CVSnapshots";
+import CVTargets from "../components/CVTargets";
+import CVTargetManager from "../components/CVTargetManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -117,6 +119,8 @@ const types = [
     CVSlicer,
     CVTours,
     CVSnapshots,
+    CVTargets,
+    CVTargetManager,
 
     NVEngine,
     NVDocuments,

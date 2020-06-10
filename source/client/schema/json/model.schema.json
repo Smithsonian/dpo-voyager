@@ -197,6 +197,33 @@
             "type": "object",
             "properties": {
             }
+        },
+        "target": {
+            "description": "Describes object that maps to state transition and clickable zones.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "zones": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/zone"
+                    }
+                }
+            }
+        },
+        "zone": {
+            "description": "Are that can be clicked to intiate target transition. Can be full model, subzone, or annotation.",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
         }
     },
 
@@ -240,6 +267,13 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/annotation"
+            }
+        },
+        "targets": {
+            "description": "List of targeted state changes available on the model",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/target"
             }
         }
     },

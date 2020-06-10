@@ -28,6 +28,7 @@ import "./ToolBar";
 import "./TourNavigator";
 import "./TourMenu";
 import "./TagCloud";
+import "./TargetNavigator";
 import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
@@ -82,6 +83,7 @@ export default class ChromeView extends DocumentView
         const tours = setup.tours.tours;
         const toursEnabled = setup.tours.ins.enabled.value;
         const tourActive = setup.tours.outs.tourIndex.value >= 0;
+        const targetActive = setup.targets.ins.engaged.value;
 
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
@@ -117,6 +119,7 @@ export default class ChromeView extends DocumentView
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>
+            ${targetActive && !tourActive ? html`<sv-target-navigator .system=${this.system}></sv-target-navigator>` : null}
             ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
             ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${tagCloudVisible && toolBarAllowed ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
@@ -151,6 +154,7 @@ export default class ChromeView extends DocumentView
                 setup.reader.ins.enabled,
                 setup.tours.ins.enabled,
                 setup.tours.outs.tourIndex,
+                setup.targets.ins.engaged,
             );
         }
 

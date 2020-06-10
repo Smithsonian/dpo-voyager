@@ -25,6 +25,7 @@ import CNodeProvider, {
 
 import NVNode from "../nodes/NVNode";
 import CVDocumentProvider, { IActiveDocumentEvent } from "./CVDocumentProvider";
+import { INodeEvent } from "client/../../libs/ff-graph/source/Node";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +88,20 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
         else if (previous) {
             selection.clearSelection();
         }
+    }
+
+    protected onSelectNode(event: INodeEvent<NVNode>)
+    {
+        const node = event.object;
+
+        if(this.isNodeInScope(node) && node.model)
+        {
+            if (event.add) {
+                node.model.ins.selected.set(); console.log(node.model);
+            }
+        }
+
+        super.onSelectNode(event);
     }
 
     protected onScopedNodes()
