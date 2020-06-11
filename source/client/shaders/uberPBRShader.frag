@@ -65,7 +65,8 @@ varying vec3 vViewPosition;
 #include <emissivemap_pars_fragment>
 #include <bsdfs>
 #include <cube_uv_reflection_fragment>
-#include <envmap_pars_fragment>
+#include <envmap_common_pars_fragment>
+//#include <envmap_pars_fragment>
 #include <envmap_physical_pars_fragment>
 #include <fog_pars_fragment>
 #include <lights_pars_begin>
