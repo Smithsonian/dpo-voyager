@@ -63,8 +63,8 @@ export default class CVEnvironment extends Component
                     if (material && material.isUberPBRMaterial) { 
                         // currently only doing env reflection if we have a rougness or metalness map defined
                         if(material.roughnessMap || material.metalnessMap) {  
-                            if(this._texture === null) {
-                                this.assetReader.getTexture("../../images/"+images[ins.imageIndex.value]).then(texture => {
+                            if(this._texture === null) { 
+                                this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
                                     this._texture = texture; 
                                     this._texture.mapping = THREE.EquirectangularReflectionMapping; 
                                     material.envMap = this._texture;
