@@ -50,7 +50,7 @@ export default class CVEnvironment extends Component
 
         if(ins.imageIndex.changed)
         {
-            this._texture.dispose();
+            if(this._texture) { this._texture.dispose(); }
             this._texture = null;  // trigger texture reload
         }
 
