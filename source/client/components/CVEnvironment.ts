@@ -67,7 +67,7 @@ export default class CVEnvironment extends Component
                         // currently only doing env reflection if we have a rougness or metalness map defined
                         if(material.roughnessMap || material.metalnessMap) 
                         {  
-                            if(ins.imageIndex.value != this._currentIdx) 
+                            if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
                             {
                                 this._currentIdx = ins.imageIndex.value;
                                 if(this._texture === null) 
