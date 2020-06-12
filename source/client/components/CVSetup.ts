@@ -51,6 +51,7 @@ export default class CVSetup extends Component
         "viewer": CVViewer,
         "navigation": CVOrbitNavigation,
         "background": CVBackground,
+        "environment": CVEnvironment,
         "floor": CVFloor,
         "grid": CVGrid,
         "tape": CVTape,
@@ -90,7 +91,6 @@ export default class CVSetup extends Component
         }
 
         this.snapshots = node.createComponent(CVSnapshots);
-        this.environment = node.createComponent(CVEnvironment);
     }
 
     fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)

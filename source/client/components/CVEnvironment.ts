@@ -21,6 +21,7 @@ import Component, { types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
 import CVScene from "./CVScene";
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
+import { IEnvironment } from "client/schema/setup";
 
 const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","1024px-Adliswil_Hauptplatz_panosphere_20200205.jpg"];  
 
@@ -39,6 +40,7 @@ export default class CVEnvironment extends Component
     ins = this.addInputs(CVEnvironment.envIns);
 
     private _texture: THREE.Texture = null;
+    private _currentIdx = 0;
 
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
@@ -47,11 +49,11 @@ export default class CVEnvironment extends Component
     update()
     {
         const ins = this.ins;
-
+        
         if(ins.imageIndex.changed)
         {
-            if(this._texture) { this._texture.dispose(); }
-            this._texture = null;  // trigger texture reload
+            //if(this._texture) { this._texture.dispose(); }
+            //this._texture = null;  // trigger texture reload
         }
 
         if(ins.dirty.changed || ins.imageIndex.changed)
@@ -59,19 +61,40 @@ export default class CVEnvironment extends Component
             const scene = this.getGraphComponent(CVScene);
             scene.models.forEach(model => {
                 model.object3D.traverse(object => {
-                    const material = object["material"] as UberPBRMaterial;
-                    if (material && material.isUberPBRMaterial) { 
+                    const material = object["material"] as UberPBRMaterial; 
+                    if (material && material.isUberPBRMaterial) 
+                    { 
                         // currently only doing env reflection if we have a rougness or metalness map defined
-                        if(material.roughnessMap || material.metalnessMap) {  
-                            if(this._texture === null) { 
-                                this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
-                                    this._texture = texture; 
-                                    this._texture.mapping = THREE.EquirectangularReflectionMapping; 
-                                    material.envMap = this._texture;
-                                    material.needsUpdate = true; 
-                                });
+                        if(material.roughnessMap || material.metalnessMap) 
+                        {  
+                            if(ins.imageIndex.value != this._currentIdx) 
+                            {
+                                this._currentIdx = ins.imageIndex.value;
+                                if(this._texture === null) 
+                                { 
+                                    const metalnessCache = material.metalness;  // hack to avoid showing reflective geometry briefly as black
+                                    material.metalness = 0.0;
+                                    this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
+                                        this._texture = texture; 
+                                        this._texture.mapping = THREE.EquirectangularReflectionMapping; 
+                                        material.envMap = this._texture;
+                                        material.metalness = metalnessCache;
+                                        material.needsUpdate = true; 
+                                    });
+                                }
+                                else 
+                                {                                  
+                                    this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
+                                        this._texture.dispose();
+                                        this._texture = texture; 
+                                        this._texture.mapping = THREE.EquirectangularReflectionMapping; 
+                                        material.envMap = this._texture;
+                                        material.needsUpdate = true; 
+                                    });
+                                }    
                             }
-                            else {
+                            else 
+                            {
                                 material.envMap = this._texture;
                                 material.envMap.mapping = THREE.EquirectangularReflectionMapping;
                                 material.needsUpdate = true; 
@@ -85,15 +108,19 @@ export default class CVEnvironment extends Component
         return true;
     }
 
-    /*fromDocument(document: IDocument, node: INode | IScene): number
+    fromData(data: IEnvironment)
     {
-        
+        this.ins.copyValues({
+            imageIndex: data.index
+        });
     }
 
-    toDocument(document: IDocument, node: INode | IScene): number
+    toData(): IEnvironment
     {
-        
-    }*/
+        const ins = this.ins;
 
-
+        return {
+            index: ins.imageIndex.cloneValue()
+        };
+    }
 }
