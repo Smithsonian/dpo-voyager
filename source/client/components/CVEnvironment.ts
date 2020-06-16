@@ -23,7 +23,7 @@ import CVScene from "./CVScene";
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import { IEnvironment } from "client/schema/setup";
 
-const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","1024px-Adliswil_Hauptplatz_panosphere_20200205.jpg"];  
+const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
 
 ////////////////////////////////////////////////////////////////////////////////
 
