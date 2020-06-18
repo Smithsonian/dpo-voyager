@@ -145,77 +145,6 @@ Version: ${ENV_VERSION}
             this.evaluateProps();
         }
 
-        //*** Support message passing over channel 2 ***//
-        {
-            // Add listener for the intial port transfer message
-            var port2;
-            window.addEventListener('message', initPort);
-
-            // Setup port for message passing
-            function initPort(e) {
-                port2 = e.ports[0];
-                if(port2) {
-                    port2.onmessage = onMessage;
-                }
-            }
-
-            // Handle messages received on port2
-            function onMessage(e) {
-                if (ENV_DEVELOPMENT) {
-                    console.log('Message received by VoyagerExplorer: "' + e.data + '"');
-                }
-
-                const analytics = system.getMainComponent(CVAnalytics);
-
-                if (e.data === "Toggle Annotations") {
-                    const viewerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-                    const toolIns = system.getMainComponent(CVToolProvider).ins;
-
-                    if (toolIns.visible.value) {
-                        toolIns.visible.setValue(false);
-                    }
-
-                    viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
-                    analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
-                }
-                else if (e.data === "Toggle Reader") {
-                    const readerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
-                    
-                    readerIns.enabled.setValue(!readerIns.enabled.value);
-                    analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
-                }
-                else if (e.data === "Toggle Tours") {
-                    const tourIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
-                    const readerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
-
-                    if (tourIns.enabled.value) {
-                        tourIns.enabled.setValue(false);
-                    }
-                    else {
-                        if (readerIns.enabled.value) {
-                            readerIns.enabled.setValue(false); // disable reader
-                        }
-
-                        tourIns.enabled.setValue(true); // enable tours
-                        tourIns.tourIndex.setValue(-1); // show tour menu
-                    }
-
-                    analytics.sendProperty("Tours.Enabled", tourIns.enabled.value);
-                }
-                else if (e.data === "Toggle Tools") {
-                    const toolIns = system.getMainComponent(CVToolProvider).ins;
-                    const viewerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-
-                    if (viewerIns.annotationsVisible.value) {
-                        viewerIns.annotationsVisible.setValue(false);
-                    }
-            
-                    toolIns.visible.setValue(!toolIns.visible.value);
-                    analytics.sendProperty("Tools.Visible", toolIns.visible.value);
-                }
-            }
-        }
-
         // start rendering
         engine.pulse.start();
     }
@@ -313,6 +242,62 @@ Version: ${ENV_VERSION}
             // if nothing else specified, try to read "document.svx.json" from the current folder
             this.loadDocument("document.svx.json", undefined).catch(() => {});
         }
+    }
+
+
+    //** API functions for external UI control */
+    toggleAnnotations()
+    {
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+
+        if (toolIns.visible.value) {
+            toolIns.visible.setValue(false);
+        }
+
+        viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+        this.analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
+    }
+
+    toggleReader()
+    {
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+                    
+        readerIns.enabled.setValue(!readerIns.enabled.value);
+        this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
+    }
+
+    toggleTours()
+    {
+        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+
+        if (tourIns.enabled.value) {
+            tourIns.enabled.setValue(false);
+        }
+        else {
+            if (readerIns.enabled.value) {
+                readerIns.enabled.setValue(false); // disable reader
+            }
+
+            tourIns.enabled.setValue(true); // enable tours
+            tourIns.tourIndex.setValue(-1); // show tour menu
+        }
+
+        this.analytics.sendProperty("Tours.Enabled", tourIns.enabled.value);
+    }
+
+    toggleTools()
+    {
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+
+        if (viewerIns.annotationsVisible.value) {
+            viewerIns.annotationsVisible.setValue(false);
+        }
+
+        toolIns.visible.setValue(!toolIns.visible.value);
+        this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
     }
 }
 

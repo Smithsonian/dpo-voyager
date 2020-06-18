@@ -123,4 +123,34 @@ export default class MainView extends CustomElement
     {
         this.fullscreen.fullscreenElement = null;
     }
+
+
+    //** Pass-through for API functions so they can be called from the main component element */
+    toggleAnnotations()
+    {
+        if(this.application) {
+            this.application.toggleAnnotations();
+        }
+    }
+
+    toggleReader()
+    {
+        if(this.application) {
+            this.application.toggleReader();
+        }
+    }
+
+    toggleTours()
+    {
+        if(this.application) {
+            this.application.toggleTours();
+        }
+    }
+
+    toggleTools()
+    {
+        if(this.application) {
+            this.application.toggleTools();
+        }
+    }
 }
