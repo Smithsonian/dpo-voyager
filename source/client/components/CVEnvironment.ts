@@ -49,12 +49,6 @@ export default class CVEnvironment extends Component
     update()
     {
         const ins = this.ins;
-        
-        if(ins.imageIndex.changed)
-        {
-            //if(this._texture) { this._texture.dispose(); }
-            //this._texture = null;  // trigger texture reload
-        }
 
         if(ins.dirty.changed || ins.imageIndex.changed)
         {
