@@ -174,6 +174,12 @@ void main() {
         diffuseColor.a *= saturate( 1. - transparency + linearToRelativeLuminance( reflectedLight.directSpecular + reflectedLight.indirectSpecular ) );
     #endif
 
+	#ifdef CUT_PLANE
+	if (!gl_FrontFacing) {
+		outgoingLight = cutPlaneColor.rgb;
+	}
+	#endif
+
 	gl_FragColor = vec4(outgoingLight, diffuseColor.a);
 
 	#include <tonemapping_fragment>
