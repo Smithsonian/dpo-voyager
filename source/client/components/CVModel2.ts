@@ -37,6 +37,7 @@ import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { Vector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
+import CVEnvironment from "./CVEnvironment";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -559,6 +560,9 @@ export default class CVModel2 extends CObject3D
                 if (this.ins.override.value) {
                     this.updateMaterial();
                 }
+
+                // flag environment map to update if needed
+                this.getGraphComponent(CVEnvironment).ins.dirty.set(); 
 
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
