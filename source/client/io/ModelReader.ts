@@ -18,11 +18,14 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
-import "three/examples/js/loaders/GLTFLoader";
+/*import "three/examples/js/loaders/GLTFLoader";
 import "three/examples/js/loaders/DRACOLoader";
 
 const GLTFLoader = (THREE as any).GLTFLoader;
-const DRACOLoader = (THREE as any).DRACOLoader;
+const DRACOLoader = (THREE as any).DRACOLoader;*/
+
+import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
@@ -78,9 +81,9 @@ export default class ModelReader
     protected createModelGroup(gltf): THREE.Object3D
     {
         const scene: THREE.Scene = gltf.scene;
-        if (scene.type !== "Scene") {
-            throw new Error("not a valid gltf scene");
-        }
+        //if (scene.type !== "Scene") {
+        //    throw new Error("not a valid gltf scene");
+        //}
 
         const model = new THREE.Group();
         scene.children.forEach(child => model.add(child));

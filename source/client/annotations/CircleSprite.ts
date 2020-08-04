@@ -193,7 +193,7 @@ export default class CircleSprite extends AnnotationSprite
 
         if (camera.isPerspectiveCamera) {
             const distZ = -_vec3a.set(0, 0, 0).applyMatrix4(_mat4).z;
-            const theta = camera.fov * THREE.Math.DEG2RAD * 0.5;
+            const theta = camera.fov * THREE.MathUtils.DEG2RAD * 0.5;
             scaleFactor = Math.tan(theta) * distZ * vpScale;
         }
         else {
