@@ -42,8 +42,12 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
 
     protected render()
     {
-        if (!this.task.activeMeta && !this.task.activeModel) {
-            return html`<div class="sv-placeholder">Please select a model or scene to to take a picture</div>`;
+        /*if (!this.task.activeMeta && !this.task.activeModel) {
+            return html`<div class="sv-placeholder">Please select a model or scene to take a picture</div>`;
+        }*/
+
+        if (!this.task.isActiveScene) {
+            return html`<div class="sv-placeholder">Please select a scene to take a picture</div>`;
         }
 
         const ins = this.task.ins;

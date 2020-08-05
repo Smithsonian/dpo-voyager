@@ -125,6 +125,11 @@ export interface IGrid
     color: number[];
 }
 
+export interface IEnvironment
+{
+    index: number;
+}
+
 export interface ITape
 {
     enabled: boolean;
