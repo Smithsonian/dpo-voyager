@@ -36,6 +36,7 @@ import NVDocuments from "../nodes/NVDocuments";
 
 import MainView from "../ui/mini/MainView";
 import { EDerivativeQuality } from "client/schema/model";
+import { EReaderPosition } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -102,6 +103,31 @@ export default class MiniApplication
         this.documentProvider.createDocument(documentTemplate as any);
         this.evaluateProps();
 
+        //*** Support message passing over channel 2 ***//
+        {
+            // Add listener for the intial port transfer message
+            var port2;
+            window.addEventListener('message', initPort);
+
+            // Setup port for message passing
+            function initPort(e) {
+                port2 = e.ports[0];
+                port2.onmessage = onMessage;
+            }
+
+            // Handle messages received on port2
+            function onMessage(e) {
+                if (ENV_DEVELOPMENT) {
+                    console.log('Message received by VoyagerMini: "' + e.data + '"');
+                }
+
+                if (e.data === "Toggle Annotations") {
+                    const viewerIns = system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+                    viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+                }
+            }
+        }
+
         // start rendering
         engine.pulse.start();
     }
@@ -163,7 +189,7 @@ export default class MiniApplication
             props.document = props.root ? props.document : manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality);
         }
-        if (props.model) {
+        else if (props.model) {
             props.model = props.root ? props.model : manager.getAssetName(props.model);
             this.loadModel(props.model, props.quality);
         }

@@ -135,6 +135,11 @@ export default class CVViewer extends Component
             this.refreshTagCloud();
         }
 
+        // ** Temporary hack until RenderView supports outputEncoding param
+        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== THREE.GammaEncoding) {
+            this.renderer.views[0].renderer.outputEncoding = THREE.GammaEncoding;
+        }
+
         return true;
     }
 

@@ -64,6 +64,8 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
         const isSolid = style === EBackgroundStyle.Solid;
         const isLinear = style === EBackgroundStyle.LinearGradient;
 
+        const environment = setup.environment;
+
         //let name0 = isSolid ? " " : (isLinear ? "Top" : "Inner");
         //let name1 = isSolid ? "" : (isLinear ? "Btm" : "Outer");
 
@@ -76,6 +78,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
                 <sv-property-color class="sv-nogap" .property=${grid.ins.color} name=" "></sv-property-color>
                 <sv-property-boolean .property=${floor.ins.visible} name="Floor"></sv-property-boolean>
                 <sv-property-color class="sv-nogap" .property=${floor.ins.color} name=" "></sv-property-color>
+                <sv-property-options .property=${environment.ins.imageIndex} name="Env Map"></sv-property-options>
             </div>
         </div>`;
     }

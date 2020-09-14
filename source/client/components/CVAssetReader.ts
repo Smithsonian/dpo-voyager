@@ -96,4 +96,10 @@ export default class CVAssetReader extends Component
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.fontReader.load(url);
     }
+
+    async getSystemTexture(assetPath: string): Promise<THREE.Texture>
+    {
+        const url = new URL(assetPath, window.location.href).href;
+        return this.textureLoader.get(url);
+    }
 }

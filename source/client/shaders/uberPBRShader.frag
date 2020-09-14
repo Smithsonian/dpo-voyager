@@ -65,7 +65,8 @@ varying vec3 vViewPosition;
 #include <emissivemap_pars_fragment>
 #include <bsdfs>
 #include <cube_uv_reflection_fragment>
-#include <envmap_pars_fragment>
+#include <envmap_common_pars_fragment>
+//#include <envmap_pars_fragment>
 #include <envmap_physical_pars_fragment>
 #include <fog_pars_fragment>
 #include <lights_pars_begin>
@@ -73,7 +74,7 @@ varying vec3 vViewPosition;
 #include <shadowmap_pars_fragment>
 #include <bumpmap_pars_fragment>
 #include <normalmap_pars_fragment>
-#include <clearcoat_normalmap_pars_fragment>
+#include <clearcoat_pars_fragment>
 #include <roughnessmap_pars_fragment>
 #include <metalnessmap_pars_fragment>
 #include <logdepthbuf_pars_fragment>
@@ -172,6 +173,12 @@ void main() {
     #ifdef TRANSPARENCY
         diffuseColor.a *= saturate( 1. - transparency + linearToRelativeLuminance( reflectedLight.directSpecular + reflectedLight.indirectSpecular ) );
     #endif
+
+	#ifdef CUT_PLANE
+	if (!gl_FrontFacing) {
+		outgoingLight = cutPlaneColor.rgb;
+	}
+	#endif
 
 	gl_FragColor = vec4(outgoingLight, diffuseColor.a);
 

@@ -239,6 +239,7 @@ function createAppConfig(app, isDevMode, isOffline)
         externals: {
             "three": "THREE",
             "quill": "Quill",
+            "../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
         }
     };
 
