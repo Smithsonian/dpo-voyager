@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2020 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
+import * as THREE from "three";
+
 import Component, { types } from "@ff/graph/Component";
 import { ITweenState } from "@ff/graph/components/CTweenMachine";
 import { IPulseContext } from "@ff/graph/components/CPulse";
+import CRenderer from "@ff/scene/components/CRenderer";
+import { IPointerEvent } from "@ff/scene/RenderView";
 
 import { ITarget, ITargets } from "client/schema/model";
 
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
-import CVModel2 from "./CVModel2";
+import CVModel2, { IModelClickEvent } from "./CVModel2";
 import CVTargetManager from "./CVTargetManager";
 import CVSetup from "./CVSetup";
-import CVAnnotationView, { IAnnotationClickEvent } from "./CVAnnotationView";
+import VGPUPicker from "../utils/VGPUPicker";
+import UberPBRMaterial from "client/shaders/UberPBRMaterial";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,26 +42,26 @@ export default class CVTargets extends Component
     static readonly typeName: string = "CVTargets";
     static readonly sceneSnapshotId = "target-default";
 
+    protected picker: VGPUPicker = null;
+
     protected static readonly ins = {
         enabled: types.Boolean("Targets.Enabled"),
         active: types.Boolean("Targets.Active", false),
-        refresh: types.Event("Targets.Refresh"),
         type: types.Enum("Targets.Type", ETargetType),
         targetIndex: types.Integer("Targets.Index", -1),
-        zoneIndex: types.Integer("Zone.Index"),
+        snapshotIndex: types.Integer("Snapshot.Index"),
         forward: types.Event("Zone.Forward"),
         back: types.Event("Zone.Back"),
         first: types.Event("Step.First"),
     };
 
     protected static readonly outs = {
-        //enagaged: types.Boolean("Targets.Engaged", false),
         count: types.Integer("Targets.Count"),
         targetIndex: types.Integer("Target.Index", -1),
         targetTitle: types.String("Target.Title"),
         targetLead: types.String("Target.Lead"),
-        zoneCount: types.Integer("Target.Zones"),
-        zoneIndex: types.Integer("Zone.Index"),
+        zoneCount: types.Integer("Target.Zones", 0),
+        snapshotIndex: types.Integer("Snapshot.Index"),
         stepTitle: types.String("Step.Title"),
     };
 
@@ -64,10 +70,21 @@ export default class CVTargets extends Component
 
     private _targets: ITarget[] = [];
     private _modelTarget: number = -1;
-    private _annotationCount: number = 0;
+    private _zoneCanvas: HTMLCanvasElement = null;
+    private _zoneTexture: THREE.CanvasTexture = null;
 
-    protected get model() {
+    get model() {
         return this.getComponent(CVModel2);
+    }
+    get material() {
+        if(this.model.object3D.type === "Mesh") {
+            const mesh = this.model.object3D as THREE.Mesh;
+            return mesh.material as UberPBRMaterial;
+        }
+        else {
+            const mesh = this.model.object3D.getObjectByProperty("type", "Mesh") as THREE.Mesh;
+            return mesh.material as UberPBRMaterial;
+        }
     }
     get setup() {
         return this.getSystemComponent(CVSetup, true);
@@ -81,28 +98,55 @@ export default class CVTargets extends Component
     get targets() {
         return this._targets;
     }
-    get activeZones() {
+    get activeSnapshots() {
         const target = this.activeTarget;
         return target ? target.snapshots : null;
     }
     get activeTarget() { 
         return this._targets[this.outs.targetIndex.value];
     }
-    get activeZone() {
+    get activeSnapshot() {
         const target = this.activeTarget;
-        return target ? target.snapshots[this.outs.zoneIndex.value] : null;
+        return target ? target.snapshots[this.outs.snapshotIndex.value] : null;
+    }
+
+    get zoneCanvas() {
+        if(this._zoneCanvas) {
+            return this._zoneCanvas;
+        } 
+        else {
+            return this._zoneCanvas = this.createZoneCanvas();
+        }
+    }
+    set zoneCanvas(canvas) {
+        this._zoneCanvas = canvas;
+    }
+
+    get zoneTexture() {
+        if(this._zoneTexture) {
+            return this._zoneTexture;
+        } 
+        else {
+            this._zoneTexture = new THREE.CanvasTexture(this.zoneCanvas);
+            this.material.zoneMap = this._zoneTexture;
+            this.material.enableZoneMap(true); 
+            return this._zoneTexture;
+        }
+    }
+    set zoneTexture(texture) {
+        this._zoneTexture = texture;
     }
 
     dispose()
     {
-        this.ins.refresh.off("value", this.regenerateTargetList, this);
+        this.model.off<IPointerEvent>("pointer-up", this.onModelClicked, this);
         super.dispose();
     }
 
     create()
     {
         super.create();
-        this.ins.refresh.on("value", this.regenerateTargetList, this);
+        this.model.on<IPointerEvent>("pointer-up", this.onModelClicked, this);
     }
 
     update(context: IPulseContext)
@@ -115,68 +159,18 @@ export default class CVTargets extends Component
         if(machine === undefined || this.setup.tours.ins.enabled.value || this.manager.ins.engaged.value) {
             return;
         }
-
-        // initialize targets with model
-        if(targets.length === 0) {
-            this._targets.splice(0, 0, {
-                type: "Model",
-                id: "model",
-                title: this.node.name,
-                snapshots: []
-            });
-        }
-
-        if(ins.active.changed) {
-            if(ins.active.value) {
-                this.model.ins.selected.on("value", this.onModelClicked, this);
-            }
-            else {
-                this.model.ins.selected.off("value", this.onModelClicked, this);
-            }
-        }
-
-        if (ins.enabled.changed) {
-
-            /*if (ins.enabled.value) {
-                // store pre-target scene state
-                const state: ITweenState = {
-                    id: CVTargets.sceneSnapshotId,
-                    curve: EEasingCurve.EaseOutQuad,
-                    duration: 1,
-                    threshold: 0,
-                    values: machine.getCurrentValues(),
-                };
-                machine.setState(state);
-            }
-            else {
-                outs.targetIndex.set();
-
-                // recall pre-target scene state
-                //machine.tweenTo(CVTargets.sceneSnapshotId, context.secondsElapsed);
-                //machine.deleteState(CVTargets.sceneSnapshotId);
-
-                return true;
-            }*/
-        }
   
-        const targetIndex = ins.targetIndex.value; //Math.min(targets.length - 1, Math.max(-1, ins.targetIndex.value));
+        const targetIndex = ins.targetIndex.value;
         const target = targets[targetIndex];
-        const zoneCount = target ? target.snapshots.length : 0;
+        const zoneCount = targets.length;
         outs.zoneCount.setValue(zoneCount);
 
-        let nextStepIndex = -1;
-
-        if (ins.targetIndex.changed || ins.enabled.changed) {
-            if (targetIndex !== outs.targetIndex.value) {
-                nextStepIndex = 0;
-            }
-         
+        if (ins.targetIndex.changed || ins.enabled.changed) {       
             outs.targetIndex.setValue(targetIndex);
             outs.targetTitle.setValue(target ? target.title : "");
-            //outs.targetLead.setValue(target ? target.lead : "");
 
             if(target) {
-                const snapshot = target.snapshots[ins.zoneIndex.value];
+                const snapshot = target.snapshots[ins.snapshotIndex.value];
                 if(snapshot) {
                     machine.ins.id.setValue(snapshot.id); 
                 }
@@ -184,24 +178,16 @@ export default class CVTargets extends Component
         }
 
         if (zoneCount === 0) {
-            outs.zoneIndex.setValue(-1);
+            outs.snapshotIndex.setValue(-1);
             outs.stepTitle.setValue("");
             return true;
         }
         else {
-            ins.zoneIndex.setValue(0);
-            outs.zoneIndex.setValue(0);
+            ins.snapshotIndex.setValue(0);
+            outs.snapshotIndex.setValue(0);
         }
 
         let tween = true;
-
-        if (ins.enabled.changed) {
-            nextStepIndex = outs.zoneIndex.value;
-        }
-        if (ins.zoneIndex.changed) {
-            //nextStepIndex = Math.min(target.snapshots.length - 1, Math.max(0, ins.zoneIndex.value));
-            //tween = false;
-        }
 
         if(ins.forward.changed)
         {
@@ -219,6 +205,7 @@ export default class CVTargets extends Component
             //outs.enagaged.setValue(true);
             this.manager.ins.engaged.setValue(true);
             
+            return true;
         }
 
         if(ins.back.changed)
@@ -231,142 +218,100 @@ export default class CVTargets extends Component
         return true;
     }
 
-    protected onModelClicked()
+    protected onModelClicked(event: IModelClickEvent)
     {
-        // set target
-        this.ins.targetIndex.setValue(this._modelTarget);
-
-        console.log("TRANSITION");
-        this.ins.forward.set();
-    }
-
-    protected onAnnotationClicked(event: IAnnotationClickEvent)
-    {
-        if(event.annotation != null) {
-            // if target is active, set index
-            let objIdx = this._targets.findIndex(o => o.id === event.annotation.id);
-            if(objIdx > -1 && this._targets[objIdx].snapshots.length > 0)
-            {
-                this.ins.targetIndex.setValue(objIdx);
-                this.ins.forward.set();
-            }
+        if(event.isDragging || !this.ins.active.value) {
+            return;
         }
-    }
 
-    protected regenerateTargetList()
-    {console.log("REGENERATING");
-        if(this._targets.length === 0)
+        let newTargetIdx = -1;
+
+        if(this.outs.zoneCount.value > 0)// TODO: Only needed if we have active zones
         {
-            // add model header
-            this._targets.splice(0, 0, {
-                type: "Header",
-                id: "",
-                title: "Model",
-                snapshots: []
-            });
-
-            // add model target
-            this._targets.splice(1, 0, {
-                type: "Model",
-                id: "model",
-                title: this.node.name,
-                snapshots: []
-            });
-
-            // add annotation header
-            this._targets.splice(2, 0, {
-                type: "Header",
-                id: "",
-                title: "Annotations",
-                snapshots: []
-            });
-
-            // add annotation targets
-            const annotationView = this.model.getComponent(CVAnnotationView, true);           
-            if(annotationView)
-            {
-                const annotationList = annotationView.getAnnotations();
-                annotationList.forEach(annotation => {
-                    const annoTarget : ITarget = {
-                        type: "Annotation",
-                        id: annotation.id,
-                        title: annotation.data.title,
-                        snapshots: []
-                    };
-                    this._targets.push(annoTarget);
-                    this._annotationCount++;
-                });
-                annotationView.on<IAnnotationClickEvent>("click", this.onAnnotationClicked, this);
+            const uv: THREE.Vector2 = new THREE.Vector2; 
+            if(this.picker === null) {
+                this.picker = new VGPUPicker(event.view.renderer);
             }
 
-            // add zone header
-            this._targets.splice(3+this._annotationCount, 0, {
-                type: "Header",
-                id: "",
-                title: "Zones",
-                snapshots: []
-            });
-        }
-        else {
-            // annotations may have changed so refresh this section
-            const annotationView = this.model.getComponent(CVAnnotationView, true);  
-            if(annotationView)
-            {
-                const annotationList = annotationView.getAnnotations();
-console.log("UPDATING TARGET LIST");
-                // add new annotations
-                const newList = annotationList.filter(annotation => !this._targets.some(target => target.id === annotation.id));
-                if(newList.length > 0) {
-                    const annoToAdd : ITarget[] = newList.map(annotation => ({
-                        type: "Annotation",
-                        id: annotation.id,
-                        title: annotation.data.title,
-                        snapshots: []
-                    }));
-                    this._targets.splice(3+this._annotationCount, 0, ...annoToAdd);
-                    this._annotationCount += newList.length;
-                }
-                
-                // remove old annotations and update
-                this._targets.slice().reverse().forEach(function(item, index, object) {
-                    if (item.type === "Annotation") {
-                        const currentAnno = annotationList.findIndex(annotation => item.id === annotation.id)
-                        if(currentAnno === -1) {
-                            // if snapshot is present, delete from machine
-                            if(item.snapshots.length > 0) {
-                                item.snapshots.forEach(snapshot => { this.snapshots.deleteState(snapshot.id); });
-                            }
-                            this._targets.splice(object.length - 1 - index, 1);
-                        }
-                        else {
-                            // annotation is still good but title may have been updated
-                            item.title = annotationList[currentAnno].data.title;
-                        }
-                    }
-                }.bind(this));
+            VGPUPicker.add(event.object3D, true);
+
+            const sceneComponent = this.system.getComponent(CRenderer, true).activeSceneComponent;
+            const scene = sceneComponent && sceneComponent.scene;
+            const camera = sceneComponent &&sceneComponent.activeCamera;
+
+            const mesh = event.object3D as THREE.Mesh;
+            const material = mesh.material as UberPBRMaterial;
+
+            const zoneColor = this.picker.pickZone(scene, material.zoneMap, camera, event); 
+            const hexColor = "#" + zoneColor.x.toString(16).padStart(2, '0') + zoneColor.y.toString(16).padStart(2, '0') + zoneColor.z.toString(16).padStart(2, '0');
+            const zoneIndex = this._targets.findIndex(target => target.color === hexColor);
+
+            if(zoneIndex > -1 && this._targets[zoneIndex].snapshots.length > 0) {
+                newTargetIdx = zoneIndex;
             }
         }
+
+        // if needed set model index
+        if(newTargetIdx === -1 && this._modelTarget != -1 && this._targets[this._modelTarget].snapshots.length > 0) {
+            newTargetIdx = this._modelTarget;
+        }
+
+
+        if(newTargetIdx > -1) {
+            // set new target
+            this.ins.targetIndex.setValue(newTargetIdx);
+            this.ins.forward.set();
+        }
+    }
+
+    protected createZoneCanvas()
+    {   
+        const material = this.material;
+        const dim = material.map ? material.map.image.width : 4096;
+
+        const canvas  = document.createElement('canvas') as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d');
+        canvas.width = dim;
+        canvas.height = dim;
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.objectFit = "scale-down";
+        canvas.style.boxSizing = "border-box";
+        canvas.style.position = "absolute";
+        canvas.style.zIndex = "2";
+        ctx.lineWidth = 10;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.fillStyle = '#FF0000';
+        ctx.strokeStyle = '#FF0000'
+
+        // if we have a pre-loaded zone texture we need to copy the image
+        if(material.zoneMap && material.zoneMap.image) {
+            ctx.drawImage(material.zoneMap.image,0,0);
+        }
+
+        return canvas;
     }
 
     fromData(data: ITargets)
     {
         this._targets.length = 0; // clear target array
-        this.regenerateTargetList();
 
         data.forEach(target => {
             if(target.type === "Model") {
                 let objIdx = this._targets.findIndex(o => o.type === 'Model');
                 if(objIdx > -1) {
-                    this._targets[objIdx].snapshots = target.snapshots;
                     this._modelTarget = objIdx;
                 }
             }
-            else {
-                let objIdx = this._targets.findIndex(o => o.id === target.id);
-                if(objIdx > -1) {
-                    this._targets[objIdx].snapshots = target.snapshots;
-                }
-            }
+
+            this._targets.splice(this._targets.length, 0, {
+                type: target.type,
+                id: target.id,
+                title: target.title,
+                color: target.color, 
+                snapshots: target.snapshots
+            });
         });
 
         
@@ -389,10 +334,11 @@ console.log("UPDATING TARGET LIST");
                 type: target.type,
                 id: target.id,
                 title: target.title,
+                color: target.color,
                 snapshots: target.snapshots,
             };
-
-            return data as ITarget;
+            
+            return data as ITarget; 
         });
     }
 }

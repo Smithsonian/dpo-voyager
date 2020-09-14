@@ -97,7 +97,7 @@ export default class CVNodeProvider extends CNodeProvider<NVNode>
         if(this.isNodeInScope(node) && node.model)
         {
             if (event.add) {
-                node.model.ins.selected.set(); console.log(node.model);
+                node.model.ins.selected.set();
             }
         }
 

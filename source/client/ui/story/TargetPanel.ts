@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2020 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,19 @@
 
 import Subscriber from "@ff/core/Subscriber";
 import { IComponentEvent } from "@ff/graph/Component";
+import { IPointerEvent } from "@ff/scene/RenderView";
 import { EEasingCurve, ITweenState } from "@ff/graph/components/CTweenMachine";
 
 import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
 import CVDocument from "../../components/CVDocument";
 import CVTargets from "../../components/CVTargets";
-import CVHotSpotsTask from "../../components/CVHotSpotsTask";
+import CVHotSpotsTask from "../../components/CVTargetsTask";
 import CVTargetManager from "../../components/CVTargetManager";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
 import NVNode from "../../nodes/NVNode";
+import taskSets from "client/applications/taskSets";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,17 +45,17 @@ interface IStepEntry
 @customElement("sv-target-panel")
 export default class TargetPanel extends DocumentView
 {
-    protected static tableColumns: ITableColumn<IStepEntry>[] = [
-        { header: "#", width: 0.05, cell: (row, index) => index.toString() },
-        { header: "Title", width: 0.4, cell: "title" },
-        { header: "Curve", width: 0.25, cell: "curve" },
-        { header: "Duration", width: 0.15, cell: "duration" },
-        { header: "Threshold", width: 0.15, cell: "threshold" },
-    ];
-
-    protected stateTable: Table<IStepEntry> = null;
-    protected subscriber: Subscriber = null;
-    targets: CVTargets = null;
+    protected isDrawing: boolean = false;
+    protected isPanning: boolean = false;
+    protected localOffsetTop: number = 0;
+    protected localOffsetLeft: number = 0;
+    protected panX: number = 0;
+    protected panY: number = 0;
+    protected savedMouseX: number = 0;
+    protected savedMouseY: number = 0;
+    protected zoomLevel: number = 1.0;
+    protected drawBounds: DOMRect = null;
+    protected targets: CVTargets = null;
 
     protected get targetsTask() {
         return this.system.getMainComponent(CVHotSpotsTask, true);
@@ -66,13 +68,6 @@ export default class TargetPanel extends DocumentView
     {
         super.firstConnected();
         this.classList.add("sv-panel", "sv-target-panel");
-
-        //this.stateTable = new Table();
-        //this.stateTable.columns = TargetPanel.tableColumns;
-        //this.stateTable.placeholder = "Start by creating a target step.";
-        //this.stateTable.addEventListener("rowclick", this.onClickTableRow.bind(this));
-
-        this.subscriber = new Subscriber("value", this.onUpdate, this);
     }
 
     protected connected()
@@ -95,8 +90,6 @@ export default class TargetPanel extends DocumentView
 
     protected render()
     {
-        //console.log("TargetPanel.render");
-
         const task = this.targetsTask;
        
         if (!task /*|| !task.outs.isActive.value*/) {
@@ -109,77 +102,59 @@ export default class TargetPanel extends DocumentView
             return html`<div class="ff-placeholder">Please select a model to edit targets.</div>`;
         }
 
-        const machine = targets.snapshots;
         const activeTarget = targets.activeTarget;
 
         if (!activeTarget) {
             return html`<div class="ff-placeholder">Please select a target to edit.</div>`;
         }
 
-        const activeZone = targets.activeZone;
+        const activeSnapshot = targets.activeSnapshot;
 
-        // reserved for future config
-        const targetConfigView = null; 
+        // zone map config
+        const targetConfigView = activeTarget.type === "Zone" ? html`<div @contextmenu=${this.onContextMenu} @wheel=${this.onScrollWheel} @mousedown=${this.onPointerDown} @mouseup=${this.onPointerUp} @mousemove=${this.onPointerMove}>${task.baseCanvas} ${task.zoneCanvas}</div>` : null; 
 
-        const activeButton = targets.activeZones.length > 0 ? html`<ff-button text="Update" icon="camera" @click=${this.onClickUpdate}></ff-button>` 
+        const activeButton = targets.activeSnapshots.length > 0 ? html`<ff-button text="Update" icon="camera" @click=${this.onClickUpdate}></ff-button>` 
             : html`<ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>`;
 
-        const targetDetailView = targets.activeZones.length > 0 ?  html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-        <sv-property-view .property=${task.ins.stepTitle}></sv-property-view>
-        <sv-property-view .property=${task.ins.stepCurve}></sv-property-view>
-        <sv-property-view .property=${task.ins.stepDuration} commitonly></sv-property-view>
-        <sv-property-view .property=${task.ins.stepThreshold} commitonly></sv-property-view>
+        const targetDetailView = targets.activeSnapshots.length > 0 ?  html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+        <sv-property-view .property=${task.ins.snapshotTitle}></sv-property-view>
+        <sv-property-view .property=${task.ins.snapshotCurve}></sv-property-view>
+        <sv-property-view .property=${task.ins.snapshotDuration} commitonly></sv-property-view>
+        <sv-property-view .property=${task.ins.snapshotThreshold} commitonly></sv-property-view>
         </div>` : html`<div class="ff-placeholder"><div>Create a target snapshot to edit.</div></div>`;
 
         return html`<div class="sv-panel-header">
             ${activeButton}
-            <ff-button text="Delete" icon="trash" ?disabled=${!activeZone} @click=${this.onClickDelete}></ff-button>
+            <ff-button text="Delete" icon="trash" ?disabled=${!activeSnapshot} @click=${this.onClickDelete}></ff-button>
         </div>
-        <div class="ff-flex-item-stretch ff-flex-row">
-            <div class="ff-splitter-section" style="flex-basis: 60%">
+        <div class="ff-flex-item-stretch ff-flex-row" style="overflow: overlay">
+            <div class="ff-splitter-section" style="flex-basis: 60%;">
                 ${targetDetailView}
             </div>
             <ff-splitter></ff-splitter>
-            <div class="ff-splitter-section" style="flex-basis: 40%">
+            <div class="ff-splitter-section" style="flex-basis: 40%;">
                 ${targetConfigView}
             </div>
         </div>`;
     }
 
-    /*protected onClickTableRow(event: ITableRowClickEvent<ITweenState>)
-    {
-        this.targets.ins.zoneIndex.setValue(event.detail.index);
-    }*/
-
     protected onClickUpdate()
     {
-        this.targetsTask.ins.updateStep.set();
+        this.targetsTask.ins.updateSnapshot.set();
     }
 
     protected onClickCreate()
     {
-        this.targetsTask.ins.createZone.set();
+        this.targetsTask.ins.createSnapshot.set();
     }
 
     protected onClickDelete()
     {
-        this.targetsTask.ins.deleteStep.set();
+        this.targetsTask.ins.deleteSnapshot.set();
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        if (previous) {
-            this.subscriber.off();
-        }
-        if (next) {
-            /*this.targets = next.setup.targets;
-            this.subscriber.on(
-                this.targets.ins.enabled,
-                this.targets.ins.targetIndex,
-                this.targets.outs.stepIndex
-            );*/
-        }
-
         this.requestUpdate();
     }
 
@@ -196,14 +171,22 @@ export default class TargetPanel extends DocumentView
         if(prevTargets)
         {
             prevTargets.outs.targetIndex.off("value", this.onUpdate, this);
-            prevTargets.outs.zoneIndex.off("value", this.onUpdate, this);
+            prevTargets.outs.snapshotIndex.off("value", this.onUpdate, this);
         }
 
         if(nextTargets)
         {       
             this.targets = nextTargets;
             this.targets.outs.targetIndex.on("value", this.onUpdate, this);
-            this.targets.outs.zoneIndex.on("value", this.onUpdate, this); 
+            this.targets.outs.snapshotIndex.on("value", this.onUpdate, this); 
+
+            // reset canvas
+            if(this.zoomLevel !== 1.0 || this.panX !== 0.0 || this.panY !== 0.0) {
+                this.zoomLevel = 1.0;
+                this.panX = 0.0;
+                this.panY= 0.0;
+                this.applyCanvasTransform();
+            }
         }
 
         this.requestUpdate();
@@ -221,5 +204,125 @@ export default class TargetPanel extends DocumentView
         }
 
         this.requestUpdate();
+    }
+
+    protected onPointerDown(event: MouseEvent)
+    {
+        // do not handle if task is not active
+        if (!this.targetsTask.outs.isActive.value) {
+            return;
+        }
+
+        if(event.button == 0)  // left mouse button
+        {
+            this.isDrawing = true;
+
+            // calculate image offset from canvas element
+            const canvas = this.targetsTask.zoneCanvas;
+            this.drawBounds = canvas.getBoundingClientRect();
+
+            const origRatio = canvas.width / canvas.height;
+            const currRatio = this.drawBounds.width / this.drawBounds.height;
+
+            if(origRatio > currRatio) {
+                const height = this.drawBounds.width / origRatio;
+                this.localOffsetTop = (this.drawBounds.height - height) / 2;
+                this.localOffsetLeft = 0; 
+            }
+            else {
+                const width = this.drawBounds.height * origRatio;
+                this.localOffsetLeft = (this.drawBounds.width - width) / 2;
+                this.localOffsetTop = 0;
+            }
+
+            let adjX = (event.clientX-this.drawBounds.left-this.localOffsetLeft)/(this.drawBounds.width-this.localOffsetLeft*2.0); 
+            let adjY = (event.clientY-this.drawBounds.top-this.localOffsetTop)/(this.drawBounds.height-this.localOffsetTop*2.0);
+            canvas.getContext('2d').beginPath();
+            canvas.getContext('2d').moveTo(adjX*canvas.width, adjY*canvas.height);
+        }
+        else
+        {
+            this.savedMouseX = event.clientX;
+            this.savedMouseY = event.clientY;
+            this.isPanning = true;
+        }
+    }
+
+    protected onPointerMove(event: MouseEvent)
+    {
+        if(this.isDrawing) {
+            this.drawToZone(event.clientX, event.clientY);
+        }
+
+        if(this.isPanning) {
+            if(this.zoomLevel <= 1.0) {
+                return;
+            }
+
+            this.panX += (event.clientX - this.savedMouseX)/this.zoomLevel;
+            this.panY += (event.clientY - this.savedMouseY)/this.zoomLevel;
+
+            this.applyCanvasTransform();
+
+            this.savedMouseX = event.clientX;
+            this.savedMouseY = event.clientY; 
+        }
+    }
+
+    protected onPointerUp(event: MouseEvent)
+    {
+        this.isDrawing = false;
+        this.isPanning = false;
+    }
+
+    protected onContextMenu(event: MouseEvent)
+    {
+        event.preventDefault();
+    }
+
+    protected onScrollWheel(event: WheelEvent)
+    {
+        //console.log(event.deltaY);
+        this.zoomLevel += -(event.deltaY/1000);
+
+        // early out
+        if(this.zoomLevel < 1.0) {
+            this.zoomLevel = 1.0;
+            return;
+        }
+
+        if(this.zoomLevel === 1.0) {
+            this.panX = 0;
+            this.panY = 0;
+        }
+
+        this.applyCanvasTransform();
+    }
+
+    protected drawToZone(x: number, y: number)
+    {
+        const canvas = this.targetsTask.zoneCanvas;
+        const clientRect = this.drawBounds;
+
+        let adjX = (x-clientRect.left-this.localOffsetLeft)/(clientRect.width-this.localOffsetLeft*2.0);
+        let adjY = (y-clientRect.top-this.localOffsetTop)/(clientRect.height-this.localOffsetTop*2.0);
+        
+        canvas.getContext('2d').lineTo(Math.floor(adjX*canvas.width), Math.floor(adjY*canvas.height));
+        canvas.getContext('2d').stroke();
+
+        //canvas.getContext('2d').fillRect(adjX*canvas.width, adjY*canvas.height, 70, 70);
+
+        this.targetsTask.updateZoneTexture();
+    }
+
+    protected applyCanvasTransform() {
+        const transformString = "scale(" + this.zoomLevel + ", " + this.zoomLevel + ") translate(" + this.panX + "px, " + this.panY + "px)";
+        const transformStringInv = "scale(" + this.zoomLevel + ", " + -this.zoomLevel + ") translate(" + this.panX + "px, " + -this.panY + "px)";
+
+        const canvas = this.targetsTask.zoneCanvas;
+        const base = this.targetsTask.baseCanvas;
+
+        canvas.style.transform = transformString;
+        base.style.transform = transformStringInv;
     }
 }

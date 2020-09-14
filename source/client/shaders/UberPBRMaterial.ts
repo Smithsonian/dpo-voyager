@@ -40,7 +40,8 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     uniforms: {
         aoMapMix: { value: THREE.Vector3 },
         cutPlaneDirection: { value: THREE.Vector4 },
-        cutPlaneColor: { value: THREE.Vector3 }
+        cutPlaneColor: { value: THREE.Vector3 },
+        zoneMap: { value: THREE.Texture }
     };
 
     vertexShader: string;
@@ -56,6 +57,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     private _aoMapMix: THREE.Vector3;
     private _cutPlaneDirection: THREE.Vector4;
     private _cutPlaneColor: THREE.Vector3;
+    private _zoneMap: THREE.Texture;
 
     constructor(params?: IUberPBRShaderProps)
     {
@@ -74,6 +76,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
             "MODE_NORMALS": false,
             "MODE_XRAY": false,
             "CUT_PLANE": false,
+            "USE_ZONEMAP": false,
         };
 
         this.uniforms = THREE.UniformsUtils.merge([
@@ -82,12 +85,14 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
                 aoMapMix: { value: new THREE.Vector3(0.25, 0.25, 0.25) },
                 cutPlaneDirection: { value: new THREE.Vector4(0, 0, -1, 0) },
                 cutPlaneColor: { value: new THREE.Vector3(1, 0, 0) },
+                zoneMap: {value: null},
             }
         ]);
 
         this._aoMapMix = this.uniforms.aoMapMix.value;
         this._cutPlaneDirection = this.uniforms.cutPlaneDirection.value;
         this._cutPlaneColor = this.uniforms.cutPlaneColor.value;
+        this._zoneMap = this.uniforms.zoneMap.value;
 
         //this.vertexShader = ShaderLib.standard.vertexShader;
         this.vertexShader = vertexShader;
@@ -122,6 +127,15 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
     }
     get aoMapMix() {
         return this._aoMapMix;
+    }
+
+    set zoneMap(map: THREE.Texture) {
+        this._zoneMap = map;
+        this.uniforms.zoneMap.value = map; 
+        this.needsUpdate = true;
+    }
+    get zoneMap() {
+        return this._zoneMap;
     }
 
     setShaderMode(mode: EShaderMode)
@@ -231,6 +245,11 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
             this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
             this.needsUpdate = true;
         }
+    }
+
+    enableZoneMap(enabled: boolean)
+    {
+        this.defines["USE_ZONEMAP"] = enabled;
     }
 
     copyStandardMaterial(material: THREE.MeshStandardMaterial): this

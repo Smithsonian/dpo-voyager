@@ -323,6 +323,14 @@ $color-component-active-target: rgb(10, 128, 10);
   fill: $color-component-model;
 }
 
+.ff-property-button.sv-property-button {
+  align-items: center;
+  padding: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: $color-background-light;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTY VIEW
 

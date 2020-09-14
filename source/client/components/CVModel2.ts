@@ -51,6 +51,10 @@ export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
 }
 
+export interface IModelClickEvent extends IPointerEvent
+{
+}
+
 /**
  * Graph component rendering a model or model part.
  *

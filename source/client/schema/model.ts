@@ -145,6 +145,7 @@ export interface ITarget
     type: string;
     id: string;
     title: string;
+    color: string;
     snapshots: ITargetSnapshot[];
 }
 

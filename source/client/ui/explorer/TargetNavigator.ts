@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2020 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 import "@ff/ui/Button";
 
 import CVDocument from "../../components/CVDocument";
-import CVTours from "../../components/CVTours";
 import CVNodeProvider from "../..//components/CVNodeProvider";
 import CVTargets from "../../components/CVTargets";
 
@@ -44,24 +43,8 @@ export default class TourNavigator extends DocumentView
 
     protected render()
     {
-        /*const tours = this.tours;
-        const activeTour = tours.activeTour;
-
-        let title, info;
-
-        if (tours && activeTour) {
-            const stepNumber = tours.outs.stepIndex.value + 1;
-            const stepCount = tours.outs.stepCount.value;
-            title = stepCount > 0 ? tours.outs.stepTitle.value : tours.outs.tourTitle.value;
-            info = stepCount > 0 ? `Step ${stepNumber} of ${stepCount}` : "No tour steps defined";
-        }
-        else {
-            title = "No tour selected";
-            info = "---";
-        }*/
-
         const targets = this.nodeProvider.activeNode.getComponent(CVTargets, true); 
-        const title = targets.activeZone.title;
+        const title = targets.activeSnapshot.title;
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
             <ff-button class="sv-section-lead" transparent icon="close" title="Exit Tour" @click=${this.onClickExit}></ff-button>
@@ -80,10 +63,7 @@ export default class TourNavigator extends DocumentView
             manager.ins.engaged.setValue(false);
             targets.ins.back.set();
         }
-
-        //console.log("EXIT TARGET");
     }
-
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {

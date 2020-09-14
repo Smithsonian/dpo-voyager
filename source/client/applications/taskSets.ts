@@ -22,7 +22,7 @@ import CVAnnotationsTask from "../components/CVAnnotationsTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 import CVArticlesTask from "../components/CVArticlesTask";
 import CVToursTask from "../components/CVToursTask";
-import CVHotSpotsTask from "client/components/CVHotSpotsTask";
+import CVTargetsTask from "client/components/CVTargetsTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +36,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
-        CVHotSpotsTask,
+        CVTargetsTask,
         CVSettingsTask,
     ],
     [ETaskMode.QC]: [
@@ -58,7 +58,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
-        CVHotSpotsTask,
+        CVTargetsTask,
         CVSettingsTask,
     ]
 }
