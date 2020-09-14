@@ -383,9 +383,10 @@ export default class CVTargetsTask extends CVTask
             next.model.on<IPointerEvent>("pointer-move", this.onPointerMove, this);
 
             next.model.outs.quality.on("value", this.onQualityChange, this);
+
+            this.baseCanvas.getContext('2d').drawImage(this.targets.material.map.image,0,0);
          
             if(this.targets.material.zoneMap) { 
-                this.baseCanvas.getContext('2d').drawImage(this.targets.material.map.image,0,0);
                 this.targets.material.enableZoneMap(true);  
                 this.updateZoneTexture();
             }
