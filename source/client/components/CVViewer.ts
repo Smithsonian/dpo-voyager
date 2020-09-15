@@ -27,6 +27,7 @@ import { EDerivativeQuality } from "client/schema/model";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
+import CVTargets from "./CVTargets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +126,7 @@ export default class CVViewer extends Component
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
+            this.getGraphComponents(CVTargets).forEach(targets => targets.ins.visible.setValue(visible));
         }
         if (ins.activeTags.changed) {
             const tags = ins.activeTags.value;

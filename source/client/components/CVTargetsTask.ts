@@ -23,7 +23,7 @@ import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
 import CVTask, { types } from "./CVTask";
-import HotSpotsTaskView from "../ui/story/TargetsTaskView";
+import TargetsTaskView from "../ui/story/TargetsTaskView";
 
 import CVDocument from "./CVDocument";
 import CVTargets from "./CVTargets";
@@ -34,7 +34,6 @@ import CVAssetManager from "./CVAssetManager";
 
 import NVNode from "../nodes/NVNode";
 import * as THREE from "three";
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 
@@ -71,6 +70,8 @@ export default class CVTargetsTask extends CVTask
         createZone: types.Event("Zone.Create"),
         deleteZone: types.Event("Zone.Delete"),
         saveZones: types.Event("Zone.Save"),
+        zoneFill: types.Event("Zone.Fill"),
+        zoneClear: types.Event("Zone.Clear"),
         zoneTitle: types.String("Zone.Title"),
         zoneColor: types.ColorRGB("Zone.Color", [1.0, 0.0, 0.0]),
         zoneBrushSize: types.Unit("Zone.BrushSize", {preset: 10, min: 1, max: 100}),
@@ -223,7 +224,7 @@ export default class CVTargetsTask extends CVTask
                 type: "Zone",
                 id: "",
                 title: "New Zone " + this._zoneDisplayCount++,
-                color: "#" + Math.floor(Math.random()*16777215).toString(16), //Math.round(this.ins.zoneColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[2]*255).toString(16).padStart(2, '0'),
+                color: "#" + Math.floor(Math.random()*16777215).toString(16),
                 snapshots: []
             });
 
@@ -254,7 +255,7 @@ export default class CVTargetsTask extends CVTask
 
         if(ins.zoneColor.changed)
         {
-            let newColor = "#" + Math.round(this.ins.zoneColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[2]*255).toString(16).padStart(2, '0');
+            const newColor = "#" + Math.round(this.ins.zoneColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[2]*255).toString(16).padStart(2, '0');
             this.ctx.fillStyle = newColor;
             this.ctx.strokeStyle = newColor;
             target.color = newColor;
@@ -289,12 +290,26 @@ export default class CVTargetsTask extends CVTask
             return true;
         }
 
+        if(ins.zoneClear.changed)
+        {
+            this.ctx.clearRect(0,0, this.zoneCanvas.width, this.zoneCanvas.height);
+            this.updateZoneTexture();
+            return true;
+        }
+
+        if(ins.zoneFill.changed)
+        {
+            this.ctx.fillRect(0,0, this.zoneCanvas.width, this.zoneCanvas.height);
+            this.updateZoneTexture();
+            return true;
+        }
+
         return true;
     }
 
     createView()
     {
-        return new HotSpotsTaskView(this);
+        return new TargetsTaskView(this);
     }
 
     activateTask()
@@ -303,7 +318,9 @@ export default class CVTargetsTask extends CVTask
 
         if (this.targets) {
             this.targets.ins.enabled.setValue(true);
-        }   
+        } 
+
+        this.system.getComponents(CVTargets).forEach(targets => targets.ins.visible.setValue(true));
     }
 
     deactivateTask()
@@ -311,6 +328,8 @@ export default class CVTargetsTask extends CVTask
         if (this.targets) {
             this.targets.ins.enabled.setValue(false);
         }
+
+        this.system.getComponents(CVTargets).forEach(targets => targets.ins.visible.setValue(false));
 
         super.deactivateTask();
     }
@@ -385,11 +404,6 @@ export default class CVTargetsTask extends CVTask
             next.model.outs.quality.on("value", this.onQualityChange, this);
 
             this.baseCanvas.getContext('2d').drawImage(this.targets.material.map.image,0,0);
-         
-            if(this.targets.material.zoneMap) { 
-                this.targets.material.enableZoneMap(true);  
-                this.updateZoneTexture();
-            }
 
             this.onTargetChange();
         }
@@ -476,9 +490,12 @@ export default class CVTargetsTask extends CVTask
         }
 
         const model = this.activeModel;
-        // if user clicked on model
-        if (event.component === model) {
+        // if user left-clicked on model
+        if (event.component === model && event.originalEvent.button == 0) {
+            event.stopPropagation = true;
             VGPUPicker.add(model.object3D, true);
+
+            this.targets.ins.visible.setValue(true);
 
             this.isPainting = true;
             this.draw(event);
@@ -502,8 +519,6 @@ export default class CVTargetsTask extends CVTask
 
     protected draw(event: IPointerEvent)
     {
-        const model = this.activeModel.object3D;
-
         const sceneComponent = this.system.getComponent(CRenderer, true).activeSceneComponent;
         const scene = sceneComponent && sceneComponent.scene;
         const camera = sceneComponent && sceneComponent.activeCamera;
@@ -511,9 +526,7 @@ export default class CVTargetsTask extends CVTask
         let shaderUVs = this.picker.pickUV(scene, camera, event);
         this.uv.setX(shaderUVs.x);
         this.uv.setY(shaderUVs.y);
-        const mesh = model.children[0].children[0] as THREE.Mesh;
-        const material = mesh.material as UberPBRMaterial;
-        material.zoneMap.transformUv( this.uv );
+        this.targets.zoneTexture.transformUv( this.uv );
 
         const brushWidth = this.ins.zoneBrushSize.value;
         this.ctx.fillRect(Math.floor(this.uv.x*this.zoneCanvas.width)-(brushWidth/2), Math.floor(this.uv.y*this.zoneCanvas.height)-(brushWidth/2), brushWidth, brushWidth);

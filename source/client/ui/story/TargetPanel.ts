@@ -15,22 +15,13 @@
  * limitations under the License.
  */
 
-import Subscriber from "@ff/core/Subscriber";
 import { IComponentEvent } from "@ff/graph/Component";
-import { IPointerEvent } from "@ff/scene/RenderView";
-import { EEasingCurve, ITweenState } from "@ff/graph/components/CTweenMachine";
-
-import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
 import CVDocument from "../../components/CVDocument";
 import CVTargets from "../../components/CVTargets";
-import CVHotSpotsTask from "../../components/CVTargetsTask";
-import CVTargetManager from "../../components/CVTargetManager";
+import CVTargetsTask from "../../components/CVTargetsTask";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
-import NVNode from "../../nodes/NVNode";
-import taskSets from "client/applications/taskSets";
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -58,7 +49,7 @@ export default class TargetPanel extends DocumentView
     protected targets: CVTargets = null;
 
     protected get targetsTask() {
-        return this.system.getMainComponent(CVHotSpotsTask, true);
+        return this.system.getMainComponent(CVTargetsTask, true);
     }
     protected get manager() {
         return this.activeDocument.setup.targets;
@@ -73,7 +64,7 @@ export default class TargetPanel extends DocumentView
     protected connected()
     {
         super.connected();
-        this.system.components.on(CVHotSpotsTask, this.onTargetsTask, this);
+        this.system.components.on(CVTargetsTask, this.onTargetsTask, this);
 
         const task = this.targetsTask;
         task && task.outs.isActive.on("value", this.onUpdate, this);
@@ -84,7 +75,7 @@ export default class TargetPanel extends DocumentView
         const task = this.targetsTask;
         task && task.outs.isActive.off("value", this.onUpdate, this);
 
-        this.system.components.off(CVHotSpotsTask, this.onTargetsTask, this);
+        this.system.components.off(CVTargetsTask, this.onTargetsTask, this);
         super.disconnected();
     }
 
@@ -192,7 +183,7 @@ export default class TargetPanel extends DocumentView
         this.requestUpdate();
     }
 
-    protected onTargetsTask(event: IComponentEvent<CVHotSpotsTask>)
+    protected onTargetsTask(event: IComponentEvent<CVTargetsTask>)
     {
         if (event.add) {
             event.object.outs.isActive.on("value", this.onUpdate, this);

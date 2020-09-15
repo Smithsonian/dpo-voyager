@@ -20,9 +20,8 @@ import List from "@ff/ui/List";
 
 import { ITarget } from "client/schema/model";
 
-import CVHotSpotsTask from "../../components/CVTargetsTask";
+import CVTargetsTask from "../../components/CVTargetsTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
-import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import CVDocument from "../../components/CVDocument";
 import CVTargets from "../../components/CVTargets";
@@ -32,8 +31,8 @@ import NVNode from "../../nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-hotspots-task-view")
-export default class HotSpotsTaskView extends TaskView<CVHotSpotsTask>
+@customElement("sv-targets-task-view")
+export default class TargetsTaskView extends TaskView<CVTargetsTask>
 {
     protected featureConfigMode = false;
     protected targets: CVTargets = null;
@@ -102,6 +101,10 @@ export default class HotSpotsTaskView extends TaskView<CVHotSpotsTask>
                 <ff-button text="X" class="ff-property-button ff-control sv-property-button" ?selected=${props.zoneErase.value} @click=${this.onClickErase}></ff-button>
             </div>
             <sv-property-view .property=${task.ins.zoneBrushSize}></sv-property-view>
+            <div class="sv-commands">
+                <ff-button text="Fill All" class="ff-control" @click=${this.onClickFillAll}></ff-button>
+                <ff-button text="Clear All" class="ff-control" @click=${this.onClickClearAll}></ff-button>
+            </div>
         </div>` : null;
 
 
@@ -113,13 +116,13 @@ export default class HotSpotsTaskView extends TaskView<CVHotSpotsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-splitter-section" style="flex-basis: 60%">
+                <div class="ff-splitter-section" style="flex-basis: 50%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-target-list .data=${targetList.slice()} .selectedItem=${activeTarget} @select=${this.onSelectTarget}></sv-target-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
-                <div class="ff-splitter-section" style="flex-basis: 40%">
+                <div class="ff-splitter-section" style="flex-basis: 50%">
                     ${zoneConfig}
                 </div>
             </div>
@@ -212,11 +215,22 @@ export default class HotSpotsTaskView extends TaskView<CVHotSpotsTask>
         this.task.ins.saveZones.set();
     }
 
+    // Handle zone fill
+    protected onClickFillAll()
+    {
+        this.task.ins.zoneFill.set();
+    }
+
+    // Handle zone clear
+    protected onClickClearAll()
+    {
+        this.task.ins.zoneClear.set();
+    }
+
     // Set zone color to erase
     protected onClickErase()
     {
         this.task.ins.zoneErase.setValue(!this.task.ins.zoneErase.value); 
-        console.log("ERASE");
     }
 }
 

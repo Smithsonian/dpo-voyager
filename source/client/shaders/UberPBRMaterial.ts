@@ -249,7 +249,10 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
 
     enableZoneMap(enabled: boolean)
     {
-        this.defines["USE_ZONEMAP"] = enabled;
+        if(enabled != this.defines["USE_ZONEMAP"]) {
+            this.defines["USE_ZONEMAP"] = enabled; 
+            this.needsUpdate = true;
+        }
     }
 
     copyStandardMaterial(material: THREE.MeshStandardMaterial): this

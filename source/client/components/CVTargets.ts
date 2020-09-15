@@ -31,7 +31,6 @@ import CVTargetManager from "./CVTargetManager";
 import CVSetup from "./CVSetup";
 import VGPUPicker from "../utils/VGPUPicker";
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
-import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +46,7 @@ export default class CVTargets extends Component
     protected static readonly ins = {
         enabled: types.Boolean("Targets.Enabled"),
         active: types.Boolean("Targets.Active", false),
+        visible: types.Boolean("Targets.Visible", false),
         type: types.Enum("Targets.Type", ETargetType),
         targetIndex: types.Integer("Targets.Index", -1),
         snapshotIndex: types.Integer("Snapshot.Index"),
@@ -77,14 +77,18 @@ export default class CVTargets extends Component
         return this.getComponent(CVModel2);
     }
     get material() {
+        let mat = null;
         if(this.model.object3D.type === "Mesh") {
             const mesh = this.model.object3D as THREE.Mesh;
-            return mesh.material as UberPBRMaterial;
+            mat = mesh.material as UberPBRMaterial;
         }
         else {
             const mesh = this.model.object3D.getObjectByProperty("type", "Mesh") as THREE.Mesh;
-            return mesh.material as UberPBRMaterial;
+            if(mesh) {
+                mat = mesh.material as UberPBRMaterial;
+            }
         }
+        return mat;
     }
     get setup() {
         return this.getSystemComponent(CVSetup, true);
@@ -129,7 +133,6 @@ export default class CVTargets extends Component
         else {
             this._zoneTexture = new THREE.CanvasTexture(this.zoneCanvas);
             this.material.zoneMap = this._zoneTexture;
-            this.material.enableZoneMap(true); 
             return this._zoneTexture;
         }
     }
@@ -212,7 +215,17 @@ export default class CVTargets extends Component
         {
             // recall pre-target scene state
             machine.tweenTo(CVTargets.sceneSnapshotId, context.secondsElapsed);
-            machine.deleteState(CVTargets.sceneSnapshotId);     
+            machine.deleteState(CVTargets.sceneSnapshotId);    
+            
+            return true;
+        }
+
+        if(ins.visible.changed)
+        {
+            if(this.material && this.material.zoneMap) {
+                const refresh = this.zoneTexture;
+                this.material.enableZoneMap(ins.visible.value);
+            }
         }
 
         return true;
