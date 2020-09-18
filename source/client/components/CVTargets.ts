@@ -115,12 +115,7 @@ export default class CVTargets extends Component
     }
 
     get zoneCanvas() {
-        if(this._zoneCanvas) {
-            return this._zoneCanvas;
-        } 
-        else {
-            return this._zoneCanvas = this.createZoneCanvas();
-        }
+        return this._zoneCanvas ? this._zoneCanvas : this._zoneCanvas = this.createZoneCanvas();
     }
     set zoneCanvas(canvas) {
         this._zoneCanvas = canvas;
@@ -131,7 +126,7 @@ export default class CVTargets extends Component
             return this._zoneTexture;
         } 
         else {
-            this._zoneTexture = new THREE.CanvasTexture(this.zoneCanvas);
+            this._zoneTexture = new THREE.CanvasTexture(this.zoneCanvas); 
             this.material.zoneMap = this._zoneTexture;
             return this._zoneTexture;
         }
@@ -292,11 +287,15 @@ export default class CVTargets extends Component
         canvas.style.boxSizing = "border-box";
         canvas.style.position = "absolute";
         canvas.style.zIndex = "2";
+        canvas.style.setProperty("mix-blend-mode", "multiply");
         ctx.lineWidth = 10;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
-        ctx.fillStyle = '#FF0000';
+        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = "#FFFFFF";
         ctx.strokeStyle = '#FF0000'
+
+        ctx.fillRect(0,0,dim,dim);
 
         // if we have a pre-loaded zone texture we need to copy the image
         if(material.zoneMap && material.zoneMap.image) {
@@ -342,7 +341,8 @@ export default class CVTargets extends Component
             return null;
         }
 
-        return  this._targets.filter(target => target.snapshots.length > 0).map(target => {
+        //return  this._targets.filter(target => target.snapshots.length > 0).map(target => {
+        return  this._targets.map(target => {
             const data: ITarget = {
                 type: target.type,
                 id: target.id,

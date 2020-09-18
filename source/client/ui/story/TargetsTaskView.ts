@@ -20,7 +20,7 @@ import List from "@ff/ui/List";
 
 import { ITarget } from "client/schema/model";
 
-import CVTargetsTask from "../../components/CVTargetsTask";
+import CVTargetsTask, { EPaintMode } from "../../components/CVTargetsTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
 
 import CVDocument from "../../components/CVDocument";
@@ -98,8 +98,13 @@ export default class TargetsTaskView extends TaskView<CVTargetsTask>
                 <div class="sv-property-value">
                     <ff-property-view .property=${task.ins.zoneColor} ></ff-property-view>
                 </div>
-                <ff-button text="X" class="ff-property-button ff-control sv-property-button" ?selected=${props.zoneErase.value} @click=${this.onClickErase}></ff-button>
             </div>
+            <div class="sv-label"><b>Painting Tools</b></div>
+            <ff-button-group class="sv-commands">
+                <ff-button text="Interact" class="ff-control" @click=${this.onClickInteract}></ff-button>
+                <ff-button text="Paint" class="ff-control" @click=${this.onClickPaint}></ff-button>
+                <ff-button text="Erase" class="ff-control" @click=${this.onClickErase}></ff-button>
+            </ff-button-group>
             <sv-property-view .property=${task.ins.zoneBrushSize}></sv-property-view>
             <div class="sv-commands">
                 <ff-button text="Fill All" class="ff-control" @click=${this.onClickFillAll}></ff-button>
@@ -116,13 +121,13 @@ export default class TargetsTaskView extends TaskView<CVTargetsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-splitter-section" style="flex-basis: 50%">
+                <div class="ff-splitter-section" style="flex-basis: 40%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-target-list .data=${targetList.slice()} .selectedItem=${activeTarget} @select=${this.onSelectTarget}></sv-target-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
-                <div class="ff-splitter-section" style="flex-basis: 50%">
+                <div class="ff-splitter-section" style="flex-basis: 60%">
                     ${zoneConfig}
                 </div>
             </div>
@@ -227,10 +232,18 @@ export default class TargetsTaskView extends TaskView<CVTargetsTask>
         this.task.ins.zoneClear.set();
     }
 
-    // Set zone color to erase
+    // Handle zone mode changes
+    protected onClickInteract()
+    {
+        this.task.ins.paintMode.setValue(EPaintMode.Interact); 
+    }
+    protected onClickPaint()
+    {
+        this.task.ins.paintMode.setValue(EPaintMode.Paint);
+    }
     protected onClickErase()
     {
-        this.task.ins.zoneErase.setValue(!this.task.ins.zoneErase.value); 
+        this.task.ins.paintMode.setValue(EPaintMode.Erase); 
     }
 }
 
@@ -275,7 +288,7 @@ export class TargetList extends List<ITarget>
             return item.title;
         }
         else {
-            return hasTarget ? html`<ff-icon class='sv-icon-active-target' name='target'></ff-icon>${item.title}` : html`<ff-icon class='sv-icon-model' name='target'></ff-icon>${item.title}`;
+            return hasTarget ? html`<ff-icon class='sv-icon-active-target' name='target'></ff-icon>${item.title}<div class="sv-target-colorbox" style="background-color:${item.color}"></div>` : html`<ff-icon class='sv-icon-model' name='target'></ff-icon>${item.title}<div class="sv-target-colorbox" style="background-color:${item.color}"></div>`;
         }
     }
 

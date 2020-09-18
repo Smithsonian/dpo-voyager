@@ -18,6 +18,7 @@
 import Subscriber from "@ff/core/Subscriber";
 import { IComponentEvent } from "@ff/graph/Component";
 import { EEasingCurve, ITweenState } from "@ff/graph/components/CTweenMachine";
+import DockPanel from "@ff/ui/DockPanel";
 
 import Table, { ITableColumn, ITableRowClickEvent } from "@ff/ui/Table";
 
@@ -75,13 +76,13 @@ export default class TourPanel extends DocumentView
         this.system.components.on(CVToursTask, this.onToursTask, this);
 
         const task = this.toursTask;
-        task && task.outs.isActive.on("value", this.onUpdate, this);
+        task && task.outs.isActive.on("value", this.onActiveTask, this);
     }
 
     protected disconnected()
     {
         const task = this.toursTask;
-        task && task.outs.isActive.off("value", this.onUpdate, this);
+        task && task.outs.isActive.off("value", this.onActiveTask, this);
 
         this.system.components.off(CVToursTask, this.onToursTask, this);
         super.disconnected();
@@ -198,12 +199,18 @@ export default class TourPanel extends DocumentView
     protected onToursTask(event: IComponentEvent<CVToursTask>)
     {
         if (event.add) {
-            event.object.outs.isActive.on("value", this.onUpdate, this);
+            event.object.outs.isActive.on("value", this.onActiveTask, this);
         }
         if (event.remove) {
-            event.object.outs.isActive.off("value", this.onUpdate, this);
+            event.object.outs.isActive.off("value", this.onActiveTask, this);
         }
 
         this.requestUpdate();
+    }
+
+    protected onActiveTask() 
+    {
+        (this.parentElement as DockPanel).activatePanel();
+        this.onUpdate();
     }
 }

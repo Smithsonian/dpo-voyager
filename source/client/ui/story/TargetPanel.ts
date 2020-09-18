@@ -19,9 +19,10 @@ import { IComponentEvent } from "@ff/graph/Component";
 
 import CVDocument from "../../components/CVDocument";
 import CVTargets from "../../components/CVTargets";
-import CVTargetsTask from "../../components/CVTargetsTask";
+import CVTargetsTask, { EPaintMode } from "../../components/CVTargetsTask";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
+import DockPanel from "client/../../libs/ff-ui/source/DockPanel";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,13 +68,13 @@ export default class TargetPanel extends DocumentView
         this.system.components.on(CVTargetsTask, this.onTargetsTask, this);
 
         const task = this.targetsTask;
-        task && task.outs.isActive.on("value", this.onUpdate, this);
+        task && task.outs.isActive.on("value", this.onActiveTask, this);
     }
 
     protected disconnected()
     {
         const task = this.targetsTask;
-        task && task.outs.isActive.off("value", this.onUpdate, this);
+        task && task.outs.isActive.off("value", this.onActiveTask, this);
 
         this.system.components.off(CVTargetsTask, this.onTargetsTask, this);
         super.disconnected();
@@ -119,11 +120,11 @@ export default class TargetPanel extends DocumentView
             <ff-button text="Delete" icon="trash" ?disabled=${!activeSnapshot} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch ff-flex-row" style="overflow: overlay">
-            <div class="ff-splitter-section" style="flex-basis: 60%;">
+            <div class="ff-splitter-section" style="flex-basis: 40%;">
                 ${targetDetailView}
             </div>
             <ff-splitter></ff-splitter>
-            <div class="ff-splitter-section" style="flex-basis: 40%;">
+            <div class="ff-splitter-section" style="flex-basis: 60%;">
                 ${targetConfigView}
             </div>
         </div>`;
@@ -186,15 +187,21 @@ export default class TargetPanel extends DocumentView
     protected onTargetsTask(event: IComponentEvent<CVTargetsTask>)
     {
         if (event.add) {
-            event.object.outs.isActive.on("value", this.onUpdate, this);
+            event.object.outs.isActive.on("value", this.onActiveTask, this);
             event.object.ins.activeNode.on("value", this.onActiveNode, this);
         }
         if (event.remove) {
-            event.object.outs.isActive.off("value", this.onUpdate, this);
-            event.object.ins.activeNode.off("value", this.onUpdate, this);
+            event.object.outs.isActive.off("value", this.onActiveTask, this);
+            event.object.ins.activeNode.off("value", this.onActiveNode, this);
         }
 
         this.requestUpdate();
+    }
+
+    protected onActiveTask() 
+    {
+        (this.parentElement as DockPanel).activatePanel();
+        this.onUpdate();
     }
 
     protected onPointerDown(event: MouseEvent)
@@ -204,7 +211,7 @@ export default class TargetPanel extends DocumentView
             return;
         }
 
-        if(event.button == 0)  // left mouse button
+        if(this.targetsTask.ins.paintMode.value != EPaintMode.Interact && event.button == 0)  // left mouse button
         {
             this.isDrawing = true;
 

@@ -188,8 +188,7 @@ void main() {
 	
 	#ifdef USE_ZONEMAP
 		vec4 zoneColor = texture2D(zoneMap, vUv);
-		vec3 finalColor = zoneColor.a < 1.0 ? vec3(1.0, 1.0, 1.0) : zoneColor.rgb;
-		gl_FragColor *= vec4(finalColor, 1.0);
+		gl_FragColor *= vec4(zoneColor.rgb, 1.0);
 	#endif
 
 	#include <tonemapping_fragment>

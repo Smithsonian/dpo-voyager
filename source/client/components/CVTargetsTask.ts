@@ -51,6 +51,8 @@ export interface IGLTFExportOptions
     includeCustomExtensions: boolean;
 } 
 
+export enum EPaintMode { Interact, Paint, Erase };
+
 export default class CVTargetsTask extends CVTask
 {
     static readonly typeName: string = "CVTargetsTask";
@@ -75,7 +77,7 @@ export default class CVTargetsTask extends CVTask
         zoneTitle: types.String("Zone.Title"),
         zoneColor: types.ColorRGB("Zone.Color", [1.0, 0.0, 0.0]),
         zoneBrushSize: types.Unit("Zone.BrushSize", {preset: 10, min: 1, max: 100}),
-        zoneErase: types.Boolean("Zone.Erase", false)
+        paintMode: types.Enum("Paint.Mode", EPaintMode, EPaintMode.Interact)
     };
 
     protected static readonly outs = {
@@ -118,6 +120,10 @@ export default class CVTargetsTask extends CVTask
 
     get zoneTexture() {
         return this.targets.zoneTexture;
+    }
+
+    get colorString() {
+        return "#" + Math.round(this.ins.zoneColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[2]*255).toString(16).padStart(2, '0');
     }
 
     constructor(node: Node, id: string)
@@ -255,7 +261,7 @@ export default class CVTargetsTask extends CVTask
 
         if(ins.zoneColor.changed)
         {
-            const newColor = "#" + Math.round(this.ins.zoneColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.zoneColor.value[2]*255).toString(16).padStart(2, '0');
+            const newColor = this.colorString;
             this.ctx.fillStyle = newColor;
             this.ctx.strokeStyle = newColor;
             target.color = newColor;
@@ -273,13 +279,16 @@ export default class CVTargetsTask extends CVTask
             return true;
         }
 
-        if(ins.zoneErase.changed)
+        if(ins.paintMode.changed)
         {
-            if(!ins.zoneErase.value) {
-                this.ctx.globalCompositeOperation = 'source-over';
+            if(ins.paintMode.value == EPaintMode.Paint) {
+                const newColor = this.colorString;
+                this.ctx.fillStyle = newColor;
+                this.ctx.strokeStyle = newColor;
             }
-            else {
-                this.ctx.globalCompositeOperation = 'destination-out';
+            else if(ins.paintMode.value == EPaintMode.Erase) {
+                this.ctx.fillStyle = "#FFFFFF";
+                this.ctx.strokeStyle = "#FFFFFF";
             }
             return true;
         }
@@ -292,7 +301,9 @@ export default class CVTargetsTask extends CVTask
 
         if(ins.zoneClear.changed)
         {
-            this.ctx.clearRect(0,0, this.zoneCanvas.width, this.zoneCanvas.height);
+            this.ctx.fillStyle = "#FFFFFF";
+            this.ctx.fillRect(0,0, this.zoneCanvas.width, this.zoneCanvas.height);
+            this.ctx.fillStyle = this.colorString;
             this.updateZoneTexture();
             return true;
         }
@@ -490,8 +501,8 @@ export default class CVTargetsTask extends CVTask
         }
 
         const model = this.activeModel;
-        // if user left-clicked on model
-        if (event.component === model && event.originalEvent.button == 0) {
+        // if user left-clicked on model in paint or erase mode
+        if (this.ins.paintMode.value != EPaintMode.Interact && event.component === model && event.originalEvent.button == 0) {
             event.stopPropagation = true;
             VGPUPicker.add(model.object3D, true);
 

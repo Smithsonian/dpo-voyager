@@ -331,6 +331,12 @@ $color-component-active-target: rgb(10, 128, 10);
   background-color: $color-background-light;
 }
 
+.sv-target-colorbox {
+  float: right; 
+  width: 1.2em; 
+  height: 1.2em; 
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTY VIEW
 
