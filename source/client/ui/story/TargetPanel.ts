@@ -177,8 +177,8 @@ export default class TargetPanel extends DocumentView
                 this.zoomLevel = 1.0;
                 this.panX = 0.0;
                 this.panY= 0.0;
-                this.applyCanvasTransform();
             }
+            this.applyCanvasTransform();
         }
 
         this.requestUpdate();
@@ -237,6 +237,9 @@ export default class TargetPanel extends DocumentView
             let adjY = (event.clientY-this.drawBounds.top-this.localOffsetTop)/(this.drawBounds.height-this.localOffsetTop*2.0);
             canvas.getContext('2d').beginPath();
             canvas.getContext('2d').moveTo(adjX*canvas.width, adjY*canvas.height);
+
+            const refresh = this.targetsTask.zoneTexture;
+            this.targets.ins.visible.setValue(true);
         }
         else
         {
@@ -281,7 +284,7 @@ export default class TargetPanel extends DocumentView
     protected onScrollWheel(event: WheelEvent)
     {
         //console.log(event.deltaY);
-        this.zoomLevel += -(event.deltaY/1000);
+        this.zoomLevel += -(event.deltaY/1000)*2;
 
         // early out
         if(this.zoomLevel < 1.0) {
@@ -304,7 +307,6 @@ export default class TargetPanel extends DocumentView
 
         let adjX = (x-clientRect.left-this.localOffsetLeft)/(clientRect.width-this.localOffsetLeft*2.0);
         let adjY = (y-clientRect.top-this.localOffsetTop)/(clientRect.height-this.localOffsetTop*2.0);
-        
         canvas.getContext('2d').lineTo(Math.floor(adjX*canvas.width), Math.floor(adjY*canvas.height));
         canvas.getContext('2d').stroke();
 
@@ -315,12 +317,11 @@ export default class TargetPanel extends DocumentView
 
     protected applyCanvasTransform() {
         const transformString = "scale(" + this.zoomLevel + ", " + this.zoomLevel + ") translate(" + this.panX + "px, " + this.panY + "px)";
-        const transformStringInv = "scale(" + this.zoomLevel + ", " + -this.zoomLevel + ") translate(" + this.panX + "px, " + -this.panY + "px)";
 
-        const canvas = this.targetsTask.zoneCanvas;
+        const canvas = this.targets.zoneCanvas;
         const base = this.targetsTask.baseCanvas;
 
         canvas.style.transform = transformString;
-        base.style.transform = transformStringInv;
+        base.style.transform = transformString;
     }
 }

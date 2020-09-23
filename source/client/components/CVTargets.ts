@@ -228,7 +228,7 @@ export default class CVTargets extends Component
 
     protected onModelClicked(event: IModelClickEvent)
     {
-        if(event.isDragging || !this.ins.active.value) {
+        if(event.isDragging || !this.ins.active.value || !this.ins.visible.value) {
             return;
         }
 

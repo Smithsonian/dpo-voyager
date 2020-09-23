@@ -101,10 +101,9 @@ export default class CVTargetsTask extends CVTask
     protected picker: VGPUPicker;
     protected uv: THREE.Vector2;
 
-    baseCanvas: HTMLCanvasElement = null; 
-
     private _oldColor: number[] = [1.0, 0.0, 0.0];
     private _zoneDisplayCount: number = 0;
+    private _baseCanvas: HTMLCanvasElement = null; 
 
     get manager() {
         return this.getSystemComponent(CVTargetManager, true);
@@ -120,6 +119,10 @@ export default class CVTargetsTask extends CVTask
 
     get zoneTexture() {
         return this.targets.zoneTexture;
+    }
+
+    get baseCanvas() {
+        return this._baseCanvas ? this._baseCanvas : this._baseCanvas = this.createBaseCanvas();
     }
 
     get colorString() {
@@ -401,10 +404,6 @@ export default class CVTargetsTask extends CVTask
             this.ctx = this.zoneCanvas.getContext('2d');
             this.ctx.lineWidth = Math.round(this.ins.zoneBrushSize.value);
 
-            if(!this.baseCanvas) {
-                this.baseCanvas = this.createBaseCanvas();
-            }
-
             this.targets.outs.targetIndex.on("value", this.onTargetChange, this);
             this.targets.outs.snapshotIndex.on("value", this.onSnapshotChange, this);
 
@@ -414,7 +413,11 @@ export default class CVTargetsTask extends CVTask
 
             next.model.outs.quality.on("value", this.onQualityChange, this);
 
-            this.baseCanvas.getContext('2d').drawImage(this.targets.material.map.image,0,0);
+            const baseCtx = this.baseCanvas.getContext('2d');
+            baseCtx.save();
+            baseCtx.scale(1, -1);
+            baseCtx.drawImage(this.targets.material.map.image,0,-this.targets.material.map.image.height);
+            baseCtx.restore();
 
             this.onTargetChange();
         }
@@ -552,7 +555,6 @@ export default class CVTargetsTask extends CVTask
         let canvas = document.createElement('canvas') as HTMLCanvasElement;
         canvas.width = dim;
         canvas.height = dim;
-        canvas.style.transform = "scaleY(-1)";
         canvas.style.width = "100%";
         canvas.style.height = "100%";
         canvas.style.objectFit = "scale-down";

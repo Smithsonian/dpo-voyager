@@ -101,9 +101,9 @@ export default class TargetsTaskView extends TaskView<CVTargetsTask>
             </div>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
-                <ff-button text="Interact" class="ff-control" @click=${this.onClickInteract}></ff-button>
-                <ff-button text="Paint" class="ff-control" @click=${this.onClickPaint}></ff-button>
-                <ff-button text="Erase" class="ff-control" @click=${this.onClickErase}></ff-button>
+                <ff-button text="Interact" icon="pointer" class="ff-control" @click=${this.onClickInteract}></ff-button>
+                <ff-button text="Paint" icon="brush" class="ff-control" @click=${this.onClickPaint}></ff-button>
+                <ff-button text="Erase" icon="eraser" class="ff-control" @click=${this.onClickErase}></ff-button>
             </ff-button-group>
             <sv-property-view .property=${task.ins.zoneBrushSize}></sv-property-view>
             <div class="sv-commands">
