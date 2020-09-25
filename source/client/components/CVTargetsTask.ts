@@ -369,12 +369,6 @@ export default class CVTargetsTask extends CVTask
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        if(this.manager.ins.engaged.value)
-        {
-            super.onActiveNode(previous, next);
-            return;
-        }
-
         const prevTargets = previous ? previous.getComponent(CVTargets, true) : null;
 
         if(prevTargets)

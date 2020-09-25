@@ -179,12 +179,6 @@ export default class TargetsTaskView extends TaskView<CVTargetsTask>
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        if(this.manager.ins.engaged.value)
-        {
-            super.onActiveNode(previous, next);
-            return;
-        }
-
         const prevTargets = previous ? previous.getComponent(CVTargets, true) : null;
         const nextTargets = next ? next.getComponent(CVTargets, true) : null;
 

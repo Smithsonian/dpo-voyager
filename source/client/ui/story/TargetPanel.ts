@@ -152,11 +152,6 @@ export default class TargetPanel extends DocumentView
 
     protected onActiveNode()
     {
-        if(this.manager.ins.engaged.value)
-        {
-            return;
-        }
-
         const prevTargets = this.targets;
         const nextTargets = this.targetsTask.targets;
 
