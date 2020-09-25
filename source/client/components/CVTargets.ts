@@ -202,6 +202,7 @@ export default class CVTargets extends Component
             tween ? machine.ins.tween.set() : machine.ins.recall.set();
             //outs.enagaged.setValue(true);
             this.manager.ins.engaged.setValue(true);
+            this.manager.engagedTargets = this;
             
             return true;
         }
@@ -210,7 +211,8 @@ export default class CVTargets extends Component
         {
             // recall pre-target scene state
             machine.tweenTo(CVTargets.sceneSnapshotId, context.secondsElapsed);
-            machine.deleteState(CVTargets.sceneSnapshotId);    
+            machine.deleteState(CVTargets.sceneSnapshotId);  
+            this.manager.engagedTargets = null;  
             
             return true;
         }

@@ -17,11 +17,15 @@
 
 import Component, { types } from "@ff/graph/Component";
 
+import CVTargets from "./CVTargets";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class CVTargetManager extends Component
 {
     static readonly typeName: string = "CVTargetManager";
+
+    engagedTargets: CVTargets = null;
 
     protected static readonly ins = {
         engaged: types.Boolean("TargetManager.Engaged", false),

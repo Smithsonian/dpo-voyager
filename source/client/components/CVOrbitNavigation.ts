@@ -191,8 +191,6 @@ export default class CVOrbitNavigation extends CObject3D
 
         // orbit, offset and limits
         if (orbit.changed || offset.changed) {
-            const stdOrbit = orbit.value;
-            stdOrbit[0] %= 360.0; stdOrbit[1] %= 360.0; stdOrbit[2] %= 360.0; // normalize angles
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
         }

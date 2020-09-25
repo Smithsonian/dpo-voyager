@@ -43,7 +43,8 @@ export default class TourNavigator extends DocumentView
 
     protected render()
     {
-        const targets = this.nodeProvider.activeNode.getComponent(CVTargets, true); 
+        const manager = this.system.getComponent(CVTargetManager);
+        const targets = manager.engagedTargets; 
         const title = targets.activeSnapshot.title;
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
@@ -57,8 +58,8 @@ export default class TourNavigator extends DocumentView
     protected onClickExit()
     {
         // exit target to return to pre-target state
-        const targets = this.nodeProvider.activeNode.getComponent(CVTargets, true); 
         const manager = this.system.getComponent(CVTargetManager);
+        const targets = manager.engagedTargets;
         if(targets && manager) {
             manager.ins.engaged.setValue(false);
             targets.ins.back.set();
