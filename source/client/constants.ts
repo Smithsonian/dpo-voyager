@@ -1,14 +1,14 @@
-import * as WebXR from "./types/WebXR";
+//import * as WebXR from "./types/WebXR";
 
 //*****************************************************************//
 // Constants from <model-viewer> 
 // https://github.com/google/model-viewer/blob/master/packages/model-viewer/src/constants.ts
 
 export const HAS_WEBXR_DEVICE_API = navigator.xr != null &&
-    (self as WebXR.Window).XRSession != null && navigator.xr.isSessionSupported != null;
+    (self as Window).XRSession != null && navigator.xr.isSessionSupported != null;
 
 export const HAS_WEBXR_HIT_TEST_API =
-    HAS_WEBXR_DEVICE_API && (self as WebXR.Window).XRSession!.prototype.requestHitTestSource;
+    HAS_WEBXR_DEVICE_API && (self as Window).XRSession!.prototype.requestHitTestSource;
 
 //export const HAS_RESIZE_OBSERVER = self.ResizeObserver != null;
 
