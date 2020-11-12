@@ -191,7 +191,7 @@ export default class CVARManager extends Component
                 optionalFeatures: ['dom-overlay'],
                 domOverlay:
                     {root: document.querySelector('ff-viewport-overlay')}
-            } ).then( session => this.onSessionStarted(renderer, session) ); //.catch(reason => { console.log("Error starting session: " + reason); });
+            } ).then( session => this.onSessionStarted(renderer, session) ); //.catch(reason => { console.log("Error starting session: " + reason); }); **TODO
         }
     }
 
