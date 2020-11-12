@@ -530,6 +530,11 @@ export default class CVModel2 extends CObject3D
                     return;
                 }
 
+                // set asset manager flag for initial model load
+                if(!this.assetManager.initialLoad && !this._activeDerivative) {
+                    this.assetManager.initialLoad = true; 
+                }
+
                 if (this._activeDerivative) {
                     this.removeObject3D(this._activeDerivative.model);
                     this._activeDerivative.unload();
@@ -537,6 +542,7 @@ export default class CVModel2 extends CObject3D
 
                 this._activeDerivative = derivative;
                 this.addObject3D(derivative.model);
+                this.renderer.activeSceneComponent.scene.updateMatrixWorld(true);
 
                 if (this._boxFrame) {
                     this.removeObject3D(this._boxFrame);
@@ -567,11 +573,6 @@ export default class CVModel2 extends CObject3D
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
-
-                // set asset manager flag for initial model load
-                if(!this.assetManager.initialLoad) {
-                    this.assetManager.initialLoad = true; 
-                }
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }

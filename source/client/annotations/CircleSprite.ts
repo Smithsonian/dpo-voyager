@@ -59,6 +59,8 @@ export default class CircleSprite extends AnnotationSprite
     protected markerA: THREE.Mesh;
     protected markerB: THREE.Mesh;
 
+    // Temporary until annotation scale implementation is resolved
+    xrScale: number = 1.0;
 
     constructor(annotation: Annotation)
     {
@@ -186,9 +188,13 @@ export default class CircleSprite extends AnnotationSprite
         _mat4.decompose(_vec3a, _quat1, _vec3b);
         this.offset.quaternion.copy(_quat1.inverse());
 
+        // get inverse world scale relative to user scale
+        this.offset.parent.matrixWorld.decompose(_vec3a, _quat1, _vec3b);
+        const invWorldScale = 1.0/_vec3b.x * (1.0/annotation.scale) * this.xrScale;
+
         // scale annotation with respect to camera distance
         const vpHeight = container.offsetHeight + 250;
-        const vpScale = annotation.scale * 55 / vpHeight;
+        const vpScale = annotation.scale * 55 / vpHeight * invWorldScale;
         let scaleFactor = 1;
 
         if (camera.isPerspectiveCamera) {
@@ -204,6 +210,12 @@ export default class CircleSprite extends AnnotationSprite
         this.offset.position.set(0, (annotation.offset + 1) * scaleFactor * 0.5, 0);
 
         this.offset.updateMatrix();
+
+        // don't show if behind the camera
+        this.visible = !this.isBehindCamera(this.offset, camera); 
+        if(!this.visible) {
+            return
+        }
 
         if (annotation.expanded) {
             // calculate screen position of HTML sprite element

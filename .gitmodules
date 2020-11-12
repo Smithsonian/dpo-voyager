@@ -6,7 +6,7 @@
 	url = https://github.com/framefactory/ff-browser
 [submodule "libs/ff-three"]
 	path = libs/ff-three
-	url = https://github.com/framefactory/ff-three
+	url = https://github.com/Smithsonian/ff-three
 [submodule "libs/ff-ui"]
 	path = libs/ff-ui
 	url = https://github.com/framefactory/ff-ui

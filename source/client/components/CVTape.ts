@@ -24,6 +24,8 @@ import { ITape } from "client/schema/setup";
 import Pin from "../utils/Pin";
 import CVModel2 from "./CVModel2";
 import CVScene from "client/components/CVScene";
+import { EUnitType } from "client/schema/common";
+import unitScaleFactor from "client/utils/unitScaleFactor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,11 +49,14 @@ export default class CVTape extends CObject3D
         endPosition: types.Vector3("End.Position"),
         endDirection: types.Vector3("End.Direction"),
         boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
+        globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
+        localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm)
     };
 
     protected static readonly tapeOuts = {
         state: types.Enum("Tape.State", ETapeState),
         distance: types.Number("Tape.Distance"),
+        unitScale: types.Number("UnitScale", { preset: 1, precision: 5 })
     };
 
     ins = this.addInputs<CObject3D, typeof CVTape.tapeIns>(CVTape.tapeIns);
@@ -108,6 +113,7 @@ export default class CVTape extends CObject3D
 
         const scene = this.getGraphComponent(CVScene);
         this.ins.boundingBox.linkFrom(scene.outs.boundingBox);
+        this.ins.globalUnits.linkFrom(scene.ins.units);
     }
 
     update(context)
@@ -137,6 +143,10 @@ export default class CVTape extends CObject3D
             else {
                 this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
             }
+        }
+
+        if (ins.globalUnits.changed) {
+            this.updateUnitScale();
         }
 
         // update tape start point
@@ -237,5 +247,20 @@ export default class CVTape extends CObject3D
 
             outs.state.setValue(ETapeState.SetStart);
         }
+    }
+
+    protected updateUnitScale()
+    {
+        const ins = this.ins;
+        const fromUnits = ins.localUnits.getValidatedValue();
+        const toUnits = ins.globalUnits.getValidatedValue();
+        this.outs.unitScale.setValue(unitScaleFactor(fromUnits, toUnits));
+
+        _vec3a.fromArray(ins.startPosition.value);
+        ins.startPosition.setValue(_vec3a.multiplyScalar(this.outs.unitScale.value).toArray());
+        _vec3a.fromArray(ins.endPosition.value);
+        ins.endPosition.setValue(_vec3a.multiplyScalar(this.outs.unitScale.value).toArray());
+
+        ins.localUnits.setValue(toUnits);
     }
 }

@@ -251,6 +251,11 @@ export default class CVOrbitNavigation extends CObject3D
         }
     }
 
+    setChanged(changed: boolean)
+    {
+        this._hasChanged = changed;
+    }
+
     tock()
     {
         this._modelBoundingBox = null;
