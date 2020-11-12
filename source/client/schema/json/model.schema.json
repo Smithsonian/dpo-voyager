@@ -111,6 +111,8 @@
                     "enum": [
                         "Image2D",
                         "Web3D",
+                        "App3D",
+                        "iOSApp3D",
                         "Print3D",
                         "Editorial3D"
                     ]
@@ -124,7 +126,8 @@
                         "High",
                         "Highest",
                         "LOD",
-                        "Stream"
+                        "Stream",
+                        "AR"
                     ]
                 },
                 "assets": {

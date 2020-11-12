@@ -285,6 +285,73 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// AR MODE
+
+.sv-ar-prompt {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-radius: 20px;
+  //height: 200px;
+  margin: 30% 0 0 0;
+  overflow: hidden;
+  background-color: $menu-color-background;
+
+  .sv-content {
+    flex: 1;
+    width: 100%;
+    margin: 10px 10px;
+    text-align: center;
+
+    .sv-ar-icon {
+      height: 10em;
+    }
+  }
+}
+
+.sv-ar-menu {
+  display: flex;
+  position: absolute;
+  bottom: 0px;
+  flex-direction: row;
+  margin: 0 0 $canvas-border-width $canvas-border-width;
+
+  & > .ff-button {
+    box-sizing: border-box;
+    width: $main-menu-button-size;
+    height: $main-menu-button-size;
+    margin: 0 0 2px 2px;
+    background-color: $menu-color-background-hover;
+    border-radius: 20px;
+    font-size: 17px;
+    transition: all $tx-short;
+    pointer-events: auto;
+
+    &:hover, &:focus {
+      outline: none;
+      background-color: $menu-color-background-hover;
+      fill: $color-text;
+    }
+
+    &[selected] {
+      background-color: $color-primary;
+      color: $menu-color-text;
+
+      & > .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        fill: $color-text;
+      }
+
+      &:hover, &:focus {
+        background-color: $color-primary-light;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CHROME VIEW
 
 .sv-chrome-view {

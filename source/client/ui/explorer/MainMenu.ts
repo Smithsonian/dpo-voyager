@@ -21,6 +21,10 @@ import CFullscreen from "@ff/scene/components/CFullscreen";
 import CVAnalytics from "../../components/CVAnalytics";
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
+import CVARManager from "../../components/CVARManager";
+import CVScene from "../../components/CVScene";
+import CVModel2 from "../../components/CVModel2";
+import { EDerivativeQuality } from "../../schema/model";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
@@ -41,6 +45,12 @@ export default class MainMenu extends DocumentView
     }
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
+    }
+    protected get arManager() {
+        return this.system.getMainComponent(CVARManager);
+    }
+    protected get sceneNode() {
+        return this.system.getComponent(CVScene);
     }
 
     protected firstConnected()
@@ -92,7 +102,14 @@ export default class MainMenu extends DocumentView
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
 
-        return html`${tourButtonVisible ? html`<ff-button icon="globe" title="Interactive Tours"
+        // TODO - push to ARManager?
+        const models = this.sceneNode.getGraphComponents(CVModel2);
+        const ARderivatives = models[0].derivatives.getByQuality(EDerivativeQuality.AR);
+        const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length === 1;
+
+        return html`${arButtonVisible ? html`<ff-button icon="ar" title="Enter AR View"
+            @click=${this.onEnterAR}></ff-button>` : null}
+        ${tourButtonVisible ? html`<ff-button icon="globe" title="Interactive Tours"
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         ${readerButtonVisible ? html`<ff-button icon="article" title="Read more..."
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
@@ -179,6 +196,12 @@ export default class MainMenu extends DocumentView
 
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+    }
+
+    protected onEnterAR()
+    {
+        const arIns = this.arManager.ins;
+        arIns.enabled.setValue(true);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

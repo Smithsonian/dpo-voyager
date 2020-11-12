@@ -45,6 +45,7 @@ export default class CVScene extends CVNode
     protected static readonly ins = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
         modelUpdated: types.Event("Scene.ModelUpdated"),
+        sceneTransformed: types.Event("Scene.Transformed"),
     };
 
     protected static readonly outs = {
@@ -92,6 +93,9 @@ export default class CVScene extends CVNode
         if (ins.modelUpdated.changed) {
             this.updateModelBoundingBox();
         }
+        if (ins.sceneTransformed.changed) {
+            this.updateModelBoundingBox();
+        }
 
         return true;
     }
@@ -127,7 +131,7 @@ export default class CVScene extends CVNode
     protected updateModelBoundingBox()
     {
         if (ENV_DEVELOPMENT) {
-            console.log("CVScene.updateModelBoundingBox");
+            //console.log("CVScene.updateModelBoundingBox");
         }
 
         const box = this.outs.boundingBox.value;

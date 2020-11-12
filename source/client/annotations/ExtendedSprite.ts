@@ -85,6 +85,9 @@ export default class ExtendedSprite extends AnnotationSprite
             element.classList.add(_quadrantClasses[this.orientationQuadrant]);
             this.quadrant = this.orientationQuadrant;
         }
+
+        // don't show if behind the camera
+        this.visible = !this.isBehindCamera(this.stemLine, camera);
     }
 
     protected createHTMLElement(): ExtendedAnnotation

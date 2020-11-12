@@ -41,6 +41,7 @@ import NVTools from "../nodes/NVTools";
 
 import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
+import CVARManager from "client/components/CVARManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -220,6 +221,15 @@ Version: ${ENV_VERSION}
             // if nothing else specified, try to read "document.svx.json" from the current folder
             this.loadDocument("document.svx.json", undefined).catch(() => {});
         }
+    }
+
+    //** API functions for external UI control */
+    enableAR()
+    {
+        const ARIns = this.system.getMainComponent(CVARManager).ins;
+
+        ARIns.enabled.setValue(true);
+        this.analytics.sendProperty("AR.enabled", true);
     }
 }
 

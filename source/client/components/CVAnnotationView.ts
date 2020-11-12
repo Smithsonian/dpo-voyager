@@ -37,6 +37,7 @@ import AnnotationFactory from "../annotations/AnnotationFactory";
 import "../annotations/StandardSprite";
 import "../annotations/ExtendedSprite";
 import "../annotations/CircleSprite";
+import CircleSprite from "../annotations/CircleSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -346,6 +347,20 @@ export default class CVAnnotationView extends CObject3D
     {
         data.forEach(annotationJson => this.addAnnotation(new Annotation(annotationJson)));
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
+    }
+
+    // Temporary until annotation scale implementation is resolved
+    setXRScale(scale: number)
+    {
+        for (const key in this._annotations) {
+            const annotation = this._annotations[key];
+            if(annotation.get("style") === "Circle") {
+                const sprite = this._sprites[annotation.id] as CircleSprite;
+                if (sprite) {
+                    sprite.xrScale = scale;
+                }
+            }
+        }
     }
 
     protected onPointerUp(event: IPointerEvent)
