@@ -144,7 +144,7 @@ Version: ${ENV_VERSION}
         }
 
         //*** Support message passing over channel 2 ***//	
-        {	
+        /*{	
             // Add listener for the intial port transfer message	
             var port2;	
             window.addEventListener('message', initPort);	
@@ -173,7 +173,7 @@ Version: ${ENV_VERSION}
                 }
 
             }	
-        }
+        }*/
 
         // start rendering
         engine.pulse.start();
