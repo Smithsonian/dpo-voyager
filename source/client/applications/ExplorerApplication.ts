@@ -143,6 +143,38 @@ Version: ${ENV_VERSION}
             this.evaluateProps();
         }
 
+        //*** Support message passing over channel 2 ***//	
+        {	
+            // Add listener for the intial port transfer message	
+            var port2;	
+            window.addEventListener('message', initPort);	
+
+            // Setup port for message passing	
+            function initPort(e) {	
+                port2 = e.ports[0];	
+                if(port2) {	
+                    port2.onmessage = onMessage;	
+                }	
+            }	
+
+            // Handle messages received on port2	
+            function onMessage(e) {	
+                if (ENV_DEVELOPMENT) {	
+                    console.log('Message received by VoyagerExplorer: "' + e.data + '"');	
+                }	
+
+                const analytics = system.getMainComponent(CVAnalytics);	
+
+                if (e.data === "enableAR") {
+                    const ARIns = system.getMainComponent(CVARManager).ins;
+
+                    ARIns.enabled.setValue(true);
+                    analytics.sendProperty("AR.enabled", true);
+                }
+
+            }	
+        }
+
         // start rendering
         engine.pulse.start();
     }
