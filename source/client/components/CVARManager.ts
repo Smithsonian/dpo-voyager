@@ -176,7 +176,7 @@ export default class CVARManager extends Component
         }
 
         const models = this.sceneNode.getGraphComponents(CVModel2);
-        const derivative = models[0].derivatives.get(EDerivativeUsage.iOSApp3D, EDerivativeQuality.AR);
+        const derivative = models[0] ?  models[0].derivatives.get(EDerivativeUsage.iOSApp3D, EDerivativeQuality.AR) : null;
 
         if(derivative) {
             this.setup.navigation.setChanged(true);  // set changed var to disable autoZoom for bounds changes
