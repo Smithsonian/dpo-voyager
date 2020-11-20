@@ -217,6 +217,14 @@
         "renderOrder": {
             "type": "number"
         },
+        "shadowSide": {
+            "type": "string",
+            "enum": [
+                "Front",
+                "Back",
+                "Double"
+            ]
+        },
         "derivatives": {
             "type": "array",
             "items": {

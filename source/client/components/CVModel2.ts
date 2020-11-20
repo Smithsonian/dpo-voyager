@@ -25,7 +25,7 @@ import CObject3D from "@ff/scene/components/CObject3D";
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "client/schema/document";
-import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
@@ -71,6 +71,7 @@ export default class CVModel2 extends CObject3D
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
         tags: types.String("Model.Tags"),
         renderOrder: types.Number("Model.RenderOrder", 0),
+        shadowSide: types.Enum("Model.ShadowSide", ESideType, ESideType.Back),
         activeTags: types.String("Model.ActiveTags"),
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
@@ -103,6 +104,7 @@ export default class CVModel2 extends CObject3D
             this.ins.localUnits,
             this.ins.tags,
             this.ins.renderOrder,
+            this.ins.shadowSide,
             this.ins.shader,
             this.ins.override,
             this.ins.color,
@@ -313,6 +315,9 @@ export default class CVModel2 extends CObject3D
         ins.tags.setValue(data.tags || "");
         ins.renderOrder.setValue(data.renderOrder !== undefined ? data.renderOrder : 0);
 
+        const side = ESideType[data.shadowSide || "Back"];
+        ins.shadowSide.setValue(isFinite(side) ? side : ESideType.Back);
+
         ins.position.reset();
         ins.rotation.reset();
 
@@ -382,6 +387,9 @@ export default class CVModel2 extends CObject3D
         }
         if (ins.renderOrder.value !== 0) {
             data.renderOrder = ins.renderOrder.value;
+        }
+        if(ins.shadowSide.value != ESideType.Back) {
+            data.shadowSide = ESideType[this.ins.shadowSide.getValidatedValue()] as TSideType;
         }
 
         const position = ins.position.value;
@@ -565,6 +573,21 @@ export default class CVModel2 extends CObject3D
 
                 if (this.ins.override.value) {
                     this.updateMaterial();
+                }
+
+                // update shadow render side
+                if(this.ins.shadowSide.value != ESideType.Back) {
+                    this.object3D.traverse(object => {
+                        const material = object["material"] as UberPBRMaterial;
+                        if (material && material.isUberPBRMaterial) {
+                            if(this.ins.shadowSide.value == ESideType.Front) {
+                                material.shadowSide = THREE.FrontSide;
+                            }
+                            else {
+                                material.shadowSide = THREE.BackSide;
+                            }
+                        }
+                    });
                 }
 
                 // flag environment map to update if needed

@@ -36,6 +36,9 @@ export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" |
 export enum EMapType { Color, Emissive, Occlusion, Normal, MetallicRoughness, Zone }
 export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "MetallicRoughness" | "Zone";
 
+export enum ESideType { Front, Back, Double }
+export type TSideType = "Front" | "Back" | "Double";
+
 
 export interface IModel
 {
@@ -45,6 +48,7 @@ export interface IModel
 
     visible?: boolean;
     renderOrder?: number;
+    shadowSide?: TSideType;
     translation?: Vector3;
     rotation?: Vector4;
     boundingBox?: IBoundingBox;
