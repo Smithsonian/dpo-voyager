@@ -22,13 +22,15 @@
 
 import Component, { types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
+import CTransform from "@ff/scene/components/CTransform";
+import CScene from "@ff/scene/components/CScene";
+import RenderView from "@ff/scene/RenderView";
 
-import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Camera, Material, RenderTarget, PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3} from 'three';
+import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Camera, Material, RenderTarget, PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
 import CVDocumentProvider from "./CVDocumentProvider";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
-import CScene from "client/../../libs/ff-scene/source/components/CScene";
 import UniversalCamera from "client/../../libs/ff-three/source/UniversalCamera";
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
@@ -41,7 +43,6 @@ import CVAnnotationView from "./CVAnnotationView";
 
 import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
-import RenderView from "client/../../libs/ff-scene/source/RenderView";
 import { EShaderMode } from "client/schema/setup";
 import ARPrompt from "client/ui/explorer/ARPrompt";
 import ARMenu from "client/ui/explorer/ARMenu";
@@ -53,6 +54,7 @@ const _matrix4 = new Matrix4();
 const _vector3 = new Vector3();
 const _hitPosition = new Vector3();
 const _boundingBox = new Box3();
+const _quat = new Quaternion();
 const ROTATION_RATE = 1.5;
 const ANNOTATION_SCALE = 2.0;
 
@@ -127,6 +129,7 @@ export default class CVARManager extends Component
     protected targetOpacity: number = 0.0;
     protected modelFloorOffset: number = 0.0;
     protected shadow: Shadow = null;
+    protected lightTransform: CTransform = null;
     protected lightsToReset: CVDirectionalLight[] = [];
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
 
@@ -300,6 +303,11 @@ export default class CVARManager extends Component
         //this.pulse.stop();
         this.setup.navigation.ins.enabled.setValue(false);
 
+        // Reset lights moved by navigation
+        const lightNode = scene.graph.findNodeByName("Lights");
+        const lightTransform = this.lightTransform = lightNode.getComponent(CTransform, true);
+        lightTransform.ins.rotation.reset();
+
         // Cache extended feature values
         featuresToReset.push(setup.floor.ins.visible.value ? 1 : 0);
         featuresToReset.push(setup.grid.ins.visible.value ? 1 : 0);
@@ -337,7 +345,7 @@ export default class CVARManager extends Component
             }
         });
 
-         // Setup shadow
+        // Setup shadow
         this.pulse.pulse(Date.now());  
         scene.update(null);  // force bounding box update so shadow is correct size
         const shadow = this.shadow = new Shadow(this.sceneNode, this.vScene.scene, 0.5);
@@ -357,6 +365,10 @@ export default class CVARManager extends Component
         }      
         camera.position.set(0, 0, 0);
         camera.updateMatrix(); 
+
+        // reset lights
+        this.lightTransform.object3D.rotation.set(0,0,0);
+        this.lightTransform.object3D.updateMatrix(); 
         
         // Reset scene and update graph
         this.sceneNode.ins.units.setValue(this.originalUnits);
@@ -418,6 +430,9 @@ export default class CVARManager extends Component
             shadow.dispose();
             this.shadow = null;
         } 
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
     }
 
     protected render = (timestamp, frame) => {
@@ -624,6 +639,12 @@ export default class CVARManager extends Component
             scene.rotation.y += (currentDragX - this.lastDragValue) * ROTATION_RATE;
             scene.updateMatrix();
 
+            // undo rotation on lights
+            _quat.copy(scene.quaternion);
+            _quat.inverse();
+            this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
+            this.lightTransform.object3D.updateMatrix();
+
             this.shadow.setRotation(scene.rotation.y);
 
             this.lastDragValue = currentDragX;
@@ -665,8 +686,8 @@ export default class CVARManager extends Component
         const scene = this.vScene.scene!; 
         const {min, max} = _boundingBox;
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
-        const width = (max.x-min.x)*1.15;
-        const height = (max.z-min.z)*1.15;
+        const width = (max.x-min.x)*1.25;
+        const height = (max.z-min.z)*1.25;
 
         // add interaction plane
         const hitPlane = this.hitPlane = new Mesh( 
@@ -681,9 +702,9 @@ export default class CVARManager extends Component
         // add selection visualization
         const roundedRectShape = new Shape();
         const cutOut = new Shape();
-        const thickness = width*0.05; 
-        this.roundedRect(roundedRectShape, -width/2.0, -height/2.0, width, height, height*0.05);
-        this.roundedRect(cutOut, -width/2.0 + thickness, -height/2.0 + thickness, width*0.9, height-width*0.1, ((height-width*0.1)-(height*0.9))*0.5);
+        const thickness = width > height ? width*0.025 : height*0.025; 
+        this.roundedRect(roundedRectShape, -width/2.0, -height/2.0, width, height, thickness*0.5);
+        this.roundedRect(cutOut, -width/2.0 + thickness, -height/2.0 + thickness, width-2*thickness, height-2*thickness, thickness*0.4);
         roundedRectShape.holes.push(cutOut);
         let geometry = new ShapeBufferGeometry(roundedRectShape);
         const selectionRing = this.selectionRing = new Mesh( geometry, new MeshBasicMaterial({ side: DoubleSide, opacity: 0.0 }) );

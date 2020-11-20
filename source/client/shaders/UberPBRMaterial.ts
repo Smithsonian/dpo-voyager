@@ -21,6 +21,7 @@ const fragmentShader = require("./uberPBRShader.frag").default;
 const vertexShader = require("./uberPBRShader.vert").default;
 
 import { EShaderMode } from "client/schema/setup";
+import { FrontSide } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -250,6 +251,8 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
         this.aoMapIntensity = material.aoMapIntensity;
 
         this.normalMap = material.normalMap;
+
+        this.shadowSide = material.shadowSide;
 
         return this;
     }
