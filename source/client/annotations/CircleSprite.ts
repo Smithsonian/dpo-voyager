@@ -28,6 +28,7 @@ import FontReader from "client/io/FontReader";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
+import { Camera, ArrayCamera, PerspectiveCamera } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -181,9 +182,19 @@ export default class CircleSprite extends AnnotationSprite
     renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
     {
         const annotation = this.annotation.data;
+        let matrixCamera : PerspectiveCamera = null;
+
+        if(camera instanceof ArrayCamera) {
+            matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
+        }
 
         // billboard rotation
-        _mat4.copy(camera.matrixWorldInverse);
+        if(matrixCamera) {
+            _mat4.copy(matrixCamera.matrixWorldInverse);
+        }
+        else {
+            _mat4.copy(camera.matrixWorldInverse);
+        }
         _mat4.multiply(this.matrixWorld);
         _mat4.decompose(_vec3a, _quat1, _vec3b);
         this.offset.quaternion.copy(_quat1.inverse());

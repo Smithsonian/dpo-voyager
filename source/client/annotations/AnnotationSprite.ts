@@ -65,6 +65,8 @@ export default class AnnotationSprite extends HTMLSprite
 {
     static readonly typeName: string = "Annotation";
 
+    isAdaptive = true;
+
     /**
      * Returns the type name of this annotation object.
      * @returns {string}

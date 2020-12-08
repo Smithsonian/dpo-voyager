@@ -247,6 +247,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     border-top-width: 1px;
     text-align: left;
   }
+  &.sv-static-width {
+    width: fit-content;
+  }
 
   .sv-title {
     padding: 1px 0 2px 0;
