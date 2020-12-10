@@ -44,6 +44,8 @@ export default class CircleSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Circle";
 
+    private _isExpanded = false;
+
     protected static readonly behindOpacity = 0.2;
 
     protected offset: THREE.Group;
@@ -66,6 +68,8 @@ export default class CircleSprite extends AnnotationSprite
     constructor(annotation: Annotation)
     {
         super(annotation);
+
+        this._isExpanded = annotation.data.expanded;
 
         this.offset = new THREE.Group();
         this.offset.matrixAutoUpdate = false;
@@ -225,7 +229,7 @@ export default class CircleSprite extends AnnotationSprite
         // don't show if behind the camera
         this.visible = !this.isBehindCamera(this.offset, camera); 
         if(!this.visible) {
-            return
+            element.setVisible(this.visible);
         }
 
         if (annotation.expanded) {
@@ -252,6 +256,11 @@ export default class CircleSprite extends AnnotationSprite
 
             element.setPosition(x, y);
         }
+
+        if(this._isExpanded !== annotation.expanded) {
+            element.style.visibility = "";
+            this._isExpanded = annotation.expanded
+        }
     }
 
     protected createHTMLElement()
@@ -262,6 +271,12 @@ export default class CircleSprite extends AnnotationSprite
     protected updateHTMLElement(element: AnnotationElement)
     {
         element.setVisible(this.visible);
+
+        // Stops annotation box from occasionally showing before it has been positioned
+        if(this.annotation.data.expanded && this._isExpanded !== this.annotation.data.expanded) {
+            element.style.visibility = "hidden";
+        }
+        
         element.requestUpdate();
     }
 }

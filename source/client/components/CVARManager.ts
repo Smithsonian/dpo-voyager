@@ -122,7 +122,9 @@ export default class CVARManager extends Component
     protected isTranslating: boolean = false;
     protected isRotating: boolean = false;
     protected isScaling: boolean = false;
-    protected lastDragValue: number = 0.0;
+    protected lastDragValueX: number = 0.0;
+    protected lastDragValueY: number = 0.0;
+    protected totalDrag: number = 0;
     protected lastScale: number = 0.0;
     protected lastHitPosition: Vector3 = new Vector3();
     protected lastFrameTime: number = 0;
@@ -566,8 +568,10 @@ export default class CVARManager extends Component
             } 
             else {
                 this.isRotating = true;
-                this.lastDragValue = axes[0];
             }
+
+            this.lastDragValueX = axes[0];
+            this.lastDragValueY = axes[1];
         } 
         else if (fingers.length === 2 /*&& scene.canScale*/) {
             this.isScaling = true;
@@ -581,6 +585,7 @@ export default class CVARManager extends Component
         }   
 
         this.targetOpacity = 0.0;
+        this.totalDrag = 0.0;
 
         this.isTranslating = false;
         this.isRotating = false;
@@ -636,7 +641,7 @@ export default class CVARManager extends Component
     
         if (this.isRotating) { 
             const currentDragX = this.inputSource!.gamepad.axes[0];
-            scene.rotation.y += (currentDragX - this.lastDragValue) * ROTATION_RATE;
+            scene.rotation.y += (currentDragX - this.lastDragValueX) * ROTATION_RATE;
             scene.updateMatrix();
 
             // undo rotation on lights
@@ -647,11 +652,16 @@ export default class CVARManager extends Component
 
             this.shadow.setRotation(scene.rotation.y);
 
-            this.lastDragValue = currentDragX;
+            this.lastDragValueX = currentDragX;
         } 
         else if (this.isTranslating) {
+            const currentDrag = this.inputSource!.gamepad.axes;
+            const offsetX = currentDrag[0] - this.lastDragValueX;
+            const offsetY = currentDrag[1] - this.lastDragValueY;
+            this.totalDrag += Math.hypot(offsetX, offsetY); console.log(this.totalDrag);
+
             fingers.forEach(finger => {
-                if (finger.inputSource !== this.inputSource || finger.results.length < 1) {
+                if (this.totalDrag < 0.005 ||finger.inputSource !== this.inputSource || finger.results.length < 1) {
                     return;
                 }
         
@@ -668,6 +678,7 @@ export default class CVARManager extends Component
                 scene.updateMatrixWorld();
 
                 this.lastHitPosition.copy(hit);
+                
 
                 this.updateBoundingBox();
             });
@@ -688,6 +699,8 @@ export default class CVARManager extends Component
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
         const width = (max.x-min.x)*1.25;
         const height = (max.z-min.z)*1.25;
+
+        this.lastHitPosition.copy(hit);
 
         // add interaction plane
         const hitPlane = this.hitPlane = new Mesh( 
