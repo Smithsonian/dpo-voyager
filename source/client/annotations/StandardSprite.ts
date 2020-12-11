@@ -38,6 +38,7 @@ export default class StandardSprite extends AnnotationSprite
 
     protected stemLine: THREE.Line;
     protected quadrant = -1;
+    protected adaptive = true;
 
     constructor(annotation: Annotation)
     {
@@ -84,6 +85,17 @@ export default class StandardSprite extends AnnotationSprite
             element.classList.remove(_quadrantClasses[this.quadrant]);
             element.classList.add(_quadrantClasses[this.orientationQuadrant]);
             this.quadrant = this.orientationQuadrant;
+        }
+
+        // update adaptive width
+        if(this.adaptive !== this.isAdaptive) {
+            if(this.isAdaptive) {
+                element.classList.remove("sv-static-width");
+            }
+            else {
+                element.classList.add("sv-static-width");
+            }
+            this.adaptive = this.isAdaptive;
         }
 
         // don't show if behind the camera

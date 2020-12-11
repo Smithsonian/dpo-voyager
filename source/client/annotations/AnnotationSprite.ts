@@ -21,7 +21,7 @@ import { ITypedEvent } from "@ff/core/Publisher";
 import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
-import { Object3D, Camera } from "three";
+import { Object3D, Camera, ArrayCamera } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +64,8 @@ export interface IAnnotationLinkEvent extends ITypedEvent<"link">
 export default class AnnotationSprite extends HTMLSprite
 {
     static readonly typeName: string = "Annotation";
+
+    isAdaptive = true;
 
     /**
      * Returns the type name of this annotation object.
@@ -109,11 +111,21 @@ export default class AnnotationSprite extends HTMLSprite
 
     protected isBehindCamera(anchor: Object3D, camera: Camera) : boolean
     {
+        let matrixCamera : Camera = null;
+        if(camera instanceof ArrayCamera && (camera as ArrayCamera).cameras.length > 0) {
+            matrixCamera = (camera as ArrayCamera).cameras[0];
+        }
+        else {
+            matrixCamera = camera;
+        }
+
         anchor.updateMatrixWorld();
         _vec3a.setFromMatrixPosition(anchor.matrixWorld); 
-        _vec3b.setFromMatrixPosition(camera.matrixWorld);
+        _vec3b.setFromMatrixPosition(matrixCamera.matrixWorld);
         _vec3b.sub(_vec3a);
-        camera.getWorldDirection(_vec3a);
+        const e = matrixCamera.matrixWorld.elements;
+        _vec3a.set(-e[8], -e[9], -e[10]).normalize();
+
         return _vec3b.angleTo(_vec3a) <= Math.PI / 2;
     }
 }

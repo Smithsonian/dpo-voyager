@@ -28,6 +28,7 @@ import FontReader from "client/io/FontReader";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
+import { Camera, ArrayCamera, PerspectiveCamera } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +43,8 @@ const _mat4 = new THREE.Matrix4();
 export default class CircleSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Circle";
+
+    private _isExpanded = false;
 
     protected static readonly behindOpacity = 0.2;
 
@@ -65,6 +68,8 @@ export default class CircleSprite extends AnnotationSprite
     constructor(annotation: Annotation)
     {
         super(annotation);
+
+        this._isExpanded = annotation.data.expanded;
 
         this.offset = new THREE.Group();
         this.offset.matrixAutoUpdate = false;
@@ -181,9 +186,19 @@ export default class CircleSprite extends AnnotationSprite
     renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
     {
         const annotation = this.annotation.data;
+        let matrixCamera : PerspectiveCamera = null;
+
+        if(camera instanceof ArrayCamera) {
+            matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
+        }
 
         // billboard rotation
-        _mat4.copy(camera.matrixWorldInverse);
+        if(matrixCamera) {
+            _mat4.copy(matrixCamera.matrixWorldInverse);
+        }
+        else {
+            _mat4.copy(camera.matrixWorldInverse);
+        }
         _mat4.multiply(this.matrixWorld);
         _mat4.decompose(_vec3a, _quat1, _vec3b);
         this.offset.quaternion.copy(_quat1.inverse());
@@ -214,7 +229,7 @@ export default class CircleSprite extends AnnotationSprite
         // don't show if behind the camera
         this.visible = !this.isBehindCamera(this.offset, camera); 
         if(!this.visible) {
-            return
+            element.setVisible(this.visible);
         }
 
         if (annotation.expanded) {
@@ -241,6 +256,11 @@ export default class CircleSprite extends AnnotationSprite
 
             element.setPosition(x, y);
         }
+
+        if(this._isExpanded !== annotation.expanded) {
+            element.style.visibility = "";
+            this._isExpanded = annotation.expanded
+        }
     }
 
     protected createHTMLElement()
@@ -251,6 +271,12 @@ export default class CircleSprite extends AnnotationSprite
     protected updateHTMLElement(element: AnnotationElement)
     {
         element.setVisible(this.visible);
+
+        // Stops annotation box from occasionally showing before it has been positioned
+        if(this.annotation.data.expanded && this._isExpanded !== this.annotation.data.expanded) {
+            element.style.visibility = "hidden";
+        }
+        
         element.requestUpdate();
     }
 }

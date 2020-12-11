@@ -38,6 +38,9 @@ import "../annotations/StandardSprite";
 import "../annotations/ExtendedSprite";
 import "../annotations/CircleSprite";
 import CircleSprite from "../annotations/CircleSprite";
+import CVARManager from "./CVARManager";
+import StandardSprite from "../annotations/StandardSprite";
+import ExtendedSprite from "../annotations/ExtendedSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +96,9 @@ export default class CVAnnotationView extends CObject3D
     protected get articles() {
         const meta = this.meta;
         return meta ? meta.articles : null;
+    }
+    protected get arManager() {
+        return this.system.getMainComponent(CVARManager);
     }
 
     get activeAnnotation() {
@@ -155,6 +161,8 @@ export default class CVAnnotationView extends CObject3D
 
         this.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
+
+        this.arManager.outs.isPresenting.on("value", this.handleARStateChange, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -269,6 +277,8 @@ export default class CVAnnotationView extends CObject3D
         this.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.system.off<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
+        this.arManager.outs.isPresenting.off("value", this.handleARStateChange, this);
+
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
 
@@ -359,6 +369,16 @@ export default class CVAnnotationView extends CObject3D
                 if (sprite) {
                     sprite.xrScale = scale;
                 }
+            }
+        }
+    }
+
+    protected handleARStateChange() {
+        for (const key in this._annotations) {
+            const annotation = this._annotations[key];
+            const sprite = this._sprites[annotation.id];
+            if (sprite instanceof StandardSprite || sprite instanceof ExtendedSprite) {
+                (sprite as AnnotationSprite).isAdaptive = !this.arManager.outs.isPresenting.value;
             }
         }
     }

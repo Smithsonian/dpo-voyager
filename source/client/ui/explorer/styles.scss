@@ -162,6 +162,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   @include noselect;
 }
 
+.sv-annotation-img {
+  max-width: 100%;
+}
+
 .sv-circle-annotation {
   width: 16%;
   min-width: 160px;
@@ -243,6 +247,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     border-top-width: 1px;
     text-align: left;
   }
+  &.sv-static-width {
+    width: fit-content;
+  }
 
   .sv-title {
     padding: 1px 0 2px 0;
@@ -304,6 +311,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     width: 100%;
     margin: 10px 10px;
     text-align: center;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none;
 
     .sv-ar-icon {
       height: 10em;
