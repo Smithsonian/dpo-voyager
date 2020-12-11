@@ -661,7 +661,7 @@ export default class CVARManager extends Component
             this.totalDrag += Math.hypot(offsetX, offsetY); console.log(this.totalDrag);
 
             fingers.forEach(finger => {
-                if (this.totalDrag < 0.005 ||finger.inputSource !== this.inputSource || finger.results.length < 1) {
+                if (this.totalDrag < 0.01 ||finger.inputSource !== this.inputSource || finger.results.length < 1) {
                     return;
                 }
         
