@@ -41,6 +41,8 @@ import CircleSprite from "../annotations/CircleSprite";
 import CVARManager from "./CVARManager";
 import StandardSprite from "../annotations/StandardSprite";
 import ExtendedSprite from "../annotations/ExtendedSprite";
+import CVLanguageManager from "./CVLanguageManager";
+import { ELanguageType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -92,6 +94,9 @@ export default class CVAnnotationView extends CObject3D
     }
     protected get reader() {
         return this.getGraphComponent(CVReader, true);
+    }
+    protected get language() {
+        return this.getGraphComponent(CVLanguageManager, true);
     }
     protected get articles() {
         const meta = this.meta;
@@ -163,6 +168,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.on("value", this.handleARStateChange, this);
+        this.language.outs.language.on("value", this.updateSprites, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -278,6 +284,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.off<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.off("value", this.handleARStateChange, this);
+        this.language.outs.language.off("value", this.updateSprites, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -299,6 +306,14 @@ export default class CVAnnotationView extends CObject3D
     {
         this._annotations[annotation.id] = annotation;
         this.createSprite(annotation);
+
+        // update langauges used in annotations
+        Object.keys(annotation.data.titles).forEach( key => {
+            this.language.addLanguage(ELanguageType[key]);
+        });
+        Object.keys(annotation.data.leads).forEach( key => {
+            this.language.addLanguage(ELanguageType[key]);
+        });
 
         this.changed = true;
     }
@@ -470,6 +485,17 @@ export default class CVAnnotationView extends CObject3D
         const sprite = this._sprites[annotation.id];
         if (sprite) {
             sprite.update();
+        }
+    }
+
+    protected updateSprites()
+    {
+        for (const key in this._annotations) {
+            const annotation = this._annotations[key];
+            const sprite = this._sprites[annotation.id];
+            if (sprite) {
+                sprite.update();
+            }
         }
     }
 }

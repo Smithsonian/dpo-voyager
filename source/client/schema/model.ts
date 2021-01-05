@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Index } from "@ff/core/types";
+import { Index, Dictionary } from "@ff/core/types";
 import { ColorRGB, ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,9 @@ export interface IAnnotation
     id: string;
 
     title?: string;
+    titles?: Dictionary<string>;
     lead?: string;
+    leads?: Dictionary<string>;
     marker?: string;
     tags?: string[];
     articleId?: string;

@@ -21,6 +21,7 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVDocument from "../../components/CVDocument";
 import CVReader, { IArticleEntry } from "../../components/CVReader";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,6 +29,7 @@ import CVReader, { IArticleEntry } from "../../components/CVReader";
 export default class ReaderView extends DocumentView
 {
     protected reader: CVReader = null;
+    protected language: CVLanguageManager = null;
 
     protected firstConnected()
     {
@@ -40,14 +42,15 @@ export default class ReaderView extends DocumentView
         const article = entry.article;
 
         return html`<div class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
-            <h1>${article.data.title}</h1>
-            <p>${article.data.lead}</p>
+            <h1>${article.title}</h1>
+            <p>${article.lead}</p>
         </div>`;
     }
 
     protected render()
     {
         const reader = this.reader;
+        const language = this.language;
 
         if (!reader) {
             return html`<div class="ff-placeholder">Please select a document to display its articles.</div>`;
@@ -56,14 +59,14 @@ export default class ReaderView extends DocumentView
         if (!reader.activeArticle) {
             const articles = reader.articles;
             return html`<div class="sv-left"></div><div class="sv-article">
-                <ff-button class="sv-nav-button" inline title="Close Article Reader" icon="close" @click=${this.onClickClose}></ff-button>
+                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
                 ${articles.map(entry => this.renderMenuEntry(entry))}
             </div><div class="sv-right"></div>`;
         }
 
         return html`<div class="sv-left"></div><div class="sv-article">
-                <ff-button class="sv-nav-button" inline title="Close Article Reader" icon="close" @click=${this.onClickClose}></ff-button>
-                <ff-button class="sv-nav-button" inline title="Article Menu" icon="bars" @click=${this.onClickMenu}></ff-button>
+                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
+                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>
                 <div class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }
@@ -100,14 +103,18 @@ export default class ReaderView extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
+            previous.setup.language.outs.language.off("value", this.onUpdate, this);
             this.reader.outs.content.off("value", this.onUpdate, this);
             this.reader.outs.article.off("value", this.onUpdate, this);
+            this.language = null;
             this.reader = null;
         }
         if (next) {
             this.reader = next.setup.reader;
+            this.language = next.setup.language;
             this.reader.outs.content.on("value", this.onUpdate, this);
             this.reader.outs.article.on("value", this.onUpdate, this);
+            next.setup.language.outs.language.on("value", this.onUpdate, this);
         }
     }
 }

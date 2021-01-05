@@ -102,4 +102,10 @@ export default class CVAssetReader extends Component
         const url = new URL(assetPath, window.location.href).href;
         return this.textureLoader.get(url);
     }
+
+    async getSystemJSON(assetPath: string): Promise<any>
+    {
+        const url = new URL(assetPath, window.location.href).href;
+        return this.jsonLoader.get(url);
+    }
 }

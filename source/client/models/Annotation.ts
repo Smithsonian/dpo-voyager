@@ -19,6 +19,7 @@ import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/
 
 import { IAnnotation } from "client/schema/model";
 import AnnotationFactory from "client/annotations/AnnotationFactory";
+import { ELanguageType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +32,20 @@ export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
     static readonly defaultColor = [ 0, 0.61, 0.87 ];
+    private _language : ELanguageType = ELanguageType.EN;
+
+    get title() {
+        return Object.keys(this.data.titles).length > 0 ? this.data.titles[ELanguageType[this.language]] : this.data.title;
+    }
+    get lead() {
+        return Object.keys(this.data.leads).length > 0 ? this.data.leads[ELanguageType[this.language]] : this.data.lead;
+    }
+    get language() {
+        return this._language;
+    }
+    set language(newLanguage: ELanguageType) {
+        this._language = newLanguage;
+    }
 
     static fromJSON(json: IAnnotation)
     {
@@ -42,7 +57,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         return {
             id: Document.generateId(),
             title: "New Annotation",
+            titles: {},
             lead: "",
+            leads: {},
             marker: "",
             tags: [],
             articleId: "",
@@ -72,8 +89,14 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.title) {
             json.title = data.title;
         }
+        if (Object.keys(this.data.titles).length > 0) {
+            json.titles = data.titles;
+        }
         if (data.lead) {
             json.lead = data.lead;
+        }
+        if (Object.keys(this.data.leads).length > 0) {
+            json.leads = data.leads;
         }
         if (data.marker) {
             json.marker = data.marker;
@@ -129,7 +152,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         data.id = json.id;
 
         data.title = json.title || "";
+        data.titles = json.titles || {};
         data.lead = json.lead || "";
+        data.leads = json.leads || {};
         data.marker = json.marker || "";
         data.tags = json.tags || [];
 

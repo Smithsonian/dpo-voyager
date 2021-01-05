@@ -17,8 +17,16 @@
                 "title": {
                     "type": "string"
                 },
+                "titles": {
+                    "description": "Short title with language key.",
+                    "type": "object"
+                },
                 "lead": {
                     "type": "string"
+                },
+                "leads": {
+                    "description": "Short lead text with language key.",
+                    "type": "object"
                 },
                 "marker": {
                     "type": "string"

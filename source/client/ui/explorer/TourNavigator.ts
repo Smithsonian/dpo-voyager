@@ -21,6 +21,7 @@ import CVDocument from "../../components/CVDocument";
 import CVTours from "../../components/CVTours";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,6 +29,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 export default class TourNavigator extends DocumentView
 {
     protected tours: CVTours;
+    protected language: CVLanguageManager;
 
     protected firstConnected()
     {
@@ -40,6 +42,7 @@ export default class TourNavigator extends DocumentView
     protected render()
     {
         const tours = this.tours;
+        const language = this.language;
         const activeTour = tours.activeTour;
 
         let title, info;
@@ -56,14 +59,14 @@ export default class TourNavigator extends DocumentView
         }
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
-            <ff-button class="sv-section-lead" transparent icon="close" title="Exit Tour" ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
+            <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
             <div class="ff-ellipsis sv-content">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
-            <ff-button class="sv-section-trail" transparent icon="bars" title="Show Tour Menu" @click=${this.onClickMenu}></ff-button>
-            <ff-button class="sv-section-trail" transparent icon="triangle-left" title="Go Backward" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
-            <ff-button class="sv-section-trail" transparent icon="triangle-right" title="Go Forward" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="bars" title=${language.getLocalizedString("Show Tour Menu")} @click=${this.onClickMenu}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-left" title=${language.getLocalizedString("Go Backward")} ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-right" title=${language.getLocalizedString("Go Forward")} ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
         </div></div>`;
     }
 
@@ -96,11 +99,14 @@ export default class TourNavigator extends DocumentView
         if (previous) {
             this.tours.outs.tourIndex.off("value", this.onUpdate, this);
             this.tours.outs.stepIndex.off("value", this.onUpdate, this);
+            this.language.outs.language.off("value", this.onUpdate, this);
         }
         if (next) {
             this.tours = next.setup.tours;
+            this.language = next.setup.language;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
+            this.language.outs.language.on("value", this.onUpdate, this);
         }
 
         this.requestUpdate();

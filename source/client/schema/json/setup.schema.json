@@ -200,8 +200,16 @@
                     "title": {
                         "type": "string"
                     },
+                    "titles": {
+                        "description": "Short title with language key.",
+                        "type": "object"
+                    },
                     "lead": {
                         "type": "string"
+                    },
+                    "leads": {
+                        "description": "Short lead text with language key.",
+                        "type": "object"
                     },
                     "tags": {
                         "description": "Array of tags, categorizing the tour.",
@@ -217,6 +225,10 @@
                             "properties": {
                                 "title": {
                                     "type": "string"
+                                },
+                                "titles": {
+                                    "description": "Short title with language key.",
+                                    "type": "object"
                                 },
                                 "id": {
                                     "type": "string"

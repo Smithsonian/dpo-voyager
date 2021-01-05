@@ -33,6 +33,7 @@ import CVMeta from "./CVMeta";
 import CVSetup from "./CVSetup";
 import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
+import { ELanguageType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +52,8 @@ export default class CVDocument extends CRenderGraph
     static readonly version = "1.0";
 
     protected static readonly validator = new DocumentValidator();
+
+    protected titles;
 
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
@@ -104,10 +107,12 @@ export default class CVDocument extends CRenderGraph
     {
         super.create();
         this.innerGraph.components.on(CVMeta, this.onMetaComponent, this);
+        this.setup.language.outs.language.on("value", this.updateTitle, this);
     }
 
     dispose()
     {
+        this.setup.language.outs.language.off("value", this.updateTitle, this);
         this.innerGraph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
@@ -260,13 +265,20 @@ export default class CVDocument extends CRenderGraph
     {
         const meta = event.object;
         const propTitle = this.outs.title;
+        const language = this.setup.language;
 
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
-                const title = meta.collection.get("title") || "";
+                this.titles = meta.collection.get("titles") || null;
+                const title = this.titles ? this.titles[ELanguageType[language.outs.language.value]] : (meta.collection.get("title") || "");
                 propTitle.setValue(title);
                 this.analytics.setTitle(title);
             });
         }
+    }
+
+    protected updateTitle() {
+        const language = this.setup.language;
+        this.outs.title.setValue(this.titles[ELanguageType[language.outs.language.value]]);
     }
 }

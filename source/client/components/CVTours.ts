@@ -19,10 +19,11 @@ import Component, { types } from "@ff/graph/Component";
 import { ITweenState } from "@ff/graph/components/CTweenMachine";
 import { IPulseContext } from "@ff/graph/components/CPulse";
 
-import { ITour, ITours } from "client/schema/setup";
+import { ITour, ITours, ELanguageType } from "client/schema/setup";
 
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 import CVAnalytics from "./CVAnalytics";
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +59,9 @@ export default class CVTours extends Component
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }
+    protected get language() {
+        return this.getGraphComponent(CVLanguageManager);
+    }
 
     get snapshots() {
         return this.getComponent(CVSnapshots);
@@ -77,8 +81,15 @@ export default class CVTours extends Component
         return tour ? tour.steps[this.outs.stepIndex.value] : null;
     }
 
+    create()
+    {
+        super.create();
+        this.language.outs.language.on("value", this.update, this);
+    }
+
     dispose()
     {
+        this.language.outs.language.off("value", this.update, this);
         super.dispose();
     }
 
@@ -126,8 +137,8 @@ export default class CVTours extends Component
             }
 
             outs.tourIndex.setValue(tourIndex);
-            outs.tourTitle.setValue(tour ? tour.title : "");
-            outs.tourLead.setValue(tour ? tour.lead : "");
+            outs.tourTitle.setValue(tour ? (Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.language.outs.language.value]] : tour.title) : "");
+            outs.tourLead.setValue(tour ? (Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.language.outs.language.value]] : tour.lead) : "");
         }
 
         if (stepCount === 0) {
@@ -167,7 +178,7 @@ export default class CVTours extends Component
             // tween to the next step
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
-            outs.stepTitle.setValue(step.title);
+            outs.stepTitle.setValue(step.titles && Object.keys(step.titles).length > 0 ? step.titles[ELanguageType[this.language.outs.language.value]] : step.title);
             machine.ins.id.setValue(step.id);
             tween ? machine.ins.tween.set() : machine.ins.recall.set();
         }
@@ -179,10 +190,19 @@ export default class CVTours extends Component
     {
         this._tours = data.map(tour => ({
             title: tour.title,
+            titles: tour.titles || {},
             steps: tour.steps,
             lead: tour.lead || "",
+            leads: tour.leads || {},
             tags: tour.tags || [],
         }));
+
+        // update langauges used in tours
+        this._tours.forEach( tour => {
+            Object.keys(tour.titles).forEach( key => {
+                this.language.addLanguage(ELanguageType[key]);
+            });
+        });
 
         this.ins.tourIndex.setValue(-1);
         this.outs.count.setValue(this._tours.length);
@@ -200,8 +220,14 @@ export default class CVTours extends Component
                 steps: tour.steps,
             };
 
+            if (Object.keys(data.titles).length > 0) {
+                data.titles = tour.titles;
+            }
             if (tour.lead) {
                 data.lead = tour.lead;
+            }
+            if (Object.keys(data.leads).length > 0) {
+                data.leads = tour.leads;
             }
             if (tour.tags.length > 0) {
                 data.tags = tour.tags;

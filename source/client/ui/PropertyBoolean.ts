@@ -20,6 +20,7 @@ import CustomElement, { customElement, property, PropertyValues, html } from "@f
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +35,9 @@ export default class PropertyBoolean extends CustomElement
 
     @property({ attribute: false })
     text: string | string[] = null;
+
+    @property({ attribute: false })
+    language: CVLanguageManager = null;
 
     protected firstConnected()
     {
@@ -68,13 +72,14 @@ export default class PropertyBoolean extends CustomElement
         const property = this.property;
         const name = this.name || property.name;
         const text = this.text;
+        const language = this.language;
 
         let label = property.value ?
             Array.isArray(text) ? text[1] : (text || "On") :
             Array.isArray(text) ? text[0] : (text || "Off");
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <ff-button .text=${label} ?selected=${property.value} @click=${this.onButtonClick}></ff-button>`;
+            <ff-button .text=${language ? language.getLocalizedString(label) : label} ?selected=${property.value} @click=${this.onButtonClick}></ff-button>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)

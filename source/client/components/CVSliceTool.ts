@@ -62,12 +62,13 @@ export class SliceToolView extends ToolView<CVSliceTool>
         const enabled = slicer.ins.enabled;
         const axis = slicer.ins.axis;
         const position = slicer.ins.position;
+        const language = document.setup.language;
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-boolean .property=${enabled} name="Slice Tool"></sv-property-boolean>
-                <sv-property-options .property=${axis}></sv-property-options>
-                <sv-property-slider .property=${position}></sv-property-slider>
+                <sv-property-boolean .property=${enabled} .language=${language} name=${language.getLocalizedString("Slice Tool")}></sv-property-boolean>
+                <sv-property-options .property=${axis} .language=${language} name=${language.getLocalizedString("Axis")}></sv-property-options>
+                <sv-property-slider .property=${position} name=${language.getLocalizedString("Position")}></sv-property-slider>
             </div>
         </div>`;
     }

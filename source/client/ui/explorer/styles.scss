@@ -438,6 +438,52 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// CHROME FOOTER
+
+.sv-chrome-footer {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: -1;
+
+  .sv-bottom-bar {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-end;
+    text-align: right;
+    //height: 30px;
+    //margin: 9px 9px 0 0;
+    overflow: hidden;
+  }
+
+  .sv-language-display {
+    flex: 1 1 auto;
+    margin: $canvas-border-width 8px;
+    font-family: "Hind Siliguri", sans-serif;;
+    font-weight: normal;
+    font-size: 1.0rem;
+    white-space: pre;
+    color: $color-text-light;
+    pointer-events: auto;
+    background: $menu-color-background-dark;
+    border-radius: 4px;
+    padding: 4px 6px;
+    @include noselect;
+
+    &:hover, &:focus {
+      outline: none;
+      background-color: $menu-color-background-hover;
+      fill: $color-text;
+    }
+
+    span {
+      color: transparent;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MAIN MENU
 
 .sv-main-menu {
@@ -572,6 +618,59 @@ $tour-entry-indent: 12px;
 
     &:hover {
       background-color: $color-paragraph-hover;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LANGUAGE MENU
+
+.sv-language-menu {
+  position: relative;
+  width: 225px;
+  max-width: 85%;
+  height: 200px;
+  max-height: 85%;
+  padding: 8px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+
+  .ff-title {
+    margin: 0.3em 0 0.3em 0;
+  }
+  .ff-button {
+    flex: 0 0 auto;
+  }
+  .ff-scroll-y {
+    top: 50px;
+  }
+
+  .sv-entry {
+    position: relative;
+    cursor: pointer;
+    padding: 5px 0 5px 15px;
+    margin-bottom: 2px;
+    max-width: 960px;
+    background-color: $color-paragraph-background;
+    @include noselect;
+
+    &:hover {
+      background-color: $color-paragraph-hover;
+    }
+
+    &[selected] {
+      background-color: $color-primary;
+      color: $menu-color-text;
+
+      & > .ff-icon {
+        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+        fill: $color-text;
+      }
+
+      &:hover, &:focus {
+        background-color: $color-primary-light;
+      }
     }
   }
 }

@@ -53,6 +53,7 @@ export class RenderToolView extends ToolView<CVRenderTool>
     protected render()
     {
         const tool = this.tool;
+        const document = this.activeDocument;
 
         const viewer = this.viewer;
         if (!viewer) {
@@ -60,10 +61,11 @@ export class RenderToolView extends ToolView<CVRenderTool>
         }
 
         const shader = viewer.ins.shader;
+        const language = document.setup.language;
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-options .property=${shader} name="Material"></sv-property-options>
+                <sv-property-options .property=${shader} .language=${language} name=${language.getLocalizedString("Material")}></sv-property-options>
             </div>
         </div>`;
     }

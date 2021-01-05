@@ -126,7 +126,7 @@ export default class CVReader extends Component
 
             if (article) {
                 this.readArticle(article);
-                this.analytics.sendProperty("Reader.ArticleId", article.data.title);
+                this.analytics.sendProperty("Reader.ArticleId", article.title);
             }
         }
 

@@ -18,7 +18,7 @@
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
-import { ITour } from "client/schema/setup";
+import { ITour, ELanguageType } from "client/schema/setup";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +36,9 @@ export default class TourMenu extends CustomElement
     @property({ attribute: false })
     tours: ITour[];
 
+    @property({ attribute: false })
+    activeLanguage: ELanguageType;
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -45,8 +48,8 @@ export default class TourMenu extends CustomElement
     protected renderEntry(tour: ITour, index: number)
     {
         return html`<div class="sv-entry" @click=${e => this.onClickTour(e, index)}>
-            <h1>${tour.title}</h1>
-            <p>${tour.lead}</p>
+            <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] : tour.title}</h1>
+            <p>${Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead}</p>
         </div>`;
     }
 

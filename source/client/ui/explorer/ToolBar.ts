@@ -19,6 +19,7 @@ import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVToolProvider, { IActiveToolEvent } from "../../components/CVToolProvider";
 import CVTool from "../../components/CVTool";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +34,9 @@ export default class ToolBar extends SystemView
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
+    protected get language() {
+        return this.system.getComponent(CVLanguageManager);
+    }
 
     protected firstConnected()
     {
@@ -45,10 +49,12 @@ export default class ToolBar extends SystemView
     {
         super.connected();
         this.toolProvider.on<IActiveToolEvent>("active-component", this.onUpdate, this);
+        this.language.outs.language.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.off<IActiveToolEvent>("active-component", this.onUpdate, this);
         super.disconnected();
     }
@@ -57,14 +63,15 @@ export default class ToolBar extends SystemView
     {
         const tools = this.toolProvider.scopedComponents;
         const activeTool = this.toolProvider.activeComponent;
+        const language = this.language;
 
         const toolButtons = tools.map(tool =>
-            html`<ff-button class="sv-tool-button" transparent text=${tool.text} icon=${tool.icon}
+            html`<ff-button class="sv-tool-button" transparent text=${language.getLocalizedString(tool.text)} icon=${tool.icon}
                 ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
 
         return html`<div class="sv-blue-bar">${activeTool ? activeTool.createView() : null}
             <div class="sv-section">
-                <ff-button class="sv-section-lead" transparent icon="close" title="Close Tools" @click=${this.onClose}></ff-button>
+                <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Close Tools")} @click=${this.onClose}></ff-button>
                 <div class="sv-tool-buttons">${toolButtons}</div>
                 <sv-tool-menu-view .system=${this.system}></sv-tool-menu-view>
             </div></div>`;

@@ -1,3 +1,5 @@
+import { Dictionary } from "client/../../libs/ff-core/source/types";
+
 /**
  * 3D Foundation Project
  * Copyright 2019 Smithsonian Institution
@@ -31,6 +33,9 @@ export enum EReaderPosition { Overlay, Left, Right }
 export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }
 
+export type TLanguageType = "EN" | "ES" | "DE";
+export enum ELanguageType { EN, ES, DE }
+
 
 export interface ISetup
 {
@@ -39,6 +44,8 @@ export interface ISetup
     reader?: IReader;
     navigation?: INavigation;
     background?: IBackground;
+    environment?: IEnvironment,
+    language?: ILanguage,
     floor?: IFloor;
     grid?: IGrid;
     tape?: ITape;
@@ -130,6 +137,11 @@ export interface IEnvironment
     index: number;
 }
 
+export interface ILanguage
+{
+    language: TLanguageType;
+}
+
 export interface ITape
 {
     enabled: boolean;
@@ -165,13 +177,22 @@ export interface ISnapshots
 export interface ITour
 {
     title: string;
+    titles?: Dictionary<string>;
     steps: ITourStep[];
     lead?: string;
+    leads?: Dictionary<string>;
     tags?: string[];
 }
 
 export interface ITourStep
 {
     title: string;
+    titles?: Dictionary<string>;
     id: string;
+}
+
+export interface ILanguageOption
+{
+    name: string;
+    id: ELanguageType;
 }

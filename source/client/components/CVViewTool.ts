@@ -61,6 +61,7 @@ export class ViewToolView extends ToolView<CVViewTool>
 
         const tool = this.tool;
         const navigation = document.setup.navigation;
+        const language = document.setup.language;
 
         const projection = navigation.ins.projection;
         const preset = navigation.ins.preset;
@@ -72,9 +73,9 @@ export class ViewToolView extends ToolView<CVViewTool>
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-options .property=${projection}></sv-property-options>
-                <sv-property-options .property=${preset} name="View" .indexMap=${presetMap}></sv-property-options>
-                <sv-property-event .property=${zoom} name="Center" icon="zoom"></sv-property-event>
+                <sv-property-options .property=${projection} .language=${language} name=${language.getLocalizedString("Projection")}></sv-property-options>
+                <sv-property-options .property=${preset} .language=${language} name=${language.getLocalizedString("View")} .indexMap=${presetMap}></sv-property-options>
+                <sv-property-event .property=${zoom} name=${language.getLocalizedString("Center")} icon="zoom"></sv-property-event>
             </div>
         </div>`;
     }

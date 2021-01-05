@@ -50,9 +50,12 @@ export interface IArticle
 {
     id: string;
     uri: string;
+    uris?: Dictionary<string>;
 
     title?: string;
+    titles?: Dictionary<string>;
     lead?: string;
+    leads?: Dictionary<string>;
     tags?: string[];
 
     mimeType?: string;
