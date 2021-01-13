@@ -23,6 +23,7 @@ import ToursTaskView from "../ui/story/ToursTaskView";
 import CVDocument from "./CVDocument";
 import CVTours from "./CVTours";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
+import { ELanguageStringType, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +54,7 @@ export default class CVToursTask extends CVTask
         stepCurve: types.Enum("Step.Curve", EEasingCurve),
         stepDuration: types.Number("Step.Duration", 1),
         stepThreshold: types.Percent("Step.Threshold", 0.5),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
     };
 
     protected static readonly outs = {
@@ -90,13 +92,23 @@ export default class CVToursTask extends CVTask
         const tours = this.tours;
         const machine = this.machine;
 
-        if (!tours) {
+        if (!tours || !this.activeDocument) {
             return false;
         }
 
         const tourList = tours.tours;
         const tourIndex = tours.outs.tourIndex.value;
         const tour = tourList[tourIndex];
+
+        const languageManager = this.activeDocument.setup.language;
+
+        if(ins.language.changed) {   
+            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
+
+            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
+            languageManager.ins.language.setValue(newLanguage);
+            //outs.language.setValue(newLanguage);
+        }
 
         if (tour) {
             const stepList = tour.steps;
@@ -125,7 +137,7 @@ export default class CVToursTask extends CVTask
                 if (ins.stepTitle.changed || ins.stepCurve.changed ||
                         ins.stepDuration.changed || ins.stepThreshold.changed) {
 
-                    step.title = ins.stepTitle.value;
+                    tours.stepTitle = ins.stepTitle.value;
                     machine.ins.curve.setValue(ins.stepCurve.value);
                     machine.ins.duration.setValue(ins.stepDuration.value);
                     machine.ins.threshold.setValue(ins.stepThreshold.value);
@@ -159,8 +171,8 @@ export default class CVToursTask extends CVTask
 
             // tour actions
             if (ins.tourTitle.changed || ins.tourLead.changed || ins.tourTags.changed) {
-                tour.title = ins.tourTitle.value;
-                tour.lead = ins.tourLead.value;
+                tours.title = ins.tourTitle.value;
+                tours.lead = ins.tourLead.value;
                 tour.tags = ins.tourTags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
                 tours.ins.tourIndex.set();
                 return true;
@@ -213,6 +225,8 @@ export default class CVToursTask extends CVTask
         if (this.tours) {
             this.tours.ins.enabled.setValue(true);
         }
+
+        this.synchLanguage();
     }
 
     deactivateTask()
@@ -233,6 +247,7 @@ export default class CVToursTask extends CVTask
 
             this.tours.outs.tourIndex.off("value", this.onTourChange, this);
             this.tours.outs.stepIndex.off("value", this.onStepChange, this);
+            previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
 
             this.tours = null;
             this.machine = null;
@@ -243,6 +258,7 @@ export default class CVToursTask extends CVTask
 
             this.tours.outs.tourIndex.on("value", this.onTourChange, this);
             this.tours.outs.stepIndex.on("value", this.onStepChange, this);
+            next.setup.language.outs.language.on("value", this.onDocumentLanguageChange, this);
 
             if (this.isActiveTask) {
                 this.tours.ins.enabled.setValue(true);
@@ -255,10 +271,11 @@ export default class CVToursTask extends CVTask
     protected onTourChange()
     {
         const ins = this.ins;
-        const tour = this.tours.activeTour;
+        const tours = this.tours;
+        const tour = tours.activeTour;
 
-        ins.tourTitle.setValue(tour ? tour.title : "", true);
-        ins.tourLead.setValue(tour ? tour.lead : "", true);
+        ins.tourTitle.setValue(tour ? tours.title : "", true);
+        ins.tourLead.setValue(tour ? tours.lead : "", true);
         ins.tourTags.setValue(tour ? tour.tags.join(", ") : "", true);
     }
 
@@ -268,9 +285,37 @@ export default class CVToursTask extends CVTask
         const step = this.tours.activeStep;
         const state = step ? this.machine.getState(step.id) : null;
 
-        ins.stepTitle.setValue(step ? step.title : "", true);
+        ins.stepTitle.setValue(step ? this.tours.stepTitle : "", true);
         ins.stepCurve.setValue(state ? state.curve : EEasingCurve.Linear, true);
         ins.stepDuration.setValue(state ? state.duration : 1, true);
         ins.stepThreshold.setValue(state ? state.threshold : 0.5, true);
+    }
+
+    protected onDocumentLanguageChange()
+    {
+        const {ins, outs} = this;
+        const languageManager = this.activeDocument.setup.language;
+        const newLanguage = languageManager.outs.language.value;
+        const tours = this.tours;
+
+        this.onTourChange();
+        this.onStepChange();
+        tours.ins.tourIndex.setValue(tours.outs.tourIndex.value);  // trigger UI refresh
+
+        if(languageManager.outs.language.value !== newLanguage)
+        {
+            ins.language.setValue(newLanguage, true);
+        }
+    }
+
+    // Make sure this task language matches document
+    protected synchLanguage() {
+        const {ins} = this;
+        const languageManager = this.activeDocument.setup.language;
+
+        if(ins.language.value !== languageManager.outs.language.value)
+        {
+            ins.language.setValue(languageManager.outs.language.value, true);
+        }
     }
 }

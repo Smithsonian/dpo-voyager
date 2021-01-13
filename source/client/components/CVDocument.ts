@@ -33,7 +33,7 @@ import CVMeta from "./CVMeta";
 import CVSetup from "./CVSetup";
 import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
-import { ELanguageType } from "client/schema/setup";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -97,6 +97,11 @@ export default class CVDocument extends CRenderGraph
             name = name.substr(0, index);
         }
         return name;
+    }
+
+    set title(inTitle : string) {
+        const language = this.setup.language;
+        this.titles[ELanguageType[language.outs.language.value]] = inTitle;
     }
 
     protected get analytics() {
@@ -269,8 +274,14 @@ export default class CVDocument extends CRenderGraph
 
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
-                this.titles = meta.collection.get("titles") || null;
-                const title = this.titles ? this.titles[ELanguageType[language.outs.language.value]] : (meta.collection.get("title") || "");
+                this.titles = meta.collection.get("titles") || [];
+
+                // TODO: Temporary - remove when single string properties are phased out
+                if(this.titles.length === 0) {
+                    this.titles[ELanguageType[language.outs.language.value]] = meta.collection.get("title") || "";
+                }
+
+                const title = this.titles[ELanguageType[language.outs.language.value]];
                 propTitle.setValue(title);
                 this.analytics.setTitle(title);
             });
@@ -279,6 +290,8 @@ export default class CVDocument extends CRenderGraph
 
     protected updateTitle() {
         const language = this.setup.language;
-        this.outs.title.setValue(this.titles[ELanguageType[language.outs.language.value]]);
+
+        const newTitle = this.titles[ELanguageType[language.outs.language.value]];
+        this.outs.title.setValue(newTitle ? newTitle : "Missing Title");
     }
 }

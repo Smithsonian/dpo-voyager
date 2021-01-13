@@ -18,7 +18,7 @@
 import Document, { IDocumentDisposeEvent, IDocumentUpdateEvent } from "@ff/core/Document";
 
 import { IArticle } from "client/schema/meta";
-import { ELanguageType } from "client/schema/setup";
+import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,13 +42,48 @@ export default class Article extends Document<IArticle>
     }
 
     get title() {
-        return Object.keys(this.data.titles).length > 0 ? this.data.titles[ELanguageType[this.language]] : this.data.title;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.titles).length === 0) {
+            this.data.titles[DEFAULT_LANGUAGE] = this.data.title;
+        }
+
+        return this.data.titles[ELanguageType[this.language]] || "undefined";
+    }
+    set title(inTitle: string) {
+        this.data.titles[ELanguageType[this.language]] = inTitle;
+        this.update();
+    }
+    get defaultTitle() {
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.titles).length === 0) {
+            this.data.titles[DEFAULT_LANGUAGE] = this.data.title;
+        }
+
+        return this.data.titles[DEFAULT_LANGUAGE] || "undefined";
     }
     get uri() {
-        return Object.keys(this.data.uris).length > 0 ? this.data.uris[ELanguageType[this.language]] : this.data.uri;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.uris).length === 0) {
+            this.data.uris[DEFAULT_LANGUAGE] = this.data.uri;
+        }
+
+        return this.data.uris[ELanguageType[this.language]];
+    }
+    set uri(inUri: string) {
+        this.data.uris[ELanguageType[this.language]] = inUri;
+        this.update();
     }
     get lead() {
-        return Object.keys(this.data.leads).length > 0 ? this.data.leads[ELanguageType[this.language]] : this.data.lead;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.leads).length === 0) {
+            this.data.leads[DEFAULT_LANGUAGE] = this.data.lead;
+        }
+
+        return this.data.leads[ELanguageType[this.language]] || "";
+    }
+    set lead(inLead: string) {
+        this.data.leads[ELanguageType[this.language]] = inLead;
+        this.update();
     }
     get language() {
         return this._language;
@@ -81,17 +116,18 @@ export default class Article extends Document<IArticle>
             json.uris = data.uris;
         }
 
-        if (data.title) {
-            json.title = data.title;
-        }
+        
         if (Object.keys(this.data.titles).length > 0) {
             json.titles = data.titles;
         }
-        if (data.lead) {
-            json.lead = data.lead;
+        else if (data.title) {
+            json.title = data.title;
         }
         if (Object.keys(this.data.leads).length > 0) {
             json.leads = data.leads;
+        }
+        else if (data.lead) {
+            json.lead = data.lead;
         }
         if (data.tags.length > 0) {
             json.tags = data.tags.slice();

@@ -126,7 +126,7 @@ export default class CVReader extends Component
 
             if (article) {
                 this.readArticle(article);
-                this.analytics.sendProperty("Reader.ArticleId", article.title);
+                this.analytics.sendProperty("Reader.ArticleId", article.defaultTitle);
             }
         }
 
@@ -136,7 +136,7 @@ export default class CVReader extends Component
     protected readArticle(article: Article): Promise<void>
     {
         const outs = this.outs;
-        const uri = article.data.uri;
+        const uri = article.uri;
 
         if (!uri) {
             outs.content.setValue(`<h2>Can't display article: no URI.</h2>`);

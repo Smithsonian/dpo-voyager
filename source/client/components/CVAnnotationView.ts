@@ -42,7 +42,7 @@ import CVARManager from "./CVARManager";
 import StandardSprite from "../annotations/StandardSprite";
 import ExtendedSprite from "../annotations/ExtendedSprite";
 import CVLanguageManager from "./CVLanguageManager";
-import { ELanguageType } from "client/schema/setup";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -127,8 +127,8 @@ export default class CVAnnotationView extends CObject3D
 
             const ins = this.ins;
             ins.marker.setValue(annotation ? annotation.data.marker : "", true);
-            ins.title.setValue(annotation ? annotation.data.title : "", true);
-            ins.lead.setValue(annotation ? annotation.data.lead : "", true);
+            ins.title.setValue(annotation ? annotation.title : "", true);
+            ins.lead.setValue(annotation ? annotation.lead : "", true);
             ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "", true);
             ins.style.setOption(annotation ? annotation.data.style : AnnotationFactory.defaultTypeName, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
@@ -168,7 +168,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.on("value", this.handleARStateChange, this);
-        this.language.outs.language.on("value", this.updateSprites, this);
+        this.language.outs.language.on("value", this.updateLanguage, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -212,10 +212,10 @@ export default class CVAnnotationView extends CObject3D
                 annotation.set("marker", ins.marker.value);
             }
             if (ins.title.changed) {
-                annotation.set("title", ins.title.value);
+                annotation.title = ins.title.value;
             }
             if (ins.lead.changed) {
-                annotation.set("lead", ins.lead.value);
+                annotation.lead = ins.lead.value;
             }
             if (ins.tags.changed) {
                 annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
@@ -284,7 +284,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.off<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.off("value", this.handleARStateChange, this);
-        this.language.outs.language.off("value", this.updateSprites, this);
+        this.language.outs.language.off("value", this.updateLanguage, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -488,8 +488,12 @@ export default class CVAnnotationView extends CObject3D
         }
     }
 
-    protected updateSprites()
+    protected updateLanguage()
     {
+        const ins = this.ins;
+        const annotation = this._activeAnnotation;
+
+        // update sprites
         for (const key in this._annotations) {
             const annotation = this._annotations[key];
             const sprite = this._sprites[annotation.id];
@@ -497,5 +501,11 @@ export default class CVAnnotationView extends CObject3D
                 sprite.update();
             }
         }
+
+        // update properties
+        ins.title.setValue(annotation ? annotation.title : "", true);
+        ins.lead.setValue(annotation ? annotation.lead : "", true);
+        ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "");
+        // article...
     }
 }

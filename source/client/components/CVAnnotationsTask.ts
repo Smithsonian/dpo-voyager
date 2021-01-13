@@ -34,6 +34,7 @@ import CVAnnotationView, { IAnnotationsUpdateEvent } from "./CVAnnotationView";
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
+import { ELanguageStringType, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,9 +55,15 @@ export default class CVAnnotationsTask extends CVTask
 
     protected static readonly ins = {
         mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+    };
+
+    protected static readonly outs = {
+        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
     };
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
+    outs = this.addOutputs<CVTask, typeof CVAnnotationsTask.outs>(CVAnnotationsTask.outs);
 
     private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
@@ -91,6 +98,7 @@ export default class CVAnnotationsTask extends CVTask
     {
         this.startObserving();
         super.activateTask();
+        this.synchLanguage();
 
         //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
         //this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -107,9 +115,27 @@ export default class CVAnnotationsTask extends CVTask
 
     update(context)
     {
-        if (this.ins.mode.changed) {
+        const {ins, outs} = this;
+        
+        if(!this.activeDocument) {
+            return false;
+        }
+        const languageManager = this.activeDocument.setup.language;
+
+        if (ins.mode.changed) {
             this.emitUpdateEvent();
         }
+
+        if(ins.language.changed) {   
+            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
+
+            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
+            languageManager.ins.language.setValue(newLanguage);
+            outs.language.setValue(newLanguage);
+            return true;
+        }
+
+        this.synchLanguage();
 
         return true;
     }
@@ -221,9 +247,14 @@ export default class CVAnnotationsTask extends CVTask
     {
         super.onActiveDocument(previous, next);
 
+        if(previous) {
+            previous.setup.language.outs.language.off("value", this.update, this);
+        }
         if (next) {
             const scene = next.getInnerComponent(CVScene);
             this._defaultScale = scene.outs.boundingRadius.value * 0.05;
+
+            next.setup.language.outs.language.on("value", this.update, this);
         }
     }
 
@@ -281,5 +312,16 @@ export default class CVAnnotationsTask extends CVTask
         while (root.parent.children.length === 1)
 
         return result;
+    }
+
+    // Make sure this task language matches document
+    protected synchLanguage() {
+        const {ins, outs} = this;
+        const languageManager = this.activeDocument.setup.language;
+
+        if(outs.language.value !== languageManager.outs.language.value)
+        {
+            ins.language.setValue(languageManager.outs.language.value, true);
+        }
     }
 }

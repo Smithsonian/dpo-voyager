@@ -28,8 +28,6 @@ import { EDerivativeQuality } from "../../schema/model";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
-import CVLanguageManager from "client/components/CVLanguageManager";
-import { ELanguageType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 

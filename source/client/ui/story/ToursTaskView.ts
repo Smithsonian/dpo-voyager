@@ -26,6 +26,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import CVDocument from "../../components/CVDocument";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +79,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const props = task.ins;
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <sv-property-view .property=${this.task.ins.language}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${props.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Tags</div>
@@ -95,9 +97,10 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">Default Language</div><div class="sv-panel-header sv-task-item sv-item-border-l">Selected Language</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} @select=${this.onSelectTour}></sv-tour-list>
+                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .language=${this.task.ins.language.value} @select=${this.onSelectTour}></sv-tour-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -210,6 +213,9 @@ export class TourList extends List<ITour>
     @property({ attribute: false })
     selectedItem: ITour = null;
 
+    @property({ attribute: false })
+    language: ELanguageType = null;
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -218,7 +224,13 @@ export class TourList extends List<ITour>
 
     protected renderItem(item: ITour)
     {
-        return item.title;
+        const language = this.language; 
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(item.titles).length === 0) { 
+            item.titles[DEFAULT_LANGUAGE] = item.title;
+        }
+
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[DEFAULT_LANGUAGE]}</div><div class="sv-task-item sv-item-border-l">${item.titles[ELanguageType[language]] || "undefined"}</div></div>`;
     }
 
     protected isItemSelected(item: ITour)

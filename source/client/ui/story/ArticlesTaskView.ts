@@ -35,11 +35,13 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     {
         super.connected();
         this.task.outs.article.on("value", this.onUpdate, this);
+        //this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.task.outs.article.off("value", this.onUpdate, this);
+        //this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         super.disconnected();
     }
 
@@ -56,6 +58,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const props = task.ins;
 
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <sv-property-view .property=${this.task.ins.language}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${props.title.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Tags</div>
@@ -66,7 +69,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
             <ff-line-edit name="uri" text=${props.uri.value} @change=${this.onTextEdit}></ff-line-edit>
         </div>` : null;
 
-        const uri = activeArticle ? activeArticle.data.uri : null;
+        const uri = activeArticle ? activeArticle.uri : null;
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
@@ -75,6 +78,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">Default Language</div><div class="sv-panel-header sv-task-item sv-item-border-l">Selected Language</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
@@ -171,7 +175,7 @@ export class ArticleList extends List<Article>
 
     protected renderItem(item: Article)
     {
-        return item.data.title;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.defaultTitle}</div><div class="sv-task-item sv-item-border-l">${item.title}</div></div>`;
     }
 
     protected isItemSelected(item: Article)

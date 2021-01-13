@@ -1,4 +1,5 @@
 import { Dictionary } from "client/../../libs/ff-core/source/types";
+import { ELanguageType, TLanguageType } from "./common";
 
 /**
  * 3D Foundation Project
@@ -32,10 +33,6 @@ export enum EReaderPosition { Overlay, Left, Right }
 
 export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }
-
-export type TLanguageType = "EN" | "ES" | "DE";
-export enum ELanguageType { EN, ES, DE }
-
 
 export interface ISetup
 {
@@ -182,6 +179,7 @@ export interface ITour
     lead?: string;
     leads?: Dictionary<string>;
     tags?: string[];
+    taglist?: Dictionary<string>;
 }
 
 export interface ITourStep

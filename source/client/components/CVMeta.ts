@@ -23,7 +23,7 @@ import { IDocument, INode, IScene } from "client/schema/document";
 import { IMeta, IImage, INote } from "client/schema/meta";
 
 import Article from "../models/Article";
-import { ELanguageType } from "client/schema/setup";
+import { ELanguageType } from "client/schema/common";
 import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////

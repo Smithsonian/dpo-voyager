@@ -18,7 +18,8 @@
 import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
-import { ITour, ELanguageType } from "client/schema/setup";
+import { ITour } from "client/schema/setup";
+import { ELanguageType } from "client/schema/common";
 
 
 ////////////////////////////////////////////////////////////////////////////////

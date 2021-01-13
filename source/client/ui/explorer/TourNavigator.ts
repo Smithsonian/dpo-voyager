@@ -50,7 +50,7 @@ export default class TourNavigator extends DocumentView
         if (tours && activeTour) {
             const stepNumber = tours.outs.stepIndex.value + 1;
             const stepCount = tours.outs.stepCount.value;
-            title = stepCount > 0 ? tours.outs.stepTitle.value : tours.outs.tourTitle.value;
+            title = stepCount > 0 ? tours.stepTitle : tours.title;
             info = stepCount > 0 ? `Step ${stepNumber} of ${stepCount}` : "No tour steps defined";
         }
         else {

@@ -16,11 +16,11 @@
  */
 
 import Component, { types } from "@ff/graph/Component";
-import { ILanguage, ILanguageOption, ELanguageType, TLanguageType } from "client/schema/setup";
+import { ILanguage, ILanguageOption } from "client/schema/setup";
+import { ELanguageType, TLanguageType, ELanguageStringType } from "client/schema/common";
 import CVReader from "./CVReader";
 import CVAnnotationView from "./CVAnnotationView";
 import CVScene from "./CVScene";
-import { Dictionary, TypeOf } from "client/../../libs/ff-core/source/types";
 import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,6 @@ export default class CVLanguageManager extends Component
     static readonly text: string = "LanguageManager";
     static readonly icon: string = "";
 
-    private nameStrings: Dictionary<string> = {"EN" : "English", "ES" : "Spanish (Español)", "DE" : "German (Deutsche)"};
     private _activeLanguages: ILanguageOption[] = [];
     private _translations: ITranslation = {};
 
@@ -60,7 +59,7 @@ export default class CVLanguageManager extends Component
     outs = this.addOutputs(CVLanguageManager.outs);
 
     protected get reader() { 
-        return this.getGraphComponent(CVReader, true);
+        return this.getSystemComponent(CVReader, true);
     }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
@@ -74,7 +73,7 @@ export default class CVLanguageManager extends Component
 
     toString()
     {
-        return this.nameStrings[ELanguageType[this.ins.language.value]];
+        return ELanguageStringType[ELanguageType[this.ins.language.value]];
     }
 
     create()
@@ -86,7 +85,8 @@ export default class CVLanguageManager extends Component
     {
         const { ins, outs } = this;
 
-        if(this.activeLanguages.length <= 1) {
+        if(this.activeLanguages.length == 0) {
+            this.addLanguage(outs.language.value);
             return;
         }
 
@@ -123,7 +123,7 @@ export default class CVLanguageManager extends Component
         const exists = this._activeLanguages.find(element => element.id === language)
 
         if(!exists) {
-            this._activeLanguages.push({ id: language, name: this.nameStrings[ELanguageType[language]]});
+            this._activeLanguages.push({ id: language, name: ELanguageStringType[ELanguageType[language]] });
         }
     }
 
@@ -139,25 +139,24 @@ export default class CVLanguageManager extends Component
 
     protected updateLanguage = () => 
     {
-        const { ins, outs } = this;
-        const reader = this.reader;
+        const { ins, outs, reader, scene } = this;
 
-        if(!reader) {
-            return;
+        if(reader) {
+            // update articles
+            reader.articles.forEach( entry => {
+                entry.article.language = ins.language.value;
+            });
         }
 
-        // update articles
-        reader.articles.forEach( entry => {
-            entry.article.language = ins.language.value;
-        });
-
-        // update annotations
-        const annotationViews = this.scene.getGraphComponents(CVAnnotationView);
-        annotationViews.forEach(view => {
-            view.getAnnotations().forEach( annotation => {
-                annotation.language = ins.language.value;
+        if(scene) {
+            // update annotations
+            const annotationViews = scene.getGraphComponents(CVAnnotationView);
+            annotationViews.forEach(view => {
+                view.getAnnotations().forEach( annotation => {
+                    annotation.language = ins.language.value;
+                });
             });
-        });
+        }
 
         outs.language.setValue(ins.language.value);
     }

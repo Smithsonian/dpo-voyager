@@ -188,6 +188,10 @@ $color-component-meta-light: #d9d998;
 
 .sv-detail-view {
   padding: 6px;
+
+  .sv-indent {
+    margin-left: 15px;
+  }
 }
 
 .sv-tour-feature-menu {
@@ -306,6 +310,20 @@ $color-component-meta-light: #d9d998;
       height: auto;
     }
   }
+}
+
+.sv-task-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 3px;
+  flex-basis: 50%;
+}
+
+.sv-item-border-l {
+  border-left: solid;
+  border-left-width: 2px;
+  border-left-color: #343434;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
