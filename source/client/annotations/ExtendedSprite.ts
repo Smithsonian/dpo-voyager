@@ -163,6 +163,11 @@ class ExtendedAnnotation extends AnnotationElement
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();
 
+        // update expanded height in case annotation changed
+        if (this.isExpanded) {
+            this.contentElement.style.height = this.contentElement.scrollHeight + "px";
+        }
+
         // update expanded/collapsed
         if (this.isExpanded !== annotation.expanded) {
 

@@ -41,12 +41,12 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         super.connected();
         this.task.on("update", this.onUpdate, this);
-        //this.task.outs.language.on("value", this.onUpdate, this);
+        this.task.ins.language.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        //this.task.outs.language.off("value", this.onUpdate, this);
+        this.task.ins.language.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
         super.disconnected();
     }
