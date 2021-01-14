@@ -165,7 +165,7 @@ class ExtendedAnnotation extends AnnotationElement
 
         // update expanded height in case annotation changed
         if (this.isExpanded) {
-            this.contentElement.style.height = this.contentElement.scrollHeight + "px";
+            this.contentElement.style.height = "auto";
         }
 
         // update expanded/collapsed
