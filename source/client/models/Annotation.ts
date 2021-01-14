@@ -58,6 +58,20 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         this.data.leads[ELanguageType[this.language]] = inLead;
         this.update();
     }
+    get tags() {
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.taglist).length === 0) {
+            if(this.data.tags.length > 0) {
+                this.data.taglist[DEFAULT_LANGUAGE] = this.data.tags;
+            }
+        }
+
+        return this.data.taglist[ELanguageType[this.language]] || [];
+    }
+    set tags(inTags: string[]) {
+        this.data.taglist[ELanguageType[this.language]] = inTags;
+        this.update();
+    }
     get language() {
         return this._language;
     }
@@ -80,6 +94,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             leads: {},
             marker: "",
             tags: [],
+            taglist: {},
             articleId: "",
             imageUri: "",
 
@@ -105,13 +120,19 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         json.id = data.id;
 
         if (Object.keys(this.data.titles).length > 0) {
-            json.titles = data.titles;
+            json.titles = {};
+            Object.keys(this.data.titles).forEach( key => {
+                json.titles[key] = data.titles[key];
+            })
         }
         else if (data.title) {
             json.title = data.title;
         }
         if (Object.keys(this.data.leads).length > 0) {
-            json.leads = data.leads;
+            json.leads = {};
+            Object.keys(this.data.leads).forEach( key => {
+                json.leads[key] = data.leads[key];
+            })
         }
         else if (data.lead) {
             json.lead = data.lead;
@@ -119,7 +140,13 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.marker) {
             json.marker = data.marker;
         }
-        if (data.tags.length > 0) {
+        if (Object.keys(this.data.taglist).length > 0) {
+            json.taglist = {};
+            Object.keys(this.data.taglist).forEach( key => {
+                json.taglist[key] = data.taglist[key].slice();
+            })
+        }
+        else if (data.tags.length > 0) {
             json.tags = data.tags;
         }
         if (data.articleId) {
@@ -175,6 +202,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         data.leads = json.leads || {};
         data.marker = json.marker || "";
         data.tags = json.tags || [];
+        data.taglist = json.taglist || {};
 
         data.articleId = json.articleId || "";
         data.imageUri = json.imageUri || "";

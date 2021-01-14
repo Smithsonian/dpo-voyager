@@ -174,7 +174,7 @@ export default class CVToursTask extends CVTask
             if (ins.tourTitle.changed || ins.tourLead.changed || ins.tourTags.changed) {
                 tours.title = ins.tourTitle.value;
                 tours.lead = ins.tourLead.value;
-                tour.tags = ins.tourTags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                tours.taglist = ins.tourTags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
                 tours.ins.tourIndex.set();
                 return true;
             }
@@ -206,6 +206,7 @@ export default class CVToursTask extends CVTask
                 lead: "",
                 leads: {},
                 tags: [],
+                taglist: {},
                 steps: []
             });
             tourList[tourIndex + 1].titles[DEFAULT_LANGUAGE] = "New Tour #" + _nextTourIndex++;
@@ -281,7 +282,7 @@ export default class CVToursTask extends CVTask
 
         ins.tourTitle.setValue(tour ? tours.title : "", true);
         ins.tourLead.setValue(tour ? tours.lead : "", true);
-        ins.tourTags.setValue(tour ? tour.tags.join(", ") : "", true);
+        ins.tourTags.setValue(tour ? tours.taglist.join(", ") : "", true);
     }
 
     protected onStepChange()

@@ -70,7 +70,7 @@ export interface IAnnotation
     leads?: Dictionary<string>;
     marker?: string;
     tags?: string[];
-    taglist?: Dictionary<string>;
+    taglist?: Dictionary<string[]>;
     articleId?: string;
     imageUri?: string;
 

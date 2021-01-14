@@ -38,6 +38,10 @@
                         "type": "string"
                     }
                 },
+                "taglist": {
+                    "description": "Array of tags, categorizing the annotation with language key.",
+                    "type": "object"
+                },
                 "articleId": {
                     "description": "Id of an article related to this annotation.",
                     "type": "string",

@@ -38,7 +38,7 @@ export default class Article extends Document<IArticle>
 
     toString()
     {
-        return this.data.title;
+        return this.title;
     }
 
     get title() {
@@ -85,6 +85,20 @@ export default class Article extends Document<IArticle>
         this.data.leads[ELanguageType[this.language]] = inLead;
         this.update();
     }
+    get tags() {
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.taglist).length === 0) {
+            if(this.data.tags.length > 0) {
+                this.data.taglist[DEFAULT_LANGUAGE] = this.data.tags;
+            }
+        }
+
+        return this.data.taglist[ELanguageType[this.language]] || [];
+    }
+    set tags(inTags: string[]) {
+        this.data.taglist[ELanguageType[this.language]] = inTags;
+        this.update();
+    }
     get language() {
         return this._language;
     }
@@ -101,6 +115,7 @@ export default class Article extends Document<IArticle>
             lead: "",
             leads: {},
             tags: [],
+            taglist: {},
             uri: "",
             uris: {},
             mimeType: "",
@@ -113,27 +128,42 @@ export default class Article extends Document<IArticle>
         json.id = data.id;
         
         if(Object.keys(this.data.uris).length > 0) {
-            json.uris = data.uris;
+            json.uris = {};
+            Object.keys(this.data.uris).forEach( key => {
+                json.uris[key] = data.uris[key];
+            })
         }
         else if(data.uri) {
             json.uri = data.uri;
         }   
 
         if (Object.keys(this.data.titles).length > 0) {
-            json.titles = data.titles;
+            json.titles = {};
+            Object.keys(this.data.titles).forEach( key => {
+                json.titles[key] = data.titles[key];
+            })
         }
         else if (data.title) {
             json.title = data.title;
         }
 
         if (Object.keys(this.data.leads).length > 0) {
-            json.leads = data.leads;
+            json.leads = {};
+            Object.keys(this.data.leads).forEach( key => {
+                json.leads[key] = data.leads[key];
+            })
         }
         else if (data.lead) {
             json.lead = data.lead;
         }
 
-        if (data.tags.length > 0) {
+        if (Object.keys(this.data.taglist).length > 0) {
+            json.taglist = {};
+            Object.keys(this.data.taglist).forEach( key => {
+                json.taglist[key] = data.taglist[key].slice();
+            })
+        }
+        else if (data.tags.length > 0) {
             json.tags = data.tags.slice();
         }
         if (data.mimeType) {
@@ -155,6 +185,7 @@ export default class Article extends Document<IArticle>
         data.lead = json.lead || "";
         data.leads = json.leads || {};
         data.tags = json.tags || [];
+        data.taglist = json.taglist || {};
         data.mimeType = json.mimeType || "";
         data.thumbnailUri = json.thumbnailUri || "";
     }

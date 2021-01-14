@@ -70,6 +70,10 @@
                         "type": "string"
                     }
                 },
+                "taglist": {
+                    "description": "Array of tags, categorizing the annotation with language key.",
+                    "type": "object"
+                },
                 "uri": {
                     "description": "Location of the article resource, absolute URL or path relative to this document",
                     "type": "string",

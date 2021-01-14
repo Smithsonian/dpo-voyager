@@ -218,6 +218,10 @@
                             "type": "string"
                         }
                     },
+                    "taglist": {
+                        "description": "Array of tags, categorizing the annotation with language key.",
+                        "type": "object"
+                    },
                     "steps": {
                         "type": "array",
                         "items": {

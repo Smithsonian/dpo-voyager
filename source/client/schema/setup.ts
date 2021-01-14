@@ -179,7 +179,7 @@ export interface ITour
     lead?: string;
     leads?: Dictionary<string>;
     tags?: string[];
-    taglist?: Dictionary<string>;
+    taglist?: Dictionary<string[]>;
 }
 
 export interface ITourStep

@@ -204,7 +204,7 @@ export default class CVViewer extends Component
         views.forEach(component => {
             const annotations = component.getAnnotations();
             annotations.forEach(annotation => {
-                const tags = annotation.data.tags;
+                const tags = annotation.tags;
                 tags.forEach(tag => tagCloud.add(tag));
             });
         });

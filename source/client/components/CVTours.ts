@@ -108,6 +108,21 @@ export default class CVTours extends Component
         const tour = this.activeTour;
         tour.leads[ELanguageType[this.language.outs.language.value]] = inLead;
     }
+    get taglist() {
+        const tour = this.activeTour;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(tour.taglist).length === 0) {
+            if(tour.tags.length > 0) {
+                tour.taglist[DEFAULT_LANGUAGE] = tour.tags;
+            }
+        }
+
+        return tour.taglist[ELanguageType[this.language.outs.language.value]] || [];
+    }
+    set taglist(inTags: string[]) {
+        const tour = this.activeTour;
+        tour.taglist[ELanguageType[this.language.outs.language.value]] = inTags;
+    }
     get stepTitle() {
         const step = this.activeStep;
         // TODO: Temporary - remove when single string properties are phased out
@@ -240,6 +255,7 @@ export default class CVTours extends Component
             lead: tour.lead || "",
             leads: tour.leads || {},
             tags: tour.tags || [],
+            taglist: tour.taglist || {}
         }));
 
         // update langauges used in tours
@@ -294,7 +310,10 @@ export default class CVTours extends Component
             else if (tour.lead) {
                 data.lead = tour.lead;
             }
-            if (tour.tags.length > 0) {
+            if (Object.keys(tour.taglist).length > 0) {
+                data.taglist = tour.taglist;
+            }
+            else if (tour.tags.length > 0) {
                 data.tags = tour.tags;
             }
 

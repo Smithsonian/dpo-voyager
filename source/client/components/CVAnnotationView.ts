@@ -129,7 +129,7 @@ export default class CVAnnotationView extends CObject3D
             ins.marker.setValue(annotation ? annotation.data.marker : "", true);
             ins.title.setValue(annotation ? annotation.title : "", true);
             ins.lead.setValue(annotation ? annotation.lead : "", true);
-            ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "", true);
+            ins.tags.setValue(annotation ? annotation.tags.join(", ") : "", true);
             ins.style.setOption(annotation ? annotation.data.style : AnnotationFactory.defaultTypeName, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
@@ -139,7 +139,7 @@ export default class CVAnnotationView extends CObject3D
 
             const articles = this.articles;
             if (articles) {
-                const names = articles.items.map(article => article.data.title);
+                const names = articles.items.map(article => article.title);
                 names.unshift("(none)");
                 ins.article.setOptions(names);
                 const article = annotation ? articles.getById(annotation.data.articleId) : null;
@@ -194,7 +194,7 @@ export default class CVAnnotationView extends CObject3D
             const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
             for (const key in this._annotations) {
                 const annotation = this._annotations[key];
-                const tags = annotation.data.tags;
+                const tags = annotation.tags;
                 let visible = tags.length === 0; // annotation is visible by default if no tags
                 activeTags.forEach(tag => {
                     if (tags.indexOf(tag) >= 0) {
@@ -218,7 +218,8 @@ export default class CVAnnotationView extends CObject3D
                 annotation.lead = ins.lead.value;
             }
             if (ins.tags.changed) {
-                annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
+               // annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
+                annotation.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
                 this.emit<ITagUpdateEvent>({ type: "tag-update" });
             }
             if (ins.style.changed) {
@@ -414,7 +415,7 @@ export default class CVAnnotationView extends CObject3D
 
         if (annotation) {
             if (ENV_DEVELOPMENT) {
-                console.log(`CVAnnotationView.onPointerUp - title: ${annotation.data.title}, marker: ${annotation.data.marker}, id: ${annotation.id}`);
+                console.log(`CVAnnotationView.onPointerUp - title: ${annotation.title}, marker: ${annotation.data.marker}, id: ${annotation.id}`);
             }
 
             // click on annotation: activate annotation
@@ -505,7 +506,6 @@ export default class CVAnnotationView extends CObject3D
         // update properties
         ins.title.setValue(annotation ? annotation.title : "", true);
         ins.lead.setValue(annotation ? annotation.lead : "", true);
-        ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "");
-        // article...
+        ins.tags.setValue(annotation ? annotation.tags.join(", ") : "");
     }
 }

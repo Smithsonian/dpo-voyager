@@ -157,7 +157,7 @@ export default class CVArticlesTask extends CVTask
             }
             if (ins.lead.changed || ins.tags.changed) {
                 activeArticle.lead = ins.lead.value;
-                activeArticle.data.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
             }
         }
 
@@ -248,7 +248,7 @@ export default class CVArticlesTask extends CVTask
         if (meta && article && meta.articles.getById(article.id)) {
             ins.title.setValue(article.title, true);
             ins.lead.setValue(article.lead, true);
-            ins.tags.setValue(article.data.tags.join(", "), true);
+            ins.tags.setValue(article.tags.join(", "), true);
             ins.uri.setValue(article.uri, true);
             outs.article.setValue(article);
         }
