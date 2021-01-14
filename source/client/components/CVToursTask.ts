@@ -23,7 +23,7 @@ import ToursTaskView from "../ui/story/ToursTaskView";
 import CVDocument from "./CVDocument";
 import CVTours from "./CVTours";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -125,7 +125,8 @@ export default class CVToursTask extends CVTask
                 });
 
                 stepList.splice(stepIndex + 1, 0, {
-                    title: "New Step #" + _nextStepIndex++,
+                    title: "",
+                    titles: {DEFAULT_LANGUAGE : "New Step #" + _nextStepIndex++},
                     id
                 });
 
@@ -200,13 +201,17 @@ export default class CVToursTask extends CVTask
 
         if (ins.createTour.changed) {
             tourList.splice(tourIndex + 1, 0, {
-                title: "New Tour #" + _nextTourIndex++,
+                title: "",
+                titles: {},
                 lead: "",
+                leads: {},
                 tags: [],
                 steps: []
             });
+            tourList[tourIndex + 1].titles[DEFAULT_LANGUAGE] = "New Tour #" + _nextTourIndex++;
             tours.ins.tourIndex.setValue(tourIndex + 1);
             tours.outs.count.setValue(tourList.length);
+            languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
             return true;
         }
 
@@ -302,10 +307,7 @@ export default class CVToursTask extends CVTask
         this.onStepChange();
         tours.ins.tourIndex.setValue(tours.outs.tourIndex.value);  // trigger UI refresh
 
-        if(languageManager.outs.language.value !== newLanguage)
-        {
-            ins.language.setValue(newLanguage, true);
-        }
+        this.synchLanguage();
     }
 
     // Make sure this task language matches document

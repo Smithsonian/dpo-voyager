@@ -139,7 +139,7 @@ class StandardAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation.data;
 
-        this.titleElement.innerText = annotation.title;
+        this.titleElement.innerText = this.sprite.annotation.title;
 
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();

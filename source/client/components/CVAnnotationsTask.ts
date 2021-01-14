@@ -34,7 +34,7 @@ import CVAnnotationView, { IAnnotationsUpdateEvent } from "./CVAnnotationView";
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -224,6 +224,8 @@ export default class CVAnnotationsTask extends CVTask
 
         annotations.addAnnotation(annotation);
         annotations.activeAnnotation = annotation;
+
+        this.activeDocument.setup.language.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
     }
 
     protected moveAnnotation(position: number[], direction: number[])
@@ -319,7 +321,7 @@ export default class CVAnnotationsTask extends CVTask
         const {ins, outs} = this;
         const languageManager = this.activeDocument.setup.language;
 
-        if(outs.language.value !== languageManager.outs.language.value)
+        if(ins.language.value !== languageManager.outs.language.value)
         {
             ins.language.setValue(languageManager.outs.language.value, true);
         }

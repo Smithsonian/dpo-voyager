@@ -111,24 +111,28 @@ export default class Article extends Document<IArticle>
     protected deflate(data: IArticle, json: IArticle)
     {
         json.id = data.id;
-        json.uri = data.uri;
-        if(data.uris) {
+        
+        if(Object.keys(this.data.uris).length > 0) {
             json.uris = data.uris;
         }
+        else if(data.uri) {
+            json.uri = data.uri;
+        }   
 
-        
         if (Object.keys(this.data.titles).length > 0) {
             json.titles = data.titles;
         }
         else if (data.title) {
             json.title = data.title;
         }
+
         if (Object.keys(this.data.leads).length > 0) {
             json.leads = data.leads;
         }
         else if (data.lead) {
             json.lead = data.lead;
         }
+
         if (data.tags.length > 0) {
             json.tags = data.tags.slice();
         }
@@ -143,7 +147,7 @@ export default class Article extends Document<IArticle>
     protected inflate(json: IArticle, data: IArticle)
     {
         data.id = json.id;
-        data.uri = json.uri;
+        data.uri = json.uri || "";
         data.uris = json.uris || {};
 
         data.title = json.title || "";

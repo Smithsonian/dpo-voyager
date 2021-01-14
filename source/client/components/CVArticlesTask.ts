@@ -147,7 +147,7 @@ export default class CVArticlesTask extends CVTask
             if (ins.title.changed) {
                 activeArticle.title = ins.title.value;
                 if (!activeAsset) {
-                    const uri = this.getSafeArticlePath(ins.title.value + "-" + ELanguageType[outs.language.value]);
+                    const uri = this.getSafeArticlePath(ins.title.value + "-" + ELanguageType[ins.language.value]);
                     activeArticle.uri = uri;
                     ins.uri.setValue(uri, true);
                 }
@@ -271,11 +271,7 @@ export default class CVArticlesTask extends CVTask
 
         this.onArticleChange();
 
-        if(outs.language.value !== newLanguage)
-        {
-            ins.language.setValue(newLanguage, true);
-            outs.language.setValue(newLanguage, true);
-        }
+        this.synchLanguage();
     }
 
     // Make sure this task language matches document
@@ -283,7 +279,7 @@ export default class CVArticlesTask extends CVTask
         const {ins, outs} = this;
         const languageManager = this.activeDocument.setup.language;
 
-        if(outs.language.value !== languageManager.outs.language.value)
+        if(ins.language.value !== languageManager.outs.language.value)
         {
             ins.language.setValue(languageManager.outs.language.value, true);
         }

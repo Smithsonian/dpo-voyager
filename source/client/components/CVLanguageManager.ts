@@ -146,6 +146,9 @@ export default class CVLanguageManager extends Component
             reader.articles.forEach( entry => {
                 entry.article.language = ins.language.value;
             });
+
+            // trigger reader active article update
+            reader.ins.articleId.set();
         }
 
         if(scene) {

@@ -151,10 +151,10 @@ class ExtendedAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation.data;
 
         // update title
-        this.titleElement.innerText = annotation.title;
+        this.titleElement.innerText = this.sprite.annotation.title;
 
         // update content
-        const contentTemplate = html`<p>${annotation.lead}</p>
+        const contentTemplate = html`<p>${this.sprite.annotation.lead}</p>
             ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
 
         render(contentTemplate, this.contentElement);
