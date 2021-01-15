@@ -187,6 +187,7 @@ export default class CircleSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
         let matrixCamera : PerspectiveCamera = null;
+        const isShowing = this.annotation.data.visible;
 
         if(camera instanceof ArrayCamera) {
             matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
@@ -227,7 +228,7 @@ export default class CircleSprite extends AnnotationSprite
         this.offset.updateMatrix();
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.offset, camera); 
+        this.visible = !this.isBehindCamera(this.offset, camera) && isShowing; 
         if(!this.visible) {
             element.setVisible(this.visible);
         }

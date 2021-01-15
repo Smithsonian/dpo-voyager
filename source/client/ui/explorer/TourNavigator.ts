@@ -51,10 +51,10 @@ export default class TourNavigator extends DocumentView
             const stepNumber = tours.outs.stepIndex.value + 1;
             const stepCount = tours.outs.stepCount.value;
             title = stepCount > 0 ? tours.stepTitle : tours.title;
-            info = stepCount > 0 ? `Step ${stepNumber} of ${stepCount}` : "No tour steps defined";
+            info = stepCount > 0 ? `${language.getLocalizedString("Step")} ${stepNumber} ${language.getLocalizedString("of")} ${stepCount}` : language.getLocalizedString("No tour steps defined");
         }
         else {
-            title = "No tour selected";
+            title = language.getLocalizedString("No tour selected");
             info = "---";
         }
 

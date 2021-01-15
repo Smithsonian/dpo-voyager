@@ -34,6 +34,7 @@ import CVSetup from "./CVSetup";
 import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
 import { ELanguageType } from "client/schema/common";
+import { Dictionary } from "client/../../libs/ff-core/source/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,12 +54,13 @@ export default class CVDocument extends CRenderGraph
 
     protected static readonly validator = new DocumentValidator();
 
-    protected titles;
+    protected titles: Dictionary<string> = {};
 
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
         dumpTree: types.Event("Document.DumpTree"),
         download: types.Event("Document.Download"),
+        title: types.String("Document.Title"),
     };
 
     protected static readonly outs = {
@@ -99,11 +101,6 @@ export default class CVDocument extends CRenderGraph
         return name;
     }
 
-    set title(inTitle : string) {
-        const language = this.setup.language;
-        this.titles[ELanguageType[language.outs.language.value]] = inTitle;
-    }
-
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }
@@ -142,6 +139,12 @@ export default class CVDocument extends CRenderGraph
         if (ins.download.changed) {
             const fileName = outs.assetPath.value.split("/").pop() || "voyager-document.json";
             download.json(this.deflateDocument(), fileName);
+        }
+
+        if(ins.title.changed && this.titles) {
+            const language = this.setup.language;
+            this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;
+            outs.title.setValue(ins.title.value);
         }
 
         return true;
@@ -274,11 +277,12 @@ export default class CVDocument extends CRenderGraph
 
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
-                this.titles = meta.collection.get("titles") || [];
+                this.titles = meta.collection.get("titles") || {};
 
                 // TODO: Temporary - remove when single string properties are phased out
-                if(this.titles.length === 0) {
+                if(Object.keys(this.titles).length === 0) {
                     this.titles[ELanguageType[language.outs.language.value]] = meta.collection.get("title") || "";
+                   meta.collection.dictionary["titles"] = this.titles;
                 }
 
                 const title = this.titles[ELanguageType[language.outs.language.value]];
@@ -292,6 +296,6 @@ export default class CVDocument extends CRenderGraph
         const language = this.setup.language;
 
         const newTitle = this.titles[ELanguageType[language.outs.language.value]];
-        this.outs.title.setValue(newTitle ? newTitle : "Missing Title");
+        this.ins.title.setValue(newTitle ? newTitle : "Missing Title");
     }
 }

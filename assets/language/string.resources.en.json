@@ -58,5 +58,8 @@
 	"Switch on to take measurements" : "Switch on to take measurements",
 	"Slice Tool" : "Slice Tool",
 	"Axis" : "Axis",
-	"Position" : "Position"
+	"Position" : "Position",
+	"Step" : "Step",
+	"of" : "of",
+	"Tour" : "Tour"
 }

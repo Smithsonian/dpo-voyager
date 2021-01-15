@@ -194,6 +194,14 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+.sv-collection-panel {
+  padding: 6px;
+
+  .sv-indent {
+    margin-left: 15px;
+  }
+}
+
 .sv-tour-feature-menu {
   display: flex;
   flex-wrap: wrap;
