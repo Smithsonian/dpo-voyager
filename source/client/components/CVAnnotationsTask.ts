@@ -30,7 +30,7 @@ import NVNode from "../nodes/NVNode";
 import CVDocument from "./CVDocument";
 import CVTask from "./CVTask";
 import CVModel2 from "./CVModel2";
-import CVAnnotationView, { IAnnotationsUpdateEvent } from "./CVAnnotationView";
+import CVAnnotationView, { IAnnotationsUpdateEvent, IAnnotationClickEvent } from "./CVAnnotationView";
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
@@ -267,8 +267,10 @@ export default class CVAnnotationsTask extends CVTask
 
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
+            prevAnnotations.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
         }
         if (nextAnnotations) {
+            nextAnnotations.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
             nextAnnotations.on<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
         }
 
@@ -288,6 +290,17 @@ export default class CVAnnotationsTask extends CVTask
     protected emitUpdateEvent()
     {
         this.emit("update");
+    }
+
+    // Handles annotation selection in outside of task.
+    protected onAnnotationClick(event: IAnnotationClickEvent) 
+    {
+        // HACK to blur potentially selected textboxes when an annotation
+        // is clicked outside of the task UI and is consumed before getting here.
+        const textboxes = document.getElementsByClassName("ff-text-edit");
+        for(let box of textboxes) {
+            (box as HTMLElement).blur();
+        }
     }
 
     /** Accumulates transforms from root until multiple children are encountered. 

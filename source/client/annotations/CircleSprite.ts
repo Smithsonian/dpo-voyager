@@ -312,7 +312,7 @@ class CircleAnnotation extends AnnotationElement
         const annotationData = annotation.data;
 
         return html`<div class="sv-title">${annotation.title}</div>
-            <p>${annotation.lead}</p>
+            <div class="sv-content"><p>${annotation.lead}</p></div>
             ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
     }
 

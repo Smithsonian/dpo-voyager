@@ -200,6 +200,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       text-decoration: underline;
     }
   }
+
+  .sv-content {
+    overflow: hidden;
+    overflow-wrap: break-word;
+  }
 }
 
 .sv-pin-annotation {
@@ -210,7 +215,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-standard-annotation, .sv-extended-annotation {
-  max-width: 350px;
+  max-width: 20%;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
@@ -262,6 +267,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     font-size: 0.8rem;
     height: 0;
     overflow: hidden;
+    overflow-wrap: break-word;
     transition: height 0.2s;
   }
 

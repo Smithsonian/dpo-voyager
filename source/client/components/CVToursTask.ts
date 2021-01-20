@@ -126,9 +126,10 @@ export default class CVToursTask extends CVTask
 
                 stepList.splice(stepIndex + 1, 0, {
                     title: "",
-                    titles: {DEFAULT_LANGUAGE : "New Step #" + _nextStepIndex++},
+                    titles: {},
                     id
                 });
+                stepList[stepIndex + 1].titles[DEFAULT_LANGUAGE] = "New Step #" + _nextStepIndex++;
 
                 tours.ins.stepIndex.setValue(stepIndex + 1);
                 return true;

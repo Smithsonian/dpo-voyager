@@ -31,6 +31,7 @@ import { ISelectAnnotationEvent } from "./AnnotationList";
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
+import { ELanguageStringType, ELanguageType, TLanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,7 +97,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">Default Language</div><div class="sv-panel-header sv-task-item sv-item-border-l">Selected Language</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[this.task.ins.language.value] as TLanguageType]}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>

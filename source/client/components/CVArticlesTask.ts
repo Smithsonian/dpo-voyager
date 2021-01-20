@@ -56,8 +56,7 @@ export default class CVArticlesTask extends CVTask
     };
 
     protected static readonly outs = {
-        article: types.Object("Article", Article),
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
+        article: types.Object("Article", Article)
     };
 
     ins = this.addInputs<CVTask, typeof CVArticlesTask.ins>(CVArticlesTask.ins);
@@ -120,7 +119,6 @@ export default class CVArticlesTask extends CVTask
 
             languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
             languageManager.ins.language.setValue(newLanguage);
-            outs.language.setValue(newLanguage);
         }
 
         if (meta && ins.create.changed) {
@@ -265,18 +263,13 @@ export default class CVArticlesTask extends CVTask
 
     protected onDocumentLanguageChange()
     {
-        const {ins, outs} = this;
-        const languageManager = this.activeDocument.setup.language;
-        const newLanguage = languageManager.outs.language.value;
-
         this.onArticleChange();
-
         this.synchLanguage();
     }
 
     // Make sure this task language matches document
     protected synchLanguage() {
-        const {ins, outs} = this;
+        const {ins} = this;
         const languageManager = this.activeDocument.setup.language;
 
         if(ins.language.value !== languageManager.outs.language.value)

@@ -22,6 +22,7 @@ import CVReader from "./CVReader";
 import CVAnnotationView from "./CVAnnotationView";
 import CVScene from "./CVScene";
 import CVAssetReader from "./CVAssetReader";
+import { ITagUpdateEvent } from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -108,6 +109,8 @@ export default class CVLanguageManager extends Component
 
         const language = ELanguageType[data.language || "EN"];
         this.ins.language.setValue(isFinite(language) ? language : ELanguageType.EN);
+
+        this.updateLanguage();
     }
 
     toData(): ILanguage
@@ -158,9 +161,11 @@ export default class CVLanguageManager extends Component
                 view.getAnnotations().forEach( annotation => {
                     annotation.language = ins.language.value;
                 });
+                view.ins.activeTags.set();
             });
         }
 
         outs.language.setValue(ins.language.value);
+        this.emit<ITagUpdateEvent>({ type: "tag-update" });
     }
 }
