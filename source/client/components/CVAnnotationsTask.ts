@@ -30,10 +30,11 @@ import NVNode from "../nodes/NVNode";
 import CVDocument from "./CVDocument";
 import CVTask from "./CVTask";
 import CVModel2 from "./CVModel2";
-import CVAnnotationView, { IAnnotationsUpdateEvent } from "./CVAnnotationView";
+import CVAnnotationView, { IAnnotationsUpdateEvent, IAnnotationClickEvent } from "./CVAnnotationView";
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
+import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,9 +55,15 @@ export default class CVAnnotationsTask extends CVTask
 
     protected static readonly ins = {
         mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+    };
+
+    protected static readonly outs = {
+        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
     };
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
+    outs = this.addOutputs<CVTask, typeof CVAnnotationsTask.outs>(CVAnnotationsTask.outs);
 
     private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
@@ -91,6 +98,7 @@ export default class CVAnnotationsTask extends CVTask
     {
         this.startObserving();
         super.activateTask();
+        this.synchLanguage();
 
         //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
         //this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -107,9 +115,27 @@ export default class CVAnnotationsTask extends CVTask
 
     update(context)
     {
-        if (this.ins.mode.changed) {
+        const {ins, outs} = this;
+        
+        if(!this.activeDocument) {
+            return false;
+        }
+        const languageManager = this.activeDocument.setup.language;
+
+        if (ins.mode.changed) {
             this.emitUpdateEvent();
         }
+
+        if(ins.language.changed) {   
+            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
+
+            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
+            languageManager.ins.language.setValue(newLanguage);
+            outs.language.setValue(newLanguage);
+            return true;
+        }
+
+        this.synchLanguage();
 
         return true;
     }
@@ -198,6 +224,8 @@ export default class CVAnnotationsTask extends CVTask
 
         annotations.addAnnotation(annotation);
         annotations.activeAnnotation = annotation;
+
+        this.activeDocument.setup.language.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
     }
 
     protected moveAnnotation(position: number[], direction: number[])
@@ -221,9 +249,14 @@ export default class CVAnnotationsTask extends CVTask
     {
         super.onActiveDocument(previous, next);
 
+        if(previous) {
+            previous.setup.language.outs.language.off("value", this.update, this);
+        }
         if (next) {
             const scene = next.getInnerComponent(CVScene);
             this._defaultScale = scene.outs.boundingRadius.value * 0.05;
+
+            next.setup.language.outs.language.on("value", this.update, this);
         }
     }
 
@@ -234,8 +267,10 @@ export default class CVAnnotationsTask extends CVTask
 
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
+            prevAnnotations.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
         }
         if (nextAnnotations) {
+            nextAnnotations.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
             nextAnnotations.on<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
         }
 
@@ -255,6 +290,17 @@ export default class CVAnnotationsTask extends CVTask
     protected emitUpdateEvent()
     {
         this.emit("update");
+    }
+
+    // Handles annotation selection in outside of task.
+    protected onAnnotationClick(event: IAnnotationClickEvent) 
+    {
+        // HACK to blur potentially selected textboxes when an annotation
+        // is clicked outside of the task UI and is consumed before getting here.
+        const textboxes = document.getElementsByClassName("ff-text-edit");
+        for(let box of textboxes) {
+            (box as HTMLElement).blur();
+        }
     }
 
     /** Accumulates transforms from root until multiple children are encountered. 
@@ -281,5 +327,16 @@ export default class CVAnnotationsTask extends CVTask
         while (root.parent.children.length === 1)
 
         return result;
+    }
+
+    // Make sure this task language matches document
+    protected synchLanguage() {
+        const {ins, outs} = this;
+        const languageManager = this.activeDocument.setup.language;
+
+        if(ins.language.value !== languageManager.outs.language.value)
+        {
+            ins.language.setValue(languageManager.outs.language.value, true);
+        }
     }
 }

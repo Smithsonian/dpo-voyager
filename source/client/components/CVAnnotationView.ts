@@ -41,6 +41,8 @@ import CircleSprite from "../annotations/CircleSprite";
 import CVARManager from "./CVARManager";
 import StandardSprite from "../annotations/StandardSprite";
 import ExtendedSprite from "../annotations/ExtendedSprite";
+import CVLanguageManager from "./CVLanguageManager";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +95,9 @@ export default class CVAnnotationView extends CObject3D
     protected get reader() {
         return this.getGraphComponent(CVReader, true);
     }
+    protected get language() {
+        return this.getGraphComponent(CVLanguageManager, true);
+    }
     protected get articles() {
         const meta = this.meta;
         return meta ? meta.articles : null;
@@ -122,9 +127,9 @@ export default class CVAnnotationView extends CObject3D
 
             const ins = this.ins;
             ins.marker.setValue(annotation ? annotation.data.marker : "", true);
-            ins.title.setValue(annotation ? annotation.data.title : "", true);
-            ins.lead.setValue(annotation ? annotation.data.lead : "", true);
-            ins.tags.setValue(annotation ? annotation.data.tags.join(", ") : "", true);
+            ins.title.setValue(annotation ? annotation.title : "", true);
+            ins.lead.setValue(annotation ? annotation.lead : "", true);
+            ins.tags.setValue(annotation ? annotation.tags.join(", ") : "", true);
             ins.style.setOption(annotation ? annotation.data.style : AnnotationFactory.defaultTypeName, true);
             ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
             ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
@@ -134,7 +139,7 @@ export default class CVAnnotationView extends CObject3D
 
             const articles = this.articles;
             if (articles) {
-                const names = articles.items.map(article => article.data.title);
+                const names = articles.items.map(article => article.title);
                 names.unshift("(none)");
                 ins.article.setOptions(names);
                 const article = annotation ? articles.getById(annotation.data.articleId) : null;
@@ -163,6 +168,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.on("value", this.handleARStateChange, this);
+        this.language.outs.language.on("value", this.updateLanguage, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -188,7 +194,7 @@ export default class CVAnnotationView extends CObject3D
             const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
             for (const key in this._annotations) {
                 const annotation = this._annotations[key];
-                const tags = annotation.data.tags;
+                const tags = annotation.tags;
                 let visible = tags.length === 0; // annotation is visible by default if no tags
                 activeTags.forEach(tag => {
                     if (tags.indexOf(tag) >= 0) {
@@ -206,13 +212,14 @@ export default class CVAnnotationView extends CObject3D
                 annotation.set("marker", ins.marker.value);
             }
             if (ins.title.changed) {
-                annotation.set("title", ins.title.value);
+                annotation.title = ins.title.value;
             }
             if (ins.lead.changed) {
-                annotation.set("lead", ins.lead.value);
+                annotation.lead = ins.lead.value;
             }
             if (ins.tags.changed) {
-                annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
+               // annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
+                annotation.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
                 this.emit<ITagUpdateEvent>({ type: "tag-update" });
             }
             if (ins.style.changed) {
@@ -278,6 +285,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.off<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.off("value", this.handleARStateChange, this);
+        this.language.outs.language.off("value", this.updateLanguage, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -299,6 +307,14 @@ export default class CVAnnotationView extends CObject3D
     {
         this._annotations[annotation.id] = annotation;
         this.createSprite(annotation);
+
+        // update langauges used in annotations
+        Object.keys(annotation.data.titles).forEach( key => {
+            this.language.addLanguage(ELanguageType[key]);
+        });
+        Object.keys(annotation.data.leads).forEach( key => {
+            this.language.addLanguage(ELanguageType[key]);
+        });
 
         this.changed = true;
     }
@@ -399,7 +415,7 @@ export default class CVAnnotationView extends CObject3D
 
         if (annotation) {
             if (ENV_DEVELOPMENT) {
-                console.log(`CVAnnotationView.onPointerUp - title: ${annotation.data.title}, marker: ${annotation.data.marker}, id: ${annotation.id}`);
+                console.log(`CVAnnotationView.onPointerUp - title: ${annotation.title}, marker: ${annotation.data.marker}, id: ${annotation.id}`);
             }
 
             // click on annotation: activate annotation
@@ -471,5 +487,25 @@ export default class CVAnnotationView extends CObject3D
         if (sprite) {
             sprite.update();
         }
+    }
+
+    protected updateLanguage()
+    {
+        const ins = this.ins;
+        const annotation = this._activeAnnotation;
+
+        // update sprites
+        for (const key in this._annotations) {
+            const annotation = this._annotations[key];
+            const sprite = this._sprites[annotation.id];
+            if (sprite) {
+                sprite.update();
+            }
+        }
+
+        // update properties
+        ins.title.setValue(annotation ? annotation.title : "", true);
+        ins.lead.setValue(annotation ? annotation.lead : "", true);
+        ins.tags.setValue(annotation ? annotation.tags.join(", ") : "");
     }
 }

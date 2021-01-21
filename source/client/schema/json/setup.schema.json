@@ -200,8 +200,16 @@
                     "title": {
                         "type": "string"
                     },
+                    "titles": {
+                        "description": "Short title with language key.",
+                        "type": "object"
+                    },
                     "lead": {
                         "type": "string"
+                    },
+                    "leads": {
+                        "description": "Short lead text with language key.",
+                        "type": "object"
                     },
                     "tags": {
                         "description": "Array of tags, categorizing the tour.",
@@ -210,6 +218,10 @@
                             "type": "string"
                         }
                     },
+                    "taglist": {
+                        "description": "Array of tags, categorizing the annotation with language key.",
+                        "type": "object"
+                    },
                     "steps": {
                         "type": "array",
                         "items": {
@@ -217,6 +229,10 @@
                             "properties": {
                                 "title": {
                                     "type": "string"
+                                },
+                                "titles": {
+                                    "description": "Short title with language key.",
+                                    "type": "object"
                                 },
                                 "id": {
                                     "type": "string"

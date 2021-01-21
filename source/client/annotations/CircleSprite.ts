@@ -187,6 +187,7 @@ export default class CircleSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
         let matrixCamera : PerspectiveCamera = null;
+        const isShowing = this.annotation.data.visible;
 
         if(camera instanceof ArrayCamera) {
             matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
@@ -227,7 +228,7 @@ export default class CircleSprite extends AnnotationSprite
         this.offset.updateMatrix();
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.offset, camera); 
+        this.visible = !this.isBehindCamera(this.offset, camera) && isShowing; 
         if(!this.visible) {
             element.setVisible(this.visible);
         }
@@ -307,11 +308,12 @@ class CircleAnnotation extends AnnotationElement
 
     protected render()
     {
-        const annotation = this.sprite.annotation.data;
+        const annotation = this.sprite.annotation;
+        const annotationData = annotation.data;
 
         return html`<div class="sv-title">${annotation.title}</div>
-            <p>${annotation.lead}</p>
-            ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+            <div class="sv-content"><p>${annotation.lead}</p></div>
+            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
     }
 
     protected onClickArticle(event: MouseEvent)

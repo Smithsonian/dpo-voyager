@@ -40,6 +40,7 @@ import InspectorPanel from "./InspectorPanel";
 import AssetPanel from "./AssetPanel";
 
 import "./styles.scss";
+import CollectionPanel from "./CollectionPanel";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS
@@ -127,6 +128,7 @@ export default class MainView extends CustomElement
         registry.set("inspector", () => new InspectorPanel(system));
         registry.set("assets", () => new AssetPanel(system));
         registry.set("article-editor", () => new EditorPanel(system));
+        registry.set("collection", () => new CollectionPanel(system));
 
         const reset = parseUrlParameter("reset") !== undefined;
         const state = reset ? null : localStorage.get("voyager-story", MainView.stateKey);
@@ -210,6 +212,9 @@ export default class MainView extends CustomElement
                 }, {
                     contentId: "assets",
                     text: "Media"
+                }, {
+                    contentId: "collection",
+                    text: "Collection"
                 }]
             }, {
                 type: "stack",
@@ -268,6 +273,9 @@ export default class MainView extends CustomElement
                 }, {
                     contentId: "assets",
                     text: "Media"
+                }, {
+                    contentId: "collection",
+                    text: "Collection"
                 }]
             }, {
                 type: "stack",

@@ -27,6 +27,7 @@ import { EDerivativeQuality } from "client/schema/model";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -90,12 +91,14 @@ export default class CVViewer extends Component
         super.create();
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
+        this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
     }
 
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
+        this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
         super.dispose();
     }
 
@@ -204,7 +207,7 @@ export default class CVViewer extends Component
         views.forEach(component => {
             const annotations = component.getAnnotations();
             annotations.forEach(annotation => {
-                const tags = annotation.data.tags;
+                const tags = annotation.tags;
                 tags.forEach(tag => tagCloud.add(tag));
             });
         });
@@ -255,6 +258,18 @@ export default class CVViewer extends Component
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
             component.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
+        }
+    }
+
+    protected onLanguageComponent(event: IComponentEvent<CVLanguageManager>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+        }
+        else if (event.remove) {
+            component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
         }
     }
 }

@@ -34,6 +34,7 @@ import CVSlicer from "./CVSlicer";
 import CVTours from "./CVTours";
 import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,6 +53,7 @@ export default class CVSetup extends Component
         "navigation": CVOrbitNavigation,
         "background": CVBackground,
         "environment": CVEnvironment,
+        "language": CVLanguageManager,
         "floor": CVFloor,
         "grid": CVGrid,
         "tape": CVTape,
@@ -78,6 +80,7 @@ export default class CVSetup extends Component
     tours: CVTours;
     snapshots: CVSnapshots;
     environment: CVEnvironment;
+    language: CVLanguageManager;
 
     create()
     {

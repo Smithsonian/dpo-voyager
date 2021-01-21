@@ -51,9 +51,17 @@
                     "description": "Short title.",
                     "type": "string"
                 },
+                "titles": {
+                    "description": "Short title with language key.",
+                    "type": "object"
+                },
                 "lead": {
                     "description": "Short lead text.",
                     "type": "string"
+                },
+                "leads": {
+                    "description": "Short lead text with language key.",
+                    "type": "object"
                 },
                 "tags": {
                     "description": "Array of tags, categorizing the article.",
@@ -62,10 +70,18 @@
                         "type": "string"
                     }
                 },
+                "taglist": {
+                    "description": "Array of tags, categorizing the annotation with language key.",
+                    "type": "object"
+                },
                 "uri": {
                     "description": "Location of the article resource, absolute URL or path relative to this document",
                     "type": "string",
                     "minLength": 1
+                },
+                "uris": {
+                    "description": "Location of the article resource, absolute URL or path relative to this document with language key",
+                    "type": "object"
                 },
                 "mimeType": {
                     "description": "MIME type of the resource.",
@@ -77,8 +93,7 @@
                 }
             },
             "required": [
-                "id",
-                "uri"
+                "id"
             ],
             "additionalProperties": false
         }

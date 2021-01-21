@@ -67,6 +67,7 @@ import CVTours from "../components/CVTours";
 import CVSnapshots from "../components/CVSnapshots";
 import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
+import CVLanguageManager from "../components/CVLanguageManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -121,6 +122,7 @@ const types = [
     CVTours,
     CVSnapshots,
     CVEnvironment,
+    CVLanguageManager,
 
     NVEngine,
     NVDocuments,

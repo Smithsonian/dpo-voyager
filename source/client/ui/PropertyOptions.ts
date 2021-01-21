@@ -20,6 +20,7 @@ import CustomElement, { customElement, property, PropertyValues, html } from "@f
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +38,9 @@ export default class PropertyOptions extends CustomElement
 
     @property({ attribute: false })
     indexMap: number[] = null;
+
+    @property({ attribute: false })
+    language: CVLanguageManager = null;
 
     protected firstConnected()
     {
@@ -73,16 +77,17 @@ export default class PropertyOptions extends CustomElement
         const name = this.name || property.name;
         const options = this.options || property.schema.options;
         const value = property.value;
+        const language = this.language;
 
         let buttons;
         if (indexMap) {
             buttons = indexMap.map(index =>
-                html`<ff-button .text=${options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button .text=${language ? language.getLocalizedString(options[index]) : options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
                     </ff-button>`);
         }
         else {
             buttons = options.map((option, index) =>
-                html`<ff-button .text=${option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button .text=${language ? language.getLocalizedString(option) : option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
                     </ff-button>`)
         }
 

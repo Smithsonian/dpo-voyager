@@ -151,10 +151,10 @@ class ExtendedAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation.data;
 
         // update title
-        this.titleElement.innerText = annotation.title;
+        this.titleElement.innerText = this.sprite.annotation.title;
 
         // update content
-        const contentTemplate = html`<p>${annotation.lead}</p>
+        const contentTemplate = html`<p>${this.sprite.annotation.lead}</p>
             ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
 
         render(contentTemplate, this.contentElement);
@@ -162,6 +162,11 @@ class ExtendedAnnotation extends AnnotationElement
         // update color
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();
+
+        // update expanded height in case annotation changed
+        if (this.isExpanded) {
+            this.contentElement.style.height = "auto";
+        }
 
         // update expanded/collapsed
         if (this.isExpanded !== annotation.expanded) {
