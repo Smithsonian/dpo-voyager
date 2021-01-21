@@ -658,7 +658,7 @@ export default class CVARManager extends Component
             const currentDrag = this.inputSource!.gamepad.axes;
             const offsetX = currentDrag[0] - this.lastDragValueX;
             const offsetY = currentDrag[1] - this.lastDragValueY;
-            this.totalDrag += Math.hypot(offsetX, offsetY); console.log(this.totalDrag);
+            this.totalDrag += Math.hypot(offsetX, offsetY);
 
             fingers.forEach(finger => {
                 if (this.totalDrag < 0.01 ||finger.inputSource !== this.inputSource || finger.results.length < 1) {
