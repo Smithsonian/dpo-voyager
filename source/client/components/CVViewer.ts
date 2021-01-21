@@ -223,6 +223,10 @@ export default class CVViewer extends Component
 
         this.outs.tagCloud.setValue(tagArray.join(", "));
 
+        // refresh tag display
+        this.ins.activeTags.set();
+        this.ins.annotationsVisible.set();
+
         if (ENV_DEVELOPMENT) {
             console.log("CVViewer.refreshTagCloud - %s", tagArray.join(", "));
         }
