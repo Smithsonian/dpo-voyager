@@ -91,12 +91,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       flex: 0 2 720px;
       background-color: $color-paragraph-background;
       padding-bottom: 35px; // room for tour navigator overlay
-      z-index: 2;   // hack for language button overlay
     }
     .sv-right {
       flex: 0 3 16px;
       background-color: $color-paragraph-background;
-      z-index: 2;   // hack for language button overlay
     }
   }
 }
