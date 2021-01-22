@@ -225,7 +225,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     width: 20%;
     min-width: 180px;
     background-color: transparentize(black, 0.2);
-    z-index: 10;
+    //z-index: 10;
   }
 
   &.sv-q0 {

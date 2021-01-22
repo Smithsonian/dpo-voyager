@@ -329,6 +329,10 @@ export default class CVAnnotationView extends CObject3D
             // select next annotation as active annotation
             const index = Math.min(keys.indexOf(annotation.id) + 1, keys.length - 1);
             this.activeAnnotation = index < 0 ? null : this._annotations[keys[index]];
+
+            if(annotation.tags.length > 0) {
+                this.emit<ITagUpdateEvent>({ type: "tag-update" });
+            }
         }
 
         this.changed = true;

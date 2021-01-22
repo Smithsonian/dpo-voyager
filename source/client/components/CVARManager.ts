@@ -775,7 +775,6 @@ export default class CVARManager extends Component
             const modelAsset = derivative.findAsset(EAssetType.Model);
             const url = this.assetManager.getAssetUrl(modelAsset.data.uri);
 
-            //const url = "https://cdn.glitch.com/14e8fae0-5489-4b51-9d43-21f9254157fe%2Fwoolly-mammoth-150k-2048-medium.glb?v=1603127885425"; 
             const intent = `intent://arvr.google.com/scene-viewer/1.0?file=${url}&mode=ar_only#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;end;`;
             
             linkElement.setAttribute('href', intent);
