@@ -125,16 +125,24 @@ export default class CVTours extends Component
     }
     get stepTitle() {
         const step = this.activeStep;
-        // TODO: Temporary - remove when single string properties are phased out
-        if(Object.keys(step.titles).length === 0) {
-            step.titles[DEFAULT_LANGUAGE] = step.title;
-        }
 
-        return step.titles[ELanguageType[this.language.outs.language.value]] || "undefined";
+        if(step) {
+            // TODO: Temporary - remove when single string properties are phased out
+            if(Object.keys(step.titles).length === 0) {
+                step.titles[DEFAULT_LANGUAGE] = step.title;
+            }
+
+            return step.titles[ELanguageType[this.language.outs.language.value]] || "undefined";
+        }
+        else {
+            return null;
+        }
     }
     set stepTitle(inTitle: string) {
         const step = this.activeStep;
-        step.titles[ELanguageType[this.language.outs.language.value]] = inTitle;
+        if(step) {
+            step.titles[ELanguageType[this.language.outs.language.value]] = inTitle;
+        }
     }
 
     create()
@@ -222,6 +230,7 @@ export default class CVTours extends Component
                 outs.tourIndex.setValue(-1);
                 outs.tourTitle.setValue("");
                 outs.tourLead.setValue("");
+                outs.stepIndex.set();
                 nextStepIndex = -1;
             }
         }
