@@ -111,7 +111,9 @@ export default class ContentView extends DocumentView
             sceneView.classList.remove("sv-blur");
         }
         else {
-            setTimeout(() => sceneView.classList.add("sv-blur"), 1);
+            if(!sceneView.classList.contains("sv-blur")) {
+                setTimeout(() => sceneView.classList.add("sv-blur"), 1); 
+            }
         }
 
         if(!isLoading && isInitialLoad) { 
