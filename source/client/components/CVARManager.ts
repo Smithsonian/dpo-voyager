@@ -210,6 +210,13 @@ export default class CVARManager extends Component
         if(view) {
             this.renderer.detachView(view);
         }
+
+        const gl = this.cachedView.renderer.getContext();
+        await gl.makeXRCompatible();
+    
+        session.updateRenderState(
+            {baseLayer: new XRWebGLLayer(session, gl, {alpha: true})}
+        );
         
         this.setupScene();
 
