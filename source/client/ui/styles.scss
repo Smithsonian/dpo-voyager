@@ -91,6 +91,7 @@
 .sv-content-view {
   @include fullsize;
   overflow: hidden;
+  @include noselect;
 }
 
 .sv-logo {

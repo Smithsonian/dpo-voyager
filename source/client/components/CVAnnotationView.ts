@@ -23,6 +23,7 @@ import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
 import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
 
 import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/CObject3D";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 import CVModel2 from "./CVModel2";
 import CVMeta from "./CVMeta";
@@ -104,6 +105,9 @@ export default class CVAnnotationView extends CObject3D
     }
     protected get arManager() {
         return this.system.getMainComponent(CVARManager);
+    }
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
     }
 
     get activeAnnotation() {
@@ -315,6 +319,17 @@ export default class CVAnnotationView extends CObject3D
         Object.keys(annotation.data.leads).forEach( key => {
             this.language.addLanguage(ELanguageType[key]);
         });
+
+        // set webgl2 for circle annotations
+        for (const key in this._annotations) {
+            const annotation = this._annotations[key];
+            if(annotation.get("style") === "Circle") {
+                const sprite = this._sprites[annotation.id] as CircleSprite;
+                if (sprite) {
+                    sprite.isWebGL2 = this.renderer.views[0].renderer.capabilities.isWebGL2;
+                }
+            }
+        }
 
         this.changed = true;
     }

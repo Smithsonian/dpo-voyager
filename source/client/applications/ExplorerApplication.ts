@@ -52,6 +52,8 @@ export interface IExplorerApplicationProps
 {
     /** URL of the root asset folder. */
     root?: string;
+    /** Custom URL to Draco files (Defaults /js/draco/ relative to distribution). */
+    dracoRoot?: string;
     /** URL of the document to load and display at startup. */
     document?: string;
     /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
@@ -219,6 +221,7 @@ Version: ${ENV_VERSION}
         const manager = this.assetManager;
 
         props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
+        props.dracoRoot = props.dracoRoot || parseUrlParameter("dracoRoot") || parseUrlParameter("dr");
         props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
@@ -229,6 +232,10 @@ Version: ${ENV_VERSION}
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
+
+        if(props.dracoRoot) {
+            this.assetReader.setDracoPath(props.dracoRoot);
+        }
 
         if (props.document) {
             // first loading priority: document

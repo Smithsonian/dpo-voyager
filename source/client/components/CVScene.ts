@@ -24,10 +24,13 @@ import { IDocument, IScene } from "client/schema/document";
 
 import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";
+import unitScaleFactor from "client/utils/unitScaleFactor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new THREE.Vector3();
+const _vec3b = new THREE.Vector3();
+const _quat = new THREE.Quaternion();
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -49,6 +52,7 @@ export default class CVScene extends CVNode
     };
 
     protected static readonly outs = {
+        units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
         boundingBox: types.Object("Models.BoundingBox", THREE.Box3),
         boundingRadius: types.Number("Models.BoundingRadius"),
     };
@@ -86,9 +90,12 @@ export default class CVScene extends CVNode
     update(context)
     {
         const ins = this.ins;
+        const outs = this.outs;
 
         if (ins.units.changed) {
+            this.updateTransformHierarchy();
             this.updateModelBoundingBox();
+            outs.units.setValue(ins.units.value);
         }
         if (ins.modelUpdated.changed) {
             this.updateModelBoundingBox();
@@ -109,6 +116,7 @@ export default class CVScene extends CVNode
     fromDocument(document: IDocument, scene: IScene)
     {
         this.ins.units.setValue(EUnitType[scene.units] || 0);
+        this.outs.units.setValue(EUnitType[scene.units] || 0);
     }
 
     toDocument(document: IDocument, scene: IScene)
@@ -142,5 +150,21 @@ export default class CVScene extends CVNode
 
         this.outs.boundingBox.set();
         this.outs.boundingRadius.setValue(_vec3.length() * 0.5);
+    }
+
+    protected updateTransformHierarchy()
+    {
+        if(this.models.length === 0) {
+            return;
+        }
+
+        const ins = this.ins;
+        const outs = this.outs;
+        const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
+        const object3D = this.models[0].object3D.parent.parent;  // TODO: Should probably crawl all the way up the hierarchy
+
+        object3D.position.multiplyScalar(unitScale);
+        object3D.updateMatrix();
+        object3D.updateMatrixWorld(true);
     }
 }

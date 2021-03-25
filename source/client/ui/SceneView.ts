@@ -49,9 +49,9 @@ export default class SceneView extends SystemView
         this.manipTarget = new ManipTarget();
 
         this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
-        this.addEventListener("pointermove", this.manipTarget.onPointerMove);
-        this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-        this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+        this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);
+        this.ownerDocument.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
+        this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
     }

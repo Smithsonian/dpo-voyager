@@ -17,11 +17,11 @@
 
 import * as THREE from "three";
 
-import "three/examples/js/loaders/OBJLoader";
-const OBJLoader = (THREE as any).OBJLoader;
+import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
+//const OBJLoader = (THREE as any).OBJLoader;
 
-import "three/examples/js/loaders/PLYLoader";
-const PLYLoader = (THREE as any).PLYLoader;
+import {PLYLoader} from "three/examples/jsm/loaders/PLYLoader";
+//const PLYLoader = (THREE as any).PLYLoader;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +44,7 @@ export default class GeometryReader
         return GeometryReader.extensions.indexOf(extension) >= 0;
     }
 
-    get(url: string): Promise<THREE.Geometry>
+    get(url: string): Promise<THREE.BufferGeometry>
     {
         const extension = url.split(".").pop().toLowerCase();
 
