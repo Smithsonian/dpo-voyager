@@ -726,6 +726,8 @@ export default class CVARManager extends Component
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
         const width = (max.x-min.x)*1.25;
         const height = (max.z-min.z)*1.25;
+        const centerOffsetX = (min.x+max.x)/2.0;
+        const centerOffsetZ = (min.z+max.z)/2.0;
 
         this.lastHitPosition.copy(hit);
 
@@ -734,7 +736,7 @@ export default class CVARManager extends Component
             new PlaneBufferGeometry(width, height),
             new MeshBasicMaterial()   
         );
-        hitPlane.position.set(0, min.y, 0);
+        hitPlane.position.set(centerOffsetX, min.y, centerOffsetZ);
         hitPlane.rotation.set(-Math.PI / 2.0, 0, 0);
         hitPlane.visible = false;
         scene.add(hitPlane);
@@ -748,7 +750,7 @@ export default class CVARManager extends Component
         roundedRectShape.holes.push(cutOut);
         let geometry = new ShapeBufferGeometry(roundedRectShape);
         const selectionRing = this.selectionRing = new Mesh( geometry, new MeshBasicMaterial({ side: DoubleSide, opacity: 0.0 }) );
-        selectionRing.position.set(0, min.y, 0);
+        selectionRing.position.set(centerOffsetX, min.y, centerOffsetZ);
         selectionRing.rotation.set(-Math.PI / 2.0, 0, 0);
         (selectionRing.material as Material).transparent = true;
         selectionRing.visible = false;
