@@ -492,7 +492,7 @@ export default class CVARManager extends Component
             _boundingBox.getCenter(_vector3);
             position.add(_vector3.negate());
             scene.updateMatrix();
-            scene.updateMatrixWorld(true);
+            scene.updateMatrixWorld();
 
             //this.updateBoundingBox();
         }
