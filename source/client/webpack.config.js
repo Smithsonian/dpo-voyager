@@ -174,7 +174,7 @@ function createAppConfig(app, isDevMode, isOffline)
             }),
             new MiniCssExtractPlugin({
                 filename: isDevMode ? "css/[name].dev.css" : "css/[name].min.css",
-                allChunks: true
+                //allChunks: true
             }),
             new HTMLWebpackPlugin({
                 filename: isDevMode ? `${appName}-dev${localTag}.html` : `${appName}${localTag}.html`,

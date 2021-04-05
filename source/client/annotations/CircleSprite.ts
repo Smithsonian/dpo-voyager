@@ -18,6 +18,7 @@
 import * as THREE from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
+import {WEBGL} from "three/examples/jsm/WebGL.js";
 
 import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
@@ -64,6 +65,8 @@ export default class CircleSprite extends AnnotationSprite
 
     // Temporary until annotation scale implementation is resolved
     xrScale: number = 1.0;
+
+    isWebGL2: boolean = false;
 
     constructor(annotation: Annotation)
     {
@@ -122,6 +125,7 @@ export default class CircleSprite extends AnnotationSprite
                 map: font.texture,
                 transparent: true,
                 color: 0xffffff,
+                isWebGL2: this.isWebGL2
             }));
 
             this.markerMaterialB = new THREE.RawShaderMaterial(createTextShader({
@@ -130,7 +134,8 @@ export default class CircleSprite extends AnnotationSprite
                 opacity: CircleSprite.behindOpacity,
                 color: 0xffffff,
                 depthFunc: THREE.GreaterDepth,
-                depthWrite: false
+                depthWrite: false,
+                isWebGL2: this.isWebGL2
             }));
 
             this.markerGeometry = createTextGeometry({ font: font.descriptor });
@@ -202,7 +207,7 @@ export default class CircleSprite extends AnnotationSprite
         }
         _mat4.multiply(this.matrixWorld);
         _mat4.decompose(_vec3a, _quat1, _vec3b);
-        this.offset.quaternion.copy(_quat1.inverse());
+        this.offset.quaternion.copy(_quat1.invert());
 
         // get inverse world scale relative to user scale
         this.offset.parent.matrixWorld.decompose(_vec3a, _quat1, _vec3b);

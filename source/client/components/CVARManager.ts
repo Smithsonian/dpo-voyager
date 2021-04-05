@@ -25,20 +25,21 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import CTransform from "@ff/scene/components/CTransform";
 import CScene from "@ff/scene/components/CScene";
 import RenderView from "@ff/scene/RenderView";
+import UniversalCamera from "@ff/three/UniversalCamera";
+import CPulse from "@ff/graph/components/CPulse";
 
-import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Camera, Material, RenderTarget, PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
+import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Camera, Material, RenderTarget, 
+    PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
 import CVDocumentProvider from "./CVDocumentProvider";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
-import UniversalCamera from "client/../../libs/ff-three/source/UniversalCamera";
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
 import { EUnitType } from "client/schema/common";
 import { EDerivativeUsage, EDerivativeQuality, EAssetType } from "client/models/Derivative";
 import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
-import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
 import CVAnnotationView from "./CVAnnotationView";
 
 import { Shadow } from "../xr/XRShadow"
@@ -47,11 +48,13 @@ import { EShaderMode } from "client/schema/setup";
 import ARPrompt from "client/ui/explorer/ARPrompt";
 import ARMenu from "client/ui/explorer/ARMenu";
 import CVAnalytics from "./CVAnalytics";
+import CVReader from "./CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _matrix4 = new Matrix4();
 const _vector3 = new Vector3();
+//const _vector3b = new Vector3();
 const _hitPosition = new Vector3();
 const _boundingBox = new Box3();
 const _quat = new Quaternion();
@@ -99,6 +102,9 @@ export default class CVARManager extends Component
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get reader() {
+        return this.getGraphComponent(CVReader, true);
+    }
 
     protected arLink = document.createElement('a');
     protected raycaster: Raycaster = new Raycaster();
@@ -130,12 +136,11 @@ export default class CVARManager extends Component
     protected lastFrameTime: number = 0;
     protected targetOpacity: number = 0.0;
     protected modelFloorOffset: number = 0.0;
+    protected optimalCameraDistance: number = 0.0;
     protected shadow: Shadow = null;
     protected lightTransform: CTransform = null;
     protected lightsToReset: CVDirectionalLight[] = [];
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
-
-    private _isFirstFrame: boolean = true;
 
     update()
     {
@@ -181,13 +186,16 @@ export default class CVARManager extends Component
         }
 
         const models = this.sceneNode.getGraphComponents(CVModel2);
-        const derivative = models[0] ?  models[0].derivatives.get(EDerivativeUsage.iOSApp3D, EDerivativeQuality.AR) : null;
+        const derivative = models[0] ?  models[0].derivatives.get(EDerivativeUsage.Web3D, EDerivativeQuality.AR) : null;
 
         if(derivative) {
             this.setup.navigation.setChanged(true);  // set changed var to disable autoZoom for bounds changes
 
             this.cachedQuality = models[0].ins.quality.value;  
-            models[0].ins.quality.setValue(EDerivativeQuality.AR);
+
+            models.forEach(model => {
+                model.ins.quality.setValue(EDerivativeQuality.AR);
+            });
 
             renderer.setAnimationLoop( (time, frame) => this.render(time, frame) );
 
@@ -201,17 +209,7 @@ export default class CVARManager extends Component
     }
 
     protected async onSessionStarted( renderer: WebGLRenderer, session: XRSession ) { 
-              
-        this._isFirstFrame = true;
-
-        // Detach view to stop pulse render during XR session.
-        // Can be removed if XR check added to CRenderer
-        const view = this.cachedView = this.renderer.views[0];
-        if(view) {
-            this.renderer.detachView(view);
-        }
-
-        const gl = this.cachedView.renderer.getContext();
+        const gl = this.renderer.views[0].renderer.getContext();
         await gl.makeXRCompatible();
     
         session.updateRenderState(
@@ -222,7 +220,7 @@ export default class CVARManager extends Component
 
         renderer.xr.enabled = true;
         renderer.xr.setReferenceSpaceType( 'local' );
-        renderer.xr.setSession( session ); 
+        renderer.xr.setSession( session as THREE.XRSession ); 
     
         session.addEventListener( 'end', this.onSessionEnded ); 
 
@@ -245,15 +243,17 @@ export default class CVARManager extends Component
             
         this.session = session;
         this.lastFrameTime = performance.now();
+
+        this.setup.reader.ins.enabled.on("value", this.endSession, this);
+    }
+
+    protected endSession() {
+        if(this.session) {
+            this.session.end();
+        }
     }
 
     protected onSessionEnded = () => {
-        // Reattach view
-        // Can be removed if XR check added to CRenderer
-        if(this.cachedView) {
-            this.renderer.attachView(this.cachedView);
-        }
-
         this.outs.isPresenting.setValue(false);
 
         const renderer = this.renderer.views[0].renderer;
@@ -287,6 +287,8 @@ export default class CVARManager extends Component
             this.session = null; 
         }
 
+        this.setup.reader.ins.enabled.off("value", this.endSession, this);
+
         renderer.setAnimationLoop(null);
         renderer.xr.enabled = false;
         this.outs.isPlaced.setValue(false);
@@ -295,7 +297,7 @@ export default class CVARManager extends Component
 
         //this.pulse.start();
      
-        this.renderer.views[0].render(); 
+        this.renderer.views[0].render();
     }
 
     protected setupScene() {
@@ -362,6 +364,13 @@ export default class CVARManager extends Component
 
         // Cache bounding box for placement
         _boundingBox.copy(this.sceneNode.outs.boundingBox.value);
+
+        // Compute optimal camera distance for initial placement
+        /*_boundingBox.getSize(_vector3);
+        _boundingBox.getCenter(_vector3b);
+        const size = Math.max(_vector3.x / this.camera.aspect, _vector3.y);
+        const fovFactor = 1 / (2 * Math.tan(this.camera.fov * (180/Math.PI) * 0.5));
+        this.optimalCameraDistance = (_vector3b.z + size * fovFactor + _vector3.z * 0.75);*/
     }
 
     protected resetScene() {
@@ -373,6 +382,7 @@ export default class CVARManager extends Component
             cameraParent.add(camera);
         }      
         camera.position.set(0, 0, 0);
+        camera.rotation.set(0, 0, 0);
         camera.updateMatrix(); 
 
         // reset lights
@@ -414,7 +424,9 @@ export default class CVARManager extends Component
 
         // Reset quality
         const models = this.sceneNode.getGraphComponents(CVModel2);
-        models[0].ins.quality.setValue(this.cachedQuality);
+        models.forEach(model => {
+            model.ins.quality.setValue(this.cachedQuality);
+        });
         
         // Clean up
         const hitPlane = this.hitPlane;
@@ -446,7 +458,7 @@ export default class CVARManager extends Component
 
     protected render = (timestamp, frame) => {
         this.frame = frame;
-        const renderer = this.renderer.views[0] ? this.renderer.views[0].renderer : this.cachedView.renderer;
+        const renderer = this.renderer.views[0].renderer;
         const {camera, xrCamera} = this;
 
         if(!frame || !frame.getViewerPose(this.refSpace!)) {
@@ -461,24 +473,26 @@ export default class CVARManager extends Component
         }
         else if(xrCamera) {
             camera.position.setFromMatrixPosition(xrCamera.matrixWorld); 
-            xrCamera.projectionMatrixInverse.getInverse(xrCamera.projectionMatrix);
+            xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
 
             camera.projectionMatrix.fromArray(xrCamera.projectionMatrix.elements);
-            camera.projectionMatrixInverse.getInverse(xrCamera.projectionMatrix);
+            camera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
         }
   
         // center model in front of camera while trying for initial placement
         if (this.initialHitTestSource != null && xrCamera) {
             const scene = this.vScene.scene; 
             const {position} = scene; 
-            const radius = this.sceneNode.outs.boundingRadius.value * 1.5; 
+            const radius =  this.sceneNode.outs.boundingRadius.value * 2.0; // Math.abs(this.optimalCameraDistance);
 
             const e = xrCamera.matrixWorld.elements;
 			position.set(-e[ 8 ], -e[ 9 ], -e[ 10 ]).normalize(); 
             position.multiplyScalar(radius);
             position.add(camera.position); 
+            _boundingBox.getCenter(_vector3);
+            position.add(_vector3.negate());
             scene.updateMatrix();
-            scene.updateMatrixWorld(true);
+            scene.updateMatrixWorld();
 
             //this.updateBoundingBox();
         }
@@ -494,8 +508,14 @@ export default class CVARManager extends Component
             this.lastFrameTime = timestamp;
         }
 
+        // TODO: Temporary fix for Chrome depth bug
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=1184085
+        const gl = renderer.getContext();
+        gl.depthMask(false);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.depthMask(true);
         
-        renderer.render( this.vScene.scene, this.camera );  
+        renderer.render( this.vScene.scene, this.camera );
     }
 
     // adapted from model-viewer
@@ -653,7 +673,7 @@ export default class CVARManager extends Component
 
             // undo rotation on lights
             _quat.copy(scene.quaternion);
-            _quat.inverse();
+            _quat.invert();
             this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
             this.lightTransform.object3D.updateMatrix();
 
@@ -706,6 +726,8 @@ export default class CVARManager extends Component
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
         const width = (max.x-min.x)*1.25;
         const height = (max.z-min.z)*1.25;
+        const centerOffsetX = (min.x+max.x)/2.0;
+        const centerOffsetZ = (min.z+max.z)/2.0;
 
         this.lastHitPosition.copy(hit);
 
@@ -714,7 +736,7 @@ export default class CVARManager extends Component
             new PlaneBufferGeometry(width, height),
             new MeshBasicMaterial()   
         );
-        hitPlane.position.set(0, min.y, 0);
+        hitPlane.position.set(centerOffsetX, min.y, centerOffsetZ);
         hitPlane.rotation.set(-Math.PI / 2.0, 0, 0);
         hitPlane.visible = false;
         scene.add(hitPlane);
@@ -728,9 +750,9 @@ export default class CVARManager extends Component
         roundedRectShape.holes.push(cutOut);
         let geometry = new ShapeBufferGeometry(roundedRectShape);
         const selectionRing = this.selectionRing = new Mesh( geometry, new MeshBasicMaterial({ side: DoubleSide, opacity: 0.0 }) );
-        selectionRing.position.set(0, min.y, 0);
+        selectionRing.position.set(centerOffsetX, min.y, centerOffsetZ);
         selectionRing.rotation.set(-Math.PI / 2.0, 0, 0);
-        selectionRing.material.transparent = true;
+        (selectionRing.material as Material).transparent = true;
         selectionRing.visible = false;
         scene.add(selectionRing);
 

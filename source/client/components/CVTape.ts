@@ -96,8 +96,11 @@ export default class CVTape extends CObject3D
         this.endPin.matrixAutoUpdate = false;
         this.endPin.visible = false;
 
-        const lineGeometry = new THREE.Geometry();
-        lineGeometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+        const points = [];
+        points.push(new THREE.Vector3(0, 0, 0));
+        points.push(new THREE.Vector3(0, 0, 0));
+
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
         const lineMaterial = new THREE.LineBasicMaterial();
         lineMaterial.depthTest = false;
         lineMaterial.transparent = true;
@@ -121,7 +124,7 @@ export default class CVTape extends CObject3D
         super.update(context);
 
         const ins = this.ins;
-        const lineGeometry = this.line.geometry as THREE.Geometry;
+        const lineGeometry = this.line.geometry as THREE.BufferGeometry;
 
         // determine pin scale based on scene/model bounding box
         if (ins.boundingBox.changed && ins.boundingBox.value) {
@@ -157,8 +160,11 @@ export default class CVTape extends CObject3D
             startPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
             startPin.updateMatrix();
 
-            lineGeometry.vertices[0].copy(startPin.position);
-            lineGeometry.verticesNeedUpdate = true;
+            const positions = lineGeometry.attributes.position.array as Array<number>;
+            positions[0] = startPin.position.x;
+            positions[1] = startPin.position.y;
+            positions[2] = startPin.position.z;
+            lineGeometry.attributes.position.needsUpdate = true;
         }
 
         // update tape end point
@@ -169,8 +175,11 @@ export default class CVTape extends CObject3D
             endPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
             endPin.updateMatrix();
 
-            lineGeometry.vertices[1].copy(endPin.position);
-            lineGeometry.verticesNeedUpdate = true;
+            const positions = lineGeometry.attributes.position.array as Array<number>;
+            positions[3] = endPin.position.x;
+            positions[4] = endPin.position.y;
+            positions[5] = endPin.position.z;
+            lineGeometry.attributes.position.needsUpdate = true;
         }
 
         // update distance between measured points

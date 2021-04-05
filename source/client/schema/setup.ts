@@ -1,4 +1,4 @@
-import { Dictionary } from "client/../../libs/ff-core/source/types";
+import { Dictionary } from "@ff/core/types";
 import { ELanguageType, TLanguageType } from "./common";
 
 /**

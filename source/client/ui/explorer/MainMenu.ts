@@ -109,7 +109,7 @@ export default class MainMenu extends DocumentView
         // TODO - push to ARManager?
         const models = this.sceneNode.getGraphComponents(CVModel2);
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
-        const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length === 1;
+        const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}

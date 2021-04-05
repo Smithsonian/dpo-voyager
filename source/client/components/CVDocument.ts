@@ -20,6 +20,7 @@ import download from "@ff/browser/download";
 import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
+import { Dictionary } from "@ff/core/types";
 
 import { IDocument } from "client/schema/document";
 import { EDerivativeQuality } from "client/schema/model";
@@ -34,7 +35,7 @@ import CVSetup from "./CVSetup";
 import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
 import { ELanguageType } from "client/schema/common";
-import { Dictionary } from "client/../../libs/ff-core/source/types";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -272,7 +273,7 @@ export default class CVDocument extends CRenderGraph
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
     {
         const meta = event.object;
-        const propTitle = this.outs.title;
+        const propTitle = this.ins.title;
         const language = this.setup.language;
 
         if (event.add && !propTitle.value) {
@@ -282,7 +283,7 @@ export default class CVDocument extends CRenderGraph
                 // TODO: Temporary - remove when single string properties are phased out
                 if(Object.keys(this.titles).length === 0) {
                     this.titles[ELanguageType[language.outs.language.value]] = meta.collection.get("title") || "";
-                   meta.collection.dictionary["titles"] = this.titles;
+                    meta.collection.dictionary["titles"] = this.titles;
                 }
 
                 const title = this.titles[ELanguageType[language.outs.language.value]];

@@ -18,12 +18,6 @@
 import resolvePathname from "resolve-pathname";
 import * as THREE from "three";
 
-/*import "three/examples/js/loaders/GLTFLoader";
-import "three/examples/js/loaders/DRACOLoader";
-
-const GLTFLoader = (THREE as any).GLTFLoader;
-const DRACOLoader = (THREE as any).DRACOLoader;*/
-
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 
@@ -39,17 +33,27 @@ export default class ModelReader
     protected loadingManager: THREE.LoadingManager;
     protected gltfLoader;
 
+    protected customDracoPath = null;
+
+    set dracoPath(path: string) 
+    {
+        this.customDracoPath = path;
+        if(this.gltfLoader.dracoLoader !== null) {
+            this.gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
+        }
+    }
+   
     constructor(loadingManager: THREE.LoadingManager)
     {
         this.loadingManager = loadingManager;
 
         const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
         if (ENV_DEVELOPMENT) {
-            console.log("ModelReader.constructor - DRACO path: %s", dracoPath);
+            console.log("ModelReader.constructor - DRACO path: %s", this.customDracoPath ? this.customDracoPath : dracoPath);
         }
 
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(dracoPath);
+        dracoLoader.setDecoderPath(this.customDracoPath ? this.customDracoPath : dracoPath);
 
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
