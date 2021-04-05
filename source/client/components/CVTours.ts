@@ -19,10 +19,12 @@ import Component, { types } from "@ff/graph/Component";
 import { ITweenState } from "@ff/graph/components/CTweenMachine";
 import { IPulseContext } from "@ff/graph/components/CPulse";
 
-import { ITour, ITours } from "client/schema/setup";
+import { ITour, ITours, ITourStep } from "client/schema/setup";
+import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 import CVAnalytics from "./CVAnalytics";
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +60,9 @@ export default class CVTours extends Component
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }
+    protected get language() {
+        return this.getGraphComponent(CVLanguageManager);
+    }
 
     get snapshots() {
         return this.getComponent(CVSnapshots);
@@ -77,8 +82,78 @@ export default class CVTours extends Component
         return tour ? tour.steps[this.outs.stepIndex.value] : null;
     }
 
+    get title() {
+        const tour = this.activeTour;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(tour.titles).length === 0) {
+            tour.titles[DEFAULT_LANGUAGE] = tour.title;
+        }
+
+        return tour.titles[ELanguageType[this.language.outs.language.value]] || "undefined";
+    }
+    set title(inTitle: string) {
+        const tour = this.activeTour;
+        tour.titles[ELanguageType[this.language.outs.language.value]] = inTitle; 
+    }
+    get lead() {
+        const tour = this.activeTour;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(tour.leads).length === 0) {
+            tour.leads[DEFAULT_LANGUAGE] = tour.lead;
+        }
+
+        return tour.leads[ELanguageType[this.language.outs.language.value]] || "";
+    }
+    set lead(inLead: string) {
+        const tour = this.activeTour;
+        tour.leads[ELanguageType[this.language.outs.language.value]] = inLead;
+    }
+    get taglist() {
+        const tour = this.activeTour;
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(tour.taglist).length === 0) {
+            if(tour.tags.length > 0) {
+                tour.taglist[DEFAULT_LANGUAGE] = tour.tags;
+            }
+        }
+
+        return tour.taglist[ELanguageType[this.language.outs.language.value]] || [];
+    }
+    set taglist(inTags: string[]) {
+        const tour = this.activeTour;
+        tour.taglist[ELanguageType[this.language.outs.language.value]] = inTags;
+    }
+    get stepTitle() {
+        const step = this.activeStep;
+
+        if(step) {
+            // TODO: Temporary - remove when single string properties are phased out
+            if(Object.keys(step.titles).length === 0) {
+                step.titles[DEFAULT_LANGUAGE] = step.title;
+            }
+
+            return step.titles[ELanguageType[this.language.outs.language.value]] || "undefined";
+        }
+        else {
+            return null;
+        }
+    }
+    set stepTitle(inTitle: string) {
+        const step = this.activeStep;
+        if(step) {
+            step.titles[ELanguageType[this.language.outs.language.value]] = inTitle;
+        }
+    }
+
+    create()
+    {
+        super.create();
+        this.language.outs.language.on("value", this.update, this);
+    }
+
     dispose()
     {
+        this.language.outs.language.off("value", this.update, this);
         super.dispose();
     }
 
@@ -126,8 +201,8 @@ export default class CVTours extends Component
             }
 
             outs.tourIndex.setValue(tourIndex);
-            outs.tourTitle.setValue(tour ? tour.title : "");
-            outs.tourLead.setValue(tour ? tour.lead : "");
+            outs.tourTitle.setValue(tour ? this.title : "");
+            outs.tourLead.setValue(tour ? this.lead : "");
         }
 
         if (stepCount === 0) {
@@ -155,6 +230,7 @@ export default class CVTours extends Component
                 outs.tourIndex.setValue(-1);
                 outs.tourTitle.setValue("");
                 outs.tourLead.setValue("");
+                outs.stepIndex.set();
                 nextStepIndex = -1;
             }
         }
@@ -167,7 +243,7 @@ export default class CVTours extends Component
             // tween to the next step
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
-            outs.stepTitle.setValue(step.title);
+            outs.stepTitle.setValue(this.stepTitle || "undefined");
             machine.ins.id.setValue(step.id);
             tween ? machine.ins.tween.set() : machine.ins.recall.set();
         }
@@ -179,10 +255,31 @@ export default class CVTours extends Component
     {
         this._tours = data.map(tour => ({
             title: tour.title,
-            steps: tour.steps,
+            titles: tour.titles || {},
+            steps: tour.steps.map(step => ({
+                title: step.title,
+                titles: step.titles || {},
+                id: step.id,
+            })),
             lead: tour.lead || "",
+            leads: tour.leads || {},
             tags: tour.tags || [],
+            taglist: tour.taglist || {}
         }));
+
+        // update langauges used in tours
+        this._tours.forEach( tour => {
+            Object.keys(tour.titles).forEach( key => {
+                this.language.addLanguage(ELanguageType[key]);
+            });
+
+            // TODO: Delete when single string properties are phased out
+            tour.steps.forEach( step => {
+                if(Object.keys(step.titles).length == 0) {
+                    step.titles[DEFAULT_LANGUAGE] = step.title || null;
+                }
+            });
+        });
 
         this.ins.tourIndex.setValue(-1);
         this.outs.count.setValue(this._tours.length);
@@ -196,14 +293,36 @@ export default class CVTours extends Component
 
         return  this._tours.map(tour => {
             const data: Partial<ITour> = {
-                title: tour.title,
-                steps: tour.steps,
+                steps: tour.steps.map(step => {
+                    const tourstep: Partial<ITourStep> = {};
+                    tourstep.id = step.id;
+                    if (Object.keys(step.titles).length > 0) {
+                        tourstep.titles = step.titles;
+                    }
+                    else if (step.title) {
+                        tourstep.title = step.title;
+                    }
+
+                    return tourstep as ITourStep;
+                }),
             };
 
-            if (tour.lead) {
+            if (Object.keys(tour.titles).length > 0) {
+                data.titles = tour.titles;
+            }
+            else if (tour.title) {
+                data.title = tour.title;
+            }
+            if (Object.keys(tour.leads).length > 0) {
+                data.leads = tour.leads;
+            }
+            else if (tour.lead) {
                 data.lead = tour.lead;
             }
-            if (tour.tags.length > 0) {
+            if (Object.keys(tour.taglist).length > 0) {
+                data.taglist = tour.taglist;
+            }
+            else if (tour.tags.length > 0) {
                 data.tags = tour.tags;
             }
 

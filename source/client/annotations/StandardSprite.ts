@@ -44,8 +44,11 @@ export default class StandardSprite extends AnnotationSprite
     {
         super(annotation);
 
-        const geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+        const points = [];
+        points.push(new THREE.Vector3(0, 0, 0));
+        points.push(new THREE.Vector3(0, 1, 0));
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({ color: "#009cde", transparent: true });
 
         this.stemLine = new THREE.Line(geometry, material);
@@ -65,7 +68,7 @@ export default class StandardSprite extends AnnotationSprite
         this.stemLine.updateMatrix();
 
         const material = this.stemLine.material as THREE.LineBasicMaterial;
-        material.color.fromArray(annotation.color);
+        (material.color as THREE.Color).fromArray(annotation.color);
 
         super.update();
     }
@@ -139,7 +142,7 @@ class StandardAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation.data;
 
-        this.titleElement.innerText = annotation.title;
+        this.titleElement.innerText = this.sprite.annotation.title;
 
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();

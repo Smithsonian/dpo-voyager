@@ -20,6 +20,7 @@ import download from "@ff/browser/download";
 import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 
 import CRenderGraph from "@ff/scene/components/CRenderGraph";
+import { Dictionary } from "@ff/core/types";
 
 import { IDocument } from "client/schema/document";
 import { EDerivativeQuality } from "client/schema/model";
@@ -33,6 +34,8 @@ import CVMeta from "./CVMeta";
 import CVSetup from "./CVSetup";
 import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
+import { ELanguageType } from "client/schema/common";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,10 +55,13 @@ export default class CVDocument extends CRenderGraph
 
     protected static readonly validator = new DocumentValidator();
 
+    protected titles: Dictionary<string> = {};
+
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
         dumpTree: types.Event("Document.DumpTree"),
         download: types.Event("Document.Download"),
+        title: types.String("Document.Title"),
     };
 
     protected static readonly outs = {
@@ -104,10 +110,12 @@ export default class CVDocument extends CRenderGraph
     {
         super.create();
         this.innerGraph.components.on(CVMeta, this.onMetaComponent, this);
+        this.setup.language.outs.language.on("value", this.updateTitle, this);
     }
 
     dispose()
     {
+        this.setup.language.outs.language.off("value", this.updateTitle, this);
         this.innerGraph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
@@ -132,6 +140,12 @@ export default class CVDocument extends CRenderGraph
         if (ins.download.changed) {
             const fileName = outs.assetPath.value.split("/").pop() || "voyager-document.json";
             download.json(this.deflateDocument(), fileName);
+        }
+
+        if(ins.title.changed && this.titles) {
+            const language = this.setup.language;
+            this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;
+            outs.title.setValue(ins.title.value);
         }
 
         return true;
@@ -259,14 +273,30 @@ export default class CVDocument extends CRenderGraph
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
     {
         const meta = event.object;
-        const propTitle = this.outs.title;
+        const propTitle = this.ins.title;
+        const language = this.setup.language;
 
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
-                const title = meta.collection.get("title") || "";
+                this.titles = meta.collection.get("titles") || {};
+
+                // TODO: Temporary - remove when single string properties are phased out
+                if(Object.keys(this.titles).length === 0) {
+                    this.titles[ELanguageType[language.outs.language.value]] = meta.collection.get("title") || "";
+                    meta.collection.dictionary["titles"] = this.titles;
+                }
+
+                const title = this.titles[ELanguageType[language.outs.language.value]];
                 propTitle.setValue(title);
                 this.analytics.setTitle(title);
             });
         }
+    }
+
+    protected updateTitle() {
+        const language = this.setup.language;
+
+        const newTitle = this.titles[ELanguageType[language.outs.language.value]];
+        this.ins.title.setValue(newTitle ? newTitle : "Missing Title");
     }
 }

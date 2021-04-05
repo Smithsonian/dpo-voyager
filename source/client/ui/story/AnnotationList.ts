@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-import { customElement, property } from "@ff/ui/CustomElement";
+import { customElement, property, html } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
 import Annotation from "../../models/Annotation";
+import { DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +45,7 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return item.data.title;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[DEFAULT_LANGUAGE]}</div><div class="sv-task-item sv-item-border-l">${item.title}</div></div>`;
     }
 
     protected isItemSelected(item: Annotation)

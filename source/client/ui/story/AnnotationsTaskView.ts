@@ -28,10 +28,10 @@ import "@ff/ui/Splitter";
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
-import Annotation from "../../models/Annotation";
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
+import { ELanguageStringType, ELanguageType, TLanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,10 +42,12 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         super.connected();
         this.task.on("update", this.onUpdate, this);
+        this.task.ins.language.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.task.ins.language.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
         super.disconnected();
     }
@@ -75,13 +77,16 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
             <sv-property-view .property=${inProps.color}></sv-property-view>
-            <sv-property-view .property=${inProps.article}></sv-property-view>
             <sv-property-view .property=${inProps.image}></sv-property-view>
-            <sv-property-view .property=${inProps.tags}></sv-property-view>
             <sv-property-view .property=${inProps.marker}></sv-property-view>
-            <sv-property-view .property=${inProps.title}></sv-property-view>
-            <div class="sv-label">Lead</div>
-            <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+            <sv-property-view .property=${this.task.ins.language}></sv-property-view>
+            <div class="sv-indent">
+                <sv-property-view .property=${inProps.article}></sv-property-view>
+                <sv-property-view .property=${inProps.tags}></sv-property-view>
+                <sv-property-view .property=${inProps.title}></sv-property-view>
+                <div class="sv-label">Lead</div>
+                <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+            </div>
         </div>` : null;
 
         return html`<div class="sv-commands">
@@ -92,6 +97,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[this.task.ins.language.value] as TLanguageType]}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>

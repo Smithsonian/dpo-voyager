@@ -21,7 +21,7 @@ import { ITypedEvent } from "@ff/core/Publisher";
 import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
-import { Object3D, Camera, ArrayCamera } from "three";
+import { Object3D, Camera, ArrayCamera, PerspectiveCamera } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -119,14 +119,17 @@ export default class AnnotationSprite extends HTMLSprite
             matrixCamera = camera;
         }
 
+        const e = matrixCamera.matrixWorld.elements;
+
         anchor.updateMatrixWorld();
         _vec3a.setFromMatrixPosition(anchor.matrixWorld); 
         _vec3b.setFromMatrixPosition(matrixCamera.matrixWorld);
+        
+        _vec3dir.set(-e[8], -e[9], -e[10]).normalize();
+        _vec3b.addScaledVector(_vec3dir, (matrixCamera as PerspectiveCamera).near); // add clip plane offset
         _vec3b.sub(_vec3a);
-        const e = matrixCamera.matrixWorld.elements;
-        _vec3a.set(-e[8], -e[9], -e[10]).normalize();
 
-        return _vec3b.angleTo(_vec3a) <= Math.PI / 2;
+        return _vec3b.angleTo(_vec3dir) <= Math.PI / 2;
     }
 }
 
@@ -145,8 +148,8 @@ export class AnnotationElement extends SpriteElement
         this.discardEvent = this.discardEvent.bind(this);
 
         this.addEventListener("pointerdown", this.discardEvent);
-        this.addEventListener("pointermove", this.discardEvent);
-        this.addEventListener("pointerup", this.discardEvent);
+        //this.addEventListener("pointermove", this.discardEvent);
+        //this.addEventListener("pointerup", this.discardEvent);
         this.addEventListener("pointercancel", this.discardEvent);
         this.addEventListener("click", this.discardEvent);
     }

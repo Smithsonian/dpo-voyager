@@ -61,6 +61,11 @@ export default class CVAssetReader extends Component
         return this.getMainComponent(CVAssetManager);
     }
 
+    setDracoPath(dracoPath: string)
+    {
+        this.modelLoader.dracoPath = dracoPath;
+    }
+
     async getJSON(assetPath: string): Promise<any>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
@@ -79,7 +84,7 @@ export default class CVAssetReader extends Component
         return this.modelLoader.get(url);
     }
 
-    async getGeometry(assetPath: string): Promise<THREE.Geometry>
+    async getGeometry(assetPath: string): Promise<THREE.BufferGeometry>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.geometryLoader.get(url);
@@ -101,5 +106,11 @@ export default class CVAssetReader extends Component
     {
         const url = new URL(assetPath, window.location.href).href;
         return this.textureLoader.get(url);
+    }
+
+    async getSystemJSON(assetPath: string): Promise<any>
+    {
+        const url = new URL(assetPath, window.location.href).href;
+        return this.jsonLoader.get(url);
     }
 }

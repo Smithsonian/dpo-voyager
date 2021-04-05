@@ -20,6 +20,10 @@ declare type Constructor<T = object> = {
   
   declare type XRReferenceSpaceType =
       'local' | 'local-floor' | 'bounded-floor' | 'unbounded' | 'viewer';
+
+  declare type XREnvironmentBlendMode = 'opaque' | 'additive' | 'alpha-blend';
+
+  declare type XRVisibilityState = 'visible' | 'visible-blurred' | 'hidden';
   
   declare type XRSessionMode = 'inline' | 'immersive-ar' | 'immersive-vr';
   
@@ -33,6 +37,10 @@ declare type Constructor<T = object> = {
   
   declare interface XRTransientInputHitTestSource {
     cancel(): void;
+  }
+
+  declare interface XRHitResult {
+    hitMatrix: Float32Array;
   }
   
   declare interface XRHitTestResult {
@@ -60,6 +68,7 @@ declare type Constructor<T = object> = {
   
   declare interface XRReferenceSpace extends XRSpace {
     getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: any;
   }
   
   type XREye = 'left'|'right';
@@ -150,17 +159,25 @@ declare type Constructor<T = object> = {
   }
   
   declare interface XRSession extends EventTarget {
-    renderState: XRRenderState;
-    updateRenderState(state?: XRRenderStateInit): any;
-    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
-    requestHitTestSourceForTransientInput(options:
-                                              XRTransientInputHitTestOptionsInit):
-        Promise<XRTransientInputHitTestSource>;
-    inputSources: Array<XRInputSource>;
-    requestAnimationFrame(callback: XRFrameRequestCallback): number;
-    cancelAnimationFrame(id: number): void;
+    requestReferenceSpace( type: XRReferenceSpaceType ): Promise<XRReferenceSpace>;
+    updateRenderState( renderStateInit: XRRenderStateInit ): Promise<void>;
+    requestAnimationFrame( callback: XRFrameRequestCallback ): number;
+    cancelAnimationFrame( id: number ): void;
     end(): Promise<void>;
+    renderState: XRRenderState;
+    inputSources: Array<XRInputSource>;
+    environmentBlendMode: XREnvironmentBlendMode;
+    visibilityState: XRVisibilityState;
+
+    // hit test
+    requestHitTestSource( options: XRHitTestOptionsInit ): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput( options: XRTransientInputHitTestOptionsInit ): Promise<XRTransientInputHitTestSource>;
+
+    // legacy AR hit test
+    requestHitTest( ray: XRRay, referenceSpace: XRReferenceSpace ): Promise<XRHitResult[]>;
+
+    // legacy plane detection
+    updateWorldTrackingState( options: { planeDetectionState?: { enabled: boolean } } ): void;
   }
   
   declare interface XRViewport {

@@ -23,6 +23,8 @@ import { IDocument, INode, IScene } from "client/schema/document";
 import { IMeta, IImage, INote } from "client/schema/meta";
 
 import Article from "../models/Article";
+import { ELanguageType } from "client/schema/common";
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +43,10 @@ export default class CVMeta extends Component
     articles = new OrderedCollection<Article>();
     leadArticle: Article = null;
     notes: INote[] = [];
+
+    protected get language() {
+        return this.getGraphComponent(CVLanguageManager, true);
+    }
 
     fromDocument(document: IDocument, node: INode | IScene): number
     {
@@ -66,6 +72,12 @@ export default class CVMeta extends Component
             if (data.leadArticle !== undefined) {
                 this.leadArticle = this.articles.getAt(data.leadArticle);
             }
+
+            this.articles.items.forEach( article => {
+                Object.keys(article.data.titles).forEach( key => {
+                   this.language.addLanguage(ELanguageType[key]);
+                });
+            });
         }
 
         this.emit("load");

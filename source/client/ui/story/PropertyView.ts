@@ -35,6 +35,9 @@ export default class PropertyView extends CustomElement
     label: string = undefined;
 
     @property({ type: Boolean })
+    showLabel = true;
+
+    @property({ type: Boolean })
     commitonly = false;
 
     protected firstConnected()
@@ -50,7 +53,8 @@ export default class PropertyView extends CustomElement
     {
         const property = this.property;
         const label = this.label !== undefined ? this.label : property.path.split(".").pop();
-        const headerElement = html`<div class="sv-property-name">${label}</div>`;
+        const showLabel = this.showLabel;
+        const headerElement = showLabel ? html`<div class="sv-property-name">${label}</div>` : null;
 
         if (property.isArray()) {
             if (property.elementCount > 4) {

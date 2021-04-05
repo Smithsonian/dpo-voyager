@@ -44,8 +44,11 @@ export default class ExtendedSprite extends AnnotationSprite
     {
         super(annotation);
 
-        const geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+        const points = [];
+        points.push(new THREE.Vector3(0, 0, 0));
+        points.push(new THREE.Vector3(0, 1, 0));
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({ color: "#009cde", transparent: true });
 
         this.stemLine = new THREE.Line(geometry, material);
@@ -65,7 +68,7 @@ export default class ExtendedSprite extends AnnotationSprite
         this.stemLine.updateMatrix();
 
         const material = this.stemLine.material as THREE.LineBasicMaterial;
-        material.color.fromArray(annotation.color);
+        (material.color as THREE.Color).fromArray(annotation.color);
 
         super.update();
     }
@@ -151,10 +154,10 @@ class ExtendedAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation.data;
 
         // update title
-        this.titleElement.innerText = annotation.title;
+        this.titleElement.innerText = this.sprite.annotation.title;
 
         // update content
-        const contentTemplate = html`<p>${annotation.lead}</p>
+        const contentTemplate = html`<p>${this.sprite.annotation.lead}</p>
             ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
 
         render(contentTemplate, this.contentElement);
@@ -162,6 +165,11 @@ class ExtendedAnnotation extends AnnotationElement
         // update color
         _color.fromArray(annotation.color);
         this.style.borderColor = _color.toString();
+
+        // update expanded height in case annotation changed
+        if (this.isExpanded) {
+            this.contentElement.style.height = "auto";
+        }
 
         // update expanded/collapsed
         if (this.isExpanded !== annotation.expanded) {

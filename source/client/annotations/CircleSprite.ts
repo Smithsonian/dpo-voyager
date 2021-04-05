@@ -18,6 +18,7 @@
 import * as THREE from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
+import {WEBGL} from "three/examples/jsm/WebGL.js";
 
 import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
@@ -64,6 +65,8 @@ export default class CircleSprite extends AnnotationSprite
 
     // Temporary until annotation scale implementation is resolved
     xrScale: number = 1.0;
+
+    isWebGL2: boolean = false;
 
     constructor(annotation: Annotation)
     {
@@ -122,6 +125,7 @@ export default class CircleSprite extends AnnotationSprite
                 map: font.texture,
                 transparent: true,
                 color: 0xffffff,
+                isWebGL2: this.isWebGL2
             }));
 
             this.markerMaterialB = new THREE.RawShaderMaterial(createTextShader({
@@ -130,7 +134,8 @@ export default class CircleSprite extends AnnotationSprite
                 opacity: CircleSprite.behindOpacity,
                 color: 0xffffff,
                 depthFunc: THREE.GreaterDepth,
-                depthWrite: false
+                depthWrite: false,
+                isWebGL2: this.isWebGL2
             }));
 
             this.markerGeometry = createTextGeometry({ font: font.descriptor });
@@ -187,6 +192,7 @@ export default class CircleSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
         let matrixCamera : PerspectiveCamera = null;
+        const isShowing = this.annotation.data.visible;
 
         if(camera instanceof ArrayCamera) {
             matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
@@ -201,7 +207,7 @@ export default class CircleSprite extends AnnotationSprite
         }
         _mat4.multiply(this.matrixWorld);
         _mat4.decompose(_vec3a, _quat1, _vec3b);
-        this.offset.quaternion.copy(_quat1.inverse());
+        this.offset.quaternion.copy(_quat1.invert());
 
         // get inverse world scale relative to user scale
         this.offset.parent.matrixWorld.decompose(_vec3a, _quat1, _vec3b);
@@ -227,7 +233,7 @@ export default class CircleSprite extends AnnotationSprite
         this.offset.updateMatrix();
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.offset, camera); 
+        this.visible = !this.isBehindCamera(this.offset, camera) && isShowing; 
         if(!this.visible) {
             element.setVisible(this.visible);
         }
@@ -307,11 +313,12 @@ class CircleAnnotation extends AnnotationElement
 
     protected render()
     {
-        const annotation = this.sprite.annotation.data;
+        const annotation = this.sprite.annotation;
+        const annotationData = annotation.data;
 
         return html`<div class="sv-title">${annotation.title}</div>
-            <p>${annotation.lead}</p>
-            ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+            <div class="sv-content"><p>${annotation.lead}</p></div>
+            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
     }
 
     protected onClickArticle(event: MouseEvent)

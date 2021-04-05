@@ -27,10 +27,12 @@ import "./MainMenu";
 import "./ToolBar";
 import "./TourNavigator";
 import "./TourMenu";
+import "./LanguageMenu";
 import "./TagCloud";
 import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import LanguageMenu from "./LanguageMenu";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,10 +57,12 @@ export default class ChromeView extends DocumentView
     {
         super.connected();
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         super.disconnected();
     }
@@ -83,6 +87,11 @@ export default class ChromeView extends DocumentView
         const toursEnabled = setup.tours.ins.enabled.value;
         const tourActive = setup.tours.outs.tourIndex.value >= 0;
 
+        const language = setup.language;
+        const languages = language.activeLanguages;
+        const activeLanguage = language.outs.language.value;
+        const languagesVisible = languages.length > 1;
+
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
 
@@ -98,10 +107,10 @@ export default class ChromeView extends DocumentView
 
         if (toursEnabled) {
             if (!tourActive) {
-                title = "Interactive Tours";
+                title = language.getLocalizedString("Interactive Tours");
             }
             else {
-                title = "Tour: " + setup.tours.outs.tourTitle.value;
+                title = language.getLocalizedString("Tour") + ": " + setup.tours.outs.tourTitle.value;
             }
         }
         else {
@@ -118,15 +127,32 @@ export default class ChromeView extends DocumentView
             </div>
             <div class="ff-flex-spacer"></div>
             ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
-            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
+            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${tagCloudVisible && toolBarAllowed ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
-            ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}`;
+            ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
+            <div class="sv-chrome-footer">
+                <div class="sv-bottom-bar">
+                    ${languagesVisible ? html`<div id="language" class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}>${setup.language.toString()}</div>` : null}
+                </div>
+            </div>`;
     }
 
     protected onSelectTour(event: ITourMenuSelectEvent)
     {
         const tours = this.activeDocument.setup.tours;
         tours.ins.tourIndex.setValue(event.detail.index);
+    }
+
+    protected openLanguageMenu() {
+        const language = this.activeDocument.setup.language;
+
+        if (!language.ins.enabled.value) {
+            language.ins.enabled.setValue(true);
+
+            LanguageMenu.show(this, this.activeDocument.setup.language).then(() => {
+                language.ins.enabled.setValue(false);
+            });
+        }
     }
 
     protected closeTools()

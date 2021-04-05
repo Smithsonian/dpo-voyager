@@ -26,6 +26,7 @@ import CVTours from "../../components/CVTours";
 import CVToursTask from "../../components/CVToursTask";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -121,7 +122,7 @@ export default class TourPanel extends DocumentView
         this.stateTable.rows = tours.activeSteps.map(step => {
             const state = machine.getState(step.id);
             return {
-                title: step.title,
+                title: step.titles[ELanguageType[this.toursTask.ins.language.value]] || "undefined",
                 curve: EEasingCurve[state.curve],
                 duration: state.duration.toFixed(1) + "s",
                 threshold: (state.threshold * 100).toFixed(0) + "%",

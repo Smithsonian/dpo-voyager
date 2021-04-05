@@ -44,8 +44,8 @@ export default class ReaderMenu extends CustomElement
     protected renderEntry(entry: IArticleEntry)
     {
         return html`<div class="sv-entry" @click=${e => this.onClick(e, entry.article.id)}>
-            <h1>${entry.article.data.title}</h1>
-            <p>${entry.article.data.lead}</p>
+            <h1>${entry.article.title}</h1>
+            <p>${entry.article.lead}</p>
         </div>`;
     }
 

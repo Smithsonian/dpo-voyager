@@ -21,6 +21,7 @@ import CVDocument from "../../components/CVDocument";
 import CVTours from "../../components/CVTours";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import CVLanguageManager from "client/components/CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,6 +29,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 export default class TourNavigator extends DocumentView
 {
     protected tours: CVTours;
+    protected language: CVLanguageManager;
 
     protected firstConnected()
     {
@@ -40,6 +42,7 @@ export default class TourNavigator extends DocumentView
     protected render()
     {
         const tours = this.tours;
+        const language = this.language;
         const activeTour = tours.activeTour;
 
         let title, info;
@@ -47,23 +50,23 @@ export default class TourNavigator extends DocumentView
         if (tours && activeTour) {
             const stepNumber = tours.outs.stepIndex.value + 1;
             const stepCount = tours.outs.stepCount.value;
-            title = stepCount > 0 ? tours.outs.stepTitle.value : tours.outs.tourTitle.value;
-            info = stepCount > 0 ? `Step ${stepNumber} of ${stepCount}` : "No tour steps defined";
+            title = stepCount > 0 ? tours.stepTitle : tours.title;
+            info = stepCount > 0 ? `${language.getLocalizedString("Step")} ${stepNumber} ${language.getLocalizedString("of")} ${stepCount}` : language.getLocalizedString("No tour steps defined");
         }
         else {
-            title = "No tour selected";
+            title = language.getLocalizedString("No tour selected");
             info = "---";
         }
 
         return html`<div class="sv-blue-bar"><div class="sv-section">
-            <ff-button class="sv-section-lead" transparent icon="close" title="Exit Tour" ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
+            <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
             <div class="ff-ellipsis sv-content">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
-            <ff-button class="sv-section-trail" transparent icon="bars" title="Show Tour Menu" @click=${this.onClickMenu}></ff-button>
-            <ff-button class="sv-section-trail" transparent icon="triangle-left" title="Go Backward" ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
-            <ff-button class="sv-section-trail" transparent icon="triangle-right" title="Go Forward" ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="bars" title=${language.getLocalizedString("Show Tour Menu")} @click=${this.onClickMenu}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-left" title=${language.getLocalizedString("Go Backward")} ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
+            <ff-button class="sv-section-trail" transparent icon="triangle-right" title=${language.getLocalizedString("Go Forward")} ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
         </div></div>`;
     }
 
@@ -96,11 +99,14 @@ export default class TourNavigator extends DocumentView
         if (previous) {
             this.tours.outs.tourIndex.off("value", this.onUpdate, this);
             this.tours.outs.stepIndex.off("value", this.onUpdate, this);
+            this.language.outs.language.off("value", this.onUpdate, this);
         }
         if (next) {
             this.tours = next.setup.tours;
+            this.language = next.setup.language;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
+            this.language.outs.language.on("value", this.onUpdate, this);
         }
 
         this.requestUpdate();

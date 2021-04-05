@@ -338,6 +338,7 @@ export default class CVModel2 extends CObject3D
 
             this._boxFrame = new (THREE.Box3Helper as any)(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
+            this._boxFrame.updateMatrixWorld(true);
 
             outs.updated.set();
         }

@@ -37,9 +37,6 @@ export { EProjection };
 
 export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
 
-
-const _vec3 = new THREE.Vector3();
-
 const _orientationPresets = [];
 _orientationPresets[EViewPreset.Left] = [ 0, -90, 0 ];
 _orientationPresets[EViewPreset.Right] = [ 0, 90, 0 ];
@@ -122,6 +119,9 @@ export default class CVOrbitNavigation extends CObject3D
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get sceneNode() {
+        return this.getSystemComponent(CVScene);
+    }
 
     create()
     {
@@ -131,10 +131,12 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
 
         this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
+        this.sceneNode.outs.boundingBox.on("value", this.onBoundsUpdate, this);
     }
 
     dispose()
     {
+        this.sceneNode.outs.boundingBox.off("value", this.onBoundsUpdate, this);
         this.assetManager.outs.completed.off("value", this.onLoadingCompleted, this);
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
@@ -358,6 +360,13 @@ export default class CVOrbitNavigation extends CObject3D
     protected onLoadingCompleted(isLoading: boolean)
     {
         if (this.ins.autoZoom.value && !this._hasChanged) {
+            this.ins.zoomExtents.set();
+        }
+    }
+
+    protected onBoundsUpdate()
+    {
+        if (this.ins.autoZoom.value) {
             this.ins.zoomExtents.set();
         }
     }
