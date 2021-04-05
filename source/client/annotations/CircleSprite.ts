@@ -28,6 +28,7 @@ import FontReader from "client/io/FontReader";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
+import { Camera, ArrayCamera, PerspectiveCamera } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +43,8 @@ const _mat4 = new THREE.Matrix4();
 export default class CircleSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Circle";
+
+    private _isExpanded = false;
 
     protected static readonly behindOpacity = 0.2;
 
@@ -59,10 +62,14 @@ export default class CircleSprite extends AnnotationSprite
     protected markerA: THREE.Mesh;
     protected markerB: THREE.Mesh;
 
+    // Temporary until annotation scale implementation is resolved
+    xrScale: number = 1.0;
 
     constructor(annotation: Annotation)
     {
         super(annotation);
+
+        this._isExpanded = annotation.data.expanded;
 
         this.offset = new THREE.Group();
         this.offset.matrixAutoUpdate = false;
@@ -179,16 +186,30 @@ export default class CircleSprite extends AnnotationSprite
     renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
     {
         const annotation = this.annotation.data;
+        let matrixCamera : PerspectiveCamera = null;
+
+        if(camera instanceof ArrayCamera) {
+            matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
+        }
 
         // billboard rotation
-        _mat4.copy(camera.matrixWorldInverse);
+        if(matrixCamera) {
+            _mat4.copy(matrixCamera.matrixWorldInverse);
+        }
+        else {
+            _mat4.copy(camera.matrixWorldInverse);
+        }
         _mat4.multiply(this.matrixWorld);
         _mat4.decompose(_vec3a, _quat1, _vec3b);
         this.offset.quaternion.copy(_quat1.inverse());
 
+        // get inverse world scale relative to user scale
+        this.offset.parent.matrixWorld.decompose(_vec3a, _quat1, _vec3b);
+        const invWorldScale = 1.0/_vec3b.x * (1.0/annotation.scale) * this.xrScale;
+
         // scale annotation with respect to camera distance
         const vpHeight = container.offsetHeight + 250;
-        const vpScale = annotation.scale * 55 / vpHeight;
+        const vpScale = annotation.scale * 55 / vpHeight * invWorldScale;
         let scaleFactor = 1;
 
         if (camera.isPerspectiveCamera) {
@@ -204,6 +225,12 @@ export default class CircleSprite extends AnnotationSprite
         this.offset.position.set(0, (annotation.offset + 1) * scaleFactor * 0.5, 0);
 
         this.offset.updateMatrix();
+
+        // don't show if behind the camera
+        this.visible = !this.isBehindCamera(this.offset, camera); 
+        if(!this.visible) {
+            element.setVisible(this.visible);
+        }
 
         if (annotation.expanded) {
             // calculate screen position of HTML sprite element
@@ -229,6 +256,11 @@ export default class CircleSprite extends AnnotationSprite
 
             element.setPosition(x, y);
         }
+
+        if(this._isExpanded !== annotation.expanded) {
+            element.style.visibility = "";
+            this._isExpanded = annotation.expanded
+        }
     }
 
     protected createHTMLElement()
@@ -239,6 +271,12 @@ export default class CircleSprite extends AnnotationSprite
     protected updateHTMLElement(element: AnnotationElement)
     {
         element.setVisible(this.visible);
+
+        // Stops annotation box from occasionally showing before it has been positioned
+        if(this.annotation.data.expanded && this._isExpanded !== this.annotation.data.expanded) {
+            element.style.visibility = "hidden";
+        }
+        
         element.requestUpdate();
     }
 }

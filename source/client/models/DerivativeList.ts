@@ -28,6 +28,7 @@ const _EMPTY_ARRAY = [];
 
 const _qualityLevels = [
     EDerivativeQuality.Thumb,
+    EDerivativeQuality.AR,
     EDerivativeQuality.Low,
     EDerivativeQuality.Medium,
     EDerivativeQuality.High,
@@ -96,6 +97,13 @@ export default class DerivativeList
             if (a.data.quality > b.data.quality) return 1;
             return 0;
         });
+    }
+
+    getByQuality(quality: EDerivativeQuality): Derivative[]
+    {
+        const derivatives = this.getArray();
+
+        return derivatives.filter(a => a.data.quality === quality);
     }
 
     getArray(): Derivative[]

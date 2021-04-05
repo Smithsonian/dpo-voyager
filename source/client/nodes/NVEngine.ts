@@ -25,6 +25,7 @@ import CFullscreen from "@ff/scene/components/CFullscreen";
 import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
 import CVAnalytics from "../components/CVAnalytics";
+import CVARManager from "../components/CVARManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +54,9 @@ export default class NVEngine extends Node
     get analytics() {
         return this.components.get(CVAnalytics);
     }
+    get arManager() {
+        return this.components.get(CVARManager);
+    }
 
     createComponents()
     {
@@ -62,6 +66,7 @@ export default class NVEngine extends Node
         this.createComponent(CVAssetManager);
         this.createComponent(CVAssetReader);
         this.createComponent(CVAnalytics);
+        this.createComponent(CVARManager);
 
         const selection = this.createComponent(CPickSelection);
 

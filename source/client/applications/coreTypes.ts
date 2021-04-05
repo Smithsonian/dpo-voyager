@@ -66,6 +66,7 @@ import CVSlicer from "../components/CVSlicer";
 import CVTours from "../components/CVTours";
 import CVSnapshots from "../components/CVSnapshots";
 import CVEnvironment from "../components/CVEnvironment";
+import CVARManager from "../components/CVARManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -90,6 +91,7 @@ const types = [
     Node,
 
     CVAnalytics,
+    CVARManager,
     CVAssetManager,
     CVAssetReader,
     CVDocument,

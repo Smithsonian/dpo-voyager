@@ -24,17 +24,20 @@ export { EUnitType, TUnitType };
 
 export type TNormalSpaceType = "Tangent" | "Object";
 
-export enum EDerivativeUsage { Image2D, Web3D, Print3D, Editorial3D }
-export type TDerivativeUsage = "Image2D" | "Web3D" | "Print3D" | "Editorial3D";
+export enum EDerivativeUsage { Image2D, Web3D, App3D, iOSApp3D, Print3D, Editorial3D }
+export type TDerivativeUsage = "Image2D" | "Web3D" | "App3D" | "iOSApp3D" | "Print3D" | "Editorial3D";
 
-export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream }
-export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream";
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream, AR }
+export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream" |"AR";
 
 export enum EAssetType { Model, Geometry, Image, Texture, Points, Volume }
 export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";
 
 export enum EMapType { Color, Emissive, Occlusion, Normal, MetallicRoughness, Zone }
 export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "MetallicRoughness" | "Zone";
+
+export enum ESideType { Front, Back, Double }
+export type TSideType = "Front" | "Back" | "Double";
 
 
 export interface IModel
@@ -45,6 +48,7 @@ export interface IModel
 
     visible?: boolean;
     renderOrder?: number;
+    shadowSide?: TSideType;
     translation?: Vector3;
     rotation?: Vector4;
     boundingBox?: IBoundingBox;

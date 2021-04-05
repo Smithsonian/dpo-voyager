@@ -42,6 +42,7 @@ import NVTools from "../nodes/NVTools";
 
 import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
+import CVARManager from "client/components/CVARManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -144,6 +145,38 @@ Version: ${ENV_VERSION}
             this.documentProvider.createDocument(documentTemplate as any);
             this.evaluateProps();
         }
+
+        //*** Support message passing over channel 2 ***//	
+        /*{	
+            // Add listener for the intial port transfer message	
+            var port2;	
+            window.addEventListener('message', initPort);	
+
+            // Setup port for message passing	
+            function initPort(e) {	
+                port2 = e.ports[0];	
+                if(port2) {	
+                    port2.onmessage = onMessage;	
+                }	
+            }	
+
+            // Handle messages received on port2	
+            function onMessage(e) {	
+                if (ENV_DEVELOPMENT) {	
+                    console.log('Message received by VoyagerExplorer: "' + e.data + '"');	
+                }	
+
+                const analytics = system.getMainComponent(CVAnalytics);	
+
+                if (e.data === "enableAR") {
+                    const ARIns = system.getMainComponent(CVARManager).ins;
+
+                    ARIns.enabled.setValue(true);
+                    analytics.sendProperty("AR.enabled", true);
+                }
+
+            }	
+        }*/
 
         // start rendering
         engine.pulse.start();
@@ -298,6 +331,14 @@ Version: ${ENV_VERSION}
 
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+    }
+    
+    enableAR()
+    {
+        const ARIns = this.system.getMainComponent(CVARManager).ins;
+
+        ARIns.enabled.setValue(true);
+        this.analytics.sendProperty("AR.enabled", true);
     }
 }
 
