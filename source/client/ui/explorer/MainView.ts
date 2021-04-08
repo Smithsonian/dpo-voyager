@@ -163,4 +163,41 @@ export default class MainView extends CustomElement
             this.application.enableAR();
         }
     }
+
+    getArticles()
+    {
+        if(this.application) {
+            const articles = this.application.getArticles();
+            return articles;
+        }
+    }
+
+    getCameraOrbit()
+    {
+        if(this.application) {
+            const orbit = this.application.getCameraOrbit();
+            return orbit;
+        }
+    }
+
+    setCameraOrbit( yaw: string, pitch: string)
+    {
+        if(this.application) {
+            this.application.setCameraOrbit(yaw, pitch);
+        }
+    }
+
+    setBackgroundColor(color0: string, color1?: string)
+    {
+        if(this.application) {
+            this.application.setBackgroundColor(color0, color1 ? color1 : null);
+        }
+    }
+
+    setBackgroundStyle(style: string)
+    {
+        if(this.application) {
+            this.application.setBackgroundStyle(style);
+        }
+    }
 }

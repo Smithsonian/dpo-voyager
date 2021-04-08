@@ -43,6 +43,8 @@ import NVTools from "../nodes/NVTools";
 import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
+import { EUIElements } from "client/components/CVInterface";
+import { EBackgroundStyle } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -203,14 +205,6 @@ Version: ${ENV_VERSION}
                     document.setup.viewer.ins.quality.setValue(dq);
                 }
 
-                if (uiMode) {
-                    if (uiMode === "None") {
-                        //document.setup.interface.ins.visible.setValue(false);
-                        document.setup.interface.ins.logo.setValue(false);
-                        document.setup.interface.ins.menu.setValue(false);
-                    }
-                }
-
                 return document;
             });
     }
@@ -246,16 +240,28 @@ Version: ${ENV_VERSION}
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
 
-        // Due to initializtion order, need to set ui prop here as well as after load to avoid flashing UI changes
+        // Config custom UI layout
         if (props.uiMode) {
-            if (props.uiMode === "None") {
-                //this.documentProvider.activeComponent.setup.interface.ins.visible.setValue(false);
-                this.documentProvider.activeComponent.setup.interface.ins.logo.setValue(false);
-                this.documentProvider.activeComponent.setup.interface.ins.menu.setValue(false);
-            }
+            //if (props.uiMode.toLowerCase().indexOf("none") !== -1) {
+            //    this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(0);
+            //}
+
+            let elementValues = 0;
+            
+            const enumNames = Object.values(EUIElements).filter(value => typeof value === 'string') as string[];
+            const uiParams = props.uiMode.split('|');
+            uiParams.forEach(param => { 
+                const stdParam = param.toLowerCase();
+                if(enumNames.includes(stdParam)) {
+                    elementValues += EUIElements[stdParam];
+                }
+            });
+
+            this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(elementValues);
         }
-        
+
         if(props.dracoRoot) {
+            // Set custom Draco path
             this.assetReader.setDracoPath(props.dracoRoot);
         }
 
@@ -284,8 +290,9 @@ Version: ${ENV_VERSION}
         }
     }
 
-
-    //** API functions for external UI control */
+    ////////////////////////////////////////////
+    //** API functions for external control **//
+    ////////////////////////////////////////////
     toggleAnnotations()
     {
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
@@ -346,6 +353,87 @@ Version: ${ENV_VERSION}
 
         ARIns.enabled.setValue(true);
         this.analytics.sendProperty("AR.enabled", true);
+    }
+
+    // Returns an array of objects with the article data for the current scene
+    getArticles()
+    {
+        const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
+        const articles = reader.articles.map(entry => entry.article.data);
+
+        return articles;
+    }
+
+    // Returns euler angles (yaw/pitch) for orbit navigation
+    getCameraOrbit()
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        return orbitNavIns.orbit.value.slice(0,2);
+    }
+
+    // Sets euler angles (yaw/pitch) for orbit navigation
+    setCameraOrbit( yaw: string, pitch: string)
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        const yawNum = parseFloat(yaw);
+        const pitchNum = parseFloat(pitch);
+  
+        if (!isNaN(yawNum) && !isNaN(pitchNum)) { 
+            orbitNavIns.orbit.setValue([yawNum, pitchNum, 0.0]);
+        }
+        else {
+            console.log("Error: setCameraOrbit param is not a number.");
+        }
+    }
+
+    // Set background color
+    setBackgroundColor(color0: string, color1?: string)
+    {
+        const backgroundIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.background.ins;
+
+        const div = document.createElement('div');
+        div.id = 'temp-color';
+        document.getElementsByTagName("voyager-explorer")[0].appendChild(div);
+
+        div.style.color = color0;
+        if(div.style.color !== '') {
+            const convColor0 = getComputedStyle(div).color;
+            const colorArray0 = convColor0.split("(")[1].split(")")[0].split(",").map(component => parseInt(component)/255);
+            backgroundIns.color0.setValue(colorArray0);
+        }
+        else {
+            console.log("Error: Color0 param is invalid.");
+        }
+
+        if(color1) {
+            div.style.color = color1;
+            if(div.style.color !== '') {
+                const convColor1 = getComputedStyle(div).color;
+                const colorArray1 = convColor1.split("(")[1].split(")")[0].split(",").map(component => parseInt(component)/255);
+                backgroundIns.color1.setValue(colorArray1);
+            }
+            else {
+                console.log("Error: Color1 param is invalid.");
+            }
+        }
+
+        document.getElementsByTagName("voyager-explorer")[0].removeChild(div);
+    }
+
+    // Set background style (Solid, LinearGradient, RadialGradient)
+    setBackgroundStyle(style: string)
+    {
+        const backgroundIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.background.ins;
+
+        const enumNames = Object.values(EBackgroundStyle).filter(value => typeof value === 'string') as string[];
+        const foundStyle = enumNames.find(name => name.toLowerCase() === style.toLowerCase());
+
+        if(foundStyle !== undefined) {
+            backgroundIns.style.setValue(EBackgroundStyle[foundStyle]);
+        }
+        else {
+            console.log("Error: Style param is invalid.");
+        }
     }
 }
 
