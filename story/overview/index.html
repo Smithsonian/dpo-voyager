@@ -43,6 +43,12 @@
       </a>
     </li>
     
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
@@ -88,6 +94,12 @@
     <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
       </a>
     </li>
     
@@ -168,6 +180,10 @@
       <a href="/dpo-voyager/explorer/usage/">Usage</a>
     </li>
     
+    <li class="">
+      <a href="/dpo-voyager/explorer/api/">API Overview</a>
+    </li>
+    
   </ul>
 </div>
 
@@ -236,42 +252,30 @@
           
 <h1 class="title">Overview</h1>
 <div class="content">
-  
-
-<p><em>Voyager Story</em> is the creation and authoring application of the Voyager tool suite. The application can be used to create and author <em>Voyager SVX Documents</em>. Documents are files in JSON format containing the description of a Voyager scene or experience.</p>
-
+  <p><em>Voyager Story</em> is the creation and authoring application of the Voyager tool suite. The application can be used to create and author <em>Voyager SVX Documents</em>. Documents are files in JSON format containing the description of a Voyager scene or experience.</p>
 <p><em>Voyager Story</em> can be operated in two different modes. Each mode offers a number of tasks.</p>
-
 <h2 id="qc-mode">QC Mode</h2>
-
 <p>This mode is aimed at 3D technicians. After a model has been digitized and processed into derivative assets ready for web consumption, QC gives you the following tasks and tools:</p>
-
 <ul>
 <li>Pose task: center the model and put it into upright position</li>
 <li>Capture task: take a 2D snapshot of the model</li>
 <li>Derivative inspection task: inspect the quality of the meshes and textures at various levels of detail</li>
-
-<li><p>Settings task: adjust parameters such as material settings</p>
-<div class="highlight"><pre class="chroma">QC mode is enabled by supplying the mode=qc URL parameter.</pre></div></li>
+<li>Settings task: adjust parameters such as material settings</li>
 </ul>
-
-<h2 id="authoring-mode">Authoring Mode</h2>
-
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">QC mode is enabled by supplying the mode=qc URL parameter.
+</code></pre></div><h2 id="authoring-mode">Authoring Mode</h2>
 <p>The authoring tools can be used by curators to stage the model(s) using lights, cameras and props, and to add content (annotations, articles, and tours) to the experience. The following tasks are available in authoring mode:</p>
-
 <ul>
 <li>Annotations task: add annotations to specific 3D locations on a model</li>
 <li>Articles task: write and edit articles (documents with text and media), and connect them with annotations and models</li>
 <li>Tours task: create guided tours which guide through the experience in multiple steps</li>
-
-<li><p>Settings task: adjust parameters such as material settings</p>
-<div class="highlight"><pre class="chroma">Authoring mode is enabled by supplying the mode=author URL parameter.</pre></div></li>
+<li>Settings task: adjust parameters such as material settings</li>
 </ul>
-
-<h2 id="expert-mode">Expert Mode</h2>
-
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">Authoring mode is enabled by supplying the mode=author URL parameter.
+</code></pre></div><h2 id="expert-mode">Expert Mode</h2>
 <p><em>Voyager Story</em> actually offers a third mode, called expert mode, which shows all available tasks at once. It also provides a detailed view of all document elements and settings. The expert mode is aimed at - well - experts and developers.</p>
-<div class="highlight"><pre class="chroma">Expert mode is enabled by supplying the mode=expert URL parameter.</pre></div>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">Expert mode is enabled by supplying the mode=expert URL parameter.
+</code></pre></div>
 </div>
 
         </div>

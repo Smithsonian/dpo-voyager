@@ -43,6 +43,12 @@
       </a>
     </li>
     
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
@@ -88,6 +94,12 @@
     <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
       </a>
     </li>
     
@@ -168,6 +180,10 @@
       <a href="/dpo-voyager/explorer/usage/">Usage</a>
     </li>
     
+    <li class="">
+      <a href="/dpo-voyager/explorer/api/">API Overview</a>
+    </li>
+    
   </ul>
 </div>
 
@@ -236,81 +252,63 @@
           
 <h1 class="title">Getting started</h1>
 <div class="content">
-  
-
-<h2 id="installation">Installation</h2>
-
+  <h2 id="installation">Installation</h2>
 <p>This document describes how to install a local development server, and build the source code for development and production.</p>
-
 <p>The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 18.04),
 or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.</p>
-
 <h4 id="prerequisites">Prerequisites</h4>
-
 <p>Operating system for direct installation: <strong>Linux only</strong> (tested on Ubuntu server 18.04).</p>
-
 <p>Before cloning the Github project, please install the following tools</p>
-
 <ul>
 <li><a href="https://nodejs.org/en/">Node.js</a> - required</li>
 <li><a href="https://www.docker.com/">Docker</a> - required for installation in a Docker container</li>
 <li><a href="https://docs.docker.com/compose/install/">Docker Compose</a> - required for installation in a Docker container</li>
 </ul>
-
 <p>Now create a project folder and clone the project from Github. Make sure not to forget the <code>--recurse-subomdules</code> option,
 this also clones the required submodules.</p>
-<div class="highlight"><pre class="chroma">mkdir &lt;my_project_dir&gt;
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">mkdir &lt;my_project_dir&gt;
 cd &lt;my_project_dir&gt;
-git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .</pre></div>
-<p>Copy and rename the <code>.env.template</code> file:</p>
-<div class="highlight"><pre class="chroma">cp .env.template .env</pre></div>
-<p>Now edit the environment variables in <code>.env</code> in your editor of choice to reflect your local configuration. To edit using
+git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .
+</code></pre></div><p>Copy and rename the <code>.env.template</code> file:</p>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">cp .env.template .env
+</code></pre></div><p>Now edit the environment variables in <code>.env</code> in your editor of choice to reflect your local configuration. To edit using
 vim enter:</p>
-<div class="highlight"><pre class="chroma">vim .env</pre></div>
-<p>Make sure you change the server port if necessary.</p>
-
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">vim .env
+</code></pre></div><p>Make sure you change the server port if necessary.</p>
 <h4 id="dockerized-environment">Dockerized environment</h4>
-
 <p>For development, if you have Docker and Docker Compose installed, you can run the development server in a container.
 To build the Docker image and start the container with the development server, run</p>
-<div class="highlight"><pre class="chroma">npm run up</pre></div>
-<p>This also watches all source folders for changes and triggers the Typescript compilation and Webpack build whenever
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm run up
+</code></pre></div><p>This also watches all source folders for changes and triggers the Typescript compilation and Webpack build whenever
 source code changes are detected.</p>
-
 <p>Once you are done, shut down the development server.</p>
-<div class="highlight"><pre class="chroma">npm run down</pre></div>
-<p>To open a shell on the running server container, enter</p>
-<div class="highlight"><pre class="chroma">npm run bash</pre></div>
-<h5 id="manual-builds-for-development-and-production">Manual builds for development and production</h5>
-
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm run down
+</code></pre></div><p>To open a shell on the running server container, enter</p>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm run bash
+</code></pre></div><h5 id="manual-builds-for-development-and-production">Manual builds for development and production</h5>
 <p>First start the development server with <code>npm run up</code>, then connect to the container with <code>npm run bash</code>. On the
 container shell, enter</p>
-<div class="highlight"><pre class="chroma">npm run build-dev       # triggers a development build
-npm run build-prod      # triggers a production build</pre></div>
-<ul>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm run build-dev       # triggers a development build
+npm run build-prod      # triggers a production build
+</code></pre></div><ul>
 <li>The development build preserves source code comments and comes with source code maps</li>
 <li>The production build generates minified scripts and CSS</li>
 </ul>
-
-<p>Note that you must run the build commands from within the docker container.<br />
+<p>Note that you must run the build commands from within the docker container.<br>
 Build output can be found in the project&rsquo;s <code>dist</code> folder, see below.</p>
-
 <h4 id="installation-on-linux-without-docker">Installation on Linux, without Docker</h4>
-
 <p><em>Note: Due to the variety of  operating systems, we strongly recommend to run the dockerized environment.
 This guarantees a standardized development environment.</em></p>
-
 <p>Without Docker, you need to install the NPM package dependencies manually.</p>
-<div class="highlight"><pre class="chroma">npm install</pre></div>
-<p>Now you are ready to build the project. The following command builds the development server.</p>
-<div class="highlight"><pre class="chroma">npm run build-server</pre></div>
-<p>If you want to specifically create a development or production build, use the following commands.</p>
-<div class="highlight"><pre class="chroma">npm run build-dev
-npm run build-prod</pre></div>
-<h4 id="location-of-build-output">Location of build output</h4>
-
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm install
+</code></pre></div><p>Now you are ready to build the project. The following command builds the development server.</p>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm run build-server
+</code></pre></div><p>If you want to specifically create a development or production build, use the following commands.</p>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">npm run build-dev
+npm run build-prod
+</code></pre></div><h4 id="location-of-build-output">Location of build output</h4>
 <p>Build output can be found in the project&rsquo;s <code>dist</code> folder. It&rsquo;s content after both <code>prod</code> and <code>dev</code> builds have been run:</p>
-<div class="highlight"><pre class="chroma">css/                       # style sheets
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">css/                       # style sheets
 fonts/                     # web fonts
 images/                    # images and logos
 js/                        # client-side Javascript for all applications
@@ -320,7 +318,8 @@ voyager-explorer-dev.html  # HTML page displaying Voyager Explorer, development 
 voyager-mini.html          # HTML page displaying Voyager Explorer Mini, production build
 voyager-mini-dev.html      # HTML page displaying Voyager Explorer Mini, development build
 voyager-story.html         # HTML page displaying Voyager Story authoring tool, production build
-voyager-story-dev.html     # HTML page displaying Voyager Story authoring tool, development build</pre></div>
+voyager-story-dev.html     # HTML page displaying Voyager Story authoring tool, development build
+</code></pre></div>
 </div>
 
         </div>

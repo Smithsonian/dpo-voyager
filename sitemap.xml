@@ -1,97 +1,53 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  
   <url>
     <loc>https://smithsonian.github.io/dpo-voyager/introduction/getting-started/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/introduction/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/document/overview/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/overview/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/overview/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/introduction/demo-assets/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/usage/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/usage/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/</loc>
-  </url>
-  
-  <url>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api/</loc>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/document/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/document/example/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/pose-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/capture-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/derivatives-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/settings-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/annotations-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/introduction/license/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/articles-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/tours-task/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/categories/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/</loc>
-  </url>
-  
-  <url>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/tags/</loc>
   </url>
-  
 </urlset>

@@ -43,6 +43,12 @@
       </a>
     </li>
     
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
@@ -88,6 +94,12 @@
     <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
       </a>
     </li>
     
@@ -168,6 +180,10 @@
       <a href="/dpo-voyager/explorer/usage/">Usage</a>
     </li>
     
+    <li class="">
+      <a href="/dpo-voyager/explorer/api/">API Overview</a>
+    </li>
+    
   </ul>
 </div>
 
@@ -236,48 +252,42 @@
           
 <h1 class="title">Demo Assets</h1>
 <div class="content">
-  
-
-<h2 id="demo-assets">Demo Assets</h2>
-
+  <h2 id="demo-assets">Demo Assets</h2>
 <p>For getting you started easily, Voyager comes with a set of demo assets.
 Please have a look at the enclosed readme, the disclaimer and the terms of use before using the assets.</p>
-
 <p>The following installation guide assumes you&rsquo;ve already installed and started the Voyager development server.</p>
-
 <h4 id="installation">Installation</h4>
-
 <p>In your Voyager project folder, create a new folder named <code>files</code> and navigate into it.</p>
 <div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> &lt;my_project_dir&gt;
 mkdir files
-<span class="nb">cd</span> files</code></pre></div>
-<p>Now fetch the demo assets from GitHub and unzip them:</p>
+<span class="nb">cd</span> files
+</code></pre></div><p>Now fetch the demo assets from GitHub and unzip them:</p>
 <div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl -L -o assets.zip https://github.com/Smithsonian/dpo-voyager/releases/download/v0.7.0/voyager-demo-assets.zip
-unzip assets.zip</code></pre></div>
-<p>Your <code>files</code> folder should now contain the following:</p>
-<div class="highlight"><pre class="chroma">assets.zip
+unzip assets.zip
+</code></pre></div><p>Your <code>files</code> folder should now contain the following:</p>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">assets.zip
 DISCLAIMER.txt
 models           &lt;- this folder contains the demo models
 README.txt
-TERMS_OF_USE.txt</pre></div>
-<p>Next, open your web browser (Chrome preferred) and navigate to one of the following URLs. Note that the host and port
+TERMS_OF_USE.txt
+</code></pre></div><p>Next, open your web browser (Chrome preferred) and navigate to one of the following URLs. Note that the host and port
 may be different depending on where you installed the Voyager development server.</p>
-
 <h6 id="voyager-exlorer-the-viewer">Voyager Exlorer (the viewer)</h6>
-<div class="highlight"><pre class="chroma">http://localhost:8000/voyager-explorer-dev.html?root=models/tusk/&amp;document=tusk.svx.json
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">http://localhost:8000/voyager-explorer-dev.html?root=models/tusk/&amp;document=tusk.svx.json
 http://localhost:8000/voyager-explorer-dev.html?root=models/vase/&amp;document=vase.svx.json
 http://localhost:8000/voyager-explorer-dev.html?root=models/chair/&amp;document=chair.svx.json
-http://localhost:8000/voyager-explorer-dev.html?root=models/ewer/&amp;document=ewer.svx.json</pre></div>
-<h6 id="voyager-story-the-authoring-tool-quality-inspection-mode">Voyager Story (the authoring tool), quality inspection mode</h6>
-<div class="highlight"><pre class="chroma">http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/tusk/&amp;document=tusk.svx.json
+http://localhost:8000/voyager-explorer-dev.html?root=models/ewer/&amp;document=ewer.svx.json
+</code></pre></div><h6 id="voyager-story-the-authoring-tool-quality-inspection-mode">Voyager Story (the authoring tool), quality inspection mode</h6>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/tusk/&amp;document=tusk.svx.json
 http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/vase/&amp;document=vase.svx.json
 http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/chair/&amp;document=chair.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/ewer/&amp;document=ewer.svx.json</pre></div>
-<h6 id="voyager-story-the-authoring-tool-authoring-mode">Voyager Story (the authoring tool), authoring mode</h6>
-<div class="highlight"><pre class="chroma">http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/tusk/&amp;document=tusk.svx.json
+http://localhost:8000/voyager-story-dev.html?mode=qc&amp;root=models/ewer/&amp;document=ewer.svx.json
+</code></pre></div><h6 id="voyager-story-the-authoring-tool-authoring-mode">Voyager Story (the authoring tool), authoring mode</h6>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/tusk/&amp;document=tusk.svx.json
 http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/vase/&amp;document=vase.svx.json
 http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/chair/&amp;document=chair.svx.json
-http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/ewer/&amp;document=ewer.svx.json</pre></div>
+http://localhost:8000/voyager-story-dev.html?mode=author&amp;root=models/ewer/&amp;document=ewer.svx.json
+</code></pre></div>
 </div>
 
         </div>

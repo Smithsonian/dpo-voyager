@@ -43,6 +43,12 @@
       </a>
     </li>
     
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
@@ -88,6 +94,12 @@
     <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
       </a>
     </li>
     
@@ -168,6 +180,10 @@
       <a href="/dpo-voyager/explorer/usage/">Usage</a>
     </li>
     
+    <li class="">
+      <a href="/dpo-voyager/explorer/api/">API Overview</a>
+    </li>
+    
   </ul>
 </div>
 
@@ -236,22 +252,15 @@
           
 <h1 class="title">Usage</h1>
 <div class="content">
-  
-
-<h2 id="web-component">Web Component</h2>
-
+  <h2 id="web-component">Web Component</h2>
 <p>The Voyager 3D Story tool is designed to be used as a single page client-side application.
 Sample HTML documents are provided as part of the distributable package.</p>
-
 <p>The application can be launched via custom HTML element, or by creating an instance of the application class and
 attaching it to a DOM element.</p>
-
 <p>Both the custom HTML element and the application class can be customized using the following properties.
 Properties can be provided as URL variables, as attributes of the custom HTML element, or by providing a
 properties object as an argument to the application constructor.</p>
-
 <h3 id="properties">Properties</h3>
-
 <table>
 <thead>
 <tr>
@@ -260,50 +269,42 @@ properties object as an argument to the application constructor.</p>
 <th>Description</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
 <td>root</td>
 <td>String/URL</td>
 <td>Path to the root folder (base folder for all assets)</td>
 </tr>
-
 <tr>
 <td>document</td>
 <td>String/URL</td>
 <td>Path to the JSON document to load (relative to the root folder).</td>
 </tr>
-
 <tr>
 <td>model</td>
 <td>String/URL</td>
 <td>URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).</td>
 </tr>
-
 <tr>
 <td>geometry</td>
 <td>String/URL</td>
 <td>URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).</td>
 </tr>
-
 <tr>
 <td>texture</td>
 <td>String/URL</td>
 <td>If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder).</td>
 </tr>
-
 <tr>
 <td>quality</td>
 <td>&ldquo;Thumb&rdquo;, &ldquo;Low&rdquo;, &ldquo;Medium&rdquo;, &ldquo;High&rdquo;, &ldquo;Highest&rdquo;</td>
 <td>For a model/geometry/texture: The quality level of the generated derivative.</td>
 </tr>
-
 <tr>
 <td>referrer</td>
 <td>String/URL</td>
 <td>The page URL to navigate to when the user exits the story tool.</td>
 </tr>
-
 <tr>
 <td>mode</td>
 <td>&ldquo;QC&rdquo;, &ldquo;Author&rdquo;, &ldquo;Expert&rdquo;</td>
@@ -311,9 +312,7 @@ properties object as an argument to the application constructor.</p>
 </tr>
 </tbody>
 </table>
-
 <h3 id="example-1-launching-the-story-tool-via-custom-html-element">Example 1: launching the Story tool via custom HTML element</h3>
-
 <div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
 <span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
@@ -334,9 +333,7 @@ properties object as an argument to the application constructor.</p>
         <span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;text/javascript&#34;</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;js/voyager-story.min.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
     <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
 <span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span></code></pre></div>
-
 <h3 id="example-2-launching-the-story-tool-via-application-class">Example 2: launching the Story tool via application class</h3>
-
 <div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
 <span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
