@@ -12,7 +12,7 @@ These attributes configure the initial object load of the component.
 | Name         | Options           | Description                                                                                                         |
 |--------------|-------------------|---------------------------------------------------------------------------------------------------------------------|
 | root         | Valid URL		   | Path to the root folder (base folder for all assets)                                                                |
-| document     | Valid URL         | Path to the JSON document to load (relative to the root folder).                                                    |
+| document     | Valid URL         | Path to the [SVX scene descriptor JSON document](https://smithsonian.github.io/dpo-voyager/document/) to load (relative to the root folder).                                                    |
 | model        | Valid URL         | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
 | geometry     | Valid URL         | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
 | texture      | Valid URL         | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
@@ -37,10 +37,10 @@ These methods engage Voyager functionality without the native UI.
 
 | Name     				 | Parameters       | Description                                                                                         |
 |------------------------|------------------|----------------------------------------------------------------------------------------------------|
-| toggleAnnotations()    | None    			| Toggles on and off visibility of model annotations (if available)  |
-| toggleReader()    	 | None    			| Toggles on and off the article reader.  |
-| toggleTours()    		 | None    			| Toggles on and off the UI for tour functionality.  |
-| toggleTools()    		 | None    			| Toggles on and off the extended tools panel at the bottom of the UI  |
+| toggleAnnotations()    | None    			| On/off toggle for visibility of model annotations (if available)  |
+| toggleReader()    	 | None    			| On/off toggle for the article reader.  |
+| toggleTours()    		 | None    			| On/off toggle for the tour functionality UI.  |
+| toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
 
 ### Navigation Methods
