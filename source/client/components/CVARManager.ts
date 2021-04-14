@@ -119,6 +119,7 @@ export default class CVARManager extends Component
     protected cameraParent: Object3D = null;
     protected cachedView: RenderView = null;
     protected cachedQuality: EDerivativeQuality = null;
+    protected cachedNearPlane: number = 0.0;
     protected xrCamera: PerspectiveCamera = null;
     protected hitPlane: Mesh = null;
     protected selectionRing: Mesh = null;
@@ -366,11 +367,16 @@ export default class CVARManager extends Component
         _boundingBox.copy(this.sceneNode.outs.boundingBox.value);
 
         // Compute optimal camera distance for initial placement
-        /*_boundingBox.getSize(_vector3);
-        _boundingBox.getCenter(_vector3b);
+        _boundingBox.getSize(_vector3);
+        /*_boundingBox.getCenter(_vector3b);
         const size = Math.max(_vector3.x / this.camera.aspect, _vector3.y);
         const fovFactor = 1 / (2 * Math.tan(this.camera.fov * (180/Math.PI) * 0.5));
         this.optimalCameraDistance = (_vector3b.z + size * fovFactor + _vector3.z * 0.75);*/
+
+        this.cachedNearPlane = this.camera.near;
+        if(Math.max(_vector3.x, _vector3.y, _vector3.z) < 0.5) {
+            this.camera.near = 0.01;
+        }
     }
 
     protected resetScene() {
@@ -383,6 +389,7 @@ export default class CVARManager extends Component
         }      
         camera.position.set(0, 0, 0);
         camera.rotation.set(0, 0, 0);
+        camera.near = this.cachedNearPlane;
         camera.updateMatrix(); 
 
         // reset lights
@@ -483,7 +490,7 @@ export default class CVARManager extends Component
         if (this.initialHitTestSource != null && xrCamera) {
             const scene = this.vScene.scene; 
             const {position} = scene; 
-            const radius =  this.sceneNode.outs.boundingRadius.value * 2.0; // Math.abs(this.optimalCameraDistance);
+            const radius =  this.sceneNode.outs.boundingRadius.value * 2.0 + xrCamera.near; // Math.abs(this.optimalCameraDistance);
 
             const e = xrCamera.matrixWorld.elements;
 			position.set(-e[ 8 ], -e[ 9 ], -e[ 10 ]).normalize(); 
@@ -724,8 +731,8 @@ export default class CVARManager extends Component
         const scene = this.vScene.scene!; 
         const {min, max} = _boundingBox;
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
-        const width = (max.x-min.x)*1.25;
-        const height = (max.z-min.z)*1.25;
+        const width = Math.max((max.x-min.x)*1.25, 0.15);
+        const height = Math.max((max.z-min.z)*1.25, 0.15);
         const centerOffsetX = (min.x+max.x)/2.0;
         const centerOffsetZ = (min.z+max.z)/2.0;
 
