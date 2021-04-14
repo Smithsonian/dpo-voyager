@@ -222,7 +222,6 @@ export default class CVAnnotationView extends CObject3D
                 annotation.lead = ins.lead.value;
             }
             if (ins.tags.changed) {
-               // annotation.set("tags", ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag));
                 annotation.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
                 this.emit<ITagUpdateEvent>({ type: "tag-update" });
             }
