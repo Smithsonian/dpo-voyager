@@ -235,7 +235,7 @@ Version: ${ENV_VERSION}
         props.occlusion = props.occlusion || parseUrlParameter("occlusion") || parseUrlParameter("o");
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
-        props.uiMode = props.uiMode || parseUrlParameter("ui") || parseUrlParameter("u");
+        props.uiMode = props.uiMode || parseUrlParameter("uiMode") || parseUrlParameter("u");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
