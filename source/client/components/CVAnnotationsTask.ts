@@ -176,11 +176,10 @@ export default class CVAnnotationsTask extends CVTask
             _mat4.compose(_position, _quat, _scaling);
 
             // add mesh parent transforms in this branch
-            _mat4.copy(_mat4.multiply(this.getMeshTransform(model.object3D)));  
-            
+            _mat4.copy(_mat4.multiply(this.getMeshTransform(model.object3D, event.object3D).invert()));   
             _mat3.getNormalMatrix(_mat4);
 
-            const position = event.view.pickPosition(event, model.localBoundingBox).applyMatrix4(_mat4).toArray();
+            const position = event.view.pickPosition(event).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
 
             const mode = this.ins.mode.getValidatedValue();
@@ -303,10 +302,8 @@ export default class CVAnnotationsTask extends CVTask
         }
     }
 
-    /** Accumulates transforms from root until multiple children are encountered. 
-     *  If there are multiple non-Mesh children in the branch picking will break anyways.
-    */
-    protected getMeshTransform(root : THREE.Object3D)
+    /** Accumulates transforms from current object to root. */
+    protected getMeshTransform(root : THREE.Object3D, current: THREE.Object3D)
     {
         var result = new THREE.Matrix4();
         var tempMatrix = new THREE.Matrix4();
@@ -314,17 +311,12 @@ export default class CVAnnotationsTask extends CVTask
         result.identity();
 
         do {
-            tempMatrix.compose(root.position, root.quaternion, root.scale);
-            result.multiply(tempMatrix);
+            tempMatrix.compose(current.position, current.quaternion, current.scale);
+            result.multiply(tempMatrix.invert());
 
-            if(root.children && root.children.length > 0) {
-                root = root.children[0];
-            }
-            else {
-                break;
-            }
+            current = current.parent;
         }
-        while (root.parent.children.length === 1)
+        while (root !== current)
 
         return result;
     }
