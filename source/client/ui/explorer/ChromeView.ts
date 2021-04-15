@@ -33,6 +33,7 @@ import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import LanguageMenu from "./LanguageMenu";
+import { EUIElements } from "client/components/CVInterface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,8 +79,9 @@ export default class ChromeView extends DocumentView
         const setup = document.setup;
 
         const interfaceVisible = setup.interface.ins.visible.value;
-        const logoVisible = setup.interface.ins.logo.value;
-        const menuVisible = setup.interface.ins.menu.value;
+        const logoVisible = setup.interface.ins.logo.value && setup.interface.isShowing(EUIElements.logo);
+        const menuVisible = setup.interface.ins.menu.value && setup.interface.isShowing(EUIElements.menu);
+        const titleVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.title);
 
         const readerVisible = setup.reader.ins.enabled.value;
 
@@ -90,7 +92,7 @@ export default class ChromeView extends DocumentView
         const language = setup.language;
         const languages = language.activeLanguages;
         const activeLanguage = language.outs.language.value;
-        const languagesVisible = languages.length > 1;
+        const languagesVisible = languages.length > 1 && setup.interface.isShowing(EUIElements.language);
 
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
@@ -121,7 +123,7 @@ export default class ChromeView extends DocumentView
             <div class="sv-chrome-header">
                 ${menuVisible ? html`<sv-main-menu .system=${this.system}></sv-main-menu>` : null}
                 <div class="sv-top-bar">
-                    <div class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>
+                    ${titleVisible ? html`<div class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>` : null}
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>

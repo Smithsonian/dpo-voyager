@@ -34,6 +34,7 @@ import CVDocument from "../components/CVDocument";
 import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
 import CVAnalytics from "../components/CVAnalytics";
+import CVToolProvider from "../components/CVToolProvider";
 
 import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
@@ -42,6 +43,8 @@ import NVTools from "../nodes/NVTools";
 import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
+import { EUIElements } from "client/components/CVInterface";
+import { EBackgroundStyle } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +72,8 @@ export interface IExplorerApplicationProps
     /** When loading a model or geometry, the quality level to set for the asset.
         Valid options: "thumb", "low", "medium", "high". */
     quality?: string;
+    /** Mode string starts Explorer in a specific ui configuration, i.e. no UI. */
+    uiMode?: string;
 }
 
 /**
@@ -186,7 +191,7 @@ Version: ${ENV_VERSION}
         this.assetManager.baseUrl = url; 
     }
 
-    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string, uiMode?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
 
@@ -199,6 +204,7 @@ Version: ${ENV_VERSION}
                 if (isFinite(dq)) {
                     document.setup.viewer.ins.quality.setValue(dq);
                 }
+
                 return document;
             });
     }
@@ -229,18 +235,40 @@ Version: ${ENV_VERSION}
         props.occlusion = props.occlusion || parseUrlParameter("occlusion") || parseUrlParameter("o");
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
+        props.uiMode = props.uiMode || parseUrlParameter("uiMode") || parseUrlParameter("u");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
 
+        // Config custom UI layout
+        if (props.uiMode) {
+            //if (props.uiMode.toLowerCase().indexOf("none") !== -1) {
+            //    this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(0);
+            //}
+
+            let elementValues = 0;
+            
+            const enumNames = Object.values(EUIElements).filter(value => typeof value === 'string') as string[];
+            const uiParams = props.uiMode.split('|');
+            uiParams.forEach(param => { 
+                const stdParam = param.toLowerCase();
+                if(enumNames.includes(stdParam)) {
+                    elementValues += EUIElements[stdParam];
+                }
+            });
+
+            this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(elementValues);
+        }
+
         if(props.dracoRoot) {
+            // Set custom Draco path
             this.assetReader.setDracoPath(props.dracoRoot);
         }
 
         if (props.document) {
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality)
+            this.loadDocument(props.document, undefined, props.quality, props.uiMode)
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
@@ -262,13 +290,150 @@ Version: ${ENV_VERSION}
         }
     }
 
-    //** API functions for external UI control */
+    ////////////////////////////////////////////
+    //** API functions for external control **//
+    ////////////////////////////////////////////
+    toggleAnnotations()
+    {
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+
+        if (toolIns.visible.value) {
+            toolIns.visible.setValue(false);
+        }
+
+        viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+        this.analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
+    }
+
+    toggleReader()
+    {
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+                    
+        readerIns.enabled.setValue(!readerIns.enabled.value);
+        this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
+    }
+
+    toggleTours()
+    {
+        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+
+        if (tourIns.enabled.value) {
+            tourIns.enabled.setValue(false);
+        }
+        else {
+            if (readerIns.enabled.value) {
+                readerIns.enabled.setValue(false); // disable reader
+            }
+
+            tourIns.enabled.setValue(true); // enable tours
+            tourIns.tourIndex.setValue(-1); // show tour menu
+        }
+
+        this.analytics.sendProperty("Tours.Enabled", tourIns.enabled.value);
+    }
+
+    toggleTools()
+    {
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+
+        if (viewerIns.annotationsVisible.value) {
+            viewerIns.annotationsVisible.setValue(false);
+        }
+
+        toolIns.visible.setValue(!toolIns.visible.value);
+        this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+    }
+    
     enableAR()
     {
         const ARIns = this.system.getMainComponent(CVARManager).ins;
 
         ARIns.enabled.setValue(true);
         this.analytics.sendProperty("AR.enabled", true);
+    }
+
+    // Returns an array of objects with the article data for the current scene
+    getArticles()
+    {
+        const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
+        const articles = reader.articles.map(entry => entry.article.data);
+
+        return articles;
+    }
+
+    // Returns euler angles (yaw/pitch) for orbit navigation
+    getCameraOrbit()
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        return orbitNavIns.orbit.value.slice(0,2);
+    }
+
+    // Sets euler angles (yaw/pitch) for orbit navigation
+    setCameraOrbit( yaw: string, pitch: string)
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        const yawNum = parseFloat(yaw);
+        const pitchNum = parseFloat(pitch);
+  
+        if (!isNaN(yawNum) && !isNaN(pitchNum)) { 
+            orbitNavIns.orbit.setValue([yawNum, pitchNum, 0.0]);
+        }
+        else {
+            console.log("Error: setCameraOrbit param is not a number.");
+        }
+    }
+
+    // Set background color
+    setBackgroundColor(color0: string, color1?: string)
+    {
+        const backgroundIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.background.ins;
+
+        const div = document.createElement('div');
+        div.id = 'temp-color';
+        document.getElementsByTagName("voyager-explorer")[0].appendChild(div);
+
+        div.style.color = color0;
+        if(div.style.color !== '') {
+            const convColor0 = getComputedStyle(div).color;
+            const colorArray0 = convColor0.split("(")[1].split(")")[0].split(",").map(component => parseInt(component)/255);
+            backgroundIns.color0.setValue(colorArray0);
+        }
+        else {
+            console.log("Error: Color0 param is invalid.");
+        }
+
+        if(color1) {
+            div.style.color = color1;
+            if(div.style.color !== '') {
+                const convColor1 = getComputedStyle(div).color;
+                const colorArray1 = convColor1.split("(")[1].split(")")[0].split(",").map(component => parseInt(component)/255);
+                backgroundIns.color1.setValue(colorArray1);
+            }
+            else {
+                console.log("Error: Color1 param is invalid.");
+            }
+        }
+
+        document.getElementsByTagName("voyager-explorer")[0].removeChild(div);
+    }
+
+    // Set background style (Solid, LinearGradient, RadialGradient)
+    setBackgroundStyle(style: string)
+    {
+        const backgroundIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.background.ins;
+
+        const enumNames = Object.values(EBackgroundStyle).filter(value => typeof value === 'string') as string[];
+        const foundStyle = enumNames.find(name => name.toLowerCase() === style.toLowerCase());
+
+        if(foundStyle !== undefined) {
+            backgroundIns.style.setValue(EBackgroundStyle[foundStyle]);
+        }
+        else {
+            console.log("Error: Style param is invalid.");
+        }
     }
 }
 
