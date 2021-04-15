@@ -28,6 +28,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import CVModel2 from "./CVModel2";
 import CVMeta from "./CVMeta";
 import CVReader from "./CVReader";
+import unitScaleFactor from "../utils/unitScaleFactor";
 
 import { IAnnotation } from "client/schema/model";
 import Annotation from "../models/Annotation";
@@ -43,7 +44,7 @@ import CVARManager from "./CVARManager";
 import StandardSprite from "../annotations/StandardSprite";
 import ExtendedSprite from "../annotations/ExtendedSprite";
 import CVLanguageManager from "./CVLanguageManager";
-import { ELanguageType } from "client/schema/common";
+import { ELanguageType, EUnitType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -230,10 +231,10 @@ export default class CVAnnotationView extends CObject3D
                 this.createSprite(annotation);
             }
             if (ins.scale.changed) {
-                annotation.set("scale", ins.scale.value);
+                annotation.set("scale", ins.scale.value * unitScaleFactor(EUnitType.m, this.model.ins.localUnits.getValidatedValue()) * 0.01);
             }
             if (ins.offset.changed) {
-                annotation.set("offset", ins.offset.value);
+                annotation.set("offset", ins.offset.value * unitScaleFactor(EUnitType.m, this.model.ins.localUnits.getValidatedValue()) * 0.01);
             }
             if (ins.tilt.changed) {
                 annotation.set("tilt", ins.tilt.value);
