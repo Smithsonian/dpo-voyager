@@ -600,4 +600,14 @@ export default class CVModel2 extends CObject3D
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }
+
+    protected addObject3D(object: THREE.Object3D)
+    {
+        this.object3D.add(object);
+        this.object3D.traverse(node => {
+            if (node.type === "Mesh") {
+                this.registerPickableObject3D(node, true);
+            }
+        });
+    }
 }

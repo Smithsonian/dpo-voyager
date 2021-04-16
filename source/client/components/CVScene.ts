@@ -29,8 +29,6 @@ import unitScaleFactor from "client/utils/unitScaleFactor";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
-const _quat = new THREE.Quaternion();
 
 /**
  * Manages the scene and the nodes in the scene tree.

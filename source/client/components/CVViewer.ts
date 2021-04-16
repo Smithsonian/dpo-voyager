@@ -204,11 +204,17 @@ export default class CVViewer extends Component
         });
 
         const views = this.getGraphComponents(CVAnnotationView);
+        const oldTagCloud = this.outs.tagCloud.value.split(",").map(tag => tag.trim()).filter(tag => tag);
         views.forEach(component => {
             const annotations = component.getAnnotations();
             annotations.forEach(annotation => {
                 const tags = annotation.tags;
-                tags.forEach(tag => tagCloud.add(tag));
+                tags.forEach(tag => {
+                    if(!oldTagCloud.includes(tag)) {
+                        this.ins.activeTags.setValue(this.ins.activeTags.value + ", " + tag);
+                    }
+                    tagCloud.add(tag)
+                });
             });
         });
 

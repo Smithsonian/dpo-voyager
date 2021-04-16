@@ -20,19 +20,25 @@ pygmentsUseClasses = true
     name = "Explorer"
     url = "/explorer/"
     weight = 3
+	
+[[menu.main]]
+    name = "API"
+    url = "/explorer/api"
+    weight = 4
 
 [[menu.main]]
     name = "Story"
     url = "/story/"
-    weight = 4
+    weight = 5
 
 [[menu.main]]
     name = "SVX"
     url = "/document/"
-    weight = 5
+    weight = 6
+
 
 [params]
-    mainSections = ["docs", "explorer", "story", "document"]
+    mainSections = ["docs", "explorer", "explorer/api", "story", "document"]
     github_link = "https://github.com/smithsonian/dpo-voyager"
     github_logo = "/images/github.svg"
     smithsonian_logo = "/images/si-digitization-logo-neg.svg"

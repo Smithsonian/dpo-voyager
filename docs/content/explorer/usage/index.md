@@ -14,14 +14,8 @@ attaching it to a DOM element.
 Both the custom HTML element and the application class can be customized using the following properties. Properties can be provided as URL variables, as attributes of the custom HTML element, or by providing a properties object as an argument to the application constructor.
 
 ### Properties
+See the [API documentation](../api/) for the full list of configurable attributes.
 
-| Property     | Type/Values       | Description                                                                                                         |
-|--------------|-------------------|---------------------------------------------------------------------------------------------------------------------|
-| root        | String/URL        | Path to the root folder (base folder for all assets)                                                                |
-| document     | String/URL        | Path to the JSON document to load (relative to the root folder).                                                    |
-| model        | String/URL        | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
-| geometry     | String/URL        | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
-| texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
 
 ### Example 1: launching the Explorer via custom element
 {{<highlight html>}}
