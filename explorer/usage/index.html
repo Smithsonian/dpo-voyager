@@ -43,6 +43,12 @@
       </a>
     </li>
     
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
     <li class="menu-item-story">
       <a href="/dpo-voyager/story/">
         <span>Story</span>
@@ -88,6 +94,12 @@
     <li class="menu-item-explorer">
       <a href="/dpo-voyager/explorer/">
         <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
       </a>
     </li>
     
@@ -168,6 +180,10 @@
       <a href="/dpo-voyager/explorer/usage/">Usage</a>
     </li>
     
+    <li class="">
+      <a href="/dpo-voyager/explorer/api/">API Overview</a>
+    </li>
+    
   </ul>
 </div>
 
@@ -242,42 +258,7 @@
 attaching it to a DOM element.</p>
 <p>Both the custom HTML element and the application class can be customized using the following properties. Properties can be provided as URL variables, as attributes of the custom HTML element, or by providing a properties object as an argument to the application constructor.</p>
 <h3 id="properties">Properties</h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type/Values</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>root</td>
-<td>String/URL</td>
-<td>Path to the root folder (base folder for all assets)</td>
-</tr>
-<tr>
-<td>document</td>
-<td>String/URL</td>
-<td>Path to the JSON document to load (relative to the root folder).</td>
-</tr>
-<tr>
-<td>model</td>
-<td>String/URL</td>
-<td>URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).</td>
-</tr>
-<tr>
-<td>geometry</td>
-<td>String/URL</td>
-<td>URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).</td>
-</tr>
-<tr>
-<td>texture</td>
-<td>String/URL</td>
-<td>If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder).</td>
-</tr>
-</tbody>
-</table>
+<p>See the <a href="../api/">API documentation</a> for the full list of configurable attributes.</p>
 <h3 id="example-1-launching-the-explorer-via-custom-element">Example 1: launching the Explorer via custom element</h3>
 <div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
 <span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
