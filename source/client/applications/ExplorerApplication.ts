@@ -247,6 +247,7 @@ Version: ${ENV_VERSION}
             //}
 
             let elementValues = 0;
+            let hasValidParam = false;
             
             const enumNames = Object.values(EUIElements).filter(value => typeof value === 'string') as string[];
             const uiParams = props.uiMode.split('|');
@@ -254,10 +255,13 @@ Version: ${ENV_VERSION}
                 const stdParam = param.toLowerCase();
                 if(enumNames.includes(stdParam)) {
                     elementValues += EUIElements[stdParam];
+                    hasValidParam = true;
                 }
             });
 
-            this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(elementValues);
+            if(hasValidParam) {
+                this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(elementValues);
+            }
         }
 
         if(props.dracoRoot) {
