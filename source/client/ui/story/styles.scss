@@ -43,6 +43,9 @@
 
 voyager-story {
   @include fullsize;
+  @include font-ui-normal;
+  font-size: 0.85rem;
+  line-height: 1.35;
 }
 
 ff-dock-view {

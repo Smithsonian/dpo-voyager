@@ -1,0 +1,11 @@
+<div style="text-align: center"> 
+  <div style="display: inline-block">
+	<select {{ printf "id=%s" (.Get 0) | safeHTMLAttr }}>
+	  {{ $options :=  after 3 .Params }}
+	  {{ range $options }}
+	  <option value="{{.}}">{{.}}</option>
+	  {{ end }}
+	</select>
+  </div>
+  <button class="sc-button" style="display: inline-block;" {{ printf "onclick=%s(%s)" (.Get 2) (.Get 0)| safeHTMLAttr }}>{{ .Get 1 }}</button>
+</div>

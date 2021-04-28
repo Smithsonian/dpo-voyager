@@ -1,0 +1,65 @@
+<link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
+<link href="https://voyager-dev.glitch.me/voyager-explorer.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
+<script type="text/javascript" src="https://voyager-dev.glitch.me/voyager-explorer.dev.js"></script>
+<!--script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script-->
+<script>
+var l ="https://3d-api.si.edu/content/document/"+{{ .Get 0 }}+"/document.json";
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' dracoRoot='https://voyager-dev.glitch.me/draco/' fontRoot='https://3d-api.si.edu/resources/fonts/' document='document.json'></voyager-explorer>";
+});
+</script>
+<div id="explorer_wrapper" width="600" height="450">
+</div>
+<script>
+function updateUI(textInput) {
+	window.location = window.location.pathname + "?uiMode=" + textInput.value;
+}
+function setBackgroundColor(color0,color1) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundColor(color0.value, color1.value);
+}
+function setBackgroundStyle(style) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundStyle(style.value);
+}
+function toggleAnnotations() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleAnnotations();
+}
+function toggleReader() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleReader();
+}
+function toggleTours() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTours();
+}
+function toggleTools() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTools();
+}
+function getCameraOrbit(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const orbitAngles = voyagerElement.getCameraOrbit();
+	
+	displayElement.innerText = "Yaw: " + orbitAngles[0] + "	Pitch: " + orbitAngles[1];
+}
+function setCameraOrbit(yaw, pitch) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
+}
+function getArticles(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const articles = voyagerElement.getArticles();
+
+	var articleNames = "";
+	articles.forEach(article => {
+		articleNames += article.title.length > 0 ? article.title : article.titles["EN"];
+		articleNames += " | ";
+	});
+  
+	displayElement.innerText = articleNames;
+}
+</script>

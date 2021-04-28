@@ -36,7 +36,6 @@ pygmentsUseClasses = true
     url = "/document/"
     weight = 6
 
-
 [params]
     mainSections = ["docs", "explorer", "explorer/api", "story", "document"]
     github_link = "https://github.com/smithsonian/dpo-voyager"

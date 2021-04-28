@@ -45,6 +45,7 @@ import StandardSprite from "../annotations/StandardSprite";
 import ExtendedSprite from "../annotations/ExtendedSprite";
 import CVLanguageManager from "./CVLanguageManager";
 import { ELanguageType, EUnitType } from "client/schema/common";
+import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -109,6 +110,9 @@ export default class CVAnnotationView extends CObject3D
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
+    }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
     }
 
     get activeAnnotation() {
@@ -475,7 +479,8 @@ export default class CVAnnotationView extends CObject3D
     {
         this.removeSprite(annotation);
 
-        const sprite = AnnotationFactory.createInstance(annotation);
+        // TODO: Combine when font loading is centralized
+        const sprite = annotation.data.style === "Circle" ? AnnotationFactory.createInstance(annotation, "Circle", this.assetReader) : AnnotationFactory.createInstance(annotation);
 
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);

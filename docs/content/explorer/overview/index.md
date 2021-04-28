@@ -1,7 +1,7 @@
 ---
 title: Overview
 summary: Voyager Explorer - 3D interactive web viewer
-weight: 100
+weight: 120
 ---
 
 The Smithsonian Voyager web explorer has been created specifically for displaying, exploring, and sharing rich 3D data

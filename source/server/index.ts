@@ -20,6 +20,8 @@ sourceMapSupport.install();
 
 import * as path from "path";
 import * as http from "http";
+import * as https from "https";
+import * as fs from "fs";
 
 import * as express from "express";
 import * as morgan from "morgan";
@@ -111,7 +113,16 @@ app.use((error, req, res, next) => {
     }
 });
 
-const server = new http.Server(app);
-server.listen(port, () => {
+const options = {
+  key: fs.readFileSync('./services/server/bin/key.pem'),
+  cert: fs.readFileSync('./services/server/bin/cert.pem')
+};
+
+https.createServer(options, app).listen(port, () => {
     console.info(`Server ready and listening on port ${port}\n`);
 });
+
+/*const server = new http.Server(app);
+server.listen(port, () => {
+    console.info(`Server ready and listening on port ${port}\n`);
+});*/

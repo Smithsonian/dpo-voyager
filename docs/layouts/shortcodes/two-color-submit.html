@@ -1,0 +1,7 @@
+<div style="text-align: center">
+	<label style="display: inline-block;" for="color0">{{ .Get 0 }}:</label>
+	<input style="display: inline-block;" type="color" {{ printf "id=%s" (.Get 0) | safeHTMLAttr }}>
+	<label style="display: inline-block;" for="color1">{{ .Get 1 }}:</label>
+	<input style="display: inline-block;" type="color" {{ printf "id=%s" (.Get 1) | safeHTMLAttr }}>
+	<button class="sc-button" style="display: inline-block; margin-right: 10px" {{ printf "onclick=%s(%s,%s)" (.Get 2) (.Get 0) (.Get 1) | safeHTMLAttr }}>{{ .Get 3 }}</button>
+</div>

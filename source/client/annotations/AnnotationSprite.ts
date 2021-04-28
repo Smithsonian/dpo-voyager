@@ -22,6 +22,7 @@ import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
 import { Object3D, Camera, ArrayCamera, PerspectiveCamera } from "three";
+import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,7 +78,7 @@ export default class AnnotationSprite extends HTMLSprite
 
     readonly annotation: Annotation;
 
-    constructor(annotation: Annotation)
+    constructor(annotation: Annotation, assetReader?: CVAssetReader)
     {
         super();
 

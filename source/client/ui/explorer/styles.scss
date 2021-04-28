@@ -371,6 +371,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 // CHROME VIEW
 
 .sv-chrome-view {
+  @include font-ui-normal;
+  font-size: 0.85rem;
+  line-height: 1.35;
   @include fullsize;
   overflow: hidden;
   display: flex;
@@ -832,6 +835,8 @@ $tour-entry-indent: 12px;
 // TOOL BAR
 
 .sv-tool-bar {
+  color: $color-text;
+  
   .sv-tool-buttons {
     flex: 1 1 auto;
     display: flex;
