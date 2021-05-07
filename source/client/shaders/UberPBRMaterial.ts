@@ -253,7 +253,7 @@ export default class UberPBRMaterial extends THREE.MeshStandardMaterial
         this.normalMap = material.normalMap;
 
         this.shadowSide = material.shadowSide;
-        this.side = material.side;
+        //this.side = material.side;
 
         return this;
     }
