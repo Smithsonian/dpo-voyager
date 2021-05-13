@@ -187,6 +187,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     font-weight: bold;
   }
   p {
+    @include font-ui-normal;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: $color-text;
     margin: 0.5em 0;
   }
   .ff-button {
@@ -272,6 +276,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 
   p {
+    @include font-ui-normal;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: $color-text;
     margin: 0.5em 0;
   }
   .ff-button {
@@ -767,6 +775,8 @@ $tour-entry-indent: 12px;
 // TOUR NAVIGATOR
 
 .sv-tour-navigator {
+  color: $color-text;
+
   .sv-content {
     flex: 1;
     margin: 2px 8px;
