@@ -15,7 +15,7 @@ Depending on the active style, set the primary and secondary colors and click 'S
 {{< two-color-submit "Color0" "Color1" "setBackgroundColor" "Set Color">}}
 
 #### How it works:
-Below we will break down the javascript from this page that makes use of the setBackgroundColor() and setBackgroundStyle() API functions.
+Below we will break down the javascript from this page that makes use of the [setBackgroundColor() and setBackgroundStyle()](../../api) API functions.
 
 Note that in each case the respective HTML input elements are passed in to provide access to the user input.
 

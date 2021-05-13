@@ -21,7 +21,7 @@ Enter yaw and pitch angles (degrees) in the boxes below and click the button to 
 {{< input-submit "Set Camera Orbit" "setCameraOrbit" "Yaw" "Pitch">}}  <br>
 
 #### How it works:
-See the annotated javascript from this page below for one way to use the 'get' and 'set' camera orbit functions.
+See the annotated javascript from this page below for one way to use the ['get' and 'set' camera orbit functions](../../api).
 
 Getting and displaying camera orbit:
 {{<highlight js>}}

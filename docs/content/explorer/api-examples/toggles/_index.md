@@ -6,7 +6,7 @@ weight: 130
 
 #### Try it out:
 
-{{< explorer "341c96cd-f967-4540-8ed1-d3fc56d31f12" >}}  <br>
+{{< explorer "d8c62be8-4ebc-11ea-b77f-2e728ce88125" >}}  <br>
   
 Click any of the buttons below to toggle on and of the respective functionality. This is especially useful if you [launch Explorer without the related UI visible](../ui-config/).  
 

@@ -18,7 +18,7 @@ Click below to pull article data from the example scene and display a list of th
 {{< control-div "articleDisplay" >}}{{< /control-div >}}  <br>
 
 #### How it works:
-The annotated javascript below shows how to call the getArticleData() function on the Explorer object and then parses the response for display. The articles are returned as an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts).
+The annotated javascript below shows how to call the [getArticleData()](../../api) function on the Voyager Explorer object and then parses the response for display. The articles are returned as an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts).
 
 {{<highlight js>}}
 function getArticles(displayElement) {
