@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Articles Task - Voyager Documentation</title>
+  <title>API Example: Toggle Displays - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-single'>
+<body class='page page-default-list'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -134,9 +134,9 @@
       
     
       
-    
-      
         
+      
+    
       
     
       
@@ -223,7 +223,7 @@
       <a href="/dpo-voyager/story/annotations-task/">Annotations Task</a>
     </li>
     
-    <li class="active ">
+    <li class="">
       <a href="/dpo-voyager/story/articles-task/">Articles Task</a>
     </li>
     
@@ -254,46 +254,112 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Articles Task</h1>
-<div class="content">
-  <p>Write or import HTML formatted articles and associate them with a scene, model, or annotation.</p>
-<!-- raw HTML omitted -->
-<p><strong>Create and write a new article</strong></p>
-<ol>
-<li>Select the <!-- raw HTML omitted -->Articles<!-- raw HTML omitted -->
-Task in the task bar.</li>
-<li>Do you want to write an article for the current scene, or for a specific model in the scene? Select either the scene node or a model node.</li>
-<li>In the task panel, click the <!-- raw HTML omitted -->Create<!-- raw HTML omitted -->
-button.</li>
-<li>Enter a title and, optionally, a lead text and some tags for the new article.</li>
-<li>Click the <!-- raw HTML omitted -->Edit<!-- raw HTML omitted -->
-button.</li>
-<li>Make sure the article editor is visible. Use the editor to edit the body text of the article.</li>
-<li>When done, click the <!-- raw HTML omitted -->Save<!-- raw HTML omitted -->
-button in the article editor.</li>
-</ol>
-<p><img src="articles-task.jpg" alt="Articles Task"></p>
-<p><strong>Preview an article in the article reader</strong></p>
-<ol>
-<li>Display the article reader by clicking the reader menu button in the Explorer panel.</li>
-<li>From the article list, select the article to be displayed. If the article isn&rsquo;t updated, deselect it, then select it again.</li>
-</ol>
-<p><img src="articles-editor.jpg" alt="Articles Editor"></p>
-<p>To delete an article, select it from the list, then click the <!-- raw HTML omitted -->Delete<!-- raw HTML omitted -->
-button in the task panel.</p>
-<p>Note that this only deletes the article reference in the current scene. The article&rsquo;s HTML file and associated media files
-(images, etc.) must be deleted manually using the media browser panel.</p>
-<p><strong>Adding images to articles</strong></p>
-<ol>
-<li>Make sure the media browser is visible. Click the <strong>Media</strong> tab next to the <strong>Navigator</strong> tab.</li>
-<li>Drag and drop image files into the media browser. Use the media browser&rsquo;s menu to rename or delete files, and to create subfolders.</li>
-<li>Open an article in the article editor. Select the article from the article list, then click the <!-- raw HTML omitted -->Edit<!-- raw HTML omitted -->
-button. You can also double click the article to open it in the editor.</li>
-<li>Drag and drop an image from the media browser into the article. Drop it at the desired position.</li>
-<li>Clicking on a dropped image displays a menu for positioning and resizing the image.</li>
-</ol>
+
+  
+  <h1 class="title">API Example: Toggle Displays</h1>
+  <div class="content">
+    <h4 id="try-it-out">Try it out:</h4>
+<p><link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
+<link href="https://3d-api.si.edu/resources/css/voyager-explorer.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
+<script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
+<script>
+var l ="https://3d-api.si.edu/content/document/"+"d8c62be8-4ebc-11ea-b77f-2e728ce88125"+"/document.json";
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' dracoRoot='https://voyager-dev.glitch.me/draco/' fontRoot='https://3d-api.si.edu/resources/fonts/' document='document.json'></voyager-explorer>";
+});
+</script>
+<div id="explorer_wrapper" width="600" height="450">
+</div>
+<script>
+function updateUI(textInput) {
+	window.location = window.location.pathname + "?uiMode=" + textInput.value;
+}
+function setBackgroundColor(color0,color1) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundColor(color0.value, color1.value);
+}
+function setBackgroundStyle(style) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundStyle(style.value);
+}
+function toggleAnnotations() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleAnnotations();
+}
+function toggleReader() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleReader();
+}
+function toggleTours() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTours();
+}
+function toggleTools() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTools();
+}
+function getCameraOrbit(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const orbitAngles = voyagerElement.getCameraOrbit();
+	
+	displayElement.innerText = "Yaw: " + orbitAngles[0] + "	Pitch: " + orbitAngles[1];
+}
+function setCameraOrbit(yaw, pitch) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
+}
+function getArticles(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const articles = voyagerElement.getArticles();
+
+	var articleNames = "";
+	articles.forEach(article => {
+		articleNames += article.title.length > 0 ? article.title : article.titles["EN"];
+		articleNames += " | ";
+	});
+  
+	displayElement.innerText = articleNames;
+}
+</script>  <!-- raw HTML omitted --></p>
+<p>Click any of the buttons below to toggle on and of the respective functionality. This is especially useful if you <a href="../ui-config/">launch Explorer without the related UI visible</a>.</p>
+<div style="text-align: center" id=toggle-wrapper>
+
+<button class="sc-button" style="display: inline-block;" onclick=toggleAnnotations()>Annotations</button>
+
+<button class="sc-button" style="display: inline-block;" onclick=toggleTours()>Tours</button>
+
+<button class="sc-button" style="display: inline-block;" onclick=toggleReader()>Reader</button>
+
+<button class="sc-button" style="display: inline-block;" onclick=toggleTools()>Tools</button>
+
 
 </div>
+<h4 id="how-it-works">How it works:</h4>
+<p>Each toggle button function starts with finding the Voyager Explorer element based on id and then calls the relevant function on the object. Code examples from this page shown below.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">toggleAnnotations</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleAnnotations</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">toggleReader</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleReader</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">toggleTours</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleTours</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">toggleTools</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleTools</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+
+  </div>
+
+  
+
 
         </div>
       </div>

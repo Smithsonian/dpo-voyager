@@ -26,15 +26,6 @@
     
     <item>
       <title>Overview</title>
-      <link>https://smithsonian.github.io/dpo-voyager/explorer/overview/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/explorer/overview/</guid>
-      <description>Voyager Explorer - 3D interactive web viewer</description>
-    </item>
-    
-    <item>
-      <title>Overview</title>
       <link>https://smithsonian.github.io/dpo-voyager/story/overview/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -67,6 +58,15 @@
       
       <guid>https://smithsonian.github.io/dpo-voyager/story/usage/</guid>
       <description>Embed and use Voyager Story in your own production pipeline.</description>
+    </item>
+    
+    <item>
+      <title>Overview</title>
+      <link>https://smithsonian.github.io/dpo-voyager/explorer/overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://smithsonian.github.io/dpo-voyager/explorer/overview/</guid>
+      <description>Voyager Explorer - 3D interactive web viewer</description>
     </item>
     
     <item>

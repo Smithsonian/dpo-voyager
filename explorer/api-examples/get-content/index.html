@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>API Examples - Voyager Documentation</title>
+  <title>API Example: Get Content - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -184,7 +184,7 @@
       <a href="/dpo-voyager/explorer/api/">API Overview</a>
     </li>
     
-    <li class="active ">
+    <li class="">
       <a href="/dpo-voyager/explorer/api-examples/">API Examples</a>
     </li>
     
@@ -256,42 +256,108 @@
           
 
   
-  <h1 class="title">API Examples</h1>
+  <h1 class="title">API Example: Get Content</h1>
   <div class="content">
-    <p>Below are some functional examples of the Voyager Explorer API in use.</p>
+    <h4 id="try-it-out">Try it out:</h4>
+<p><link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
+<link href="https://3d-api.si.edu/resources/css/voyager-explorer.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
+<script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
+<script>
+var l ="https://3d-api.si.edu/content/document/"+"d8c646aa-4ebc-11ea-b77f-2e728ce88125"+"/document.json";
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' dracoRoot='https://voyager-dev.glitch.me/draco/' fontRoot='https://3d-api.si.edu/resources/fonts/' document='document.json'></voyager-explorer>";
+});
+</script>
+<div id="explorer_wrapper" width="600" height="450">
+</div>
+<script>
+function updateUI(textInput) {
+	window.location = window.location.pathname + "?uiMode=" + textInput.value;
+}
+function setBackgroundColor(color0,color1) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundColor(color0.value, color1.value);
+}
+function setBackgroundStyle(style) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundStyle(style.value);
+}
+function toggleAnnotations() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleAnnotations();
+}
+function toggleReader() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleReader();
+}
+function toggleTours() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTours();
+}
+function toggleTools() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTools();
+}
+function getCameraOrbit(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const orbitAngles = voyagerElement.getCameraOrbit();
+	
+	displayElement.innerText = "Yaw: " + orbitAngles[0] + "	Pitch: " + orbitAngles[1];
+}
+function setCameraOrbit(yaw, pitch) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
+}
+function getArticles(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const articles = voyagerElement.getArticles();
+
+	var articleNames = "";
+	articles.forEach(article => {
+		articleNames += article.title.length > 0 ? article.title : article.titles["EN"];
+		articleNames += " | ";
+	});
+  
+	displayElement.innerText = articleNames;
+}
+</script>  <!-- raw HTML omitted --></p>
+<p>Click below to pull article data from the example scene and display a list of the article titles.</p>
+<div style="text-align: center" id=article-wrapper>
+
+<button class="sc-button" style="display: inline-block;" onclick=getArticles(articleDisplay)>Get Articles</button>
+
+
+</div>
+<p><div style="text-align: center" id=articleDisplay>
+
+</div>  <!-- raw HTML omitted --></p>
+<h4 id="how-it-works">How it works:</h4>
+<p>The annotated javascript below shows how to call the <a href="../../api">getArticleData()</a> function on the Voyager Explorer object and then parses the response for display. The articles are returned as an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts">Article data objects</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">getArticles</span><span class="p">(</span><span class="nx">displayElement</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="c1">// Call getArticles() on the object and store the resulting array
+</span><span class="c1"></span>	<span class="kr">const</span> <span class="nx">articles</span> <span class="o">=</span> <span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">getArticles</span><span class="p">();</span>
+
+	<span class="c1">// For each article in the array, grab the title attribute 
+</span><span class="c1"></span>	<span class="c1">// and add it to a string.
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">articleNames</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span><span class="p">;</span>
+	<span class="nx">articles</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">article</span> <span class="p">=&gt;</span> <span class="p">{</span>
+		<span class="nx">articleNames</span> <span class="o">+=</span> <span class="nx">article</span><span class="p">.</span><span class="nx">title</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="nx">article</span><span class="p">.</span><span class="nx">title</span> 
+			<span class="o">:</span> <span class="nx">article</span><span class="p">.</span><span class="nx">titles</span><span class="p">[</span><span class="s2">&#34;EN&#34;</span><span class="p">];</span>
+		<span class="nx">articleNames</span> <span class="o">+=</span> <span class="s2">&#34; | &#34;</span><span class="p">;</span>
+	<span class="p">});</span>
+  
+	<span class="c1">// Set the innerText of the passed in display element to 
+</span><span class="c1"></span>	<span class="c1">// the string of titles.
+</span><span class="c1"></span>	<span class="nx">displayElement</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="nx">articleNames</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
 
   </div>
 
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a></h2>
-  <p>How to use change the component background properties using the API</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api-examples/camera-orbit/">API Example: Camera Orbit</a></h2>
-  <p>Use API functions to get or set the Explorer active camera orbit.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api-examples/get-content/">API Example: Get Content</a></h2>
-  <p>Use API functions to pull content info from the active Voyager scene.</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a></h2>
-  <p>Use API functions to turn on/off functionality without the native UI</p>
-</div>
-  
-    <div class="summary mb-2">
-  
-  <h2 class="title-summary"><a href="/dpo-voyager/explorer/api-examples/ui-config/">API Example: UI Configuration</a></h2>
-  <p>How to use the &lsquo;uiMode&rsquo; attribute to customize the UI displayed on initial load of Explorer.</p>
-</div>
   
 
 

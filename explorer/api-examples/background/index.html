@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>API Example: UI Configuration - Voyager Documentation</title>
+  <title>API Example: Background Properties - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -256,7 +256,7 @@
           
 
   
-  <h1 class="title">API Example: UI Configuration</h1>
+  <h1 class="title">API Example: Background Properties</h1>
   <div class="content">
     <h4 id="try-it-out">Try it out:</h4>
 <p><link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
@@ -323,24 +323,52 @@ function getArticles(displayElement) {
 	displayElement.innerText = articleNames;
 }
 </script>  <!-- raw HTML omitted --></p>
-<p>Enter any combination of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/components/CVInterface.ts">EUIElements</a> values (none, menu, title, logo, language) in the input box below and click &ldquo;Update UI&rdquo; to refresh the page with that UI config. Use “|” to concatenate multiple options.
-<div style="text-align: center">
-	
-	
-	
-	<label style="display: inline-block;" for=Elements>Elements:</label>
-	<input class="sc-param" style="display: inline-block;" id=Elements></input>
-	
-	<button class="sc-button" style="display: inline-block;" onclick=updateUI(Elements)>Update UI</button>
+<p>Set a new background style (Solid, LinearGradient, RadialGradient) and click &lsquo;Set Style&rsquo; to apply it to the component.
+Depending on the active style, set the primary and secondary colors and click &lsquo;Set Color&rsquo; to apply.
+<div style="text-align: center"> 
+  <div style="display: inline-block">
+	<select id=Style>
+	  
+	  
+	  <option value="Solid">Solid</option>
+	  
+	  <option value="LinearGradient">LinearGradient</option>
+	  
+	  <option value="RadialGradient">RadialGradient</option>
+	  
+	</select>
+  </div>
+  <button class="sc-button" style="display: inline-block;" onclick=setBackgroundStyle(Style)>Set Style</button>
 </div></p>
+<div style="text-align: center">
+	<label style="display: inline-block;" for="color0">Color0:</label>
+	<input style="display: inline-block;" type="color" id=Color0>
+	<label style="display: inline-block;" for="color1">Color1:</label>
+	<input style="display: inline-block;" type="color" id=Color1>
+	<button class="sc-button" style="display: inline-block; margin-right: 10px" onclick=setBackgroundColor(Color0,Color1)>Set Color</button>
+</div>
 <h4 id="how-it-works">How it works:</h4>
-<p>The &lsquo;uiMode&rsquo; attribute can either be set directly on the Voyager Explorer component, or can be passed in as a URL parameter. For this example we chose to do the latter and append the parameter to the window location and refresh the page.</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">updateUI</span><span class="p">(</span><span class="nx">textinput</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nb">window</span><span class="p">.</span><span class="nx">location</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">pathname</span> <span class="o">+</span> <span class="s2">&#34;?uiMode=&#34;</span> <span class="o">+</span> <span class="nx">textinput</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+<p>Below we will break down the javascript from this page that makes use of the <a href="../../api">setBackgroundColor() and setBackgroundStyle()</a> API functions.</p>
+<p>Note that in each case the respective HTML input elements are passed in to provide access to the user input.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">setBackgroundStyle</span><span class="p">(</span><span class="nx">style</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get reference to the Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	
+	<span class="c1">// Call the style function with the value of the 
+</span><span class="c1"></span>	<span class="c1">// option input element as the parameter
+</span><span class="c1"></span>	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setBackgroundStyle</span><span class="p">(</span><span class="nx">style</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The code below shows option two with the example tag uiMode attribute directly set to display no UI.</p>
-<div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html"><span class="p">&lt;</span><span class="nt">voyager-explorer</span> <span class="na">style</span><span class="o">=</span><span class="s">&#34;display: block; position: relative; height: 450px&#34;</span> <span class="na">root</span><span class="o">=</span><span class="s">&#34;https://3d-api.si.edu/content/document/d8c636ce-4ebc-11ea-b77f-2e728ce88125/document.json&#34;</span> <span class="na">uiMode</span><span class="o">=</span><span class="s">&#34;none&#34;</span> <span class="na">dracoroot</span><span class="o">=</span><span class="s">&#34;https://voyager-dev.glitch.me/draco/&#34;</span> <span class="na">document</span><span class="o">=</span><span class="s">&#34;document.json&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">voyager-explorer</span><span class="p">&gt;</span></code></pre></div>
+<p>To set the color we follow the same pattern. Pass in the two color inputs and find the Explorer element.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">setBackgroundColor</span><span class="p">(</span><span class="nx">color0</span><span class="p">,</span><span class="nx">color1</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get reference to the Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	
+	<span class="c1">// Call the color function with the color input
+</span><span class="c1"></span>	<span class="c1">// element current values
+</span><span class="c1"></span>	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setBackgroundColor</span><span class="p">(</span><span class="nx">color0</span><span class="p">.</span><span class="nx">value</span><span class="p">,</span> <span class="nx">color1</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
 
   </div>
 

@@ -8,8 +8,6 @@
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/document/overview/</loc>
   </url><url>
-    <loc>https://smithsonian.github.io/dpo-voyager/explorer/overview/</loc>
-  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/overview/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/introduction/demo-assets/</loc>
@@ -20,11 +18,19 @@
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/usage/</loc>
   </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/overview/</loc>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/</loc>
   </url><url>
-    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/ui-config/</loc>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/background/</loc>
   </url><url>
-    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/</loc>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/camera-orbit/</loc>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/get-content/</loc>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/toggles/</loc>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/ui-config/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/api/</loc>
   </url><url>
@@ -37,6 +43,8 @@
     <loc>https://smithsonian.github.io/dpo-voyager/story/capture-task/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/derivatives-task/</loc>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/settings-task/</loc>
   </url><url>
