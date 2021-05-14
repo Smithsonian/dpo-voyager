@@ -1,0 +1,9 @@
+<div style="text-align: center">
+	{{ $fields :=  after 2 .Params }}
+	{{ $fieldString := delimit $fields "," }}
+	{{ range $fields }}
+	<label style="display: inline-block;" {{ printf "for=%s" (.) | safeHTMLAttr }}>{{ . }}:</label>
+	<input class="sc-param" style="display: inline-block;" {{ printf "id=%s" (.) | safeHTMLAttr }}></input>
+	{{ end }}
+	<button class="sc-button" style="display: inline-block;" {{ printf "onclick=%s(%s)" (.Get 1) $fieldString | safeHTMLAttr }}>{{ .Get 0 }}</button>
+</div>

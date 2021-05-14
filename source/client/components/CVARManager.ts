@@ -804,7 +804,8 @@ export default class CVARManager extends Component
 
     protected launchSceneViewer() {
         const models = this.sceneNode.getGraphComponents(CVModel2);
-        const derivative = models[0].derivatives.get(EDerivativeUsage.App3D, EDerivativeQuality.AR);
+        const svIndex = models.findIndex(model => {return model.derivatives.get(EDerivativeUsage.App3D, EDerivativeQuality.AR) !== null});
+        const derivative = svIndex > -1 ? models[svIndex].derivatives.get(EDerivativeUsage.App3D, EDerivativeQuality.AR) : null;
         
         if(derivative) {
             const linkElement = this.arLink;
@@ -820,7 +821,8 @@ export default class CVARManager extends Component
 
     protected launchQuickLook() {
         const models = this.sceneNode.getGraphComponents(CVModel2);
-        const derivative = models[0].derivatives.get(EDerivativeUsage.iOSApp3D, EDerivativeQuality.AR);
+        const iOSIndex = models.findIndex(model => {return model.derivatives.get(EDerivativeUsage.iOSApp3D, EDerivativeQuality.AR) !== null});
+        const derivative = iOSIndex > -1 ? models[iOSIndex].derivatives.get(EDerivativeUsage.iOSApp3D, EDerivativeQuality.AR) : null;
         
         if(derivative) {
             const linkElement = this.arLink;

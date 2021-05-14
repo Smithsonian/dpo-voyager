@@ -17,7 +17,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../../../libs/ff-ui/source/styles/dark";
+//@import "../../../libs/ff-ui/source/styles/dark";
+@import "../../../libs/ff-ui/source/styles/styles";
 @import "../../../libs/ff-scene/source/ui/styles";
 @import "../../../libs/ff-three/source/ui/styles";
 
@@ -89,6 +90,11 @@
 // GLOBAL
 
 .sv-content-view {
+  @include font-ui-normal;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: $color-text;
+  background-color: $color-background;
   @include fullsize;
   overflow: hidden;
   @include noselect;

@@ -1,5 +1,6 @@
 ---
 title: "API Overview"
+summary: A description of the attributes and methods that help you to externally configure and control Voyager Explorer.
 weight: 130
 ---
 
@@ -16,7 +17,8 @@ These attributes configure the initial object load of the component.
 | model        | Valid URL         | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
 | geometry     | Valid URL         | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
 | texture      | Valid URL         | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
-| dracoRoot	   | Valid URL		   | Absolute path to the Draco compression libraries used for glTF models.
+| dracoRoot	   | Valid URL		   | Absolute path to the Draco compression libraries used for glTF models. Defaults to release package path.
+| fontRoot	   | Valid URL		   | Absolute path to the folder containing bitmap fonts for the app. Defaults to release package path.
 
 ### UI Attributes
 

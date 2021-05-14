@@ -30,6 +30,7 @@ import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSpr
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
 import { Camera, ArrayCamera, PerspectiveCamera } from "three";
+import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +69,7 @@ export default class CircleSprite extends AnnotationSprite
 
     isWebGL2: boolean = false;
 
-    constructor(annotation: Annotation)
+    constructor(annotation: Annotation, assetReader: CVAssetReader)
     {
         super(annotation);
 
@@ -120,7 +121,7 @@ export default class CircleSprite extends AnnotationSprite
         this.markerA = null;
         this.markerB = null;
 
-        _fontReader.load("fonts/Roboto-Bold").then(font => {
+        assetReader.fontReader.load("fonts/Roboto-Bold").then(font => {
             this.markerMaterialA = new THREE.RawShaderMaterial(createTextShader({
                 map: font.texture,
                 transparent: true,

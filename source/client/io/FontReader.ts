@@ -33,11 +33,22 @@ export default class FontReader
     private _textureLoader: THREE.TextureLoader;
     private _cache: Dictionary<IBitmapFont>;
 
+    private _customFontPath = null;
+
     constructor(loadingManager: THREE.LoadingManager)
     {
         this._loadingManager = loadingManager;
         this._textureLoader = new THREE.TextureLoader(loadingManager);
         this._cache = {};
+    }
+
+    set fontPath(path: string) 
+    {
+        this._customFontPath = path;
+    }
+    get fontPath()
+    {
+        return this._customFontPath;
     }
 
     get(url: string): IBitmapFont
@@ -53,8 +64,12 @@ export default class FontReader
 
         this._loadingManager.itemStart(url);
 
-        const descriptorUrl = url + ".json";
-        const bitmapUrl = url + ".png";
+        const customUrl = this.fontPath;
+        const fontnameDelim = url.lastIndexOf("/");
+        const fontname = url.substr(fontnameDelim > -1 ? fontnameDelim : url.lastIndexOf("\\"));
+
+        const descriptorUrl = customUrl ? customUrl + fontname + ".json" : url + ".json";
+        const bitmapUrl = customUrl ? customUrl + fontname + ".png" : url + ".png";
 
         const loadDescriptor = fetch(descriptorUrl, {
             headers: {
@@ -85,7 +100,7 @@ export default class FontReader
                     descriptor: result[0] as object,
                     texture: result[1] as THREE.Texture,
                 };
-                this._cache[url] = font;
+                this._cache[url] = font;  // TODO: Revisit caching - this doesn't do much for us
                 this._loadingManager.itemEnd(url);
                 return font;
             });

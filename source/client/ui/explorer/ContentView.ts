@@ -28,6 +28,7 @@ import "../Spinner";
 import "./ReaderView";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +49,9 @@ export default class ContentView extends DocumentView
     }
     protected get tours() {
         return this.activeDocument ? this.activeDocument.setup.tours : null;
+    }
+    protected get renderer() {
+        return this.system.getMainComponent(CRenderer);
     }
 
     protected firstConnected()
@@ -112,7 +116,7 @@ export default class ContentView extends DocumentView
         }
         else {
             if(!sceneView.classList.contains("sv-blur")) {
-                setTimeout(() => sceneView.classList.add("sv-blur"), 1); 
+                setTimeout(() => {sceneView.classList.add("sv-blur"); this.renderer.views[0].render()}, 1);  // TODO: Extra for an apparent Android Firefox bug - remove when fixed
             }
         }
 

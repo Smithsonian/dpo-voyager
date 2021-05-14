@@ -66,6 +66,11 @@ export default class CVAssetReader extends Component
         this.modelLoader.dracoPath = dracoPath;
     }
 
+    setFontPath(fontPath: string)
+    {
+        this.fontReader.fontPath = fontPath;
+    }
+
     async getJSON(assetPath: string): Promise<any>
     {
         const url = this.assetManager.getAssetUrl(assetPath);

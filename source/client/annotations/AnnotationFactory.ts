@@ -19,6 +19,7 @@ import { Dictionary } from "@ff/core/types";
 
 import AnnotationSprite from "./AnnotationSprite";
 import Annotation from "../models/Annotation";
+import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -59,9 +60,11 @@ export default class AnnotationFactory
         return type;
     }
 
-    static createInstance(annotation: Annotation, typeName?: string): AnnotationSprite
+    static createInstance(annotation: Annotation, typeName?: string, assetReader?: CVAssetReader): AnnotationSprite
     {
         typeName = typeName || annotation.data.style;
-        return new (this.getType(typeName))(annotation);
+
+        // TODO: Combine when font loading is centralized
+        return typeName === "Circle" ? new (this.getType(typeName))(annotation, assetReader) : new (this.getType(typeName))(annotation);
     }
 }

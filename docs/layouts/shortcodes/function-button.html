@@ -1,0 +1,1 @@
+<button class="sc-button" style="display: inline-block;" {{ printf "onclick=%s(%s)" (.Get 1) (.Get 2)| safeHTMLAttr }}>{{ .Get 0 }}</button>

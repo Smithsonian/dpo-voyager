@@ -187,6 +187,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     font-weight: bold;
   }
   p {
+    @include font-ui-normal;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: $color-text;
     margin: 0.5em 0;
   }
   .ff-button {
@@ -215,7 +219,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-standard-annotation, .sv-extended-annotation {
-  max-width: 20%;
+  max-width: 28%;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
@@ -272,6 +276,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 
   p {
+    @include font-ui-normal;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: $color-text;
     margin: 0.5em 0;
   }
   .ff-button {
@@ -371,6 +379,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 // CHROME VIEW
 
 .sv-chrome-view {
+  @include font-ui-normal;
+  font-size: 0.85rem;
+  line-height: 1.35;
   @include fullsize;
   overflow: hidden;
   display: flex;
@@ -764,6 +775,8 @@ $tour-entry-indent: 12px;
 // TOUR NAVIGATOR
 
 .sv-tour-navigator {
+  color: $color-text;
+
   .sv-content {
     flex: 1;
     margin: 2px 8px;
@@ -832,6 +845,8 @@ $tour-entry-indent: 12px;
 // TOOL BAR
 
 .sv-tool-bar {
+  color: $color-text;
+  
   .sv-tool-buttons {
     flex: 1 1 auto;
     display: flex;
