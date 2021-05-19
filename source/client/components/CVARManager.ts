@@ -28,7 +28,7 @@ import RenderView from "@ff/scene/RenderView";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
 
-import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Camera, Material, RenderTarget, 
+import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Material, 
     PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";

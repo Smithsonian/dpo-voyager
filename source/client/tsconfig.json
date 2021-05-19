@@ -5,6 +5,7 @@
         "sourceMap": true,
         "jsx": "react",
         "resolveJsonModule": true,
+        //"noUnusedLocals": true,
         "experimentalDecorators": true,
 
         "baseUrl": ".",

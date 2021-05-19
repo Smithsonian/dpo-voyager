@@ -323,7 +323,7 @@ export default class CVAnnotationsTask extends CVTask
 
     // Make sure this task language matches document
     protected synchLanguage() {
-        const {ins, outs} = this;
+        const {ins} = this;
         const languageManager = this.activeDocument.setup.language;
 
         if(ins.language.value !== languageManager.outs.language.value)

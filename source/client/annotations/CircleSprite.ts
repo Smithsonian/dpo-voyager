@@ -18,14 +18,12 @@
 import * as THREE from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
-import {WEBGL} from "three/examples/jsm/WebGL.js";
 
 import { customElement, html } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
 
 import GPUPicker from "@ff/three/GPUPicker";
 
-import FontReader from "client/io/FontReader";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
@@ -33,9 +31,6 @@ import { Camera, ArrayCamera, PerspectiveCamera } from "three";
 import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-// TODO: Temporary until the framework has centralized font management
-const _fontReader = new FontReader(new THREE.LoadingManager());
 
 const _vec3a = new THREE.Vector3();
 const _vec3b = new THREE.Vector3();

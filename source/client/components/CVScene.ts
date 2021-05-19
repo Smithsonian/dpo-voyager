@@ -17,7 +17,7 @@
 
 import * as THREE from "three";
 
-import { IComponentEvent, ITypedEvent, types } from "@ff/graph/Component";
+import { IComponentEvent, types } from "@ff/graph/Component";
 
 import { EUnitType, TUnitType } from "client/schema/common";
 import { IDocument, IScene } from "client/schema/document";

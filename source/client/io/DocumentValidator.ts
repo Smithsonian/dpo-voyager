@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as Ajv from "ajv";
+import AjvCore from "ajv";
 
 import * as documentSchema from "client/schema/json/document.schema.json";
 import * as commonSchema from "client/schema/json/common.schema.json";
@@ -34,7 +34,7 @@ export default class DocumentValidator
 
     constructor()
     {
-        this._schemaValidator = new Ajv({
+        this._schemaValidator = new AjvCore({
             schemas: [
                 documentSchema,
                 commonSchema,

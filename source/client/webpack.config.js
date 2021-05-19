@@ -240,7 +240,9 @@ function createAppConfig(app, isDevMode, isOffline)
             "three": "THREE",
             "quill": "Quill",
             "../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
-        }
+        },
+
+        stats: 'detailed'
     };
 
     if (isDevMode) {

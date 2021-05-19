@@ -28,10 +28,8 @@ import NVNode from "../nodes/NVNode";
 
 import CVModel2 from "./CVModel2";
 import CVTask from "./CVTask";
-import CVScene from "./CVScene";
 
 import PoseTaskView from "../ui/story/PoseTaskView";
-import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
