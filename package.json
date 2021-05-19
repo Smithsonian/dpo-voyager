@@ -43,12 +43,13 @@
         }
     ],
     "license": "Apache-2.0",
+    "sideEffects": ["source/client/ui/explorer/MainMenu.ts"],
     "bugs": {
         "url": "https://github.com/Smithsonian/dpo-voyager/issues"
     },
     "homepage": "https://github.com/Smithsonian/dpo-voyager#readme",
     "dependencies": {
-        "ajv": "^6.12.3",
+        "ajv": "^7.2.1",
         "clone-deep": "^4.0.1",
         "express": "^4.17.1",
         "filenamify": "^4.2.0",

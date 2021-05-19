@@ -19,7 +19,6 @@ import * as THREE from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
-import CRenderable from "@ff/scene/components/CRenderable";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";

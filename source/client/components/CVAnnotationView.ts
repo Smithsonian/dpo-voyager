@@ -27,7 +27,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 
 import CVModel2 from "./CVModel2";
 import CVMeta from "./CVMeta";
-import CVReader from "./CVReader";
+//import CVReader from "./CVReader";
 import unitScaleFactor from "../utils/unitScaleFactor";
 
 import { IAnnotation } from "client/schema/model";
@@ -95,9 +95,9 @@ export default class CVAnnotationView extends CObject3D
     protected get meta() {
         return this.getComponent(CVMeta, true);
     }
-    protected get reader() {
-        return this.getGraphComponent(CVReader, true);
-    }
+    //protected get reader() {
+    //    return this.getGraphComponent(CVReader, true);
+    //}
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
     }
@@ -468,11 +468,11 @@ export default class CVAnnotationView extends CObject3D
 
     protected onSpriteLink(event: IAnnotationLinkEvent)
     {
-        const reader = this.reader;
+        /*const reader = this.reader;
         if (reader) {
             this.reader.ins.articleId.setValue(event.annotation.data.articleId);
             this.reader.ins.enabled.setValue(true);
-        }
+        }*/
     }
 
     protected createSprite(annotation: Annotation)

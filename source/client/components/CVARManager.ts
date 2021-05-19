@@ -32,7 +32,7 @@ import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, M
     PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
-import CVDocumentProvider from "./CVDocumentProvider";
+//import CVDocumentProvider from "./CVDocumentProvider";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
@@ -45,10 +45,10 @@ import CVAnnotationView from "./CVAnnotationView";
 import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
-import ARPrompt from "client/ui/explorer/ARPrompt";
-import ARMenu from "client/ui/explorer/ARMenu";
+//import ARPrompt from "client/ui/explorer/ARPrompt";
+//import ARMenu from "client/ui/explorer/ARMenu";
 import CVAnalytics from "./CVAnalytics";
-import CVReader from "./CVReader";
+//import CVReader from "./CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,18 +93,18 @@ export default class CVARManager extends Component
     protected get sceneNode() {
         return this.getSystemComponent(CVScene);
     }
-    protected get documentProvider() {
-        return this.getMainComponent(CVDocumentProvider);
-    }
+    //protected get documentProvider() {
+    //    return this.getMainComponent(CVDocumentProvider);
+    //}
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
     }
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
-    protected get reader() {
-        return this.getGraphComponent(CVReader, true);
-    }
+    //protected get reader() {
+    //    return this.getGraphComponent(CVReader, true);
+    //}
 
     protected arLink = document.createElement('a');
     protected raycaster: Raycaster = new Raycaster();
@@ -180,7 +180,7 @@ export default class CVARManager extends Component
         const sceneComponent = this.vScene = this.renderer.activeSceneComponent;
         const camera = this.camera = sceneComponent.activeCamera;
         this.cameraParent = camera.parent;
-        const setup = this.setup = this.documentProvider.outs.activeDocument.value.setup;
+        //const setup = this.setup = this.documentProvider.outs.activeDocument.value.setup;
         
         if(!setup) {
             return false;
@@ -861,10 +861,10 @@ export default class CVARManager extends Component
     protected addUIElements() {
         const overlayElement = document.querySelector('ff-viewport-overlay');
         if(document.querySelector('sv-ar-prompt-container') === null) {        
-            overlayElement.append(new ARPrompt(this.system));
+            //overlayElement.append(new ARPrompt(this.system));
         }
         if(document.querySelector('sv-ar-menu-container') === null) {
-            overlayElement.append(new ARMenu(this.system));
+            //overlayElement.append(new ARMenu(this.system));
         }
     }
 

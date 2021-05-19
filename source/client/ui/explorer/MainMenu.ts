@@ -77,7 +77,7 @@ export default class MainMenu extends DocumentView
 
     protected render()
     {
-        const document = this.activeDocument;
+        const document = this.activeDocument; console.log(document);
         if (!document) {
             return html``;
         }
@@ -110,7 +110,7 @@ export default class MainMenu extends DocumentView
         const models = this.sceneNode.getGraphComponents(CVModel2);
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
-
+console.log("RENDER MENU");
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
         ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as filenamify from "filenamify";
+import filenamify from "filenamify";
 
 import { Node, types } from "@ff/graph/Component";
 

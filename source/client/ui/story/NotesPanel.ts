@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as moment from "moment";
+import moment from "moment";
 
 import System from "@ff/graph/System";
 

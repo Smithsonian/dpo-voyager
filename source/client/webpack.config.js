@@ -157,6 +157,7 @@ function createAppConfig(app, isDevMode, isOffline)
         },
 
         optimization: {
+            usedExports: true,
             minimize: !isDevMode,
 
             minimizer: [
@@ -201,7 +202,7 @@ function createAppConfig(app, isDevMode, isOffline)
                     // Typescript/JSX files
                     test: /\.tsx?$/,
                     use: "ts-loader",
-		    exclude: /node_modules/,
+		            exclude: /node_modules/,
                 },
                 {
                     // Enforce source maps for all javascript files
@@ -216,7 +217,8 @@ function createAppConfig(app, isDevMode, isOffline)
                         MiniCssExtractPlugin.loader,
                         "css-loader",
                         "sass-loader"
-                    ]
+                    ],
+                    sideEffects: true
                 },
                 {
                     // Concatenate CSS
