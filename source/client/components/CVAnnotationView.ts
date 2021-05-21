@@ -36,6 +36,9 @@ import Annotation from "../models/Annotation";
 import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
 import AnnotationFactory from "../annotations/AnnotationFactory";
 
+import "../annotations/StandardSprite";
+import "../annotations/ExtendedSprite";
+import "../annotations/CircleSprite";
 import CircleSprite from "../annotations/CircleSprite";
 import CVARManager from "./CVARManager";
 import StandardSprite from "../annotations/StandardSprite";
