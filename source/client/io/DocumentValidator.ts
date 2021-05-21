@@ -34,7 +34,6 @@ export default class DocumentValidator
 
     constructor()
     {
-        console.log(documentSchema);
         this._schemaValidator = new AjvCore({
             schemas: [
                 documentSchema,

@@ -30,6 +30,9 @@ import "./ReaderView";
 import DocumentView, { customElement, html } from "./DocumentView";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
+import ARPrompt from "./ARPrompt";
+import ARMenu from "./ARMenu";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-content-view")
@@ -84,6 +87,17 @@ export default class ContentView extends DocumentView
 
         const reader = this.reader;
         const tours = this.tours;
+
+        // TODO - Hack, figure out a better place for this.
+        const overlayElement = document.querySelector('ff-viewport-overlay');
+        if(overlayElement) {
+            if(document.querySelector('sv-ar-prompt-container') === null) {        
+                overlayElement.append(new ARPrompt(this.system));
+            }
+            if(document.querySelector('sv-ar-menu-container') === null) {
+                overlayElement.append(new ARMenu(this.system));
+            }
+        }
         
         if (tours) {
             tourMenuVisible = tours.ins.enabled.value && tours.outs.tourIndex.value === -1;

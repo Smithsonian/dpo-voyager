@@ -43,7 +43,6 @@
         }
     ],
     "license": "Apache-2.0",
-    "sideEffects": ["source/client/ui/explorer/MainMenu.ts"],
     "bugs": {
         "url": "https://github.com/Smithsonian/dpo-voyager/issues"
     },

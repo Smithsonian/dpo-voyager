@@ -32,7 +32,6 @@ import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, M
     PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
-//import CVDocumentProvider from "./CVDocumentProvider";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
@@ -45,10 +44,7 @@ import CVAnnotationView from "./CVAnnotationView";
 import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
-//import ARPrompt from "client/ui/explorer/ARPrompt";
-//import ARMenu from "client/ui/explorer/ARMenu";
 import CVAnalytics from "./CVAnalytics";
-//import CVReader from "./CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -179,8 +175,8 @@ export default class CVARManager extends Component
         const renderer = this.renderer.views[0].renderer;
         const sceneComponent = this.vScene = this.renderer.activeSceneComponent;
         const camera = this.camera = sceneComponent.activeCamera;
-        this.cameraParent = camera.parent;
-        //const setup = this.setup = this.documentProvider.outs.activeDocument.value.setup;
+        this.cameraParent = camera.parent; console.log(this);
+        const setup = this.setup = this.getSystemComponent(CVSetup); //this.documentProvider.outs.activeDocument.value.setup;
         
         if(!setup) {
             return false;
@@ -237,8 +233,6 @@ export default class CVARManager extends Component
             .then(hitTestSource => {
                 this.initialHitTestSource = hitTestSource;
             });
-
-        this.addUIElements();
 
         this.outs.isPresenting.setValue(true);
             
@@ -856,18 +850,6 @@ export default class CVARManager extends Component
 
         this.selectionRing.visible = material.opacity > 0;
     }
-
-    // Add AR UI to overlay
-    protected addUIElements() {
-        const overlayElement = document.querySelector('ff-viewport-overlay');
-        if(document.querySelector('sv-ar-prompt-container') === null) {        
-            //overlayElement.append(new ARPrompt(this.system));
-        }
-        if(document.querySelector('sv-ar-menu-container') === null) {
-            //overlayElement.append(new ARMenu(this.system));
-        }
-    }
-
 
     // Helper function to generate rounded rectangle shape from Three.js example:
     // https://github.com/mrdoob/three.js/blob/dev/examples/webgl_geometry_shapes.html
