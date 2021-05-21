@@ -36,9 +36,6 @@ import Annotation from "../models/Annotation";
 import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
 import AnnotationFactory from "../annotations/AnnotationFactory";
 
-import "../annotations/StandardSprite";
-import "../annotations/ExtendedSprite";
-import "../annotations/CircleSprite";
 import CircleSprite from "../annotations/CircleSprite";
 import CVARManager from "./CVARManager";
 import StandardSprite from "../annotations/StandardSprite";
@@ -517,6 +514,12 @@ export default class CVAnnotationView extends CObject3D
     {
         const ins = this.ins;
         const annotation = this._activeAnnotation;
+        const language = this.language;
+
+        this.getAnnotations().forEach( annotation => {
+            annotation.language = language.outs.language.value;
+        });
+        ins.activeTags.set();
 
         // update sprites
         for (const key in this._annotations) {

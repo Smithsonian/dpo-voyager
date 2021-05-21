@@ -22,12 +22,14 @@ import { IReader, EReaderPosition } from "client/schema/setup";
 
 import Article from "../models/Article";
 
-import NVNode from "../nodes/NVNode";
+//import NVNode from "../nodes/NVNode";
 
 import CVMeta, { IArticlesUpdateEvent } from "./CVMeta";
 import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import CVAnalytics from "./CVAnalytics";
+
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +38,7 @@ export { Article, EReaderPosition };
 export interface IArticleEntry
 {
     article: Article;
-    node: NVNode;
+    //node: NVNode;
 }
 
 export default class CVReader extends Component
@@ -55,7 +57,7 @@ export default class CVReader extends Component
     protected static readonly outs = {
         article: types.Object("Article.Active", Article),
         content: types.String("Article.Content"),
-        node: types.Object("Article.Node", NVNode),
+        //node: types.Object("Article.Node", NVNode),
     };
 
     ins = this.addInputs(CVReader.ins);
@@ -91,6 +93,9 @@ export default class CVReader extends Component
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }
+    protected get language() {
+        return this.getGraphComponent(CVLanguageManager);
+    }
 
     protected _articles: Dictionary<IArticleEntry>;
 
@@ -99,11 +104,13 @@ export default class CVReader extends Component
         super.create();
         this.getGraphComponents(CVMeta).forEach(meta => meta.on<IArticlesUpdateEvent>("update", this.updateArticles, this));
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
+        this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
         this.updateArticles();
     }
 
     dispose()
     {
+        this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
         this.getGraphComponents(CVMeta).forEach(meta => meta.off<IArticlesUpdateEvent>("update", this.updateArticles, this));
         super.dispose();
@@ -120,7 +127,7 @@ export default class CVReader extends Component
         if (ins.articleId.changed) {
             const entry = this._articles[ins.articleId.value] || null;
             const article = entry && entry.article;
-            outs.node.setValue(entry && entry.node);
+            //outs.node.setValue(entry && entry.node);
             outs.article.setValue(article);
             outs.content.setValue("");
 
@@ -179,6 +186,16 @@ export default class CVReader extends Component
         this.updateArticles();
     }
 
+    protected onLanguageComponent(event: IComponentEvent<CVLanguageManager>)
+    {
+        if (event.add) {
+            event.object.outs.language.on("value", this.updateLanguage, this);
+        }
+        if (event.remove) {
+            event.object.outs.language.off("value", this.updateLanguage, this);
+        }
+    }
+
     protected updateArticles()
     {
         const metas = this.getGraphComponents(CVMeta);
@@ -200,6 +217,18 @@ export default class CVReader extends Component
         else {
             this.ins.articleId.setValue("");
         }
+    }
+
+    protected updateLanguage()
+    {
+        const ins = this.ins;
+        // update articles
+        this.articles.forEach( entry => {
+            entry.article.language = this.language.outs.language.value;
+        });
+
+        // trigger reader active article update
+        ins.articleId.set();
     }
 
     fromData(data: IReader)
