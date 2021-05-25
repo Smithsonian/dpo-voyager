@@ -198,25 +198,31 @@ function createAppConfig(app, isDevMode, isOffline)
                     loader: "raw-loader"
                 },
                 {
-                    // Typescript/JSX files
-                    test: /\.tsx?$/,
-                    use: "ts-loader",
-		    exclude: /node_modules/,
-                },
-                {
                     // Enforce source maps for all javascript files
                     enforce: "pre",
                     test: /\.js$/,
                     loader: "source-map-loader"
                 },
                 {
+                    // Transpile SCSS to CSS and concatenate (to string)
+                    test: /\.scss$/,
+                    use: ["raw-loader","sass-loader"],
+                    issuer: {
+                        include: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                    }
+                },
+                {
                     // Transpile SCSS to CSS and concatenate
                     test: /\.scss$/,
-                    use: [
-                        MiniCssExtractPlugin.loader,
-                        "css-loader",
-                        "sass-loader"
-                    ]
+                    use: /*appName === 'voyager-explorer' ? ["raw-loader","sass-loader"] :*/
+                        [         
+                            MiniCssExtractPlugin.loader,
+                            "css-loader",
+                            "sass-loader"
+                        ],
+                    issuer: {
+                        exclude: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                    }
                 },
                 {
                     // Concatenate CSS
@@ -226,6 +232,12 @@ function createAppConfig(app, isDevMode, isOffline)
                         "style-loader",
                         "css-loader",
                     ]
+                },
+                {
+                    // Typescript/JSX files
+                    test: /\.tsx?$/,
+                    use: "ts-loader",
+		            exclude: /node_modules/,
                 },
                 {
                     test: /\.hbs$/,

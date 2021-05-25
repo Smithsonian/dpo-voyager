@@ -38,9 +38,9 @@ import NotesPanel from "./NotesPanel";
 import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 import AssetPanel from "./AssetPanel";
+import CollectionPanel from "./CollectionPanel";
 
 import "./styles.scss";
-import CollectionPanel from "./CollectionPanel";
 
 ////////////////////////////////////////////////////////////////////////////////
 // STORY ICONS

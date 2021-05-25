@@ -3,6 +3,8 @@ declare module '!raw-loader!*' {
     export = contents;
 }
 
+declare module "*.scss";
+
 // Webpack constant: build version
 declare const ENV_VERSION: string;
 // Webpack constant: true during development build

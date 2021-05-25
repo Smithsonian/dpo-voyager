@@ -27,7 +27,7 @@ import ExplorerApplication, { IExplorerApplicationProps } from "../../applicatio
 import ContentView from "./ContentView";
 import ChromeView from "./ChromeView";
 
-import "./styles.scss";
+import styles from "./styles.scss";
 
 ////////////////////////////////////////////////////////////////////////////////
 // EXPLORER ICONS
@@ -104,13 +104,21 @@ export default class MainView extends CustomElement
             this.application = new ExplorerApplication(null, props);
         }
 
+        this.attachShadow({mode: 'open'});
+        const shadowRoot = this.shadowRoot;
+
+        // add style
+        var styleElement = document.createElement("style");
+        styleElement.innerText = styles;
+        shadowRoot.appendChild(styleElement);
+
         const system = this.application.system;
-        new ContentView(system).appendTo(this);
-        new ChromeView(system).appendTo(this);
+        shadowRoot.appendChild(new ContentView(system));
+        shadowRoot.appendChild(new ChromeView(system));
 
         const notifications = document.createElement("div");
         notifications.setAttribute("id", Notification.stackId);
-        this.appendChild(notifications);
+        shadowRoot.appendChild(notifications);
     }
 
     protected connected()
