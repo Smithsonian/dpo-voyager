@@ -119,6 +119,7 @@ export default class MainView extends CustomElement
         const notifications = document.createElement("div");
         notifications.setAttribute("id", Notification.stackId);
         shadowRoot.appendChild(notifications);
+        Notification.shadowRootNode = shadowRoot;
     }
 
     protected connected()
