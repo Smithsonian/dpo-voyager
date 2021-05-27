@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Texture, EquirectangularReflectionMapping } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
@@ -39,7 +39,7 @@ export default class CVEnvironment extends Component
 
     ins = this.addInputs(CVEnvironment.envIns);
 
-    private _texture: THREE.Texture = null;
+    private _texture: Texture = null;
     private _currentIdx = 0;
 
     protected get assetReader() {
@@ -70,7 +70,7 @@ export default class CVEnvironment extends Component
                                     material.metalness = 0.0;
                                     this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
                                         this._texture = texture; 
-                                        this._texture.mapping = THREE.EquirectangularReflectionMapping; 
+                                        this._texture.mapping = EquirectangularReflectionMapping; 
                                         material.envMap = this._texture;
                                         material.metalness = metalnessCache;
                                         material.needsUpdate = true; 
@@ -81,7 +81,7 @@ export default class CVEnvironment extends Component
                                     this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
                                         this._texture.dispose();
                                         this._texture = texture; 
-                                        this._texture.mapping = THREE.EquirectangularReflectionMapping; 
+                                        this._texture.mapping = EquirectangularReflectionMapping; 
                                         material.envMap = this._texture;
                                         material.needsUpdate = true; 
                                     });
@@ -90,7 +90,7 @@ export default class CVEnvironment extends Component
                             else 
                             {
                                 material.envMap = this._texture;
-                                material.envMap.mapping = THREE.EquirectangularReflectionMapping;
+                                material.envMap.mapping = EquirectangularReflectionMapping;
                                 material.needsUpdate = true; 
                             }
                         }

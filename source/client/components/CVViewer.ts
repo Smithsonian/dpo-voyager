@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { GammaEncoding } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -138,8 +138,8 @@ export default class CVViewer extends Component
         }
 
         // ** Temporary hack until RenderView supports outputEncoding param
-        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== THREE.GammaEncoding) {
-            this.renderer.views[0].renderer.outputEncoding = THREE.GammaEncoding;
+        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== GammaEncoding) {
+            this.renderer.views[0].renderer.outputEncoding = GammaEncoding;
         }
 
         return true;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Matrix4, Quaternion, Euler, MathUtils } from "three";
 
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
@@ -23,11 +23,11 @@ import { INode } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
-const _mat4 = new THREE.Matrix4();
-const _quat = new THREE.Quaternion();
-const _euler = new THREE.Euler();
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _mat4 = new Matrix4();
+const _quat = new Quaternion();
+const _euler = new Euler();
 
 export default class CVNode extends CTransform
 {
@@ -63,7 +63,7 @@ export default class CVNode extends CTransform
             _mat4.decompose(_vec3a, _quat, _vec3b);
             _vec3a.toArray(position.value);
             _euler.setFromQuaternion(_quat, orderTag);
-            _euler.toVector3(_vec3a).multiplyScalar(THREE.MathUtils.RAD2DEG).toArray(rotation.value);
+            _euler.toVector3(_vec3a).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
             _vec3b.toArray(scale.value);
 
             position.set();
@@ -77,7 +77,7 @@ export default class CVNode extends CTransform
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
                 _euler.setFromQuaternion(_quat, orderTag);
-                _euler.toVector3(_vec3a).multiplyScalar(THREE.MathUtils.RAD2DEG).toArray(rotation.value);
+                _euler.toVector3(_vec3a).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
                 rotation.set();
             }
             if (data.scale) {

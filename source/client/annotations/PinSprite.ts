@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Mesh, CylinderBufferGeometry, MeshPhongMaterial, Camera } from "three";
 
 import math from "@ff/core/math";
 import { customElement, html } from "@ff/ui/CustomElement";
@@ -25,21 +25,21 @@ import AnnotationFactory from "./AnnotationFactory";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _offset = new THREE.Vector3(0, 1.5, 0);
+const _offset = new Vector3(0, 1.5, 0);
 
 export default class PinSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Pin";
 
-    protected pin: THREE.Mesh;
+    protected pin: Mesh;
 
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        this.pin = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.25, 0.02, 1, 16, 1),
-            new THREE.MeshPhongMaterial({ color: "white" })
+        this.pin = new Mesh(
+            new CylinderBufferGeometry(0.25, 0.02, 1, 16, 1),
+            new MeshPhongMaterial({ color: "white" })
         );
         this.pin.geometry.translate(0, 0.5, 0);
         this.pin.frustumCulled = false;
@@ -58,19 +58,19 @@ export default class PinSprite extends AnnotationSprite
         this.pin.updateMatrix();
 
         const c = annotation.color;
-        (this.pin.material as THREE.MeshPhongMaterial).color.setRGB(c[0], c[1], c[2]);
+        (this.pin.material as MeshPhongMaterial).color.setRGB(c[0], c[1], c[2]);
 
         super.update();
     }
 
-    renderHTMLElement(element: PinAnnotation, container: HTMLElement, camera: THREE.Camera)
+    renderHTMLElement(element: PinAnnotation, container: HTMLElement, camera: Camera)
     {
         super.renderHTMLElement(element, container, camera, this.pin, _offset);
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
-        (this.pin.material as THREE.MeshPhongMaterial).opacity = opacity;
+        (this.pin.material as MeshPhongMaterial).opacity = opacity;
         element.setOpacity(opacity);
     }
 

@@ -150,14 +150,15 @@ function createAppConfig(app, isDevMode, isOffline)
                 "@ff/react": path.resolve(dirs.libs, "ff-react/source"),
                 "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
                 "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
-                "@ff/scene": path.resolve(dirs.libs, "ff-scene/source")
+                "@ff/scene": path.resolve(dirs.libs, "ff-scene/source"),
+                "three$": path.resolve(dirs.modules, "three/src/Three"),
+                "../../../build/three.module.js": path.resolve(dirs.modules, "three/src/Three")
             },
             // Resolvable extensions
             extensions: [".ts", ".tsx", ".js", ".json"]
         },
 
         optimization: {
-            usedExports: true,
             //concatenateModules: false,
             minimize: !isDevMode,
 
@@ -240,9 +241,9 @@ function createAppConfig(app, isDevMode, isOffline)
         // When importing a module whose path matches one of the following, just
         // assume a corresponding global variable exists and use that instead.
         externals: {
-            "three": "THREE",
+            //"three": "THREE",
             "quill": "Quill",
-            "../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
+            //"../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
         },
 
         stats: {chunkModules: true, excludeModules: false }

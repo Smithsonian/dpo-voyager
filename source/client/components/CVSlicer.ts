@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Box3, Mesh } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
@@ -56,7 +56,7 @@ export default class CVSlicer extends Component
         position: types.Number("Slice.Position", { min: 0, max: 1, preset: 0.5 }),
         inverted: types.Boolean("Slice.Inverted"),
         color: types.ColorRGB("Slice.Color", [ 0, 0.61, 0.87 ]), // SI blue
-        boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
+        boundingBox: types.Object("Scene.BoundingBox", Box3),
     };
 
     ins = this.addInputs(CVSlicer.ins);
@@ -129,7 +129,7 @@ export default class CVSlicer extends Component
         // set the slicing plane in the Uber materials of each scene model
         models.forEach(model => {
             const object = model.object3D;
-            object.traverse((mesh: THREE.Mesh) => {
+            object.traverse((mesh: Mesh) => {
                 if (mesh.isMesh) {
                     const material = mesh.material as UberPBRMaterial;
                     if (material.isUberPBRMaterial) {

@@ -94,7 +94,7 @@ export default class ContentView extends DocumentView
             if(document.querySelector('sv-ar-prompt-container') === null) {        
                 overlayElement.append(new ARPrompt(this.system));
             }
-            if(document.querySelector('sv-ar-menu-container') === null) {
+            if(document.querySelector('sv-ar-menu') === null) {
                 overlayElement.append(new ARMenu(this.system));
             }
         }

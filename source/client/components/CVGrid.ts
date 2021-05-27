@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Matrix4, Box3, Color } from "three";
 
 import Viewport from "@ff/three/Viewport";
 import ThreeGrid, { IGridProps } from "@ff/three/Grid";
@@ -30,11 +30,11 @@ import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
 
-const _matRotationOffset = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
-const _matIdentity = new THREE.Matrix4();
+const _matRotationOffset = new Matrix4().makeRotationX(Math.PI * 0.5);
+const _matIdentity = new Matrix4();
 
 
 export default class CVGrid extends CObject3D
@@ -47,7 +47,7 @@ export default class CVGrid extends CObject3D
     protected static readonly gridIns = {
         color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
         opacity: types.Percent("Grid.Opacity", 1.0),
-        boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
+        boundingBox: types.Object("Scene.BoundingBox", Box3),
     };
 
     protected static readonly gridOuts = {
@@ -81,8 +81,8 @@ export default class CVGrid extends CObject3D
         size: 20,
         mainDivisions: 2,
         subDivisions: 10,
-        mainColor: new THREE.Color(0.5, 0.7, 0.8),
-        subColor: new THREE.Color(0.25, 0.35, 0.4)
+        mainColor: new Color(0.5, 0.7, 0.8),
+        subColor: new Color(0.25, 0.35, 0.4)
     };
 
     create()
@@ -107,8 +107,8 @@ export default class CVGrid extends CObject3D
             const props = this._gridProps;
 
             if (ins.color.changed) {
-                const mainColor = props.mainColor as THREE.Color;
-                const subColor = props.subColor as THREE.Color;
+                const mainColor = props.mainColor as Color;
+                const subColor = props.subColor as Color;
                 mainColor.fromArray(ins.color.value);
                 subColor.r = mainColor.r * 0.5;
                 subColor.g = mainColor.g * 0.5;
@@ -120,7 +120,7 @@ export default class CVGrid extends CObject3D
                 const box = scene.outs.boundingBox.value;
                 const units = scene.ins.units.value;
 
-                box.getSize(_vec3a as unknown as THREE.Vector3);
+                box.getSize(_vec3a as unknown as Vector3);
                 let size = Math.max(_vec3a.x, _vec3a.y, _vec3a.z);
                 let f = 1;
 

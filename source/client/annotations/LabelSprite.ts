@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Mesh, CylinderBufferGeometry, MeshPhongMaterial, Camera } from "three";
 
 import { customElement, html } from "@ff/ui/CustomElement";
 
@@ -28,15 +28,15 @@ export default class LabelSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Label";
 
-    protected cone: THREE.Mesh;
+    protected cone: Mesh;
 
     constructor(annotation: Annotation)
     {
         super(annotation);
 
-        this.cone = new THREE.Mesh(
-            new THREE.CylinderBufferGeometry(0.3, 0.02, 4),
-            new THREE.MeshPhongMaterial({ color: "green" })
+        this.cone = new Mesh(
+            new CylinderBufferGeometry(0.3, 0.02, 4),
+            new MeshPhongMaterial({ color: "green" })
         );
 
         this.cone.geometry.translate(0, 2, 0);
@@ -48,7 +48,7 @@ export default class LabelSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(element: LabelAnnotation, container: HTMLElement, camera: THREE.Camera)
+    renderHTMLElement(element: LabelAnnotation, container: HTMLElement, camera: Camera)
     {
         super.renderHTMLElement(element, container, camera, this.cone);
     }

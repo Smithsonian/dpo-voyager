@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { LoadingManager } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Component containing a THREE.LoadingManager and services to convert
+ * Component containing a LoadingManager and services to convert
  * asset paths to URLs and vice versa.
  *
  * Outputs indicate whether the loading manager is busy.
@@ -149,7 +149,7 @@ export default class CVAssetManager extends Component
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class AssetLoadingManager extends THREE.LoadingManager
+class AssetLoadingManager extends LoadingManager
 {
     private _manager: CVAssetManager;
     private _isBusy: boolean;

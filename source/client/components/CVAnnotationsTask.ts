@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Quaternion, Matrix4, Matrix3, Object3D } from "three";
 
 import * as helpers from "@ff/three/helpers";
 
@@ -38,11 +38,11 @@ import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/sch
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _position = new THREE.Vector3();
-const _scaling = new THREE.Vector3();
-const _quat = new THREE.Quaternion();
-const _mat4 = new THREE.Matrix4();
-const _mat3 = new THREE.Matrix3();
+const _position = new Vector3();
+const _scaling = new Vector3();
+const _quat = new Quaternion();
+const _mat4 = new Matrix4();
+const _mat3 = new Matrix3();
 
 export enum EAnnotationsTaskMode { Off, Move, Create }
 
@@ -303,10 +303,10 @@ export default class CVAnnotationsTask extends CVTask
     }
 
     /** Accumulates transforms from current object to root. */
-    protected getMeshTransform(root : THREE.Object3D, current: THREE.Object3D)
+    protected getMeshTransform(root : Object3D, current: Object3D)
     {
-        var result = new THREE.Matrix4();
-        var tempMatrix = new THREE.Matrix4();
+        var result = new Matrix4();
+        var tempMatrix = new Matrix4();
 
         result.identity();
 
