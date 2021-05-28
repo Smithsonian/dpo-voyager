@@ -32,6 +32,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 import ARPrompt from "./ARPrompt";
 import ARMenu from "./ARMenu";
+import CVARManager from "client/components/CVARManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,6 +56,9 @@ export default class ContentView extends DocumentView
     }
     protected get renderer() {
         return this.system.getMainComponent(CRenderer);
+    }
+    protected get arManager() {
+        return this.system.getMainComponent(CVARManager);
     }
 
     protected firstConnected()
@@ -89,12 +93,12 @@ export default class ContentView extends DocumentView
         const tours = this.tours;
 
         // TODO - Hack, figure out a better place for this.
-        const overlayElement = document.querySelector('ff-viewport-overlay');
+        const overlayElement = this.arManager.shadowRoot.querySelector('ff-viewport-overlay');
         if(overlayElement) {
-            if(document.querySelector('sv-ar-prompt-container') === null) {        
+            if(this.arManager.shadowRoot.querySelector('sv-ar-prompt-container') === null) {        
                 overlayElement.append(new ARPrompt(this.system));
             }
-            if(document.querySelector('sv-ar-menu') === null) {
+            if(this.arManager.shadowRoot.querySelector('sv-ar-menu') === null) {
                 overlayElement.append(new ARMenu(this.system));
             }
         }

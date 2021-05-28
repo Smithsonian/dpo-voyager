@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component, { types } from "@ff/graph/Component";
+import Component from "@ff/graph/Component";
 
 import CVModel2 from "./CVModel2";
 

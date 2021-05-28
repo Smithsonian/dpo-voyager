@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+/*import * as THREE from "three";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import AnnotationFactory from "./AnnotationFactory";
@@ -39,4 +39,4 @@ export default class BalloonSprite extends AnnotationSprite
     }
 }
 
-AnnotationFactory.registerType(BalloonSprite);
+AnnotationFactory.registerType(BalloonSprite);*/

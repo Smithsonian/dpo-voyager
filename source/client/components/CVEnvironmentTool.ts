@@ -17,7 +17,7 @@
 
 import CVDocument from "./CVDocument";
 
-import CVTool, { types, customElement, html, ToolView } from "./CVTool";
+import CVTool, { customElement, html, ToolView } from "./CVTool";
 import { EBackgroundStyle } from "@ff/scene/components/CBackground";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
         const style = background.ins.style.getValidatedValue();
 
         const isSolid = style === EBackgroundStyle.Solid;
-        const isLinear = style === EBackgroundStyle.LinearGradient;
+        //const isLinear = style === EBackgroundStyle.LinearGradient;
 
         const environment = setup.environment;
         const language = setup.language;

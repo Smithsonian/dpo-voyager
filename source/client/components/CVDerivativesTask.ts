@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Node, types } from "@ff/graph/Component";
+import { Node } from "@ff/graph/Component";
 
 import CVTask from "./CVTask";
 import DerivativesTaskView from "../ui/story/DerivativesTaskView";

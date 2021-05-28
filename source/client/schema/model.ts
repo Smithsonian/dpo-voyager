@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import { Index, Dictionary } from "@ff/core/types";
-import { ColorRGB, ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
+import { Dictionary } from "@ff/core/types";
+import { ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
 
 ////////////////////////////////////////////////////////////////////////////////
 

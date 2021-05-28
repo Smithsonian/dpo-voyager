@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, property, html } from "@ff/ui/Popup";
+import Popup, { customElement, html } from "@ff/ui/Popup";
 
 import "@ff/ui/Button";
 import "@ff/ui/TextEdit";

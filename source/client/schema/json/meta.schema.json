@@ -114,14 +114,14 @@
             "items": {
                 "$ref": "#/definitions/image"
             },
-            "minLength": 1
+            "minItems": 1
         },
         "articles": {
             "type": "array",
             "items": {
                 "$ref": "#/definitions/article"
             },
-            "minLength": 1
+            "minItems": 1
         },
         "leadArticle": {
             "description": "Index of the main article. This is the default article displayed with the item.",

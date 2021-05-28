@@ -16,13 +16,12 @@
  */
 
 import { MeshStandardMaterialParameters, MeshStandardMaterial, Vector3, Vector4, Color, 
-    Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending } from "three";
+    Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending, FrontSide } from "three";
 
 const fragmentShader = require("./uberPBRShader.frag").default;
 const vertexShader = require("./uberPBRShader.vert").default;
 
 import { EShaderMode } from "client/schema/setup";
-import { FrontSide } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 

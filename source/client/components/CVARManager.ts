@@ -28,7 +28,7 @@ import RenderView from "@ff/scene/RenderView";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
 
-import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Camera, Material, RenderTarget, 
+import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Material, 
     PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
@@ -66,6 +66,8 @@ export default class CVARManager extends Component
 
     static readonly isSystemSingleton = true;
 
+    private _shadowRoot = null;
+
     protected static readonly ins = {
         enabled: types.Boolean("State.Enabled")
     };
@@ -89,18 +91,19 @@ export default class CVARManager extends Component
     protected get sceneNode() {
         return this.getSystemComponent(CVScene);
     }
-    //protected get documentProvider() {
-    //    return this.getMainComponent(CVDocumentProvider);
-    //}
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
     }
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
-    //protected get reader() {
-    //    return this.getGraphComponent(CVReader, true);
-    //}
+
+    get shadowRoot() {
+        return this._shadowRoot;
+    }
+    set shadowRoot(root: ShadowRoot) {
+        this._shadowRoot = root;
+    }
 
     protected arLink = document.createElement('a');
     protected raycaster: Raycaster = new Raycaster();
@@ -200,7 +203,7 @@ export default class CVARManager extends Component
                 requiredFeatures: ['hit-test'],
                 optionalFeatures: ['dom-overlay'],
                 domOverlay:
-                    {root: document.querySelector('ff-viewport-overlay')}
+                    {root: this.shadowRoot.querySelector('ff-viewport-overlay')}
             } ).then( session => this.onSessionStarted(renderer, session) ); //.catch(reason => { console.log("Error starting session: " + reason); }); **TODO
         }
     }
