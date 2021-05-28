@@ -41,8 +41,6 @@ import "../annotations/ExtendedSprite";
 import "../annotations/CircleSprite";
 import CircleSprite from "../annotations/CircleSprite";
 import CVARManager from "./CVARManager";
-import StandardSprite from "../annotations/StandardSprite";
-import ExtendedSprite from "../annotations/ExtendedSprite";
 import CVLanguageManager from "./CVLanguageManager";
 import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
@@ -416,9 +414,7 @@ export default class CVAnnotationView extends CObject3D
         for (const key in this._annotations) {
             const annotation = this._annotations[key];
             const sprite = this._sprites[annotation.id];
-            if (sprite instanceof StandardSprite || sprite instanceof ExtendedSprite) {
-                (sprite as AnnotationSprite).isAdaptive = !this.arManager.outs.isPresenting.value;
-            }
+            (sprite as AnnotationSprite).isAdaptive = !this.arManager.outs.isPresenting.value;
         }
     }
 
