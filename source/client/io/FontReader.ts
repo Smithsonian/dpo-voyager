@@ -19,6 +19,8 @@ import { Texture, LoadingManager, TextureLoader } from "three";
 
 import { Dictionary } from "@ff/core/types";
 
+import {DEFAULT_SYSTEM_ASSET_PATH} from "../components/CVAssetReader"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface IBitmapFont
@@ -65,11 +67,9 @@ export default class FontReader
         this._loadingManager.itemStart(url);
 
         const customUrl = this.fontPath;
-        const fontnameDelim = url.lastIndexOf("/");
-        const fontname = url.substr(fontnameDelim > -1 ? fontnameDelim : url.lastIndexOf("\\"));
 
-        const descriptorUrl = customUrl ? customUrl + fontname + ".json" : url + ".json";
-        const bitmapUrl = customUrl ? customUrl + fontname + ".png" : url + ".png";
+        const descriptorUrl = customUrl ? customUrl + url + ".json" : DEFAULT_SYSTEM_ASSET_PATH + url + ".json";
+        const bitmapUrl = customUrl ? customUrl + url + ".png" : DEFAULT_SYSTEM_ASSET_PATH + url + ".png";
 
         const loadDescriptor = fetch(descriptorUrl, {
             headers: {

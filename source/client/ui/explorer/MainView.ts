@@ -96,7 +96,7 @@ export default class MainView extends CustomElement
             const props: IExplorerApplicationProps = {
                 root: this.getAttribute("root"),
                 dracoRoot: this.getAttribute("dracoRoot"),
-                fontRoot: this.getAttribute("fontRoot"),
+                resourceRoot: this.getAttribute("resourceRoot"),
                 document: this.getAttribute("document"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),

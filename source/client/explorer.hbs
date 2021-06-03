@@ -20,8 +20,13 @@
     <!-- End Google Analytics -->
     {{/unless}}
 
-    <link rel="shortcut icon" type="image/png" href="favicon.png"/>
-    <link href="/fonts/fonts.css" rel="stylesheet">
+    {{#if htmlWebpackPlugin.options.isOffline}}
+        <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+        <link href="/fonts/fonts.css" rel="stylesheet">
+    {{else}}  
+        <link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/favicon.png"/>
+        <link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
+    {{/if}}  
 
     <style>
         body { background: #303030; }
