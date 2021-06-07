@@ -65,7 +65,7 @@
         "quill-image-resize-module": "^3.0.0",
         "resolve-pathname": "^3.0.0",
         "three": "^0.127.0",
-        "three-bmfont-text": "smithsonian/three-bmfont-text#738cf5b43e",
+        "three-bmfont-text": "git+https://github.com/Smithsonian/three-bmfont-text.git#12b45277c9",
         "toposort": "^2.0.2",
         "webdav": "^3.3.0",
         "webdav-server": "^2.6.2",
