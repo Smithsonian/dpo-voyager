@@ -238,7 +238,8 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     {
         this.color = material.color;
         this.opacity = material.opacity;
-        this.transparent = material.opacity < 1 || !!material.alphaMap;
+        this.transparent = material.opacity < 1 || !!material.alphaMap || material.transparent;
+        this.alphaTest = material.alphaTest;
 
         this.roughness = material.roughness;
         this.roughnessMap = material.roughnessMap;
