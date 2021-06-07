@@ -133,6 +133,8 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         this.defines["MODE_XRAY"] = false;
         this.defines["OBJECTSPACE_NORMALMAP"] = !!(this.normalMap && this._objectSpaceNormalMap);
 
+        this.side = this.defines["CUT_PLANE"] ? DoubleSide : this.side;
+
         this.needsUpdate = true;
 
         switch(mode) {
