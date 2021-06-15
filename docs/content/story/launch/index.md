@@ -1,10 +1,14 @@
 ---
-title: Usage
+title: "How To: Launch the app"
 summary: Embed and use Voyager Story in your own production pipeline.
 weight: 110
 ---
 
-## Web Component
+**Currently, the only options for launching Voyager Story require hosting the application yourself in one of the ways described below.
+If you are an end user with no access to this option, please contact us. We are working to host a publically accessible version of Story that end users can use without the need for any installation or setup.**
+
+
+## Web Application
 
 The Voyager 3D Story tool is designed to be used as a single page client-side application.
 Sample HTML documents are provided as part of the distributable package.
