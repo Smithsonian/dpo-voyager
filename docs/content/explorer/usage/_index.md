@@ -64,11 +64,11 @@ To display your own content in Explorer it must be accessible online and referen
 
 **Option 1: Voyager Explorer tag attributes**
 
-You can set the location of your assets and the name of your scene file using the 'root' and 'document' attributes of the tag, respectively. An example of this is shown in the previous section above using a Smithsonian 3D API endpoint as the location of our assets.
+You can set the location of your assets and the name of your scene file using the 'root' and 'document' attributes of the tag, respectively. An example of this is shown in the "Option 2: Embedding the Component Directly" section above using a Smithsonian 3D API endpoint as the location of our assets.
 
 **Option 2: URL parameters** 
 
-You can also supply the ['root' and 'document' attributes](../api) of the component through URL paramters of the same name appended to the end of the page URL. This can be helpful if you want to create one page that can load different models depending on the link the user clicked to get there.
+You can also supply the ['root' and 'document' attributes](../api) of the component through 'root' and 'document' URL parameters appended to the end of the page URL. This can be helpful if you want to create one page that can load different models depending on the link the user clicked to get there.
 
 An example of this is below:
 {{<highlight html>}}
@@ -76,6 +76,6 @@ https://www.my_website.com/my_voyager_scene.html?root=https://3d-api.si.edu/cont
 {{</highlight>}}
 
 ### Custom Properties
-The Explorer component has several cusotmizable properties. These properties can be provided as URL variables or as attributes of the custom HTML element.
+The Explorer component has several customizable properties. These properties can be provided as URL variables or as attributes of the custom HTML element.
 
 See the [API documentation](../api/) for the full list of configurable attributes.

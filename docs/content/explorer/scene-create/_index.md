@@ -118,11 +118,12 @@ You can use a [fully-featured example]() as your base, or start with the minimal
 
 In the above example, the only required changes would be to change the "uri" attributes of each derivative to the appropriate uri of the associated model, relative to the location of the scene document.
 For instance, if I had a "High" quality .glb called "NewModel.glb" that was in a subfolder called "models", the "uri" attribute of the model block with "quality": "High"
-would change to "uri": "./models/NewModel.glb". Ideally you would also change the metadata like byteSize, numFaces, imageSize, and units to match the info for your model.
+would change to "uri": "./models/NewModel.glb". Ideally you would also change the metadata like byteSize, numFaces, imageSize, and units to match the info for your model. This metadata is currently 
+just for informational purposes and is not used by the system.
 
 If you do not have model derivatives available at all of the quality levels listed above, just delete the unused derivative blocks.
 
-**Note:** If using the fully-featured example linked above as your starting point, please keep in mind that this file also includes transformations. Remove these or set default values until you know how your model should be positioned.
+**Note:** If using the fully-featured example linked above as your starting point, please keep in mind that this file also includes transformations. Remove these or set default values until you know what transform your model needs for a good starting position/orientation. Voyager will not automatically center the model for you. 
 
 **Option 2: The Cook - Our automated processing framework**
 
