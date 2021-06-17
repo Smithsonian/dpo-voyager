@@ -16,75 +16,12 @@
     </item>
     
     <item>
-      <title>Usage</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/usage/</link>
+      <title>How To: Launch the app</title>
+      <link>https://smithsonian.github.io/dpo-voyager/story/launch/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://smithsonian.github.io/dpo-voyager/story/usage/</guid>
+      <guid>https://smithsonian.github.io/dpo-voyager/story/launch/</guid>
       <description>Embed and use Voyager Story in your own production pipeline.</description>
-    </item>
-    
-    <item>
-      <title>Pose Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/pose-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/pose-task/</guid>
-      <description>Center models and adjust their pose.</description>
-    </item>
-    
-    <item>
-      <title>Capture Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/capture-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/capture-task/</guid>
-      <description>Create 2D snapshots of a 3D model.</description>
-    </item>
-    
-    <item>
-      <title>Derivatives Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/derivatives-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/derivatives-task/</guid>
-      <description>Inspect a model&amp;rsquo;s mesh and textures at various quality levels.</description>
-    </item>
-    
-    <item>
-      <title>Settings Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/settings-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/settings-task/</guid>
-      <description>Adjust scene, environment, lights, and material settings.</description>
-    </item>
-    
-    <item>
-      <title>Annotations Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/annotations-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/annotations-task/</guid>
-      <description>Attach hotspots and annotations to a 3D models.</description>
-    </item>
-    
-    <item>
-      <title>Articles Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/articles-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/articles-task/</guid>
-      <description>Write rich documents, add media, and connect them with annotations and models.</description>
-    </item>
-    
-    <item>
-      <title>Tours Task</title>
-      <link>https://smithsonian.github.io/dpo-voyager/story/tours-task/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://smithsonian.github.io/dpo-voyager/story/tours-task/</guid>
-      <description>Create interactive, guided tours.</description>
     </item>
     
   </channel>

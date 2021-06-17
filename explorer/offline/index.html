@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>How To: Use the component offline - Voyager Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
+
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+  
+  
+  <link rel="stylesheet" href="/dpo-voyager/css/style.min.css">
+  
+
+  
+
+</head>
+
+<body class='page page-default-list'>
+  <div id="main-menu-mobile" class="main-menu-mobile">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/dpo-voyager/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-explorer">
+      <a href="/dpo-voyager/explorer/">
+        <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-story">
+      <a href="/dpo-voyager/story/">
+        <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-github" title="Smithsonian Cook on Github">
+      <a href="https://github.com/smithsonian/dpo-voyager"><img src="/dpo-voyager/images/github.svg" alt="Github"></a>
+    </li>
+  </ul>
+</div>
+  <div class="wrapper">
+    <div class='header'>
+  <div class="container">
+    <div class="logo">
+      <a href="https://smithsonian.github.io/dpo-voyager"><img alt="Logo" src="/dpo-voyager/images/voyager-neg.svg" /></a>
+    </div>
+    <div class="logo-mobile">
+      <a href="https://smithsonian.github.io/dpo-voyager"><img alt="Logo" src="/dpo-voyager/images/voyager-neg.svg" /></a>
+    </div>
+    <div id="main-menu" class="main-menu">
+  <ul>
+    
+    
+    <li class="menu-item-home">
+      <a href="/dpo-voyager/">
+        <span>Home</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-introduction">
+      <a href="/dpo-voyager/introduction/">
+        <span>Introduction</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-explorer">
+      <a href="/dpo-voyager/explorer/">
+        <span>Explorer</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-api">
+      <a href="/dpo-voyager/explorer/api">
+        <span>API</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-story">
+      <a href="/dpo-voyager/story/">
+        <span>Story</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-svx">
+      <a href="/dpo-voyager/document/">
+        <span>SVX</span>
+      </a>
+    </li>
+    
+    <li class="menu-item-github" title="Smithsonian Cook on Github">
+      <a href="https://github.com/smithsonian/dpo-voyager"><img src="/dpo-voyager/images/github.svg" alt="Github"></a>
+    </li>
+  </ul>
+</div>
+    <button id="toggle-main-menu-mobile" class="hamburger hamburger--slider" type="button">
+  <span class="hamburger-box">
+    <span class="hamburger-inner"></span>
+  </span>
+</button>
+  </div>
+</div>
+
+
+    
+    
+      
+    
+      
+        
+      
+    
+      
+    
+      
+    
+
+    
+    <div class="container pt-2 pt-md-6 pb-3 pb-md-6">
+      <div class="row">
+        <div class="col-12 col-md-3 mb-3">
+          <div class="sidebar">
+            
+
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/introduction/">Introduction</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/getting-started/">Quickstart Guide</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/installation/">How To: Install and Build Voyager</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/hosting/">How To: Host a prebuilt Voyager release</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/license/">License</a>
+    </li>
+		
+    
+  </ul>
+</div>
+
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/explorer/">Explorer</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/overview/">Overview</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/usage/">How To: Embed a model on your site</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/scene-create/">How To: Create a scene file</a>
+    </li>
+		
+    
+    <li class="active ">
+      <a href="/dpo-voyager/explorer/offline/">How To: Use the component offline</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/api/">API Overview</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/api-examples/">API Examples</a>
+    </li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/camera-orbit/">API Example: Camera Orbit</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/get-content/">API Example: Get Content</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/ui-config/">API Example: UI Configuration</a>
+		</li>
+		
+    
+  </ul>
+</div>
+
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/story/">Story</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/story/overview/">Overview</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/story/launch/">How To: Launch the app</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/story/usage/">How To: Use the app</a>
+    </li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/pose-task/">Pose Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/capture-task/">Capture Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/derivatives-task/">Derivatives Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/settings-task/">Settings Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/annotations-task/">Annotations Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/articles-task/">Articles Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/tours-task/">Tours Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/language-support/">Multilingual Support</a>
+		</li>
+		
+    
+  </ul>
+</div>
+
+<div class="docs-menu">
+  <h4><a href="/dpo-voyager/document/">SVX Document Format</a></h4>
+  <ul>
+    
+    <li class="">
+      <a href="/dpo-voyager/document/overview/">Overview</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/document/example/">Example</a>
+    </li>
+		
+    
+  </ul>
+</div>
+
+
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          
+
+  
+  <h1 class="title">How To: Use the component offline</h1>
+  <div class="content">
+    <p>You may want to use Voyager Explorer in a gallery setting where no internet connection is available or want to run the component offline for testing and debugging purposes.
+The default configuration of the component relies on a few online resources so there are a few steps to take to use it in this way.</p>
+<h3 id="configuring-the-explorer-component-for-offline-use">Configuring the Explorer component for offline use</h3>
+<p><strong>1. Make sure all of the resources are installed locally</strong></p>
+<p>You can do this by downloading a pre-built package (<a href="../../introduction/hosting/">How To: Host a prebuilt Voyager release</a>)
+or installing and building from scratch (<a href="../../introduction/installation/">How To: Install and Build Voyager</a>) which will also provide a local web server if needed.</p>
+<p><strong>2. Point to local include files</strong></p>
+<p>The documentation and html launch pages included with the distribution package point to online locations for the files that need to be included in a webpage 
+that contains the Voyager Explorer component.</p>
+<p>These files are also present in the distribution package and will need to be referenced locally. See below for an example of these includes
+with relative paths that assumes the default folder structure of a release package.</p>
+<div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html"><span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#34;shortcut icon&#34;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;image/png&#34;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;./favicon.png&#34;</span><span class="p">/&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&#34;fonts/fonts.css&#34;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#34;stylesheet&#34;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;js/voyager-explorer.dev.js&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span></code></pre></div>
+<p><strong>3. Set tag attributes to local paths</strong></p>
+<p>Several attributes will also need to be configured with local paths.</p>
+<p>The &lsquo;dracoRoot&rsquo; and &lsquo;resourceRoot&rsquo; attributes point to the locations of the Draco libraries and component resources, respectively. The &lsquo;root&rsquo; attribute will also need to point at 
+a local copy of your scene file. The example below assumes default distro folder structure.</p>
+<div class="highlight"><pre class="chroma"><code class="language-html" data-lang="html"><span class="p">&lt;</span><span class="nt">voyager-explorer</span> <span class="na">dracoRoot</span><span class="o">=</span><span class="s">&#34;js/draco/&#34;</span> <span class="na">resourceRoot</span><span class="o">=</span><span class="s">&#34;./&#34;</span> <span class="na">root</span><span class="o">=</span><span class="s">&#34;models/chair/&#34;</span><span class="p">&gt;&lt;/</span><span class="nt">voyager-explorer</span><span class="p">&gt;</span></code></pre></div>
+
+  </div>
+
+  
+
+
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+          <a href="https://3d.si.edu" target="_blank"><img class="si-logo" src="/dpo-voyager/images/si-digitization-logo-neg.svg" alt="Smithsonian Digitization Logo"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  
+  
+
+  
+  <script type="text/javascript" src="/dpo-voyager/js/scripts.min.js"></script>
+  
+
+  
+  
+  
+    
+  
+
+
+</body>
+
+</html>

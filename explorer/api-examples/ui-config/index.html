@@ -154,16 +154,29 @@
   <ul>
     
     <li class="">
-      <a href="/dpo-voyager/introduction/getting-started/">Getting started</a>
+      <a href="/dpo-voyager/introduction/getting-started/">Quickstart Guide</a>
     </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/installation/">How To: Install and Build Voyager</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/introduction/hosting/">How To: Host a prebuilt Voyager release</a>
+    </li>
+		
     
     <li class="">
       <a href="/dpo-voyager/introduction/demo-assets/">Demo Assets</a>
     </li>
+		
     
     <li class="">
       <a href="/dpo-voyager/introduction/license/">License</a>
     </li>
+		
     
   </ul>
 </div>
@@ -173,20 +186,54 @@
   <ul>
     
     <li class="">
-      <a href="/dpo-voyager/explorer/usage/">Usage</a>
-    </li>
-    
-    <li class="">
       <a href="/dpo-voyager/explorer/overview/">Overview</a>
     </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/usage/">How To: Embed a model on your site</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/scene-create/">How To: Create a scene file</a>
+    </li>
+		
+    
+    <li class="">
+      <a href="/dpo-voyager/explorer/offline/">How To: Use the component offline</a>
+    </li>
+		
     
     <li class="">
       <a href="/dpo-voyager/explorer/api/">API Overview</a>
     </li>
+		
     
     <li class="">
       <a href="/dpo-voyager/explorer/api-examples/">API Examples</a>
     </li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/camera-orbit/">API Example: Camera Orbit</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/get-content/">API Example: Get Content</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="active ">
+		  <a href="/dpo-voyager/explorer/api-examples/ui-config/">API Example: UI Configuration</a>
+		</li>
+		
     
   </ul>
 </div>
@@ -198,38 +245,49 @@
     <li class="">
       <a href="/dpo-voyager/story/overview/">Overview</a>
     </li>
+		
     
     <li class="">
-      <a href="/dpo-voyager/story/usage/">Usage</a>
+      <a href="/dpo-voyager/story/launch/">How To: Launch the app</a>
     </li>
+		
     
     <li class="">
-      <a href="/dpo-voyager/story/pose-task/">Pose Task</a>
+      <a href="/dpo-voyager/story/usage/">How To: Use the app</a>
     </li>
-    
-    <li class="">
-      <a href="/dpo-voyager/story/capture-task/">Capture Task</a>
-    </li>
-    
-    <li class="">
-      <a href="/dpo-voyager/story/derivatives-task/">Derivatives Task</a>
-    </li>
-    
-    <li class="">
-      <a href="/dpo-voyager/story/settings-task/">Settings Task</a>
-    </li>
-    
-    <li class="">
-      <a href="/dpo-voyager/story/annotations-task/">Annotations Task</a>
-    </li>
-    
-    <li class="">
-      <a href="/dpo-voyager/story/articles-task/">Articles Task</a>
-    </li>
-    
-    <li class="">
-      <a href="/dpo-voyager/story/tours-task/">Tours Task</a>
-    </li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/pose-task/">Pose Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/capture-task/">Capture Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/derivatives-task/">Derivatives Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/settings-task/">Settings Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/annotations-task/">Annotations Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/articles-task/">Articles Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/tours-task/">Tours Task</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/story/usage/language-support/">Multilingual Support</a>
+		</li>
+		
     
   </ul>
 </div>
@@ -241,10 +299,12 @@
     <li class="">
       <a href="/dpo-voyager/document/overview/">Overview</a>
     </li>
+		
     
     <li class="">
       <a href="/dpo-voyager/document/example/">Example</a>
     </li>
+		
     
   </ul>
 </div>
@@ -259,15 +319,12 @@
   <h1 class="title">API Example: UI Configuration</h1>
   <div class="content">
     <h4 id="try-it-out">Try it out:</h4>
-<p><link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
-<link href="https://3d-api.si.edu/resources/css/voyager-explorer.min.css" rel="stylesheet">
-<script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
+<p><link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
 <script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
 <script>
-var l ="https://3d-api.si.edu/content/document/"+"d8c636ce-4ebc-11ea-b77f-2e728ce88125"+"/document.json";
+var l ="https://3d-api.si.edu/content/document/"+"d8c636ce-4ebc-11ea-b77f-2e728ce88125"+"/";
 document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' dracoRoot='https://voyager-dev.glitch.me/draco/' fontRoot='https://3d-api.si.edu/resources/fonts/' document='document.json'></voyager-explorer>";
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' document='document.json'></voyager-explorer>";
 });
 </script>
 <div id="explorer_wrapper" width="600" height="450">
