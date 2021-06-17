@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import resolvePathname from "resolve-pathname";
-import * as THREE from "three";
+//import resolvePathname from "resolve-pathname";
+import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, sRGBEncoding } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -25,12 +25,14 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const DEFAULT_DRACO_PATH = "https://www.gstatic.com/draco/versioned/decoders/1.3.6/";
+
 export default class ModelReader
 {
     static readonly extensions = [ "gltf", "glb" ];
     static readonly mimeTypes = [ "model/gltf+json", "model/gltf-binary" ];
 
-    protected loadingManager: THREE.LoadingManager;
+    protected loadingManager: LoadingManager;
     protected gltfLoader;
 
     protected customDracoPath = null;
@@ -43,17 +45,18 @@ export default class ModelReader
         }
     }
    
-    constructor(loadingManager: THREE.LoadingManager)
+    constructor(loadingManager: LoadingManager)
     {
         this.loadingManager = loadingManager;
 
-        const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
+        //const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
+
         if (ENV_DEVELOPMENT) {
-            console.log("ModelReader.constructor - DRACO path: %s", this.customDracoPath ? this.customDracoPath : dracoPath);
+            console.log("ModelReader.constructor - DRACO path: %s", this.customDracoPath || DEFAULT_DRACO_PATH);
         }
 
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(this.customDracoPath ? this.customDracoPath : dracoPath);
+        dracoLoader.setDecoderPath(this.customDracoPath || DEFAULT_DRACO_PATH);
 
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
@@ -70,7 +73,7 @@ export default class ModelReader
         return ModelReader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    get(url: string): Promise<THREE.Object3D>
+    get(url: string): Promise<Object3D>
     {
         return new Promise((resolve, reject) => {
             this.gltfLoader.load(url, gltf => {
@@ -82,24 +85,24 @@ export default class ModelReader
         });
     }
 
-    protected createModelGroup(gltf): THREE.Object3D
+    protected createModelGroup(gltf): Object3D
     {
-        const scene: THREE.Scene = gltf.scene;
+        const scene: Scene = gltf.scene;
         //if (scene.type !== "Scene") {
         //    throw new Error("not a valid gltf scene");
         //}
 
-        const model = new THREE.Group();
+        const model = new Group();
         scene.children.forEach(child => model.add(child));
 
         model.traverse((object: any) => {
             if (object.type === "Mesh") {
-                const mesh: THREE.Mesh = object;
+                const mesh: Mesh = object;
                 mesh.castShadow = true;
-                const material = mesh.material as THREE.MeshStandardMaterial;
+                const material = mesh.material as MeshStandardMaterial;
 
                 if (material.map) {
-                   material.map.encoding = THREE.sRGBEncoding;
+                   material.map.encoding = sRGBEncoding;
                 }
 
                 mesh.geometry.computeBoundingBox();

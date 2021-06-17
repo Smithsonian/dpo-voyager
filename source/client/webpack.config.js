@@ -150,13 +150,16 @@ function createAppConfig(app, isDevMode, isOffline)
                 "@ff/react": path.resolve(dirs.libs, "ff-react/source"),
                 "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
                 "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
-                "@ff/scene": path.resolve(dirs.libs, "ff-scene/source")
+                "@ff/scene": path.resolve(dirs.libs, "ff-scene/source"),
+                "three$": path.resolve(dirs.modules, "three/src/Three"),
+                "../../../build/three.module.js": path.resolve(dirs.modules, "three/src/Three")
             },
             // Resolvable extensions
             extensions: [".ts", ".tsx", ".js", ".json"]
         },
 
         optimization: {
+            //concatenateModules: false,
             minimize: !isDevMode,
 
             minimizer: [
@@ -198,25 +201,31 @@ function createAppConfig(app, isDevMode, isOffline)
                     loader: "raw-loader"
                 },
                 {
-                    // Typescript/JSX files
-                    test: /\.tsx?$/,
-                    use: "ts-loader",
-		    exclude: /node_modules/,
-                },
-                {
                     // Enforce source maps for all javascript files
                     enforce: "pre",
                     test: /\.js$/,
                     loader: "source-map-loader"
                 },
                 {
+                    // Transpile SCSS to CSS and concatenate (to string)
+                    test: /\.scss$/,
+                    use: ["raw-loader","sass-loader"],
+                    issuer: {
+                        include: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                    }
+                },
+                {
                     // Transpile SCSS to CSS and concatenate
                     test: /\.scss$/,
-                    use: [
-                        MiniCssExtractPlugin.loader,
-                        "css-loader",
-                        "sass-loader"
-                    ]
+                    use: /*appName === 'voyager-explorer' ? ["raw-loader","sass-loader"] :*/
+                        [         
+                            MiniCssExtractPlugin.loader,
+                            "css-loader",
+                            "sass-loader"
+                        ],
+                    issuer: {
+                        exclude: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                    }
                 },
                 {
                     // Concatenate CSS
@@ -228,6 +237,12 @@ function createAppConfig(app, isDevMode, isOffline)
                     ]
                 },
                 {
+                    // Typescript/JSX files
+                    test: /\.tsx?$/,
+                    use: "ts-loader",
+		            exclude: /node_modules/,
+                },
+                {
                     test: /\.hbs$/,
                     loader: "handlebars-loader"
                 },
@@ -237,10 +252,12 @@ function createAppConfig(app, isDevMode, isOffline)
         // When importing a module whose path matches one of the following, just
         // assume a corresponding global variable exists and use that instead.
         externals: {
-            "three": "THREE",
+            //"three": "THREE",
             "quill": "Quill",
-            "../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
-        }
+            //"../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
+        },
+
+        stats: {chunkModules: true, excludeModules: false }
     };
 
     if (isDevMode) {

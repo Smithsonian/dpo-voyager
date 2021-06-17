@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { TextureLoader, LoadingManager, Texture } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,12 +24,12 @@ export default class TextureReader
     static readonly extensions = [ "jpg", "png" ];
     static readonly mimeTypes = [ "image/jpeg", "image/png" ];
 
-    protected textureLoader: THREE.TextureLoader;
+    protected textureLoader: TextureLoader;
 
 
-    constructor(loadingManager: THREE.LoadingManager)
+    constructor(loadingManager: LoadingManager)
     {
-        this.textureLoader = new THREE.TextureLoader(loadingManager);
+        this.textureLoader = new TextureLoader(loadingManager);
     }
 
     isValid(url: string): boolean
@@ -43,7 +43,7 @@ export default class TextureReader
         return TextureReader.mimeTypes.indexOf(mimeType) >= 0;
     }
 
-    get(url: string): Promise<THREE.Texture>
+    get(url: string): Promise<Texture>
     {
         return new Promise((resolve, reject) => {
             this.textureLoader.load(url, texture => {
@@ -55,7 +55,7 @@ export default class TextureReader
         });
     }
 
-    getImmediate(url: string): THREE.Texture
+    getImmediate(url: string): Texture
     {
         return this.textureLoader.load(url, null, null, errorEvent => {
             console.error(errorEvent);

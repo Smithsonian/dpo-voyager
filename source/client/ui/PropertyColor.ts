@@ -121,7 +121,7 @@ export default class PropertyColor extends CustomElement
             return;
         }
 
-        if (event.target instanceof Node && this.contains(event.target)) {
+        if (event.composedPath()[0] instanceof Node && this.contains(event.composedPath()[0] as Node)) {
             return;
         }
 

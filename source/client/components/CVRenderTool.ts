@@ -20,7 +20,7 @@ import "../ui/PropertyOptions";
 import CVDocument from "./CVDocument";
 import CVViewer from "./CVViewer";
 
-import CVTool, { types, customElement, html, ToolView } from "./CVTool";
+import CVTool, { customElement, html, ToolView } from "./CVTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 

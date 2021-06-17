@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-
 import CustomElement, { customElement } from "@ff/ui/CustomElement";
 import HTMLSprite from "@ff/three/HTMLSprite";
 

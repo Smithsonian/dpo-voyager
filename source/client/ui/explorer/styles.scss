@@ -382,6 +382,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   @include font-ui-normal;
   font-size: 0.85rem;
   line-height: 1.35;
+  color: $color-text;
   @include fullsize;
   overflow: hidden;
   display: flex;

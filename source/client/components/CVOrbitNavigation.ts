@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
-import hotkeys from "hotkeys-js";
+import { Box3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -85,7 +84,7 @@ export default class CVOrbitNavigation extends CObject3D
 
     private _controller = new CameraController();
     private _scene: CScene = null;
-    private _modelBoundingBox: THREE.Box3 = null;
+    private _modelBoundingBox: Box3 = null;
     private _hasChanged = false;
 
     constructor(node: Node, id: string)

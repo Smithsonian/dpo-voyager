@@ -15,30 +15,32 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Texture, LoadingManager, TextureLoader } from "three";
 
 import { Dictionary } from "@ff/core/types";
+
+import {DEFAULT_SYSTEM_ASSET_PATH} from "../components/CVAssetReader"
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export interface IBitmapFont
 {
     descriptor: object;
-    texture: THREE.Texture;
+    texture: Texture;
 }
 
 export default class FontReader
 {
-    private _loadingManager: THREE.LoadingManager;
-    private _textureLoader: THREE.TextureLoader;
+    private _loadingManager: LoadingManager;
+    private _textureLoader: TextureLoader;
     private _cache: Dictionary<IBitmapFont>;
 
     private _customFontPath = null;
 
-    constructor(loadingManager: THREE.LoadingManager)
+    constructor(loadingManager: LoadingManager)
     {
         this._loadingManager = loadingManager;
-        this._textureLoader = new THREE.TextureLoader(loadingManager);
+        this._textureLoader = new TextureLoader(loadingManager);
         this._cache = {};
     }
 
@@ -65,11 +67,9 @@ export default class FontReader
         this._loadingManager.itemStart(url);
 
         const customUrl = this.fontPath;
-        const fontnameDelim = url.lastIndexOf("/");
-        const fontname = url.substr(fontnameDelim > -1 ? fontnameDelim : url.lastIndexOf("\\"));
 
-        const descriptorUrl = customUrl ? customUrl + fontname + ".json" : url + ".json";
-        const bitmapUrl = customUrl ? customUrl + fontname + ".png" : url + ".png";
+        const descriptorUrl = customUrl ? customUrl + url + ".json" : DEFAULT_SYSTEM_ASSET_PATH + url + ".json";
+        const bitmapUrl = customUrl ? customUrl + url + ".png" : DEFAULT_SYSTEM_ASSET_PATH + url + ".png";
 
         const loadDescriptor = fetch(descriptorUrl, {
             headers: {
@@ -98,7 +98,7 @@ export default class FontReader
             .then(result => {
                 const font: IBitmapFont = {
                     descriptor: result[0] as object,
-                    texture: result[1] as THREE.Texture,
+                    texture: result[1] as Texture,
                 };
                 this._cache[url] = font;  // TODO: Revisit caching - this doesn't do much for us
                 this._loadingManager.itemEnd(url);

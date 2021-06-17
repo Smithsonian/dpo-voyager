@@ -18,9 +18,6 @@
 import Component, { types } from "@ff/graph/Component";
 import { ILanguage, ILanguageOption } from "client/schema/setup";
 import { ELanguageType, TLanguageType, ELanguageStringType } from "client/schema/common";
-import CVReader from "./CVReader";
-import CVAnnotationView from "./CVAnnotationView";
-import CVScene from "./CVScene";
 import CVAssetReader from "./CVAssetReader";
 import { ITagUpdateEvent } from "./CVModel2";
 
@@ -59,14 +56,8 @@ export default class CVLanguageManager extends Component
     ins = this.addInputs(CVLanguageManager.ins);
     outs = this.addOutputs(CVLanguageManager.outs);
 
-    protected get reader() { 
-        return this.getSystemComponent(CVReader, true);
-    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
-    }
-    protected get scene() {
-        return this.getSystemComponent(CVScene);
     }
     get activeLanguages() {
         return this._activeLanguages;
@@ -142,28 +133,7 @@ export default class CVLanguageManager extends Component
 
     protected updateLanguage = () => 
     {
-        const { ins, outs, reader, scene } = this;
-
-        if(reader) {
-            // update articles
-            reader.articles.forEach( entry => {
-                entry.article.language = ins.language.value;
-            });
-
-            // trigger reader active article update
-            reader.ins.articleId.set();
-        }
-
-        if(scene) {
-            // update annotations
-            const annotationViews = scene.getGraphComponents(CVAnnotationView);
-            annotationViews.forEach(view => {
-                view.getAnnotations().forEach( annotation => {
-                    annotation.language = ins.language.value;
-                });
-                view.ins.activeTags.set();
-            });
-        }
+        const { ins, outs } = this;
 
         outs.language.setValue(ins.language.value);
         this.emit<ITagUpdateEvent>({ type: "tag-update" });

@@ -300,9 +300,6 @@ export default class CVToursTask extends CVTask
 
     protected onDocumentLanguageChange()
     {
-        const {ins, outs} = this;
-        const languageManager = this.activeDocument.setup.language;
-        const newLanguage = languageManager.outs.language.value;
         const tours = this.tours;
 
         this.onTourChange();

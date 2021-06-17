@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -29,10 +29,10 @@ import unitScaleFactor from "client/utils/unitScaleFactor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _mat3 = new THREE.Matrix3();
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
-const _vec3up = new THREE.Vector3(0, 1, 0);
+const _mat3 = new Matrix3();
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _vec3up = new Vector3(0, 1, 0);
 
 export enum ETapeState { SetStart, SetEnd }
 
@@ -48,7 +48,7 @@ export default class CVTape extends CObject3D
         startDirection: types.Vector3("Start.Direction"),
         endPosition: types.Vector3("End.Position"),
         endDirection: types.Vector3("End.Direction"),
-        boundingBox: types.Object("Scene.BoundingBox", THREE.Box3),
+        boundingBox: types.Object("Scene.BoundingBox", Box3),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm)
     };
@@ -80,13 +80,13 @@ export default class CVTape extends CObject3D
 
     protected startPin: Pin = null;
     protected endPin: Pin = null;
-    protected line: THREE.Line = null;
+    protected line: Line = null;
 
     constructor(node: Node, id: string)
     {
         super(node, id);
 
-        this.object3D = new THREE.Group();
+        this.object3D = new Group();
 
         this.startPin = new Pin();
         this.startPin.matrixAutoUpdate = false;
@@ -97,14 +97,14 @@ export default class CVTape extends CObject3D
         this.endPin.visible = false;
 
         const points = [];
-        points.push(new THREE.Vector3(0, 0, 0));
-        points.push(new THREE.Vector3(0, 0, 0));
+        points.push(new Vector3(0, 0, 0));
+        points.push(new Vector3(0, 0, 0));
 
-        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const lineMaterial = new THREE.LineBasicMaterial();
+        const lineGeometry = new BufferGeometry().setFromPoints(points);
+        const lineMaterial = new LineBasicMaterial();
         lineMaterial.depthTest = false;
         lineMaterial.transparent = true;
-        this.line = new THREE.Line(lineGeometry, lineMaterial);
+        this.line = new Line(lineGeometry, lineMaterial);
         this.line.visible = false;
 
         this.object3D.add(this.startPin, this.endPin, this.line);
@@ -124,7 +124,7 @@ export default class CVTape extends CObject3D
         super.update(context);
 
         const ins = this.ins;
-        const lineGeometry = this.line.geometry as THREE.BufferGeometry;
+        const lineGeometry = this.line.geometry as BufferGeometry;
 
         // determine pin scale based on scene/model bounding box
         if (ins.boundingBox.changed && ins.boundingBox.value) {

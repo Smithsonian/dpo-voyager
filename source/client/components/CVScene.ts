@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Box3 } from "three";
 
-import { IComponentEvent, ITypedEvent, types } from "@ff/graph/Component";
+import { IComponentEvent, types } from "@ff/graph/Component";
 
 import { EUnitType, TUnitType } from "client/schema/common";
 import { IDocument, IScene } from "client/schema/document";
@@ -28,7 +28,7 @@ import unitScaleFactor from "client/utils/unitScaleFactor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3 = new THREE.Vector3();
+const _vec3 = new Vector3();
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -51,7 +51,7 @@ export default class CVScene extends CVNode
 
     protected static readonly outs = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
-        boundingBox: types.Object("Models.BoundingBox", THREE.Box3),
+        boundingBox: types.Object("Models.BoundingBox", Box3),
         boundingRadius: types.Number("Models.BoundingRadius"),
     };
 
@@ -75,7 +75,7 @@ export default class CVScene extends CVNode
     {
         super.create();
 
-        this.outs.boundingBox.setValue(new THREE.Box3());
+        this.outs.boundingBox.setValue(new Box3());
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
 

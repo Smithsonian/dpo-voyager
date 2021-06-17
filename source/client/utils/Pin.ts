@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Group, MeshStandardMaterial, Mesh, Vector2, LatheBufferGeometry } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class Pin extends THREE.Group
+export default class Pin extends Group
 {
     constructor()
     {
@@ -48,18 +48,18 @@ export default class Pin extends THREE.Group
             0, 20,
         ];
 
-        const needleMaterial = new THREE.MeshStandardMaterial({ color: "white", metalness: 1 });
+        const needleMaterial = new MeshStandardMaterial({ color: "white", metalness: 1 });
         needleMaterial.transparent = true;
 
-        const needle = new THREE.Mesh(
+        const needle = new Mesh(
             this.createLatheGeometry(needlePoints),
             needleMaterial
         );
 
-        const handleMaterial = new THREE.MeshStandardMaterial(({ color: "#ffcd00", roughness: 0.8, metalness: 0.1 }));
+        const handleMaterial = new MeshStandardMaterial(({ color: "#ffcd00", roughness: 0.8, metalness: 0.1 }));
         handleMaterial.transparent = true;
 
-        const handle = new THREE.Mesh(
+        const handle = new Mesh(
             this.createLatheGeometry(handlePoints),
             handleMaterial
         );
@@ -81,9 +81,9 @@ export default class Pin extends THREE.Group
         const vectors = [];
 
         for (let i = 0, n = points.length; i < n; i += 2) {
-            vectors.push(new THREE.Vector2(points[i], points[i + 1]));
+            vectors.push(new Vector2(points[i], points[i + 1]));
         }
 
-        return new THREE.LatheBufferGeometry(vectors, 16);
+        return new LatheBufferGeometry(vectors, 16);
     }
 }

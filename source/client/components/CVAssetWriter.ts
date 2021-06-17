@@ -16,7 +16,7 @@
  */
 
 import fetch from "@ff/browser/fetch";
-import Component, { Node, types } from "@ff/graph/Component";
+import Component, { Node } from "@ff/graph/Component";
 
 import JSONWriter from "../io/JSONWriter";
 import { INodeComponents } from "../nodes/NVNode";
