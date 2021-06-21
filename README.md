@@ -9,14 +9,22 @@ Suite of browser-based 3D tools, consisting of
 
 ### Documentation
 
- * [Voyager Documentation](https://smithsonian.github.io/dpo-voyager) 
+ * Not sure where to start? Try our [Quickstart Guide](https://smithsonian.github.io/dpo-voyager/introduction/getting-started/)
+ * How to easily [embed Voyager Explorer on your site](https://smithsonian.github.io/dpo-voyager/explorer/usage/)
+ * Check out the [Voyager API](https://smithsonian.github.io/dpo-voyager/explorer/api/)
+ * [Voyager Documentation Home](https://smithsonian.github.io/dpo-voyager) 
 
+### Questions / Comments / Issues
+Please open an issue and we will respond ASAP.
+
+### Contributions
+We welcome any contributions to the project. Please open a PR for any bug fixes and open an issue for any major changes or feature ideas.
 
 ### Pre-Release Software
 This software is pre-release and provided "as is". Breaking changes can and will happen during development.
 
 ### License Information
-Copyright 2019 Smithsonian Institution.
+Copyright 2021 Smithsonian Institution.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use the content of this repository except in compliance with the License. You may obtain a copy of the License at
 
