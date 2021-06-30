@@ -178,7 +178,7 @@ export default class CVARManager extends Component
         const renderer = this.renderer.views[0].renderer;
         const sceneComponent = this.vScene = this.renderer.activeSceneComponent;
         const camera = this.camera = sceneComponent.activeCamera;
-        this.cameraParent = camera.parent; console.log(this);
+        this.cameraParent = camera.parent;
         const setup = this.setup = this.getSystemComponent(CVSetup); //this.documentProvider.outs.activeDocument.value.setup;
         
         if(!setup) {
