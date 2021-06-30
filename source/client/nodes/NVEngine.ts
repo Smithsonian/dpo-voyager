@@ -26,6 +26,7 @@ import CVAssetManager from "../components/CVAssetManager";
 import CVAssetReader from "../components/CVAssetReader";
 import CVAnalytics from "../components/CVAnalytics";
 import CVARManager from "../components/CVARManager";
+import CVSonify from "client/components/CVSonify";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,6 +68,7 @@ export default class NVEngine extends Node
         this.createComponent(CVAssetReader);
         this.createComponent(CVAnalytics);
         this.createComponent(CVARManager);
+        this.createComponent(CVSonify);
 
         const selection = this.createComponent(CPickSelection);
 

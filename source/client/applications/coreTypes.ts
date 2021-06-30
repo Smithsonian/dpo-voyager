@@ -68,6 +68,7 @@ import CVSnapshots from "../components/CVSnapshots";
 import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
 import CVLanguageManager from "../components/CVLanguageManager";
+import CVSonify from "client/components/CVSonify";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -97,6 +98,7 @@ const types = [
     CVAssetReader,
     CVDocument,
     CVDocumentProvider,
+    CVSonify,
 
     CVScene,
     CVSetup,

@@ -28,6 +28,7 @@ import { EDerivativeQuality } from "../../schema/model";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
+import CVSonify from "../../components/CVSonify";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +49,9 @@ export default class MainMenu extends DocumentView
     }
     protected get arManager() {
         return this.system.getMainComponent(CVARManager);
+    }
+    protected get sonification() {
+        return this.system.getMainComponent(CVSonify);
     }
     protected get sceneNode() {
         return this.system.getComponent(CVScene);
@@ -113,6 +117,8 @@ export default class MainMenu extends DocumentView
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
+        <ff-button icon="knife" title=${language.getLocalizedString("Sonify")}
+            ?selected=${this.shareButtonSelected} @click=${this.onToggleSonify}></ff-button>
         ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         ${readerButtonVisible ? html`<ff-button icon="article" title=${language.getLocalizedString("Read more...")}
@@ -200,6 +206,12 @@ export default class MainMenu extends DocumentView
 
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+    }
+
+    protected onToggleSonify()
+    {
+        this.sonification.ins.active.setValue(!this.sonification.ins.active.value);
+        this.analytics.sendProperty("Menu.Sonify");
     }
 
     protected onEnterAR()
