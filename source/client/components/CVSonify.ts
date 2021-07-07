@@ -18,7 +18,7 @@
 import Component, { types } from "@ff/graph/Component";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import { WebGLRenderTarget, RGBFormat, NearestFilter, DepthTexture, UnsignedShortType, DepthFormat, UnsignedIntType, Vector3, Color, PlaneGeometry, MeshBasicMaterial, Mesh, DoubleSide } from "three";
+import { WebGLRenderTarget, RGBFormat, NearestFilter, DepthTexture, UnsignedShortType, DepthFormat, UnsignedIntType, Vector3, Color, PlaneGeometry, MeshBasicMaterial, Mesh, DoubleSide, SphereGeometry, BoxGeometry, Box3, Plane } from "three";
 import DepthShader from "../shaders/DepthShader";
 import { EProjection } from "client/../../libs/ff-three/source/UniversalCamera";
 import CVScene from "./CVScene";
@@ -26,9 +26,13 @@ import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const corners = [[1,1,1],[0,1,1],[0,0,1],[1,0,1],[0,0,0],[0,1,0],[1,1,0],[1,0,0]];
+
 const _target: Vector3 = new Vector3();
 const _dir: Vector3 = new Vector3();
 const _color = new Color();
+const _plane = new Plane();
+const _box = new Box3();
 
 export default class CVSonify extends Component
 {
@@ -178,7 +182,7 @@ export default class CVSonify extends Component
             + buffer[1] * 1.531862745098039e-5 
             + buffer[0] * 0.003921568627451;
 
-            this.oscillator.frequency.value = depth <= 0.000001 ? 100 : 100 + 780*(1.0-depth);
+            this.oscillator.frequency.value = depth <= 0.000001 ? 100 : 100 + 1480*(1.0-depth);
 
             //console.log(event.localX + " " + event.localY + " DEPTH: " + depth);
         }
@@ -188,21 +192,35 @@ export default class CVSonify extends Component
     {
         const sceneComponent = this.system.getComponent(CRenderer, true).activeSceneComponent;
         const scene = sceneComponent && sceneComponent.scene;
-        const camera = sceneComponent &&sceneComponent.activeCamera;
-
-        //camera.setProjection(EProjection.Orthographic);
-
-        camera.getWorldPosition(_target);
+        const sceneNode = this.sceneNode;
+        const camera = sceneComponent && sceneComponent.activeCamera;
+        const bbox = /*sceneNode.models.length === 1 ? _box.copy(sceneNode.models[0].localBoundingBox).applyMatrix4(sceneNode.models[0].object3D.matrixWorld)
+                                                     :*/ sceneNode.outs.boundingBox.value;
 
         const oldFarPlane = camera.far;
         const oldNearPlane = camera.near;
-        const boundingRadius = this.sceneNode.outs.boundingRadius.value;
-        const sceneDist = this.sceneNode.outs.boundingBox.value.distanceToPoint(_target);
-        camera.far = sceneDist + 2*boundingRadius;
-        camera.near = Math.max(camera.near, sceneDist);
+
+        camera.getWorldDirection(_dir);
+        camera.getWorldPosition(_target);
+
+        _plane.set(_dir, _target.length());
+
+        // Calculate new near and far planes based on bbox
+        camera.far = 0;
+        camera.near = 1000000;
+        corners.forEach(corner => {
+            _target.set(bbox.max.x*corner[0]+bbox.min.x*(1-corner[0]),
+                bbox.max.y*corner[1]+bbox.min.y*(1-corner[1]),
+                bbox.max.z*corner[2]+bbox.min.z*(1-corner[2])); 
+            
+            camera.far = Math.max(camera.far, _plane.distanceToPoint(_target));
+            camera.near = Math.min(camera.near, _plane.distanceToPoint(_target));
+        });
+
         camera.updateProjectionMatrix();
 
         // TEMP
+        /*camera.getWorldPosition(_target);
         camera.getWorldDirection(_dir);
         var geometry = new PlaneGeometry(100, 100);
         var material = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide, transparent: true, opacity: 0.5 });
@@ -217,6 +235,16 @@ export default class CVSonify extends Component
         mesh.position.set(newLoc.x, newLoc.y, newLoc.z);
         sceneComponent.scene.add(mesh);
 
+        //const geometry2 = new SphereGeometry( boundingRadius, 128, 128 );
+        var size = new Vector3();
+        bbox.getSize(size); console.log("Getting bounds: " + JSON.stringify(size));
+        const geometry2 = new BoxGeometry( size.x, size.y, size.z );
+        const sphere = new Mesh( geometry2, material );
+        var center = new Vector3();
+        bbox.getCenter(center);
+        sphere.position.set(center.x, center.y, center.z);
+        sceneComponent.scene.add(sphere);
+
         camera.getWorldPosition(_target);
         camera.getWorldDirection(_dir);
         const dirNorm2 = _dir.normalize();
@@ -224,7 +252,7 @@ export default class CVSonify extends Component
         const newLoc2 = _target;
         newLoc2.add(offset2);
         mesh2.position.set(newLoc2.x, newLoc2.y, newLoc2.z);
-        sceneComponent.scene.add(mesh2);
+        sceneComponent.scene.add(mesh2);*/
         // TEMP
 
         const renderer = this.renderer.views[0].renderer;  
@@ -248,7 +276,7 @@ export default class CVSonify extends Component
         renderer.setClearColor(_color);
 
 
-        console.log(camera.near + " " + camera.far);
+        //console.log(camera.near + " " + camera.far);
 
         //renderer.render( scene, camera );
 
@@ -259,10 +287,5 @@ export default class CVSonify extends Component
         camera.far = oldFarPlane;
         camera.near = oldNearPlane;
         camera.updateProjectionMatrix();
-    }
-
-    updateTone()
-    {
-
     }
 }

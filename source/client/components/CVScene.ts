@@ -145,7 +145,7 @@ export default class CVScene extends CVNode
 
         this.models.forEach(model => box.expandByObject(model.object3D));
         box.getSize(_vec3);
-
+console.log("Setting bounds: " + JSON.stringify(_vec3)); if(this.models[0]){console.log(this.models[0].object3D);}
         this.outs.boundingBox.set();
         this.outs.boundingRadius.setValue(_vec3.length() * 0.5);
     }
