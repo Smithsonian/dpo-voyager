@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import {WebGLRenderer, Scene, Vector3, Camera, Texture, Color} from 'three';
 import GPUPicker from "@ff/three/GPUPicker";
 import { IBaseEvent } from "@ff/three/Viewport";
 
 import UVShader from "../shaders/UVShader";
 import ZoneShader from "../shaders/ZoneShader";
 
+const _color = new Color();
+
 export default class VGPUPicker extends GPUPicker
 {
     protected uvShader: UVShader;
     protected zoneShader: ZoneShader;
 
-    constructor(renderer: THREE.WebGLRenderer)
+    constructor(renderer: WebGLRenderer)
     {
         super(renderer);
 
@@ -42,10 +44,10 @@ export default class VGPUPicker extends GPUPicker
      * @param event A UI event providing the screen position at which to pick.
      * @param result A vector containing the picked uv coordinates.
      */
-    pickUV(scene: THREE.Scene, camera: THREE.Camera,
-        event: IBaseEvent, result?: THREE.Vector3): THREE.Vector3
+    pickUV(scene: Scene, camera: Camera,
+        event: IBaseEvent, result?: Vector3): Vector3
     {
-        result = result || new THREE.Vector3();
+        result = result || new Vector3();
 
         const viewport = event.viewport;
         camera = viewport.updateCamera(camera);
@@ -55,7 +57,7 @@ export default class VGPUPicker extends GPUPicker
 
         const renderer = this.renderer;
         const pickTextures = this.pickTextures;
-        const color = renderer.getClearColor().clone();
+        renderer.getClearColor(_color);
 
         for (let i = 0; i < 2; ++i) {
             shader.uniforms.index.value = i;
@@ -66,7 +68,7 @@ export default class VGPUPicker extends GPUPicker
         }
 
         renderer.setRenderTarget(null);
-        renderer.setClearColor(color);
+        renderer.setClearColor(_color);
 
         scene.overrideMaterial = overrideMaterial;
 
@@ -94,10 +96,10 @@ export default class VGPUPicker extends GPUPicker
      * @param event A UI event providing the screen position at which to pick.
      * @param result A vector containing the picked uv coordinates.
      */
-    pickZone(scene: THREE.Scene, texture: THREE.Texture, camera: THREE.Camera,
-        event: IBaseEvent, result?: THREE.Vector3): THREE.Vector3
+    pickZone(scene: Scene, texture: Texture, camera: Camera,
+        event: IBaseEvent, result?: Vector3): Vector3
     {
-        result = result || new THREE.Vector3();
+        result = result || new Vector3();
 
         const viewport = event.viewport;
         camera = viewport.updateCamera(camera);
@@ -107,7 +109,7 @@ export default class VGPUPicker extends GPUPicker
 
         const renderer = this.renderer;
         const pickTexture = this.pickTextures[0];
-        const color = renderer.getClearColor().clone();
+        renderer.getClearColor(_color);
 
         shader.uniforms.zoneMap.value = texture;
         viewport.applyPickViewport(pickTexture, event);
@@ -116,7 +118,7 @@ export default class VGPUPicker extends GPUPicker
         renderer.render(scene, camera);
 
         renderer.setRenderTarget(null);
-        renderer.setClearColor(color);
+        renderer.setClearColor(_color);
 
         scene.overrideMaterial = overrideMaterial;
 

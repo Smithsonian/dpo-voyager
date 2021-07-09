@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import {ShaderMaterial} from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,7 @@ import * as THREE from "three";
  * Renders the zone colors
  * Based on ff-three position shader : Copyright 2020 Ralph Wiedemeier, Frame Factory GmbH
  */
-export default class ZoneShader extends THREE.ShaderMaterial
+export default class ZoneShader extends ShaderMaterial
 {
     isZoneShader = true;
 

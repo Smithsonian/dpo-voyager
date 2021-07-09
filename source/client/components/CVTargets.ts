@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import {CanvasTexture, Mesh, Vector2} from 'three';
 
 import Component, { types } from "@ff/graph/Component";
 import { ITweenState } from "@ff/graph/components/CTweenMachine";
@@ -71,7 +71,7 @@ export default class CVTargets extends Component
     private _targets: ITarget[] = [];
     private _modelTarget: number = -1;
     private _zoneCanvas: HTMLCanvasElement = null;
-    private _zoneTexture: THREE.CanvasTexture = null;
+    private _zoneTexture: CanvasTexture = null;
 
     get model() {
         return this.getComponent(CVModel2);
@@ -79,11 +79,11 @@ export default class CVTargets extends Component
     get material() {
         let mat = null;
         if(this.model.object3D.type === "Mesh") {
-            const mesh = this.model.object3D as THREE.Mesh;
+            const mesh = this.model.object3D as Mesh;
             mat = mesh.material as UberPBRMaterial;
         }
         else {
-            const mesh = this.model.object3D.getObjectByProperty("type", "Mesh") as THREE.Mesh;
+            const mesh = this.model.object3D.getObjectByProperty("type", "Mesh") as Mesh;
             if(mesh) {
                 mat = mesh.material as UberPBRMaterial;
             }
@@ -126,7 +126,7 @@ export default class CVTargets extends Component
             return this._zoneTexture;
         } 
         else {
-            this._zoneTexture = new THREE.CanvasTexture(this.zoneCanvas); 
+            this._zoneTexture = new CanvasTexture(this.zoneCanvas); 
             this.material.zoneMap = this._zoneTexture;
             return this._zoneTexture;
         }
@@ -238,7 +238,7 @@ export default class CVTargets extends Component
 
         if(this.outs.zoneCount.value > 0)// TODO: Only needed if we have active zones
         {
-            const uv: THREE.Vector2 = new THREE.Vector2; 
+            const uv: Vector2 = new Vector2; 
             if(this.picker === null) {
                 this.picker = new VGPUPicker(event.view.renderer);
             }
@@ -249,7 +249,7 @@ export default class CVTargets extends Component
             const scene = sceneComponent && sceneComponent.scene;
             const camera = sceneComponent &&sceneComponent.activeCamera;
 
-            const mesh = event.object3D as THREE.Mesh;
+            const mesh = event.object3D as Mesh;
             const material = mesh.material as UberPBRMaterial;
 
             const zoneColor = this.picker.pickZone(scene, material.zoneMap, camera, event); 

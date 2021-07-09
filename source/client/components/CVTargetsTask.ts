@@ -33,7 +33,7 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import NVNode from "../nodes/NVNode";
-import * as THREE from "three";
+import {Vector2, Raycaster, Scene} from 'three';
 import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 
@@ -91,15 +91,15 @@ export default class CVTargetsTask extends CVTask
 
     isPainting: boolean = false;
 
-    protected zoneScene: THREE.Scene;
+    protected zoneScene: Scene;
     protected qualities: EDerivativeQuality[] = [EDerivativeQuality.Low, EDerivativeQuality.Medium, EDerivativeQuality.High];
 
-    protected onClickPosition: THREE.Vector2;
-    protected raycaster: THREE.Raycaster;
+    protected onClickPosition: Vector2;
+    protected raycaster: Raycaster;
     protected ctx: CanvasRenderingContext2D;
     protected activeModel: CVModel2;
     protected picker: VGPUPicker;
-    protected uv: THREE.Vector2;
+    protected uv: Vector2;
 
     private _oldColor: number[] = [1.0, 0.0, 0.0];
     private _zoneDisplayCount: number = 0;
@@ -136,10 +136,10 @@ export default class CVTargetsTask extends CVTask
         const configuration = this.configuration;
         configuration.bracketsVisible = false;
 
-        this.zoneScene = new THREE.Scene();
-        this.onClickPosition = new THREE.Vector2();
-        this.raycaster = new THREE.Raycaster();
-        this.uv = new THREE.Vector2();  
+        this.zoneScene = new Scene();
+        this.onClickPosition = new Vector2();
+        this.raycaster = new Raycaster();
+        this.uv = new Vector2();  
     }
 
     create()

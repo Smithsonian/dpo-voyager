@@ -130,7 +130,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         return this._aoMapMix;
     }
 
-    set zoneMap(map: THREE.Texture) {
+    set zoneMap(map: Texture) {
         this._zoneMap = map;
         this.uniforms.zoneMap.value = map; 
         this.needsUpdate = true;
