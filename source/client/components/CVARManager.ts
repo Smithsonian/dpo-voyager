@@ -554,7 +554,7 @@ export default class CVARManager extends Component
             });
     }
 
-    protected getHitPoint( hitResult: XRHitTestResult): THREE.Vector3|null {
+    protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
         const pose = hitResult.getPose(this.refSpace!);
         if (pose == null) {
           return null;
