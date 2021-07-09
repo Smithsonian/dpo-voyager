@@ -78,6 +78,7 @@ export default class CVSnapshots extends CTweenMachine
 
         const models = this.getGraphComponents(CVModel2);
         models.forEach(model => this.updateComponentTarget(model.transform, !!features["models"]));
+        models.forEach(model => this.updateComponentTarget(model, !!features["models"]));        
 
         const lights = this.getGraphComponents(CLight);
         lights.forEach(light => this.updateComponentTarget(light, !!features["lights"]));
@@ -103,7 +104,7 @@ export default class CVSnapshots extends CTweenMachine
             if (!schema.event && property.type !== "object") {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
-                    this.addTargetProperty(property);
+                    this.addTargetProperty(property); 
                 }
                 else if (!include && isIncluded) {
                     this.removeTargetProperty(property);

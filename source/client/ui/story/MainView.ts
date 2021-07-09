@@ -33,6 +33,7 @@ import TaskBar from "./TaskBar";
 import ExplorerPanel from "./ExplorerPanel";
 import EditorPanel from "./EditorPanel";
 import TourPanel from "./TourPanel";
+import TargetPanel from "./TargetPanel";
 import TaskPanel from "./TaskPanel";
 import NotesPanel from "./NotesPanel";
 import ConsolePanel from "./ConsolePanel";
@@ -63,6 +64,10 @@ Icon.add("upload", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384
 Icon.add("download", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M216 236.07c0-6.63-5.37-12-12-12h-24c-6.63 0-12 5.37-12 12v84.01h-48.88c-10.71 0-16.05 12.97-8.45 20.52l72.31 71.77c4.99 4.95 13.04 4.95 18.03 0l72.31-71.77c7.6-7.54 2.26-20.52-8.45-20.52H216v-84.01zM369.83 97.98L285.94 14.1c-9-9-21.2-14.1-33.89-14.1H47.99C21.5.1 0 21.6 0 48.09v415.92C0 490.5 21.5 512 47.99 512h287.94c26.5 0 48.07-21.5 48.07-47.99V131.97c0-12.69-5.17-24.99-14.17-33.99zM255.95 51.99l76.09 76.08h-76.09V51.99zM336 464.01H47.99V48.09h159.97v103.98c0 13.3 10.7 23.99 24 23.99H336v287.95z"/></svg>`);
 Icon.add("trash", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"/></svg>`);
 Icon.add("cube", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M239.1 7.5l-208 78c-18.7 7-31.1 25-31.1 45v225.1c0 18.2 10.3 34.8 26.5 42.9l208 104c13.5 6.8 29.4 6.8 42.9 0l208-104c16.3-8.1 26.5-24.8 26.5-42.9V130.5c0-20-12.4-37.9-31.1-44.9l-208-78C262 3.4 250 3.4 239.1 7.5zm16.9 45l208 78v.3l-208 84.5-208-84.5v-.3l208-78zM48 182.6l184 74.8v190.2l-184-92v-173zm232 264.9V257.4l184-74.8v172.9l-184 92z"/></svg>`);
+Icon.add("target", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 135 135"><path d="M 67.645247,1.6743484 A 66.145703,66.145703 0 0 0 1.5,67.820658 66.145703,66.145703 0 0 0 67.645247,133.96667 66.145703,66.145703 0 0 0 133.791,67.820658 66.145703,66.145703 0 0 0 67.645247,1.6743484 Z m 0,12.7005696 A 53.445726,53.445726 0 0 1 121.09123,67.820658 53.445726,53.445726 0 0 1 67.645247,121.26617 53.445726,53.445726 0 0 1 14.199769,67.820658 53.445726,53.445726 0 0 1 67.645247,14.374918 ZM 67.645247,24.957868 A 42.862413,42.862413 0 0 0 24.78339,67.820658 42.862413,42.862413 0 0 0 67.645247,110.68329 42.862413,42.862413 0 0 0 110.50763,67.820658 42.862413,42.862413 0 0 0 67.645247,24.957868 Z m 0,12.70057 a 30.162438,30.162438 0 0 1 30.162685,30.16222 30.162438,30.162438 0 0 1 -30.162685,30.16213 30.162438,30.162438 0 0 1 -30.162088,-30.16213 30.162438,30.162438 0 0 1 30.162088,-30.16222 z"/><circle cx="67.873672" cy="68.118736" r="18.854462" /></svg>`);
+Icon.add("brush", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244.04 230.05"><path d="M79.13,167.56c4.39,4,12.25,13,9,25.72C83.61,211,63,222.16,57.17,224.64c-9.78,4.19-26.57,6.87-39.23,3.14-7.33-2.16-13-4-16.31-6.33a2.76,2.76,0,0,1-.14-4.34c26.77-22.32,20.51-33.44,37.58-51.6C54.65,148.92,73.8,162.77,79.13,167.56Z"/><path d="M98.28,176.7c-4.27-6.93-5.56-9.07-11.23-14.88S78.43,154.91,72.24,150a4.8,4.8,0,0,1,.19-6.57C98.18,110.73,107,98.87,126.28,77.89c18.23-19.86,65.64-61.59,89.93-76,11.75-7,32.61,14.45,26.1,26.35-13.1,24-54.88,73.91-74.25,92.58-20.68,20-32.23,29-63.77,55.31C102.73,177.72,100.17,178.64,98.28,176.7Z"/></svg>`);
+Icon.add("pointer", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 208.31 207.81"><path d="M6.06.8l171.8,68.67a4.05,4.05,0,0,1,1.36,6.63L76.1,179.22a4.05,4.05,0,0,1-6.63-1.36L.8,6.06A4,4,0,0,1,6.06.8Z"/><rect x="121.07" y="73.15" width="46.71" height="141.55" rx="7.65" transform="translate(348.31 143.57) rotate(135)"/></svg>`);
+Icon.add("eraser", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260.7 217.79"><rect x="92.28" y="16.11" width="128.08" height="176.54" rx="9.22" transform="translate(119.59 -79.96) rotate(45)"/><path d="M38.83,217.77v0L3.12,182.07a10.63,10.63,0,0,1,0-15l32.27-32.27a10.63,10.63,0,0,1,15,0l64.86,64.86a10.64,10.64,0,0,1-7.53,18.16Z"/></svg>`);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -126,6 +131,7 @@ export default class MainView extends CustomElement
         const explorer = this.application.explorer;
         registry.set("explorer", () => new ExplorerPanel(explorer));
         registry.set("tour-editor", () => new TourPanel(system));
+        registry.set("target-editor", () => new TargetPanel(system));
         registry.set("task", () => new TaskPanel(system));
         registry.set("notes", () => new NotesPanel(system));
         registry.set("console", () => new ConsolePanel(system));
@@ -254,6 +260,9 @@ export default class MainView extends CustomElement
                     contentId: "tour-editor",
                     text: "Tour Editor"
                 }, {
+                    contentId: "target-editor",
+                    text: "Target Editor"
+                }, {
                     contentId: "notes",
                     text: "Note Editor"
                 }]
@@ -314,6 +323,9 @@ export default class MainView extends CustomElement
                 }, {
                     contentId: "tour-editor",
                     text: "Tour Editor"
+                }, {
+                    contentId: "target-editor",
+                    text: "Target Editor"
                 }, {
                     contentId: "notes",
                     text: "Note Editor"

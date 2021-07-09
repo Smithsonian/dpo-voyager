@@ -339,6 +339,35 @@ $color-component-meta-light: #d9d998;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TARGETS
+
+$color-component-active-target: rgb(10, 128, 10);
+
+.ff-list .sv-target-list-header {
+  //background-color: $color-background-darker;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.sv-icon-active-target {
+  fill: $color-component-model;
+}
+
+.ff-property-button.sv-property-button {
+  align-items: center;
+  padding: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: $color-background-light;
+}
+
+.sv-target-colorbox {
+  float: right; 
+  width: 1.2em; 
+  height: 1.2em; 
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PROPERTY VIEW
 
 .sv-property-view {

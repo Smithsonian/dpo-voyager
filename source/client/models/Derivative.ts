@@ -71,6 +71,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         }
 
         const modelAsset = this.findAsset(EAssetType.Model);
+        const imageAssets = this.findAssets(EAssetType.Image);
 
         if (modelAsset) {
             return assetReader.getModel(modelAsset.data.uri)
@@ -79,12 +80,32 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                     disposeObject(this.model);
                 }
                 this.model = object;
-                return object;
+
+                if(imageAssets.length > 0) {
+                    return Promise.all(imageAssets.map(asset => assetReader.getTexture(asset.data.uri)))
+                    .then(textures => {
+                            let material = null;
+                            this.model.traverse((node: any) => {
+                                if (node.type === "Mesh") {
+                                    const mesh: THREE.Mesh = node;
+                                    material = mesh.material as UberPBRMaterial;
+                                }
+                            });
+                            this.assignTextures(imageAssets, textures, material);
+                            return this.model;
+                    })
+                    .catch(error => {
+                        console.warn("failed to load additional texture files");
+                        return object;
+                    });
+                }
+                else {
+                    return object;
+                }
             });
         }
 
         const geoAsset = this.findAsset(EAssetType.Geometry);
-        const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
             return assetReader.getGeometry(geoAsset.data.uri)
@@ -228,6 +249,10 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
 
                 case EMapType.Normal:
                     material.normalMap = texture;
+                    break;
+
+                case EMapType.Zone:
+                    material.zoneMap = texture;
                     break;
             }
         }

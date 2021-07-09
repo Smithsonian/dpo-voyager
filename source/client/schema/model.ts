@@ -54,6 +54,7 @@ export interface IModel
     boundingBox?: IBoundingBox;
     material?: IPBRMaterialSettings;
     annotations?: IAnnotation[];
+    targets?: ITarget[];
 }
 
 /**
@@ -138,4 +139,25 @@ export interface IPBRMaterialSettings
     //alphaCutoff?: number;
     //doubleSided?: boolean;
     normalSpace?: TNormalSpaceType;
+}
+
+/**
+ * Describes a targeted state change. Links to snapshot id for new state.
+ * Target type can be model, zone, or annotation.
+ */
+export type ITargets = ITarget[];
+
+export interface ITarget
+{
+    type: string;
+    id: string;
+    title: string;
+    color: string;
+    snapshots: ITargetSnapshot[];
+}
+
+export interface ITargetSnapshot
+{
+    title: string;
+    id: string;
 }

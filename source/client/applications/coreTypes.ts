@@ -65,6 +65,8 @@ import CVTape from "../components/CVTape";
 import CVSlicer from "../components/CVSlicer";
 import CVTours from "../components/CVTours";
 import CVSnapshots from "../components/CVSnapshots";
+import CVTargets from "../components/CVTargets";
+import CVTargetManager from "../components/CVTargetManager";
 import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
 import CVLanguageManager from "../components/CVLanguageManager";
@@ -121,6 +123,8 @@ const types = [
     CVSlicer,
     CVTours,
     CVSnapshots,
+    CVTargets,
+    CVTargetManager,
     CVEnvironment,
     CVLanguageManager,
 

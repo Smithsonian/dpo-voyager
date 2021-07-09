@@ -20,7 +20,7 @@ import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, 
 import Notification from "@ff/ui/Notification";
 
 import { ITypedEvent, Node, types } from "@ff/graph/Component";
-import CObject3D from "@ff/scene/components/CObject3D";
+import CObject3D, { IPointerEvent } from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
 
@@ -33,6 +33,7 @@ import Derivative from "../models/Derivative";
 import DerivativeList from "../models/DerivativeList";
 
 import CVAnnotationView from "./CVAnnotationView";
+import CVTargets from "./CVTargets";
 import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { Vector3 as LocalVector3 } from "client/schema/common";
@@ -47,6 +48,10 @@ const _quat = new Quaternion();
 const _box = new Box3();
 
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
+{
+}
+
+export interface IModelClickEvent extends IPointerEvent
 {
 }
 
@@ -77,6 +82,7 @@ export default class CVModel2 extends CObject3D
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
+        selected: types.Event("Model.Selected"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
         override: types.Boolean("Material.Override", false),
         color: types.ColorRGB("Material.BaseColor"),
@@ -113,6 +119,13 @@ export default class CVModel2 extends CObject3D
             this.ins.roughness,
             this.ins.metalness,
             this.ins.occlusion,
+        ];
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.visible,
+            this.ins.quality,
         ];
     }
 
@@ -157,6 +170,9 @@ export default class CVModel2 extends CObject3D
         // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
+
+        // create targets component for this model
+        this.node.createComponent(CVTargets);
 
         // set quality based on max texture size
         const maxTextureSize = this.renderer.outs.maxTextureSize.value;
@@ -206,7 +222,7 @@ export default class CVModel2 extends CObject3D
                 this.updateMaterial();
             }
             else {
-                this.object3D.visible = false;
+                this.object3D.visible = false; 
             }
         }
 
@@ -363,6 +379,10 @@ export default class CVModel2 extends CObject3D
             this.getComponent(CVAnnotationView).fromData(data.annotations);
         }
 
+        if (data.targets) {
+            this.getComponent(CVTargets).fromData(data.targets);
+        }
+
         // emit tag update event
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
 
@@ -425,6 +445,11 @@ export default class CVModel2 extends CObject3D
         const annotations = this.getComponent(CVAnnotationView).toData();
         if (annotations && annotations.length > 0) {
             data.annotations = annotations;
+        }
+
+        const targets = this.getComponent(CVTargets).toData();
+        if (targets && targets.length > 0) {
+            data.targets = targets;
         }
 
         document.models = document.models || [];

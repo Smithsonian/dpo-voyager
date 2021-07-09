@@ -16,7 +16,7 @@
  */
 
 import { MeshStandardMaterialParameters, MeshStandardMaterial, Vector3, Vector4, Color, 
-    Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending, FrontSide } from "three";
+    Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending, FrontSide, Texture } from "three";
 
 const fragmentShader = require("./uberPBRShader.frag").default;
 const vertexShader = require("./uberPBRShader.vert").default;
@@ -41,7 +41,8 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     uniforms: {
         aoMapMix: { value: Vector3 },
         cutPlaneDirection: { value: Vector4 },
-        cutPlaneColor: { value: Vector3 }
+        cutPlaneColor: { value: Vector3 },
+        zoneMap: { value: Texture }
     };
 
     vertexShader: string;
@@ -57,6 +58,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     private _aoMapMix: Vector3;
     private _cutPlaneDirection: Vector4;
     private _cutPlaneColor: Vector3;
+    private _zoneMap: Texture;
 
     constructor(params?: IUberPBRShaderProps)
     {
@@ -75,6 +77,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
             "MODE_NORMALS": false,
             "MODE_XRAY": false,
             "CUT_PLANE": false,
+            "USE_ZONEMAP": false,
         };
 
         this.uniforms = UniformsUtils.merge([
@@ -83,12 +86,14 @@ export default class UberPBRMaterial extends MeshStandardMaterial
                 aoMapMix: { value: new Vector3(0.25, 0.25, 0.25) },
                 cutPlaneDirection: { value: new Vector4(0, 0, -1, 0) },
                 cutPlaneColor: { value: new Vector3(1, 0, 0) },
+                zoneMap: {value: null},
             }
         ]);
 
         this._aoMapMix = this.uniforms.aoMapMix.value;
         this._cutPlaneDirection = this.uniforms.cutPlaneDirection.value;
         this._cutPlaneColor = this.uniforms.cutPlaneColor.value;
+        this._zoneMap = this.uniforms.zoneMap.value;
 
         //this.vertexShader = ShaderLib.standard.vertexShader;
         this.vertexShader = vertexShader;
@@ -123,6 +128,15 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     }
     get aoMapMix() {
         return this._aoMapMix;
+    }
+
+    set zoneMap(map: THREE.Texture) {
+        this._zoneMap = map;
+        this.uniforms.zoneMap.value = map; 
+        this.needsUpdate = true;
+    }
+    get zoneMap() {
+        return this._zoneMap;
     }
 
     setShaderMode(mode: EShaderMode)
@@ -232,6 +246,14 @@ export default class UberPBRMaterial extends MeshStandardMaterial
 
         if (this.normalMap) {
             this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
+            this.needsUpdate = true;
+        }
+    }
+
+    enableZoneMap(enabled: boolean)
+    {
+        if(enabled != this.defines["USE_ZONEMAP"]) {
+            this.defines["USE_ZONEMAP"] = enabled; 
             this.needsUpdate = true;
         }
     }
