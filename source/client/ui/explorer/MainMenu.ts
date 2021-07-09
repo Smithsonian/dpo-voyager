@@ -69,10 +69,12 @@ export default class MainMenu extends DocumentView
         this.fullscreen.outs.fullscreenActive.on("value", this.onUpdate, this);
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.sonification.ins.active.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
+        this.sonification.ins.active.off("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         this.fullscreen.outs.fullscreenActive.off("value", this.onUpdate, this);
@@ -108,6 +110,8 @@ export default class MainMenu extends DocumentView
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
 
+        const sonifyActive = this.sonification.ins.active.value;
+
         const language = setup.language;
 
         // TODO - push to ARManager?
@@ -118,7 +122,7 @@ export default class MainMenu extends DocumentView
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
         <ff-button icon="knife" title=${language.getLocalizedString("Sonify")}
-            ?selected=${this.shareButtonSelected} @click=${this.onToggleSonify}></ff-button>
+            ?selected=${sonifyActive} @click=${this.onToggleSonify}></ff-button>
         ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         ${readerButtonVisible ? html`<ff-button icon="article" title=${language.getLocalizedString("Read more...")}
