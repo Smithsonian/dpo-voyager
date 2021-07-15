@@ -96,6 +96,20 @@
                 "id"
             ],
             "additionalProperties": false
+        },
+        "audioclip": {
+            "$id": "audioclip",
+            "description": "Reference to an audio file",
+            "type": "object",
+            "properties": {
+                "uris": {
+                    "description": "Location of the audio resource, absolute URL or path relative to this document with language key",
+                    "type": "object"
+                }
+            },
+            "required": [
+                "uris"
+            ]
         }
     },
 
@@ -127,6 +141,13 @@
             "description": "Index of the main article. This is the default article displayed with the item.",
             "type": "integer",
             "minimum": 0
+        },
+        "audio": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/audioclip"
+            },
+            "minItems": 0
         }
     },
     "additionalProperties": false

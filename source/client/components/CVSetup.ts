@@ -34,6 +34,7 @@ import CVTours from "./CVTours";
 import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
+import CVAudioManager from "./CVAudioManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -58,6 +59,7 @@ export default class CVSetup extends Component
         "tape": CVTape,
         "slicer": CVSlicer,
         "tours": CVTours,
+        "audio": CVAudioManager
     };
 
     get featureMap() {
@@ -80,6 +82,7 @@ export default class CVSetup extends Component
     snapshots: CVSnapshots;
     environment: CVEnvironment;
     language: CVLanguageManager;
+    audio: CVAudioManager;
 
     create()
     {
