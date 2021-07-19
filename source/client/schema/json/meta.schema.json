@@ -102,12 +102,21 @@
             "description": "Reference to an audio file",
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "name": {
+                    "description": "Short name.",
+                    "type": "string"
+                },
                 "uris": {
                     "description": "Location of the audio resource, absolute URL or path relative to this document with language key",
                     "type": "object"
                 }
             },
             "required": [
+                "id",
                 "uris"
             ]
         }

@@ -115,6 +115,10 @@ export default class CVMeta extends Component
                 data.leadArticle = articles.indexOf(this.leadArticle);
             }
         }
+        if (this.audio.length > 0) {
+            data = data || {};
+            data.audio = this.audio.items;
+        }
 
         if (data) {
             document.metas = document.metas || [];

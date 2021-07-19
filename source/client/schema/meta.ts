@@ -80,5 +80,6 @@ export interface INote
 export interface IAudioClip
 {
     id: string;
+    name: string;
     uris: Dictionary<string>;
 }

@@ -141,7 +141,7 @@ export interface ILanguage
 
 export interface IAudio
 {
-    narrationId: string;
+    narrationId?: string;
 }
 
 export interface ITape
