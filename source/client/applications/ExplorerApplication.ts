@@ -358,6 +358,13 @@ Version: ${ENV_VERSION}
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
     }
+
+    toggleMeasurement()
+    {
+        const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+
+        tapeIns.visible.setValue(!tapeIns.visible.value);
+    }
     
     enableAR()
     {

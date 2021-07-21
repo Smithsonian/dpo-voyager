@@ -37,6 +37,8 @@ export default class CVViewer extends Component
     static readonly text: string = "Viewer";
     static readonly icon: string = "";
 
+    private _rootElement: HTMLElement = null;
+
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
         activeAnnotation: types.String("Annotations.ActiveId"),
@@ -83,6 +85,13 @@ export default class CVViewer extends Component
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
+    }
+
+    get rootElement() {
+        return this._rootElement;
+    }
+    set rootElement(root: HTMLElement) {
+        this._rootElement = root;
     }
 
     create()
@@ -241,6 +250,8 @@ export default class CVViewer extends Component
     {
         const id = event.annotation ? event.annotation.id : "";
         this.ins.activeAnnotation.setValue(id);
+
+        this.rootElement.dispatchEvent(new CustomEvent('annotation-active', { detail: id }));
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)
