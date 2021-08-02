@@ -43,6 +43,7 @@ These methods engage Voyager functionality without the native UI.
 | toggleReader()    	 | None    			| On/off toggle for the article reader.  |
 | toggleTours()    		 | None    			| On/off toggle for the tour functionality UI.  |
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
+| toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
 
 ### Navigation Methods
@@ -58,3 +59,9 @@ Methods for external control over camera properties and navigation.
 | Name     				 		| Parameters       	   | Description                                                                                         |
 |-------------------------------|----------------------|--------------------------------------------------|
 | getArticles()				    | None 			   	   | Returns an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts) with properties of each article associated with the current scene.      |
+
+### Events
+
+| Name     				 		| Description                                                                                         |
+|-------------------------------|------------------------------------------------------------------------|
+| annotation-active				| This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.|
