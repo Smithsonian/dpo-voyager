@@ -29,11 +29,13 @@ import "./TourNavigator";
 import "./TourMenu";
 import "./LanguageMenu";
 import "./TagCloud";
+import "./SonifyMenu";
 import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import LanguageMenu from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
+import CVSonify from "client/components/CVSonify";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +46,9 @@ export default class ChromeView extends DocumentView
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
+    }
+    protected get sonification() {
+        return this.system.getMainComponent(CVSonify);
     }
 
     protected firstConnected()
@@ -58,12 +63,14 @@ export default class ChromeView extends DocumentView
     {
         super.connected();
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.sonification.ins.active.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this); // TODO: move to bottom
     }
 
     protected disconnected()
     {
-        this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this); // TODO: move to bottom
+        this.sonification.ins.active.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         super.disconnected();
     }
@@ -93,6 +100,8 @@ export default class ChromeView extends DocumentView
         const languages = language.activeLanguages;
         const activeLanguage = language.outs.language.value;
         const languagesVisible = languages.length > 1 && setup.interface.isShowing(EUIElements.language);
+
+        const sonifyEnabled = this.sonification.ins.active.value;
 
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
@@ -132,6 +141,7 @@ export default class ChromeView extends DocumentView
             ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${tagCloudVisible && toolBarAllowed ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
+            ${sonifyEnabled && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-sonify-menu .system=${this.system} ></sv-sonify-menu></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
                     ${languagesVisible ? html`<div id="language" class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}>${setup.language.toString()}</div>` : null}

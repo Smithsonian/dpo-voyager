@@ -127,6 +127,7 @@ export default class CVSonify extends Component
                 osc.start();
 
                 this.setup.navigation.ins.enabled.setValue(false);
+                this.setup.navigation.ins.preset.on("value", this.onViewChange, this);
 
                 this.isPlaying = true;            
             }
@@ -136,6 +137,7 @@ export default class CVSonify extends Component
                     this.oscillator.disconnect(this.audioCtx.destination);
                     this.isPlaying = false;
 
+                    this.setup.navigation.ins.preset.off("value", this.onViewChange, this);
                     this.setup.navigation.ins.enabled.setValue(true);
 
                     console.log("Stopping Audio");
@@ -287,5 +289,15 @@ export default class CVSonify extends Component
         camera.far = oldFarPlane;
         camera.near = oldNearPlane;
         camera.updateProjectionMatrix();
+    }
+
+    protected onViewChange()
+    {
+        const navigation = this.setup.navigation;
+        navigation.ins.enabled.setValue(true);
+        navigation.update();
+        navigation.tick();
+        navigation.ins.enabled.setValue(false);
+        this.generateDepthMap();
     }
 }
