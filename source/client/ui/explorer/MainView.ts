@@ -16,6 +16,8 @@
  */
 
 import CFullscreen from "@ff/scene/components/CFullscreen";
+import CVARManager from "client/components/CVARManager";
+import CVViewer from "client/components/CVViewer";
 
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 
@@ -83,6 +85,12 @@ export default class MainView extends CustomElement
     protected get fullscreen() {
         return this.application.system.getMainComponent(CFullscreen);
     }
+    protected get arManager() {
+        return this.application.system.getMainComponent(CVARManager);
+    }
+    protected get viewer() {
+        return this.application.system.getComponent(CVViewer);
+    }
 
     protected firstConnected()
     {
@@ -92,7 +100,7 @@ export default class MainView extends CustomElement
             const props: IExplorerApplicationProps = {
                 root: this.getAttribute("root"),
                 dracoRoot: this.getAttribute("dracoRoot"),
-                fontRoot: this.getAttribute("fontRoot"),
+                resourceRoot: this.getAttribute("resourceRoot"),
                 document: this.getAttribute("document"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
@@ -106,6 +114,8 @@ export default class MainView extends CustomElement
 
         this.attachShadow({mode: 'open'});
         const shadowRoot = this.shadowRoot;
+
+        this.arManager.shadowRoot = shadowRoot;
 
         // add style
         var styleElement = document.createElement("style");
@@ -125,11 +135,13 @@ export default class MainView extends CustomElement
     protected connected()
     {
         this.fullscreen.fullscreenElement = this;
+        this.viewer.rootElement = this;
     }
 
     protected disconnected()
     {
         this.fullscreen.fullscreenElement = null;
+        this.viewer.rootElement = null;
     }
 
 
@@ -159,6 +171,13 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.toggleTools();
+        }
+    }
+
+    toggleMeasurement()
+    {
+        if(this.application) {
+            this.application.toggleMeasurement();
         }
     }
     

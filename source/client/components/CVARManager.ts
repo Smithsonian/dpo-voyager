@@ -32,7 +32,6 @@ import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, M
     PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
-import CVDocumentProvider from "./CVDocumentProvider";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
@@ -45,10 +44,7 @@ import CVAnnotationView from "./CVAnnotationView";
 import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
-import ARPrompt from "client/ui/explorer/ARPrompt";
-import ARMenu from "client/ui/explorer/ARMenu";
 import CVAnalytics from "./CVAnalytics";
-import CVReader from "./CVReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +65,8 @@ export default class CVARManager extends Component
     static readonly icon: string = "";
 
     static readonly isSystemSingleton = true;
+
+    private _shadowRoot = null;
 
     protected static readonly ins = {
         enabled: types.Boolean("State.Enabled")
@@ -93,17 +91,18 @@ export default class CVARManager extends Component
     protected get sceneNode() {
         return this.getSystemComponent(CVScene);
     }
-    protected get documentProvider() {
-        return this.getMainComponent(CVDocumentProvider);
-    }
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
     }
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
-    protected get reader() {
-        return this.getGraphComponent(CVReader, true);
+
+    get shadowRoot() {
+        return this._shadowRoot;
+    }
+    set shadowRoot(root: ShadowRoot) {
+        this._shadowRoot = root;
     }
 
     protected arLink = document.createElement('a');
@@ -204,7 +203,7 @@ export default class CVARManager extends Component
                 requiredFeatures: ['hit-test'],
                 optionalFeatures: ['dom-overlay'],
                 domOverlay:
-                    {root: document.querySelector('ff-viewport-overlay')}
+                    {root: this.shadowRoot.querySelector('ff-viewport-overlay')}
             } ).then( session => this.onSessionStarted(renderer, session) ); //.catch(reason => { console.log("Error starting session: " + reason); }); **TODO
         }
     }
@@ -237,8 +236,6 @@ export default class CVARManager extends Component
             .then(hitTestSource => {
                 this.initialHitTestSource = hitTestSource;
             });
-
-        this.addUIElements();
 
         this.outs.isPresenting.setValue(true);
             
@@ -557,7 +554,7 @@ export default class CVARManager extends Component
             });
     }
 
-    protected getHitPoint( hitResult: XRHitTestResult): THREE.Vector3|null {
+    protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
         const pose = hitResult.getPose(this.refSpace!);
         if (pose == null) {
           return null;
@@ -856,18 +853,6 @@ export default class CVARManager extends Component
 
         this.selectionRing.visible = material.opacity > 0;
     }
-
-    // Add AR UI to overlay
-    protected addUIElements() {
-        const overlayElement = document.querySelector('ff-viewport-overlay');
-        if(document.querySelector('sv-ar-prompt-container') === null) {        
-            overlayElement.append(new ARPrompt(this.system));
-        }
-        if(document.querySelector('sv-ar-menu-container') === null) {
-            overlayElement.append(new ARMenu(this.system));
-        }
-    }
-
 
     // Helper function to generate rounded rectangle shape from Three.js example:
     // https://github.com/mrdoob/three.js/blob/dev/examples/webgl_geometry_shapes.html

@@ -28,6 +28,8 @@ import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export const DEFAULT_SYSTEM_ASSET_PATH = "https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/";
+
 export default class CVAssetReader extends Component
 {
     static readonly typeName: string = "CVAssetReader";
@@ -43,6 +45,7 @@ export default class CVAssetReader extends Component
     readonly textureLoader: TextureReader;
     readonly fontReader: FontReader;
 
+    private systemAssetPath = null;
 
     constructor(node: Node, id: string)
     {
@@ -66,9 +69,10 @@ export default class CVAssetReader extends Component
         this.modelLoader.dracoPath = dracoPath;
     }
 
-    setFontPath(fontPath: string)
+    setSystemAssetPath(assetPath: string)
     {
-        this.fontReader.fontPath = fontPath;
+        this.fontReader.fontPath = assetPath;
+        this.systemAssetPath = assetPath;
     }
 
     async getJSON(assetPath: string): Promise<any>
@@ -109,13 +113,13 @@ export default class CVAssetReader extends Component
 
     async getSystemTexture(assetPath: string): Promise<THREE.Texture>
     {
-        const url = new URL(assetPath, window.location.href).href;
+        const url = (this.systemAssetPath || DEFAULT_SYSTEM_ASSET_PATH) + assetPath;
         return this.textureLoader.get(url);
     }
 
     async getSystemJSON(assetPath: string): Promise<any>
     {
-        const url = new URL(assetPath, window.location.href).href;
+        const url = (this.systemAssetPath || DEFAULT_SYSTEM_ASSET_PATH) + assetPath;
         return this.jsonLoader.get(url);
     }
 }

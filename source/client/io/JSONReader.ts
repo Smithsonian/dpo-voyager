@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { LoadingManager } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class JSONReader
 {
-    private _loadingManager: THREE.LoadingManager;
+    private _loadingManager: LoadingManager;
 
-    constructor(loadingManager: THREE.LoadingManager)
+    constructor(loadingManager: LoadingManager)
     {
         this._loadingManager = loadingManager;
     }

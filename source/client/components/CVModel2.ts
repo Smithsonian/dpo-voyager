@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide } from "three";
 
 import Notification from "@ff/ui/Notification";
 
@@ -35,16 +35,16 @@ import DerivativeList from "../models/DerivativeList";
 import CVAnnotationView from "./CVAnnotationView";
 import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
-import { Vector3 } from "client/schema/common";
+import { Vector3 as LocalVector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
-const _quat = new THREE.Quaternion();
-const _box = new THREE.Box3();
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _quat = new Quaternion();
+const _box = new Box3();
 
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
@@ -120,14 +120,14 @@ export default class CVModel2 extends CObject3D
     private _activeDerivative: Derivative = null;
 
     private _visible: boolean = true;
-    private _boxFrame: THREE.Mesh = null;
-    private _localBoundingBox = new THREE.Box3();
+    private _boxFrame: Mesh = null;
+    private _localBoundingBox = new Box3();
 
     constructor(node: Node, id: string)
     {
         super(node, id);
 
-        this.object3D = new THREE.Group();
+        this.object3D = new Group();
     }
 
     get derivatives() {
@@ -136,7 +136,7 @@ export default class CVModel2 extends CObject3D
     get activeDerivative() {
         return this._activeDerivative;
     }
-    get localBoundingBox(): Readonly<THREE.Box3> {
+    get localBoundingBox(): Readonly<Box3> {
         return this._localBoundingBox;
     }
 
@@ -285,7 +285,7 @@ export default class CVModel2 extends CObject3D
         position.set();
     }
 
-    setFromMatrix(matrix: THREE.Matrix4)
+    setFromMatrix(matrix: Matrix4)
     {
         const ins = this.ins;
 
@@ -336,7 +336,7 @@ export default class CVModel2 extends CObject3D
             boundingBox.min.fromArray(data.boundingBox.min);
             boundingBox.max.fromArray(data.boundingBox.max);
 
-            this._boxFrame = new (THREE.Box3Helper as any)(boundingBox, "#009cde");
+            this._boxFrame = new (Box3Helper as any)(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
             this._boxFrame.updateMatrixWorld(true);
 
@@ -416,8 +416,8 @@ export default class CVModel2 extends CObject3D
         }
 
         data.boundingBox = {
-            min: this._localBoundingBox.min.toArray() as Vector3,
-            max: this._localBoundingBox.max.toArray() as Vector3
+            min: this._localBoundingBox.min.toArray() as LocalVector3,
+            max: this._localBoundingBox.max.toArray() as LocalVector3
         };
 
         data.derivatives = this.derivatives.toJSON();
@@ -490,7 +490,7 @@ export default class CVModel2 extends CObject3D
         this.outs.updated.set();
     }
 
-    protected updateRenderOrder(model: THREE.Object3D, value: number)
+    protected updateRenderOrder(model: Object3D, value: number)
     {
         model.renderOrder = value;
         model.children.forEach(child => this.updateRenderOrder(child, value));
@@ -582,10 +582,10 @@ export default class CVModel2 extends CObject3D
                         const material = object["material"] as UberPBRMaterial;
                         if (material && material.isUberPBRMaterial) {
                             if(this.ins.shadowSide.value == ESideType.Front) {
-                                material.shadowSide = THREE.FrontSide;
+                                material.shadowSide = FrontSide;
                             }
                             else {
-                                material.shadowSide = THREE.BackSide;
+                                material.shadowSide = BackSide;
                             }
                         }
                     });
@@ -601,7 +601,7 @@ export default class CVModel2 extends CObject3D
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }
 
-    protected addObject3D(object: THREE.Object3D)
+    protected addObject3D(object: Object3D)
     {
         this.object3D.add(object);
         this.object3D.traverse(node => {

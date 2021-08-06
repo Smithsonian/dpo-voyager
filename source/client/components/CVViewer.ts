@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { GammaEncoding } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -36,6 +36,8 @@ export default class CVViewer extends Component
 
     static readonly text: string = "Viewer";
     static readonly icon: string = "";
+
+    private _rootElement: HTMLElement = null;
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
@@ -83,6 +85,13 @@ export default class CVViewer extends Component
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
+    }
+
+    get rootElement() {
+        return this._rootElement;
+    }
+    set rootElement(root: HTMLElement) {
+        this._rootElement = root;
     }
 
     create()
@@ -138,8 +147,8 @@ export default class CVViewer extends Component
         }
 
         // ** Temporary hack until RenderView supports outputEncoding param
-        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== THREE.GammaEncoding) {
-            this.renderer.views[0].renderer.outputEncoding = THREE.GammaEncoding;
+        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== GammaEncoding) {
+            this.renderer.views[0].renderer.outputEncoding = GammaEncoding;
         }
 
         return true;
@@ -241,6 +250,8 @@ export default class CVViewer extends Component
     {
         const id = event.annotation ? event.annotation.id : "";
         this.ins.activeAnnotation.setValue(id);
+
+        this.rootElement.dispatchEvent(new CustomEvent('annotation-active', { detail: id }));
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)

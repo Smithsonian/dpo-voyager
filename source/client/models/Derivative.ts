@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Object3D, Mesh, Texture } from "three";
 
 import { disposeObject } from "@ff/three/helpers";
 
@@ -56,7 +56,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         return new Derivative(json);
     }
 
-    model: THREE.Object3D = null;
+    model: Object3D = null;
 
     dispose()
     {
@@ -64,7 +64,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         super.dispose();
     }
 
-    load(assetReader: CVAssetReader): Promise<THREE.Object3D>
+    load(assetReader: CVAssetReader): Promise<Object3D>
     {
         if (this.data.usage !== EDerivativeUsage.Web3D) {
             throw new Error("can't load, not a Web3D derivative");
@@ -89,7 +89,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         if (geoAsset) {
             return assetReader.getGeometry(geoAsset.data.uri)
             .then(geometry => {
-                this.model = new THREE.Mesh(geometry, new UberPBRMaterial());
+                this.model = new Mesh(geometry, new UberPBRMaterial());
 
                 return Promise.all(imageAssets.map(asset => assetReader.getTexture(asset.data.uri)))
                 .catch(error => {
@@ -98,7 +98,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                 });
             })
             .then(textures => {
-                const material = (this.model as THREE.Mesh).material as UberPBRMaterial;
+                const material = (this.model as Mesh).material as UberPBRMaterial;
                 this.assignTextures(imageAssets, textures, material);
 
                 if (!material.map) {
@@ -202,7 +202,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         data.assets = json.assets.map(assetJson => new Asset(assetJson));
     }
 
-    protected assignTextures(assets: Asset[], textures: THREE.Texture[], material: UberPBRMaterial)
+    protected assignTextures(assets: Asset[], textures: Texture[], material: UberPBRMaterial)
     {
         for (let i = 0; i < assets.length; ++i) {
             const asset = assets[i];

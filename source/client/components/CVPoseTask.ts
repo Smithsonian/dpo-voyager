@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Matrix4, Quaternion, Box3 } from "three";
 
 import { Node, types } from "@ff/graph/Component";
 
@@ -33,13 +33,13 @@ import PoseTaskView from "../ui/story/PoseTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _axis = new THREE.Vector3();
-const _mat4 = new THREE.Matrix4();
-const _quat0 = new THREE.Quaternion();
-const _quat1 = new THREE.Quaternion();
-const _boundingBox = new THREE.Box3();
-const _size = new THREE.Vector3();
+const _vec3a = new Vector3();
+const _axis = new Vector3();
+const _mat4 = new Matrix4();
+const _quat0 = new Quaternion();
+const _quat1 = new Quaternion();
+const _boundingBox = new Box3();
+const _size = new Vector3();
 
 export enum EPoseManipMode { Off, Translate, Rotate }
 

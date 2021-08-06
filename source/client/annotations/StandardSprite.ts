@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Vector3, Line, BufferGeometry, LineBasicMaterial, Color, Camera } from "three";
 
 import math from "@ff/core/math";
-import Color from "@ff/core/Color";
+import FFColor from "@ff/core/Color";
 
 import { customElement, PropertyValues } from "@ff/ui/CustomElement";
 import "@ff/ui/Button";
@@ -29,14 +29,14 @@ import AnnotationFactory from "./AnnotationFactory";
 ////////////////////////////////////////////////////////////////////////////////
 
 const _quadrantClasses = [ "sv-q0", "sv-q1", "sv-q2", "sv-q3" ];
-const _color = new Color();
-const _offset = new THREE.Vector3(0, 1, 0);
+const _color = new FFColor();
+const _offset = new Vector3(0, 1, 0);
 
 export default class StandardSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Standard";
 
-    protected stemLine: THREE.Line;
+    protected stemLine: Line;
     protected quadrant = -1;
     protected adaptive = true;
 
@@ -45,13 +45,13 @@ export default class StandardSprite extends AnnotationSprite
         super(annotation);
 
         const points = [];
-        points.push(new THREE.Vector3(0, 0, 0));
-        points.push(new THREE.Vector3(0, 1, 0));
+        points.push(new Vector3(0, 0, 0));
+        points.push(new Vector3(0, 1, 0));
 
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color: "#009cde", transparent: true });
+        const geometry = new BufferGeometry().setFromPoints(points);
+        const material = new LineBasicMaterial({ color: "#009cde", transparent: true });
 
-        this.stemLine = new THREE.Line(geometry, material);
+        this.stemLine = new Line(geometry, material);
         this.stemLine.frustumCulled = false;
         this.stemLine.matrixAutoUpdate = false;
         this.add(this.stemLine);
@@ -67,13 +67,13 @@ export default class StandardSprite extends AnnotationSprite
         this.stemLine.position.y = annotation.offset;
         this.stemLine.updateMatrix();
 
-        const material = this.stemLine.material as THREE.LineBasicMaterial;
-        (material.color as THREE.Color).fromArray(annotation.color);
+        const material = this.stemLine.material as LineBasicMaterial;
+        (material.color as Color).fromArray(annotation.color);
 
         super.update();
     }
 
-    renderHTMLElement(element: StandardAnnotation, container: HTMLElement, camera: THREE.Camera)
+    renderHTMLElement(element: StandardAnnotation, container: HTMLElement, camera: Camera)
     {
         super.renderHTMLElement(element, container, camera, this.stemLine, _offset);
 

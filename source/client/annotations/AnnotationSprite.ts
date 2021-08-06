@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Object3D, Camera, ArrayCamera, PerspectiveCamera, Vector3 } from "three";
 
 import { ITypedEvent } from "@ff/core/Publisher";
 import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
-import { Object3D, Camera, ArrayCamera, PerspectiveCamera } from "three";
 import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3up = new THREE.Vector3(0, 1, 0);
-const _vec3dir = new THREE.Vector3();
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
+const _vec3up = new Vector3(0, 1, 0);
+const _vec3dir = new Vector3();
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
 
 export { Annotation, html };
 

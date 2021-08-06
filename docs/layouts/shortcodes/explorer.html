@@ -1,13 +1,9 @@
-<link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
-<link href="https://voyager-dev.glitch.me/voyager-explorer.min.css" rel="stylesheet">
-<script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
-<script type="text/javascript" src="https://voyager-dev.glitch.me/voyager-explorer.dev.js"></script>
-<!--script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script-->
+<link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
+<script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
 <script>
-var l ="https://3d-api.si.edu/content/document/"+{{ .Get 0 }}+"/document.json";
+var l ="https://3d-api.si.edu/content/document/"+{{ .Get 0 }}+"/";
 document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' dracoRoot='https://voyager-dev.glitch.me/draco/' fontRoot='https://3d-api.si.edu/resources/fonts/' document='document.json'></voyager-explorer>";
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' document='document.json'></voyager-explorer>";
 });
 </script>
 <div id="explorer_wrapper" width="600" height="450">

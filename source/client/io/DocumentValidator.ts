@@ -17,11 +17,11 @@
 
 import AjvCore from "ajv";
 
-import * as documentSchema from "client/schema/json/document.schema.json";
-import * as commonSchema from "client/schema/json/common.schema.json";
-import * as metaSchema from "client/schema/json/meta.schema.json";
-import * as modelSchema from "client/schema/json/model.schema.json";
-import * as setupSchema from "client/schema/json/setup.schema.json";
+import documentSchema from "client/schema/json/document.schema.json";
+import commonSchema from "client/schema/json/common.schema.json";
+import metaSchema from "client/schema/json/meta.schema.json";
+import modelSchema from "client/schema/json/model.schema.json";
+import setupSchema from "client/schema/json/setup.schema.json";
 
 import { IDocument } from "client/schema/document";
 

@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { Camera, ArrayCamera, PerspectiveCamera, Vector3, Quaternion, Matrix4, Group, 
+    Mesh, RingBufferGeometry, MeshBasicMaterial, BufferGeometry, RawShaderMaterial, 
+    GreaterDepth, CircleBufferGeometry, MathUtils } from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
 
@@ -27,15 +29,14 @@ import GPUPicker from "@ff/three/GPUPicker";
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
-import { Camera, ArrayCamera, PerspectiveCamera } from "three";
 import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const _vec3a = new THREE.Vector3();
-const _vec3b = new THREE.Vector3();
-const _quat1 = new THREE.Quaternion();
-const _mat4 = new THREE.Matrix4();
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _quat1 = new Quaternion();
+const _mat4 = new Matrix4();
 
 export default class CircleSprite extends AnnotationSprite
 {
@@ -45,19 +46,19 @@ export default class CircleSprite extends AnnotationSprite
 
     protected static readonly behindOpacity = 0.2;
 
-    protected offset: THREE.Group;
-    protected anchorMesh: THREE.Mesh;
+    protected offset: Group;
+    protected anchorMesh: Mesh;
 
-    protected ringMesh: THREE.Mesh;
-    protected ringGeometry: THREE.RingBufferGeometry;
-    protected ringMaterialA: THREE.MeshBasicMaterial;
-    protected ringMaterialB: THREE.MeshBasicMaterial;
+    protected ringMesh: Mesh;
+    protected ringGeometry: RingBufferGeometry;
+    protected ringMaterialA: MeshBasicMaterial;
+    protected ringMaterialB: MeshBasicMaterial;
 
-    protected markerGeometry: THREE.BufferGeometry;
-    protected markerMaterialA: THREE.RawShaderMaterial;
-    protected markerMaterialB: THREE.RawShaderMaterial;
-    protected markerA: THREE.Mesh;
-    protected markerB: THREE.Mesh;
+    protected markerGeometry: BufferGeometry;
+    protected markerMaterialA: RawShaderMaterial;
+    protected markerMaterialB: RawShaderMaterial;
+    protected markerA: Mesh;
+    protected markerB: Mesh;
 
     // Temporary until annotation scale implementation is resolved
     xrScale: number = 1.0;
@@ -70,43 +71,43 @@ export default class CircleSprite extends AnnotationSprite
 
         this._isExpanded = annotation.data.expanded;
 
-        this.offset = new THREE.Group();
+        this.offset = new Group();
         this.offset.matrixAutoUpdate = false;
 
         this.add(this.offset);
 
-        this.ringGeometry = new THREE.RingBufferGeometry(0.45, 0.5, 32);
+        this.ringGeometry = new RingBufferGeometry(0.45, 0.5, 32);
 
-        this.ringMaterialA = new THREE.MeshBasicMaterial();
-        this.ringMaterialB = new THREE.MeshBasicMaterial({
-            depthFunc: THREE.GreaterDepth,
+        this.ringMaterialA = new MeshBasicMaterial();
+        this.ringMaterialB = new MeshBasicMaterial({
+            depthFunc: GreaterDepth,
             depthWrite: false,
             opacity: CircleSprite.behindOpacity,
             transparent: true
         });
 
-        this.ringMesh = new THREE.Mesh(
+        this.ringMesh = new Mesh(
             this.ringGeometry,
             this.ringMaterialA,
         );
 
-        const ringMeshB = new THREE.Mesh(
+        const ringMeshB = new Mesh(
             this.ringGeometry,
             this.ringMaterialB,
         );
 
-        const innerCircle = new THREE.Mesh(
-            new THREE.CircleBufferGeometry(0.45, 32),
-            new THREE.MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
+        const innerCircle = new Mesh(
+            new CircleBufferGeometry(0.45, 32),
+            new MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
         );
 
         innerCircle.matrixAutoUpdate = false;
         innerCircle.position.set(0, 0, 0.005);
         innerCircle.updateMatrix();
 
-        this.anchorMesh = new THREE.Mesh(
-            new THREE.BufferGeometry(),
-            new THREE.MeshBasicMaterial()
+        this.anchorMesh = new Mesh(
+            new BufferGeometry(),
+            new MeshBasicMaterial()
         );
         this.anchorMesh.frustumCulled = false;
 
@@ -117,29 +118,29 @@ export default class CircleSprite extends AnnotationSprite
         this.markerB = null;
 
         assetReader.fontReader.load("fonts/Roboto-Bold").then(font => {
-            this.markerMaterialA = new THREE.RawShaderMaterial(createTextShader({
+            this.markerMaterialA = new RawShaderMaterial(createTextShader.default({
                 map: font.texture,
                 transparent: true,
                 color: 0xffffff,
                 isWebGL2: this.isWebGL2
             }));
 
-            this.markerMaterialB = new THREE.RawShaderMaterial(createTextShader({
+            this.markerMaterialB = new RawShaderMaterial(createTextShader.default({
                 map: font.texture,
                 transparent: true,
                 opacity: CircleSprite.behindOpacity,
                 color: 0xffffff,
-                depthFunc: THREE.GreaterDepth,
+                depthFunc: GreaterDepth,
                 depthWrite: false,
                 isWebGL2: this.isWebGL2
             }));
 
-            this.markerGeometry = createTextGeometry({ font: font.descriptor });
+            this.markerGeometry = createTextGeometry.default({ font: font.descriptor });
 
-            this.markerA = new THREE.Mesh(this.markerGeometry, this.markerMaterialA);
+            this.markerA = new Mesh(this.markerGeometry, this.markerMaterialA);
             this.markerA.matrixAutoUpdate = false;
 
-            this.markerB = new THREE.Mesh(this.markerGeometry, this.markerMaterialB);
+            this.markerB = new Mesh(this.markerGeometry, this.markerMaterialB);
             this.markerB.matrixAutoUpdate = false;
 
             // we're async here, register marker for picking manually
@@ -216,7 +217,7 @@ export default class CircleSprite extends AnnotationSprite
 
         if (camera.isPerspectiveCamera) {
             const distZ = -_vec3a.set(0, 0, 0).applyMatrix4(_mat4).z;
-            const theta = camera.fov * THREE.MathUtils.DEG2RAD * 0.5;
+            const theta = camera.fov * MathUtils.DEG2RAD * 0.5;
             scaleFactor = Math.tan(theta) * distZ * vpScale;
         }
         else {

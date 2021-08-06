@@ -27,7 +27,7 @@ import System from "@ff/graph/System";
 import coreTypes from "./coreTypes";
 import explorerTypes from "./explorerTypes";
 
-import * as documentTemplate from "client/templates/default.svx.json";
+import documentTemplate from "client/templates/default.svx.json";
 
 import CVDocumentProvider from "../components/CVDocumentProvider";
 import CVDocument from "../components/CVDocument";
@@ -55,10 +55,10 @@ export interface IExplorerApplicationProps
 {
     /** URL of the root asset folder. */
     root?: string;
-    /** Custom URL to Draco files (Defaults /js/draco/ relative to distribution). */
+    /** Custom URL to Draco files (Defaults to online CDN). */
     dracoRoot?: string;
-    /** Custom URL to font files (Defaults /fonts/ relative to distribution). */
-    fontRoot?: string;
+    /** Custom URL to resource files (Defaults to online CDN). */
+    resourceRoot?: string;
     /** URL of the document to load and display at startup. */
     document?: string;
     /** URL of a model (supported formats: gltf, glb) to load and display at startup. */
@@ -230,7 +230,7 @@ Version: ${ENV_VERSION}
 
         props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
         props.dracoRoot = props.dracoRoot || parseUrlParameter("dracoRoot") || parseUrlParameter("dr");
-        props.fontRoot = props.fontRoot || parseUrlParameter("fontRoot") || parseUrlParameter("fr");
+        props.resourceRoot = props.resourceRoot || parseUrlParameter("resourceRoot") || parseUrlParameter("rr");
         props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
         props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
         props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
@@ -272,9 +272,9 @@ Version: ${ENV_VERSION}
             this.assetReader.setDracoPath(props.dracoRoot);
         }
 
-        if(props.fontRoot) {
-            // Set custom font path
-            this.assetReader.setFontPath(props.fontRoot);
+        if(props.resourceRoot) {
+            // Set custom resource path
+            this.assetReader.setSystemAssetPath(props.resourceRoot);
         }
 
         if (props.document) {
@@ -357,6 +357,13 @@ Version: ${ENV_VERSION}
 
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+    }
+
+    toggleMeasurement()
+    {
+        const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+
+        tapeIns.visible.setValue(!tapeIns.visible.value);
     }
     
     enableAR()

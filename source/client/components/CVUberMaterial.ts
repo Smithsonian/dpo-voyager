@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { MeshStandardMaterial } from "three";
 
 import CMaterial, { types } from "@ff/scene/components/CMaterial";
 import CTexture from "@ff/scene/components/CTexture";
@@ -55,7 +55,7 @@ export default class CVUberMaterial extends CMaterial
         return true;
     }
 
-    setFromStandardMaterial(material: THREE.MeshStandardMaterial)
+    setFromStandardMaterial(material: MeshStandardMaterial)
     {
         this._material = material;
 

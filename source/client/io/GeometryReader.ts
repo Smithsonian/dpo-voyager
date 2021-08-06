@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import * as THREE from "three";
+import { LoadingManager, BufferGeometry } from "three";
 
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 //const OBJLoader = (THREE as any).OBJLoader;
@@ -32,7 +32,7 @@ export default class GeometryReader
     protected objLoader: any;
     protected plyLoader: any;
 
-    constructor(loadingManager: THREE.LoadingManager)
+    constructor(loadingManager: LoadingManager)
     {
         this.objLoader = new OBJLoader(loadingManager);
         this.plyLoader = new PLYLoader(loadingManager);
@@ -44,7 +44,7 @@ export default class GeometryReader
         return GeometryReader.extensions.indexOf(extension) >= 0;
     }
 
-    get(url: string): Promise<THREE.BufferGeometry>
+    get(url: string): Promise<BufferGeometry>
     {
         const extension = url.split(".").pop().toLowerCase();
 
