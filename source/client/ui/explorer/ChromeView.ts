@@ -121,9 +121,9 @@ export default class ChromeView extends DocumentView
 
         return html`
             <div class="sv-chrome-header">
-                ${menuVisible ? html`<sv-main-menu .system=${this.system}></sv-main-menu>` : null}
+                ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
                 <div class="sv-top-bar">
-                    ${titleVisible ? html`<div class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>` : null}
+                    ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>` : null}
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>

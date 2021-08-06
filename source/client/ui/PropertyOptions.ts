@@ -82,12 +82,12 @@ export default class PropertyOptions extends CustomElement
         let buttons;
         if (indexMap) {
             buttons = indexMap.map(index =>
-                html`<ff-button .text=${language ? language.getLocalizedString(options[index]) : options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button role="radio" aria-checked=${index === value ? true : false} .text=${language ? language.getLocalizedString(options[index]) : options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
                     </ff-button>`);
         }
         else {
             buttons = options.map((option, index) =>
-                html`<ff-button .text=${language ? language.getLocalizedString(option) : option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button role="radio" aria-checked=${index === value ? true : false} .text=${language ? language.getLocalizedString(option) : option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
                     </ff-button>`)
         }
 

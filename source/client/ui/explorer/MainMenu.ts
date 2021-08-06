@@ -111,19 +111,19 @@ export default class MainMenu extends DocumentView
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 
-        return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
+        return html`${arButtonVisible ? html`<ff-button role="button" icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
-        ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
+        ${tourButtonVisible ? html`<ff-button role="button" aria-pressed=${toursActive} icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        ${readerButtonVisible ? html`<ff-button icon="article" title=${language.getLocalizedString("Read more...")}
+        ${readerButtonVisible ? html`<ff-button role="button" aria-pressed=${readerActive} icon="article" title=${language.getLocalizedString("Read more...")}
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
-        ${annotationsButtonVisible ? html`<ff-button icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
+        ${annotationsButtonVisible ? html`<ff-button role="button" aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
             ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-        <ff-button icon="share" title=${language.getLocalizedString("Share Experience")}
+        <ff-button icon="share" role="button" aria-pressed=${this.shareButtonSelected} title=${language.getLocalizedString("Share Experience")}
             ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
-        ${fullscreenButtonVisible ? html`<ff-button icon="expand" title=${language.getLocalizedString("Fullscreen")}
+        ${fullscreenButtonVisible ? html`<ff-button role="button" aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        ${toolButtonVisible ? html`<ff-button icon="tools" title=${language.getLocalizedString("Tools and Settings")}
+        ${toolButtonVisible ? html`<ff-button role="button" aria-pressed=${toolsActive} icon="tools" title=${language.getLocalizedString("Tools and Settings")}
             ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
