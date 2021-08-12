@@ -220,7 +220,7 @@ export default class CVARManager extends Component
 
         renderer.xr.enabled = true;
         renderer.xr.setReferenceSpaceType( 'local' );
-        renderer.xr.setSession( session as THREE.XRSession ); 
+        renderer.xr.setSession( session as unknown as THREE.XRSession ); 
     
         session.addEventListener( 'end', this.onSessionEnded ); 
 

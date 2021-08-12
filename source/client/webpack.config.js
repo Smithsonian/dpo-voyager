@@ -87,7 +87,7 @@ const analyticsId = process.env["VOYAGER_ANALYTICS_ID"];
 
 module.exports = function(env, argv)
 {
-    const appKey = argv.app || "explorer";
+    const appKey = env.app || "explorer";
     const isDevMode = argv.mode !== undefined ? argv.mode !== "production" : process.env["NODE_ENV"] !== "production";
     const isOffline = argv.offline !== undefined ? true : process.env["VOYAGER_OFFLINE"] === "true";
 
@@ -155,7 +155,12 @@ function createAppConfig(app, isDevMode, isOffline)
                 "../../../build/three.module.js": path.resolve(dirs.modules, "three/src/Three")
             },
             // Resolvable extensions
-            extensions: [".ts", ".tsx", ".js", ".json"]
+            extensions: [".ts", ".tsx", ".js", ".json"],
+            // Fallbacks
+            fallback: {
+                "stream": require.resolve("stream-browserify"), // include a polyfill for stream
+                "path": false,
+            },
         },
 
         optimization: {
@@ -211,7 +216,8 @@ function createAppConfig(app, isDevMode, isOffline)
                     test: /\.scss$/,
                     use: ["raw-loader","sass-loader"],
                     issuer: {
-                        include: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                        //include: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                        and: [/source\/client\/ui\/explorer/]     // currently only inlining explorer css
                     }
                 },
                 {
@@ -224,7 +230,7 @@ function createAppConfig(app, isDevMode, isOffline)
                             "sass-loader"
                         ],
                     issuer: {
-                        exclude: /source\/client\/ui\/explorer/     // currently only inlining explorer css
+                        not: [/source\/client\/ui\/explorer/]     // currently only inlining explorer css
                     }
                 },
                 {
