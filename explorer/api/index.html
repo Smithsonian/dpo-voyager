@@ -438,6 +438,11 @@
 <td>On/off toggle for the extended tools panel at the bottom of the UI</td>
 </tr>
 <tr>
+<td>toggleMeasurement()</td>
+<td>None</td>
+<td>On/off toggle for visibility of the object measurement tool.</td>
+</tr>
+<tr>
 <td>enableAR()</td>
 <td>None</td>
 <td>Requests an AR session (if available, outcome depends on platform) <strong>*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe</strong></td>
@@ -481,6 +486,21 @@
 <td>getArticles()</td>
 <td>None</td>
 <td>Returns an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts">Article data objects</a> with properties of each article associated with the current scene.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="events">Events</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>annotation-active</td>
+<td>This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.</td>
 </tr>
 </tbody>
 </table>
