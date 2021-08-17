@@ -37,7 +37,7 @@ const webpack = require("webpack");
 
 const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const CSSMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ function createAppConfig(app, isDevMode, isOffline)
 
             minimizer: [
                 new TerserPlugin({ parallel: true }),
-                new OptimizeCSSAssetsPlugin({}),
+                new CSSMinimizerPlugin(),
             ]
         },
 
