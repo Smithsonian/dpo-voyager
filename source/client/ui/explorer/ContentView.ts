@@ -70,12 +70,12 @@ export default class ContentView extends DocumentView
     protected connected()
     {
         super.connected();
-        this.assetManager.outs.busy.on("value", this.performUpdate, this);
+        this.assetManager.outs.busy.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.assetManager.outs.busy.off("value", this.performUpdate, this);
+        this.assetManager.outs.busy.off("value", this.onUpdate, this);
         super.disconnected();
     }
 
