@@ -88,6 +88,10 @@ export default class MainView extends CustomElement
         return this.application.system.getMainComponent(CVTaskProvider);
     }
 
+    get app() {
+        return this.application;
+    }
+
     constructor(application?: StoryApplication)
     {
         super();

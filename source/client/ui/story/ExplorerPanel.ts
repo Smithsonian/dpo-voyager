@@ -38,5 +38,8 @@ export default class ExplorerPanel extends CustomElement
     {
         this.classList.add("sv-panel", "sv-explorer-panel");
         this.appendElement(new ExplorerView(this.application));
+        const fileInput = this.appendElement("input");
+        fileInput.type = "file";
+        fileInput.id = "fileInput";
     }
 }

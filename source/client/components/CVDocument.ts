@@ -65,7 +65,7 @@ export default class CVDocument extends CRenderGraph
     };
 
     protected static readonly outs = {
-        assetPath: types.AssetPath("Asset.Path", { preset: "document.svx.json" }),
+        assetPath: types.AssetPath("Asset.Path", { preset: "scene.svx.json" }),
         title: types.String("Document.Title"),
     };
 
