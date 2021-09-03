@@ -16,6 +16,7 @@
  */
 
 import download from "@ff/browser/download";
+import { downloadZip } from "client-zip";
 
 import Component, { Node, types } from "@ff/graph/Component";
 
@@ -29,11 +30,14 @@ import { INodeComponents } from "./CVDocument";
 
 import { ETaskMode } from "../applications/taskSets";
 
-import { SimpleDropzone } from 'simple-dropzone';
-import CVAssetReader from "./CVAssetReader";
-import { EDerivativeQuality } from "client/schema/model";
-import ExplorerApplication from "client/applications/ExplorerApplication";
-import MainView from "client/ui/story/MainView";
+import { EDerivativeQuality, EAssetType } from "client/schema/model";
+import CVMediaManager from "./CVMediaManager";
+import { IAssetEntry } from "client/../../libs/ff-scene/source/components/CAssetManager";
+import CVModel2 from "./CVModel2";
+import CVCaptureTask from "./CVCaptureTask";
+import convert from "client/../../libs/ff-browser/source/convert";
+import CVMeta from "./CVMeta";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,9 +46,6 @@ export default class CVStoryApplication extends Component
 {
     static readonly typeName: string = "CVStoryApplication";
     static readonly isSystemSingleton = true;
-
-    private configuredStandalone: boolean = false;
-    private runtimeURLs: Array<string> = [];
 
     protected static readonly ins = {
         exit: types.Event("Application.Exit"),
@@ -68,6 +69,18 @@ export default class CVStoryApplication extends Component
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
     }
+    protected get mediaManager() {
+        return this.system.getMainComponent(CVMediaManager);
+    }
+    protected get captureTask() {
+        return this.system.getMainComponent(CVCaptureTask);
+    }
+    protected get meta() {
+        return this.system.getComponent(CVMeta);
+    }
+    protected get standaloneFileManager() {
+        return this.system.getComponent(CVStandaloneFileManager, true);
+    }
 
     constructor(node: Node, id: string)
     {
@@ -79,12 +92,10 @@ export default class CVStoryApplication extends Component
     {
         super.create();
         window.addEventListener("beforeunload", this.beforeUnload);
-        this.assetManager.outs.completed.on("value", this.cleanupFiles, this);
     }
 
     dispose()
     {
-        this.assetManager.outs.completed.off("value", this.cleanupFiles, this);
         window.removeEventListener("beforeunload", this.beforeUnload);
         super.dispose();
     }
@@ -109,9 +120,66 @@ export default class CVStoryApplication extends Component
                 const json = JSON.stringify(data, (key, value) =>
                     typeof value === "number" ? parseFloat(value.toFixed(7)) : value);
 
-                this.assetWriter.putJSON(json, cvDocument.assetPath)
-                .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
-                .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
+                if(storyMode !== ETaskMode.Standalone) {
+                    this.assetWriter.putJSON(json, cvDocument.assetPath)
+                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
+                    .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
+                }
+                else {
+                    // Standalone save
+                    const fileManager = this.standaloneFileManager;
+                    const saveFiles = [];
+
+                    const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
+                    saveFiles.push({ name: fileName, lastModified: new Date(), input: json });
+
+                    // collect model files
+                    const models = this.getSystemComponents(CVModel2);
+                    models.forEach(model => {
+                        model.derivatives.getArray().forEach(derivative => {
+                            const modelAsset = derivative.findAsset(EAssetType.Model);
+                            if(modelAsset !== undefined) {
+                                const modelFile = fileManager.getFile(modelAsset.data.uri);
+                                if(modelFile !== undefined) {
+                                    saveFiles.push({ name: modelFile.name, lastModified: new Date(), input: modelFile });
+                                }
+                            }
+                        });
+                    });
+
+                    // collect thumbnail images              
+                    const meta = this.meta;
+                    const capture = this.captureTask;
+                    const images = meta && meta.images;
+
+                    if (images && images.length > 0) {
+                        if(capture && capture.outs.updated.value) {
+                            // Add new images to save queue
+                            images.items.forEach(image => {
+                                const element = capture.getImageElement(EDerivativeQuality[image.quality as keyof typeof EDerivativeQuality]);
+                                const blob = convert.dataURItoBlob(element.src);
+                                saveFiles.push({ name: image.uri, lastModified: new Date(), input: blob });
+                            });
+                        }
+                        else {
+                            // Add uploaded images to save queue (no changes)
+                            images.items.forEach(image => {
+                                    saveFiles.push({ name: image.uri, lastModified: new Date(), input: fileManager.getFile(image.uri) });
+                            });
+                        }
+                    }
+
+                    // recursively collect articles and related assets
+                    const assetURIs = this.getArticleAssetURIs(this.mediaManager.root);
+                    assetURIs.filter(uri => uri.split("/").length > 1).forEach(uri => {
+                        saveFiles.push({ name: uri, lastModified: new Date(), input: fileManager.getFile(uri) });
+                    });
+                    
+                    downloadZip(saveFiles).blob().then(blob => { // await for async
+                        const bloburl = URL.createObjectURL(blob);
+                        download.url(bloburl, "voyager-scene.zip");
+                    });
+                }
             }
 
             if (ins.download.changed) {
@@ -120,15 +188,6 @@ export default class CVStoryApplication extends Component
 
                 const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
                 download.json(json, fileName);
-            }
-
-            
-            if (!this.configuredStandalone) {
-                const explorerPanel = document.getElementsByClassName('sv-explorer-panel')[0];
-                const input = document.querySelector('#fileInput');
-                const dropZone = new SimpleDropzone(explorerPanel, input);
-                dropZone.on('drop', ({files}: any) => this.onFileDrop(files));
-                this.configuredStandalone = true;
             }
         }
 
@@ -146,63 +205,24 @@ export default class CVStoryApplication extends Component
         //return "x";
     }
 
-    
-    protected onFileDrop(files: Map<string, File>)
+    protected getArticleAssetURIs(asset: IAssetEntry): string[] 
     {
-        console.log("FILES DROPPED");
-        console.log(files);
+        let result: string[] = [];
 
-        const fileArray = Array.from(files);
-
-        const docIndex = fileArray.findIndex( (element) => { return element[0].toLowerCase().indexOf(".svx.json") > -1 });
-        const documentProvided : boolean = docIndex > -1;
-        if(documentProvided) {
-            fileArray.push(fileArray.splice(docIndex)[0]);
+        if(asset.info.folder) {
+            asset.children.forEach(child => {
+                if(!child.info.folder) {
+                    result.push(child.info.url);
+                }
+                else {
+                    result = result.concat(this.getArticleAssetURIs(child));
+                }
+            });
         }
-        
+        else {
+            result.push(asset.info.url);
+        }
 
-        fileArray.forEach(([path, file]) => {
-            const filename = file.name.toLowerCase();
-            if (filename.match(/\.(gltf|glb|svx.json)$/)) {
-                console.log("GLTF DROPPED");
-                console.log(path);
-
-                const rootPath = path.replace(file.name, '');
-
-                this.assetManager.loadingManager.setURLModifier( ( url ) => {
-
-                    const index = url.lastIndexOf('/');
-
-                    const normalizedURL =
-                        rootPath + url.substr(index + 1).replace(/^(\.?\/)/, '');
-
-                    if(files.has(normalizedURL)) {
-                        const bloburl = URL.createObjectURL( files.get(normalizedURL) );
-                        this.runtimeURLs.push( bloburl ); 
-                        return bloburl;
-                    } 
-
-                    return url;
-                } );
-
-                if (filename.match(/\.(gltf|glb)$/) && !documentProvided) {
-                    // converting path to relative (TODO: check if all browsers will have leading slash here)
-                    this.documentProvider.activeComponent.appendModel(path.substr(1), EDerivativeQuality.High);
-                }
-                else if (filename.match(/\.(svx.json)$/)) {
-                    const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
-                    const explorer : ExplorerApplication = mainView.app.explorerApp;
-            
-                    const bloburl = URL.createObjectURL( file );
-                    this.runtimeURLs.push( bloburl );
-                    explorer.loadDocument(bloburl);
-                }
-            }
-        });
-    }
-
-    protected cleanupFiles() {
-        this.runtimeURLs.forEach(( url ) => URL.revokeObjectURL( url ));
-        // TODO: Clear array?
+        return result;
     }
 }

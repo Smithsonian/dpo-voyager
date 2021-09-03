@@ -25,7 +25,7 @@ import CVToursTask from "../components/CVToursTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum ETaskMode { QC, Authoring, Edit, Expert }
+export enum ETaskMode { QC, Authoring, Edit, Expert, Standalone }
 
 export default {
     [ETaskMode.Edit]: [
@@ -50,6 +50,15 @@ export default {
         CVSettingsTask,
     ],
     [ETaskMode.Expert]: [
+        CVPoseTask,
+        CVCaptureTask,
+        CVDerivativesTask,
+        CVAnnotationsTask,
+        CVArticlesTask,
+        CVToursTask,
+        CVSettingsTask,
+    ],
+    [ETaskMode.Standalone]: [
         CVPoseTask,
         CVCaptureTask,
         CVDerivativesTask,

@@ -41,6 +41,7 @@ import NVoyagerStory from "../nodes/NVoyagerStory";
 
 import MainView from "../ui/story/MainView";
 import CVTaskProvider, { ETaskMode } from "../components/CVTaskProvider";
+import CVStandaloneFileManager from "client/components/CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +52,7 @@ export interface IStoryApplicationProps extends IExplorerApplicationProps
 {
     /** The page URL to navigate to when the user exits the story tool. */
     referrer?: string;
-    /** The task set the application should display. Valid options: "prep" and "author". */
+    /** The task set the application should display. Valid options: "prep","author","qc","expert","standalone". */
     mode?: string;
     /** When set to true, application displays additional expert level tools. */
     expert?: boolean;
@@ -151,8 +152,6 @@ export default class StoryApplication
 
         this.explorer.evaluateProps();
 
-        this.mediaManager.rootUrl = this.assetManager.baseUrl;
-
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
@@ -172,6 +171,12 @@ export default class StoryApplication
         else if (modeText.startsWith("ex")) {
             mode = ETaskMode.Expert;
         }
+        else if (modeText.startsWith("stand")) {
+            mode = ETaskMode.Standalone;
+            app.createComponent(CVStandaloneFileManager);
+        }
+
+        this.mediaManager.rootUrl = this.assetManager.baseUrl;
 
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);

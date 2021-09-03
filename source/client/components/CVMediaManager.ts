@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-import CAssetManager, { IAssetOpenEvent } from "@ff/scene/components/CAssetManager";
+import CAssetManager, { IAssetOpenEvent, IFileInfo, IAssetTreeChangeEvent, IAssetEntry } from "@ff/scene/components/CAssetManager";
 import Notification from "@ff/ui/Notification";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,9 +29,16 @@ export default class CVMediaManager extends CAssetManager
 
     static readonly articleFolder: string = "articles";
 
+    protected get standaloneFileManager() {
+        return this.getGraphComponent(CVStandaloneFileManager, true);
+    }
+
     protected rootUrlChanged(): Promise<any>
     {
-        return this.createArticleFolder();
+        const standaloneManager = this.standaloneFileManager;
+        if(!standaloneManager) {
+            return this.createArticleFolder();
+        }
     }
 
     protected createArticleFolder(): Promise<any>
@@ -45,5 +53,45 @@ export default class CVMediaManager extends CAssetManager
                 .catch(error => Notification.show(`Failed to create ${infoText}`));
             }
         });
+    }
+
+    refresh()
+    {
+        const standaloneManager = this.standaloneFileManager;
+        if(standaloneManager) {
+            const infos = standaloneManager.getFileInfos();
+            this.root = this.createAssetTree(infos); 
+            this.emit<IAssetTreeChangeEvent>({ type: "tree-change", root: this.root });
+            return Promise.resolve();
+        }
+        else {
+            return super.refresh();
+        }
+    }
+
+    rename(asset: IAssetEntry, name: string): Promise<void>
+    {
+        const standaloneManager = this.standaloneFileManager;
+        if(standaloneManager) {
+            standaloneManager.renameFile(asset.info.url, name);
+            return this.refresh();
+        }
+        else {
+            return super.rename(asset, name);
+        }
+    }
+
+    deleteSelected()
+    {
+        const standaloneManager = this.standaloneFileManager;
+        if(standaloneManager) {
+            const selected = this.selectedAssets;
+            selected.forEach(file => standaloneManager.deleteFile(file.info.url));
+
+            return this.refresh();
+        }
+        else {
+            return super.deleteSelected();
+        }
     }
 }

@@ -77,7 +77,8 @@ export default class CVAssetManager extends Component
 
     getAssetUrl(assetPath: string)
     {
-        return new URL(assetPath, this._baseUrl).href;
+        const url = new URL(assetPath, this._baseUrl).href;
+        return this.loadingManager.resolveURL(url);
     }
 
     getAssetPath(url: string)

@@ -30,6 +30,7 @@ import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
 
 import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
+import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +55,9 @@ export default class ArticleEditor extends SystemView
     }
     protected get assetWriter() {
         return this.system.getMainComponent(CVAssetWriter);
+    }
+    protected get standaloneFileManager() {
+        return this.system.getMainComponent(CVStandaloneFileManager, true);
     }
 
     protected get editorElement() {
@@ -134,6 +138,11 @@ export default class ArticleEditor extends SystemView
 
         // transform absolute to article-relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
+            if((assetUrl as string).startsWith("blob")) {
+                assetUrl = this.standaloneFileManager.blobUrlToFileUrl(assetUrl);
+                return pre + assetUrl + post;
+            }
+
             return pre + this.assetManager.getRelativeAssetPath(assetUrl, basePath) + post;
         });
 
@@ -162,6 +171,10 @@ export default class ArticleEditor extends SystemView
     {
         super.firstConnected();
         this.classList.add("sv-article-editor");
+
+        // Hack to override Quill sanitization of blob urls.
+        var Image = QuillEditor.import('formats/image');
+        Image.sanitize = function(url) { return url; }
 
         const toolbarOptions = [
             // header formats

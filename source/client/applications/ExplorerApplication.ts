@@ -296,7 +296,7 @@ Version: ${ENV_VERSION}
             props.normals = props.root ? props.normals : manager.getAssetName(props.normals);
             this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
         }
-        else {
+        else if (props.root){
             // if nothing else specified, try to read "document.svx.json" from the current folder
             this.loadDocument("document.svx.json", undefined).catch(() => {});
         }

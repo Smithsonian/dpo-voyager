@@ -37,6 +37,7 @@ import CVTask from "./CVTask";
 import CaptureTaskView from "../ui/story/CaptureTaskView";
 import { TImageQuality } from "client/schema/meta";
 import CVNodeProvider from "./CVNodeProvider";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +86,7 @@ export default class CVCaptureTask extends CVTask
 
     protected static readonly outs = {
         ready: types.Boolean("Picture.Ready"),
+        updated: types.Boolean("Picture.Updated", false),
     };
 
     ins = this.addInputs<CVTask, typeof CVCaptureTask.ins>(CVCaptureTask.ins);
@@ -203,15 +205,20 @@ export default class CVCaptureTask extends CVTask
             const blob = convert.dataURItoBlob(dataURI);
             const file = new File([blob], fileName);
 
-            fetch.file(fileURL, "PUT", file)
-            .then(() => {
+            if(this.graph.getMainComponent(CVStandaloneFileManager, true)) {
                 this.updateImageMeta(quality, this._mimeType, filePath);
-                new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
-            })
-            .catch(e => {
-                new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
-            });
-
+                new Notification(`Saved ${fileName} to scene package.`, "info", 4000);    
+            }
+            else {
+                fetch.file(fileURL, "PUT", file)
+                .then(() => {
+                    this.updateImageMeta(quality, this._mimeType, filePath);
+                    new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
+                })
+                .catch(e => {
+                    new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
+                });
+            }
         });
     }
 
@@ -255,6 +262,8 @@ export default class CVCaptureTask extends CVTask
                 height,
             }, qualityName);
         }
+
+        this.outs.updated.setValue(true);
     }
 
     protected getImageAssetPath(quality: EDerivativeQuality, extension: string)

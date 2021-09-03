@@ -33,6 +33,7 @@ import ArticlesTaskView from "../ui/story/ArticlesTaskView";
 import CVMediaManager from "./CVMediaManager";
 import CVAssetWriter from "./CVAssetWriter";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +126,12 @@ export default class CVArticlesTask extends CVTask
             const article = new Article();
             const defaultFolder = CVMediaManager.articleFolder;
             article.uri = `${defaultFolder}/new-article-${article.id}.html`;
+
+            const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
+            if(standaloneFiles) {
+                standaloneFiles.addFile(article.uri);
+            }
+
             meta.articles.append(article);
             this.reader.ins.articleId.setValue(article.id);
             languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);

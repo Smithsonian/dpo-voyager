@@ -643,7 +643,7 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // LANGUAGE MENU
 
-.sv-language-menu {
+.sv-option-menu {
   position: relative;
   width: 225px;
   max-width: 85%;
@@ -655,13 +655,21 @@ $tour-entry-indent: 12px;
   pointer-events: auto;
 
   .ff-title {
-    margin: 0.3em 0 0.3em 0;
+    margin: 0.3em 0 0.3em 0.3em;
+  }
+  .ff-header {
+    padding: 0.3em 0 0.3em 0.3em;
+    background: $menu-color-background-dark;
   }
   .ff-button {
     flex: 0 0 auto;
+    margin: 4px;
   }
-  .ff-scroll-y {
+  .sv-scroll-offset {
     top: 50px;
+  }
+  .sv-centered {
+    justify-content: center;
   }
 
   .sv-entry {
