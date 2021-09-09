@@ -208,6 +208,12 @@ export class Shadow extends DirectionalLight {
         camera.near,
         camera.far);
     camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+
+    this.shadow.updateMatrices(this);
+  }
+
+  updateMatrices() {
+    this.shadow.updateMatrices(this);
   }
 
   /** Clean up */
