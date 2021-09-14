@@ -248,9 +248,10 @@ export default class CVArticlesTask extends CVTask
         const ins = this.ins;
         const outs = this.outs;
         const meta = this.meta;
-        const article = this.reader.activeArticle;
+        let article = this.reader.activeArticle;
 
         if (meta && article && meta.articles.getById(article.id)) {
+            article = meta.articles.getById(article.id);
             ins.title.setValue(article.title, true);
             ins.lead.setValue(article.lead, true);
             ins.tags.setValue(article.tags.join(", "), true);

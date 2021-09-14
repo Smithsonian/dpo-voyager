@@ -71,6 +71,12 @@ export default class CVDocumentProvider extends CComponentProvider<CVDocument>
         return document;
     }
 
+    refreshDocument()
+    {
+        // emit an event to indicate the active document has changed in place.
+        this.emit<IActiveDocumentEvent>({ type: "active-component", previous: null, next: this.activeComponent });
+    }
+
     appendModel(modelPath: string, quality: string): CVDocument
     {
         const document = this.activeComponent;

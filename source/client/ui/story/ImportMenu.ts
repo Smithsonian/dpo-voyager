@@ -31,9 +31,9 @@ export default class ImportMenu extends Popup
     protected url: string;
     protected language: CVLanguageManager = null;
     protected filename: string = "";
-    protected modelOptions: {name: string, id: string}[] = [{name: "No Parent", id: "-1"}];
+    protected modelOptions: {name: string, id: string}[] = [{name: "New Model", id: "-1"}];
     protected qualitySelection: EDerivativeQuality = EDerivativeQuality.Thumb;
-    protected parentSelection: {name: string, id: string} = {name: "No Parent", id: "-1"};
+    protected parentSelection: {name: string, id: string} = null;
 
     static show(parent: HTMLElement, language: CVLanguageManager, filename: string): Promise<[EDerivativeQuality, string]>
     {
@@ -54,6 +54,7 @@ export default class ImportMenu extends Popup
         this.modelOptions = this.modelOptions.concat(language.getGraphComponents(CVModel2).map(model => ({name: model.node.name, id: model.id})));
         this.position = "center";
         this.modal = true;
+        this.parentSelection = this.modelOptions.length > 1 ? this.modelOptions[1] : this.modelOptions[0];
 
         this.url = window.location.href;
         this.style.height = "300px";

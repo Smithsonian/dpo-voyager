@@ -38,6 +38,7 @@ import CaptureTaskView from "../ui/story/CaptureTaskView";
 import { TImageQuality } from "client/schema/meta";
 import CVNodeProvider from "./CVNodeProvider";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
+import CVDocument from "./CVDocument";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -145,6 +146,18 @@ export default class CVCaptureTask extends CVTask
     {
         this.stopObserving();
         super.deactivateTask();
+    }
+
+    create()
+    {
+        super.create();
+        this.startObserving();
+    }
+
+    dispose()
+    {
+        this.stopObserving();
+        super.dispose();
     }
 
     update()
@@ -280,6 +293,20 @@ export default class CVCaptureTask extends CVTask
     protected removePictures()
     {
         console.warn("CCaptureTask.removePictures - not implemented yet");
+    }
+
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        super.onActiveDocument(previous, next);
+
+        if(previous) {
+            //
+        }
+        if (next) {
+            if(this.isActiveTask) {
+                this.onActiveNode(this.activeNode, this.activeNode); // refresh task data
+            }
+        }
     }
 
     protected onActiveNode(previous: NVNode, next: NVNode)

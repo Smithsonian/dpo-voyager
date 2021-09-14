@@ -30,6 +30,7 @@ import { IFileInfo } from "client/../../libs/ff-scene/source/components/CAssetMa
 import { Dictionary } from "client/../../libs/ff-core/source/types";
 import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2 from "./CVModel2";
+import { EDerivativeUsage } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +47,7 @@ export default class CVStandaloneFileManager extends Component
 
 
     private isConfigured: boolean = null;
+    private documentLoaded: boolean = false;
 
     protected get documentProvider() {
         return this.getMainComponent(CVDocumentProvider);
@@ -134,24 +136,28 @@ export default class CVStandaloneFileManager extends Component
     protected onFileDrop(files: Map<string, File>)
     {
         const fileArray = Array.from(files);
+        const hasDoc = this.documentLoaded;
         
         const docIndex = fileArray.findIndex( (element) => { return element[0].toLowerCase().indexOf(".svx.json") > -1 });
         const documentProvided : boolean = docIndex > -1;
         if(documentProvided) {
             fileArray.push(fileArray.splice(docIndex,1)[0]);
+
+            if(hasDoc) {
+                this.reload();
+            }
+
+            this.documentLoaded = true;
         }
+        const documentRoot = documentProvided ? fileArray[fileArray.length-1][0].replace(fileArray[fileArray.length-1][1].name, '') : "";
 
         fileArray.forEach(([path, file]) => {
             const filenameLower = file.name.toLowerCase();
-            if (filenameLower.match(/\.(gltf|glb|svx.json|html|jpg|png|usdz)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|png|usdz)$/)) {
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|png)$/)) {
                     path = CVMediaManager.articleFolder + "/" + file.name;
                 }
-
-                const rootPath = path.replace(file.name, '');
-                this.rootMap[file.name] = rootPath;
-                this.fileMap[path] = file;
 
                 // add folders to map
                 const parts = path.split("/").filter(part => !!part);
@@ -161,13 +167,20 @@ export default class CVStandaloneFileManager extends Component
                     this.fileMap[folderPath] = null;
                 }
 
+                // normalize path relative to document root
+                path = documentProvided ? path.replace(documentRoot, '') : (path.startsWith("/") ? path.substr(1) : path);
+                const rootPath = path.replace(file.name, '');
+                this.rootMap[file.name] = rootPath;
+                
+                this.fileMap[path] = file;
+
                 this.assetManager.loadingManager.setURLModifier( ( url ) => {
 
                     const index = url.lastIndexOf('/');
                     const filename = url.substr(index + 1).replace(/^(\.?\/)/, '');
 
-                    const normalizedURL =
-                        this.rootMap[filename] + filename;
+                    const baseURL = this.rootMap[filename] + filename;
+                    const normalizedURL = baseURL.startsWith("/") ? baseURL.substr(1) : baseURL;  // strip potential leading slash
 
                     if(this.fileMap[normalizedURL]) {
                         const bloburl = URL.createObjectURL( this.fileMap[normalizedURL] );
@@ -186,6 +199,9 @@ export default class CVStandaloneFileManager extends Component
                     const explorer : ExplorerApplication = mainView.app.explorerApp;
             
                     explorer.loadDocument(path);
+                    this.documentProvider.refreshDocument();
+                    
+                    //this.assetReader.getJSON(path).then(data => this.documentProvider.createDocument(data, path))
                 }
             }
             else {
@@ -245,17 +261,32 @@ export default class CVStandaloneFileManager extends Component
         ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentId]) => {
             if(parentId === "-1") {
                 // converting path to relative (TODO: check if all browsers will have leading slash here)
-                const model = activeDoc.appendModel(filepath.substr(1), quality);
+                const model = activeDoc.appendModel(filepath, quality);
                 model.node.name = filename.substr(0, filename.indexOf("."));
+                model.ins.quality.setValue(quality);
             }
             else {
                 const model = this.getSystemComponents(CVModel2).find(element => element.id === parentId);
-                model.derivatives.createModelAsset(filepath.substr(1), quality);
+                model.derivatives.remove(EDerivativeUsage.Web3D, quality);
+                model.derivatives.createModelAsset(filepath, quality)
+                model.ins.quality.setValue(quality);
+                model.outs.updated.set();
             }
 
             if(importQueue.length > 0) {
                 this.handleModelImport(importQueue.pop());
             }
         });
+    }
+
+    protected reload() {
+        this.cleanupFiles();
+        this.runtimeURLs.length = 0;
+        this.fileMap = {};
+        this.rootMap = {};
+
+        this.fileMap["/"] = null;  // needs base path for asset tree to generate correctly
+        this.fileMap["articles/"] = null;
+        this.mediaManager.refresh();
     }
 }

@@ -179,6 +179,7 @@ export default class CVDocument extends CRenderGraph
 
         if (!mergeParent) {
             this.clearNodeTree();
+            this.ins.title.setValue(null);
         }
 
         // listen to load events on scene meta component
