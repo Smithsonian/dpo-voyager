@@ -25,7 +25,7 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const DEFAULT_DRACO_PATH = "https://www.gstatic.com/draco/versioned/decoders/1.4.2/";
+const DEFAULT_DRACO_PATH = "https://www.gstatic.com/draco/versioned/decoders/1.3.6/";
 
 export default class ModelReader
 {

@@ -138,8 +138,8 @@ export default class CVAnnotationView extends CObject3D
             ins.lead.setValue(annotation ? annotation.lead : "", true);
             ins.tags.setValue(annotation ? annotation.tags.join(", ") : "", true);
             ins.style.setOption(annotation ? annotation.data.style : AnnotationFactory.defaultTypeName, true);
-            ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
-            ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
+            ins.scale.setValue(annotation ? annotation.data.scale * 100 * unitScaleFactor(this.model.ins.localUnits.getValidatedValue(), EUnitType.m) : 1, true);
+            ins.offset.setValue(annotation ? annotation.data.offset * 100 * unitScaleFactor(this.model.ins.localUnits.getValidatedValue(), EUnitType.m) : 0, true);
             ins.tilt.setValue(annotation ? annotation.data.tilt : 0, true);
             ins.azimuth.setValue(annotation ? annotation.data.azimuth : 0, true);
             ins.color.setValue(annotation ? annotation.data.color.slice() : [ 1, 1, 1 ], true);
@@ -161,6 +161,10 @@ export default class CVAnnotationView extends CObject3D
 
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
+    }
+
+    get hasAnnotations() {
+        return Object.keys(this._annotations).length > 0;
     }
 
     constructor(node: Node, id: string)

@@ -41,6 +41,7 @@ export default class ContentView extends DocumentView
 {
     protected sceneView: SceneView = null;
     protected documentProps = new Subscriber("value", this.onUpdate, this);
+    protected isMobile: boolean = null;
 
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
@@ -65,6 +66,8 @@ export default class ContentView extends DocumentView
     {
         this.classList.add("sv-content-view");
         this.sceneView = new SceneView(this.system);
+
+        this.isMobile = this.mobileCheck();
     }
 
     protected connected()
@@ -112,7 +115,7 @@ export default class ContentView extends DocumentView
             readerPosition = reader.ins.position.value;
 
             // do not use right reader position on mobile
-            if(this.mobileCheck() === true) {
+            if(this.isMobile === true) {
                 readerPosition = EReaderPosition.Overlay;
             }
 
