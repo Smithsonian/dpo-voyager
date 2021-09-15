@@ -102,7 +102,7 @@ export default class ExtendedSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.stemLine, camera);
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
     }
 
     protected createHTMLElement(): ExtendedAnnotation

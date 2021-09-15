@@ -217,10 +217,11 @@ export default class CVARManager extends Component
         );
         
         this.setupScene();
+        renderer.shadowMap.autoUpdate = false;
 
         renderer.xr.enabled = true;
         renderer.xr.setReferenceSpaceType( 'local' );
-        renderer.xr.setSession( session as THREE.XRSession ); 
+        renderer.xr.setSession( session as unknown as THREE.XRSession ); 
     
         session.addEventListener( 'end', this.onSessionEnded ); 
 
@@ -257,6 +258,8 @@ export default class CVARManager extends Component
         const renderer = this.renderer.views[0].renderer;
 
         this.resetScene();
+
+        renderer.shadowMap.autoUpdate = true;
         
         // Clean up
         const hitSourceInitial = this.initialHitTestSource;
@@ -518,6 +521,11 @@ export default class CVARManager extends Component
         gl.depthMask(false);
         gl.clear(gl.DEPTH_BUFFER_BIT);
         gl.depthMask(true);
+
+        if(this.shadow.needsUpdate) {
+            renderer.shadowMap.needsUpdate = true;
+            this.shadow.needsUpdate = false;
+        }
         
         renderer.render( this.vScene.scene, this.camera );
     }
@@ -552,6 +560,8 @@ export default class CVARManager extends Component
             .then(hitTestSource => {
                 this.transientHitTestSource = hitTestSource; 
             });
+
+        this.shadow.updateMatrices();
     }
 
     protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
@@ -713,6 +723,8 @@ export default class CVARManager extends Component
 
                 this.updateBoundingBox();
             });
+
+            this.shadow.updateMatrices();
         }
     }
 
