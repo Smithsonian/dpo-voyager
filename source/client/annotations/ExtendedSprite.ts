@@ -179,6 +179,7 @@ class ExtendedAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 this.classList.add("sv-expanded");
+                this.style.minWidth = this.sprite.annotation.lead.length < 40 ? "0" : "";
                 this.contentElement.style.display = "inherit";
                 this.contentElement.style.height = this.contentElement.scrollHeight + "px";
 
