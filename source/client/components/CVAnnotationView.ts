@@ -217,6 +217,9 @@ export default class CVAnnotationView extends CObject3D
                 this.updateSprite(annotation);
             }
         }
+        if (ins.visible.changed) {
+            (object3D as HTMLSpriteGroup).setVisible(ins.visible.value);
+        }
 
         if (annotation) {
             if (ins.marker.changed) {
