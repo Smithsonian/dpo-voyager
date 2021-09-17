@@ -16,6 +16,7 @@
  */
 
 import download from "@ff/browser/download";
+import sanitizeHtml from 'sanitize-html';
 
 import Component, { IComponentEvent, Node, types } from "@ff/graph/Component";
 
@@ -144,6 +145,7 @@ export default class CVDocument extends CRenderGraph
 
         if(ins.title.changed && this.titles) {
             const language = this.setup.language;
+            ins.title.setValue(sanitizeHtml(ins.title.value), true);
             this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;
             outs.title.setValue(ins.title.value);
         }

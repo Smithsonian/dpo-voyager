@@ -3,6 +3,7 @@
         "target": "es2017",
         "module": "es2015",
         "sourceMap": true,
+        //"strict": true,
         "jsx": "react",
         "esModuleInterop": true,
         "resolveJsonModule": true,
