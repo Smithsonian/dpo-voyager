@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import sanitizeHtml from 'sanitize-html';
 
 import Component, { types } from "@ff/graph/Component";
 import { ITweenState } from "@ff/graph/components/CTweenMachine";
@@ -94,7 +93,7 @@ export default class CVTours extends Component
     }
     set title(inTitle: string) {
         const tour = this.activeTour;
-        tour.titles[ELanguageType[this.language.outs.language.value]] = sanitizeHtml(inTitle); 
+        tour.titles[ELanguageType[this.language.outs.language.value]] = inTitle; 
     }
     get lead() {
         const tour = this.activeTour;

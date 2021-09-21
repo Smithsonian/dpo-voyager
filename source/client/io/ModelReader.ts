@@ -88,14 +88,8 @@ export default class ModelReader
     protected createModelGroup(gltf): Object3D
     {
         const scene: Scene = gltf.scene;
-        //if (scene.type !== "Scene") {
-        //    throw new Error("not a valid gltf scene");
-        //}
 
-        const model = new Group();
-        scene.children.forEach(child => model.add(child));
-
-        model.traverse((object: any) => {
+        scene.traverse((object: any) => {
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
@@ -127,6 +121,6 @@ export default class ModelReader
             }
         });
 
-        return model;
+        return scene;
     }
 }
