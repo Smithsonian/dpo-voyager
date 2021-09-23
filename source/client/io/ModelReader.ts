@@ -62,6 +62,11 @@ export default class ModelReader
         this.gltfLoader.setDRACOLoader(dracoLoader);
     }
 
+    dispose()
+    {
+        this.gltfLoader.dracoLoader.dispose();
+    }
+
     isValid(url: string): boolean
     {
         const extension = url.split(".").pop().toLowerCase();

@@ -188,6 +188,11 @@ Version: ${ENV_VERSION}
         engine.pulse.start();
     }
 
+    dispose()
+    {
+        this.assetReader.dispose();
+    }
+
     setBaseUrl(url: string)
     {
         this.assetManager.baseUrl = url; 
