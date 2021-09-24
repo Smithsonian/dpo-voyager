@@ -65,6 +65,8 @@ export default class ModelReader
     dispose()
     {
         this.gltfLoader.dracoLoader.dispose();
+        this.gltfLoader.setDRACOLoader(null);
+        this.gltfLoader = null;
     }
 
     isValid(url: string): boolean

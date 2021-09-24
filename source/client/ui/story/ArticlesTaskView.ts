@@ -35,12 +35,12 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     protected connected()
     {
         super.connected();
-        this.task.outs.article.on("value", this.onUpdate, this);
+        this.task.outs.article.on("value", this.onArticleChange, this);
     }
 
     protected disconnected()
     {
-        this.task.outs.article.off("value", this.onUpdate, this);
+        this.task.outs.article.off("value", this.onArticleChange, this);
         super.disconnected();
     }
 
@@ -138,6 +138,12 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
     protected onEditArticle(event: IEditArticleEvent)
     {
+        this.task.ins.edit.set();
+    }
+
+    protected onArticleChange()
+    {
+        this.onUpdate();
         this.task.ins.edit.set();
     }
 }

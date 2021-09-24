@@ -538,6 +538,11 @@ export default class CVModel2 extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
+        if(!this.node || !this.assetReader) {    // TODO: Better way to handle active loads when node has been disposed?
+            console.warn("Model load interrupted.");
+            return;
+        }
+
         return derivative.load(this.assetReader)
             .then(() => {
                 if (!derivative.model) {

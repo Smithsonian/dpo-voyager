@@ -145,6 +145,7 @@ export default class MainView extends CustomElement
         this.fullscreen.fullscreenElement = null;
         this.viewer.rootElement = null;
         this.application.dispose();
+        this.application = null;
     }
 
     attributeChangedCallback(name: string, old: string | null, value: string | null)

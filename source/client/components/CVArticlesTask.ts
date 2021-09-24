@@ -98,8 +98,11 @@ export default class CVArticlesTask extends CVTask
 
     deactivateTask()
     {
+        this.reader.ins.articleId.setValue("");  
+        this.mediaManager.open(null); // close any open article
         this.stopObserving();
         super.deactivateTask();
+
     }
 
     update(context)
@@ -157,6 +160,11 @@ export default class CVArticlesTask extends CVTask
             if (ins.lead.changed || ins.tags.changed) {
                 activeArticle.lead = ins.lead.value;
                 activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+            }
+        }
+        else {
+            if (ins.edit.changed) {
+                this.mediaManager.open(null);
             }
         }
 

@@ -45,6 +45,7 @@ import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
 import { EBackgroundStyle } from "client/schema/setup";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -190,7 +191,15 @@ Version: ${ENV_VERSION}
 
     dispose()
     {
+        // Clean up assuming a component disconnect means it won't be reconnected
         this.assetReader.dispose();
+        this.documentProvider.activeComponent.clearNodeTree();
+        this.system.getMainComponent(CRenderer).views.forEach(view => view.dispose());
+        //this.documentProvider.activeComponent.setup.node.dispose();
+        //this.system.graph.clear();
+        this.documentProvider.activeComponent.setup.tape.dispose();
+        this.documentProvider.activeComponent.setup.floor.dispose();
+        this.documentProvider.activeComponent.setup.grid.dispose();
     }
 
     setBaseUrl(url: string)
