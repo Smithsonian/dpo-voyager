@@ -70,9 +70,11 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
         const uri = activeArticle ? activeArticle.uri : null;
 
+        // Trying article UI without edit button
+        //<ff-button text="Edit" icon="pen" ?disabled=${!uri} @click=${this.onClickEdit}></ff-button>
+
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
-            <ff-button text="Edit" icon="pen" ?disabled=${!uri} @click=${this.onClickEdit}></ff-button>       
+            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>              
             <ff-button text="Delete" icon="trash" ?disabled=${!activeArticle} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
