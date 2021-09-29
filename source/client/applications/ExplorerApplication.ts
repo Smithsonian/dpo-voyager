@@ -295,12 +295,19 @@ Version: ${ENV_VERSION}
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality, props.uiMode)
+            .then(() => this.assetManager.ins.baseUrlValid.setValue(true))
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
             // second loading priority: model
             props.model = props.root ? props.model : manager.getAssetName(props.model);
-            this.loadModel(props.model, props.quality);
+
+            this.assetReader.getText(props.model)       // make sure we have a valid model path
+            .then(() => {
+                this.loadModel(props.model, props.quality);
+                this.assetManager.ins.baseUrlValid.setValue(true);
+            })
+            .catch(error => Notification.show(`Bad Model Path: ${error.message}`, "error"));
         }
         else if (props.geometry) {
             // third loading priority: geometry (plus optional color texture)
@@ -308,11 +315,19 @@ Version: ${ENV_VERSION}
             props.texture = props.root ? props.texture : manager.getAssetName(props.texture);
             props.occlusion = props.root ? props.occlusion : manager.getAssetName(props.occlusion);
             props.normals = props.root ? props.normals : manager.getAssetName(props.normals);
-            this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
+
+            this.assetReader.getText(props.geometry)    // make sure we have a valid geometry path   
+            .then(() => {
+                this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
+                this.assetManager.ins.baseUrlValid.setValue(true);
+            })
+            .catch(error => Notification.show(`Bad Geometry Path: ${error.message}`, "error"));
         }
         else if (props.root) {
-            // if nothing else specified, try to read "document.svx.json" from the current folder
-            this.loadDocument("document.svx.json", undefined).catch(() => {});
+            // if nothing else specified, try to read "scene.svx.json" from the current folder
+            this.loadDocument("scene.svx.json", undefined)
+            .then(() => this.assetManager.ins.baseUrlValid.setValue(true))
+            .catch(() => {});
         }
     }
 
