@@ -1,6 +1,6 @@
 {
     "name": "voyager",
-    "version": "0.14.0",
+    "version": "0.14.1",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
@@ -65,6 +65,7 @@
         "quill-image-resize-module": "^3.0.0",
         "readable-stream": "^3.6.0",
         "resolve-pathname": "^3.0.0",
+        "sanitize-html": "^2.5.1",
         "stream-browserify": "^3.0.0",
         "three": "^0.132.2",
         "three-bmfont-text": "git+https://github.com/Smithsonian/three-bmfont-text.git#e611dac13d",

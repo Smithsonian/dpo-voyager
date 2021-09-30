@@ -60,6 +60,12 @@ export default class CVAssetReader extends Component
         this.fontReader = new FontReader(loadingManager);
     }
 
+    dispose()
+    {
+        this.modelLoader.dispose();
+        super.dispose();
+    }
+
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
