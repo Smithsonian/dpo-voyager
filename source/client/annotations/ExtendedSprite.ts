@@ -102,7 +102,7 @@ export default class ExtendedSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.stemLine, camera);
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
     }
 
     protected createHTMLElement(): ExtendedAnnotation
@@ -139,6 +139,7 @@ class ExtendedAnnotation extends AnnotationElement
 
         this.contentElement = this.createElement("div", null, this.wrapperElement);
         this.contentElement.classList.add("sv-content");
+        this.contentElement.style.display = "none";
     }
 
     protected firstConnected()
@@ -179,6 +180,7 @@ class ExtendedAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 this.classList.add("sv-expanded");
+                this.style.minWidth = this.sprite.annotation.lead.length < 40 ? "0" : "";
                 this.contentElement.style.display = "inherit";
                 this.contentElement.style.height = this.contentElement.scrollHeight + "px";
 

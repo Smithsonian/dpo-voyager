@@ -28,6 +28,7 @@ import { EDerivativeQuality } from "../../schema/model";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
+import CVAnnotationView from "client/components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,16 +86,18 @@ export default class MainMenu extends DocumentView
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
 
         const setup = document.setup;
+        const scene = this.sceneNode;
 
         const tourButtonVisible = setup.tours.outs.count.value > 0;
         const toursActive = setup.tours.ins.enabled.value;
 
         const modeButtonsDisabled = toursActive && !isEditing;
 
-        const readerButtonVisible = true; //setup.reader.articles.length > 0 && !isEditing;
+        const readerButtonVisible = setup.reader.articles.length > 0; // && !isEditing;
         const readerActive = setup.reader.ins.enabled.value;
 
-        const annotationsButtonVisible = true;
+        const views = scene.getGraphComponents(CVAnnotationView);
+        const annotationsButtonVisible = views.some(view => {return view.hasAnnotations;}); //true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
 
         const fullscreen = this.fullscreen;
@@ -107,7 +110,7 @@ export default class MainMenu extends DocumentView
         const language = setup.language;
 
         // TODO - push to ARManager?
-        const models = this.sceneNode.getGraphComponents(CVModel2);
+        const models = scene.getGraphComponents(CVModel2);
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 

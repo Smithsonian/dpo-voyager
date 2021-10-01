@@ -41,6 +41,7 @@ import { EUIElements } from "client/components/CVInterface";
 export default class ChromeView extends DocumentView
 {
     protected documentProps = new Subscriber("value", this.onUpdate, this);
+    protected titleElement: HTMLDivElement;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -59,6 +60,7 @@ export default class ChromeView extends DocumentView
         super.connected();
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.titleElement = this.createElement("div", null);
     }
 
     protected disconnected()
@@ -71,6 +73,7 @@ export default class ChromeView extends DocumentView
     protected render()
     {
         const document = this.activeDocument;
+        const titleElement = this.titleElement;
 
         if (!document) {
             return html``;
@@ -119,11 +122,13 @@ export default class ChromeView extends DocumentView
             title = document.outs.title.value || document.name || "Untitled Document";
         }
 
+        titleElement.innerHTML = title;
+
         return html`
             <div class="sv-chrome-header">
                 ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
                 <div class="sv-top-bar">
-                    ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>` : null}
+                    ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${titleElement}<span class="ff-ellipsis"> </span></div>` : null}
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>

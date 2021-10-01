@@ -17,6 +17,7 @@
 
 
 import List from "@ff/ui/List";
+import sanitizeHtml from 'sanitize-html';
 
 import { ITour } from "client/schema/setup";
 
@@ -173,7 +174,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const text = event.detail.text;
 
         if (target.name === "title") {
-            task.ins.tourTitle.setValue(text);
+            task.ins.tourTitle.setValue(sanitizeHtml(text));
         }
         else if (target.name === "lead") {
             task.ins.tourLead.setValue(text);

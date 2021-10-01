@@ -42,6 +42,8 @@ export default class CVEnvironment extends Component
     private _texture: Texture = null;
     private _currentIdx = 0;
 
+    protected shouldUseEnvMap = false;
+
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
@@ -49,54 +51,53 @@ export default class CVEnvironment extends Component
     update()
     {
         const ins = this.ins;
+        const scene = this.getGraphComponent(CVScene);
 
-        if(ins.dirty.changed || ins.imageIndex.changed)
+        if(ins.dirty.changed)
         {
-            const scene = this.getGraphComponent(CVScene);
+            // currently only doing env reflection if we have a rougness or metalness map defined
+            this.shouldUseEnvMap = false;
             scene.models.forEach(model => {
                 model.object3D.traverse(object => {
-                    const material = object["material"] as UberPBRMaterial; 
-                    if (material && material.isUberPBRMaterial) 
-                    { 
-                        // currently only doing env reflection if we have a rougness or metalness map defined
-                        if(material.roughnessMap || material.metalnessMap) 
-                        {  
-                            if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
-                            {
-                                this._currentIdx = ins.imageIndex.value;
-                                if(this._texture === null) 
-                                { 
-                                    const metalnessCache = material.metalness;  // hack to avoid showing reflective geometry briefly as black
-                                    material.metalness = 0.0;
-                                    this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
-                                        this._texture = texture; 
-                                        this._texture.mapping = EquirectangularReflectionMapping; 
-                                        material.envMap = this._texture;
-                                        material.metalness = metalnessCache;
-                                        material.needsUpdate = true; 
-                                    });
-                                }
-                                else 
-                                {                                  
-                                    this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
-                                        this._texture.dispose();
-                                        this._texture = texture; 
-                                        this._texture.mapping = EquirectangularReflectionMapping; 
-                                        material.envMap = this._texture;
-                                        material.needsUpdate = true; 
-                                    });
-                                }    
-                            }
-                            else 
-                            {
-                                material.envMap = this._texture;
-                                material.envMap.mapping = EquirectangularReflectionMapping;
-                                material.needsUpdate = true; 
-                            }
+                    const material = object["material"] as UberPBRMaterial;
+                    if(material && material.isUberPBRMaterial && (material.roughnessMap || material.metalnessMap)) {
+                        this.shouldUseEnvMap = true;
+
+                        if(this._texture !== null) 
+                        {
+                            this._texture.dispose(); 
+                            this._texture = null;   
                         }
-                    } 
+                        ins.imageIndex.set();
+                    }
                 });
             });
+        }
+        if(ins.imageIndex.changed && this.shouldUseEnvMap)
+        {
+            if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
+            {
+                if(this._texture !== null) 
+                {
+                    this._texture.dispose();    
+                }
+
+                this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
+                    scene.models.forEach(model => {
+                        model.object3D.traverse(object => {
+                            const material = object["material"] as UberPBRMaterial;
+                            if (object.type !== "Group" && material && material.isUberPBRMaterial) 
+                            {
+                                this._texture = texture; 
+                                this._texture.mapping = EquirectangularReflectionMapping; 
+                                material.envMap = this._texture;
+                                material.needsUpdate = true; 
+                            }
+                        });
+                    });
+                });
+                this._currentIdx = ins.imageIndex.value;
+            }
         }
 
         return true;

@@ -16,9 +16,11 @@
  */
 
 import CVTaskProvider from "../../components/CVTaskProvider";
+import sanitizeHtml from 'sanitize-html';
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
 import CVDocument from "client/components/CVDocument";
+import { ILineEditChangeEvent } from "client/../../libs/ff-ui/source/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,8 +51,23 @@ export default class CollectionPanel extends DocumentView
             </div>
             <sv-property-view .property=${this.taskProvider.ins.language}></sv-property-view>
             <div class="sv-indent">
-                <sv-property-view .property=${this.activeDocument.ins.title}></sv-property-view>
+                <div class="sv-label">Title</div>
+                <ff-text-edit name="title" text=${this.activeDocument.ins.title.value} @change=${this.onTextEdit}></ff-text-edit>
             </div>`;
+    }
+
+    protected onTextEdit(event: ILineEditChangeEvent)
+    {
+        const activeDoc = this.activeDocument;
+
+        if (activeDoc) {
+            const target = event.target;
+            const text = event.detail.text;
+
+            if (target.name === "title") {
+                activeDoc.ins.title.setValue(sanitizeHtml(text));
+            }
+        }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
