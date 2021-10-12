@@ -71,7 +71,7 @@ export class ViewToolView extends ToolView<CVViewTool>
             EViewPreset.Left, EViewPreset.Right,
             EViewPreset.Top, EViewPreset.Bottom ];
 
-        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+        return html`<div role="toolbar" aria-label="View tool" class="sv-section"><ff-button class="sv-section-lead" tabbingIndex="-1" transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${projection} .language=${language} name=${language.getLocalizedString("Projection")}></sv-property-options>
                 <sv-property-options .property=${preset} .language=${language} name=${language.getLocalizedString("View")} .indexMap=${presetMap}></sv-property-options>

@@ -130,10 +130,13 @@ class ExtendedAnnotation extends AnnotationElement
 
         this.onClickTitle = this.onClickTitle.bind(this);
         this.onClickArticle = this.onClickArticle.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
 
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-title");
         this.titleElement.addEventListener("click", this.onClickTitle);
+        this.titleElement.addEventListener("keydown", this.onKeyDown);
+        this.titleElement.setAttribute("tabindex", "0");
 
         this.wrapperElement = this.appendElement("div");
 
@@ -203,5 +206,13 @@ class ExtendedAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
+    }
+
+    protected onKeyDown(event: KeyboardEvent)
+    {
+        if (event.code === "Space" || event.code === "Enter") {
+            event.stopPropagation();
+            this.sprite.emitClickEvent();
+        }
     }
 }

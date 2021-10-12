@@ -52,6 +52,7 @@ export default class CVReader extends Component
         enabled: types.Boolean("Reader.Enabled"),
         position: types.Enum("Reader.Position", EReaderPosition),
         articleId: types.String("Article.ID"),
+        focus: types.Boolean("Reader.Focus"),
     };
 
     protected static readonly outs = {

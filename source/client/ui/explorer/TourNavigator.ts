@@ -31,12 +31,15 @@ export default class TourNavigator extends DocumentView
     protected tours: CVTours;
     protected language: CVLanguageManager;
 
+    protected needsFocus: boolean = false;
+
     protected firstConnected()
     {
         super.firstConnected();
 
         this.classList.add("sv-bottom-bar-container", "sv-tour-navigator", "sv-transition");
         setTimeout(() => this.classList.remove("sv-transition"), 1);
+        this.needsFocus = true;
     }
 
     protected render()
@@ -68,6 +71,16 @@ export default class TourNavigator extends DocumentView
             <ff-button class="sv-section-trail" transparent icon="triangle-left" title=${language.getLocalizedString("Go Backward")} ?disabled=${!activeTour} @click=${this.onClickPrevious}></ff-button>
             <ff-button class="sv-section-trail" transparent icon="triangle-right" title=${language.getLocalizedString("Go Forward")} ?disabled=${!activeTour} @click=${this.onClickNext}></ff-button>
         </div></div>`;
+    }
+
+    protected update(changedProperties) {
+        super.update(changedProperties);
+
+        if(this.needsFocus) {
+            const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
+            container.focus();
+            this.needsFocus = false;
+        }
     }
 
     protected onClickExit()

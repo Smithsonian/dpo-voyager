@@ -65,12 +65,14 @@ export default class ToolBar extends SystemView
         const activeTool = this.toolProvider.activeComponent;
         const language = this.language;
 
+        const toolbarWrapper = activeTool ? html`<div role="region" aria-label=${activeTool.text + " toolbar"}>`: null;
+
         const toolButtons = tools.map(tool =>
             html`<ff-button class="sv-tool-button" transparent text=${language.getLocalizedString(tool.text)} icon=${tool.icon}
                 ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
 
         return html`<div class="sv-blue-bar">${activeTool ? activeTool.createView() : null}
-            <div class="sv-section">
+            <div role="menubar" aria-label="Tools and settings" class="sv-section">
                 <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Close Tools")} @click=${this.onClose}></ff-button>
                 <div class="sv-tool-buttons">${toolButtons}</div>
                 <sv-tool-menu-view .system=${this.system}></sv-tool-menu-view>

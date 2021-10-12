@@ -91,7 +91,7 @@ export default class PropertyOptions extends CustomElement
                     </ff-button>`)
         }
 
-        return html`<label class="ff-label ff-off">${name}</label><div class="sv-options">${buttons}</div>`;
+        return html`<label class="ff-label ff-off">${name}</label><div role="radiogroup" title=${name} class="sv-options">${buttons}</div>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)

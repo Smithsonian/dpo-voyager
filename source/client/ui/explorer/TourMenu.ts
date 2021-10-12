@@ -40,15 +40,18 @@ export default class TourMenu extends CustomElement
     @property({ attribute: false })
     activeLanguage: ELanguageType;
 
+    protected needsFocus: boolean = false;
+
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-document-overlay", "sv-article", "sv-tour-menu");
+        this.needsFocus = true;
     }
 
     protected renderEntry(tour: ITour, index: number)
     {
-        return html`<div class="sv-entry" @click=${e => this.onClickTour(e, index)}>
+        return html`<div role="menuitem" title="tour entry" tabindex="0" @keydown=${e =>this.onKeyDown(e, index)} class="sv-entry" @click=${e => this.onClickTour(e, index)}>
             <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] : tour.title}</h1>
             <p>${Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead}</p>
         </div>`;
@@ -64,9 +67,19 @@ export default class TourMenu extends CustomElement
             </div>`;
         }
 
-        return html`<div class="ff-scroll-y">
+        return html`<div role="menu" aria-label="interactive tour menu" class="ff-scroll-y">
             ${tours.map((tour, index) => this.renderEntry(tour, index))}
         </div>`;
+    }
+
+    protected update(changedProperties) {
+        super.update(changedProperties);
+
+        if(this.needsFocus) {
+            const container = this.getElementsByClassName("sv-entry").item(0) as HTMLElement;
+            container.focus();
+            this.needsFocus = false;
+        }
     }
 
     protected onClickTour(e: MouseEvent, index: number)
@@ -76,5 +89,15 @@ export default class TourMenu extends CustomElement
         this.dispatchEvent(new CustomEvent("select", {
             detail: { index }
         }));
+    }
+
+    protected onKeyDown(e: KeyboardEvent, index: number)
+    {
+        if (e.code === "Space" || e.code === "Enter") {
+            e.preventDefault();
+            this.dispatchEvent(new CustomEvent("select", {
+                detail: { index }
+            }));
+        }
     }
 }

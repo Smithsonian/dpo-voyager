@@ -41,7 +41,7 @@ export default class ReaderView extends DocumentView
     {
         const article = entry.article;
 
-        return html`<div class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
+        return html`<div role="menuitem" title="article" tabindex="0" @keydown=${e =>this.onKeyDown(e, article.id)} class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
             <h1>${article.title}</h1>
             <p>${article.lead}</p>
         </div>`;
@@ -58,7 +58,7 @@ export default class ReaderView extends DocumentView
 
         if (!reader.activeArticle) {
             const articles = reader.articles;
-            return html`<div class="sv-left"></div><div class="sv-article">
+            return html`<div class="sv-left"></div><div role="menu" aria-label="articles" class="sv-article">
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
                 ${articles.map(entry => this.renderMenuEntry(entry))}
             </div><div class="sv-right"></div>`;
@@ -67,7 +67,7 @@ export default class ReaderView extends DocumentView
         return html`<div class="sv-left"></div><div class="sv-article">
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>
-                <div class="sv-container"></div>
+                <div role="region" aria-live="polite" title="article list" class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }
 
@@ -75,6 +75,7 @@ export default class ReaderView extends DocumentView
     {
         event.stopPropagation();
         this.reader.ins.articleId.setValue("");
+        this.reader.ins.focus.setValue(true);
     }
 
     protected onClickClose(event: IButtonClickEvent)
@@ -94,9 +95,15 @@ export default class ReaderView extends DocumentView
 
         const reader = this.reader;
 
-        if (reader && reader.activeArticle) {
+        if (reader) {
+            if(reader.activeArticle) {
             const container = this.getElementsByClassName("sv-container").item(0) as HTMLElement;
             container.innerHTML = reader.outs.content.value;
+            }
+            if(reader.ins.focus.value) {
+                this.setFocus();
+                reader.ins.focus.setValue(false, true);
+            }
         }
     }
 
@@ -116,5 +123,18 @@ export default class ReaderView extends DocumentView
             this.reader.outs.article.on("value", this.onUpdate, this);
             next.setup.language.outs.language.on("value", this.onUpdate, this);
         }
+    }
+
+    protected onKeyDown(e: KeyboardEvent, id: string)
+    {
+        if (e.code === "Space" || e.code === "Enter") {
+            e.preventDefault();
+            this.reader.ins.articleId.setValue(id);
+        }
+    }
+
+    protected setFocus() {
+        const container = this.getElementsByClassName("sv-nav-button").item(0) as HTMLElement;
+        container.focus();
     }
 }
