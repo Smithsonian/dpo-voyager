@@ -20,7 +20,7 @@ import "@ff/ui/Button";
 
 import { ITour } from "client/schema/setup";
 import { ELanguageType } from "client/schema/common";
-
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +41,7 @@ export default class TourMenu extends CustomElement
     activeLanguage: ELanguageType;
 
     protected needsFocus: boolean = false;
+    protected focusableElements: HTMLElement[] = [];
 
     protected firstConnected()
     {
@@ -98,6 +99,19 @@ export default class TourMenu extends CustomElement
             this.dispatchEvent(new CustomEvent("select", {
                 detail: { index }
             }));
+        }
+        else if (e.code === "Escape") {
+            e.preventDefault();
+            this.dispatchEvent(new CustomEvent("close", {
+                detail: { index }
+            }));
+        }
+        else if(e.code === "Tab") {
+            if(this.focusableElements.length === 0) {
+                this.focusableElements = getFocusableElements(this) as HTMLElement[];
+            }
+
+            focusTrap(this.focusableElements, e);
         }
     }
 }

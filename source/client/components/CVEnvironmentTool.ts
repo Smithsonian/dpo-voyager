@@ -70,7 +70,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
         //let name0 = isSolid ? " " : (isLinear ? "Top" : "Inner");
         //let name1 = isSolid ? "" : (isLinear ? "Btm" : "Outer");
 
-        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${background.ins.style} .language=${language} .options=${options} name=${language.getLocalizedString("Background")}></sv-property-options>
                 <sv-property-color class="sv-nogap" .property=${background.ins.color0} name=" "></sv-property-color>
@@ -96,5 +96,18 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
         }
 
         this.requestUpdate();
+    }
+
+    protected async setFocus()
+    {
+        await this.updateComplete;
+        const focusElement = this.getElementsByTagName("ff-button")[1] as HTMLElement;
+        focusElement.focus();
+    }
+
+    protected onClose(event: MouseEvent)
+    {
+        this.parentElement.dispatchEvent(new CustomEvent("close"));
+        event.stopPropagation();
     }
 }

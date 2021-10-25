@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import "@ff/ui/Button";
 import "@ff/ui/TextEdit";
 import TextEdit from "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +30,7 @@ export default class ShareMenu extends Popup
 {
     protected url: string;
     protected language: CVLanguageManager = null;
+    protected needsFocus: boolean = false;
 
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
     {
@@ -61,6 +63,7 @@ export default class ShareMenu extends Popup
     {
         super.firstConnected();
         this.classList.add("sv-share-menu");
+        this.needsFocus = true;
     }
 
     protected render()
@@ -77,22 +80,34 @@ export default class ShareMenu extends Popup
         const emailUrl = `mailto:?subject=${title}&body=${url}`;
 
         return html`
-        <div class="ff-flex-row">
-            <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Share Experience")}</div>
-            <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
-        </div>
-        <div class="ff-flex-row sv-share-buttons">
-            <a href=${twitterShareUrl} target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-twitter" icon="twitter" title="Twitter"></ff-button></a>
-            <a href=${facebookShareUrl} target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-facebook" icon="facebook" title="Facebook"></ff-button></a>
-            <a href=${linkedInShareUrl} target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-linkedin" icon="linkedin" title="LinkedIn"></ff-button></a>
-            <a href=${emailUrl} target="_blank"><ff-button class="sv-share-button-email" icon="email" title=${language.getLocalizedString("Email")}></ff-button></a>
-        </div>
-        <div class="ff-title">${language.getLocalizedString("Embed Link")}</div>
-        <div class="ff-flex-row sv-embed-link">
-            <ff-text-edit text=${iFrameEmbedCode}></ff-text-edit>
-            <ff-button icon="copy" title=${language.getLocalizedString("Copy to Clipboard")} @click=${this.onClickCopy}></ff-button>
+        <div @keydown=${e =>this.onKeyDown(e)}>
+            <div class="ff-flex-row">
+                <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Share Experience")}</div>
+                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
+            </div>
+            <div class="ff-flex-row sv-share-buttons">
+                <a href=${twitterShareUrl} tabindex="-1" target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-twitter" icon="twitter" title="Twitter"></ff-button></a>
+                <a href=${facebookShareUrl} tabindex="-1" target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-facebook" icon="facebook" title="Facebook"></ff-button></a>
+                <a href=${linkedInShareUrl} tabindex="-1" target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-linkedin" icon="linkedin" title="LinkedIn"></ff-button></a>
+                <a href=${emailUrl} tabindex="-1" target="_blank"><ff-button class="sv-share-button-email" icon="email" title=${language.getLocalizedString("Email")}></ff-button></a>
+            </div>
+            <div class="ff-title">${language.getLocalizedString("Embed Link")}</div>
+            <div class="ff-flex-row sv-embed-link">
+                <ff-text-edit text=${iFrameEmbedCode}></ff-text-edit>
+                <ff-button icon="copy" title=${language.getLocalizedString("Copy to Clipboard")} @click=${this.onClickCopy}></ff-button>
+            </div>
         </div>
         `;
+    }
+
+    protected update(changedProperties) {
+        super.update(changedProperties);
+
+        if(this.needsFocus) {
+            const container = this.getElementsByClassName("sv-share-button-twitter").item(0) as HTMLElement;
+            container.focus();
+            this.needsFocus = false;
+        }
     }
 
     protected onClickCopy()
@@ -100,5 +115,16 @@ export default class ShareMenu extends Popup
         const textArea = this.getElementsByTagName("ff-text-edit").item(0) as TextEdit;
         textArea.select();
         document.execCommand("copy");
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            this.close();
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
     }
 }

@@ -63,7 +63,7 @@ export class RenderToolView extends ToolView<CVRenderTool>
         const shader = viewer.ins.shader;
         const language = document.setup.language;
 
-        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${shader} .language=${language} name=${language.getLocalizedString("Material")}></sv-property-options>
             </div>
@@ -81,5 +81,18 @@ export class RenderToolView extends ToolView<CVRenderTool>
             this.viewer = next.setup.viewer;
             this.viewer.ins.shader.on("value", this.onUpdate, this);
         }
+    }
+
+    protected async setFocus()
+    {
+        await this.updateComplete;
+        const focusElement = this.getElementsByTagName("ff-button")[1] as HTMLElement;
+        focusElement.focus();
+    }
+
+    protected onClose(event: MouseEvent)
+    {
+        this.parentElement.dispatchEvent(new CustomEvent("close"));
+        event.stopPropagation();
     }
 }

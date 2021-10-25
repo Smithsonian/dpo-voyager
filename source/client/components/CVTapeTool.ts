@@ -80,7 +80,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
             text = language.getLocalizedString("Tap on model to set end of tape") + ".";
         }
 
-        return html`<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-boolean .property=${visible} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
                 <div class="sv-property-view"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
@@ -98,5 +98,18 @@ export class TapeToolView extends ToolView<CVTapeTool>
         }
 
         this.requestUpdate();
+    }
+
+    protected async setFocus()
+    {
+        await this.updateComplete;
+        const focusElement = this.getElementsByTagName("ff-button")[1] as HTMLElement;
+        focusElement.focus();
+    }
+
+    protected onClose(event: MouseEvent)
+    {
+        this.parentElement.dispatchEvent(new CustomEvent("close"));
+        event.stopPropagation();
     }
 }

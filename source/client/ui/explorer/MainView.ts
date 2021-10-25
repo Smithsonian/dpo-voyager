@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,10 @@ export default class MainView extends CustomElement
 
             this.application = new ExplorerApplication(null, props);
         }
+
+        this.setAttribute("aria-label", "The Voyager web application allows you to view "
+        + "and interact with a 3D model from the Smithsonian collection. Use the tab key to "
+        + "move through interactive elements, enter or spacebar keys to activate, and the escape key to exit menus.");
 
         this.attachShadow({mode: 'open'});
         const shadowRoot = this.shadowRoot;

@@ -22,6 +22,7 @@ import CVTours from "../../components/CVTours";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVLanguageManager from "client/components/CVLanguageManager";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,7 +62,7 @@ export default class TourNavigator extends DocumentView
             info = "---";
         }
 
-        return html`<div class="sv-blue-bar"><div class="sv-section">
+        return html`<div class="sv-blue-bar" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
             <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
             <div class="ff-ellipsis sv-content">
                 <div class="ff-ellipsis sv-title">${title}</div>
@@ -87,6 +88,7 @@ export default class TourNavigator extends DocumentView
     {
         // disable tours
         this.tours.ins.enabled.setValue(false);
+        this.tours.ins.closed.set();
     }
 
     protected onClickMenu()
@@ -123,5 +125,17 @@ export default class TourNavigator extends DocumentView
         }
 
         this.requestUpdate();
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            this.tours.ins.tourIndex.setValue(-1);
+            //this.dispatchEvent(new CustomEvent("close"));
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
     }
 }

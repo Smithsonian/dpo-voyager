@@ -21,6 +21,7 @@ import "@ff/ui/Button";
 import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { ILanguageOption } from "client/schema/setup";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +66,7 @@ export default class LanguageMenu extends Popup
 
     protected renderEntry(language: ILanguageOption, index: number)
     {
-        return html`<div class="sv-entry" @click=${e => this.onClickLanguage(e, index)} ?selected=${language.name === this.language.toString()}>
+        return html`<div class="sv-entry" tabindex="0" @click=${e => this.onClickLanguage(e, index)} @keydown=${e =>this.onKeyDownEntry(e, index)} ?selected=${language.name === this.language.toString()}>
             ${language.name}
         </div>`;
     }
@@ -75,16 +76,24 @@ export default class LanguageMenu extends Popup
         const language = this.language;
 
         return html`
-        <div class="ff-flex-row">
-            <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Set Language")}</div>
-            <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
-        </div>
-        <div class="ff-flex-row">
-            <div class="ff-scroll-y">
-                ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
+        <div @keydown=${e =>this.onKeyDownMain(e)}>
+            <div class="ff-flex-row">
+                <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Set Language")}</div>
+                <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
+            </div>
+            <div class="ff-flex-row">
+                <div class="ff-scroll-y">
+                    ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
+                </div>
             </div>
         </div>
         `;
+    }
+
+    protected firstUpdated(changedProperties) {
+        super.firstUpdated(changedProperties);
+
+        (this.getElementsByClassName("sv-entry")[0] as HTMLElement).focus();
     }
 
     protected onClickLanguage(e: MouseEvent, index: number)
@@ -95,5 +104,26 @@ export default class LanguageMenu extends Popup
 
         language.ins.language.setValue(language.activeLanguages[index].id);  
         this.close();  
+    }
+
+    protected onKeyDownEntry(e: KeyboardEvent, index: number)
+    {
+        const language = this.language;
+        if (e.code === "Space" || e.code === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            language.ins.language.setValue(language.activeLanguages[index].id);
+            this.close();
+        }
+    }
+
+    protected onKeyDownMain(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            this.close();
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
     }
 }

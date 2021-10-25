@@ -50,6 +50,7 @@ export default class CVReader extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Reader.Enabled"),
+        closed: types.Event("Reader.Closed"),
         position: types.Enum("Reader.Position", EReaderPosition),
         articleId: types.String("Article.ID"),
         focus: types.Boolean("Reader.Focus"),

@@ -21,7 +21,8 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVDocument from "../../components/CVDocument";
 import CVReader, { IArticleEntry } from "../../components/CVReader";
-import CVLanguageManager from "client/components/CVLanguageManager";
+import CVLanguageManager from "../../components/CVLanguageManager";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,10 +65,10 @@ export default class ReaderView extends DocumentView
             </div><div class="sv-right"></div>`;
         }
 
-        return html`<div class="sv-left"></div><div class="sv-article">
+        return html`<div class="sv-left"></div><div class="sv-article" @keydown=${e =>this.onKeyDown(e, reader.activeArticle.id)} >
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>
-                <div role="region" aria-live="polite" title="article list" class="sv-container"></div>
+                <div role="region" aria-live="polite" title="article" class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }
 
@@ -127,14 +128,30 @@ export default class ReaderView extends DocumentView
 
     protected onKeyDown(e: KeyboardEvent, id: string)
     {
-        if (e.code === "Space" || e.code === "Enter") {
+        const reader = this.reader;
+        if ((e.code === "Space" || e.code === "Enter") && (reader && !reader.activeArticle)) {
             e.preventDefault();
             this.reader.ins.articleId.setValue(id);
+            this.reader.ins.focus.setValue(true);
+        }
+        else if (e.code === "Escape") {
+            e.preventDefault();
+            if (!reader.activeArticle) { 
+                this.dispatchEvent(new CustomEvent("close"));
+            }
+            else {
+                reader.ins.articleId.setValue("");
+                reader.ins.focus.setValue(true);
+            }
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
         }
     }
 
     protected setFocus() {
-        const container = this.getElementsByClassName("sv-nav-button").item(0) as HTMLElement;
-        container.focus();
+        const reader = this.reader;
+        const container = reader.activeArticle ? this.getElementsByClassName("sv-nav-button").item(1) : this.getElementsByClassName("sv-entry").item(0);
+        (container  as HTMLElement).focus();
     }
 }

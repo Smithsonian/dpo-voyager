@@ -36,6 +36,7 @@ export default class CVTours extends Component
     protected static readonly ins = {
         enabled: types.Boolean("Tours.Enabled"),
         tourIndex: types.Integer("Tours.Index", -1),
+        closed: types.Event("Tours.Closed"),
         stepIndex: types.Integer("Step.Index"),
         next: types.Event("Step.Next"),
         previous: types.Event("Step.Previous"),

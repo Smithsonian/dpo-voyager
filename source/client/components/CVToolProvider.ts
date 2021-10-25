@@ -36,7 +36,8 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
     static readonly componentType = CVTool;
 
     protected static readonly ins = {
-        visible: types.Boolean("Tools.Visible")
+        visible: types.Boolean("Tools.Visible"),
+        closed: types.Event("Tools.Closed")
     };
 
     ins = this.addInputs(CVToolProvider.ins);
@@ -56,9 +57,9 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
         const ins = this.ins;
 
         if (ins.visible.changed) {
-            if (ins.visible.value && !this.activeComponent) {
+            /*if (ins.visible.value && !this.activeComponent) {
                 this.activeComponent = this.scopedComponents[0];
-            }
+            }*/
         }
 
         return true;

@@ -110,7 +110,7 @@ export class LightToolView extends ToolView<CVLightTool>
         const language = document.setup.language;
 
         const lightDetails = activeLight ? html`<div class="sv-section">
-            <ff-button class="sv-section-lead" transparent icon="cog"></ff-button>
+            <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                 <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
@@ -118,7 +118,7 @@ export class LightToolView extends ToolView<CVLightTool>
             </div>
         </div>` : null;
 
-        return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" transparent icon=${tool.icon}></ff-button>
+        return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${navigation.ins.lightsFollowCamera} name="Follow Camera"></sv-property-boolean> -->
                 <sv-property-options .property=${tool.ins.light} .language=${language} name=${language.getLocalizedString("Select Scene Light")}></sv-property-options>
@@ -136,5 +136,18 @@ export class LightToolView extends ToolView<CVLightTool>
         }
 
         this.requestUpdate();
+    }
+
+    protected async setFocus()
+    {
+        await this.updateComplete;
+        const focusElement = this.getElementsByClassName("sv-options")[0].children[0] as HTMLElement;
+        focusElement.focus();
+    }
+
+    protected onClose(event: MouseEvent)
+    {
+        this.parentElement.dispatchEvent(new CustomEvent("close"));
+        event.stopPropagation();
     }
 }

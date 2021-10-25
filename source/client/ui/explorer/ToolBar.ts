@@ -19,7 +19,8 @@ import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVToolProvider, { IActiveToolEvent } from "../../components/CVToolProvider";
 import CVTool from "../../components/CVTool";
-import CVLanguageManager from "client/components/CVLanguageManager";
+import CVLanguageManager from "../../components/CVLanguageManager";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +32,8 @@ export interface IToolBarCloseEvent extends CustomEvent
 @customElement("sv-tool-bar")
 export default class ToolBar extends SystemView
 {
+    protected needsFocus: boolean = false;
+
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
@@ -43,6 +46,7 @@ export default class ToolBar extends SystemView
         super.firstConnected();
         this.classList.add("sv-bottom-bar-container", "sv-transition", "sv-tool-bar");
         setTimeout(() => this.classList.remove("sv-transition"), 1);
+        this.needsFocus = true;
     }
 
     protected connected()
@@ -71,8 +75,8 @@ export default class ToolBar extends SystemView
             html`<ff-button class="sv-tool-button" transparent text=${language.getLocalizedString(tool.text)} icon=${tool.icon}
                 ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
 
-        return html`<div class="sv-blue-bar">${activeTool ? activeTool.createView() : null}
-            <div role="menubar" aria-label="Tools and settings" class="sv-section">
+        return html`<div class="sv-blue-bar"><div id="toolmenu" @close=${this.closeTool} @keydown=${e =>this.onKeyDownTool(e)}>${activeTool ? activeTool.createView() : null}</div>
+            <div id="mainmenu" role="menubar" @keydown=${e =>this.onKeyDownMain(e)} aria-label="Tools and settings" class="sv-section">
                 <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Close Tools")} @click=${this.onClose}></ff-button>
                 <div class="sv-tool-buttons">${toolButtons}</div>
                 <sv-tool-menu-view .system=${this.system}></sv-tool-menu-view>
@@ -88,5 +92,50 @@ export default class ToolBar extends SystemView
     {
         this.dispatchEvent(new CustomEvent("close"));
         event.stopPropagation();
+    }
+
+    protected update(changedProperties) {
+        super.update(changedProperties);
+
+        if(this.needsFocus) {
+            const container = this.getElementsByClassName("sv-tool-button").item(0) as HTMLElement;
+            container.focus();
+            this.needsFocus = false;
+        }
+    }
+
+    protected onKeyDownMain(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            this.dispatchEvent(new CustomEvent("close"));
+        }
+        else if(e.code === "Tab") {
+            const element = Array.from(this.getElementsByTagName("div")).find(e => e.id === "mainmenu");
+            focusTrap(getFocusableElements(element) as HTMLElement[], e);
+        }
+    }
+
+    protected onKeyDownTool(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            this.closeTool();
+        }
+        else if(e.code === "Tab") {
+            const element = Array.from(this.getElementsByTagName("div")).find(e => e.id === "toolmenu");
+            focusTrap(getFocusableElements(element) as HTMLElement[], e);
+        }
+    }
+
+    protected closeTool() 
+    {
+        const buttons = this.getElementsByTagName("ff-button");
+        const activeButton = Array.from(buttons).find(button => {
+            const label = button.getAttribute("text");
+            return label === this.language.getLocalizedString(this.toolProvider.activeComponent.text)
+        });
+        (activeButton as HTMLElement).focus();
+        this.toolProvider.activeComponent = null;
     }
 }

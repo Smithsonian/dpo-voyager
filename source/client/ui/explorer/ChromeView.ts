@@ -134,13 +134,13 @@ export default class ChromeView extends DocumentView
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>
-            ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
-            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @select=${this.onSelectTour}></sv-tour-menu>` : null}
+            ${toursEnabled && tourActive ? html`<sv-tour-navigator @close=${this.closeTours} .system=${this.system}></sv-tour-navigator>` : null}
+            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @close=${this.closeTours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${tagCloudVisible && toolBarAllowed ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
-                    ${languagesVisible ? html`<div id="language" class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}>${setup.language.toString()}</div>` : null}
+                    ${languagesVisible ? html`<ff-button id="language" text=${setup.language.toString()} title=${language.getLocalizedString("Set Language")} class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}></ff-button>` : null}
                 </div>
             </div>`;
     }
@@ -151,6 +151,13 @@ export default class ChromeView extends DocumentView
         tours.ins.tourIndex.setValue(event.detail.index);
     }
 
+    protected closeTours()
+    {
+        const tours = this.activeDocument.setup.tours;
+        tours.ins.enabled.setValue(false);
+        tours.ins.closed.set();
+    }
+
     protected openLanguageMenu() {
         const language = this.activeDocument.setup.language;
 
@@ -159,13 +166,16 @@ export default class ChromeView extends DocumentView
 
             LanguageMenu.show(this, this.activeDocument.setup.language).then(() => {
                 language.ins.enabled.setValue(false);
+                (this.getElementsByClassName("sv-language-display")[0] as HTMLElement).focus();
             });
         }
     }
 
     protected closeTools()
     {
-        this.toolProvider.ins.visible.setValue(false);
+        const toolIns = this.toolProvider.ins;
+        toolIns.visible.setValue(false);
+        toolIns.closed.set();
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
