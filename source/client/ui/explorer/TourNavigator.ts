@@ -33,6 +33,7 @@ export default class TourNavigator extends DocumentView
     protected language: CVLanguageManager;
 
     protected needsFocus: boolean = false;
+    protected firstRender: boolean = true;
 
     protected firstConnected()
     {
@@ -62,9 +63,9 @@ export default class TourNavigator extends DocumentView
             info = "---";
         }
 
-        return html`<div class="sv-blue-bar" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
+        return html`<div class="sv-blue-bar" role=region title="Tour Navigation" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
             <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
-            <div class="ff-ellipsis sv-content">
+            <div class="ff-ellipsis sv-content" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
@@ -74,13 +75,20 @@ export default class TourNavigator extends DocumentView
         </div></div>`;
     }
 
-    protected update(changedProperties) {
-        super.update(changedProperties);
+    protected updated(changedProperties) {
+        super.updated(changedProperties);
 
         if(this.needsFocus) {
             const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
             container.focus();
             this.needsFocus = false;
+        }
+
+        // Hack so that initial nav title display is detected by screen readers.
+        if(this.firstRender) {
+            const titleDiv = this.getElementsByClassName("sv-title").item(0) as HTMLElement;
+            setTimeout(() => {titleDiv.innerHTML = `<div>${titleDiv.innerText}</div>`;}, 100);
+            this.firstRender = false;
         }
     }
 

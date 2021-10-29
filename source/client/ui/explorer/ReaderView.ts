@@ -31,6 +31,7 @@ export default class ReaderView extends DocumentView
 {
     protected reader: CVReader = null;
     protected language: CVLanguageManager = null;
+    protected firstRender: boolean = true;
 
     protected firstConnected()
     {
@@ -68,7 +69,7 @@ export default class ReaderView extends DocumentView
         return html`<div class="sv-left"></div><div class="sv-article" @keydown=${e =>this.onKeyDown(e, reader.activeArticle.id)} >
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>
-                <div role="region" aria-live="polite" title="article" class="sv-container"></div>
+                <div role="region" aria-live="polite" aria-atomic="true" title="article" class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }
 
@@ -98,8 +99,14 @@ export default class ReaderView extends DocumentView
 
         if (reader) {
             if(reader.activeArticle) {
-            const container = this.getElementsByClassName("sv-container").item(0) as HTMLElement;
-            container.innerHTML = reader.outs.content.value;
+                const container = this.getElementsByClassName("sv-container").item(0) as HTMLElement;
+                container.innerHTML = reader.outs.content.value;
+
+                // Hack so that initial article display is detected by screen readers.
+                if(this.firstRender) {
+                    setTimeout(() => {container.innerHTML = reader.outs.content.value;}, 200);
+                    this.firstRender = false;
+                }
             }
             if(reader.ins.focus.value) {
                 this.setFocus();

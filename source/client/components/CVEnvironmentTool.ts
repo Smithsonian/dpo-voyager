@@ -73,12 +73,12 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
         return html`<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${background.ins.style} .language=${language} .options=${options} name=${language.getLocalizedString("Background")}></sv-property-options>
-                <sv-property-color class="sv-nogap" .property=${background.ins.color0} name=" "></sv-property-color>
-                ${!isSolid ? html`<sv-property-color class="sv-nogap" .property=${background.ins.color1} name=" "></sv-property-color>` : null}
+                <sv-property-color title="Background Color 1" class="sv-nogap" .property=${background.ins.color0} name=" "></sv-property-color>
+                ${!isSolid ? html`<sv-property-color title="Background Color 2" class="sv-nogap" .property=${background.ins.color1} name=" "></sv-property-color>` : null}
                 <sv-property-boolean .property=${grid.ins.visible} .language=${language} name=${language.getLocalizedString("Grid")}></sv-property-boolean>
-                <sv-property-color class="sv-nogap" .property=${grid.ins.color} name=" "></sv-property-color>
+                <sv-property-color title="Grid Color" class="sv-nogap" .property=${grid.ins.color} name=" "></sv-property-color>
                 <sv-property-boolean .property=${floor.ins.visible} .language=${language} name=${language.getLocalizedString("Floor")}></sv-property-boolean>
-                <sv-property-color class="sv-nogap" .property=${floor.ins.color} name=" "></sv-property-color>
+                <sv-property-color title="Floor Color" class="sv-nogap" .property=${floor.ins.color} name=" "></sv-property-color>
                 <sv-property-options .property=${environment.ins.imageIndex} name="Env Map"></sv-property-options>
             </div>
         </div>`;

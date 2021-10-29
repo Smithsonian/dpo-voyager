@@ -80,7 +80,7 @@ export default class PropertySlider extends CustomElement
         const v = (value - min) / (max - min);
 
         return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
-            <ff-linear-slider aria-labelledby="${name}-label" role="slider" .value=${v} @keydown=${this.onKeyDown} @change=${this.onSliderChange}></ff-linear-slider>`;
+            <ff-linear-slider aria-labelledby="${name}-label" aria-valuemin=${min.toString()} aria-valuemax=${max.toString()} aria-valuenow=${value.toFixed(3)} role="slider" .value=${v} @keydown=${this.onKeyDown} @change=${this.onSliderChange}></ff-linear-slider>`;
     }
 
     protected onSliderChange(event: ILinearSliderChangeEvent)

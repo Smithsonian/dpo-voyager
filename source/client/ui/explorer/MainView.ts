@@ -82,6 +82,8 @@ export default class MainView extends CustomElement
         if (application) {
             this.application = application;
         }
+
+        this.addEventListener('focus', this.onFocus);
     }
 
     protected get fullscreen() {
@@ -114,10 +116,6 @@ export default class MainView extends CustomElement
             this.application = new ExplorerApplication(null, props);
         }
 
-        this.setAttribute("aria-label", "The Voyager web application allows you to view "
-        + "and interact with a 3D model from the Smithsonian collection. Use the tab key to "
-        + "move through interactive elements, enter or spacebar keys to activate, and the escape key to exit menus.");
-
         this.attachShadow({mode: 'open'});
         const shadowRoot = this.shadowRoot;
 
@@ -136,6 +134,13 @@ export default class MainView extends CustomElement
         notifications.setAttribute("id", Notification.stackId);
         shadowRoot.appendChild(notifications);
         Notification.shadowRootNode = shadowRoot;
+
+        this.setAttribute("tabindex", "0");
+        const introAnnouncement = document.createElement("div");
+        introAnnouncement.classList.add("sr-only");
+        introAnnouncement.setAttribute("id", "sr-intro");
+        introAnnouncement.setAttribute("aria-live", "polite");
+        shadowRoot.appendChild(introAnnouncement);
     }
 
     protected connected()
@@ -160,6 +165,14 @@ export default class MainView extends CustomElement
             this.application.props.root = this.getAttribute("root");
             this.application.evaluateProps();
         }
+    }
+
+    protected onFocus()
+    {
+        this.shadowRoot.getElementById("sr-intro").innerText =
+            "The Voyager web application allows you to view "
+            + "and interact with a 3D model from the Smithsonian collection. Use the tab key to "
+            + "move through interactive elements, enter or spacebar keys to activate, and the escape key to exit menus.";
     }
 
 
