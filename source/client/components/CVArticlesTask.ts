@@ -34,6 +34,7 @@ import CVMediaManager from "./CVMediaManager";
 import CVAssetWriter from "./CVAssetWriter";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -98,8 +99,11 @@ export default class CVArticlesTask extends CVTask
 
     deactivateTask()
     {
+        this.reader.ins.articleId.setValue("");  
+        this.mediaManager.open(null); // close any open article
         this.stopObserving();
         super.deactivateTask();
+
     }
 
     update(context)
@@ -125,7 +129,7 @@ export default class CVArticlesTask extends CVTask
         if (meta && ins.create.changed) {
             const article = new Article();
             const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}.html`;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[DEFAULT_LANGUAGE]}.html`;
 
             const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
             if(standaloneFiles) {
@@ -165,6 +169,11 @@ export default class CVArticlesTask extends CVTask
                 activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
             }
         }
+        else {
+            if (ins.edit.changed) {
+                this.mediaManager.open(null);
+            }
+        }
 
         outs.article.set();
 
@@ -183,6 +192,17 @@ export default class CVArticlesTask extends CVTask
         if (asset) {
             this.mediaManager.delete(asset);
         }
+        
+        // check for article ids in annotations
+        const views = this.system.getComponents(CVAnnotationView); 
+        views.forEach(component => {
+            component.getAnnotations().forEach(annotation => {
+                if(annotation.data.articleId === article.id) {
+                    annotation.set("articleId", "");
+                    component.updateAnnotation(annotation);
+                }
+            });
+        });
     }
 
     protected createEditArticle(article: Article)
@@ -271,8 +291,17 @@ export default class CVArticlesTask extends CVTask
 
     protected onDocumentLanguageChange()
     {
+        const article = this.activeArticle;
+        const {ins} = this;
+
         this.onArticleChange();
         this.synchLanguage();
+
+        // if we don't have a uri for this language, create one so that it is editable
+        if(this.activeArticle.uri === undefined) {
+            const defaultFolder = CVMediaManager.articleFolder;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
+        }
     }
 
     // Make sure this task language matches document

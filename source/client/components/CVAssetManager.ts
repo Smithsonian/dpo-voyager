@@ -39,6 +39,7 @@ export default class CVAssetManager extends Component
     protected static readonly ins = {
         busy: types.Boolean("State.Busy"),
         //baseUrl: types.String("Settings.BaseURL"),
+        baseUrlValid: types.Boolean("Settings.BaseURLValid")
     };
 
     protected static readonly outs = {

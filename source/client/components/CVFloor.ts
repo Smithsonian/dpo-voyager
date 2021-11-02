@@ -18,9 +18,15 @@
 import Node from "@ff/graph/Node";
 import CFloor from "@ff/scene/components/CFloor";
 
+import { types } from "@ff/graph/Component";
+
 import { IFloor } from "client/schema/setup";
+import CVScene from "./CVScene";
+import { Vector3 } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _vec3 = new Vector3();
 
 export default class CVFloor extends CFloor
 {
@@ -28,6 +34,12 @@ export default class CVFloor extends CFloor
 
     static readonly text: string = "Floor";
     static readonly icon: string = "";
+
+    protected static readonly floorAddIns = {
+        autoSize: types.Boolean("Floor.AutoSize", true),
+    };
+
+    addIns = this.addInputs(CVFloor.floorAddIns);
 
     get settingProperties() {
         return [
@@ -37,6 +49,7 @@ export default class CVFloor extends CFloor
             this.ins.color,
             this.ins.opacity,
             this.ins.receiveShadow,
+            this.addIns.autoSize,
         ];
     }
 
@@ -44,6 +57,10 @@ export default class CVFloor extends CFloor
         return [
             this.ins.opacity,
         ];
+    }
+
+    protected get sceneNode() {
+        return this.getSystemComponent(CVScene);
     }
 
     constructor(node: Node, id: string)
@@ -55,6 +72,45 @@ export default class CVFloor extends CFloor
 
         // make sure floor is rendered behind other transparent scene objects
         this.floor.renderOrder = -1;
+    }
+
+    create()
+    {
+        super.create();
+        this.sceneNode.outs.boundingBox.on("value", this.recalculateSize, this);
+    }
+
+    dispose()
+    {
+        this.sceneNode.outs.boundingBox.off("value", this.recalculateSize, this);
+        super.dispose();
+    }
+
+    update(context): boolean
+    {
+        const addIns = this.addIns;
+
+        if (addIns.autoSize.changed && addIns.autoSize.value) {
+            this.recalculateSize();
+        }
+
+        super.update(context);
+        return true;
+    }
+
+    protected recalculateSize()
+    {
+        const {addIns} = this;
+
+        if(addIns.autoSize.value) {
+            const boundingBox = this.sceneNode.outs.boundingBox.value;
+            boundingBox.getSize(_vec3 as unknown as Vector3);
+            const size = Math.max(_vec3.x, _vec3.y, _vec3.z);
+            const {min, max} = boundingBox;
+
+            this.ins.radius.setValue(size);
+            this.ins.position.setValue([(min.x+max.x)/2.0, min.y, (min.z+max.z)/2.0]);
+        }
     }
 
     fromData(data: IFloor)

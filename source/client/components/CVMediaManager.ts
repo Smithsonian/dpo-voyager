@@ -18,6 +18,7 @@
 import CAssetManager, { IAssetOpenEvent, IFileInfo, IAssetTreeChangeEvent, IAssetEntry } from "@ff/scene/components/CAssetManager";
 import Notification from "@ff/ui/Notification";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,13 +33,28 @@ export default class CVMediaManager extends CAssetManager
     protected get standaloneFileManager() {
         return this.getGraphComponent(CVStandaloneFileManager, true);
     }
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
+    }
+
+    create()
+    {
+        super.create();
+        this.assetManager.ins.baseUrlValid.on("value", this.refreshRoot, this);
+    }
+
+    dispose()
+    {
+        this.assetManager.ins.baseUrlValid.off("value", this.refreshRoot, this);
+        super.dispose();
+    }
 
     protected rootUrlChanged(): Promise<any>
     {
-        const standaloneManager = this.standaloneFileManager;
-        if(!standaloneManager) {
+        if(this.assetManager.ins.baseUrlValid.value) {
             return this.createArticleFolder();
         }
+        return Promise.resolve();
     }
 
     protected createArticleFolder(): Promise<any>
@@ -65,7 +81,10 @@ export default class CVMediaManager extends CAssetManager
             return Promise.resolve();
         }
         else {
-            return super.refresh();
+            if(this.assetManager.ins.baseUrlValid.value) {
+                super.refresh();
+            }
+            return Promise.resolve();
         }
     }
 
@@ -92,6 +111,13 @@ export default class CVMediaManager extends CAssetManager
         }
         else {
             return super.deleteSelected();
+        }
+    }
+
+    refreshRoot()
+    {
+        if(this.assetManager.ins.baseUrlValid.value) {
+            super.refresh().then(() => this.rootUrlChanged());
         }
     }
 }

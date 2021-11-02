@@ -39,6 +39,7 @@ import { TImageQuality } from "client/schema/meta";
 import CVNodeProvider from "./CVNodeProvider";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVDocument from "./CVDocument";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -83,6 +84,7 @@ export default class CVCaptureTask extends CVTask
         remove: types.Event("Picture.Remove"),
         type: types.Enum("Picture.Type", EFileType),
         quality: types.Percent("Picture.Quality", 0.85),
+        restore: types.Event("State.Restore"),
     };
 
     protected static readonly outs = {
@@ -121,7 +123,10 @@ export default class CVCaptureTask extends CVTask
     }
     protected get nodeProvider() {
         return this.getMainComponent(CVNodeProvider);
-    } 
+    }
+    protected get setup() {
+        return this.getSystemComponent(CVSetup);
+    }
 
     getImageElement(quality: EDerivativeQuality = EDerivativeQuality.Low)
     {
@@ -167,6 +172,7 @@ export default class CVCaptureTask extends CVTask
         if (ins.take.changed) {
             const typeIndex = ins.type.getValidatedValue();
             this.takePictures(ins.quality.value, _mimeTypes[typeIndex], _typeExtensions[typeIndex]);
+            this.setup.ins.saveState.set();
         }
         if (ins.save.changed) {
             this.savePictures();
@@ -176,6 +182,9 @@ export default class CVCaptureTask extends CVTask
         }
         if (ins.remove.changed) {
             this.removePictures();
+        }
+        if (ins.restore.changed) {
+            this.restoreState();
         }
 
         return true;
@@ -346,5 +355,10 @@ export default class CVCaptureTask extends CVTask
                 }
             });
         }
+    }
+
+    protected restoreState()
+    {
+        this.setup.ins.restoreState.set();
     }
 }
