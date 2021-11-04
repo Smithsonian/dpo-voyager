@@ -53,6 +53,12 @@ ff-dock-view {
   flex: 1 1 auto;
 }
 
+ff-tab-header, ff-dock-panel-header {
+  .ff-text {
+    display: inline;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MENU/TASK BAR
 
