@@ -777,18 +777,30 @@ $tour-entry-indent: 12px;
     background-color: $color-paragraph-background;
     @include noselect;
 
+    &:focus {
+      outline: 2px solid lighten($color-primary, 50%);
+      outline-offset: -2px;
+      background-color: $color-paragraph-background;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+    }
+
+    &:focus-visible {
+      outline: 2px solid lighten($color-primary, 50%);
+      outline-offset: -2px;
+      background-color: $color-paragraph-background;
+    }
+
     &:hover {
       background-color: $color-paragraph-hover;
+      fill: $color-text;
     }
 
     &[selected] {
       background-color: $color-primary;
       color: $menu-color-text;
-
-      & > .ff-icon {
-        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-        fill: $color-text;
-      }
 
       &:hover, &:focus {
         background-color: $color-primary-light;

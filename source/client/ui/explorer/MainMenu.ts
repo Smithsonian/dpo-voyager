@@ -122,17 +122,17 @@ export default class MainMenu extends DocumentView
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
-        ${tourButtonVisible ? html`<ff-button id="tour-btn" aria-pressed=${toursActive} icon="globe" title=${language.getLocalizedString("Interactive Tours")}
+        ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        ${readerButtonVisible ? html`<ff-button id="reader-btn" aria-pressed=${readerActive} icon="article" title=${language.getLocalizedString("Read more...")}
+        ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read more...")}
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
         ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
             ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-        <ff-button icon="share" id="share-btn" aria-pressed=${this.shareButtonSelected} title=${language.getLocalizedString("Share Experience")}
+        <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
             ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
         ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        ${toolButtonVisible ? html`<ff-button id="tools-btn" aria-pressed=${toolsActive} icon="tools" title=${language.getLocalizedString("Tools and Settings")}
+        ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
             ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 

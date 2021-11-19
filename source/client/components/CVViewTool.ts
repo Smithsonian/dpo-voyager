@@ -88,7 +88,7 @@ export class ViewToolView extends ToolView<CVViewTool>
     protected async setFocus()
     {
         await this.updateComplete;
-        const focusElement = this.getElementsByTagName("ff-button")[1] as HTMLElement;
+        const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
         focusElement.focus();
     }
 

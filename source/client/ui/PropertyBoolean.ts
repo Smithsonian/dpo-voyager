@@ -71,6 +71,7 @@ export default class PropertyBoolean extends CustomElement
     {
         const property = this.property;
         const name = this.name || property.name;
+        const labelName = name.replace(/\s/g, '');
         const text = this.text;
         const language = this.language;
 
@@ -78,8 +79,8 @@ export default class PropertyBoolean extends CustomElement
             Array.isArray(text) ? text[1] : (text || "On") :
             Array.isArray(text) ? text[0] : (text || "Off");
 
-        return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
-            <ff-button role="switch" aria-labelledby="${name}-label" .text=${language ? language.getLocalizedString(label) : label} ?selected=${property.value} @click=${this.onButtonClick}></ff-button>`;
+        return html`<label id="${labelName}-label" class="ff-label ff-off">${name}</label>
+            <ff-button role="switch" aria-labelledby="${labelName}-label" aria-checked=${property.value} .text=${language ? language.getLocalizedString(label) : label} ?selected=${property.value} @click=${this.onButtonClick}></ff-button>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)

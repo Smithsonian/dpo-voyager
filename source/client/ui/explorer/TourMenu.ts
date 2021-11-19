@@ -52,7 +52,7 @@ export default class TourMenu extends CustomElement
 
     protected renderEntry(tour: ITour, index: number)
     {
-        return html`<div role="menuitem" title="tour entry ${index+1} of ${this.tours.length}" tabindex="0" @keydown=${e =>this.onKeyDown(e, index)} class="sv-entry" @click=${e => this.onClickTour(e, index)}>
+        return html`<div role="option" title="tour entry" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, index)} class="sv-entry" @click=${e => this.onClickTour(e, index)}>
             <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] : tour.title}</h1>
             <p>${Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead}</p>
         </div>`;
@@ -68,7 +68,7 @@ export default class TourMenu extends CustomElement
             </div>`;
         }
 
-        return html`<div role="region" aria-label="interactive tour menu" class="ff-scroll-y">
+        return html`<div role="listbox" aria-label="interactive tour menu" class="ff-scroll-y">
             ${tours.map((tour, index) => this.renderEntry(tour, index))}
         </div>`;
     }
@@ -112,6 +112,17 @@ export default class TourMenu extends CustomElement
             }
 
             focusTrap(this.focusableElements, e);
+        }
+        else if(e.code === "ArrowUp" || e.code === "ArrowDown") {
+            const currentActive = e.target instanceof Element ? e.target as Element : null;
+            if(currentActive) {
+                const newActive = e.code === "ArrowUp" ? currentActive.previousElementSibling : currentActive.nextElementSibling;
+                if(newActive) {
+                    currentActive.setAttribute("tabIndex", "-1");
+                    newActive.setAttribute("tabIndex", "0");
+                    (newActive as HTMLElement).focus();
+                }
+            }
         }
     }
 }

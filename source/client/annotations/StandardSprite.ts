@@ -129,8 +129,8 @@ class StandardAnnotation extends AnnotationElement
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-title");
         this.titleElement.addEventListener("click", this.onClickTitle);
-        this.titleElement.addEventListener("keydown", this.onKeyDown);
-        this.titleElement.setAttribute("tabindex", "0");
+        //this.titleElement.addEventListener("keydown", this.onKeyDown);
+        //this.titleElement.setAttribute("tabindex", "0");
     }
 
     protected firstConnected()

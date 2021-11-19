@@ -79,10 +79,12 @@ export default class ShareMenu extends Popup
 
         const emailUrl = `mailto:?subject=${title}&body=${url}`;
 
+        const windowName = language.getLocalizedString("Share Experience");
+
         return html`
-        <div @keydown=${e =>this.onKeyDown(e)}>
+        <div role="region" aria-label=${windowName} @keydown=${e =>this.onKeyDown(e)}>
             <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Share Experience")}</div>
+                <div id="shareTitle" class="ff-flex-spacer ff-title">${windowName}</div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div class="ff-flex-row sv-share-buttons">
@@ -93,7 +95,7 @@ export default class ShareMenu extends Popup
             </div>
             <div class="ff-title">${language.getLocalizedString("Embed Link")}</div>
             <div class="ff-flex-row sv-embed-link">
-                <ff-text-edit text=${iFrameEmbedCode}></ff-text-edit>
+                <ff-text-edit readonly text=${iFrameEmbedCode}></ff-text-edit>
                 <ff-button icon="copy" title=${language.getLocalizedString("Copy to Clipboard")} @click=${this.onClickCopy}></ff-button>
             </div>
         </div>

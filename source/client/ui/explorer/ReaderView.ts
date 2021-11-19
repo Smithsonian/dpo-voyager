@@ -39,11 +39,11 @@ export default class ReaderView extends DocumentView
         this.classList.add("sv-reader-view");
     }
 
-    protected renderMenuEntry(entry: IArticleEntry)
+    protected renderMenuEntry(entry: IArticleEntry, index: number)
     {
         const article = entry.article;
 
-        return html`<div role="menuitem" title="article" tabindex="0" @keydown=${e =>this.onKeyDown(e, article.id)} class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
+        return html`<div role="option" title="article" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, article.id)} class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
             <h1>${article.title}</h1>
             <p>${article.lead}</p>
         </div>`;
@@ -60,9 +60,9 @@ export default class ReaderView extends DocumentView
 
         if (!reader.activeArticle) {
             const articles = reader.articles;
-            return html`<div class="sv-left"></div><div role="menu" aria-label="articles" class="sv-article">
-                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
-                ${articles.map(entry => this.renderMenuEntry(entry))}
+            return html`<div class="sv-left"></div><div role="listbox" aria-label="articles" class="sv-article">
+                <!--ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button-->
+                ${articles.map((entry, index) => this.renderMenuEntry(entry, index))}
             </div><div class="sv-right"></div>`;
         }
 
@@ -153,6 +153,17 @@ export default class ReaderView extends DocumentView
         }
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
+        else if((e.code === "ArrowUp" || e.code === "ArrowDown") && (reader && !reader.activeArticle)) {
+            const currentActive = e.target instanceof Element ? e.target as Element : null;
+            if(currentActive) {
+                const newActive = e.code === "ArrowUp" ? currentActive.previousElementSibling : currentActive.nextElementSibling;
+                if(newActive) {
+                    currentActive.setAttribute("tabIndex", "-1");
+                    newActive.setAttribute("tabIndex", "0");
+                    (newActive as HTMLElement).focus();
+                }
+            }
         }
     }
 

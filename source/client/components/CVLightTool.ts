@@ -141,7 +141,7 @@ export class LightToolView extends ToolView<CVLightTool>
     protected async setFocus()
     {
         await this.updateComplete;
-        const focusElement = this.getElementsByClassName("sv-options")[0].children[0] as HTMLElement;
+        const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
         focusElement.focus();
     }
 

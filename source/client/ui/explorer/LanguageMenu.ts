@@ -66,7 +66,8 @@ export default class LanguageMenu extends Popup
 
     protected renderEntry(language: ILanguageOption, index: number)
     {
-        return html`<div class="sv-entry" tabindex="0" @click=${e => this.onClickLanguage(e, index)} @keydown=${e =>this.onKeyDownEntry(e, index)} ?selected=${language.name === this.language.toString()}>
+        const isSelected = language.name === this.language.toString();
+        return html`<div class="sv-entry" role="option" tabindex=${isSelected ? "0" : "-1"} @click=${e => this.onClickLanguage(e, index)} @keydown=${e =>this.onKeyDownEntry(e, index)} ?selected=${isSelected}>
             ${language.name}
         </div>`;
     }
@@ -76,13 +77,13 @@ export default class LanguageMenu extends Popup
         const language = this.language;
 
         return html`
-        <div @keydown=${e =>this.onKeyDownMain(e)}>
+        <div role="region" aria-label="Language Menu" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
                 <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Set Language")}</div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div class="ff-flex-row">
-                <div class="ff-scroll-y">
+                <div class="ff-scroll-y" role="listbox">
                     ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
                 </div>
             </div>
@@ -93,7 +94,7 @@ export default class LanguageMenu extends Popup
     protected firstUpdated(changedProperties) {
         super.firstUpdated(changedProperties);
 
-        (this.getElementsByClassName("sv-entry")[0] as HTMLElement).focus();
+        (Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
     }
 
     protected onClickLanguage(e: MouseEvent, index: number)
@@ -115,6 +116,20 @@ export default class LanguageMenu extends Popup
             language.ins.language.setValue(language.activeLanguages[index].id);
             this.close();
         }
+        else if(e.code === "ArrowUp" || e.code === "ArrowDown") {
+            const currentActive = e.target instanceof Element ? e.target as Element : null;
+            if(currentActive) {
+                const newActive = e.code === "ArrowUp" ? currentActive.previousElementSibling : currentActive.nextElementSibling;
+                if(newActive) {
+                    currentActive.setAttribute("tabIndex", "-1");
+                    newActive.setAttribute("tabIndex", "0");
+                    (newActive as HTMLElement).focus();
+                }
+            }
+        }
+        else if(e.code === "Tab") {
+            this.addEventListener('blur', this.tabReset, { once: true, capture: true });
+        }
     }
 
     protected onKeyDownMain(e: KeyboardEvent)
@@ -124,6 +139,18 @@ export default class LanguageMenu extends Popup
         }
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
+    }
+
+    // resets tabIndex if needed
+    protected tabReset(e: FocusEvent) {
+        const currentActive = e.target instanceof Element ? e.target as Element : null;
+        if(currentActive) {
+            const currentSelected = Array.from(currentActive.parentElement.children).find(elem => elem.hasAttribute("selected"));
+            if(currentSelected !== currentActive) {
+                currentActive.setAttribute("tabIndex", "-1");
+                currentSelected.setAttribute("tabIndex", "0");
+            }
         }
     }
 }
