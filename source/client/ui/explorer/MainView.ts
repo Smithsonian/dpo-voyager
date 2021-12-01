@@ -135,7 +135,7 @@ export default class MainView extends CustomElement
         shadowRoot.appendChild(notifications);
         Notification.shadowRootNode = shadowRoot;
 
-        this.setAttribute("tabindex", "0");
+        //this.setAttribute("tabindex", "0");
         const introAnnouncement = document.createElement("div");
         introAnnouncement.classList.add("sr-only");
         introAnnouncement.setAttribute("id", "sr-intro");

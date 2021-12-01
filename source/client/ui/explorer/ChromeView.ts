@@ -105,6 +105,9 @@ export default class ChromeView extends DocumentView
         const tagCloudVisible = setup.viewer.ins.annotationsVisible.value && setup.viewer.outs.tagCloud.value;
         const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
+        const showTourEndMsg = this.activeDocument.setup.tours.outs.ending.value;
+        this.activeDocument.setup.tours.outs.ending.setValue(false);
+
         if (!interfaceVisible) {
             return html``;
         }
@@ -125,7 +128,7 @@ export default class ChromeView extends DocumentView
 
         titleElement.innerHTML = title;
 
-        return html`
+        return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
             <div class="sv-chrome-header">
                 ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
                 <div class="sv-top-bar">

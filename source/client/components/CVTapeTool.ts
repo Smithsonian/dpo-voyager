@@ -43,6 +43,9 @@ export default class CVTapeTool extends CVTool
 @customElement("sv-tape-tool-view")
 export class TapeToolView extends ToolView<CVTapeTool>
 {
+    protected firstRender: boolean = true;
+    protected statusMsg: string = "";
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -80,12 +83,29 @@ export class TapeToolView extends ToolView<CVTapeTool>
             text = language.getLocalizedString("Tap on model to set end of tape") + ".";
         }
 
-        return html`<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
+        this.statusMsg = text;
+
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-boolean .property=${visible} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
                 <div class="sv-property-view"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
-                <div class="ff-string">${text}</div></div>
+                <div class="ff-string" aria-live="polite" aria-atomic="true"></div></div>
             </div></div>`;
+    }
+
+    protected updated(changedProperties): void
+    {
+        super.updated(changedProperties);
+
+        const container = this.getElementsByClassName("ff-string").item(0) as HTMLElement;
+        if(container) {
+            container.innerHTML = this.statusMsg;
+            // Hack so that initial status message is detected by screen readers.
+            if(this.firstRender) {
+                setTimeout(() => {container.innerHTML = `<div>${this.statusMsg}</div>`}, 200);
+                this.firstRender = false;
+            }
+        }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

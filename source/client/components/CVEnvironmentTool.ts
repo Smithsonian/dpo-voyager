@@ -70,7 +70,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
         //let name0 = isSolid ? " " : (isLinear ? "Top" : "Inner");
         //let name1 = isSolid ? "" : (isLinear ? "Btm" : "Outer");
 
-        return html`<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
+        return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${background.ins.style} .language=${language} .options=${options} name=${language.getLocalizedString("Background")}></sv-property-options>
                 <sv-property-color title="Background Color 1" class="sv-nogap" .property=${background.ins.color0} name=" "></sv-property-color>

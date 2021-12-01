@@ -93,10 +93,10 @@ export default class ShareMenu extends Popup
                 <a href=${linkedInShareUrl} tabindex="-1" target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-linkedin" icon="linkedin" title="LinkedIn"></ff-button></a>
                 <a href=${emailUrl} tabindex="-1" target="_blank"><ff-button class="sv-share-button-email" icon="email" title=${language.getLocalizedString("Email")}></ff-button></a>
             </div>
-            <div class="ff-title">${language.getLocalizedString("Embed Link")}</div>
+            <div class="ff-title" id="embedTitle">${language.getLocalizedString("Embed Link")}</div>
             <div class="ff-flex-row sv-embed-link">
-                <ff-text-edit readonly text=${iFrameEmbedCode}></ff-text-edit>
-                <ff-button icon="copy" title=${language.getLocalizedString("Copy to Clipboard")} @click=${this.onClickCopy}></ff-button>
+                <ff-text-edit readonly aria-labelledby="embedTitle" text=${iFrameEmbedCode}></ff-text-edit>
+                <ff-button icon="copy" title=${language.getLocalizedString("Copy link to Clipboard")} @click=${this.onClickCopy}></ff-button>
             </div>
         </div>
         `;

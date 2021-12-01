@@ -118,7 +118,7 @@ export class LightToolView extends ToolView<CVLightTool>
             </div>
         </div>` : null;
 
-        return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" @click=${this.onClose} transparent icon=${tool.icon}></ff-button>
+        return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${navigation.ins.lightsFollowCamera} name="Follow Camera"></sv-property-boolean> -->
                 <sv-property-options .property=${tool.ins.light} .language=${language} name=${language.getLocalizedString("Select Scene Light")}></sv-property-options>

@@ -49,6 +49,7 @@ export default class CVTours extends Component
         tourTitle: types.String("Tour.Title"),
         tourLead: types.String("Tour.Lead"),
         stepCount: types.Integer("Tour.Steps"),
+        ending: types.Boolean("Tour.Ending"),
         stepIndex: types.Integer("Step.Index"),
         stepTitle: types.String("Step.Title"),
     };
@@ -228,6 +229,7 @@ export default class CVTours extends Component
             nextStepIndex = outs.stepIndex.value + 1;
             // after last step, show tour menu
             if (nextStepIndex >= stepCount) {
+                outs.ending.setValue(true);
                 outs.tourIndex.setValue(-1);
                 outs.tourTitle.setValue("");
                 outs.tourLead.setValue("");

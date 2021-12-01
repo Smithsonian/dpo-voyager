@@ -124,7 +124,7 @@ export default class MainMenu extends DocumentView
             @click=${this.onEnterAR}></ff-button>` : null}
         ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read more...")}
+        ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
         ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
             ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
