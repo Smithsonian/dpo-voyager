@@ -154,6 +154,23 @@ export default class CircleSprite extends AnnotationSprite
         this.update();
     }
 
+    dispose()
+    {
+        this.offset = null;
+        this.anchorMesh = null;
+        this.ringMesh = null;
+        this.ringGeometry = null;
+        this.ringMaterialA = null;
+        this.ringMaterialB = null;
+        this.markerGeometry = null;
+        this.markerMaterialA = null;
+        this.markerMaterialB = null;
+        this.markerA = null;
+        this.markerB = null;
+
+        super.dispose();
+    }
+
     update()
     {
         const annotation = this.annotation.data;

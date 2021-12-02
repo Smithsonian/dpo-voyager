@@ -329,17 +329,6 @@ export default class CVAnnotationView extends CObject3D
             this.language.addLanguage(ELanguageType[key]);
         });
 
-        // set webgl2 for circle annotations
-        for (const key in this._annotations) {
-            const annotation = this._annotations[key];
-            if(annotation.get("style") === "Circle") {
-                const sprite = this._sprites[annotation.id] as CircleSprite;
-                if (sprite) {
-                    sprite.isWebGL2 = this.renderer.views[0].renderer.capabilities.isWebGL2;
-                }
-            }
-        }
-
         this.changed = true;
     }
 
@@ -464,12 +453,12 @@ export default class CVAnnotationView extends CObject3D
         group.disposeHTMLElements(event.viewport.overlay);
     }
 
-    protected onSpriteClick(event: IAnnotationClickEvent)
+    protected onSpriteClick(event: any)
     {
         this.emit(event);
     }
 
-    protected onSpriteLink(event: IAnnotationLinkEvent)
+    protected onSpriteLink(event: any)
     {
         const reader = this.reader;
         if (reader) {
@@ -481,9 +470,10 @@ export default class CVAnnotationView extends CObject3D
     protected createSprite(annotation: Annotation)
     {
         this.removeSprite(annotation);
+        const isCircle = annotation.data.style === "Circle";
 
         // TODO: Combine when font loading is centralized
-        const sprite = annotation.data.style === "Circle" ? AnnotationFactory.createInstance(annotation, "Circle", this.assetReader) : AnnotationFactory.createInstance(annotation);
+        const sprite = isCircle ? AnnotationFactory.createInstance(annotation, "Circle", this.assetReader) : AnnotationFactory.createInstance(annotation);
 
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);
@@ -491,6 +481,11 @@ export default class CVAnnotationView extends CObject3D
         this._sprites[annotation.id] = sprite;
         this.object3D.add(sprite);
         this.registerPickableObject3D(sprite, true);
+
+        // set webgl2 for circle annotations
+        if (isCircle) {
+            (sprite as CircleSprite).isWebGL2 = this.renderer.views[0].renderer.capabilities.isWebGL2;
+        }
     }
 
     protected removeSprite(annotation: Annotation)

@@ -454,7 +454,7 @@ export default class CVModel2 extends CObject3D
 
         this.object3D.traverse(object => {
             const material = object["material"] as UberPBRMaterial;
-            if (material && material.isUberPBRMaterial) { console.log(JSON.stringify(material.aoMapMix) + " " + material.roughness + " " + material.metalness);
+            if (material && material.isUberPBRMaterial) {
                 material.aoMapMix.setScalar(ins.occlusion.value);
                 material.color.fromArray(ins.color.value);
                 material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
@@ -538,6 +538,11 @@ export default class CVModel2 extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
+        if(!this.node || !this.assetReader) {    // TODO: Better way to handle active loads when node has been disposed?
+            console.warn("Model load interrupted.");
+            return;
+        }
+
         return derivative.load(this.assetReader)
             .then(() => {
                 if (!derivative.model) {
