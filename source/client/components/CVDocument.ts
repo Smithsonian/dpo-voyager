@@ -144,6 +144,7 @@ export default class CVDocument extends CRenderGraph
 
         if(ins.title.changed && this.titles) {
             const language = this.setup.language;
+            ins.title.setValue(ins.title.value, true);
             this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;
             outs.title.setValue(ins.title.value);
         }

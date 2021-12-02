@@ -154,6 +154,23 @@ export default class CircleSprite extends AnnotationSprite
         this.update();
     }
 
+    dispose()
+    {
+        this.offset = null;
+        this.anchorMesh = null;
+        this.ringMesh = null;
+        this.ringGeometry = null;
+        this.ringMaterialA = null;
+        this.ringMaterialB = null;
+        this.markerGeometry = null;
+        this.markerMaterialA = null;
+        this.markerMaterialB = null;
+        this.markerA = null;
+        this.markerB = null;
+
+        super.dispose();
+    }
+
     update()
     {
         const annotation = this.annotation.data;
@@ -230,9 +247,9 @@ export default class CircleSprite extends AnnotationSprite
         this.offset.updateMatrix();
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.offset, camera) && isShowing; 
-        if(!this.visible) {
-            element.setVisible(this.visible);
+        this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing); 
+        if(!this.getVisible()) {
+            element.setVisible(this.getVisible());
         }
 
         if (annotation.expanded) {
@@ -273,7 +290,7 @@ export default class CircleSprite extends AnnotationSprite
 
     protected updateHTMLElement(element: AnnotationElement)
     {
-        element.setVisible(this.visible);
+        element.setVisible(this.getVisible());
 
         // Stops annotation box from occasionally showing before it has been positioned
         if(this.annotation.data.expanded && this._isExpanded !== this.annotation.data.expanded) {

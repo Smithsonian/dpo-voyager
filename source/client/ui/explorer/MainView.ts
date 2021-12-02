@@ -17,6 +17,7 @@
 
 import CFullscreen from "@ff/scene/components/CFullscreen";
 import CVARManager from "client/components/CVARManager";
+import CVViewer from "client/components/CVViewer";
 
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 
@@ -72,6 +73,8 @@ export default class MainView extends CustomElement
 {
     application: ExplorerApplication = null;
 
+    static get observedAttributes() { return ['root']; }
+
     constructor(application?: ExplorerApplication)
     {
         super();
@@ -86,6 +89,9 @@ export default class MainView extends CustomElement
     }
     protected get arManager() {
         return this.application.system.getMainComponent(CVARManager);
+    }
+    protected get viewer() {
+        return this.application.system.getComponent(CVViewer);
     }
 
     protected firstConnected()
@@ -131,11 +137,25 @@ export default class MainView extends CustomElement
     protected connected()
     {
         this.fullscreen.fullscreenElement = this;
+        this.viewer.rootElement = this;
     }
 
     protected disconnected()
     {
         this.fullscreen.fullscreenElement = null;
+        this.viewer.rootElement = null;
+        this.application.dispose();
+        this.application = null;
+    }
+
+    attributeChangedCallback(name: string, old: string | null, value: string | null)
+    {
+        super.attributeChangedCallback(name, old, value);
+
+        if(this.application && name === "root") {
+            this.application.props.root = this.getAttribute("root");
+            this.application.evaluateProps();
+        }
     }
 
 
@@ -165,6 +185,13 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.toggleTools();
+        }
+    }
+
+    toggleMeasurement()
+    {
+        if(this.application) {
+            this.application.toggleMeasurement();
         }
     }
     

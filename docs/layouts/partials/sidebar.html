@@ -7,6 +7,11 @@
     <li class="{{ if eq .File.UniqueID $currentNode.File.UniqueID }}active {{ end }}">
       <a href="{{ .RelPermalink }}">{{ .Title }}</a>
     </li>
+		{{ range .Pages }}
+		<li style="padding-left: 15px" class="{{ if eq .File.UniqueID $currentNode.File.UniqueID }}active {{ end }}">
+		  <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+		</li>
+		{{ end }}
     {{ end }}
   </ul>
 </div>

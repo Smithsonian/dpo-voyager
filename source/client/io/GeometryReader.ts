@@ -18,10 +18,7 @@
 import { LoadingManager, BufferGeometry } from "three";
 
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-//const OBJLoader = (THREE as any).OBJLoader;
-
 import {PLYLoader} from "three/examples/jsm/loaders/PLYLoader";
-//const PLYLoader = (THREE as any).PLYLoader;
 
 ////////////////////////////////////////////////////////////////////////////////
 

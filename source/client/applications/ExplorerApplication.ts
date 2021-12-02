@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
 import { EBackgroundStyle } from "client/schema/setup";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +94,7 @@ export default class ExplorerApplication
     
 Voyager - 3D Explorer and Tool Suite
 3D Foundation Project
-(c) 2019 Smithsonian Institution
+(c) 2021 Smithsonian Institution
 
 https://3d.si.edu
 https://github.com/smithsonian/dpo-voyager
@@ -184,8 +185,28 @@ Version: ${ENV_VERSION}
             }	
         }*/
 
+        // Temporary hack to work around iOS 15+ texture memory issue
+        const IS_IOS = /^(iPad|iPhone|iPod)/.test(window.navigator.platform) ||
+            (/^Mac/.test(window.navigator.platform) && window.navigator.maxTouchPoints > 1);
+        if (IS_IOS) {
+            window.createImageBitmap = undefined;
+        }
+
         // start rendering
         engine.pulse.start();
+    }
+
+    dispose()
+    {
+        // Clean up assuming a component disconnect means it won't be reconnected
+        this.assetReader.dispose();
+        this.documentProvider.activeComponent.clearNodeTree();
+        this.system.getMainComponent(CRenderer).views.forEach(view => view.dispose());
+        //this.documentProvider.activeComponent.setup.node.dispose();
+        //this.system.graph.clear();
+        this.documentProvider.activeComponent.setup.tape.dispose();
+        this.documentProvider.activeComponent.setup.floor.dispose();
+        this.documentProvider.activeComponent.setup.grid.dispose();
     }
 
     setBaseUrl(url: string)
@@ -281,12 +302,19 @@ Version: ${ENV_VERSION}
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality, props.uiMode)
+            .then(() => this.assetManager.ins.baseUrlValid.setValue(true))
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
             // second loading priority: model
             props.model = props.root ? props.model : manager.getAssetName(props.model);
-            this.loadModel(props.model, props.quality);
+
+            this.assetReader.getText(props.model)       // make sure we have a valid model path
+            .then(() => {
+                this.loadModel(props.model, props.quality);
+                this.assetManager.ins.baseUrlValid.setValue(true);
+            })
+            .catch(error => Notification.show(`Bad Model Path: ${error.message}`, "error"));
         }
         else if (props.geometry) {
             // third loading priority: geometry (plus optional color texture)
@@ -294,11 +322,19 @@ Version: ${ENV_VERSION}
             props.texture = props.root ? props.texture : manager.getAssetName(props.texture);
             props.occlusion = props.root ? props.occlusion : manager.getAssetName(props.occlusion);
             props.normals = props.root ? props.normals : manager.getAssetName(props.normals);
-            this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
+
+            this.assetReader.getText(props.geometry)    // make sure we have a valid geometry path   
+            .then(() => {
+                this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
+                this.assetManager.ins.baseUrlValid.setValue(true);
+            })
+            .catch(error => Notification.show(`Bad Geometry Path: ${error.message}`, "error"));
         }
-        else {
-            // if nothing else specified, try to read "document.svx.json" from the current folder
-            this.loadDocument("document.svx.json", undefined).catch(() => {});
+        else if (props.root) {
+            // if nothing else specified, try to read "scene.svx.json" from the current folder
+            this.loadDocument("scene.svx.json", undefined)
+            .then(() => this.assetManager.ins.baseUrlValid.setValue(true))
+            .catch(() => {});
         }
     }
 
@@ -357,6 +393,13 @@ Version: ${ENV_VERSION}
 
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+    }
+
+    toggleMeasurement()
+    {
+        const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+
+        tapeIns.visible.setValue(!tapeIns.visible.value);
     }
     
     enableAR()
