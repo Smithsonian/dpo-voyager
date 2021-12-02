@@ -184,6 +184,13 @@ Version: ${ENV_VERSION}
             }	
         }*/
 
+        // Temporary hack to work around iOS 15+ texture memory issue
+        const IS_IOS = /^(iPad|iPhone|iPod)/.test(window.navigator.platform) ||
+            (/^Mac/.test(window.navigator.platform) && window.navigator.maxTouchPoints > 1);
+        if (IS_IOS) {
+            window.createImageBitmap = undefined;
+        }
+
         // start rendering
         engine.pulse.start();
     }
