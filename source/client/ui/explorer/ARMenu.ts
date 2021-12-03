@@ -75,7 +75,7 @@ export default class ARMenu extends DocumentView
         return outs.isPlaced.value && outs.isPresenting.value ? html`<div class="sv-ar-menu">
         ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
             ?selected=${annotationsActive} @click=${this.onToggleAnnotations}></ff-button>` : null}
-        ${narrationButtonVisible ? html`<ff-button icon="knife" title=${"Play Audio Narration"}
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${"Play Audio Narration"}
             ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
         </div>` : null;
     }

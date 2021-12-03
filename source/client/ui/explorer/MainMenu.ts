@@ -119,7 +119,7 @@ export default class MainMenu extends DocumentView
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
-        ${narrationButtonVisible ? html`<ff-button icon="knife" title=${language.getLocalizedString("Play Audio Narration")}
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
             ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
         ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
