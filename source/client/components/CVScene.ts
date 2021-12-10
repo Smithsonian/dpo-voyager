@@ -164,5 +164,13 @@ console.log("Setting bounds: " + JSON.stringify(_vec3)); if(this.models[0]){cons
         object3D.position.multiplyScalar(unitScale);
         object3D.updateMatrix();
         object3D.updateMatrixWorld(true);
+
+        this.models.forEach(model => {
+            const modelParent = model.object3D.parent;
+
+            modelParent.position.multiplyScalar(unitScale);
+            modelParent.updateMatrix();
+            modelParent.updateMatrixWorld(true);
+        });
     }
 }

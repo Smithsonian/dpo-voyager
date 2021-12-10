@@ -29,6 +29,7 @@ import { EDerivativeQuality } from "../../schema/model";
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
 import CVSonify from "../../components/CVSonify";
+import CVAnnotationView from "../../components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,10 +71,18 @@ export default class MainMenu extends DocumentView
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
         this.sonification.ins.active.on("value", this.onUpdate, this);
+        this.activeDocument.setup.tours.ins.closed.on("value", this.setTourFocus, this);
+        this.activeDocument.setup.reader.ins.closed.on("value", this.setReaderFocus, this);
+        this.toolProvider.ins.closed.on("value", this.setToolsFocus, this);
+        this.sonification.ins.closed.on("value", this.setSonifyFocus, this);
     }
 
     protected disconnected()
     {
+        this.sonification.ins.closed.off("value", this.setSonifyFocus, this);
+        this.toolProvider.ins.closed.off("value", this.setToolsFocus, this);
+        this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
+        this.activeDocument.setup.tours.ins.closed.off("value", this.setTourFocus, this);
         this.sonification.ins.active.off("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
@@ -91,16 +100,18 @@ export default class MainMenu extends DocumentView
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
 
         const setup = document.setup;
+        const scene = this.sceneNode;
 
         const tourButtonVisible = setup.tours.outs.count.value > 0;
         const toursActive = setup.tours.ins.enabled.value;
 
         const modeButtonsDisabled = toursActive && !isEditing;
 
-        const readerButtonVisible = true; //setup.reader.articles.length > 0 && !isEditing;
+        const readerButtonVisible = setup.reader.articles.length > 0; // && !isEditing;
         const readerActive = setup.reader.ins.enabled.value;
 
-        const annotationsButtonVisible = true;
+        const views = scene.getGraphComponents(CVAnnotationView);
+        const annotationsButtonVisible = views.some(view => {return view.hasAnnotations;}); //true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
 
         const fullscreen = this.fullscreen;
@@ -115,25 +126,25 @@ export default class MainMenu extends DocumentView
         const language = setup.language;
 
         // TODO - push to ARManager?
-        const models = this.sceneNode.getGraphComponents(CVModel2);
+        const models = scene.getGraphComponents(CVModel2);
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" role="button" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
-        <ff-button icon="knife" role="button" title=${language.getLocalizedString("Sonify")}
-            ?selected=${sonifyActive} @click=${this.onToggleSonify}></ff-button>
-        ${tourButtonVisible ? html`<ff-button icon="globe" role="button" title=${language.getLocalizedString("Interactive Tours")}
+        <ff-button icon="music" id="sonify-btn" role="button" title=${language.getLocalizedString("Sonify")}
+            ?selected=${sonifyActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleSonify}></ff-button>
+        ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        ${readerButtonVisible ? html`<ff-button icon="article" role="button" title=${language.getLocalizedString("Read more...")}
+        ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
-        ${annotationsButtonVisible ? html`<ff-button icon="comment" role="button" title=${language.getLocalizedString("Show/Hide Annotations")}
+        ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
             ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-        <ff-button icon="share" role="button" title=${language.getLocalizedString("Share Experience")}
+        <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
             ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
-        ${fullscreenButtonVisible ? html`<ff-button icon="expand" role="button" title=${language.getLocalizedString("Fullscreen")}
+        ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        ${toolButtonVisible ? html`<ff-button icon="tools" role="button" title=${language.getLocalizedString("Tools and Settings")}
+        ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
             ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
@@ -141,6 +152,7 @@ export default class MainMenu extends DocumentView
     {
         const readerIns = this.activeDocument.setup.reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
+        readerIns.focus.setValue(readerIns.enabled.value);
 
         this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
     }
@@ -186,7 +198,8 @@ export default class MainMenu extends DocumentView
 
             ShareMenu.show(this, this.activeDocument.setup.language).then(() => {
                 this.shareButtonSelected = false;
-                this.requestUpdate()
+                this.requestUpdate();
+                this.setElementFocus("share-btn");
             });
 
             this.analytics.sendProperty("Menu.Share");
@@ -214,14 +227,69 @@ export default class MainMenu extends DocumentView
 
     protected onToggleSonify()
     {
-        this.sonification.ins.active.setValue(!this.sonification.ins.active.value);
-        this.analytics.sendProperty("Menu.Sonify");
+        const status: Boolean = !this.sonification.ins.active.value;
+        const buttons = this.getElementsByTagName("ff-button");
+        Array.from(buttons).forEach(button => {
+            if(button.id !== "sonify-btn") {
+                status ? button.setAttribute("disabled", "true") : button.removeAttribute("disabled");
+            }
+        });
+
+        this.sonification.ins.active.setValue(status.valueOf());
+        this.analytics.sendProperty("Menu.Sonify", this.sonification.ins.active.value);
+
+        if(this.sonification.ins.active.value) {
+            const toolIns = this.toolProvider.ins;
+            const viewerIns = this.activeDocument.setup.viewer.ins;
+            const readerIns = this.activeDocument.setup.reader.ins;
+
+            toolIns.visible.setValue(false);
+            viewerIns.annotationsVisible.setValue(false);
+            readerIns.enabled.setValue(false);
+        }
     }
 
     protected onEnterAR()
     {
         const arIns = this.arManager.ins;
         arIns.enabled.setValue(true);
+    }
+
+    // TODO: More elegant way to handle focus
+    protected setTourFocus()
+    {
+        this.setElementFocus("tour-btn");
+    }
+    protected setReaderFocus()
+    {
+        this.setElementFocus("reader-btn");
+    }
+    protected setToolsFocus()
+    {
+        this.setElementFocus("tools-btn");
+    }
+    protected setSonifyFocus()
+    {
+        const buttons = this.getElementsByTagName("ff-button");
+        Array.from(buttons).forEach(button => {
+            button.removeAttribute("disabled");
+        });
+
+        this.setElementFocus("sonify-btn");
+    }
+
+    protected setElementFocus(elementID: string)
+    {
+        const buttons = this.getElementsByTagName("ff-button");
+        const buttonArray = Array.from(buttons);
+        const buttonToFocus = buttonArray.find(element => element.id === elementID);
+
+        if(buttonToFocus !== undefined) {
+            (buttonToFocus as HTMLElement).focus();
+        }
+        else {
+            console.warn("Can't focus. Element [" + elementID + "] not found.");
+        }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

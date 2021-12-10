@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 import CFullscreen from "@ff/scene/components/CFullscreen";
 import CVARManager from "client/components/CVARManager";
+import CVViewer from "client/components/CVViewer";
 
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
 
@@ -60,6 +61,7 @@ Icon.add("email", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
 Icon.add("copy", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg>`);
 Icon.add("ar", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.844874 7.2009368"><path d="M 4.1805699,5.4542117 H 2.4801904 L 2.2118585,6.5168507 H 1.1187593 L 2.6807334,0.68408928 h 1.296469 L 5.5391781,6.5168507 H 4.4460774 Z M 2.7513476,4.3720517 H 3.9065883 L 3.3303802,2.0514503 Z"/><path d="m 7.5355365,3.2703464 q 0.3417706,0 0.4886463,-0.1758024 0.1497018,-0.1758024 0.1497018,-0.5781942 0,-0.3984876 -0.1497018,-0.5703858 Q 7.8773071,1.7740658 7.5355365,1.7740658 H 7.0779585 V 3.2703464 Z M 7.0779585,4.309544 V 6.5168507 H 5.9905084 V 0.68408928 h 1.6608338 q 0.8332429,0 1.220205,0.38676692 0.3897887,0.3867669 0.3897887,1.2228084 0,0.5781942 -0.2033672,0.9493362 -0.200543,0.371142 -0.607278,0.5469444 0.2231388,0.070308 0.3982608,0.320355 0.1779472,0.2461266 0.358719,0.7500924 L 9.7980008,6.5168507 H 8.6399351 L 8.1258661,5.0674448 Q 7.970517,4.6298909 7.8095182,4.4697134 7.6513422,4.309544 7.3858347,4.309544 Z"/></svg>`);
 Icon.add("device-move", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 119.4 57.7"><path d="M47.4,20.7h-34c-0.2,0-0.4-0.1-0.5-0.3l-0.1-0.2l0.1-0.3l9-19.5C21.9,0.2,22.1,0,22.3,0h24.5v1H22.6L14,19.7h33.4V20.7z"/><path d="M103,20.7H71v-1h31.6L95,1H46.8V0h48.3c0.3,0,0.6,0.2,0.7,0.5l7.8,19.2c0.1,0.2,0.1,0.5-0.1,0.7C103.5,20.6,103.2,20.7,103,20.7z M94.9,0.9L94.9,0.9z"/><path d="M49,2.9c-1.1,0-2,0.9-2,2v40c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2v-40c0-1.1-0.9-2-2-2L49,2.9z M49,3.9h3.6l0,0h0l0,0l0,0l0,0l0,0l0,0v0l0,0l0,0l0,0l0,0v0.5c0,0.6,0.4,1,1,1H64c0.6,0,1-0.4,1-1v0l0,0V4.3c0,0,0,0,0-0.1l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0h4c0.6,0,1,0.4,1,1v40c0,0.6-0.4,1-1,1H49c-0.6,0-1-0.4-1-1l0-40.2c0.1-0.5,0-0.8,0.4-1.1C48.5,4,48.8,3.9,49,3.9z"/><path d="M53.3,43.9h11.5c0.3,0,0.6,0.2,0.6,0.5c0,0.3-0.3,0.5-0.6,0.5H53.3c-0.3,0-0.6-0.2-0.6-0.5C52.7,44.1,53,43.8,53.3,43.9z"/><path d="M76,37.8c-0.7,0-1.3,0-2-0.1l0.1-1c1.6,0.2,10,0.7,15.7-5.5c1.8-2,3.1-4.4,3.8-7l1,0.3c-0.7,2.8-2.1,5.3-4,7.5C85.8,37,79.3,37.8,76,37.8z"/><polygon points="96.9,28.6 96,29 93.8,24.6 89.5,27.1 89,26.2 94.3,23.2"/><path d="M42.1,37.4c-3.4,0-9.9-0.8-14.5-6c-1.9-2.1-3.3-4.7-4-7.5l1-0.3c0.7,2.6,1.9,5,3.7,7.1c5.6,6.3,14,5.7,15.7,5.5l0.1,1C43.4,37.4,42.8,37.4,42.1,37.4z"/><polygon points="29,25.8 28.5,26.6 24.3,24.2 22.1,28.6 21.2,28.2 23.8,22.8"/></svg>`);
+Icon.add("music", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="180 220 375 615"><path d="m418.39 231.34c14.32 21.136 21.682 46.728 40.135 64.982 21.135 27.835 48.146 50.891 69.089 79.058 15.157 19.681 31.771 40.599 36.074 65.357 11.587 31.757 6.556 67.409-5.8056 98.498-13.947 16.765-23.482-4.9319-19.589-18.365 0.59324-18.535 0.32293-37.021-6.7859-54.528-6.3047-26.255-17.834-51.101-37.136-70.366-16.772-14.701-35.813-47.095-61.382-35.941-16.885 10.637-9.5289 32.139-11.346 48.712-1.0035 101.95-1.0707 203.94-2.7005 305.87-1.2461 42.809-38.247 71.529-72.88 89.908-30.854 18.567-67.795 28.966-103.61 20.691-33.304-3.4173-67.756-27.73-68.454-63.704-2.2204-41.711 27.904-80.552 64.988-97.024 36.404-20.749 82.429-25.246 121.63-10.331 19.156 6.0549 24.483-11.721 26.874-28.819 2.2123-129.77 3.9829-259.54 4.4354-389.33 0.36593-12.973 21.496-16.139 26.461-4.6603z"/></svg>`);
 //Icon.add("name", html``);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +74,8 @@ export default class MainView extends CustomElement
 {
     application: ExplorerApplication = null;
 
+    static get observedAttributes() { return ['root']; }
+
     constructor(application?: ExplorerApplication)
     {
         super();
@@ -79,6 +83,8 @@ export default class MainView extends CustomElement
         if (application) {
             this.application = application;
         }
+
+        this.addEventListener('focus', this.onFocus);
     }
 
     protected get fullscreen() {
@@ -86,6 +92,9 @@ export default class MainView extends CustomElement
     }
     protected get arManager() {
         return this.application.system.getMainComponent(CVARManager);
+    }
+    protected get viewer() {
+        return this.application.system.getComponent(CVViewer);
     }
 
     protected firstConnected()
@@ -126,16 +135,45 @@ export default class MainView extends CustomElement
         notifications.setAttribute("id", Notification.stackId);
         shadowRoot.appendChild(notifications);
         Notification.shadowRootNode = shadowRoot;
+
+        //this.setAttribute("tabindex", "0");
+        const introAnnouncement = document.createElement("div");
+        introAnnouncement.classList.add("sr-only");
+        introAnnouncement.setAttribute("id", "sr-intro");
+        introAnnouncement.setAttribute("aria-live", "polite");
+        shadowRoot.appendChild(introAnnouncement);
     }
 
     protected connected()
     {
         this.fullscreen.fullscreenElement = this;
+        this.viewer.rootElement = this;
     }
 
     protected disconnected()
     {
         this.fullscreen.fullscreenElement = null;
+        this.viewer.rootElement = null;
+        this.application.dispose();
+        this.application = null;
+    }
+
+    attributeChangedCallback(name: string, old: string | null, value: string | null)
+    {
+        super.attributeChangedCallback(name, old, value);
+
+        if(this.application && name === "root") {
+            this.application.props.root = this.getAttribute("root");
+            this.application.evaluateProps();
+        }
+    }
+
+    protected onFocus()
+    {
+        this.shadowRoot.getElementById("sr-intro").innerText =
+            "The Voyager web application allows you to view "
+            + "and interact with a 3D model from the Smithsonian collection. Use the tab key to "
+            + "move through interactive elements, enter or spacebar keys to activate, and the escape key to exit menus.";
     }
 
 
@@ -165,6 +203,13 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.toggleTools();
+        }
+    }
+
+    toggleMeasurement()
+    {
+        if(this.application) {
+            this.application.toggleMeasurement();
         }
     }
     

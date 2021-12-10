@@ -43,6 +43,7 @@ import CVSonify from "client/components/CVSonify";
 export default class ChromeView extends DocumentView
 {
     protected documentProps = new Subscriber("value", this.onUpdate, this);
+    protected titleElement: HTMLDivElement;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -65,6 +66,8 @@ export default class ChromeView extends DocumentView
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.sonification.ins.active.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this); // TODO: move to bottom
+        this.titleElement = this.createElement("div", null);
+        this.titleElement.classList.add("ff-ellipsis", "sv-main-title");
     }
 
     protected disconnected()
@@ -78,6 +81,7 @@ export default class ChromeView extends DocumentView
     protected render()
     {
         const document = this.activeDocument;
+        const titleElement = this.titleElement;
 
         if (!document) {
             return html``;
@@ -110,6 +114,9 @@ export default class ChromeView extends DocumentView
         const tagCloudVisible = setup.viewer.ins.annotationsVisible.value && setup.viewer.outs.tagCloud.value;
         const toolsVisible = !readerVisible && this.toolProvider.ins.visible.value;
 
+        const showTourEndMsg = this.activeDocument.setup.tours.outs.ending.value;
+        this.activeDocument.setup.tours.outs.ending.setValue(false);
+
         if (!interfaceVisible) {
             return html``;
         }
@@ -128,23 +135,25 @@ export default class ChromeView extends DocumentView
             title = document.outs.title.value || document.name || "Untitled Document";
         }
 
-        return html`
+        titleElement.innerHTML = title;
+
+        return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
             <div class="sv-chrome-header">
-                ${menuVisible ? html`<sv-main-menu .system=${this.system}></sv-main-menu>` : null}
+                ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
                 <div class="sv-top-bar">
-                    ${titleVisible ? html`<div class="ff-ellipsis sv-main-title">${title}<span class="ff-ellipsis"> </span></div>` : null}
+                    ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${titleElement}<span class="ff-ellipsis"> </span></div>` : null}
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>
-            ${toursEnabled && tourActive ? html`<sv-tour-navigator .system=${this.system}></sv-tour-navigator>` : null}
-            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @select=${this.onSelectTour}></sv-tour-menu>` : null}
+            ${toursEnabled && tourActive ? html`<sv-tour-navigator @close=${this.closeTours} .system=${this.system}></sv-tour-navigator>` : null}
+            ${toursEnabled && !tourActive ? html`<sv-tour-menu .tours=${tours} .activeLanguage=${activeLanguage} @close=${this.closeTours} @select=${this.onSelectTour}></sv-tour-menu>` : null}
             ${tagCloudVisible && toolBarAllowed ? html`<sv-tag-cloud .system=${this.system}></sv-tag-cloud>` : null}
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             ${sonifyEnabled && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-sonify-menu .system=${this.system} ></sv-sonify-menu></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
-                    ${languagesVisible ? html`<div id="language" class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}>${setup.language.toString()}</div>` : null}
+                    ${languagesVisible ? html`<ff-button id="language" text=${setup.language.toString()} title=${language.getLocalizedString("Set Language")} class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}></ff-button>` : null}
                 </div>
             </div>`;
     }
@@ -155,6 +164,13 @@ export default class ChromeView extends DocumentView
         tours.ins.tourIndex.setValue(event.detail.index);
     }
 
+    protected closeTours()
+    {
+        const tours = this.activeDocument.setup.tours;
+        tours.ins.enabled.setValue(false);
+        tours.ins.closed.set();
+    }
+
     protected openLanguageMenu() {
         const language = this.activeDocument.setup.language;
 
@@ -163,13 +179,16 @@ export default class ChromeView extends DocumentView
 
             LanguageMenu.show(this, this.activeDocument.setup.language).then(() => {
                 language.ins.enabled.setValue(false);
+                (this.getElementsByClassName("sv-language-display")[0] as HTMLElement).focus();
             });
         }
     }
 
     protected closeTools()
     {
-        this.toolProvider.ins.visible.setValue(false);
+        const toolIns = this.toolProvider.ins;
+        toolIns.visible.setValue(false);
+        toolIns.closed.set();
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

@@ -102,7 +102,7 @@ export default class StandardSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.stemLine, camera);
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
     }
 
     protected createHTMLElement(): StandardAnnotation
@@ -124,10 +124,13 @@ class StandardAnnotation extends AnnotationElement
     {
         super(sprite);
         this.onClickTitle = this.onClickTitle.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
 
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-title");
         this.titleElement.addEventListener("click", this.onClickTitle);
+        //this.titleElement.addEventListener("keydown", this.onKeyDown);
+        //this.titleElement.setAttribute("tabindex", "0");
     }
 
     protected firstConnected()
@@ -152,5 +155,13 @@ class StandardAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitClickEvent();
+    }
+
+    protected onKeyDown(event: KeyboardEvent)
+    {
+        if (event.code === "Space" || event.code === "Enter") {
+            event.stopPropagation();
+            this.sprite.emitClickEvent();
+        }
     }
 }

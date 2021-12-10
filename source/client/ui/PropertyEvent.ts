@@ -73,9 +73,9 @@ export default class PropertyEvent extends CustomElement
         const text = this.text;
         const icon = this.icon;
 
-        return html`<label class="ff-label ff-off">${name}</label>
+        return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
             <div class="sv-options">
-                <ff-button .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
+                <ff-button aria-labelledby="${name}-label" .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
             </div>`;
     }
 

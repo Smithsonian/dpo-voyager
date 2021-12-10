@@ -23,7 +23,7 @@ import {ShaderMaterial} from "three";
  * Renders the UV coordinates
  * Based on ff-three position shader : Copyright 2020 Ralph Wiedemeier, Frame Factory GmbH
  */
-export default class UVShader extends ShaderMaterial
+export default class DepthShader extends ShaderMaterial
 {
     isUVShader = true;
 

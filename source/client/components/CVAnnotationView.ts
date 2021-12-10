@@ -138,8 +138,8 @@ export default class CVAnnotationView extends CObject3D
             ins.lead.setValue(annotation ? annotation.lead : "", true);
             ins.tags.setValue(annotation ? annotation.tags.join(", ") : "", true);
             ins.style.setOption(annotation ? annotation.data.style : AnnotationFactory.defaultTypeName, true);
-            ins.scale.setValue(annotation ? annotation.data.scale : 1, true);
-            ins.offset.setValue(annotation ? annotation.data.offset : 0, true);
+            ins.scale.setValue(annotation ? annotation.data.scale * 100 * unitScaleFactor(this.model.ins.localUnits.getValidatedValue(), EUnitType.m) : 1, true);
+            ins.offset.setValue(annotation ? annotation.data.offset * 100 * unitScaleFactor(this.model.ins.localUnits.getValidatedValue(), EUnitType.m) : 0, true);
             ins.tilt.setValue(annotation ? annotation.data.tilt : 0, true);
             ins.azimuth.setValue(annotation ? annotation.data.azimuth : 0, true);
             ins.color.setValue(annotation ? annotation.data.color.slice() : [ 1, 1, 1 ], true);
@@ -161,6 +161,10 @@ export default class CVAnnotationView extends CObject3D
 
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
+    }
+
+    get hasAnnotations() {
+        return Object.keys(this._annotations).length > 0;
     }
 
     constructor(node: Node, id: string)
@@ -212,6 +216,9 @@ export default class CVAnnotationView extends CObject3D
                 annotation.set("visible", visible);
                 this.updateSprite(annotation);
             }
+        }
+        if (ins.visible.changed) {
+            (object3D as HTMLSpriteGroup).setVisible(ins.visible.value);
         }
 
         if (annotation) {
@@ -321,17 +328,6 @@ export default class CVAnnotationView extends CObject3D
         Object.keys(annotation.data.leads).forEach( key => {
             this.language.addLanguage(ELanguageType[key]);
         });
-
-        // set webgl2 for circle annotations
-        for (const key in this._annotations) {
-            const annotation = this._annotations[key];
-            if(annotation.get("style") === "Circle") {
-                const sprite = this._sprites[annotation.id] as CircleSprite;
-                if (sprite) {
-                    sprite.isWebGL2 = this.renderer.views[0].renderer.capabilities.isWebGL2;
-                }
-            }
-        }
 
         this.changed = true;
     }
@@ -474,9 +470,10 @@ export default class CVAnnotationView extends CObject3D
     protected createSprite(annotation: Annotation)
     {
         this.removeSprite(annotation);
+        const isCircle = annotation.data.style === "Circle";
 
         // TODO: Combine when font loading is centralized
-        const sprite = annotation.data.style === "Circle" ? AnnotationFactory.createInstance(annotation, "Circle", this.assetReader) : AnnotationFactory.createInstance(annotation);
+        const sprite = isCircle ? AnnotationFactory.createInstance(annotation, "Circle", this.assetReader) : AnnotationFactory.createInstance(annotation);
 
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);
@@ -484,6 +481,11 @@ export default class CVAnnotationView extends CObject3D
         this._sprites[annotation.id] = sprite;
         this.object3D.add(sprite);
         this.registerPickableObject3D(sprite, true);
+
+        // set webgl2 for circle annotations
+        if (isCircle) {
+            (sprite as CircleSprite).isWebGL2 = this.renderer.views[0].renderer.capabilities.isWebGL2;
+        }
     }
 
     protected removeSprite(annotation: Annotation)
