@@ -19,10 +19,9 @@ import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVToolProvider from "../../components/CVToolProvider";
 import CVLanguageManager from "client/components/CVLanguageManager";
-import { EViewPreset } from "client/../../libs/ff-three/source/UniversalCamera";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 import CVSonify, { ESonifyMode } from "../../components/CVSonify";
-import CVOrbitNavigation from "../../components/CVOrbitNavigation";
+import CVOrbitNavigation, { EViewPreset } from "../../components/CVOrbitNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +49,10 @@ export default class SonifyMenu extends SystemView
         this.classList.add("sv-bottom-bar-container", "sv-transition", "sv-sonify-menu");
         setTimeout(() => this.classList.remove("sv-transition"), 1);
         this.needsFocus = true;
+
+        if(this.navigation.ins.preset.value === EViewPreset.None) {
+            this.navigation.ins.preset.setValue(EViewPreset.Front);
+        }
     }
 
     protected connected()
@@ -57,12 +60,14 @@ export default class SonifyMenu extends SystemView
         super.connected();
         //this.toolProvider.on<IActiveToolEvent>("active-component", this.onUpdate, this);
         this.language.outs.language.on("value", this.onUpdate, this);
+        this.sonification.outs.mode.on("value", this.onModeChange, this);
         window.addEventListener("keydown", this.onKeyDown);
     }
 
     protected disconnected()
     {
         window.removeEventListener("keydown", this.onKeyDown);
+        this.sonification.outs.mode.off("value", this.onModeChange, this);
         this.language.outs.language.off("value", this.onUpdate, this);
         //this.toolProvider.off<IActiveToolEvent>("active-component", this.onUpdate, this);
         super.disconnected();
@@ -89,6 +94,7 @@ export default class SonifyMenu extends SystemView
                         <sv-property-options role="radiogroup" .property=${mode} .language=${language} name=${language.getLocalizedString("Mode")} ></sv-property-options>
                     </div>
                 </div>
+                <div class="sr-only" id="sonify-intro" aria-live="polite"></div>
             </div>`;
     }
 
@@ -98,6 +104,14 @@ export default class SonifyMenu extends SystemView
         if(this.needsFocus) {
             this.setFocus();
             this.needsFocus = false;
+
+            setTimeout(() => {
+            const introElement = this.getElementsByClassName("sr-only").item(0) as HTMLElement;
+            introElement.innerText = "This feature uses sound to describe the shape of a 3D object. "
+            + "As you click and drag your pointer over the object the sound will change based on "
+            + "close or far the surface is from you at that point. There are 3 options for type of "
+            + "sound change... frequency, volume, and beep.";
+            }, 100);
         }
     }
 
@@ -126,6 +140,23 @@ export default class SonifyMenu extends SystemView
         event.stopPropagation();
         this.sonification.ins.active.setValue(false);
         this.sonification.ins.closed.set();
+    }
+
+    protected onModeChange()
+    {
+        const sonifyOuts = this.sonification.outs;
+
+        const introElement = this.getElementsByClassName("sr-only").item(0) as HTMLElement;
+
+        if(sonifyOuts.mode.value === ESonifyMode.Frequency) {
+            introElement.innerText = "Higher frequency means closer surface";
+        }
+        else if(sonifyOuts.mode.value === ESonifyMode.Volume) {
+            introElement.innerText = "Louder tone means closer surface"
+        }
+        else {
+            introElement.innerText = "Faster beeps mean a closer surface"
+        }
     }
 
     protected async setFocus()

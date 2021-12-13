@@ -198,6 +198,13 @@ export default class CVSonify extends Component
     protected onPointer(event: IPointerEvent)
     {
         if(this.isPlaying) {
+            if(event.type === "pointer-up") {
+                this.oscillator.frequency.value = 100;
+                this.gain.gain.value = 1.0;
+                this.bufferSource.loopEnd = 1.0;
+                return;
+            }
+
             const renderer = this.renderer.views[0].renderer;
             const buffer = this.pickBuffer;
             const limits = this.depthLimits;
@@ -432,6 +439,9 @@ export default class CVSonify extends Component
         };
     };
 
+    // Adapted from: https://github.com/padenot/metro/blob/master/metro.js.md
+    // MIT License, Copyright (c) 2014 Paul Adenot
+    // https://github.com/padenot/metro/blob/master/LICENSE
     protected setupBufferSource() {
         const ac = this.audioCtx;
         const buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
