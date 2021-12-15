@@ -62,10 +62,12 @@ export default class SonifyMenu extends SystemView
         this.language.outs.language.on("value", this.onUpdate, this);
         this.sonification.outs.mode.on("value", this.onModeChange, this);
         window.addEventListener("keydown", this.onKeyDown);
+        this.sonification.ins.visible.setValue(true);
     }
 
     protected disconnected()
     {
+        this.sonification.ins.visible.setValue(false);
         window.removeEventListener("keydown", this.onKeyDown);
         this.sonification.outs.mode.off("value", this.onModeChange, this);
         this.language.outs.language.off("value", this.onUpdate, this);
@@ -81,6 +83,7 @@ export default class SonifyMenu extends SystemView
 
         const preset = navigation.ins.preset;
         const mode = sonify.ins.mode;
+        const active = sonify.ins.active;
 
         const presetMap = [ EViewPreset.Front, EViewPreset.Back,
             EViewPreset.Left, EViewPreset.Right,
@@ -89,9 +92,10 @@ export default class SonifyMenu extends SystemView
         return html`<div class="sv-blue-bar" role=region title="Sonification Options" @keydown=${e =>this.onKeyDown(e)}>
                 <div class="sv-section">
                     <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Close")} @click=${this.onClose}></ff-button>
-                    <div role="region" aria-label="Select view toolbar" class="sv-tool-controls">
+                    <div role="region" aria-label="Sonify toolbar" class="sv-tool-controls">
                         <sv-property-options role="radiogroup" .property=${preset} .language=${language} name=${language.getLocalizedString("View Direction")} .indexMap=${presetMap}></sv-property-options>
                         <sv-property-options role="radiogroup" .property=${mode} .language=${language} name=${language.getLocalizedString("Mode")} ></sv-property-options>
+                        <sv-property-boolean .property=${active} .language=${language} name=${language.getLocalizedString("Start Sonify")}></sv-property-boolean>
                     </div>
                 </div>
                 <div class="sr-only" id="sonify-intro" aria-live="polite"></div>
@@ -108,9 +112,10 @@ export default class SonifyMenu extends SystemView
             setTimeout(() => {
             const introElement = this.getElementsByClassName("sr-only").item(0) as HTMLElement;
             introElement.innerText = "This feature uses sound to describe the shape of a 3D object. "
-            + "As you click and drag your pointer over the object the sound will change based on "
+            + "As you move your pointer over the object the sound will change based on how "
             + "close or far the surface is from you at that point. There are 3 options for type of "
-            + "sound change... frequency, volume, and beep.";
+            + "sound change... frequency, volume, and beep. Select a type and then click the start button "
+            + "to try it out!";
             }, 100);
         }
     }
@@ -120,6 +125,7 @@ export default class SonifyMenu extends SystemView
         if (e.code === "Escape") {
             e.preventDefault();
             this.sonification.ins.active.setValue(false);
+            this.sonification.ins.visible.setValue(false);
             this.sonification.ins.closed.set();
         }
         else if(e.code === "Tab") {
@@ -139,6 +145,7 @@ export default class SonifyMenu extends SystemView
     {    
         event.stopPropagation();
         this.sonification.ins.active.setValue(false);
+        this.sonification.ins.visible.setValue(false);
         this.sonification.ins.closed.set();
     }
 

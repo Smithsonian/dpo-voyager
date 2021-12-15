@@ -24,6 +24,7 @@ import MinMaxShader from "../shaders/MinMaxShader";
 import { EProjection } from "client/../../libs/ff-three/source/UniversalCamera";
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +35,7 @@ const _dir: Vector3 = new Vector3();
 const _color = new Color();
 const _plane = new Plane();
 const _box = new Box3();
+const _lowVolume: number = 0.25;
 
 export enum ESonifyMode { Frequency, Volume, Beep };
 
@@ -43,6 +45,7 @@ export default class CVSonify extends Component
 
     protected static readonly ins = {
         active: types.Boolean("Sonify.Active", false),
+        visible: types.Boolean("Sonify.Visible", false),
         closed: types.Event("Sonify.Closed"),
         mode: types.Enum("Sonify.Mode", ESonifyMode, ESonifyMode.Frequency),
     };
@@ -59,6 +62,9 @@ export default class CVSonify extends Component
     }
     protected get setup() {
         return this.getSystemComponent(CVSetup);
+    }
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
     }
 
     protected audioCtx: AudioContext = null;
@@ -80,7 +86,8 @@ export default class CVSonify extends Component
     {
         super.create();
 
-        this.system.on(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        //this.system.on(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.on(["pointer-hover", "pointer-move"], this.onPointer, this);
         
         const AudioContext = window.AudioContext;// || window.webkitAudioContext;
         this.audioCtx = new AudioContext();
@@ -92,6 +99,7 @@ export default class CVSonify extends Component
         this.minMaxShader = new MinMaxShader();
 
         window.addEventListener("resize", this.debounce(this.onResize, 200, false));
+        window.addEventListener("fullscreenchange", this.onResize);
     }
 
     dispose()
@@ -100,7 +108,10 @@ export default class CVSonify extends Component
             this.audioCtx.close();
         }
 
-        this.system.off(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        //this.system.off(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.off(["pointer-hover", "pointer-move"], this.onPointer, this);
+
+        window.removeEventListener("fullscreenchange", this.onResize);
         window.removeEventListener("resize", this.debounce(this.onResize, 200, false));
         
         super.dispose();
@@ -108,7 +119,7 @@ export default class CVSonify extends Component
 
     update(context)
     {
-        const { ins } = this;
+        const { ins, outs } = this;
 
         if (ins.active.changed) {
             if(ins.active.value) {
@@ -122,10 +133,11 @@ export default class CVSonify extends Component
 
                 const gainNode = this.gain = this.audioCtx.createGain();
                 gainNode.connect(this.audioCtx.destination);
+                gainNode.gain.value = outs.mode.value === ESonifyMode.Volume ? _lowVolume : 1.0;
 
                 const osc = this.oscillator = this.audioCtx.createOscillator();
                 osc.type = 'sine';
-                osc.frequency.value = 100;
+                osc.frequency.value = outs.mode.value === ESonifyMode.Volume ? 133 : 100;
                 osc.start();
 
                 this.setupBufferSource();
@@ -141,6 +153,7 @@ export default class CVSonify extends Component
                 this.setup.navigation.ins.enabled.setValue(false, true);
                 this.setup.navigation.ins.preset.on("value", this.onViewChange, this);
 
+                this.analytics.sendProperty("Menu.Sonify", true);
                 this.isPlaying = true;            
             }
             else {
@@ -176,18 +189,20 @@ export default class CVSonify extends Component
                 return false;
             }
 
-            gainNode.gain.value = 1.0;
-            osc.frequency.value = 100;
+            gainNode.gain.value  = inMode === ESonifyMode.Volume ? _lowVolume : 1.0;
+            osc.frequency.value = inMode === ESonifyMode.Volume ? 133 : 100;
 
-            if(inMode === ESonifyMode.Beep) {   
-                osc.disconnect(gainNode);
-                this.bufferSource.connect(gainNode);
-            }
-            else {
-                if(outMode.value  === ESonifyMode.Beep) {
-                    this.bufferSource.disconnect(gainNode);
-                    osc.connect(gainNode);
-                }   
+            if(this.ins.active.value) {
+                if(inMode === ESonifyMode.Beep) {   
+                    osc.disconnect(gainNode);
+                    this.bufferSource.connect(gainNode);
+                }
+                else {
+                    if(outMode.value  === ESonifyMode.Beep) {
+                        this.bufferSource.disconnect(gainNode);
+                        osc.connect(gainNode);
+                    }   
+                }
             }
 
             outMode.setValue(inMode);
@@ -198,12 +213,12 @@ export default class CVSonify extends Component
     protected onPointer(event: IPointerEvent)
     {
         if(this.isPlaying) {
-            if(event.type === "pointer-up") {
+            /*if(event.type === "pointer-up") {
                 this.oscillator.frequency.value = 100;
                 this.gain.gain.value = 1.0;
                 this.bufferSource.loopEnd = 1.0;
                 return;
-            }
+            }*/
 
             const renderer = this.renderer.views[0].renderer;
             const buffer = this.pickBuffer;
@@ -223,7 +238,7 @@ export default class CVSonify extends Component
                 this.oscillator.frequency.value = nDepth <= 0.000001 ? 100 : 100 + 700*(1.0-nDepth);
             }
             else if(this.ins.mode.value === ESonifyMode.Volume) {
-                this.gain.gain.value = nDepth <= 0.000001 ? 1.0 : 1.0 + 10.0*(1.0-nDepth);
+                this.gain.gain.value = nDepth <= 0.000001 ? _lowVolume : _lowVolume + 10.0*(1.0-nDepth);
             }
             else {
                 this.bufferSource.loopEnd =  nDepth <= 0.000001 ? 1.0 : 1 / ((60 + (440.0*(1.0-nDepth))) / 60);

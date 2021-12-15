@@ -121,7 +121,7 @@ export default class MainMenu extends DocumentView
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
 
-        const sonifyActive = this.sonification.ins.active.value;
+        const sonifyActive = this.sonification.ins.visible.value;
 
         const language = setup.language;
 
@@ -227,7 +227,7 @@ export default class MainMenu extends DocumentView
 
     protected onToggleSonify()
     {
-        const status: Boolean = !this.sonification.ins.active.value;
+        const status: Boolean = !this.sonification.ins.visible.value;
         const buttons = this.getElementsByTagName("ff-button");
         Array.from(buttons).forEach(button => {
             if(button.id !== "sonify-btn") {
@@ -235,10 +235,9 @@ export default class MainMenu extends DocumentView
             }
         });
 
-        this.sonification.ins.active.setValue(status.valueOf());
-        this.analytics.sendProperty("Menu.Sonify", this.sonification.ins.active.value);
+        this.sonification.ins.visible.setValue(status.valueOf());
 
-        if(this.sonification.ins.active.value) {
+        if(this.sonification.ins.visible.value) {
             const toolIns = this.toolProvider.ins;
             const viewerIns = this.activeDocument.setup.viewer.ins;
             const readerIns = this.activeDocument.setup.reader.ins;
@@ -246,6 +245,9 @@ export default class MainMenu extends DocumentView
             toolIns.visible.setValue(false);
             viewerIns.annotationsVisible.setValue(false);
             readerIns.enabled.setValue(false);
+        }
+        else {
+            this.sonification.ins.active.setValue(false);
         }
     }
 
