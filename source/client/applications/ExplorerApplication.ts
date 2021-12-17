@@ -47,6 +47,8 @@ import { EUIElements } from "client/components/CVInterface";
 import { EBackgroundStyle } from "client/schema/setup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
+import { clamp } from "client/utils/Helpers"
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -438,6 +440,37 @@ Version: ${ENV_VERSION}
         }
         else {
             console.log("Error: setCameraOrbit param is not a number.");
+        }
+    }
+
+    // Returns camera offset vector (x,y,z)
+    getCameraOffset()
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        return orbitNavIns.offset.value.slice(0,3);
+    }
+
+    // Sets camera offset vector (x,y,z)
+    setCameraOffset( x: string, y: string, z: string)
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        let xNum = parseFloat(x);
+        let yNum = parseFloat(y);
+        let zNum = parseFloat(z);
+  
+        if (!isNaN(xNum) && !isNaN(yNum) && !isNaN(zNum)) {
+            const minOffset = orbitNavIns.minOffset.value;
+            const maxOffset = orbitNavIns.maxOffset.value;
+
+            // check limits
+            xNum = clamp(xNum, minOffset[0], maxOffset[0]);
+            yNum = clamp(yNum, minOffset[1], maxOffset[1]);
+            zNum = clamp(zNum, minOffset[2], maxOffset[2]);
+
+            orbitNavIns.offset.setValue([xNum, yNum, zNum]);
+        }
+        else {
+            console.log("Error: setCameraOffset param is not a number.");
         }
     }
 

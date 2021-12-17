@@ -225,6 +225,21 @@ export default class MainView extends CustomElement
         }
     }
 
+    getCameraOffset()
+    {
+        if(this.application) {
+            const offset = this.application.getCameraOffset();
+            return offset;
+        }
+    }
+
+    setCameraOffset( x: string, y: string, z: string)
+    {
+        if(this.application) {
+            this.application.setCameraOffset(x, y, z);
+        }
+    }
+
     setBackgroundColor(color0: string, color1?: string)
     {
         if(this.application) {
