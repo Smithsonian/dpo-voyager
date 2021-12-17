@@ -142,12 +142,6 @@ export default class MainView extends CustomElement
         introAnnouncement.setAttribute("id", "sr-intro");
         introAnnouncement.setAttribute("aria-live", "polite");
         shadowRoot.appendChild(introAnnouncement);
-
-        const srStatus = document.createElement("div");
-        srStatus.classList.add("sr-only");
-        srStatus.setAttribute("id", "sr-status");
-        srStatus.setAttribute("aria-live", "polite");
-        shadowRoot.appendChild(srStatus);
     }
 
     protected connected()

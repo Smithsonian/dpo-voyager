@@ -29,6 +29,7 @@ import CVOrbitNavigation, { EViewPreset } from "../../components/CVOrbitNavigati
 export default class SonifyMenu extends SystemView
 {
     protected needsFocus: boolean = false;
+    protected sonifyDot: HTMLDivElement = null;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -61,17 +62,32 @@ export default class SonifyMenu extends SystemView
         //this.toolProvider.on<IActiveToolEvent>("active-component", this.onUpdate, this);
         this.language.outs.language.on("value", this.onUpdate, this);
         this.sonification.outs.mode.on("value", this.onModeChange, this);
+        this.sonification.outs.scanline.on("value", this.onScanUpdate, this);
+        this.sonification.ins.scanning.on("value", this.onScanEnable, this);
         window.addEventListener("keydown", this.onKeyDown);
         this.sonification.ins.visible.setValue(true);
+
+        const root = this.getRootNode();
+        if(root instanceof ShadowRoot) {
+            const mainView = (root as ShadowRoot).querySelectorAll("sv-content-view")[0];
+            const dot = this.sonifyDot = document.createElement("div");
+            dot.classList.add("sv-sonify-circle");
+            mainView.appendChild(dot);
+        }
     }
 
     protected disconnected()
     {
         this.sonification.ins.visible.setValue(false);
         window.removeEventListener("keydown", this.onKeyDown);
+        this.sonification.ins.scanning.off("value", this.onScanEnable, this);
+        this.sonification.outs.scanline.off("value", this.onScanUpdate, this);
         this.sonification.outs.mode.off("value", this.onModeChange, this);
         this.language.outs.language.off("value", this.onUpdate, this);
         //this.toolProvider.off<IActiveToolEvent>("active-component", this.onUpdate, this);
+
+        this.sonifyDot.remove();
+
         super.disconnected();
     }
 
@@ -84,6 +100,7 @@ export default class SonifyMenu extends SystemView
         const preset = navigation.ins.preset;
         const mode = sonify.ins.mode;
         const active = sonify.ins.active;
+        const scan = sonify.ins.scanning;
 
         const presetMap = [ EViewPreset.Front, EViewPreset.Back,
             EViewPreset.Left, EViewPreset.Right,
@@ -96,6 +113,7 @@ export default class SonifyMenu extends SystemView
                         <sv-property-options role="radiogroup" .property=${preset} .language=${language} name=${language.getLocalizedString("View Direction")} .indexMap=${presetMap}></sv-property-options>
                         <sv-property-options role="radiogroup" .property=${mode} .language=${language} name=${language.getLocalizedString("Mode")} ></sv-property-options>
                         <sv-property-boolean .property=${active} .language=${language} name=${language.getLocalizedString("Start Sonify")}></sv-property-boolean>
+                        <sv-property-boolean .property=${scan} .language=${language} name=${language.getLocalizedString("Start Scan")}></sv-property-boolean>
                     </div>
                 </div>
                 <div class="sr-only" id="sonify-intro" aria-live="polite"></div>
@@ -125,6 +143,7 @@ export default class SonifyMenu extends SystemView
         if (e.code === "Escape") {
             e.preventDefault();
             this.sonification.ins.active.setValue(false);
+            this.sonification.ins.scanning.setValue(false);
             this.sonification.ins.visible.setValue(false);
             this.sonification.ins.closed.set();
         }
@@ -145,6 +164,7 @@ export default class SonifyMenu extends SystemView
     {    
         event.stopPropagation();
         this.sonification.ins.active.setValue(false);
+        this.sonification.ins.scanning.setValue(false);
         this.sonification.ins.visible.setValue(false);
         this.sonification.ins.closed.set();
     }
@@ -164,6 +184,20 @@ export default class SonifyMenu extends SystemView
         else {
             introElement.innerText = "Faster beeps mean a closer surface"
         }
+    }
+
+    protected onScanUpdate()
+    {
+        const scanline = this.sonification.outs.scanline.value;
+        this.sonifyDot.style.top = scanline.toString() + "px";
+    }
+
+    protected onScanEnable()
+    {
+        const scanning = this.sonification.ins.scanning.value;
+        const dot = this.sonifyDot;
+        dot.style.display = scanning ? "block" : "none";
+        dot.style.top = "-" + (dot.clientHeight/2).toString() + "px";
     }
 
     protected async setFocus()

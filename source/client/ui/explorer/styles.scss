@@ -1106,3 +1106,18 @@ $tour-entry-indent: 12px;
     flex-wrap: wrap;
   }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SONIFICATION DISPLAY
+
+.sv-sonify-circle {
+  width: 10px;
+  height: 10px;
+  background: red;
+  border: 2px solid gray;
+  border-radius: 50%;
+  z-index: 100;
+  position: absolute;
+  display: none;
+}

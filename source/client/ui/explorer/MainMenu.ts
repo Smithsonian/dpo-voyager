@@ -227,7 +227,7 @@ export default class MainMenu extends DocumentView
 
     protected onToggleSonify()
     {
-        const status: Boolean = !this.sonification.ins.visible.value;
+        const status: boolean = !this.sonification.ins.visible.value;
         const buttons = this.getElementsByTagName("ff-button");
         Array.from(buttons).forEach(button => {
             if(button.id !== "sonify-btn") {
@@ -235,7 +235,7 @@ export default class MainMenu extends DocumentView
             }
         });
 
-        this.sonification.ins.visible.setValue(status.valueOf());
+        this.sonification.ins.visible.setValue(status);
 
         if(this.sonification.ins.visible.value) {
             const toolIns = this.toolProvider.ins;
