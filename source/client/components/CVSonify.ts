@@ -459,7 +459,7 @@ export default class CVSonify extends Component
 
     protected onResize = () => 
     {   
-        if(this.ins.active.value) {
+        if(this.ins.visible.value) {
             this.convTarget.dispose();
             this.convTarget = new WebGLRenderTarget( window.innerWidth, window.innerHeight, { stencilBuffer: false } );
             this.generateDepthMap();
