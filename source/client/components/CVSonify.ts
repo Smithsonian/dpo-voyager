@@ -25,10 +25,14 @@ import { EProjection } from "client/../../libs/ff-three/source/UniversalCamera";
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
 import CVAnalytics from "./CVAnalytics";
+import { computeLocalBoundingBox } from "@ff/three/helpers";
+import CVOrbitNavigation from "./CVOrbitNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const corners = [[1,1,1],[0,1,1],[0,0,1],[1,0,1],[0,0,0],[0,1,0],[1,1,0],[1,0,0]];
+const minBoundsByView = [[0,1,0],[1,1,1],[0,1,0],[0,0,1],[0,1,1],[1,1,0]];  // left,right,top,bottom,front,back
+const maxBoundsByView = [[0,0,1],[1,0,0],[1,1,1],[1,0,0],[1,0,1],[0,0,0]];  // left,right,top,bottom,front,back
 
 const _target: Vector3 = new Vector3();
 const _dir: Vector3 = new Vector3();
@@ -53,7 +57,7 @@ export default class CVSonify extends Component
 
     protected static readonly outs = {
         mode: types.Enum("Sonify.Mode", ESonifyMode, ESonifyMode.Frequency),
-        scanline: types.Number("Sonify.Scanline", 0),
+        scanline: types.Vector2("Sonify.Scanline"),
     };
 
     protected get renderer() {
@@ -68,6 +72,9 @@ export default class CVSonify extends Component
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
     }
+    protected get navigation() {
+        return this.system.getComponent(CVOrbitNavigation);
+    }
 
     protected audioCtx: AudioContext = null;
     protected oscillator: OscillatorNode = null;
@@ -81,6 +88,8 @@ export default class CVSonify extends Component
     protected scanIterval: number = null;
     protected beepElement: HTMLAudioElement = null;
     protected sonifyDot: HTMLDivElement = null;
+    protected scanMin: number[] = [];
+    protected scanDims: number[] = [];
 
     protected isPlaying: boolean = false;
 
@@ -295,8 +304,12 @@ export default class CVSonify extends Component
         const scene = sceneComponent && sceneComponent.scene;
         const sceneNode = this.sceneNode;
         const camera = sceneComponent && sceneComponent.activeCamera;
-        const bbox = /*sceneNode.models.length === 1 ? _box.copy(sceneNode.models[0].localBoundingBox).applyMatrix4(sceneNode.models[0].object3D.matrixWorld)
-                                                     :*/ sceneNode.outs.boundingBox.value;
+        //const bbox = /*sceneNode.models.length === 1 ? _box.copy(sceneNode.models[0].localBoundingBox).applyMatrix4(sceneNode.models[0].object3D.matrixWorld)
+        //                                             :*/ sceneNode.outs.boundingBox.value;
+        
+        computeLocalBoundingBox(sceneNode.models[0].object3D, _box, sceneNode.object3D);
+        const bbox: Box3 = _box;
+
         const reducedTargets: WebGLRenderTarget[] = [];
 
         // Create reducing power of 2 render targets for finding min/max depth
@@ -333,6 +346,7 @@ export default class CVSonify extends Component
         // TEMP
         /*camera.getWorldPosition(_target);
         camera.getWorldDirection(_dir);
+        
         var geometry = new PlaneGeometry(100, 100);
         var material = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide, transparent: true, opacity: 0.5 });
         var mesh = new Mesh(geometry, material);
@@ -344,17 +358,25 @@ export default class CVSonify extends Component
         const newLoc = _target;
         newLoc.add(offset);
         mesh.position.set(newLoc.x, newLoc.y, newLoc.z);
-        sceneComponent.scene.add(mesh);
+        //sceneComponent.scene.add(mesh);
 
         //const geometry2 = new SphereGeometry( boundingRadius, 128, 128 );
         var size = new Vector3();
         bbox.getSize(size); console.log("Getting bounds: " + JSON.stringify(size));
         const geometry2 = new BoxGeometry( size.x, size.y, size.z );
+        const geometry3 = new SphereGeometry( 0.5 );
         const sphere = new Mesh( geometry2, material );
+        const sphere2 = new Mesh( geometry3, material );
         var center = new Vector3();
         bbox.getCenter(center);
         sphere.position.set(center.x, center.y, center.z);
-        sceneComponent.scene.add(sphere);
+        //sphere2.position.set(bbox.min.x, bbox.max.y, bbox.max.z); // front
+        //sphere2.position.set(bbox.max.x, bbox.max.y, bbox.min.z); // back
+        //sphere2.position.set(bbox.min.x, bbox.max.y, bbox.min.z); // left + top
+        //sphere2.position.set(bbox.max.x, bbox.max.y, bbox.max.z); // right
+        //sphere2.position.set(bbox.min.x, bbox.min.y, bbox.max.z); // bottom
+        //sceneComponent.scene.add(sphere);
+        //sceneComponent.scene.add(sphere2);
 
         camera.getWorldPosition(_target);
         camera.getWorldDirection(_dir);
@@ -363,8 +385,24 @@ export default class CVSonify extends Component
         const newLoc2 = _target;
         newLoc2.add(offset2);
         mesh2.position.set(newLoc2.x, newLoc2.y, newLoc2.z);
-        sceneComponent.scene.add(mesh2);*/
+        //sceneComponent.scene.add(mesh2);*/
         // TEMP
+
+        let cornerSelect = minBoundsByView[this.navigation.ins.preset.value]
+        _target.set(cornerSelect[0] ? bbox.max.x : bbox.min.x, cornerSelect[1] ? bbox.max.y : bbox.min.y, cornerSelect[2] ? bbox.max.z : bbox.min.z);
+        _target.project(camera);
+        const halfWidth = this.convTarget.width / 2;
+        const halfHeight = this.convTarget.height / 2;
+
+        this.scanMin[0] = (_target.x * halfWidth) + halfWidth;
+        this.scanMin[1] = -(_target.y * halfHeight) + halfHeight;
+
+        cornerSelect = maxBoundsByView[this.navigation.ins.preset.value]
+        _target.set(cornerSelect[0] ? bbox.max.x : bbox.min.x, cornerSelect[1] ? bbox.max.y : bbox.min.y, cornerSelect[2] ? bbox.max.z : bbox.min.z);
+        _target.project(camera);
+
+        this.scanDims[0] = Math.abs(this.scanMin[0] - ((_target.x * halfWidth) + halfWidth));
+        this.scanDims[1] = Math.abs(this.scanMin[1] - (-(_target.y * halfHeight) + halfHeight));
 
         const renderer = this.renderer.views[0].renderer;  
         
@@ -523,9 +561,9 @@ export default class CVSonify extends Component
     protected startScanlines() {
         let elapsedTime = 0;
         let lineCount = 0;
-        const depthTarget = this.convTarget;
-        const height = depthTarget.height;
-        const width = depthTarget.width;
+        const scanMin = this.scanMin;
+        const height = this.scanDims[1];
+        const width = this.scanDims[0];
         const increment = 2000/width;
         this.scanIterval = window.setInterval(() => {
 
@@ -535,20 +573,20 @@ export default class CVSonify extends Component
             }
 
             elapsedTime += increment;
+            this.outs.scanline.setValue([scanMin[0] + width*(elapsedTime/2000), scanMin[1]+(height/20)*lineCount]);
 
             if(elapsedTime > 2000) {
                 lineCount++;
-                this.outs.scanline.setValue((height/20)*lineCount);
+                //this.outs.scanline.setValue([scanMin[0], scanMin[1]+(height/20)*lineCount]);
                 elapsedTime = 0;
             }
 
             if(lineCount > 20) {
-                //clearInterval(this.scanIterval);
                 this.ins.scanning.setValue(false);
                 return;
             }
 
-            this.updateSonification(width*(elapsedTime/2000), (height/20)*lineCount);
+            this.updateSonification(scanMin[0] + width*(elapsedTime/2000), scanMin[1]+(height/20)*lineCount);
         }, increment);
     }
 }

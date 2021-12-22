@@ -189,15 +189,18 @@ export default class SonifyMenu extends SystemView
     protected onScanUpdate()
     {
         const scanline = this.sonification.outs.scanline.value;
-        this.sonifyDot.style.top = scanline.toString() + "px";
+        const dot = this.sonifyDot;
+        dot.style.top = scanline[1].toString() + "px";
+        dot.style.left = (scanline[0]-(dot.clientHeight/2)).toString() + "px";
     }
 
     protected onScanEnable()
     {
         const scanning = this.sonification.ins.scanning.value;
         const dot = this.sonifyDot;
+        
+        dot.style.top = "-10000px";
         dot.style.display = scanning ? "block" : "none";
-        dot.style.top = "-" + (dot.clientHeight/2).toString() + "px";
     }
 
     protected async setFocus()
