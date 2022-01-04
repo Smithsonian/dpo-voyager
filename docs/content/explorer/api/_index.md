@@ -17,8 +17,10 @@ These attributes configure the initial object load of the component.
 | model        | Valid URL         | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
 | geometry     | Valid URL         | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
 | texture      | Valid URL         | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
-| dracoRoot	   | Valid URL		   | Path to the Draco compression libraries used for glTF models. Defaults to Google CDN.
-| resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.
+| dracoRoot	   | Valid URL		   | Path to the Draco compression libraries used for glTF models. Defaults to Google CDN.								 |
+| resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.			 |
+| bgColor	   | Valid CSS colors  | Sets the color of the component background. Optional second color for gradient styles. Ex: "red" or "red rgb(0,255,0)" |
+| bgStyle	   | Solid, LinearGradient, RadialGradient | Sets the style of the component background. |
 
 ### UI Attributes
 

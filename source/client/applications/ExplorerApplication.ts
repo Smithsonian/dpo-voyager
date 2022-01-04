@@ -79,6 +79,10 @@ export interface IExplorerApplicationProps
     quality?: string;
     /** Mode string starts Explorer in a specific ui configuration, i.e. no UI. */
     uiMode?: string;
+    /** Component background colors */
+    bgColor?: string;
+    /** Component background style */
+    bgStyle?: string;
 }
 
 /**
@@ -216,7 +220,7 @@ Version: ${ENV_VERSION}
         this.assetManager.baseUrl = url; 
     }
 
-    loadDocument(documentPath: string, merge?: boolean, quality?: string, uiMode?: string): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
 
@@ -262,6 +266,8 @@ Version: ${ENV_VERSION}
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
         props.uiMode = props.uiMode || parseUrlParameter("uiMode") || parseUrlParameter("u");
+        props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
+        props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
@@ -303,8 +309,8 @@ Version: ${ENV_VERSION}
         if (props.document) {
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality, props.uiMode)
-            .then(() => this.assetManager.ins.baseUrlValid.setValue(true))
+            this.loadDocument(props.document, undefined, props.quality)
+            .then(() => this.postLoadHandler(props))
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
@@ -314,7 +320,7 @@ Version: ${ENV_VERSION}
             this.assetReader.getText(props.model)       // make sure we have a valid model path
             .then(() => {
                 this.loadModel(props.model, props.quality);
-                this.assetManager.ins.baseUrlValid.setValue(true);
+                this.postLoadHandler(props);
             })
             .catch(error => Notification.show(`Bad Model Path: ${error.message}`, "error"));
         }
@@ -328,15 +334,26 @@ Version: ${ENV_VERSION}
             this.assetReader.getText(props.geometry)    // make sure we have a valid geometry path   
             .then(() => {
                 this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
-                this.assetManager.ins.baseUrlValid.setValue(true);
+                this.postLoadHandler(props);
             })
             .catch(error => Notification.show(`Bad Geometry Path: ${error.message}`, "error"));
         }
         else if (props.root) {
             // if nothing else specified, try to read "scene.svx.json" from the current folder
             this.loadDocument("scene.svx.json", undefined)
-            .then(() => this.assetManager.ins.baseUrlValid.setValue(true))
+            .then(() => this.postLoadHandler(props))
             .catch(() => {});
+        }
+    }
+
+    protected postLoadHandler(props: IExplorerApplicationProps) {
+        this.assetManager.ins.baseUrlValid.setValue(true);
+        if(props.bgColor) {
+            const colors = props.bgColor.split(" ");
+            this.setBackgroundColor(colors[0], colors[1] || null);
+        }
+        if(props.bgStyle) {
+            this.setBackgroundStyle(props.bgStyle);
         }
     }
 
