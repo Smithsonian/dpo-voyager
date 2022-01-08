@@ -44,7 +44,7 @@ export default class SceneView extends SystemView
     {
         super(system);
 
-        this.onResize = this.onResize.bind(this);
+        //this.onResize = this.onResize.bind(this);
 
         this.manipTarget = new ManipTarget();
 
@@ -105,19 +105,22 @@ export default class SceneView extends SystemView
     {
         this.view.attach();
 
-        window.addEventListener("resize", this.onResize);
-        window.dispatchEvent(new CustomEvent("resize"));
+        //window.addEventListener("resize", this.onResize);
+        //window.dispatchEvent(new CustomEvent("resize"));
+
+        const resizeObserver = new ResizeObserver(() => this.view.resize());
+        resizeObserver.observe(this.view.renderer.domElement);
     }
 
     protected disconnected()
     {
         this.view.detach();
 
-        window.removeEventListener("resize", this.onResize);
+        //window.removeEventListener("resize", this.onResize);
     }
 
-    protected onResize()
+    /*protected onResize()
     {
         this.view.resize();
-    }
+    }*/
 }
