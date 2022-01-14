@@ -48,6 +48,8 @@ import { EBackgroundStyle } from "client/schema/setup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 import { clamp } from "client/utils/Helpers"
+import CVScene from "client/components/CVScene";
+import CVAnnotationView from "client/components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -436,6 +438,19 @@ Version: ${ENV_VERSION}
         const articles = reader.articles.map(entry => entry.article.data);
 
         return articles;
+    }
+
+    // Returns an array of objects with the annotation data for the current scene
+    getAnnotations()
+    {
+        const scene = this.system.getComponent(CVScene);
+        const views = scene.getGraphComponents(CVAnnotationView);
+        let annotations = [];
+        views.forEach(component => {
+            annotations = annotations.concat(component.getAnnotations());
+        });
+
+        return annotations;
     }
 
     // Returns euler angles (yaw/pitch) for orbit navigation

@@ -47,6 +47,7 @@ These methods engage Voyager functionality without the native UI.
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
+| setActiveAnnotation(id)| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
 
 ### Navigation Methods
 Methods for external control over camera properties and navigation.
@@ -61,6 +62,7 @@ Methods for external control over camera properties and navigation.
 | Name     				 		| Parameters       	   | Description                                                                                         |
 |-------------------------------|----------------------|--------------------------------------------------|
 | getArticles()				    | None 			   	   | Returns an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts) with properties of each article associated with the current scene.      |
+| getAnnotations()				| None				   | Returns an array of [Annotation data objects](https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63) for the current scene.			|
 
 ### Events
 

@@ -212,6 +212,14 @@ export default class MainView extends CustomElement
         }
     }
 
+    getAnnotations()
+    {
+        if(this.application) {
+            const annotations = this.application.getAnnotations();
+            return annotations;
+        }
+    }
+
     getCameraOrbit()
     {
         if(this.application) {
@@ -253,6 +261,13 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.setBackgroundStyle(style);
+        }
+    }
+
+    setActiveAnnotation(id: string)
+    {
+        if(this.application) {
+            this.viewer.ins.activeAnnotation.setValue(id);
         }
     }
 }

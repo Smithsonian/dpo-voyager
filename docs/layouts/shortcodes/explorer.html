@@ -68,4 +68,20 @@ function getArticles(displayElement) {
   
 	displayElement.innerText = articleNames;
 }
+function getAnnotations(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const annotations = voyagerElement.getAnnotations();
+
+	var annotationNames = "";
+	annotations.forEach(annotation => {
+		annotationNames += "[id: " + annotation.id + " title: " + annotation.title + "]";
+		annotationNames += " | ";
+	});
+  
+	displayElement.innerText = annotationNames;
+}
+function setActiveAnnotation(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveAnnotation(id.value);
+}
 </script>
