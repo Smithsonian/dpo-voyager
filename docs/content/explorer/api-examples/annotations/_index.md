@@ -19,11 +19,15 @@ To find unknown annotation ids try the getAnnotations() function. [See an exampl
 {{< input-submit "Activate" "setActiveAnnotation" "Annotation_ID">}}  <br>
 
 #### How it works:
-See the annotated javascript from this page below for how to use the [setActiveAnnotation(id)](../../api).
+See the annotated javascript from this page below for how to use the [setActiveAnnotation(id) function](../../api).
 
 {{<highlight js>}}
 function setActiveAnnotation(id) {
+	// Get reference to the Explorer element by id
 	var voyagerElement = document.getElementById("voyager");
+	
+	// Call the activateAnnotation function with the value of the 
+	// option input element as the parameter
 	voyagerElement.setActiveAnnotation(id.value);
 }
 {{</highlight>}}

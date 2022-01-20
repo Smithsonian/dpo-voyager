@@ -84,4 +84,8 @@ function setActiveAnnotation(id) {
 	var voyagerElement = document.getElementById("voyager");
 	voyagerElement.setActiveAnnotation(id.value);
 }
+function setTourStep(stepIdx) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setTourStep(0, stepIdx.value, true);
+}
 </script>

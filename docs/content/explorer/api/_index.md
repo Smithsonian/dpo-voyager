@@ -21,6 +21,7 @@ These attributes configure the initial object load of the component.
 | resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.			 |
 | bgColor	   | Valid CSS colors  | Sets the color of the component background. Optional second color for gradient styles. Ex: "red" or "red rgb(0,255,0)" |
 | bgStyle	   | Solid, LinearGradient, RadialGradient | Sets the style of the component background. |
+| controls	   | True, False	   | Enables/Disables user-driven camera controls. Defaults to 'True'. Useful if driving navigation from external code.  |
 
 ### UI Attributes
 
@@ -48,6 +49,7 @@ These methods engage Voyager functionality without the native UI.
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
 | setActiveAnnotation(id)| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
+| setTourStep(tourIdx, stepIdx, interpolate[optional]) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
 
 ### Navigation Methods
 Methods for external control over camera properties and navigation.

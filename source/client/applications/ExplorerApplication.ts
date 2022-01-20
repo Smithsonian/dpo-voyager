@@ -85,6 +85,8 @@ export interface IExplorerApplicationProps
     bgColor?: string;
     /** Component background style */
     bgStyle?: string;
+    /** Enables/disables pointer-driven camera controls. */
+    controls?: string;
 }
 
 /**
@@ -270,6 +272,7 @@ Version: ${ENV_VERSION}
         props.uiMode = props.uiMode || parseUrlParameter("uiMode") || parseUrlParameter("u");
         props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
         props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
+        props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
@@ -356,6 +359,9 @@ Version: ${ENV_VERSION}
         }
         if(props.bgStyle) {
             this.setBackgroundStyle(props.bgStyle);
+        }
+        if(props.controls) {
+            this.enableNavigation(props.controls);
         }
     }
 
@@ -553,6 +559,51 @@ Version: ${ENV_VERSION}
         }
         else {
             console.log("Error: Style param is invalid.");
+        }
+    }
+
+    // Activate a specific tour step
+    setTourStep(tourIdx: string, stepIdx: string, interpolate: boolean)
+    {
+        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+        const tourOuts = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.outs;
+        let tour = parseInt(tourIdx);
+        let step = parseInt(stepIdx);
+  
+        if (!isNaN(tour) && !isNaN(step) && tour >= 0 && step >= 0) {
+            tourIns.tourIndex.setValue(tour);
+
+            if(interpolate) {
+                tourOuts.stepIndex.setValue(step-1);
+                tourIns.next.set();
+            }
+            else {
+                tourIns.stepIndex.setValue(step);
+            }
+        }
+        else {
+            console.log("Error: setTourStep param ["+tour+" "+step+"] is not a valid number.");
+        }
+    }
+
+    // enable/disable camera controls
+    enableNavigation(enable: string)
+    {
+        let controls = undefined;
+        const controlsLower = enable.toLowerCase();
+        if(controlsLower === "true") {
+            controls = true;
+        }
+        else if(controlsLower === "false") {
+            controls = false;
+        }
+
+        if(controls != undefined) {
+            const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+            orbitNavIns.pointerEnabled.setValue(controls);
+        }
+        else {
+            console.log("Error: enableNavigation param is not valid.");
         }
     }
 }

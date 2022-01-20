@@ -110,7 +110,8 @@ export default class MainView extends CustomElement
                 quality: this.getAttribute("quality"),
                 uiMode: this.getAttribute("uiMode"),
                 bgColor: this.getAttribute("bgColor"),
-                bgStyle: this.getAttribute("bgStyle")
+                bgStyle: this.getAttribute("bgStyle"),
+                controls: this.getAttribute("controls")
             };
 
             this.application = new ExplorerApplication(null, props);
@@ -157,6 +158,9 @@ export default class MainView extends CustomElement
         if(this.application && name === "root") {
             this.application.props.root = this.getAttribute("root");
             this.application.evaluateProps();
+        }
+        else if(this.application && name === "controls") {
+            this.application.enableNavigation(value);
         }
     }
 
@@ -268,6 +272,13 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.viewer.ins.activeAnnotation.setValue(id);
+        }
+    }
+
+    setTourStep(tourIdx: string, stepIdx: string, interpolate?: boolean)
+    {
+        if(this.application) {
+            this.application.setTourStep(tourIdx, stepIdx, interpolate !== undefined ? interpolate : true);
         }
     }
 }
