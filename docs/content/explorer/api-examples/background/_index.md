@@ -6,7 +6,15 @@ weight: 130
 
 #### Try it out:
 
-{{< explorer "d8c636ce-4ebc-11ea-b77f-2e728ce88125" >}}  <br>
+{{< explorer "d8c636ce-4ebc-11ea-b77f-2e728ce88125" "bgColor='red #000' bgStyle='LinearGradient'">}}  <br>
+
+The background style and colors in this component are set via [attribute](../../api) as shown in the code block below. Background color can be defined in any standard css color format. The example demonstrates this by using both keyword for color0 and hex for color1.
+
+{{<highlight js>}}
+<voyager-explorer id="voyager" style="display: block; position: relative; height: 450px" 
+	bgcolor="red #000" bgstyle="LinearGradient" root="https://3d-api.si.edu/content/document/d8c636ce-4ebc-11ea-b77f-2e728ce88125/" 
+	document="document.json">
+{{</highlight>}}  
   
 Set a new background style (Solid, LinearGradient, RadialGradient) and click 'Set Style' to apply it to the component.
 Depending on the active style, set the primary and secondary colors and click 'Set Color' to apply.

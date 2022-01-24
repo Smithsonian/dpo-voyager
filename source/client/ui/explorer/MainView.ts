@@ -108,7 +108,10 @@ export default class MainView extends CustomElement
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
                 quality: this.getAttribute("quality"),
-                uiMode: this.getAttribute("uiMode")
+                uiMode: this.getAttribute("uiMode"),
+                bgColor: this.getAttribute("bgColor"),
+                bgStyle: this.getAttribute("bgStyle"),
+                controls: this.getAttribute("controls")
             };
 
             this.application = new ExplorerApplication(null, props);
@@ -155,6 +158,9 @@ export default class MainView extends CustomElement
         if(this.application && name === "root") {
             this.application.props.root = this.getAttribute("root");
             this.application.evaluateProps();
+        }
+        else if(this.application && name === "controls") {
+            this.application.enableNavigation(value);
         }
     }
 
@@ -210,6 +216,14 @@ export default class MainView extends CustomElement
         }
     }
 
+    getAnnotations()
+    {
+        if(this.application) {
+            const annotations = this.application.getAnnotations();
+            return annotations;
+        }
+    }
+
     getCameraOrbit()
     {
         if(this.application) {
@@ -225,6 +239,21 @@ export default class MainView extends CustomElement
         }
     }
 
+    getCameraOffset()
+    {
+        if(this.application) {
+            const offset = this.application.getCameraOffset();
+            return offset;
+        }
+    }
+
+    setCameraOffset( x: string, y: string, z: string)
+    {
+        if(this.application) {
+            this.application.setCameraOffset(x, y, z);
+        }
+    }
+
     setBackgroundColor(color0: string, color1?: string)
     {
         if(this.application) {
@@ -236,6 +265,20 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.setBackgroundStyle(style);
+        }
+    }
+
+    setActiveAnnotation(id: string)
+    {
+        if(this.application) {
+            this.viewer.ins.activeAnnotation.setValue(id);
+        }
+    }
+
+    setTourStep(tourIdx: string, stepIdx: string, interpolate?: boolean)
+    {
+        if(this.application) {
+            this.application.setTourStep(tourIdx, stepIdx, interpolate !== undefined ? interpolate : true);
         }
     }
 }
