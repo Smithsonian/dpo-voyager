@@ -13,10 +13,7 @@ If you are an end user with no access to this option, please contact us. We are 
 The Voyager 3D Story tool is designed to be used as a single page client-side application.
 Sample HTML documents are provided as part of the distributable package.
 
-The application can be launched via custom HTML element, or by creating an instance of the application class and
-attaching it to a DOM element.
-
-Both the custom HTML element and the application class can be customized using the following properties.
+The application can be launched via custom HTML element that can be customized using the following properties.
 Properties can be provided as URL variables, as attributes of the custom HTML element, or by providing a
 properties object as an argument to the application constructor.
 
@@ -44,19 +41,21 @@ properties object as an argument to the application constructor.
         <title>Voyager Story</title>
 
         <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+        <link href="/fonts/fonts.css" rel="stylesheet">
         
-        <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
 
         <link rel="stylesheet" href="css/voyager-story.min.css">
     </head>
     <body>
         <voyager-story presentation="my_presentation.json"></voyager-story>
-        <script type="text/javascript" src="js/voyager-story.min.js"></script>
+        <script defer="defer" type="text/javascript" src="js/voyager-story.min.js"></script>
     </body>
 </html>
 {{</highlight>}}
 
+<!--
 ### Example 2: launching the Story tool via application class
 {{<highlight html>}}
 <!DOCTYPE html>
@@ -74,3 +73,4 @@ properties object as an argument to the application constructor.
     </body>
 </html>
 {{</highlight>}}
+-->

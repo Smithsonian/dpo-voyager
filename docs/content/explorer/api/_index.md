@@ -17,8 +17,11 @@ These attributes configure the initial object load of the component.
 | model        | Valid URL         | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
 | geometry     | Valid URL         | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
 | texture      | Valid URL         | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
-| dracoRoot	   | Valid URL		   | Path to the Draco compression libraries used for glTF models. Defaults to Google CDN.
-| resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.
+| dracoRoot	   | Valid URL		   | Path to the Draco compression libraries used for glTF models. Defaults to Google CDN.								 |
+| resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.			 |
+| bgColor	   | Valid CSS colors  | Sets the color of the component background. Optional second color for gradient styles. Ex: "red" or "red rgb(0,255,0)" |
+| bgStyle	   | Solid, LinearGradient, RadialGradient | Sets the style of the component background. |
+| controls	   | True, False	   | Enables/Disables user-driven camera controls. Defaults to 'True'. Useful if driving navigation from external code.  |
 
 ### UI Attributes
 
@@ -45,6 +48,8 @@ These methods engage Voyager functionality without the native UI.
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
+| setActiveAnnotation(id)| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
+| setTourStep(tourIdx, stepIdx, interpolate[optional]) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
 
 ### Navigation Methods
 Methods for external control over camera properties and navigation.
@@ -59,6 +64,7 @@ Methods for external control over camera properties and navigation.
 | Name     				 		| Parameters       	   | Description                                                                                         |
 |-------------------------------|----------------------|--------------------------------------------------|
 | getArticles()				    | None 			   	   | Returns an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts) with properties of each article associated with the current scene.      |
+| getAnnotations()				| None				   | Returns an array of [Annotation data objects](https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63) for the current scene.			|
 
 ### Events
 

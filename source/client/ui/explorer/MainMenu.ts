@@ -113,6 +113,9 @@ export default class MainMenu extends DocumentView
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
 
+        const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
+        const narrationActive = setup.audio.outs.narrationPlaying.value;
+
         const language = setup.language;
 
         // TODO - push to ARManager?
@@ -122,7 +125,13 @@ export default class MainMenu extends DocumentView
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
+<<<<<<< HEAD
         ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
+=======
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
+            ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
+        ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
+>>>>>>> master
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
@@ -219,6 +228,12 @@ export default class MainMenu extends DocumentView
         arIns.enabled.setValue(true);
     }
 
+    protected onToggleNarration()
+    {
+        const audioIns = this.activeDocument.setup.audio.ins;
+        audioIns.playNarration.set();
+    }
+
     // TODO: More elegant way to handle focus
     protected setTourFocus()
     {
@@ -261,6 +276,7 @@ export default class MainMenu extends DocumentView
                 setup.tours.ins.enabled,
                 setup.tours.outs.count,
                 setup.viewer.ins.annotationsVisible,
+                setup.audio.outs.narrationPlaying,
                 this.toolProvider.ins.visible
             );
         }

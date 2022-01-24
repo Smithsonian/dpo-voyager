@@ -39,6 +39,12 @@ export default class PropertyBoolean extends CustomElement
     @property({ attribute: false })
     language: CVLanguageManager = null;
 
+    @property({ type: Boolean })
+    disabled = false;
+
+    @property({ type: String })
+    customLabelStyle = "";
+
     protected firstConnected()
     {
         this.classList.add("sv-property-view", "sv-property-boolean");
@@ -74,13 +80,14 @@ export default class PropertyBoolean extends CustomElement
         const labelName = name.replace(/\s/g, '');
         const text = this.text;
         const language = this.language;
+        const customClass = this.customLabelStyle;
 
         let label = property.value ?
             Array.isArray(text) ? text[1] : (text || "On") :
             Array.isArray(text) ? text[0] : (text || "Off");
 
-        return html`<label id="${labelName}-label" class="ff-label ff-off">${name}</label>
-            <ff-button role="switch" aria-labelledby="${labelName}-label" aria-checked=${property.value} .text=${language ? language.getLocalizedString(label) : label} ?selected=${property.value} @click=${this.onButtonClick}></ff-button>`;
+        return html`<label id="${labelName}-label" class="ff-label ff-off  ${customClass}">${name}</label>
+            <ff-button role="switch" aria-labelledby="${labelName}-label" aria-checked=${property.value} .text=${language ? language.getLocalizedString(label) : label} ?disabled=${this.disabled} ?selected=${property.value} @click=${this.onButtonClick}></ff-button>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)

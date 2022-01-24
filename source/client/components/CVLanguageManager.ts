@@ -36,7 +36,7 @@ export default class CVLanguageManager extends Component
 {
     static readonly typeName: string = "CVLanguageManager";
 
-    static readonly text: string = "LanguageManager";
+    static readonly text: string = "Language";
     static readonly icon: string = "";
 
     private _activeLanguages: ILanguageOption[] = [];
@@ -55,6 +55,12 @@ export default class CVLanguageManager extends Component
 
     ins = this.addInputs(CVLanguageManager.ins);
     outs = this.addOutputs(CVLanguageManager.outs);
+
+    /*get settingProperties() {
+        return [
+            this.ins.language
+        ];
+    }*/
 
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
