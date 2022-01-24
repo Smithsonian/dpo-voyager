@@ -107,6 +107,9 @@ export default class MainMenu extends DocumentView
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
 
+        const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
+        const narrationActive = setup.audio.outs.narrationPlaying.value;
+
         const language = setup.language;
 
         // TODO - push to ARManager?
@@ -116,6 +119,8 @@ export default class MainMenu extends DocumentView
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
+            ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
         ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         ${readerButtonVisible ? html`<ff-button icon="article" title=${language.getLocalizedString("Read more...")}
@@ -211,6 +216,12 @@ export default class MainMenu extends DocumentView
         arIns.enabled.setValue(true);
     }
 
+    protected onToggleNarration()
+    {
+        const audioIns = this.activeDocument.setup.audio.ins;
+        audioIns.playNarration.set();
+    }
+
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
@@ -225,6 +236,7 @@ export default class MainMenu extends DocumentView
                 setup.tours.ins.enabled,
                 setup.tours.outs.count,
                 setup.viewer.ins.annotationsVisible,
+                setup.audio.outs.narrationPlaying,
                 this.toolProvider.ins.visible
             );
         }
