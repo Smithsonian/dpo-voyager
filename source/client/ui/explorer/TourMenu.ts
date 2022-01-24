@@ -20,7 +20,7 @@ import "@ff/ui/Button";
 
 import { ITour } from "client/schema/setup";
 import { ELanguageType } from "client/schema/common";
-
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,15 +40,19 @@ export default class TourMenu extends CustomElement
     @property({ attribute: false })
     activeLanguage: ELanguageType;
 
+    protected needsFocus: boolean = false;
+    protected focusableElements: HTMLElement[] = [];
+
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-document-overlay", "sv-article", "sv-tour-menu");
+        this.needsFocus = true;
     }
 
     protected renderEntry(tour: ITour, index: number)
     {
-        return html`<div class="sv-entry" @click=${e => this.onClickTour(e, index)}>
+        return html`<div role="option" title="tour entry" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, index)} class="sv-entry" @click=${e => this.onClickTour(e, index)}>
             <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] : tour.title}</h1>
             <p>${Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead}</p>
         </div>`;
@@ -64,9 +68,19 @@ export default class TourMenu extends CustomElement
             </div>`;
         }
 
-        return html`<div class="ff-scroll-y">
+        return html`<div role="listbox" aria-label="interactive tour menu" class="ff-scroll-y">
             ${tours.map((tour, index) => this.renderEntry(tour, index))}
         </div>`;
+    }
+
+    protected update(changedProperties) {
+        super.update(changedProperties);
+
+        if(this.needsFocus) {
+            const container = this.getElementsByClassName("sv-entry").item(0) as HTMLElement;
+            container.focus();
+            this.needsFocus = false;
+        }
     }
 
     protected onClickTour(e: MouseEvent, index: number)
@@ -76,5 +90,39 @@ export default class TourMenu extends CustomElement
         this.dispatchEvent(new CustomEvent("select", {
             detail: { index }
         }));
+    }
+
+    protected onKeyDown(e: KeyboardEvent, index: number)
+    {
+        if (e.code === "Space" || e.code === "Enter") {
+            e.preventDefault();
+            this.dispatchEvent(new CustomEvent("select", {
+                detail: { index }
+            }));
+        }
+        else if (e.code === "Escape") {
+            e.preventDefault();
+            this.dispatchEvent(new CustomEvent("close", {
+                detail: { index }
+            }));
+        }
+        else if(e.code === "Tab") {
+            if(this.focusableElements.length === 0) {
+                this.focusableElements = getFocusableElements(this) as HTMLElement[];
+            }
+
+            focusTrap(this.focusableElements, e);
+        }
+        else if(e.code === "ArrowUp" || e.code === "ArrowDown") {
+            const currentActive = e.target instanceof Element ? e.target as Element : null;
+            if(currentActive) {
+                const newActive = e.code === "ArrowUp" ? currentActive.previousElementSibling : currentActive.nextElementSibling;
+                if(newActive) {
+                    currentActive.setAttribute("tabIndex", "-1");
+                    newActive.setAttribute("tabIndex", "0");
+                    (newActive as HTMLElement).focus();
+                }
+            }
+        }
     }
 }

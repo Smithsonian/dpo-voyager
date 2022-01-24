@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,8 @@ export default class MainView extends CustomElement
         if (application) {
             this.application = application;
         }
+
+        this.addEventListener('focus', this.onFocus);
     }
 
     protected get fullscreen() {
@@ -136,6 +138,13 @@ export default class MainView extends CustomElement
         notifications.setAttribute("id", Notification.stackId);
         shadowRoot.appendChild(notifications);
         Notification.shadowRootNode = shadowRoot;
+
+        //this.setAttribute("tabindex", "0");
+        const introAnnouncement = document.createElement("div");
+        introAnnouncement.classList.add("sr-only");
+        introAnnouncement.setAttribute("id", "sr-intro");
+        introAnnouncement.setAttribute("aria-live", "polite");
+        shadowRoot.appendChild(introAnnouncement);
     }
 
     protected connected()
@@ -163,6 +172,14 @@ export default class MainView extends CustomElement
         else if(this.application && name === "controls") {
             this.application.enableNavigation(value);
         }
+    }
+
+    protected onFocus()
+    {
+        this.shadowRoot.getElementById("sr-intro").innerText =
+            "The Voyager web application allows you to view "
+            + "and interact with a 3D model from the Smithsonian collection. Use the tab key to "
+            + "move through interactive elements, enter or spacebar keys to activate, and the escape key to exit menus.";
     }
 
 
