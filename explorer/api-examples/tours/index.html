@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Multilingual Support - Voyager Documentation</title>
+  <title>API Example: Tours - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-single'>
+<body class='page page-default-list'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -134,9 +134,9 @@
       
     
       
-    
-      
         
+      
+    
       
     
       
@@ -238,7 +238,7 @@
 		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="">
+		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/explorer/api-examples/tours/">API Example: Tours</a>
 		</li>
 		
@@ -296,7 +296,7 @@
 		  <a href="/dpo-voyager/story/usage/tours-task/">Tours Task</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="active ">
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/story/usage/language-support/">Multilingual Support</a>
 		</li>
 		
@@ -326,62 +326,131 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Multilingual Support</h1>
-<div class="content">
-  <p>Voyager supports providing scene text in alternate languages that also have supporting language files for the UI. This currently includes English, Spanish, and German.</p>
-<p>The alternate text is added in the Story component and will be reflected in the Explorer component when changing the language in the UI.</p>
-<p><strong>Note: After adding your alternate language text don&rsquo;t forget to click &lsquo;Save&rsquo; write your changes to the scene file!</strong></p>
-<p><strong>Annotations</strong></p>
-<p><img src="lang-annotation.jpg" alt="Annotation Language Setup"></p>
-<ol>
-<li>
-<p>The task panel will display the base language (defaults to English) and the currently selected language.</p>
-</li>
-<li>
-<p>To add new content, just change the &lsquo;Language&rsquo; drop-down to the desired language and enter the new text in the appropriate boxes.</p>
-</li>
-<li>
-<p>Newly entered text will be immediately reflected in the visualization window.</p>
-</li>
-</ol>
-<p><strong>Articles</strong></p>
-<p><img src="lang-article.jpg" alt="Article Language Setup"></p>
-<ol>
-<li>
-<p>The task panel will display the base language (defaults to English) and the currently selected language.</p>
-</li>
-<li>
-<p>Select the desired language from the drop-down and enter a new title and lead. A language-specific article URI will automatically be generated.</p>
-</li>
-<li>
-<p>Edit the new language version article in the editor as usual.</p>
-</li>
-</ol>
-<p><strong>Tours</strong></p>
-<p><img src="lang-tour.jpg" alt="Tour Language Setup"></p>
-<ol>
-<li>
-<p>The task panel will display the base language (defaults to English) and the currently selected language.</p>
-</li>
-<li>
-<p>Select the desired language from the drop-down and enter a new title and lead.</p>
-</li>
-<li>
-<p>Add language specific tour step titles in the tour editor pane.</p>
-</li>
-</ol>
-<p><strong>Scene Title</strong></p>
-<p><img src="lang-title.jpg" alt="Title Language Setup"></p>
-<ol>
-<li>
-<p>Click the &lsquo;Collection&rsquo; tab at the top-left of the UI.</p>
-</li>
-<li>
-<p>Select the desired language from the drop-down and enter a new scene title.</p>
-</li>
-</ol>
 
+  
+  <h1 class="title">API Example: Tours</h1>
+  <div class="content">
+    <h4 id="try-it-out">Try it out:</h4>
+<p><link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
+<script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
+<script>
+var l ="https://3d-api.si.edu/content/document/"+"e7514eea-3f12-490d-a2d0-999f2a1a70f7"+"/";
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px'"+"uiMode='None'"+"root='"+l+"' document='document.json'></voyager-explorer>";
+});
+</script>
+<div id="explorer_wrapper" width="600" height="450">
 </div>
+<script>
+function updateUI(textInput) {
+	window.location = window.location.pathname + "?uiMode=" + textInput.value;
+}
+function setBackgroundColor(color0,color1) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundColor(color0.value, color1.value);
+}
+function setBackgroundStyle(style) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundStyle(style.value);
+}
+function toggleAnnotations() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleAnnotations();
+}
+function toggleReader() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleReader();
+}
+function toggleTours() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTours();
+}
+function toggleTools() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTools();
+}
+function getCameraOrbit(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const orbitAngles = voyagerElement.getCameraOrbit();
+	
+	displayElement.innerText = "Yaw: " + orbitAngles[0] + "	Pitch: " + orbitAngles[1];
+}
+function setCameraOrbit(yaw, pitch) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
+}
+function getCameraOffset(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const offset = voyagerElement.getCameraOffset();
+	
+	displayElement.innerText = "X: " + offset[0].toFixed(3) + "	Y: " + offset[1].toFixed(3) + "	Z: " + offset[2].toFixed(3);
+}
+function setCameraOffset(x, y, z) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOffset(x.value, y.value, z.value);
+}
+function getArticles(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const articles = voyagerElement.getArticles();
+
+	var articleNames = "";
+	articles.forEach(article => {
+		articleNames += article.title.length > 0 ? article.title : article.titles["EN"];
+		articleNames += " | ";
+	});
+  
+	displayElement.innerText = articleNames;
+}
+function getAnnotations(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const annotations = voyagerElement.getAnnotations();
+
+	var annotationNames = "";
+	annotations.forEach(annotation => {
+		annotationNames += "[id: " + annotation.id + " title: " + annotation.title + "]";
+		annotationNames += " | ";
+	});
+  
+	displayElement.innerText = annotationNames;
+}
+function setActiveAnnotation(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveAnnotation(id.value);
+}
+function setTourStep(stepIdx) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setTourStep(0, stepIdx.value, true);
+}
+</script>  <!-- raw HTML omitted --></p>
+<p>Activate a tour step by entering a tour step index in the box below and clicking the &ldquo;Activate&rdquo; button.</p>
+<p>The <a href="../../api">setTourStep()</a> function also allows for specifying the tour index (for the purposes of this demo we have hard coded it to 0),
+and an optional &lsquo;interpolate&rsquo; flag to indicate if the viewer should animate or jump directly to the next scene state (defaults to &lsquo;True&rsquo;).</p>
+<p><div style="text-align: center">
+	
+	
+	
+	<label style="display: inline-block;" for=step>step:</label>
+	<input class="sc-param" style="display: inline-block;" id=step></input>
+	
+	<button class="sc-button" style="display: inline-block;" onclick=setTourStep(step)>Activate</button>
+</div>  <!-- raw HTML omitted --></p>
+<h4 id="how-it-works">How it works:</h4>
+<p>See the annotated javascript from this page below for how to use the <a href="../../api">setTourStep() function</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">setTourStep</span><span class="p">(</span><span class="nx">stepIdx</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get reference to the Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	
+	<span class="c1">// Call the setTourStep function with the value of the 
+</span><span class="c1"></span>	<span class="c1">// option input element as the parameter.
+</span><span class="c1"></span>	<span class="c1">// **Note the hard-coded tour index and interpolate flag.
+</span><span class="c1"></span>	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setTourStep</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">stepIdx</span><span class="p">.</span><span class="nx">value</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+
+  </div>
+
+  
+
 
         </div>
       </div>

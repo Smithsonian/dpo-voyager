@@ -215,7 +215,15 @@
     </li>
 		
 		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/annotations/">API Example: Annotations</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/camera-offset/">API Example: Camera Offset</a>
 		</li>
 		
 		<li style="padding-left: 15px" class="">
@@ -228,6 +236,10 @@
 		
 		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/tours/">API Example: Tours</a>
 		</li>
 		
 		<li style="padding-left: 15px" class="">
@@ -365,6 +377,21 @@
 <td>Valid URL</td>
 <td>Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.</td>
 </tr>
+<tr>
+<td>bgColor</td>
+<td>Valid CSS colors</td>
+<td>Sets the color of the component background. Optional second color for gradient styles. Ex: &ldquo;red&rdquo; or &ldquo;red rgb(0,255,0)&rdquo;</td>
+</tr>
+<tr>
+<td>bgStyle</td>
+<td>Solid, LinearGradient, RadialGradient</td>
+<td>Sets the style of the component background.</td>
+</tr>
+<tr>
+<td>controls</td>
+<td>True, False</td>
+<td>Enables/Disables user-driven camera controls. Defaults to &lsquo;True&rsquo;. Useful if driving navigation from external code.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="ui-attributes">UI Attributes</h3>
@@ -447,6 +474,16 @@
 <td>None</td>
 <td>Requests an AR session (if available, outcome depends on platform) <strong>*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe</strong></td>
 </tr>
+<tr>
+<td>setActiveAnnotation(id)</td>
+<td>id: unique id string</td>
+<td>Activates the annotation with the provided id. Opens annotation content where style permits.</td>
+</tr>
+<tr>
+<td>setTourStep(tourIdx, stepIdx, interpolate[optional])</td>
+<td>tourIdx, stepIdx: valid integer - interpolate: boolean</td>
+<td>Activates the scene state found at the provided tour and step index. Optional &lsquo;interpolate&rsquo; parameter to control if transition is animated. Defaults to true.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="navigation-methods">Navigation Methods</h3>
@@ -486,6 +523,11 @@
 <td>getArticles()</td>
 <td>None</td>
 <td>Returns an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts">Article data objects</a> with properties of each article associated with the current scene.</td>
+</tr>
+<tr>
+<td>getAnnotations()</td>
+<td>None</td>
+<td>Returns an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63">Annotation data objects</a> for the current scene.</td>
 </tr>
 </tbody>
 </table>

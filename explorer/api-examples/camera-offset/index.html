@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>API Example: Toggle Displays - Voyager Documentation</title>
+  <title>API Example: Camera Offset - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -222,7 +222,7 @@
 		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="">
+		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/explorer/api-examples/camera-offset/">API Example: Camera Offset</a>
 		</li>
 		
@@ -234,7 +234,7 @@
 		  <a href="/dpo-voyager/explorer/api-examples/get-content/">API Example: Get Content</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="active ">
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
 		</li>
 		
@@ -328,13 +328,13 @@
           
 
   
-  <h1 class="title">API Example: Toggle Displays</h1>
+  <h1 class="title">API Example: Camera Offset</h1>
   <div class="content">
     <h4 id="try-it-out">Try it out:</h4>
 <p><link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
 <script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
 <script>
-var l ="https://3d-api.si.edu/content/document/"+"d8c62be8-4ebc-11ea-b77f-2e728ce88125"+"/";
+var l ="https://3d-api.si.edu/content/document/"+"d8c636ce-4ebc-11ea-b77f-2e728ce88125"+"/";
 document.addEventListener("DOMContentLoaded", function(){
     document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px'"+""+"root='"+l+"' document='document.json'></voyager-explorer>";
 });
@@ -422,38 +422,55 @@ function setTourStep(stepIdx) {
 	voyagerElement.setTourStep(0, stepIdx.value, true);
 }
 </script>  <!-- raw HTML omitted --></p>
-<p>Click any of the buttons below to toggle on and of the respective functionality. This is especially useful if you <a href="../ui-config/">launch Explorer without the related UI visible</a>.</p>
-<div style="text-align: center" id=toggle-wrapper>
+<p>Orient the scene above to the desired view and then click the button below to get the current offset values.</p>
+<div style="text-align: center" id=offset-wrapper>
 
-<button class="sc-button" style="display: inline-block;" onclick=toggleAnnotations()>Annotations</button>
-
-<button class="sc-button" style="display: inline-block;" onclick=toggleTours()>Tours</button>
-
-<button class="sc-button" style="display: inline-block;" onclick=toggleReader()>Reader</button>
-
-<button class="sc-button" style="display: inline-block;" onclick=toggleTools()>Tools</button>
+	<button class="sc-button" style="display: inline-block;" onclick=getCameraOffset(offsetDisplay)>Get Camera Offset</button>
 
 
 </div>
+<p><div style="text-align: center" id=offsetDisplay>
+
+</div>  <!-- raw HTML omitted --></p>
+<p>Enter offset values in the boxes below and click the button to immediately update the camera offset in the example. Values outside of the limits imposed by the scene will be clamped to the min/max.</p>
+<p><div style="text-align: center">
+	
+	
+	
+	<label style="display: inline-block;" for=X>X:</label>
+	<input class="sc-param" style="display: inline-block;" id=X></input>
+	
+	<label style="display: inline-block;" for=Y>Y:</label>
+	<input class="sc-param" style="display: inline-block;" id=Y></input>
+	
+	<label style="display: inline-block;" for=Z>Z:</label>
+	<input class="sc-param" style="display: inline-block;" id=Z></input>
+	
+	<button class="sc-button" style="display: inline-block;" onclick=setCameraOffset(X,Y,Z)>Set Camera Offset</button>
+</div>  <!-- raw HTML omitted --></p>
 <h4 id="how-it-works">How it works:</h4>
-<p>Each toggle button function starts with finding the Voyager Explorer element based on id and then calls the relevant function on the object. Code examples from this page shown below.</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">toggleAnnotations</span><span class="p">()</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
-	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleAnnotations</span><span class="p">();</span>
+<p>See the annotated javascript from this page below for one way to use the <a href="../../api">&lsquo;get&rsquo; and &lsquo;set&rsquo; camera offset functions</a>.</p>
+<p>Getting and displaying camera offset:
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">getCameraOffset</span><span class="p">(</span><span class="nx">displayElement</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="c1">// Call getCameraOffset() on the object and store the resulting array
+</span><span class="c1"></span>	<span class="kr">const</span> <span class="nx">offset</span> <span class="o">=</span> <span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">getCameraOffset</span><span class="p">();</span>
+	
+	<span class="c1">// Format the offset values and assign to the inner 
+</span><span class="c1"></span>	<span class="c1">// text of the passed in display element
+</span><span class="c1"></span>	<span class="nx">displayElement</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="s2">&#34;X: &#34;</span> <span class="o">+</span> <span class="nx">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">toFixed</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&#34;	Y: &#34;</span> <span class="o">+</span> <span class="nx">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">toFixed</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&#34;	Z: &#34;</span> <span class="o">+</span> <span class="nx">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="nx">toFixed</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
 <span class="p">}</span>
-<span class="kd">function</span> <span class="nx">toggleReader</span><span class="p">()</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
-	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleReader</span><span class="p">();</span>
+</code></pre></div></p>
+<p>Setting new camera offset values:
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">setCameraOffset</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="nx">z</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>	
+	<span class="c1">// Call setCameraOffset() on the object with the values
+</span><span class="c1"></span>	<span class="c1">// of the x, y, and z input elements as params
+</span><span class="c1"></span>	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setCameraOffset</span><span class="p">(</span><span class="nx">x</span><span class="p">.</span><span class="nx">value</span><span class="p">,</span> <span class="nx">y</span><span class="p">.</span><span class="nx">value</span><span class="p">,</span> <span class="nx">z</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
 <span class="p">}</span>
-<span class="kd">function</span> <span class="nx">toggleTours</span><span class="p">()</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
-	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleTours</span><span class="p">();</span>
-<span class="p">}</span>
-<span class="kd">function</span> <span class="nx">toggleTools</span><span class="p">()</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
-	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleTools</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre></div>
+</code></pre></div></p>
 
   </div>
 

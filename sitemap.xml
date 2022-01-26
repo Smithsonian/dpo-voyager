@@ -30,13 +30,19 @@
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/story/usage/</loc>
   </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/annotations/</loc>
+  </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/background/</loc>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/camera-offset/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/camera-orbit/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/get-content/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/toggles/</loc>
+  </url><url>
+    <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/tours/</loc>
   </url><url>
     <loc>https://smithsonian.github.io/dpo-voyager/explorer/api-examples/ui-config/</loc>
   </url><url>

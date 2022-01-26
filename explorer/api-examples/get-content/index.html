@@ -215,7 +215,15 @@
     </li>
 		
 		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/annotations/">API Example: Annotations</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/camera-offset/">API Example: Camera Offset</a>
 		</li>
 		
 		<li style="padding-left: 15px" class="">
@@ -228,6 +236,10 @@
 		
 		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/tours/">API Example: Tours</a>
 		</li>
 		
 		<li style="padding-left: 15px" class="">
@@ -324,7 +336,7 @@
 <script>
 var l ="https://3d-api.si.edu/content/document/"+"d8c646aa-4ebc-11ea-b77f-2e728ce88125"+"/";
 document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' document='document.json'></voyager-explorer>";
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px'"+""+"root='"+l+"' document='document.json'></voyager-explorer>";
 });
 </script>
 <div id="explorer_wrapper" width="600" height="450">
@@ -367,6 +379,16 @@ function setCameraOrbit(yaw, pitch) {
 	var voyagerElement = document.getElementById("voyager");	
 	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
 }
+function getCameraOffset(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const offset = voyagerElement.getCameraOffset();
+	
+	displayElement.innerText = "X: " + offset[0].toFixed(3) + "	Y: " + offset[1].toFixed(3) + "	Z: " + offset[2].toFixed(3);
+}
+function setCameraOffset(x, y, z) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOffset(x.value, y.value, z.value);
+}
 function getArticles(displayElement) {
 	var voyagerElement = document.getElementById("voyager");
 	const articles = voyagerElement.getArticles();
@@ -379,8 +401,28 @@ function getArticles(displayElement) {
   
 	displayElement.innerText = articleNames;
 }
+function getAnnotations(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const annotations = voyagerElement.getAnnotations();
+
+	var annotationNames = "";
+	annotations.forEach(annotation => {
+		annotationNames += "[id: " + annotation.id + " title: " + annotation.title + "]";
+		annotationNames += " | ";
+	});
+  
+	displayElement.innerText = annotationNames;
+}
+function setActiveAnnotation(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveAnnotation(id.value);
+}
+function setTourStep(stepIdx) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setTourStep(0, stepIdx.value, true);
+}
 </script>  <!-- raw HTML omitted --></p>
-<p>Click below to pull article data from the example scene and display a list of the article titles.</p>
+<p>Click below to pull and display article or annotation data from the example scene.</p>
 <div style="text-align: center" id=article-wrapper>
 
 <button class="sc-button" style="display: inline-block;" onclick=getArticles(articleDisplay)>Get Articles</button>
@@ -390,8 +432,19 @@ function getArticles(displayElement) {
 <p><div style="text-align: center" id=articleDisplay>
 
 </div>  <!-- raw HTML omitted --></p>
+<div style="text-align: center" id=annotation-wrapper>
+
+<button class="sc-button" style="display: inline-block;" onclick=getAnnotations(annotationDisplay)>Get Annotations</button>
+
+
+</div>
+<p><div style="text-align: center" id=annotationDisplay>
+
+</div>  <!-- raw HTML omitted --></p>
 <h4 id="how-it-works">How it works:</h4>
-<p>The annotated javascript below shows how to call the <a href="../../api">getArticleData()</a> function on the Voyager Explorer object and then parses the response for display. The articles are returned as an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts">Article data objects</a>.</p>
+<p>The annotated javascript below shows how to call the <a href="../../api">getArticles()</a> and <a href="../../api">getAnnotations()</a> functions on the Voyager Explorer object 
+and then parses the response for display. The articles are returned as an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts">Article data objects</a>
+and the annotations are returned as an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63">Annotation data objects</a>.</p>
 <div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">getArticles</span><span class="p">(</span><span class="nx">displayElement</span><span class="p">)</span> <span class="p">{</span>
 	<span class="c1">// Get Explorer element by id
 </span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
@@ -410,6 +463,25 @@ function getArticles(displayElement) {
 	<span class="c1">// Set the innerText of the passed in display element to 
 </span><span class="c1"></span>	<span class="c1">// the string of titles.
 </span><span class="c1"></span>	<span class="nx">displayElement</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="nx">articleNames</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">getAnnotations</span><span class="p">(</span><span class="nx">displayElement</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	<span class="c1">// Call getAnnotations() on the object and store the resulting array
+</span><span class="c1"></span>	<span class="kr">const</span> <span class="nx">annotations</span> <span class="o">=</span> <span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">getAnnotations</span><span class="p">();</span>
+
+	<span class="c1">// For each annotation in the array, grab the id 
+</span><span class="c1"></span>	<span class="c1">// and title attributes and add to a string.
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">annotationNames</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span><span class="p">;</span>
+	<span class="nx">annotations</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">annotation</span> <span class="p">=&gt;</span> <span class="p">{</span>
+		<span class="nx">annotationNames</span> <span class="o">+=</span> <span class="s2">&#34;[id: &#34;</span> <span class="o">+</span> <span class="nx">annotation</span><span class="p">.</span><span class="nx">id</span> <span class="o">+</span> <span class="s2">&#34; title: &#34;</span> <span class="o">+</span> <span class="nx">annotation</span><span class="p">.</span><span class="nx">title</span> <span class="o">+</span> <span class="s2">&#34;]&#34;</span><span class="p">;</span>
+		<span class="nx">annotationNames</span> <span class="o">+=</span> <span class="s2">&#34; | &#34;</span><span class="p">;</span>
+	<span class="p">});</span>
+  
+	<span class="c1">// Set the innerText of the passed in display element to 
+</span><span class="c1"></span>	<span class="c1">// the string of annotation data.
+</span><span class="c1"></span>	<span class="nx">displayElement</span><span class="p">.</span><span class="nx">innerText</span> <span class="o">=</span> <span class="nx">annotationNames</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div>
 
