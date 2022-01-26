@@ -14,8 +14,7 @@ The Voyager 3D Story tool is designed to be used as a single page client-side ap
 Sample HTML documents are provided as part of the distributable package.
 
 The application can be launched via custom HTML element that can be customized using the following properties.
-Properties can be provided as URL variables, as attributes of the custom HTML element, or by providing a
-properties object as an argument to the application constructor.
+Properties can be provided as URL variables or as attributes of the custom HTML element.
 
 ### Properties
 
@@ -32,28 +31,38 @@ properties object as an argument to the application constructor.
 
 ### Example 1: launching the Story tool via custom HTML element
 {{<highlight html>}}
-<!DOCTYPE html>
+<!doctype html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Voyager Story</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Voyager Story</title>
+	
+    <link rel="shortcut icon" type="image/png" href="favicon.png" />
+    <link href="/fonts/fonts.css" rel="stylesheet">
+	
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+    <script defer="defer" src="js/voyager-story.min.js"></script>
+    <link href="css/voyager-story.min.css" rel="stylesheet">
+</head>
 
-        <link rel="shortcut icon" type="image/png" href="favicon.png"/>
-        <link href="/fonts/fonts.css" rel="stylesheet">
-        
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<body>
+    <voyager-story></voyager-story>
+</body>
 
-        <link rel="stylesheet" href="css/voyager-story.min.css">
-    </head>
-    <body>
-        <voyager-story presentation="my_presentation.json"></voyager-story>
-        <script defer="defer" type="text/javascript" src="js/voyager-story.min.js"></script>
-    </body>
 </html>
 {{</highlight>}}
+
+Then provide the root path to your scene folder as well as the document name as url params. 
+
+An example url using the default Voyager distribution package, WebDAV server,
+and [demo assets](../../introduction/demo-assets/) would look something like this:
+
+```
+http://localhost:8000/voyager-story-dev.html?mode=qc&root=models/tusk/&document=tusk.svx.json
+```
 
 <!--
 ### Example 2: launching the Story tool via application class
