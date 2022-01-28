@@ -34,6 +34,7 @@ export default class TourNavigator extends DocumentView
 
     protected needsFocus: boolean = false;
     protected firstRender: boolean = true;
+    protected stepTitle: string = "";
 
     protected firstConnected()
     {
@@ -62,6 +63,7 @@ export default class TourNavigator extends DocumentView
             title = language.getLocalizedString("No tour selected");
             info = "---";
         }
+        this.stepTitle = title;
 
         return html`<div class="sv-blue-bar" role=region title="Tour Navigation" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
             <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
@@ -85,10 +87,14 @@ export default class TourNavigator extends DocumentView
         }
 
         // Hack so that initial nav title display is detected by screen readers.
-        if(this.firstRender) {
-            const titleDiv = this.getElementsByClassName("sv-title").item(0) as HTMLElement;
-            setTimeout(() => {titleDiv.innerHTML = `<div>${titleDiv.innerText}</div>`;}, 100);
-            this.firstRender = false;
+        const titleDiv = this.getElementsByClassName("sv-title").item(0) as HTMLElement;
+        if(titleDiv)
+        {
+            titleDiv.innerHTML = this.stepTitle;
+            if(this.firstRender) {  
+                setTimeout(() => {titleDiv.innerHTML = `<div>${this.stepTitle}</div>`;}, 100);
+                this.firstRender = false;
+            }
         }
     }
 
