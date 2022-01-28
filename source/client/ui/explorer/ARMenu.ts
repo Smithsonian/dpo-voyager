@@ -90,8 +90,9 @@ export default class ARMenu extends DocumentView
 
     protected onToggleNarration()
     {
-        const audioIns = this.activeDocument.setup.audio.ins;
-        audioIns.playNarration.set();
+        const audio = this.activeDocument.setup.audio;
+        audio.setupAudio();  // required for Safari compatibility
+        audio.ins.playNarration.set();
     }
 
     protected onToggleAnnotations()

@@ -75,9 +75,6 @@ export default class CVAudioManager extends Component
     {
         super.create();
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
-
-        this.audioPlayer = document.createElement('audio');
-        this.audioPlayer.onended = this.onEnd;
     }
 
     dispose()
@@ -91,11 +88,13 @@ export default class CVAudioManager extends Component
         const { ins, outs } = this;
 
         if (ins.playNarration.changed) {
-            if(!this.isPlaying) {
-                this.play(this._narrationId);
-            }
-            else {
-                this.stop();
+            if(this.audioPlayer) {
+                if(!this.isPlaying) {
+                    this.play(this._narrationId);
+                }
+                else {
+                    this.stop();
+                }
             }
         }
     
@@ -171,12 +170,13 @@ export default class CVAudioManager extends Component
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id === this._narrationId);
         })
-        .catch(error => Notification.show(`Failed to play audio at '${uri}'`, "warning"));  
+        .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));  
     }
 
     stop()
     {      
         this.audioPlayer.pause();
+        this.audioPlayer.currentTime = 0;
         this.onEnd();
     }
 
@@ -185,5 +185,17 @@ export default class CVAudioManager extends Component
 
         this.isPlaying = false;
         outs.narrationPlaying.setValue(false);
+    }
+
+    // setup function required for Safari compatibility so audio element is setup immediately on user interaction.
+    setupAudio()
+    {
+        if(this.audioPlayer === null) {
+            this.audioPlayer = document.createElement('audio');
+            this.audioPlayer.onended = this.onEnd;
+            //this.audioPlayer.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+
+            this.ins.playNarration.set();
+        }
     }
 }
