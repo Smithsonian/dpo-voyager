@@ -18,7 +18,7 @@
 import Component, { types } from "@ff/graph/Component";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import { WebGLRenderTarget, RGBFormat, NearestFilter, DepthTexture, UnsignedShortType, DepthFormat, UnsignedIntType, Vector3, Color, PlaneGeometry, MeshBasicMaterial, Mesh, DoubleSide, SphereGeometry, BoxGeometry, Box3, Plane, Scene, OrthographicCamera, RGBAFormat } from "three";
+import { WebGLRenderTarget, RGBFormat, NearestFilter, DepthTexture, UnsignedShortType, DepthFormat, UnsignedIntType, Vector3, Color, PlaneGeometry, MeshBasicMaterial, Mesh, DoubleSide, SphereGeometry, BoxGeometry, Box3, Plane, Scene, OrthographicCamera, RGBAFormat, Box2, Vector2 } from "three";
 import DepthShader from "../shaders/DepthShader";
 import MinMaxShader from "../shaders/MinMaxShader";
 import { EProjection } from "client/../../libs/ff-three/source/UniversalCamera";
@@ -36,12 +36,14 @@ const maxBoundsByView = [[0,0,1],[1,0,0],[1,1,1],[1,0,0],[1,0,1],[0,0,0]];  // l
 
 const _target: Vector3 = new Vector3();
 const _dir: Vector3 = new Vector3();
+const _point: Vector2 = new Vector2();
+const _point2: Vector2 = new Vector2();
 const _color = new Color();
 const _plane = new Plane();
 const _box = new Box3();
 const _lowVolume: number = 0.25;
 
-export enum ESonifyMode { Frequency, Volume, Beep };
+export enum ESonifyMode { Frequency, Beep };
 
 export default class CVSonify extends Component
 {
@@ -90,6 +92,8 @@ export default class CVSonify extends Component
     protected sonifyDot: HTMLDivElement = null;
     protected scanMin: number[] = [];
     protected scanDims: number[] = [];
+    protected scanBox: Box2 = null;
+    protected volumeDist: number = 0;
 
     protected isPlaying: boolean = false;
 
@@ -127,6 +131,8 @@ export default class CVSonify extends Component
             + "/+kXg1WRVJL/9EmQ1YZIsv/6Qzwy5qk7/+tEU0nkls3/zIUMPKNX/6yZLf+kFgAfgGyLFAUwY//uQZAUABcd5UiNPVXAAAApAA"
             + "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///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=";
             
+        this.scanBox = new Box2();
+        
         window.addEventListener("resize", this.debounce(this.onResize, 200, false));
         window.addEventListener("fullscreenchange", this.onResize);
     }
@@ -162,11 +168,11 @@ export default class CVSonify extends Component
 
                 const gainNode = this.gain = this.audioCtx.createGain();
                 gainNode.connect(this.audioCtx.destination);
-                gainNode.gain.value = outs.mode.value === ESonifyMode.Volume ? _lowVolume : 1.0;
+                //gainNode.gain.value = outs.mode.value === ESonifyMode.Volume ? _lowVolume : 1.0;
 
                 const osc = this.oscillator = this.audioCtx.createOscillator();
                 osc.type = 'sine';
-                osc.frequency.value = outs.mode.value === ESonifyMode.Volume ? 133 : 100;
+                osc.frequency.value = 100;
                 osc.start();
 
                 this.setupBufferSource();
@@ -224,8 +230,8 @@ export default class CVSonify extends Component
             }
 
             if(this.ins.active.value) {
-                gainNode.gain.value  = inMode === ESonifyMode.Volume ? _lowVolume : 1.0;
-                osc.frequency.value = inMode === ESonifyMode.Volume ? 133 : 100;
+                //gainNode.gain.value  = inMode === ESonifyMode.Volume ? _lowVolume : 1.0;
+                osc.frequency.value = 100;
             
                 if(inMode === ESonifyMode.Beep) {   
                     osc.disconnect(gainNode);
@@ -288,12 +294,14 @@ export default class CVSonify extends Component
         if(this.ins.mode.value === ESonifyMode.Frequency) {
             this.oscillator.frequency.value = nDepth <= 0.000001 ? 100 : 100 + 700*(1.0-nDepth);
         }
-        else if(this.ins.mode.value === ESonifyMode.Volume) {
-            this.gain.gain.value = nDepth <= 0.000001 ? _lowVolume : _lowVolume + 10.0*(1.0-nDepth);
-        }
         else {
             this.bufferSource.loopEnd =  nDepth <= 0.000001 ? 1.0 : 1 / ((60 + (440.0*(1.0-nDepth))) / 60);
         }
+
+        // Update volume based on proximity to object on screen
+        _point.set(x,y);
+        const dist = this.scanBox.distanceToPoint(_point);
+        this.gain.gain.value = 1.0 - 0.8*(dist/this.volumeDist);
 
         //console.log(x + " " + y + " DEPTH: " + nDepth);
     }
@@ -403,6 +411,11 @@ export default class CVSonify extends Component
 
         this.scanDims[0] = Math.abs(this.scanMin[0] - ((_target.x * halfWidth) + halfWidth));
         this.scanDims[1] = Math.abs(this.scanMin[1] - (-(_target.y * halfHeight) + halfHeight));
+
+        _point.set(this.scanMin[0], this.scanMin[1]);
+        _point2.set(_point.x+this.scanDims[0], _point.y+this.scanDims[1]);
+        this.scanBox.set(_point, _point2);
+        this.volumeDist = Math.sqrt(Math.pow((window.innerWidth-this.scanDims[0])/2.0,2.0) + Math.pow((window.innerHeight-this.scanDims[1])/2.0,2.0));
 
         const renderer = this.renderer.views[0].renderer;  
         

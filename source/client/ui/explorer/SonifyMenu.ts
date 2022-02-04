@@ -131,8 +131,8 @@ export default class SonifyMenu extends SystemView
             const introElement = this.getElementsByClassName("sr-only").item(0) as HTMLElement;
             introElement.innerText = "This feature uses sound to describe the shape of a 3D object. "
             + "As you move your pointer over the object the sound will change based on how "
-            + "close or far the surface is from you at that point. There are 3 options for type of "
-            + "sound change... frequency, volume, and beep. Select a type and then click the start button "
+            + "close or far the surface is from you at that point. There are 2 options for type of "
+            + "sound change... frequency and rate of beep. Select a type and then click the start button "
             + "to try it out!";
             }, 100);
         }
@@ -177,9 +177,6 @@ export default class SonifyMenu extends SystemView
 
         if(sonifyOuts.mode.value === ESonifyMode.Frequency) {
             introElement.innerText = "Higher frequency means closer surface";
-        }
-        else if(sonifyOuts.mode.value === ESonifyMode.Volume) {
-            introElement.innerText = "Louder tone means closer surface"
         }
         else {
             introElement.innerText = "Faster beeps mean a closer surface"
