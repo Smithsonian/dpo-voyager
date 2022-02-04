@@ -22,6 +22,7 @@ import CVAnnotationsTask from "../components/CVAnnotationsTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 import CVArticlesTask from "../components/CVArticlesTask";
 import CVToursTask from "../components/CVToursTask";
+import CVAudioTask from "../components/CVAudioTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,6 +36,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVAudioTask,
         CVSettingsTask,
     ],
     [ETaskMode.QC]: [
@@ -47,6 +49,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVAudioTask,
         CVSettingsTask,
     ],
     [ETaskMode.Expert]: [
@@ -56,6 +59,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVAudioTask,
         CVSettingsTask,
     ]
 }

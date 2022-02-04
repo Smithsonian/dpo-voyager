@@ -122,6 +122,8 @@ export default class MainMenu extends DocumentView
         const toolsActive = this.toolProvider.ins.visible.value;
 
         const sonifyActive = this.sonification.ins.visible.value;
+        const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
+        const narrationActive = setup.audio.outs.narrationPlaying.value;
 
         const language = setup.language;
 
@@ -134,6 +136,8 @@ export default class MainMenu extends DocumentView
             @click=${this.onEnterAR}></ff-button>` : null}
         <ff-button icon="music" id="sonify-btn" role="button" title=${language.getLocalizedString("Sonify")}
             ?selected=${sonifyActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleSonify}></ff-button>
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
+            ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
         ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
         ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
@@ -257,6 +261,13 @@ export default class MainMenu extends DocumentView
         arIns.enabled.setValue(true);
     }
 
+    protected onToggleNarration()
+    {
+        const audio = this.activeDocument.setup.audio;
+        audio.setupAudio();  // required for Safari compatibility
+        audio.ins.playNarration.set();
+    }
+
     // TODO: More elegant way to handle focus
     protected setTourFocus()
     {
@@ -308,6 +319,7 @@ export default class MainMenu extends DocumentView
                 setup.tours.ins.enabled,
                 setup.tours.outs.count,
                 setup.viewer.ins.annotationsVisible,
+                setup.audio.outs.narrationPlaying,
                 this.toolProvider.ins.visible
             );
         }

@@ -76,6 +76,7 @@ import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
+import CVAudioManager from "client/components/CVAudioManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +126,7 @@ const types = [
     CVSnapshots,
     CVEnvironment,
     CVLanguageManager,
+    CVAudioManager,
 
     NVEngine,
     NVDocuments,

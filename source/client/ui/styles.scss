@@ -136,6 +136,10 @@
 
 }
 
+.ff-flex-spacer {
+  @include noselect;
+}
+
 // Screen reader only elements
 .sr-only {
   position: absolute;

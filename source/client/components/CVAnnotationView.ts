@@ -453,12 +453,12 @@ export default class CVAnnotationView extends CObject3D
         group.disposeHTMLElements(event.viewport.overlay);
     }
 
-    protected onSpriteClick(event: IAnnotationClickEvent)
+    protected onSpriteClick(event: any)
     {
         this.emit(event);
     }
 
-    protected onSpriteLink(event: IAnnotationLinkEvent)
+    protected onSpriteLink(event: any)
     {
         const reader = this.reader;
         if (reader) {

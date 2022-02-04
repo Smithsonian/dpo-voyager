@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { GammaEncoding, ACESFilmicToneMapping, NoToneMapping, Mesh } from "three";
+import { ACESFilmicToneMapping, NoToneMapping, Mesh } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -142,7 +142,7 @@ export default class CVViewer extends Component
             }
         }
         if (ins.gamma.changed) {
-            this.renderer.ins.gamma.setValue(ins.gamma.value);
+            //this.renderer.ins.gamma.setValue(ins.gamma.value);
         }
 
         if (ins.quality.changed) {
@@ -164,11 +164,6 @@ export default class CVViewer extends Component
         }
         if (ins.sortedTags.changed) {
             this.refreshTagCloud();
-        }
-
-        // ** Temporary hack until RenderView supports outputEncoding param
-        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== GammaEncoding) {
-            this.renderer.views[0].renderer.outputEncoding = GammaEncoding;
         }
 
         return true;
