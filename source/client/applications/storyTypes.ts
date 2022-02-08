@@ -29,6 +29,7 @@ import CVArticlesTask from "../components/CVArticlesTask";
 import CVToursTask from "../components/CVToursTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 import CVStandaloneFileManager from "../components/CVStandaloneFileManager";
+import CVAudioTask from "../components/CVAudioTask";
 
 import NVVoyagerStory from "../nodes/NVoyagerStory";
 import NVTasks from "../nodes/NVTasks";
@@ -50,6 +51,7 @@ const types = [
     CVArticlesTask,
     CVToursTask,
     CVDerivativesTask,
+    CVAudioTask,
 
     NVVoyagerStory,
     NVTasks,

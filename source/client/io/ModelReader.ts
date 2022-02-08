@@ -86,8 +86,15 @@ export default class ModelReader
             this.gltfLoader.load(url, gltf => {
                 resolve(this.createModelGroup(gltf));
             }, null, error => {
-                console.error(`failed to load '${url}': ${error}`);
-                reject(new Error(error));
+                if(this.gltfLoader === null || this.gltfLoader.dracoLoader === null) {
+                    // HACK to avoid errors when component is removed while loading still in progress.
+                    // Remove once Three.js supports aborting requests again.
+                    resolve(null);
+                }
+                else {
+                    console.error(`failed to load '${url}': ${error}`);
+                    reject(new Error(error));
+                }
             })
         });
     }

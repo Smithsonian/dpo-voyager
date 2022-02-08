@@ -140,6 +140,11 @@ export interface ILanguage
     language: TLanguageType;
 }
 
+export interface IAudio
+{
+    narrationId?: string;
+}
+
 export interface ITape
 {
     enabled: boolean;

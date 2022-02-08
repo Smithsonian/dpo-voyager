@@ -82,21 +82,66 @@ export default class PropertyOptions extends CustomElement
         let buttons;
         if (indexMap) {
             buttons = indexMap.map(index =>
-                html`<ff-button .text=${language ? language.getLocalizedString(options[index]) : options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button role="radio" aria-checked=${index === value ? true : false} tabbingIndex=${indexMap.includes(value) ? (index === value ? 0 : -1) : (index === indexMap[0] ? 0 : -1)} .text=${language ? language.getLocalizedString(options[index]) : options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
                     </ff-button>`);
         }
         else {
             buttons = options.map((option, index) =>
-                html`<ff-button .text=${language ? language.getLocalizedString(option) : option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button role="radio" aria-checked=${index === value ? true : false} tabbingIndex=${index === value ? 0 : -1} .text=${language ? language.getLocalizedString(option) : option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
                     </ff-button>`)
         }
 
-        return html`<label class="ff-label ff-off">${name}</label><div class="sv-options">${buttons}</div>`;
+        return html`<label class="ff-label ff-off">${name}</label><div role="radiogroup" @keydown=${e =>this.onKeyDown(e)} title=${name} class="sv-options">${buttons}</div>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)
     {
         const value = event.target.index;
         this.property.setValue(value);
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if(e.code === "ArrowUp" || e.code === "ArrowLeft") {
+            const options = this.getElementsByTagName("ff-button");
+            const currentIdx = Array.from(options).findIndex(option => e.target === option);
+            if(currentIdx > 0) {
+                options[currentIdx].setAttribute("tabIndex", "-1");
+                options[currentIdx-1].setAttribute("tabIndex", "0");
+                (options[currentIdx-1] as HTMLElement).focus();
+            }
+        }
+        else if(e.code === "ArrowDown" || e.code === "ArrowRight") {
+            const options = this.getElementsByTagName("ff-button");
+            const currentIdx = Array.from(options).findIndex(option => e.target === option);
+            if(currentIdx < options.length-1) {
+                options[currentIdx].setAttribute("tabIndex", "-1");
+                options[currentIdx+1].setAttribute("tabIndex", "0");
+                (options[currentIdx+1] as HTMLElement).focus();
+            }
+        }
+        else if(e.code === "Tab") {
+            this.addEventListener('blur', this.tabReset, { once: true, capture: true });
+        }
+    }
+
+    focus() {
+        const options = this.getElementsByTagName("ff-button");
+        const currentIdx = Math.max(Array.from(options).findIndex(option => (option as HTMLElement).tabIndex === 0), 0);
+
+        (options[currentIdx] as HTMLElement).focus();
+    }
+
+    // resets tabIndex if needed
+    protected tabReset(e: FocusEvent) {
+        const options = this.getElementsByTagName("ff-button");
+        const optionsArray = Array.from(options);
+        const activeIdx = optionsArray.findIndex(option => (option as HTMLElement).tabIndex === 0);
+        const selectedIdx = optionsArray.findIndex(option => option.getAttribute("aria-checked") === "true");
+        if(activeIdx != selectedIdx) {
+            options[activeIdx].setAttribute("tabIndex", "-1");
+            const currentIdx = selectedIdx > -1 ? selectedIdx : 0;
+            options[currentIdx].setAttribute("tabIndex", "0");
+        }
     }
 }

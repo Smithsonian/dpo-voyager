@@ -24,7 +24,7 @@ We welcome any contributions to the project. Please open a PR for any bug fixes 
 This software is pre-release and provided "as is". Breaking changes can and will happen during development.
 
 ### License Information
-Copyright 2021 Smithsonian Institution.
+Copyright 2022 Smithsonian Institution.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use the content of this repository except in compliance with the License. You may obtain a copy of the License at
 

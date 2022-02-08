@@ -180,6 +180,7 @@ export default class ContentView extends DocumentView
     protected onReaderClose()
     {
         this.reader.ins.enabled.setValue(false);
+        this.reader.ins.closed.set();
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

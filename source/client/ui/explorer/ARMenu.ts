@@ -69,9 +69,14 @@ export default class ARMenu extends DocumentView
         const annotationsButtonVisible = true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
 
+        const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
+        const narrationActive = setup.audio.outs.narrationPlaying.value;
+
         return outs.isPlaced.value && outs.isPresenting.value ? html`<div class="sv-ar-menu">
         ${annotationsButtonVisible ? html`<ff-button icon="comment" title="Show/Hide Annotations"
             ?selected=${annotationsActive} @click=${this.onToggleAnnotations}></ff-button>` : null}
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${"Play Audio Narration"}
+            ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
         </div>` : null;
     }
 
@@ -83,6 +88,12 @@ export default class ARMenu extends DocumentView
         this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
     }
 
+    protected onToggleNarration()
+    {
+        const audio = this.activeDocument.setup.audio;
+        audio.setupAudio();  // required for Safari compatibility
+        audio.ins.playNarration.set();
+    }
 
     protected onToggleAnnotations()
     {
@@ -110,6 +121,7 @@ export default class ARMenu extends DocumentView
 
             this.documentProps.on(
                 setup.viewer.ins.annotationsVisible,
+                setup.audio.outs.narrationPlaying,
             );
 
             this.arManager.outs.isPlaced.on("value", this.onUpdate, this);

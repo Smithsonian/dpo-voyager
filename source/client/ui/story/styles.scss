@@ -338,6 +338,21 @@ $color-component-meta-light: #d9d998;
   flex-basis: 50%;
 }
 
+.sv-task-item-full {
+  flex-basis: 100%;
+}
+
+.sv-drop-zone {
+  outline-style: solid;
+  outline-width: 2px;
+  outline-color: blue;
+}
+
+.sv-task-option-base-align {
+  color: #a0a0a0;
+  align-self: flex-end;
+}
+
 .sv-item-border-l {
   border-left: solid;
   border-left-width: 2px;

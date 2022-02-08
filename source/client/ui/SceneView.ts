@@ -21,6 +21,7 @@ import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
+import CVDocumentProvider from "client/components/CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,11 +41,13 @@ export default class SceneView extends SystemView
     protected overlay: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
 
+    protected pointerEventsEnabled: boolean = false;
+
     constructor(system?: System)
     {
         super(system);
 
-        this.onResize = this.onResize.bind(this);
+        //this.onResize = this.onResize.bind(this);
 
         this.manipTarget = new ManipTarget();
 
@@ -57,6 +60,8 @@ export default class SceneView extends SystemView
         this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
+
+        this.pointerEventsEnabled = true;
     }
 
     protected firstConnected()
@@ -105,19 +110,65 @@ export default class SceneView extends SystemView
     {
         this.view.attach();
 
-        window.addEventListener("resize", this.onResize);
-        window.dispatchEvent(new CustomEvent("resize"));
+        //window.addEventListener("resize", this.onResize);
+        //window.dispatchEvent(new CustomEvent("resize"));
+
+        const resizeObserver = new ResizeObserver(() => this.view.resize());
+        resizeObserver.observe(this.view.renderer.domElement);
+
+        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
     }
 
     protected disconnected()
     {
+        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
+
         this.view.detach();
 
-        window.removeEventListener("resize", this.onResize);
+        //window.removeEventListener("resize", this.onResize);
     }
 
-    protected onResize()
+    protected enablePointerEvents() {
+        const needsEnabled = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.value;
+
+        if(needsEnabled && !this.pointerEventsEnabled) {
+            this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
+            this.addEventListener("pointermove", this.manipTarget.onPointerMove);
+            this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
+            this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+            this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
+            this.ownerDocument.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
+            this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.addEventListener("wheel", this.manipTarget.onWheel);
+            this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
+
+            // disable default touch action on mobile devices
+            this.style.touchAction = "none";
+            this.setAttribute("touch-action", "none");
+
+            this.pointerEventsEnabled = true;
+        }
+        else if(!needsEnabled && this.pointerEventsEnabled) {
+            this.removeEventListener("pointerdown", this.manipTarget.onPointerDown);
+            this.removeEventListener("pointermove", this.manipTarget.onPointerMove);
+            this.removeEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
+            this.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+            this.ownerDocument.removeEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
+            this.ownerDocument.removeEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
+            this.ownerDocument.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.removeEventListener("wheel", this.manipTarget.onWheel);
+            this.removeEventListener("contextmenu", this.manipTarget.onContextMenu);
+
+            // enable default touch action on mobile devices
+            this.style.touchAction = "auto";
+            this.setAttribute("touch-action", "auto");
+
+            this.pointerEventsEnabled = false;
+        }
+    }
+
+    /*protected onResize()
     {
         this.view.resize();
-    }
+    }*/
 }

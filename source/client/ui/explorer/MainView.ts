@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ Icon.add("email", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
 Icon.add("copy", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg>`);
 Icon.add("ar", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10.844874 7.2009368"><path d="M 4.1805699,5.4542117 H 2.4801904 L 2.2118585,6.5168507 H 1.1187593 L 2.6807334,0.68408928 h 1.296469 L 5.5391781,6.5168507 H 4.4460774 Z M 2.7513476,4.3720517 H 3.9065883 L 3.3303802,2.0514503 Z"/><path d="m 7.5355365,3.2703464 q 0.3417706,0 0.4886463,-0.1758024 0.1497018,-0.1758024 0.1497018,-0.5781942 0,-0.3984876 -0.1497018,-0.5703858 Q 7.8773071,1.7740658 7.5355365,1.7740658 H 7.0779585 V 3.2703464 Z M 7.0779585,4.309544 V 6.5168507 H 5.9905084 V 0.68408928 h 1.6608338 q 0.8332429,0 1.220205,0.38676692 0.3897887,0.3867669 0.3897887,1.2228084 0,0.5781942 -0.2033672,0.9493362 -0.200543,0.371142 -0.607278,0.5469444 0.2231388,0.070308 0.3982608,0.320355 0.1779472,0.2461266 0.358719,0.7500924 L 9.7980008,6.5168507 H 8.6399351 L 8.1258661,5.0674448 Q 7.970517,4.6298909 7.8095182,4.4697134 7.6513422,4.309544 7.3858347,4.309544 Z"/></svg>`);
 Icon.add("device-move", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 119.4 57.7"><path d="M47.4,20.7h-34c-0.2,0-0.4-0.1-0.5-0.3l-0.1-0.2l0.1-0.3l9-19.5C21.9,0.2,22.1,0,22.3,0h24.5v1H22.6L14,19.7h33.4V20.7z"/><path d="M103,20.7H71v-1h31.6L95,1H46.8V0h48.3c0.3,0,0.6,0.2,0.7,0.5l7.8,19.2c0.1,0.2,0.1,0.5-0.1,0.7C103.5,20.6,103.2,20.7,103,20.7z M94.9,0.9L94.9,0.9z"/><path d="M49,2.9c-1.1,0-2,0.9-2,2v40c0,1.1,0.9,2,2,2h20c1.1,0,2-0.9,2-2v-40c0-1.1-0.9-2-2-2L49,2.9z M49,3.9h3.6l0,0h0l0,0l0,0l0,0l0,0l0,0v0l0,0l0,0l0,0l0,0v0.5c0,0.6,0.4,1,1,1H64c0.6,0,1-0.4,1-1v0l0,0V4.3c0,0,0,0,0-0.1l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0,0h4c0.6,0,1,0.4,1,1v40c0,0.6-0.4,1-1,1H49c-0.6,0-1-0.4-1-1l0-40.2c0.1-0.5,0-0.8,0.4-1.1C48.5,4,48.8,3.9,49,3.9z"/><path d="M53.3,43.9h11.5c0.3,0,0.6,0.2,0.6,0.5c0,0.3-0.3,0.5-0.6,0.5H53.3c-0.3,0-0.6-0.2-0.6-0.5C52.7,44.1,53,43.8,53.3,43.9z"/><path d="M76,37.8c-0.7,0-1.3,0-2-0.1l0.1-1c1.6,0.2,10,0.7,15.7-5.5c1.8-2,3.1-4.4,3.8-7l1,0.3c-0.7,2.8-2.1,5.3-4,7.5C85.8,37,79.3,37.8,76,37.8z"/><polygon points="96.9,28.6 96,29 93.8,24.6 89.5,27.1 89,26.2 94.3,23.2"/><path d="M42.1,37.4c-3.4,0-9.9-0.8-14.5-6c-1.9-2.1-3.3-4.7-4-7.5l1-0.3c0.7,2.6,1.9,5,3.7,7.1c5.6,6.3,14,5.7,15.7,5.5l0.1,1C43.4,37.4,42.8,37.4,42.1,37.4z"/><polygon points="29,25.8 28.5,26.6 24.3,24.2 22.1,28.6 21.2,28.2 23.8,22.8"/></svg>`);
+Icon.add("audio", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="50 85 300 275"><path d="M144.800 88.415 C 105.869 89.675,75.661 108.730,58.580 142.800 C 42.479 174.915,49.153 218.126,74.086 243.200 C 82.194 251.354,81.622 247.747,81.571 290.400 C 81.526 327.954,81.532 328.075,83.579 331.303 C 85.932 335.013,81.918 334.725,133.200 334.853 L 178.200 334.965 180.317 334.026 C 184.940 331.975,186.179 329.159,187.004 318.834 C 187.966 306.788,188.179 306.609,201.600 306.579 C 223.132 306.529,231.384 304.069,239.712 295.216 C 246.448 288.055,247.778 282.132,247.527 260.400 C 247.353 245.306,247.496 245.061,256.908 244.337 C 272.369 243.147,279.383 238.170,279.366 228.400 C 279.356 222.955,278.475 220.120,267.737 191.000 C 266.520 187.700,263.126 177.980,260.196 169.400 C 249.024 136.687,242.930 126.187,227.400 112.880 C 209.769 97.774,189.461 89.600,166.600 88.407 C 158.610 87.991,157.887 87.991,144.800 88.415 M205.416 171.240 C 218.099 175.986,216.908 195.403,203.667 199.781 C 192.504 203.472,180.685 190.157,185.674 179.509 C 189.403 171.550,197.349 168.222,205.416 171.240 M311.000 220.715 C 304.366 224.871,305.398 229.213,315.511 239.699 C 325.906 250.478,330.441 259.997,334.191 278.909 C 338.184 299.050,330.538 322.088,313.936 339.938 C 307.475 346.885,307.028 347.548,307.030 350.184 C 307.038 359.089,317.896 358.672,326.406 349.440 C 353.041 320.544,357.609 275.463,337.176 243.154 C 326.661 226.527,316.131 217.500,311.000 220.715 M291.392 243.932 C 286.465 247.613,286.911 251.389,293.068 258.095 C 310.600 277.194,310.622 300.169,293.125 319.139 C 287.742 324.975,286.682 328.672,289.377 332.205 C 294.000 338.266,301.447 335.014,309.224 323.540 C 324.531 300.956,324.654 275.911,309.565 254.525 C 302.386 244.350,295.897 240.567,291.392 243.932 M272.664 267.012 C 268.192 270.357,268.344 272.961,273.453 280.549 C 278.010 287.318,277.882 290.657,272.777 298.232 C 267.556 305.977,269.217 312.622,276.361 312.571 C 288.218 312.486,295.338 289.895,288.227 274.922 C 284.588 267.259,277.292 263.551,272.664 267.012 " fill-rule="evenodd"></path></svg>`);
 //Icon.add("name", html``);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +83,8 @@ export default class MainView extends CustomElement
         if (application) {
             this.application = application;
         }
+
+        this.addEventListener('focus', this.onFocus);
     }
 
     protected get fullscreen() {
@@ -108,7 +111,10 @@ export default class MainView extends CustomElement
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
                 quality: this.getAttribute("quality"),
-                uiMode: this.getAttribute("uiMode")
+                uiMode: this.getAttribute("uiMode"),
+                bgColor: this.getAttribute("bgColor"),
+                bgStyle: this.getAttribute("bgStyle"),
+                controls: this.getAttribute("controls")
             };
 
             this.application = new ExplorerApplication(null, props);
@@ -132,6 +138,13 @@ export default class MainView extends CustomElement
         notifications.setAttribute("id", Notification.stackId);
         shadowRoot.appendChild(notifications);
         Notification.shadowRootNode = shadowRoot;
+
+        //this.setAttribute("tabindex", "0");
+        const introAnnouncement = document.createElement("div");
+        introAnnouncement.classList.add("sr-only");
+        introAnnouncement.setAttribute("id", "sr-intro");
+        introAnnouncement.setAttribute("aria-live", "polite");
+        shadowRoot.appendChild(introAnnouncement);
     }
 
     protected connected()
@@ -156,6 +169,17 @@ export default class MainView extends CustomElement
             this.application.props.root = this.getAttribute("root");
             this.application.evaluateProps();
         }
+        else if(this.application && name === "controls") {
+            this.application.enableNavigation(value);
+        }
+    }
+
+    protected onFocus()
+    {
+        this.shadowRoot.getElementById("sr-intro").innerText =
+            "The Voyager web application allows you to view "
+            + "and interact with a 3D model from the Smithsonian collection. Use the tab key to "
+            + "move through interactive elements, enter or spacebar keys to activate, and the escape key to exit menus.";
     }
 
 
@@ -210,6 +234,14 @@ export default class MainView extends CustomElement
         }
     }
 
+    getAnnotations()
+    {
+        if(this.application) {
+            const annotations = this.application.getAnnotations();
+            return annotations;
+        }
+    }
+
     getCameraOrbit()
     {
         if(this.application) {
@@ -225,6 +257,21 @@ export default class MainView extends CustomElement
         }
     }
 
+    getCameraOffset()
+    {
+        if(this.application) {
+            const offset = this.application.getCameraOffset();
+            return offset;
+        }
+    }
+
+    setCameraOffset( x: string, y: string, z: string)
+    {
+        if(this.application) {
+            this.application.setCameraOffset(x, y, z);
+        }
+    }
+
     setBackgroundColor(color0: string, color1?: string)
     {
         if(this.application) {
@@ -236,6 +283,20 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.setBackgroundStyle(style);
+        }
+    }
+
+    setActiveAnnotation(id: string)
+    {
+        if(this.application) {
+            this.viewer.ins.activeAnnotation.setValue(id);
+        }
+    }
+
+    setTourStep(tourIdx: string, stepIdx: string, interpolate?: boolean)
+    {
+        if(this.application) {
+            this.application.setTourStep(tourIdx, stepIdx, interpolate !== undefined ? interpolate : true);
         }
     }
 }
