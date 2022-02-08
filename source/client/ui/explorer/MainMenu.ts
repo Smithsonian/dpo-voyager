@@ -28,6 +28,7 @@ import { EDerivativeQuality } from "../../schema/model";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
+import CVAnnotationView from "client/components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,10 +66,16 @@ export default class MainMenu extends DocumentView
         this.fullscreen.outs.fullscreenActive.on("value", this.onUpdate, this);
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.activeDocument.setup.tours.ins.closed.on("value", this.setTourFocus, this);
+        this.activeDocument.setup.reader.ins.closed.on("value", this.setReaderFocus, this);
+        this.toolProvider.ins.closed.on("value", this.setToolsFocus, this);
     }
 
     protected disconnected()
     {
+        this.toolProvider.ins.closed.off("value", this.setToolsFocus, this);
+        this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
+        this.activeDocument.setup.tours.ins.closed.off("value", this.setTourFocus, this);
         this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         this.fullscreen.outs.fullscreenActive.off("value", this.onUpdate, this);
@@ -85,16 +92,18 @@ export default class MainMenu extends DocumentView
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
 
         const setup = document.setup;
+        const scene = this.sceneNode;
 
         const tourButtonVisible = setup.tours.outs.count.value > 0;
         const toursActive = setup.tours.ins.enabled.value;
 
         const modeButtonsDisabled = toursActive && !isEditing;
 
-        const readerButtonVisible = true; //setup.reader.articles.length > 0 && !isEditing;
+        const readerButtonVisible = setup.reader.articles.length > 0; // && !isEditing;
         const readerActive = setup.reader.ins.enabled.value;
 
-        const annotationsButtonVisible = true;
+        const views = scene.getGraphComponents(CVAnnotationView);
+        const annotationsButtonVisible = views.some(view => {return view.hasAnnotations;}); //true;
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
 
         const fullscreen = this.fullscreen;
@@ -104,26 +113,31 @@ export default class MainMenu extends DocumentView
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
 
+        const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
+        const narrationActive = setup.audio.outs.narrationPlaying.value;
+
         const language = setup.language;
 
         // TODO - push to ARManager?
-        const models = this.sceneNode.getGraphComponents(CVModel2);
+        const models = scene.getGraphComponents(CVModel2);
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 
         return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
             @click=${this.onEnterAR}></ff-button>` : null}
-        ${tourButtonVisible ? html`<ff-button icon="globe" title=${language.getLocalizedString("Interactive Tours")}
+        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
+            ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
+        ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
             ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        ${readerButtonVisible ? html`<ff-button icon="article" title=${language.getLocalizedString("Read more...")}
+        ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
             ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
-        ${annotationsButtonVisible ? html`<ff-button icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
+        ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
             ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-        <ff-button icon="share" title=${language.getLocalizedString("Share Experience")}
+        <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
             ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
-        ${fullscreenButtonVisible ? html`<ff-button icon="expand" title=${language.getLocalizedString("Fullscreen")}
+        ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
             ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        ${toolButtonVisible ? html`<ff-button icon="tools" title=${language.getLocalizedString("Tools and Settings")}
+        ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
             ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
@@ -131,6 +145,7 @@ export default class MainMenu extends DocumentView
     {
         const readerIns = this.activeDocument.setup.reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
+        readerIns.focus.setValue(readerIns.enabled.value);
 
         this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
     }
@@ -176,7 +191,8 @@ export default class MainMenu extends DocumentView
 
             ShareMenu.show(this, this.activeDocument.setup.language).then(() => {
                 this.shareButtonSelected = false;
-                this.requestUpdate()
+                this.requestUpdate();
+                this.setElementFocus("share-btn");
             });
 
             this.analytics.sendProperty("Menu.Share");
@@ -208,6 +224,41 @@ export default class MainMenu extends DocumentView
         arIns.enabled.setValue(true);
     }
 
+    protected onToggleNarration()
+    {
+        const audio = this.activeDocument.setup.audio;
+        audio.setupAudio();  // required for Safari compatibility
+        audio.ins.playNarration.set();
+    }
+
+    // TODO: More elegant way to handle focus
+    protected setTourFocus()
+    {
+        this.setElementFocus("tour-btn");
+    }
+    protected setReaderFocus()
+    {
+        this.setElementFocus("reader-btn");
+    }
+    protected setToolsFocus()
+    {
+        this.setElementFocus("tools-btn");
+    }
+
+    protected setElementFocus(elementID: string)
+    {
+        const buttons = this.getElementsByTagName("ff-button");
+        const buttonArray = Array.from(buttons);
+        const buttonToFocus = buttonArray.find(element => element.id === elementID);
+
+        if(buttonToFocus !== undefined) {
+            (buttonToFocus as HTMLElement).focus();
+        }
+        else {
+            console.warn("Can't focus. Element [" + elementID + "] not found.");
+        }
+    }
+
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
@@ -222,6 +273,7 @@ export default class MainMenu extends DocumentView
                 setup.tours.ins.enabled,
                 setup.tours.outs.count,
                 setup.viewer.ins.annotationsVisible,
+                setup.audio.outs.narrationPlaying,
                 this.toolProvider.ins.visible
             );
         }

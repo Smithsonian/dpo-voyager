@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2021 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,11 @@ import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
 import { EBackgroundStyle } from "client/schema/setup";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
+
+import { clamp } from "client/utils/Helpers"
+import CVScene from "client/components/CVScene";
+import CVAnnotationView from "client/components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,6 +81,12 @@ export interface IExplorerApplicationProps
     quality?: string;
     /** Mode string starts Explorer in a specific ui configuration, i.e. no UI. */
     uiMode?: string;
+    /** Component background colors */
+    bgColor?: string;
+    /** Component background style */
+    bgStyle?: string;
+    /** Enables/disables pointer-driven camera controls. */
+    controls?: string;
 }
 
 /**
@@ -93,7 +104,7 @@ export default class ExplorerApplication
     
 Voyager - 3D Explorer and Tool Suite
 3D Foundation Project
-(c) 2019 Smithsonian Institution
+(c) 2021 Smithsonian Institution
 
 https://3d.si.edu
 https://github.com/smithsonian/dpo-voyager
@@ -184,8 +195,28 @@ Version: ${ENV_VERSION}
             }	
         }*/
 
+        // Temporary hack to work around iOS 15+ texture memory issue
+        const IS_IOS = /^(iPad|iPhone|iPod)/.test(window.navigator.platform) ||
+            (/^Mac/.test(window.navigator.platform) && window.navigator.maxTouchPoints > 1);
+        if (IS_IOS) {
+            window.createImageBitmap = undefined;
+        }
+
         // start rendering
         engine.pulse.start();
+    }
+
+    dispose()
+    {
+        // Clean up assuming a component disconnect means it won't be reconnected
+        this.assetReader.dispose();
+        this.documentProvider.activeComponent.clearNodeTree();
+        this.system.getMainComponent(CRenderer).views.forEach(view => view.dispose());
+        //this.documentProvider.activeComponent.setup.node.dispose();
+        //this.system.graph.clear();
+        this.documentProvider.activeComponent.setup.tape.dispose();
+        this.documentProvider.activeComponent.setup.floor.dispose();
+        this.documentProvider.activeComponent.setup.grid.dispose();
     }
 
     setBaseUrl(url: string)
@@ -193,7 +224,7 @@ Version: ${ENV_VERSION}
         this.assetManager.baseUrl = url; 
     }
 
-    loadDocument(documentPath: string, merge?: boolean, quality?: string, uiMode?: string): Promise<CVDocument>
+    loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
 
@@ -239,6 +270,9 @@ Version: ${ENV_VERSION}
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
         props.uiMode = props.uiMode || parseUrlParameter("uiMode") || parseUrlParameter("u");
+        props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
+        props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
+        props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
@@ -280,13 +314,20 @@ Version: ${ENV_VERSION}
         if (props.document) {
             // first loading priority: document
             props.document = props.root ? props.document : manager.getAssetName(props.document);
-            this.loadDocument(props.document, undefined, props.quality, props.uiMode)
+            this.loadDocument(props.document, undefined, props.quality)
+            .then(() => this.postLoadHandler(props))
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
             // second loading priority: model
             props.model = props.root ? props.model : manager.getAssetName(props.model);
-            this.loadModel(props.model, props.quality);
+
+            this.assetReader.getText(props.model)       // make sure we have a valid model path
+            .then(() => {
+                this.loadModel(props.model, props.quality);
+                this.postLoadHandler(props);
+            })
+            .catch(error => Notification.show(`Bad Model Path: ${error.message}`, "error"));
         }
         else if (props.geometry) {
             // third loading priority: geometry (plus optional color texture)
@@ -294,11 +335,33 @@ Version: ${ENV_VERSION}
             props.texture = props.root ? props.texture : manager.getAssetName(props.texture);
             props.occlusion = props.root ? props.occlusion : manager.getAssetName(props.occlusion);
             props.normals = props.root ? props.normals : manager.getAssetName(props.normals);
-            this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
+
+            this.assetReader.getText(props.geometry)    // make sure we have a valid geometry path   
+            .then(() => {
+                this.loadGeometry(props.geometry, props.texture, props.occlusion, props.normals, props.quality);
+                this.postLoadHandler(props);
+            })
+            .catch(error => Notification.show(`Bad Geometry Path: ${error.message}`, "error"));
         }
-        else {
-            // if nothing else specified, try to read "document.svx.json" from the current folder
-            this.loadDocument("document.svx.json", undefined).catch(() => {});
+        else if (props.root) {
+            // if nothing else specified, try to read "scene.svx.json" from the current folder
+            this.loadDocument("scene.svx.json", undefined)
+            .then(() => this.postLoadHandler(props))
+            .catch(() => {});
+        }
+    }
+
+    protected postLoadHandler(props: IExplorerApplicationProps) {
+        this.assetManager.ins.baseUrlValid.setValue(true);
+        if(props.bgColor) {
+            const colors = props.bgColor.split(" ");
+            this.setBackgroundColor(colors[0], colors[1] || null);
+        }
+        if(props.bgStyle) {
+            this.setBackgroundStyle(props.bgStyle);
+        }
+        if(props.controls) {
+            this.enableNavigation(props.controls);
         }
     }
 
@@ -358,6 +421,13 @@ Version: ${ENV_VERSION}
         toolIns.visible.setValue(!toolIns.visible.value);
         this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
     }
+
+    toggleMeasurement()
+    {
+        const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+
+        tapeIns.visible.setValue(!tapeIns.visible.value);
+    }
     
     enableAR()
     {
@@ -374,6 +444,19 @@ Version: ${ENV_VERSION}
         const articles = reader.articles.map(entry => entry.article.data);
 
         return articles;
+    }
+
+    // Returns an array of objects with the annotation data for the current scene
+    getAnnotations()
+    {
+        const scene = this.system.getComponent(CVScene);
+        const views = scene.getGraphComponents(CVAnnotationView);
+        let annotations = [];
+        views.forEach(component => {
+            annotations = annotations.concat(component.getAnnotations());
+        });
+
+        return annotations;
     }
 
     // Returns euler angles (yaw/pitch) for orbit navigation
@@ -395,6 +478,37 @@ Version: ${ENV_VERSION}
         }
         else {
             console.log("Error: setCameraOrbit param is not a number.");
+        }
+    }
+
+    // Returns camera offset vector (x,y,z)
+    getCameraOffset()
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        return orbitNavIns.offset.value.slice(0,3);
+    }
+
+    // Sets camera offset vector (x,y,z)
+    setCameraOffset( x: string, y: string, z: string)
+    {
+        const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+        let xNum = parseFloat(x);
+        let yNum = parseFloat(y);
+        let zNum = parseFloat(z);
+  
+        if (!isNaN(xNum) && !isNaN(yNum) && !isNaN(zNum)) {
+            const minOffset = orbitNavIns.minOffset.value;
+            const maxOffset = orbitNavIns.maxOffset.value;
+
+            // check limits
+            xNum = clamp(xNum, minOffset[0], maxOffset[0]);
+            yNum = clamp(yNum, minOffset[1], maxOffset[1]);
+            zNum = clamp(zNum, minOffset[2], maxOffset[2]);
+
+            orbitNavIns.offset.setValue([xNum, yNum, zNum]);
+        }
+        else {
+            console.log("Error: setCameraOffset param is not a number.");
         }
     }
 
@@ -445,6 +559,51 @@ Version: ${ENV_VERSION}
         }
         else {
             console.log("Error: Style param is invalid.");
+        }
+    }
+
+    // Activate a specific tour step
+    setTourStep(tourIdx: string, stepIdx: string, interpolate: boolean)
+    {
+        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+        const tourOuts = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.outs;
+        let tour = parseInt(tourIdx);
+        let step = parseInt(stepIdx);
+  
+        if (!isNaN(tour) && !isNaN(step) && tour >= 0 && step >= 0) {
+            tourIns.tourIndex.setValue(tour);
+
+            if(interpolate) {
+                tourOuts.stepIndex.setValue(step-1);
+                tourIns.next.set();
+            }
+            else {
+                tourIns.stepIndex.setValue(step);
+            }
+        }
+        else {
+            console.log("Error: setTourStep param ["+tour+" "+step+"] is not a valid number.");
+        }
+    }
+
+    // enable/disable camera controls
+    enableNavigation(enable: string)
+    {
+        let controls = undefined;
+        const controlsLower = enable.toLowerCase();
+        if(controlsLower === "true") {
+            controls = true;
+        }
+        else if(controlsLower === "false") {
+            controls = false;
+        }
+
+        if(controls != undefined) {
+            const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+            orbitNavIns.pointerEnabled.setValue(controls);
+        }
+        else {
+            console.log("Error: enableNavigation param is not valid.");
         }
     }
 }

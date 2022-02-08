@@ -133,7 +133,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-article {
   position: relative;
-  padding: 5px 0 0 16px;
+  padding: 5px 8px 0 16px;
 }
 
 .sv-content-overlay {
@@ -219,7 +219,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-standard-annotation, .sv-extended-annotation {
-  max-width: 28%;
+  max-width: 20%;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
@@ -346,7 +346,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     box-sizing: border-box;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
-    margin: 0 0 2px 2px;
+    margin: 0 6px 2px 0;
     background-color: $menu-color-background-hover;
     border-radius: 20px;
     font-size: 17px;
@@ -395,7 +395,22 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     flex: 0 1 auto;
     box-sizing: border-box;
 
-    &:hover, &:focus {
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:hover {
       outline: none;
 
       & > .ff-icon {
@@ -511,6 +526,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   & > .ff-button {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
     margin: 2px 0;
@@ -520,8 +536,24 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     transition: all $tx-short;
     pointer-events: auto;
 
-    &:hover, &:focus {
+    &:focus {
       outline: none;
+      background-color: $menu-color-background-dark;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background-color: $menu-color-background-dark;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:hover {
       background-color: $menu-color-background-hover;
       fill: $color-text;
     }
@@ -575,22 +607,95 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       height: 30px;
       fill: #f0f0f0;
     }
+
   }
 
   .sv-share-button-twitter {
     background-color: #00aced;
+    
+    &:focus {
+      outline: none;
+      background-color: #00aced;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: #00aced;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
     &:hover { background-color: lighten(#00aced, 10%) }
   }
   .sv-share-button-facebook {
     background-color: #3c5a99;
+
+    &:focus {
+      outline: none;
+      background-color: #3c5a99;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: #3c5a99;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
     &:hover { background-color: lighten(#3c5a99, 10%) }
   }
   .sv-share-button-linkedin {
     background-color: #0077B5;
+
+    &:focus {
+      outline: none;
+      background-color: #0077B5;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: #0077B5;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
     &:hover { background-color: lighten(#0077B5, 10%) }
   }
   .sv-share-button-email {
     background-color: #d28842;
+
+    &:focus {
+      outline: none;
+      background-color: #d28842;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: #d28842;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
     &:hover { background-color: lighten(#d28842, 10%) }
   }
 }
@@ -630,7 +735,7 @@ $tour-entry-indent: 12px;
     position: relative;
     cursor: pointer;
     padding: 5px 0 5px 15px;
-    margin-bottom: 16px;
+    margin: 2px 2px 16px 2px;
     max-width: 960px;
     background-color: $color-paragraph-background;
 
@@ -673,18 +778,30 @@ $tour-entry-indent: 12px;
     background-color: $color-paragraph-background;
     @include noselect;
 
+    &:focus {
+      outline: 2px solid lighten($color-primary, 50%);
+      outline-offset: -2px;
+      background-color: $color-paragraph-background;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+    }
+
+    &:focus-visible {
+      outline: 2px solid lighten($color-primary, 50%);
+      outline-offset: -2px;
+      background-color: $color-paragraph-background;
+    }
+
     &:hover {
       background-color: $color-paragraph-hover;
+      fill: $color-text;
     }
 
     &[selected] {
       background-color: $color-primary;
       color: $menu-color-text;
-
-      & > .ff-icon {
-        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-        fill: $color-text;
-      }
 
       &:hover, &:focus {
         background-color: $color-primary-light;
@@ -954,6 +1071,28 @@ $tour-entry-indent: 12px;
     padding: 0 4px;
     background: $color-background;
     border-radius: 2px;
+
+    &:focus {
+      outline: none;
+      background: $color-background;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: $color-background;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:hover {
+      background-color: $color-background-lighter;
+      fill: $color-text;
+    }
   }
 }
 

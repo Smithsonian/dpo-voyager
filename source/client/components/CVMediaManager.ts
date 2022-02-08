@@ -17,6 +17,7 @@
 
 import CAssetManager, { IAssetOpenEvent } from "@ff/scene/components/CAssetManager";
 import Notification from "@ff/ui/Notification";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,9 +29,28 @@ export default class CVMediaManager extends CAssetManager
 
     static readonly articleFolder: string = "articles";
 
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
+    }
+
+    create()
+    {
+        super.create();
+        this.assetManager.ins.baseUrlValid.on("value", this.refreshRoot, this);
+    }
+
+    dispose()
+    {
+        this.assetManager.ins.baseUrlValid.off("value", this.refreshRoot, this);
+        super.dispose();
+    }
+
     protected rootUrlChanged(): Promise<any>
     {
-        return this.createArticleFolder();
+        if(this.assetManager.ins.baseUrlValid.value) {
+            return this.createArticleFolder();
+        }
+        return Promise.resolve();
     }
 
     protected createArticleFolder(): Promise<any>
@@ -45,5 +65,20 @@ export default class CVMediaManager extends CAssetManager
                 .catch(error => Notification.show(`Failed to create ${infoText}`));
             }
         });
+    }
+
+    refresh()
+    {
+        if(this.assetManager.ins.baseUrlValid.value) {
+            super.refresh();
+        }
+        return Promise.resolve();
+    }
+
+    refreshRoot()
+    {
+        if(this.assetManager.ins.baseUrlValid.value) {
+            super.refresh().then(() => this.rootUrlChanged());
+        }
     }
 }

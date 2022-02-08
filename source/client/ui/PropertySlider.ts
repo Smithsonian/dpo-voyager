@@ -79,8 +79,8 @@ export default class PropertySlider extends CustomElement
 
         const v = (value - min) / (max - min);
 
-        return html`<label class="ff-label ff-off">${name}</label>
-            <ff-linear-slider .value=${v} @change=${this.onSliderChange}></ff-linear-slider>`;
+        return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
+            <ff-linear-slider aria-labelledby="${name}-label" aria-valuemin=${min.toString()} aria-valuemax=${max.toString()} aria-valuenow=${value.toFixed(3)} role="slider" .value=${v} @keydown=${this.onKeyDown} @change=${this.onSliderChange}></ff-linear-slider>`;
     }
 
     protected onSliderChange(event: ILinearSliderChangeEvent)
@@ -92,5 +92,26 @@ export default class PropertySlider extends CustomElement
 
         const value = min + event.detail.value * (max - min);
         property.setValue(value);
+    }
+
+    protected onKeyDown(event: KeyboardEvent)
+    {
+        const property = this.property;
+
+        if(event.code === "ArrowRight" || event.code === "ArrowUp" || event.code === "PageUp") {
+            property.setValue(this.clamp(event.code === "PageUp" ? property.value + 0.1 : property.value + 0.01));
+        }
+        else if(event.code === "ArrowLeft" || event.code === "ArrowDown" || event.code === "PageDown") {
+            property.setValue(this.clamp(event.code === "PageDown" ? property.value - 0.1 : property.value - 0.01));
+        }
+    }
+
+    protected clamp(input: number) : number
+    {
+        const property = this.property;
+        const min = isFinite(this.min) ? this.min : property.schema.min;
+        const max = isFinite(this.max) ? this.max : property.schema.max;
+        
+        return Math.min(Math.max(input, min), max);
     }
 }

@@ -63,6 +63,7 @@ export interface IViewer
 {
     shader: TShaderMode;
     exposure: number;
+    toneMapping: boolean;
     gamma: number;
     annotationsVisible?: boolean;
     activeTags?: string;
@@ -137,6 +138,11 @@ export interface IEnvironment
 export interface ILanguage
 {
     language: TLanguageType;
+}
+
+export interface IAudio
+{
+    narrationId?: string;
 }
 
 export interface ITape

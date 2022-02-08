@@ -62,6 +62,13 @@ export default class ModelReader
         this.gltfLoader.setDRACOLoader(dracoLoader);
     }
 
+    dispose()
+    {
+        this.gltfLoader.dracoLoader.dispose();
+        this.gltfLoader.setDRACOLoader(null);
+        this.gltfLoader = null;
+    }
+
     isValid(url: string): boolean
     {
         const extension = url.split(".").pop().toLowerCase();
@@ -79,8 +86,15 @@ export default class ModelReader
             this.gltfLoader.load(url, gltf => {
                 resolve(this.createModelGroup(gltf));
             }, null, error => {
-                console.error(`failed to load '${url}': ${error}`);
-                reject(new Error(error));
+                if(this.gltfLoader === null || this.gltfLoader.dracoLoader === null) {
+                    // HACK to avoid errors when component is removed while loading still in progress.
+                    // Remove once Three.js supports aborting requests again.
+                    resolve(null);
+                }
+                else {
+                    console.error(`failed to load '${url}': ${error}`);
+                    reject(new Error(error));
+                }
             })
         });
     }
@@ -88,14 +102,8 @@ export default class ModelReader
     protected createModelGroup(gltf): Object3D
     {
         const scene: Scene = gltf.scene;
-        //if (scene.type !== "Scene") {
-        //    throw new Error("not a valid gltf scene");
-        //}
 
-        const model = new Group();
-        scene.children.forEach(child => model.add(child));
-
-        model.traverse((object: any) => {
+        scene.traverse((object: any) => {
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
@@ -127,6 +135,6 @@ export default class ModelReader
             }
         });
 
-        return model;
+        return scene;
     }
 }

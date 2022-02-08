@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide } from "three";
+import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide } from "three";
 
 import Notification from "@ff/ui/Notification";
 
@@ -90,7 +90,8 @@ export default class CVModel2 extends CObject3D
         hiddenOpacity: types.Percent("Material.HiddenOpacity", 0.0),
         roughness: types.Percent("Material.Roughness", 0.8),
         metalness: types.Percent("Material.Metalness", 0.1),
-        occlusion: types.Percent("Material.Occlusion", 0.3),
+        occlusion: types.Percent("Material.Occlusion", 0.25),
+        doubleSided: types.Boolean("Material.DoubleSided", false),
         dumpDerivatives: types.Event("Derivatives.Dump"),
     };
 
@@ -119,6 +120,7 @@ export default class CVModel2 extends CObject3D
             this.ins.roughness,
             this.ins.metalness,
             this.ins.occlusion,
+            this.ins.doubleSided
         ];
     }
 
@@ -372,6 +374,7 @@ export default class CVModel2 extends CObject3D
                 roughness: material.roughness !== undefined ? material.roughness : ins.roughness.schema.preset,
                 metalness: material.metalness !== undefined ? material.metalness : ins.metalness.schema.preset,
                 occlusion: material.occlusion !== undefined ? material.occlusion : ins.occlusion.schema.preset,
+                doubleSided: material.doubleSided !== undefined ? material.doubleSided : ins.doubleSided.schema.preset
             });
         }
 
@@ -432,6 +435,7 @@ export default class CVModel2 extends CObject3D
                 roughness: ins.roughness.value,
                 metalness: ins.metalness.value,
                 occlusion: ins.occlusion.value,
+                doubleSided: ins.doubleSided.value
             };
         }
 
@@ -483,6 +487,7 @@ export default class CVModel2 extends CObject3D
                 //material.depthWrite = material.opacity === 1;
                 material.roughness = ins.roughness.value;
                 material.metalness = ins.metalness.value;
+                material.side = ins.doubleSided.value ? DoubleSide : FrontSide;
             }
         });
     }
@@ -558,6 +563,11 @@ export default class CVModel2 extends CObject3D
      */
     protected loadDerivative(derivative: Derivative): Promise<void>
     {
+        if(!this.node || !this.assetReader) {    // TODO: Better way to handle active loads when node has been disposed?
+            console.warn("Model load interrupted.");
+            return;
+        }
+
         return derivative.load(this.assetReader)
             .then(() => {
                 if (!derivative.model) {

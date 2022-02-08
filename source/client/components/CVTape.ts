@@ -119,6 +119,15 @@ export default class CVTape extends CObject3D
         this.ins.globalUnits.linkFrom(scene.ins.units);
     }
 
+    dispose()
+    {
+        this.startPin = null;
+        this.endPin = null;
+        this.line = null;
+
+        super.dispose();
+    }
+
     update(context)
     {
         super.update(context);

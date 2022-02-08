@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { GammaEncoding } from "three";
+import { ACESFilmicToneMapping, NoToneMapping, Mesh } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -38,6 +38,8 @@ export default class CVViewer extends Component
     static readonly text: string = "Viewer";
     static readonly icon: string = "";
 
+    private _rootElement: HTMLElement = null;
+
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
         activeAnnotation: types.String("Annotations.ActiveId"),
@@ -45,6 +47,7 @@ export default class CVViewer extends Component
         sortedTags: types.String("Tags.Sorted"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
+        toneMapping: types.Boolean("Renderer.ToneMapping", false),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 2),
         quality: types.Enum("Models.Quality", EDerivativeQuality, EDerivativeQuality.High),
@@ -64,6 +67,7 @@ export default class CVViewer extends Component
             this.ins.sortedTags,
             this.ins.radioTags,
             this.ins.shader,
+            this.ins.toneMapping,
             this.ins.exposure,
             this.ins.gamma,
         ];
@@ -84,6 +88,13 @@ export default class CVViewer extends Component
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
+    }
+
+    get rootElement() {
+        return this._rootElement;
+    }
+    set rootElement(root: HTMLElement) {
+        this._rootElement = root;
     }
 
     create()
@@ -113,8 +124,26 @@ export default class CVViewer extends Component
         if (ins.exposure.changed) {
             this.renderer.ins.exposure.setValue(ins.exposure.value);
         }
+        if (ins.toneMapping.changed) {
+            this.renderer.views.forEach(view => view.renderer.toneMapping = ins.toneMapping.value ? ACESFilmicToneMapping : NoToneMapping);
+
+            const scene = this.renderer.activeScene;
+            if (scene) {
+                scene.traverse(object => {
+                    const mesh = object as Mesh;
+                    if (mesh.isMesh) {
+                        if (Array.isArray(mesh.material)) {
+                            mesh.material.forEach(material => material.needsUpdate = true);
+                        }
+                        else {
+                            mesh.material.needsUpdate = true;
+                        }
+                    }
+                });
+            }
+        }
         if (ins.gamma.changed) {
-            this.renderer.ins.gamma.setValue(ins.gamma.value);
+            //this.renderer.ins.gamma.setValue(ins.gamma.value);
         }
 
         if (ins.quality.changed) {
@@ -139,11 +168,6 @@ export default class CVViewer extends Component
             this.refreshTagCloud();
         }
 
-        // ** Temporary hack until RenderView supports outputEncoding param
-        if(this.renderer.views[0] && this.renderer.views[0].renderer.outputEncoding !== GammaEncoding) {
-            this.renderer.views[0].renderer.outputEncoding = GammaEncoding;
-        }
-
         return true;
     }
 
@@ -160,6 +184,7 @@ export default class CVViewer extends Component
         ins.copyValues({
             shader: EShaderMode[data.shader] || EShaderMode.Default,
             exposure: data.exposure !== undefined ? data.exposure : ins.exposure.schema.preset,
+            toneMapping: data.toneMapping || false,
             gamma: data.gamma !== undefined ? data.gamma : ins.gamma.schema.preset,
             annotationsVisible: !!data.annotationsVisible,
             activeTags: data.activeTags || "",
@@ -175,6 +200,7 @@ export default class CVViewer extends Component
         const data: Partial<IViewer> = {
             shader: EShaderMode[ins.shader.value] as TShaderMode,
             exposure: ins.exposure.value,
+            toneMapping: ins.toneMapping.value,
             gamma: ins.gamma.value,
         };
 
@@ -243,6 +269,8 @@ export default class CVViewer extends Component
     {
         const id = event.annotation ? event.annotation.id : "";
         this.ins.activeAnnotation.setValue(id);
+
+        this.rootElement.dispatchEvent(new CustomEvent('annotation-active', { detail: id }));
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)

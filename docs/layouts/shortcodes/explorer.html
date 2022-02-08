@@ -1,12 +1,9 @@
-<link href="https://3d-api.si.edu/resources/fonts/fonts.css" rel="stylesheet">
-<link href="https://3d-api.si.edu/resources/css/voyager-explorer.min.css" rel="stylesheet">
-<script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
+<link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
 <script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
 <script>
-var l ="https://3d-api.si.edu/content/document/"+{{ .Get 0 }}+"/document.json";
+var l ="https://3d-api.si.edu/content/document/"+{{ .Get 0 }}+"/";
 document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px' root='"+l+"' dracoRoot='https://voyager-dev.glitch.me/draco/' fontRoot='https://3d-api.si.edu/resources/fonts/' document='document.json'></voyager-explorer>";
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px'"+{{ .Get 1 }}+"root='"+l+"' document='document.json'></voyager-explorer>";
 });
 </script>
 <div id="explorer_wrapper" width="600" height="450">
@@ -49,6 +46,16 @@ function setCameraOrbit(yaw, pitch) {
 	var voyagerElement = document.getElementById("voyager");	
 	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
 }
+function getCameraOffset(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const offset = voyagerElement.getCameraOffset();
+	
+	displayElement.innerText = "X: " + offset[0].toFixed(3) + "	Y: " + offset[1].toFixed(3) + "	Z: " + offset[2].toFixed(3);
+}
+function setCameraOffset(x, y, z) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOffset(x.value, y.value, z.value);
+}
 function getArticles(displayElement) {
 	var voyagerElement = document.getElementById("voyager");
 	const articles = voyagerElement.getArticles();
@@ -60,5 +67,25 @@ function getArticles(displayElement) {
 	});
   
 	displayElement.innerText = articleNames;
+}
+function getAnnotations(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const annotations = voyagerElement.getAnnotations();
+
+	var annotationNames = "";
+	annotations.forEach(annotation => {
+		annotationNames += "[id: " + annotation.id + " title: " + annotation.title + "]";
+		annotationNames += " | ";
+	});
+  
+	displayElement.innerText = annotationNames;
+}
+function setActiveAnnotation(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveAnnotation(id.value);
+}
+function setTourStep(stepIdx) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setTourStep(0, stepIdx.value, true);
 }
 </script>

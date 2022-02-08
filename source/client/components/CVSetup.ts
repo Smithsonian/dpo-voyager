@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component from "@ff/graph/Component";
+import Component, { types } from "@ff/graph/Component";
 import CTransform from "@ff/scene/components/CTransform";
 
 import { IDocument } from "client/schema/document";
@@ -35,6 +35,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVTargetManager from "./CVTargetManager";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
+import CVAudioManager from "./CVAudioManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,15 @@ import CVLanguageManager from "./CVLanguageManager";
 export default class CVSetup extends Component
 {
     static readonly typeName: string = "CVSetup";
+
+    private _savedSetupData: ISetup = {};
+
+    protected static readonly ins = {
+        saveState: types.Event("Setup.SaveState"),
+        restoreState: types.Event("Setup.RestoreState"),
+    };
+
+    ins = this.addInputs(CVSetup.ins);
 
     protected static readonly featureMap = {
         "interface": CVInterface,
@@ -59,6 +69,7 @@ export default class CVSetup extends Component
         "tape": CVTape,
         "slicer": CVSlicer,
         "tours": CVTours,
+        "audio": CVAudioManager
     };
 
     get featureMap() {
@@ -82,6 +93,7 @@ export default class CVSetup extends Component
     targets: CVTargetManager;
     environment: CVEnvironment;
     language: CVLanguageManager;
+    audio: CVAudioManager;
 
     create()
     {
@@ -98,6 +110,20 @@ export default class CVSetup extends Component
         this.targets = node.createComponent(CVTargetManager);
     }
 
+    update()
+    {
+        const ins = this.ins;
+
+        if (ins.saveState.changed) {
+            this.cacheSetupState();
+        }
+        if (ins.restoreState.changed) {
+            this.restoreSetupState();
+        }
+        
+        return true;
+    }
+
     fromDocument(document: IDocument, sceneIndex: number, pathMap: Map<string, Component>)
     {
         const scene = document.scenes[sceneIndex];
@@ -106,7 +132,7 @@ export default class CVSetup extends Component
             throw new Error("setup property missing in node");
         }
 
-        const setupData = document.setups[scene.setup];
+        const setupData = this._savedSetupData = document.setups[scene.setup];
         const features = CVSetup.featureMap;
 
         for (const name in features) {
@@ -125,22 +151,21 @@ export default class CVSetup extends Component
 
     toDocument(document: IDocument, sceneIndex: number, pathMap: Map<Component, string>)
     {
-        let setupData: ISetup = null;
+        const setupData: ISetup = this._savedSetupData;
         const features = CVSetup.featureMap;
 
         for (const name in features) {
             pathMap.set(this[name], `scenes/${sceneIndex}/setup/${name}`);
+        }
 
-            const featureData = this[name].toData();
-            if (featureData) {
-                setupData = setupData || {};
-                setupData[name] = featureData;
-            }
+        // save current tours state
+        const tourData = this["tours"].toData();
+        if (tourData) {
+            setupData["tours"] = tourData;
         }
 
         const snapshotData = this.snapshots.toData(pathMap);
         if (snapshotData) {
-            setupData = setupData || {};
             setupData.snapshots = snapshotData;
         }
 
@@ -149,6 +174,33 @@ export default class CVSetup extends Component
             const index = document.setups.length;
             document.setups.push(setupData);
             document.scenes[sceneIndex].setup = index;
+        }
+    }
+
+    // Caches current setup state for future saving.
+    protected cacheSetupState()
+    {
+        const features = CVSetup.featureMap;
+
+        for (const name in features) {
+            const featureData = this[name].toData();
+            if (featureData) {
+                this._savedSetupData[name] = featureData;
+            }
+        }
+    }
+
+    // Restores cached setup state for future saving.
+    protected restoreSetupState()
+    {
+        const cachedData = this._savedSetupData;
+        const features = CVSetup.featureMap;
+
+        for (const name in features) {
+            const featureData = cachedData[name];
+            if (featureData && name !== "tours") {
+                this[name].fromData(featureData);
+            }
         }
     }
 }

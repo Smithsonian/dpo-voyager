@@ -22,6 +22,7 @@ import CVTours from "../../components/CVTours";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVLanguageManager from "client/components/CVLanguageManager";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,12 +32,17 @@ export default class TourNavigator extends DocumentView
     protected tours: CVTours;
     protected language: CVLanguageManager;
 
+    protected needsFocus: boolean = false;
+    protected firstRender: boolean = true;
+    protected stepTitle: string = "";
+
     protected firstConnected()
     {
         super.firstConnected();
 
         this.classList.add("sv-bottom-bar-container", "sv-tour-navigator", "sv-transition");
         setTimeout(() => this.classList.remove("sv-transition"), 1);
+        this.needsFocus = true;
     }
 
     protected render()
@@ -57,10 +63,11 @@ export default class TourNavigator extends DocumentView
             title = language.getLocalizedString("No tour selected");
             info = "---";
         }
+        this.stepTitle = title;
 
-        return html`<div class="sv-blue-bar"><div class="sv-section">
+        return html`<div class="sv-blue-bar" role=region title="Tour Navigation" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
             <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
-            <div class="ff-ellipsis sv-content">
+            <div class="ff-ellipsis sv-content" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
@@ -70,10 +77,32 @@ export default class TourNavigator extends DocumentView
         </div></div>`;
     }
 
+    protected updated(changedProperties) {
+        super.updated(changedProperties);
+
+        if(this.needsFocus) {
+            const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
+            container.focus();
+            this.needsFocus = false;
+        }
+
+        // Hack so that initial nav title display is detected by screen readers.
+        const titleDiv = this.getElementsByClassName("sv-title").item(0) as HTMLElement;
+        if(titleDiv)
+        {
+            titleDiv.innerHTML = this.stepTitle;
+            if(this.firstRender) {  
+                setTimeout(() => {titleDiv.innerHTML = `<div>${this.stepTitle}</div>`;}, 100);
+                this.firstRender = false;
+            }
+        }
+    }
+
     protected onClickExit()
     {
         // disable tours
         this.tours.ins.enabled.setValue(false);
+        this.tours.ins.closed.set();
     }
 
     protected onClickMenu()
@@ -110,5 +139,17 @@ export default class TourNavigator extends DocumentView
         }
 
         this.requestUpdate();
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            this.tours.ins.tourIndex.setValue(-1);
+            //this.dispatchEvent(new CustomEvent("close"));
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
     }
 }

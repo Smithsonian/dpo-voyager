@@ -39,6 +39,7 @@ export default class JSONReader
         }).then(result => {
             if (!result.ok) {
                 this._loadingManager.itemError(url);
+                this._loadingManager.itemEnd(url);
                 throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
             }
 

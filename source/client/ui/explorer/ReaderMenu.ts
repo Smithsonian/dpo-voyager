@@ -43,7 +43,7 @@ export default class ReaderMenu extends CustomElement
 
     protected renderEntry(entry: IArticleEntry)
     {
-        return html`<div class="sv-entry" @click=${e => this.onClick(e, entry.article.id)}>
+        return html`<div role="menuitem" tabindex="0" @keydown=${e =>this.onKeyDown(e, entry.article.id)} class="sv-entry" @click=${e => this.onClick(e, entry.article.id)}>
             <h1>${entry.article.title}</h1>
             <p>${entry.article.lead}</p>
         </div>`;
@@ -59,7 +59,7 @@ export default class ReaderMenu extends CustomElement
             </div>`;
         }
 
-        return html`<div class="ff-scroll-y">
+        return html`<div role="menu" aria-label="articles" class="ff-scroll-y">
             ${articles.map(article => this.renderEntry(article))}
         </div>`;
     }
@@ -71,5 +71,14 @@ export default class ReaderMenu extends CustomElement
         this.dispatchEvent(new CustomEvent("select", {
             detail: { id }
         }));
+    }
+
+    protected onKeyDown(e: KeyboardEvent, id: string)
+    {
+        if (e.code === "Space" || e.code === "Enter") {
+            this.dispatchEvent(new CustomEvent("select", {
+                detail: { id }
+            }));
+        }
     }
 }

@@ -175,17 +175,17 @@ export default class CVARManager extends Component
     }
 
     protected launchWebXR() {
-        const renderer = this.renderer.views[0].renderer;
-        const sceneComponent = this.vScene = this.renderer.activeSceneComponent;
-        const camera = this.camera = sceneComponent.activeCamera;
-        this.cameraParent = camera.parent; console.log(this);
+        const renderer = this.renderer?.views[0].renderer;
+        const sceneComponent = this.vScene = this.renderer?.activeSceneComponent;
+        const camera = this.camera = sceneComponent?.activeCamera;
+        this.cameraParent = camera.parent;
         const setup = this.setup = this.getSystemComponent(CVSetup); //this.documentProvider.outs.activeDocument.value.setup;
         
         if(!setup) {
             return false;
         }
 
-        const models = this.sceneNode.getGraphComponents(CVModel2);
+        const models = this.sceneNode?.getGraphComponents(CVModel2);
         const derivative = models[0] ?  models[0].derivatives.get(EDerivativeUsage.Web3D, EDerivativeQuality.AR) : null;
 
         if(derivative) {
@@ -217,10 +217,11 @@ export default class CVARManager extends Component
         );
         
         this.setupScene();
+        renderer.shadowMap.autoUpdate = false;
 
         renderer.xr.enabled = true;
         renderer.xr.setReferenceSpaceType( 'local' );
-        renderer.xr.setSession( session as THREE.XRSession ); 
+        renderer.xr.setSession( session as unknown as THREE.XRSession ); 
     
         session.addEventListener( 'end', this.onSessionEnded ); 
 
@@ -257,6 +258,8 @@ export default class CVARManager extends Component
         const renderer = this.renderer.views[0].renderer;
 
         this.resetScene();
+
+        renderer.shadowMap.autoUpdate = true;
         
         // Clean up
         const hitSourceInitial = this.initialHitTestSource;
@@ -276,6 +279,9 @@ export default class CVARManager extends Component
         this.inputSource = null;
         this.xrCamera = null;
         this.cachedView = null;
+        this.vScene = null;
+        this.cachedView = null;
+        this.camera = null;
         
         const session = this.session;
         if(session) {
@@ -463,15 +469,16 @@ export default class CVARManager extends Component
     protected render = (timestamp, frame) => {
         this.frame = frame;
         const renderer = this.renderer.views[0].renderer;
-        const {camera, xrCamera} = this;
+        const {camera, xrCamera, refSpace, initialHitTestSource, vScene, sceneNode,
+             shadow, lastFrameTime} = this;
 
-        if(!frame || !frame.getViewerPose(this.refSpace!)) {
+        if(!frame || !frame.getViewerPose(refSpace!)) {
             return;
         }
 
         // Get xr camera from Three.js to set local camera properties. TODO: More efficient use of xrcamera
         if(!xrCamera && this.session) {
-            const xrCameraArray : ArrayCamera = renderer.xr.getCamera(this.camera) as ArrayCamera;
+            const xrCameraArray : ArrayCamera = renderer.xr.getCamera(camera) as ArrayCamera;
             this.xrCamera = xrCameraArray.cameras[0];
             return;
         }
@@ -484,10 +491,10 @@ export default class CVARManager extends Component
         }
   
         // center model in front of camera while trying for initial placement
-        if (this.initialHitTestSource != null && xrCamera) {
-            const scene = this.vScene.scene; 
+        if (initialHitTestSource != null && xrCamera) {
+            const scene = vScene.scene; 
             const {position} = scene; 
-            const radius =  this.sceneNode.outs.boundingRadius.value * 2.0 + xrCamera.near; // Math.abs(this.optimalCameraDistance);
+            const radius =  sceneNode.outs.boundingRadius.value * 2.0 + xrCamera.near; // Math.abs(this.optimalCameraDistance);
 
             const e = xrCamera.matrixWorld.elements;
 			position.set(-e[ 8 ], -e[ 9 ], -e[ 10 ]).normalize(); 
@@ -507,7 +514,7 @@ export default class CVARManager extends Component
 
         if(this.outs.isPlaced.value) {
             // update selection ring opacity
-            const deltaT = timestamp - this.lastFrameTime; 
+            const deltaT = timestamp - lastFrameTime; 
             this.updateOpacity(deltaT, this.targetOpacity);
             this.lastFrameTime = timestamp;
         }
@@ -518,8 +525,13 @@ export default class CVARManager extends Component
         gl.depthMask(false);
         gl.clear(gl.DEPTH_BUFFER_BIT);
         gl.depthMask(true);
+
+        if(shadow.needsUpdate) {
+            renderer.shadowMap.needsUpdate = true;
+            shadow.needsUpdate = false;
+        }
         
-        renderer.render( this.vScene.scene, this.camera );
+        renderer.render( vScene.scene, camera );
     }
 
     // adapted from model-viewer
@@ -552,9 +564,11 @@ export default class CVARManager extends Component
             .then(hitTestSource => {
                 this.transientHitTestSource = hitTestSource; 
             });
+
+        this.shadow.updateMatrices();
     }
 
-    protected getHitPoint( hitResult: XRHitTestResult): THREE.Vector3|null {
+    protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
         const pose = hitResult.getPose(this.refSpace!);
         if (pose == null) {
           return null;
@@ -713,6 +727,8 @@ export default class CVARManager extends Component
 
                 this.updateBoundingBox();
             });
+
+            this.shadow.updateMatrices();
         }
     }
 

@@ -102,7 +102,7 @@ export default class ExtendedSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.visible = !this.isBehindCamera(this.stemLine, camera);
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
     }
 
     protected createHTMLElement(): ExtendedAnnotation
@@ -130,15 +130,19 @@ class ExtendedAnnotation extends AnnotationElement
 
         this.onClickTitle = this.onClickTitle.bind(this);
         this.onClickArticle = this.onClickArticle.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
 
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-title");
         this.titleElement.addEventListener("click", this.onClickTitle);
+        //this.titleElement.addEventListener("keydown", this.onKeyDown);
+        //this.titleElement.setAttribute("tabindex", "0");
 
         this.wrapperElement = this.appendElement("div");
 
         this.contentElement = this.createElement("div", null, this.wrapperElement);
         this.contentElement.classList.add("sv-content");
+        this.contentElement.style.display = "none";
     }
 
     protected firstConnected()
@@ -179,6 +183,7 @@ class ExtendedAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 this.classList.add("sv-expanded");
+                this.style.minWidth = this.sprite.annotation.lead.length < 40 ? "0" : "";
                 this.contentElement.style.display = "inherit";
                 this.contentElement.style.height = this.contentElement.scrollHeight + "px";
 
@@ -201,5 +206,13 @@ class ExtendedAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
+    }
+
+    protected onKeyDown(event: KeyboardEvent)
+    {
+        if (event.code === "Space" || event.code === "Enter") {
+            event.stopPropagation();
+            this.sprite.emitClickEvent();
+        }
     }
 }

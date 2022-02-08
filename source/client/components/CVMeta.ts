@@ -20,7 +20,7 @@ import UnorderedCollection from "@ff/core/UnorderedCollection";
 import Component from "@ff/graph/Component";
 
 import { IDocument, INode, IScene } from "client/schema/document";
-import { IMeta, IImage, INote } from "client/schema/meta";
+import { IMeta, IImage, INote, IAudioClip } from "client/schema/meta";
 
 import Article from "../models/Article";
 import { ELanguageType } from "client/schema/common";
@@ -43,6 +43,7 @@ export default class CVMeta extends Component
     articles = new OrderedCollection<Article>();
     leadArticle: Article = null;
     notes: INote[] = [];
+    audio = new UnorderedCollection<IAudioClip>();
 
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
@@ -79,6 +80,11 @@ export default class CVMeta extends Component
                 });
             });
         }
+        if (data.audio) {
+            const audioDict = {};
+            data.audio.forEach(clip => audioDict[clip.id] = clip);
+            this.audio.dictionary = audioDict;
+        }
 
         this.emit("load");
         return node.meta;
@@ -108,6 +114,10 @@ export default class CVMeta extends Component
             if (this.leadArticle) {
                 data.leadArticle = articles.indexOf(this.leadArticle);
             }
+        }
+        if (this.audio.length > 0) {
+            data = data || {};
+            data.audio = this.audio.items;
         }
 
         if (data) {

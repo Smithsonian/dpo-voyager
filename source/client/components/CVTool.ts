@@ -85,6 +85,8 @@ export class ToolView<T extends CVTool = CVTool> extends NodeView
     @property({ attribute: false })
     tool: T = null;
 
+    protected needsFocus: boolean = false;
+
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
     }
@@ -98,6 +100,7 @@ export class ToolView<T extends CVTool = CVTool> extends NodeView
     protected firstConnected()
     {
         this.classList.add("sv-group", "sv-tool-view");
+        this.needsFocus = true;
     }
 
     protected connected()
@@ -111,4 +114,17 @@ export class ToolView<T extends CVTool = CVTool> extends NodeView
         this.tool.off("update", this.onUpdate, this);
         super.disconnected();
     }
+
+    protected updated(changedProperties) {
+        super.updated(changedProperties);
+
+        if(this.needsFocus) {
+            this.setFocus();
+            this.needsFocus = false;
+        }
+    }
+
+    /** Can be implemented to set focus on specific 
+        tool widget when tool is activated */
+    protected setFocus() {}
 }

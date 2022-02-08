@@ -1,12 +1,14 @@
 ---
-title: Getting started
+title: "How To: Install and Build Voyager"
 summary: Installation and configuration
-weight: 100
+weight: 105
 ---
 
 ## Installation
 
 This document describes how to install a local development server, and build the source code for development and production.
+
+**If you are just interested in using Voyager on your site and have no need to host or customize it, please take a look at [How To: Embed a model on your site](../../explorer/usage/).**
 
 The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 18.04),
 or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.
@@ -21,7 +23,7 @@ Before cloning the Github project, please install the following tools
  * [Docker](https://www.docker.com/) - required for installation in a Docker container
  * [Docker Compose](https://docs.docker.com/compose/install/) - required for installation in a Docker container
 
-Now create a project folder and clone the project from Github. Make sure not to forget the `--recurse-subomdules` option,
+Now create a project folder and clone the project from Github. Make sure not to forget the `--recurse-submodules` option,
 this also clones the required submodules.
 
 ```

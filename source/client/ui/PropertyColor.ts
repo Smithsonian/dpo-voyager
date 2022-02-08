@@ -26,6 +26,8 @@ import { IButtonClickEvent } from "@ff/ui/Button";
 import "@ff/ui/ColorEdit";
 import { IColorEditChangeEvent } from "@ff/ui/ColorEdit";
 
+import {getFocusableElements, focusTrap} from "../utils/focusHelpers";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-color")
@@ -93,14 +95,25 @@ export default class PropertyColor extends CustomElement
         const color = this.color.toString();
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <ff-button style="background-color: ${color}" @click=${this.onButtonClick}></ff-button>
-            ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @change=${this.onColorEditChange}></ff-color-edit>` : null}`;
+            <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
+            ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorEditChange}></ff-color-edit>` : null}`;
+    }
+
+    protected async setPickerFocus()
+    {
+        await this.updateComplete;
+        const container = this.getElementsByTagName("ff-color-edit").item(0) as HTMLElement;
+        (getFocusableElements(container)[0] as HTMLElement).focus();
     }
 
     protected onButtonClick(event: IButtonClickEvent)
     {
         this.pickerActive = !this.pickerActive;
         this.requestUpdate();
+
+        if(this.pickerActive) {
+            this.setPickerFocus();
+        }
     }
 
     protected onColorEditChange(event: IColorEditChangeEvent)
@@ -127,5 +140,21 @@ export default class PropertyColor extends CustomElement
 
         this.pickerActive = false;
         this.requestUpdate();
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.pickerActive = false;
+            this.requestUpdate();
+
+            (this.getElementsByTagName("ff-button")[0] as HTMLElement).focus();
+        }
+        else if(e.code === "Tab") {
+            const element = this.getElementsByTagName("ff-color-edit")[0] as HTMLElement;
+            focusTrap(getFocusableElements(element) as HTMLElement[], e);
+        }
     }
 }
