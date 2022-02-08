@@ -172,7 +172,7 @@ export default class CVSonify extends Component
 
                 const osc = this.oscillator = this.audioCtx.createOscillator();
                 osc.type = 'sine';
-                osc.frequency.value = 100;
+                osc.frequency.value = 80;
                 osc.start();
 
                 this.setupBufferSource();
@@ -231,7 +231,7 @@ export default class CVSonify extends Component
 
             if(this.ins.active.value) {
                 //gainNode.gain.value  = inMode === ESonifyMode.Volume ? _lowVolume : 1.0;
-                osc.frequency.value = 100;
+                osc.frequency.value = 80;
             
                 if(inMode === ESonifyMode.Beep) {   
                     osc.disconnect(gainNode);
@@ -292,16 +292,17 @@ export default class CVSonify extends Component
         const nDepth = Math.max((depth - limits[0])/(limits[1] - limits[0]), 0);
 
         if(this.ins.mode.value === ESonifyMode.Frequency) {
-            this.oscillator.frequency.value = nDepth <= 0.000001 ? 100 : 100 + 700*(1.0-nDepth);
+            this.oscillator.frequency.value = nDepth <= 0.000001 ? 80 : 80 + 700*(1.0-nDepth);
         }
         else {
             this.bufferSource.loopEnd =  nDepth <= 0.000001 ? 1.0 : 1 / ((60 + (440.0*(1.0-nDepth))) / 60);
+            //this.bufferSource.playbackRate.value = nDepth <= 0.000001 ? 1.0 : 1 + (10.0*(1.0-nDepth));
         }
 
         // Update volume based on proximity to object on screen
         _point.set(x,y);
         const dist = this.scanBox.distanceToPoint(_point);
-        this.gain.gain.value = 1.0 - 0.8*(dist/this.volumeDist);
+        this.gain.gain.setTargetAtTime(1.0 - 0.9*(dist/this.volumeDist), 0, 0.01);
 
         //console.log(x + " " + y + " DEPTH: " + nDepth);
     }
