@@ -407,11 +407,13 @@ export default class CVTargetsTask extends CVTask
 
             next.model.outs.quality.on("value", this.onQualityChange, this);
 
-            const baseCtx = this.baseCanvas.getContext('2d');
-            baseCtx.save();
-            baseCtx.scale(1, -1);
-            baseCtx.drawImage(this.targets.material.map.image,0,-this.targets.material.map.image.height);
-            baseCtx.restore();
+            if(this.targets.material.map) {
+                const baseCtx = this.baseCanvas.getContext('2d');
+                baseCtx.save();
+                baseCtx.scale(1, -1);
+                baseCtx.drawImage(this.targets.material.map.image,0,-this.targets.material.map.image.height);
+                baseCtx.restore();
+            }
 
             this.onTargetChange();
         }
@@ -545,7 +547,7 @@ export default class CVTargetsTask extends CVTask
     protected createBaseCanvas()
     {
         const material = this.targets.material;
-        const dim = material ? material.map.image.width : 4096;
+        const dim = material && material.map ? material.map.image.width : 4096;
         let canvas = document.createElement('canvas') as HTMLCanvasElement;
         canvas.width = dim;
         canvas.height = dim;
