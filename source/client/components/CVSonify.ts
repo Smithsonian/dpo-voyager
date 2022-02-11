@@ -82,6 +82,8 @@ export default class CVSonify extends Component
     protected oscillator: OscillatorNode = null;
     protected bufferSource: AudioBufferSourceNode = null;
     protected gain: GainNode = null;
+    protected limiter: DynamicsCompressorNode = null;
+    protected filter: BiquadFilterNode = null;
     protected convTarget: WebGLRenderTarget = null;
     protected pickBuffer: Uint8Array;
     protected depthShader: DepthShader;
@@ -156,7 +158,39 @@ export default class CVSonify extends Component
     {
         const { ins, outs } = this;
 
+        if (ins.active.changed && ins.scanning.value) {
+            ins.scanning.setValue(false, true);
+        }
+        else if (ins.scanning.changed && ins.active.value) {
+            ins.active.setValue(false, true);
+        }
+
         if (ins.active.changed || ins.scanning.changed) {
+            if(this.gain) {
+                this.oscillator.stop();
+                this.bufferSource.stop();
+
+                if(this.outs.mode.value === ESonifyMode.Beep) {
+                    this.bufferSource.disconnect(this.gain);
+                }
+                else {
+                    this.oscillator.disconnect(this.gain);
+                }
+
+                this.isPlaying = false;
+                clearInterval(this.scanIterval);
+
+                this.filter.disconnect(this.audioCtx.destination);
+
+                this.gain = null;
+                this.oscillator = null;
+                this.bufferSource = null;
+                this.filter = null;
+                this.limiter = null;
+
+                console.log("Stopping Audio");
+            }
+
             if(ins.active.value || ins.scanning.value) {
                 console.log("Playing Audio Context");
 
@@ -166,8 +200,23 @@ export default class CVSonify extends Component
                     this.audioCtx.resume();
                 }
 
+                const filterNode = this.filter = this.audioCtx.createBiquadFilter();
+                filterNode.frequency.value = 580;
+                filterNode.Q.value = 0.001;
+                filterNode.connect(this.audioCtx.destination);
+
+                const limiterNode = this.limiter = this.audioCtx.createDynamicsCompressor();
+                limiterNode.threshold.value = 0.0;
+                limiterNode.knee.value = 0.0;
+                limiterNode.ratio.value = 20.0;
+                limiterNode.attack.value = 0.005;
+                limiterNode.release.value = 0.050;
+                limiterNode.connect(filterNode);
+                //limiterNode.connect(this.audioCtx.destination);
+
                 const gainNode = this.gain = this.audioCtx.createGain();
-                gainNode.connect(this.audioCtx.destination);
+                //gainNode.connect(this.audioCtx.destination);
+                gainNode.connect(limiterNode);
                 //gainNode.gain.value = outs.mode.value === ESonifyMode.Volume ? _lowVolume : 1.0;
 
                 const osc = this.oscillator = this.audioCtx.createOscillator();
@@ -193,30 +242,6 @@ export default class CVSonify extends Component
                 else {
                     this.startScanlines();
                 }         
-            }
-            else {
-                if(this.gain) {
-                    this.oscillator.stop();
-                    this.bufferSource.stop();
-
-                    if(this.outs.mode.value === ESonifyMode.Beep) {
-                        this.bufferSource.disconnect(this.gain);
-                    }
-                    else {
-                        this.oscillator.disconnect(this.gain);
-                    }
-
-                    this.isPlaying = false;
-                    clearInterval(this.scanIterval);
-
-                    this.gain.disconnect(this.audioCtx.destination);
-
-                    this.gain = null;
-                    this.oscillator = null;
-                    this.bufferSource = null;
-
-                    console.log("Stopping Audio");
-                }
             }
         }
         else if(ins.mode.changed) {
@@ -292,10 +317,10 @@ export default class CVSonify extends Component
         const nDepth = Math.max((depth - limits[0])/(limits[1] - limits[0]), 0);
 
         if(this.ins.mode.value === ESonifyMode.Frequency) {
-            this.oscillator.frequency.value = nDepth <= 0.000001 ? 80 : 80 + 700*(1.0-nDepth);
+            this.oscillator.frequency.value = nDepth <= 0.000001 ? 80 : 80 + 500*(1.0-nDepth);
         }
         else {
-            this.bufferSource.loopEnd =  nDepth <= 0.000001 ? 1.0 : 1 / ((60 + (440.0*(1.0-nDepth))) / 60);
+            this.bufferSource.loopEnd =  nDepth <= 0.000001 ? 1.0 : 1 / ((60 + (640.0*(1.0-nDepth))) / 60);
             //this.bufferSource.playbackRate.value = nDepth <= 0.000001 ? 1.0 : 1 + (10.0*(1.0-nDepth));
         }
 
