@@ -88,7 +88,7 @@ export default class CVLanguageManager extends Component
             return;
         }
 
-        if (ins.language.changed) {
+        if (ins.language.changed && ins.language.value != outs.language.value) {
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.language.value].toLowerCase() + ".json").then( json => {
                 this._translations = json;
                 this.updateLanguage();

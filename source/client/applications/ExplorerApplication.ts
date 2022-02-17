@@ -50,6 +50,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";
 import CVAnnotationView from "client/components/CVAnnotationView";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -604,6 +605,20 @@ Version: ${ENV_VERSION}
         }
         else {
             console.log("Error: enableNavigation param is not valid.");
+        }
+    }
+
+    // set language
+    setLanguage(languageID: string)
+    {
+        const languageIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.language.ins;
+        const id = languageID.toUpperCase();
+
+        if(id in ELanguageType) {
+            languageIns.language.setValue(ELanguageType[id]);
+        }
+        else {
+            console.log("Error: setLanguage param is not a valid language id.");
         }
     }
 }

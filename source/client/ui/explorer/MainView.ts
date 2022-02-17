@@ -299,4 +299,11 @@ export default class MainView extends CustomElement
             this.application.setTourStep(tourIdx, stepIdx, interpolate !== undefined ? interpolate : true);
         }
     }
+
+    setLanguage(languageID: string)
+    {
+        if(this.application) {
+            this.application.setLanguage(languageID);
+        }
+    }
 }
