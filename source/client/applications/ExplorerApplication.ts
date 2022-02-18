@@ -88,6 +88,8 @@ export interface IExplorerApplicationProps
     bgStyle?: string;
     /** Enables/disables pointer-driven camera controls. */
     controls?: string;
+    /** ISO 639-1 language code to change active component language */
+    lang?: string;
 }
 
 /**
@@ -274,6 +276,7 @@ Version: ${ENV_VERSION}
         props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
         props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
         props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
+        props.lang = props.lang || parseUrlParameter("lang") || parseUrlParameter("l");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
@@ -310,6 +313,10 @@ Version: ${ENV_VERSION}
         if(props.resourceRoot) {
             // Set custom resource path
             this.assetReader.setSystemAssetPath(props.resourceRoot);
+        }
+
+        if(props.lang) {
+            this.setLanguage(props.lang);
         }
 
         if (props.document) {

@@ -82,17 +82,18 @@ export default class CVLanguageManager extends Component
     update()
     {
         const { ins, outs } = this;
-
+        
         if(this.activeLanguages.length == 0) {
             this.addLanguage(outs.language.value);
-            return;
+            //return;
         }
-
+        
         if (ins.language.changed && ins.language.value != outs.language.value) {
+            const newLanguage = ins.language.value;
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.language.value].toLowerCase() + ".json").then( json => {
                 this._translations = json;
-                this.updateLanguage();
- 
+                this.updateLanguage(newLanguage);
+                
                 //this.analytics.sendProperty("Menu.Language", outs.language.value);
             });          
         }
@@ -102,12 +103,15 @@ export default class CVLanguageManager extends Component
 
     fromData(data: ILanguage)
     {
+        const { ins, outs } = this;
         data = data || {} as ILanguage;
 
         const language = ELanguageType[data.language || "EN"];
-        this.ins.language.setValue(isFinite(language) ? language : ELanguageType.EN);
 
-        this.updateLanguage();
+        if(language != outs.language.value && ins.language.value === outs.language.value) {
+            ins.language.setValue(isFinite(language) ? language : ELanguageType.EN);
+            this.updateLanguage(language);
+        }
     }
 
     toData(): ILanguage
@@ -137,11 +141,11 @@ export default class CVLanguageManager extends Component
         return dictionary[text] || text;
     }
 
-    protected updateLanguage = () => 
+    protected updateLanguage = (language: ELanguageType) => 
     {
         const { ins, outs } = this;
 
-        outs.language.setValue(ins.language.value);
+        outs.language.setValue(language);
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
     }
 }
