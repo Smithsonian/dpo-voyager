@@ -25,7 +25,7 @@ import CObject3D from "@ff/scene/components/CObject3D";
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "client/schema/document";
-import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType, EAssetType, EMapType } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
@@ -38,6 +38,7 @@ import CVAssetReader from "./CVAssetReader";
 import { Vector3 as LocalVector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +79,7 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
+        overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         override: types.Boolean("Material.Override", false),
         color: types.ColorRGB("Material.BaseColor"),
         opacity: types.Percent("Material.Opacity", 1.0),
@@ -107,6 +109,7 @@ export default class CVModel2 extends CObject3D
             this.ins.renderOrder,
             this.ins.shadowSide,
             this.ins.shader,
+            this.ins.overlayMap,
             this.ins.override,
             this.ins.color,
             this.ins.opacity,
@@ -130,6 +133,14 @@ export default class CVModel2 extends CObject3D
         super(node, id);
 
         this.object3D = new Group();
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.visible,
+            this.ins.quality,
+            this.ins.overlayMap,
+        ];
     }
 
     get derivatives() {
@@ -240,6 +251,10 @@ export default class CVModel2 extends CObject3D
 
         if (ins.shader.changed) {
             this.updateShader();
+        }
+
+        if (ins.overlayMap.changed) {
+            this.updateOverlayMap();
         }
 
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
@@ -448,6 +463,40 @@ export default class CVModel2 extends CObject3D
         });
     }
 
+    updateOverlayMap() {
+        // only update if we are not currently tweening
+        const setup = this.getGraphComponent(CVSetup, true);
+        if (setup && setup.snapshots.outs.tweening.value) {
+            setup.snapshots.outs.end.once("value", () => {
+                this.ins.overlayMap.set();
+                this.update();
+            });
+            return;
+        }
+        const mapURI = this.ins.overlayMap.getOptionText();
+        if (mapURI !== "None") {
+            this.assetReader.getTexture(mapURI).then(texture => {
+                this.object3D.traverse(object => {
+                    const material = object["material"];
+                    if (material && material.isUberPBRMaterial) {
+                        texture.flipY = false;
+                        material.zoneMap = texture;
+                        material.enableZoneMap(true);
+                    }
+                });
+            });
+        }
+        else {
+            this.object3D.traverse(object => {
+                const material = object["material"];
+                if (material && material.isUberPBRMaterial) {
+                    material.enableZoneMap(false);
+                    material.zoneMap = null;
+                }
+            });
+        }
+    }
+
     protected updateMaterial()
     {
         const ins = this.ins;
@@ -607,6 +656,11 @@ export default class CVModel2 extends CObject3D
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
+
+                // set overlay map options
+                const overlayOptions = ["None"];
+                overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
+                this.ins.overlayMap.setOptions(overlayOptions);
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }

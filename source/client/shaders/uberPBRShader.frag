@@ -80,6 +80,10 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
 
+#ifdef USE_ZONEMAP
+	uniform sampler2D zoneMap;
+#endif
+
 #ifdef USE_AOMAP
     uniform vec3 aoMapMix;
 #endif
@@ -181,6 +185,11 @@ void main() {
 	#endif
 
 	gl_FragColor = vec4(outgoingLight, diffuseColor.a);
+
+	#ifdef USE_ZONEMAP
+		vec4 zoneColor = texture2D(zoneMap, vUv);
+		gl_FragColor += vec4(zoneColor.rgb, 1.0);
+	#endif
 
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
