@@ -344,6 +344,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   & > .ff-button {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
     margin: 0 6px 2px 0;
