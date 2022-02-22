@@ -25,6 +25,7 @@ import { IDocument, IScene } from "client/schema/document";
 import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";
 import unitScaleFactor from "client/utils/unitScaleFactor";
+import CTransform from "client/../../libs/ff-scene/source/components/CTransform";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -93,10 +94,12 @@ export default class CVScene extends CVNode
         if (ins.units.changed) {
             this.updateTransformHierarchy();
             this.updateModelBoundingBox();
+            this.updateLights();
             outs.units.setValue(ins.units.value);
         }
         if (ins.modelUpdated.changed) {
             this.updateModelBoundingBox();
+            this.updateLights();
         }
         if (ins.sceneTransformed.changed) {
             this.updateModelBoundingBox();
@@ -156,8 +159,7 @@ export default class CVScene extends CVNode
             return;
         }
 
-        const ins = this.ins;
-        const outs = this.outs;
+        const {ins, outs} = this;
         const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
         const object3D = this.models[0].object3D.parent.parent;  // TODO: Should probably crawl all the way up the hierarchy
 
@@ -172,5 +174,18 @@ export default class CVScene extends CVNode
             modelParent.updateMatrix();
             modelParent.updateMatrixWorld(true);
         });
+    }
+
+    protected updateLights()
+    {
+        const {ins, outs} = this; 
+        const lightNode = this.graph.findNodeByName("Lights");
+        const lightTransform = lightNode.getComponent(CTransform, true);
+           
+        const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
+        _vec3.setScalar(this.outs.boundingRadius.value * unitScale * 0.05);
+        lightTransform.ins.scale.setValue(_vec3.toArray());
+
+        lightTransform.object3D.updateMatrixWorld(true);
     }
 }
