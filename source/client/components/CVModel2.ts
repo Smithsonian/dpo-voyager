@@ -67,6 +67,7 @@ export default class CVModel2 extends CObject3D
     static readonly rotationOrder = "ZYX";
 
     protected static readonly ins = {
+        name: types.String("Model.Name"),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
@@ -102,6 +103,7 @@ export default class CVModel2 extends CObject3D
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.visible,
             this.ins.quality,
             this.ins.localUnits,
@@ -188,6 +190,10 @@ export default class CVModel2 extends CObject3D
     update()
     {
         const ins = this.ins;
+
+        if (ins.name.changed) {
+            this.node.name = ins.name.value;
+        }
 
         if (ins.tags.changed || ins.activeTags.changed || ins.visible.changed) {
             let visible = ins.visible.value;
@@ -324,6 +330,8 @@ export default class CVModel2 extends CObject3D
         }
 
         const data = document.models[node.model];
+
+        ins.name.setValue(node.name);
 
         const units = EUnitType[data.units || "cm"];
         ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);

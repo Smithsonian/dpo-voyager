@@ -262,7 +262,9 @@ export default class CVStandaloneFileManager extends Component
             if(parentId === "-1") {
                 // converting path to relative (TODO: check if all browsers will have leading slash here)
                 const model = activeDoc.appendModel(filepath, quality);
-                model.node.name = filename.substr(0, filename.indexOf("."));
+                const name = filename.substr(0, filename.indexOf("."));
+                model.node.name = name;
+                model.ins.name.setValue(name);
                 model.ins.quality.setValue(quality);
             }
             else {

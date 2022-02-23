@@ -156,10 +156,12 @@ class NodeTree extends Tree<NVNode>
     protected onActiveNode(event: IActiveNodeEvent)
     {
         if (event.previous) {
+            event.previous.off("change", this.onUpdate, this);
             this.setSelected(event.previous, false);
         }
         if (event.next) {
             this.setSelected(event.next, true);
+            event.next.on("change", this.onUpdate, this);
         }
     }
 }

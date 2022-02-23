@@ -23,7 +23,7 @@ import Button, { IButtonClickEvent } from "@ff/ui/Button";
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVStoryApplication from "../../components/CVStoryApplication";
-import CVTaskProvider, { IActiveTaskEvent, ITaskSetEvent } from "../../components/CVTaskProvider";
+import CVTaskProvider, { ETaskMode, IActiveTaskEvent, ITaskSetEvent } from "../../components/CVTaskProvider";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,11 +63,14 @@ export default class TaskBar extends SystemView
     {
         const tasks = this.taskProvider.scopedComponents;
         const activeTask = this.taskProvider.activeComponent;
-        const taskMode = this.taskProvider.ins.mode.getOptionText();
+        const taskMode = this.taskProvider.ins.mode.value;
+        const taskModeText = this.taskProvider.ins.mode.getOptionText();
+        const downloadButtonVisible = taskMode !== ETaskMode.Standalone;
+        const exitButtonVisible = taskMode !== ETaskMode.Standalone;
 
         return html`
             <img class="sv-story-logo" src="images/voyager-75grey.svg" alt="Logo"/>
-            <div class="sv-mode ff-text">${taskMode}</div>
+            <div class="sv-mode ff-text">${taskModeText}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
@@ -78,8 +81,8 @@ export default class TaskBar extends SystemView
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group">
                 <ff-button text="Save" icon="save" @click=${this.onClickSave}></ff-button>
-                <ff-button text="Download" icon="download" @click=${this.onClickDownload}></ff-button>
-                <ff-button text="Exit" icon="exit" @click=${this.onClickExit}></ff-button>
+                ${downloadButtonVisible ? html`<ff-button text="Download" icon="download" @click=${this.onClickDownload}></ff-button>` : null}
+                ${exitButtonVisible ? html`<ff-button text="Exit" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
             </div>
         `;
     }

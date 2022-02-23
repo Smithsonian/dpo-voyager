@@ -57,7 +57,7 @@ export default class ImportMenu extends Popup
         this.parentSelection = this.modelOptions.length > 1 ? this.modelOptions[1] : this.modelOptions[0];
 
         this.url = window.location.href;
-        this.style.height = "300px";
+        this.style.height = "50%";
     }
 
     close()
@@ -98,7 +98,7 @@ export default class ImportMenu extends Popup
                     <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
                 </div>
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Derivative Quality")}</div>
+                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Derivative Quality")}:</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 70%">
                     <div class="ff-scroll-y">
@@ -106,7 +106,7 @@ export default class ImportMenu extends Popup
                     </div>
                 </div>
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Parent Model")}</div>
+                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Add to Model")}:</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                         <div class="ff-scroll-y">
