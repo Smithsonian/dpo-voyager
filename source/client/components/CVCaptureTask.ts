@@ -225,13 +225,15 @@ export default class CVCaptureTask extends CVTask
             const fileURL = this.assetManager.getAssetUrl(filePath);
             const fileName = this.assetManager.getAssetName(filePath);
             const blob = convert.dataURItoBlob(dataURI);
-            const file = new File([blob], fileName);
+            const standaloneFM = this.graph.getMainComponent(CVStandaloneFileManager, true);
 
-            if(this.graph.getMainComponent(CVStandaloneFileManager, true)) {
+            if(standaloneFM) {
+                standaloneFM.addFile(fileURL, [blob]);
                 this.updateImageMeta(quality, this._mimeType, filePath);
                 new Notification(`Saved ${fileName} to scene package.`, "info", 4000);    
             }
             else {
+                const file = new File([blob], fileName);
                 fetch.file(fileURL, "PUT", file)
                 .then(() => {
                     this.updateImageMeta(quality, this._mimeType, filePath);
