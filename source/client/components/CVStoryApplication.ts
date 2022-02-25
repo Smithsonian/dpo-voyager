@@ -149,24 +149,12 @@ export default class CVStoryApplication extends Component
 
                     // collect thumbnail images              
                     const meta = this.meta;
-                    const capture = this.captureTask;
                     const images = meta && meta.images;
 
                     if (images && images.length > 0) {
-                        if(capture && capture.outs.updated.value) {
-                            // Add new images to save queue
-                            images.items.forEach(image => {
-                                const element = capture.getImageElement(EDerivativeQuality[image.quality as keyof typeof EDerivativeQuality]);
-                                const blob = convert.dataURItoBlob(element.src);
-                                saveFiles.push({ name: image.uri, lastModified: new Date(), input: blob });
-                            });
-                        }
-                        else {
-                            // Add uploaded images to save queue (no changes)
-                            images.items.forEach(image => {
-                                    saveFiles.push({ name: image.uri, lastModified: new Date(), input: fileManager.getFile(image.uri) });
-                            });
-                        }
+                        images.items.forEach(image => {
+                            saveFiles.push({ name: image.uri, lastModified: new Date(), input: fileManager.getFile(image.uri) });
+                        });
                     }
 
                     // recursively collect articles and related assets

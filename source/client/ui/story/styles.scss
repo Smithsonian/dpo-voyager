@@ -343,9 +343,9 @@ $color-component-meta-light: #d9d998;
 }
 
 .sv-drop-zone {
-  outline-style: solid;
-  outline-width: 2px;
-  outline-color: blue;
+  border-style: dashed;
+  border-width: 2px;
+  border-color: blue;
 }
 
 .sv-task-option-base-align {

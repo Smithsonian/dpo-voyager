@@ -26,6 +26,8 @@ import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";
 import unitScaleFactor from "client/utils/unitScaleFactor";
 import CTransform from "client/../../libs/ff-scene/source/components/CTransform";
+import CVCamera from "./CVCamera";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +74,14 @@ export default class CVScene extends CVNode
         return this.getGraphComponents(CVModel2);
     }
 
+    get cameras() {
+        return this.getGraphComponents(CVCamera);
+    }
+
+    get setup() {
+        return this.getGraphComponent(CVSetup);
+    }
+
     create()
     {
         super.create();
@@ -95,11 +105,13 @@ export default class CVScene extends CVNode
             this.updateTransformHierarchy();
             this.updateModelBoundingBox();
             this.updateLights();
+            this.updateCameras();
             outs.units.setValue(ins.units.value);
         }
         if (ins.modelUpdated.changed) {
             this.updateModelBoundingBox();
             this.updateLights();
+            this.updateCameras();
         }
         if (ins.sceneTransformed.changed) {
             this.updateModelBoundingBox();
@@ -187,5 +199,28 @@ export default class CVScene extends CVNode
         lightTransform.ins.scale.setValue(_vec3.toArray());
 
         lightTransform.object3D.updateMatrixWorld(true);
+    }
+
+    protected updateCameras()
+    {
+        if(this.setup.navigation.ins.autoZoom.value) {
+            this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
+        }
+        else {
+            this.updateCameraHelper();
+        }
+    }
+
+    protected updateCameraHelper = () =>
+    {
+        this.cameras.forEach(camera => {
+            const navOffset = this.setup.navigation.ins.offset.value;
+            const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length()
+
+            const far = 3 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const near = far / 1000.0;
+            camera.ins.far.setValue(far);
+            camera.ins.near.setValue(near);
+        });
     }
 }

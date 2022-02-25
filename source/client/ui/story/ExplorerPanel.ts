@@ -19,6 +19,7 @@ import ExplorerApplication from "../../applications/ExplorerApplication";
 import ExplorerView from "../explorer/MainView";
 
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import CVBackground from "client/components/CVBackground";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +33,10 @@ export default class ExplorerPanel extends CustomElement
     {
         super();
         this.application = application;
+
+        this.addEventListener('dragenter', this.onDragEnter);
+        this.addEventListener('dragleave', this.onDragLeave);
+        this.addEventListener('drop', this.onDragDrop);
     }
 
     protected firstConnected()
@@ -41,5 +46,20 @@ export default class ExplorerPanel extends CustomElement
         const fileInput = this.appendElement("input");
         fileInput.type = "file";
         fileInput.id = "fileInput";
+    }
+
+    protected onDragEnter(e: MouseEvent) {
+        e.preventDefault();
+        this.classList.add("sv-drop-zone");
+    }
+
+    protected onDragLeave(e: MouseEvent) {
+        e.preventDefault();
+        this.classList.remove("sv-drop-zone");
+    }
+
+    protected onDragDrop(e: MouseEvent) {
+        e.preventDefault();
+        this.classList.remove("sv-drop-zone");
     }
 }

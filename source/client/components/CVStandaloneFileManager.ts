@@ -278,7 +278,7 @@ export default class CVStandaloneFileManager extends Component
             if(importQueue.length > 0) {
                 this.handleModelImport(importQueue.pop());
             }
-        });
+        }).catch(e => {});
     }
 
     protected reload() {

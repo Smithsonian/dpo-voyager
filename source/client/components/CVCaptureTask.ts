@@ -228,7 +228,7 @@ export default class CVCaptureTask extends CVTask
             const standaloneFM = this.graph.getMainComponent(CVStandaloneFileManager, true);
 
             if(standaloneFM) {
-                standaloneFM.addFile(fileURL, [blob]);
+                standaloneFM.addFile(filePath, [blob]);
                 this.updateImageMeta(quality, this._mimeType, filePath);
                 new Notification(`Saved ${fileName} to scene package.`, "info", 4000);    
             }

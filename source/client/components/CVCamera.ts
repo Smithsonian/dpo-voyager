@@ -33,8 +33,8 @@ export default class CVCamera extends CCamera
             this.ins.projection,
             this.ins.fov,
             this.ins.size,
-            this.ins.near,
-            this.ins.far,
+            //this.ins.near,
+            //this.ins.far,
         ]
     }
 

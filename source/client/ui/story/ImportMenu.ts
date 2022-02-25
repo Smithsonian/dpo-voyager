@@ -41,7 +41,8 @@ export default class ImportMenu extends Popup
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
-            menu.on("close", () => resolve([menu.qualitySelection, menu.parentSelection.id]));
+            menu.on("confirm", () => resolve([menu.qualitySelection, menu.parentSelection.id]));
+            menu.on("close", () => reject());
         });
     }
 
@@ -63,6 +64,12 @@ export default class ImportMenu extends Popup
     close()
     {
         this.dispatchEvent(new CustomEvent("close"));
+        this.remove();
+    }
+
+    confirm()
+    {
+        this.dispatchEvent(new CustomEvent("confirm"));
         this.remove();
     }
 
@@ -114,7 +121,7 @@ export default class ImportMenu extends Popup
                         </div>
                 </div>
                 <div class="ff-flex-row sv-centered">
-                    <ff-button icon="upload" class="ff-button ff-control" text=${language.getLocalizedString("Import Model")} title=${language.getLocalizedString("Import Model")} @click=${this.close}></ff-button>
+                    <ff-button icon="upload" class="ff-button ff-control" text=${language.getLocalizedString("Import Model")} title=${language.getLocalizedString("Import Model")} @click=${this.confirm}></ff-button>
                 </div>
             </div>
         </div>
