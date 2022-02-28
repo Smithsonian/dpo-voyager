@@ -34,8 +34,6 @@ import { EDerivativeQuality, EAssetType } from "client/schema/model";
 import CVMediaManager from "./CVMediaManager";
 import { IAssetEntry } from "client/../../libs/ff-scene/source/components/CAssetManager";
 import CVModel2 from "./CVModel2";
-import CVCaptureTask from "./CVCaptureTask";
-import convert from "client/../../libs/ff-browser/source/convert";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
@@ -71,9 +69,6 @@ export default class CVStoryApplication extends Component
     }
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
-    }
-    protected get captureTask() {
-        return this.system.getMainComponent(CVCaptureTask);
     }
     protected get meta() {
         return this.system.getComponent(CVMeta);

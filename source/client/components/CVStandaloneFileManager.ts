@@ -258,17 +258,17 @@ export default class CVStandaloneFileManager extends Component
         const importQueue = this.importQueue;
         const filename = this.fileMap[filepath].name;
 
-        ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentId]) => {
-            if(parentId === "-1") {
+        ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentName]) => {
+            const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
+            if(model === undefined) {
                 // converting path to relative (TODO: check if all browsers will have leading slash here)
-                const model = activeDoc.appendModel(filepath, quality);
-                const name = filename.substr(0, filename.indexOf("."));
-                model.node.name = name;
-                model.ins.name.setValue(name);
-                model.ins.quality.setValue(quality);
+                const newModel = activeDoc.appendModel(filepath, quality);
+                const name = parentName;
+                newModel.node.name = name;
+                newModel.ins.name.setValue(name);
+                newModel.ins.quality.setValue(quality);
             }
             else {
-                const model = this.getSystemComponents(CVModel2).find(element => element.id === parentId);
                 model.derivatives.remove(EDerivativeUsage.Web3D, quality);
                 model.derivatives.createModelAsset(filepath, quality)
                 model.ins.quality.setValue(quality);

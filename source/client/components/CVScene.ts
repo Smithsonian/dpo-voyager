@@ -203,11 +203,14 @@ export default class CVScene extends CVNode
 
     protected updateCameras()
     {
-        if(this.setup.navigation.ins.autoZoom.value) {
-            this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
-        }
-        else {
-            this.updateCameraHelper();
+        // Only dynamically update near/far planes when we are editing a scene
+        if(!!this.system.getComponent("CVStoryApplication", true)) {
+            if(this.setup.navigation.ins.autoZoom.value) {
+                this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
+            }
+            else {
+                this.updateCameraHelper();
+            }
         }
     }
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html } from "@ff/ui/Popup";
+import Popup, { customElement, html, property } from "@ff/ui/Popup";
 
 import "@ff/ui/Button";
 import "@ff/ui/TextEdit";
@@ -31,7 +31,7 @@ export default class ImportMenu extends Popup
     protected url: string;
     protected language: CVLanguageManager = null;
     protected filename: string = "";
-    protected modelOptions: {name: string, id: string}[] = [{name: "New Model", id: "-1"}];
+    protected modelOptions: {name: string, id: string}[] = [];
     protected qualitySelection: EDerivativeQuality = EDerivativeQuality.Thumb;
     protected parentSelection: {name: string, id: string} = null;
 
@@ -41,7 +41,7 @@ export default class ImportMenu extends Popup
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
-            menu.on("confirm", () => resolve([menu.qualitySelection, menu.parentSelection.id]));
+            menu.on("confirm", () => resolve([menu.qualitySelection, menu.parentSelection.name]));
             menu.on("close", () => reject());
         });
     }
@@ -55,10 +55,9 @@ export default class ImportMenu extends Popup
         this.modelOptions = this.modelOptions.concat(language.getGraphComponents(CVModel2).map(model => ({name: model.node.name, id: model.id})));
         this.position = "center";
         this.modal = true;
-        this.parentSelection = this.modelOptions.length > 1 ? this.modelOptions[1] : this.modelOptions[0];
+        this.parentSelection = this.modelOptions.length > 0 ? this.modelOptions[0] : {name: "Model"+this.modelOptions.length.toString(), id: "-1"};
 
         this.url = window.location.href;
-        this.style.height = "50%";
     }
 
     close()
@@ -76,7 +75,7 @@ export default class ImportMenu extends Popup
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-import-menu", "sv-option-menu");
+        this.classList.add("sv-option-menu", "sv-import-menu");
     }
 
     protected renderQualityEntry(quality: EDerivativeQuality, index: number)
@@ -116,9 +115,16 @@ export default class ImportMenu extends Popup
                     <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Add to Model")}:</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
-                        <div class="ff-scroll-y">
-                            ${this.modelOptions.map((option, index) => this.renderParentEntry(option.name, index))}
+                    <div class="ff-scroll-y">
+                        <div class="sv-entry" @click=${e => this.onClickParent(e, -1)} ?selected=${ "-1" === this.parentSelection.id }>
+                        <div class="ff-flex-row">
+                            <label class="ff-label ff-off">New Model:</label>
+                            <div class="ff-flex-spacer"></div>
+                            <input id="modelName" tabindex="0" class="ff-property-field ff-input" @change=${this.onNameChange} value=${"Model"+this.modelOptions.length.toString()} touch-action="none" style="touch-action: none;" title="Parent.Name [string]"><div class="ff-fullsize ff-off ff-content"></div></input>
                         </div>
+                        </div>
+                        ${this.modelOptions.map((option, index) => this.renderParentEntry(option.name, index))}
+                    </div>
                 </div>
                 <div class="ff-flex-row sv-centered">
                     <ff-button icon="upload" class="ff-button ff-control" text=${language.getLocalizedString("Import Model")} title=${language.getLocalizedString("Import Model")} @click=${this.confirm}></ff-button>
@@ -140,7 +146,11 @@ export default class ImportMenu extends Popup
     {
         e.stopPropagation();
 
-        this.parentSelection = this.modelOptions[index];
+        this.parentSelection = this.modelOptions[index] || {name: (this.querySelector("#modelName") as HTMLInputElement).value, id: "-1"};
         this.requestUpdate();
+    }
+
+    protected onNameChange() {
+        this.parentSelection.name = (this.querySelector("#modelName") as HTMLInputElement).value;
     }
 }
