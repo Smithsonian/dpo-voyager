@@ -106,7 +106,7 @@ export default class ImportMenu extends Popup
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Derivative Quality")}:</div>
                 </div>
-                <div class="ff-splitter-section" style="flex-basis: 70%">
+                <div class="ff-splitter-section" style="flex-basis: 60%">
                     <div class="ff-scroll-y">
                         ${Object.keys(EDerivativeQuality).filter(key => typeof EDerivativeQuality[key] === 'number').map((key, index) => this.renderQualityEntry(EDerivativeQuality[key], index))}
                     </div>
@@ -114,7 +114,7 @@ export default class ImportMenu extends Popup
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Add to Model")}:</div>
                 </div>
-                <div class="ff-splitter-section" style="flex-basis: 30%">
+                <div class="ff-splitter-section" style="flex-basis: 40%">
                     <div class="ff-scroll-y">
                         <div class="sv-entry" @click=${e => this.onClickParent(e, -1)} ?selected=${ "-1" === this.parentSelection.id }>
                         <div class="ff-flex-row">

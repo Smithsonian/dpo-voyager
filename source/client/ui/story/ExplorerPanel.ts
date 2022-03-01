@@ -19,7 +19,6 @@ import ExplorerApplication from "../../applications/ExplorerApplication";
 import ExplorerView from "../explorer/MainView";
 
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
-import CVBackground from "client/components/CVBackground";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,18 +33,21 @@ export default class ExplorerPanel extends CustomElement
         super();
         this.application = application;
 
-        this.addEventListener('dragenter', this.onDragEnter);
-        this.addEventListener('dragleave', this.onDragLeave);
-        this.addEventListener('drop', this.onDragDrop);
+        if(application.system.getComponent("CVStandaloneFileManager", true)) {
+            this.addEventListener('dragenter', this.onDragEnter);
+            this.addEventListener('dragleave', this.onDragLeave);
+            this.addEventListener('drop', this.onDragDrop);
+
+            const fileInput = this.appendElement("input");
+            fileInput.type = "file";
+            fileInput.id = "fileInput";
+        }
     }
 
     protected firstConnected()
     {
         this.classList.add("sv-panel", "sv-explorer-panel");
         this.appendElement(new ExplorerView(this.application));
-        const fileInput = this.appendElement("input");
-        fileInput.type = "file";
-        fileInput.id = "fileInput";
     }
 
     protected onDragEnter(e: MouseEvent) {
