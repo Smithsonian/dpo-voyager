@@ -40,6 +40,7 @@ export default class SceneView extends SystemView
     protected canvas: HTMLCanvasElement = null;
     protected overlay: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
+    protected resizeObserver: ResizeObserver = null;
 
     protected pointerEventsEnabled: boolean = false;
 
@@ -113,14 +114,16 @@ export default class SceneView extends SystemView
         //window.addEventListener("resize", this.onResize);
         //window.dispatchEvent(new CustomEvent("resize"));
 
-        const resizeObserver = new ResizeObserver(() => this.view.resize());
-        resizeObserver.observe(this.view.renderer.domElement);
+        this.resizeObserver = new ResizeObserver(() => this.view.resize());
+        this.resizeObserver.observe(this.view.renderer.domElement);
 
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
     }
 
     protected disconnected()
     {
+        this.resizeObserver.disconnect();
+
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
 
         this.view.detach();

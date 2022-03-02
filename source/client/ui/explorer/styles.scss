@@ -59,6 +59,13 @@ $main-menu-button-size: 38px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// MAIN VIEW
+
+voyager-explorer {
+  font-size: 16px;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CONTENT LAYER
 
 $pad: $canvas-border-width + $main-menu-button-size + 8px;
@@ -140,6 +147,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .ff-viewport-overlay {
+  font-size: 1.0em;
 }
 
 .sv-scene-view {
@@ -183,12 +191,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   .sv-title {
     padding: 0 0 2px 0;
-    font-size: 0.85rem;
     font-weight: bold;
   }
   p {
     @include font-ui-normal;
-    font-size: 0.75rem;
+    font-size: 0.88em;
     line-height: 1.35;
     color: $color-text;
     margin: 0.5em 0;
@@ -262,13 +269,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   .sv-title {
     padding: 1px 0 2px 0;
-    font-size: 0.85rem;
     font-weight: bold;
   }
 
   .sv-content {
     padding: 2px 0;
-    font-size: 0.8rem;
     height: 0;
     overflow: hidden;
     overflow-wrap: break-word;
@@ -277,7 +282,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   p {
     @include font-ui-normal;
-    font-size: 0.75rem;
+    font-size: 0.88em;
     line-height: 1.35;
     color: $color-text;
     margin: 0.5em 0;
@@ -381,7 +386,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-chrome-view {
   @include font-ui-normal;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   line-height: 1.35;
   color: $color-text;
   @include fullsize;
@@ -460,7 +465,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     margin: $canvas-border-width 8px;
     font-family: "Hind Siliguri", sans-serif;;
     font-weight: normal;
-    font-size: 1.2rem;
+    font-size: 1.412em;
     white-space: pre;
     color: $color-text-light;
     @include noselect;
@@ -496,7 +501,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     margin: $canvas-border-width 8px;
     font-family: "Hind Siliguri", sans-serif;;
     font-weight: normal;
-    font-size: 1.0rem;
+    font-size: 1.176em;
     white-space: pre;
     color: $color-text-light;
     pointer-events: auto;
@@ -950,7 +955,7 @@ $tour-entry-indent: 12px;
     padding: 2px 4px;
     background-color: $menu-color-background-dark;
     border-radius: 3px;
-    font-size: 0.75rem;
+    font-size: 0.88em;
 
     &:hover {
       background-color: $menu-color-background-hover;
@@ -987,7 +992,7 @@ $tour-entry-indent: 12px;
     margin: 2px;
     padding: 1px 2px;
     border-radius: 3px;
-    font-size: 0.75rem;
+    font-size: 0.882em;
 
     .ff-text {
       margin: 1px 2px;
@@ -1004,7 +1009,7 @@ $tour-entry-indent: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.882em;
 
   .sv-property-view {
     flex: 0 1 auto;
@@ -1072,7 +1077,7 @@ $tour-entry-indent: 12px;
     flex: 0 1 auto;
     height: 26px;
     margin: 2px;
-    font-size: 1rem;
+    font-size: 1.34em;
   }
 
   .ff-button {

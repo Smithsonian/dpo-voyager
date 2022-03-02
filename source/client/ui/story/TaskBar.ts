@@ -24,6 +24,7 @@ import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVStoryApplication from "../../components/CVStoryApplication";
 import CVTaskProvider, { ETaskMode, IActiveTaskEvent, ITaskSetEvent } from "../../components/CVTaskProvider";
+import CVAssetReader from "../../components/CVAssetReader";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,10 @@ export default class TaskBar extends SystemView
 
         this.story = system.getMainComponent(CVStoryApplication);
         this.taskProvider = system.getMainComponent(CVTaskProvider);
+    }
+
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
     }
 
     protected firstConnected()
@@ -69,7 +74,7 @@ export default class TaskBar extends SystemView
         const exitButtonVisible = taskMode !== ETaskMode.Standalone;
 
         return html`
-            <img class="sv-story-logo" src="images/voyager-75grey.svg" alt="Logo"/>
+            <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
             <div class="sv-mode ff-text">${taskModeText}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>

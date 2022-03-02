@@ -45,17 +45,26 @@
 voyager-story {
   @include fullsize;
   @include font-ui-normal;
-  font-size: 0.85rem;
+  font-size: 16px; //0.85rem;
   line-height: 1.35;
 }
 
 ff-dock-view {
   flex: 1 1 auto;
+  font-size: 0.85em;
 }
 
 ff-tab-header, ff-dock-panel-header {
   .ff-text {
     display: inline;
+  }
+
+  .ff-icon {
+    height: 0.94em;
+  }
+
+  label {
+    font-weight: normal;
   }
 }
 
@@ -72,7 +81,7 @@ ff-tab-header, ff-dock-panel-header {
   }
 
   .sv-story-logo {
-    height: 28px;
+    height: 28px !important; 
     margin: 8px;
     align-self: center;
   }
