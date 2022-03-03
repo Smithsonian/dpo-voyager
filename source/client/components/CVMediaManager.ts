@@ -82,9 +82,11 @@ export default class CVMediaManager extends CAssetManager
         }
         else {
             if(this.assetManager.ins.baseUrlValid.value) {
-                super.refresh();
+                return super.refresh();
             }
-            return Promise.resolve();
+            else {
+                return Promise.resolve();
+            }
         }
     }
 
