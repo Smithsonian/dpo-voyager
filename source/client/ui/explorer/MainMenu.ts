@@ -270,6 +270,7 @@ export default class MainMenu extends DocumentView
             this.documentProps.on(
                 setup.interface.ins.tools,
                 setup.reader.ins.enabled,
+                setup.reader.outs.count,
                 setup.tours.ins.enabled,
                 setup.tours.outs.count,
                 setup.viewer.ins.annotationsVisible,
