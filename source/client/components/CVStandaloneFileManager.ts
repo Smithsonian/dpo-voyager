@@ -80,9 +80,19 @@ export default class CVStandaloneFileManager extends Component
         super.dispose();
     }
 
-    getFile(name: string)
+    getFile(name: string) : File
     {
         return this.fileMap[name];
+    }
+
+    getFiles() : File[]
+    {
+        return Object.keys(this.fileMap).map(key => this.fileMap[key]);
+    }
+
+    getFilePath(filename: string) : string
+    {
+        return this.rootMap[filename];
     }
     
     addFile(uri: string, data: BlobPart[] = [])
@@ -155,7 +165,7 @@ export default class CVStandaloneFileManager extends Component
             const filenameLower = file.name.toLowerCase();
             if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|png|usdz)$/)) {
 
-                if(!documentProvided && filenameLower.match(/\.(jpg|png)$/)) {
+                if(!documentProvided && filenameLower.match(/\.(jpg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + file.name;
                 }
 

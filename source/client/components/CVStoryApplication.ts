@@ -30,10 +30,7 @@ import { INodeComponents } from "./CVDocument";
 
 import { ETaskMode } from "../applications/taskSets";
 
-import { EDerivativeQuality, EAssetType } from "client/schema/model";
 import CVMediaManager from "./CVMediaManager";
-import { IAssetEntry } from "client/../../libs/ff-scene/source/components/CAssetManager";
-import CVModel2 from "./CVModel2";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
@@ -122,42 +119,17 @@ export default class CVStoryApplication extends Component
                 }
                 else {
                     // Standalone save
-                    const fileManager = this.standaloneFileManager;
+                    const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
                     const saveFiles = [];
 
                     const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
                     saveFiles.push({ name: fileName, lastModified: new Date(), input: json });
 
-                    // collect model files
-                    const models = this.getSystemComponents(CVModel2);
-                    models.forEach(model => {
-                        model.derivatives.getArray().forEach(derivative => {
-                            const modelAsset = derivative.findAsset(EAssetType.Model);
-                            if(modelAsset !== undefined) {
-                                const modelFile = fileManager.getFile(modelAsset.data.uri);
-                                if(modelFile !== undefined) {
-                                    saveFiles.push({ name: modelFile.name, lastModified: new Date(), input: modelFile });
-                                }
-                            }
-                        });
+                    const files = fileManager.getFiles().filter(file => file != null && !file.name.endsWith(".json"));
+                    files.forEach(file => {
+                        saveFiles.push({ name: fileManager.getFilePath(file.name)+file.name, lastModified: new Date(), input: file });
                     });
-
-                    // collect thumbnail images              
-                    const meta = this.meta;
-                    const images = meta && meta.images;
-
-                    if (images && images.length > 0) {
-                        images.items.forEach(image => {
-                            saveFiles.push({ name: image.uri, lastModified: new Date(), input: fileManager.getFile(image.uri) });
-                        });
-                    }
-
-                    // recursively collect articles and related assets
-                    const assetURIs = this.getArticleAssetURIs(this.mediaManager.root);
-                    assetURIs.filter(uri => uri.split("/").length > 1).forEach(uri => {
-                        saveFiles.push({ name: uri, lastModified: new Date(), input: fileManager.getFile(uri) });
-                    });
-                    
+               
                     downloadZip(saveFiles).blob().then(blob => { // await for async
                         const bloburl = URL.createObjectURL(blob);
                         download.url(bloburl, "voyager-scene.zip");
@@ -186,26 +158,5 @@ export default class CVStoryApplication extends Component
     {
         event.returnValue = "x";
         //return "x";
-    }
-
-    protected getArticleAssetURIs(asset: IAssetEntry): string[] 
-    {
-        let result: string[] = [];
-
-        if(asset.info.folder) {
-            asset.children.forEach(child => {
-                if(!child.info.folder) {
-                    result.push(child.info.url);
-                }
-                else {
-                    result = result.concat(this.getArticleAssetURIs(child));
-                }
-            });
-        }
-        else {
-            result.push(asset.info.url);
-        }
-
-        return result;
     }
 }

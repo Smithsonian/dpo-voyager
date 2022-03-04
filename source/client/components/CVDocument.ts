@@ -147,9 +147,12 @@ export default class CVDocument extends CRenderGraph
         if(ins.title.changed && this.titles) {
             const language = this.setup.language;
             ins.title.setValue(ins.title.value, true);
-            this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;
             outs.title.setValue(ins.title.value);
-            this.updateTitlesMeta();
+
+            if(ins.title.value) {
+                this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;     
+                this.updateTitlesMeta();
+            }
         }
 
         return true;
@@ -309,7 +312,7 @@ export default class CVDocument extends CRenderGraph
         const language = this.setup.language;
 
         const newTitle = this.titles[ELanguageType[language.outs.language.value]];
-        this.ins.title.setValue(newTitle ? newTitle : "Missing Title");
+        this.ins.title.setValue(newTitle);
     }
 
     protected updateTitlesMeta() {

@@ -102,6 +102,18 @@ export default class CVMediaManager extends CAssetManager
         }
     }
 
+    delete(asset: IAssetEntry)
+    {
+        const standaloneManager = this.standaloneFileManager;
+        if(standaloneManager) {
+            standaloneManager.deleteFile(asset.info.url);
+            return this.refresh();
+        }
+        else {
+            return super.delete(asset);
+        }
+    }
+
     deleteSelected()
     {
         const standaloneManager = this.standaloneFileManager;

@@ -123,7 +123,7 @@ export default class ChromeView extends DocumentView
             }
         }
         else {
-            title = document.outs.title.value || document.name || "Untitled Document";
+            title = document.outs.title.value || document.name || "Missing Title";
         }
 
         titleElement.innerHTML = title;

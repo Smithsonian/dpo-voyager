@@ -31,6 +31,7 @@ import CVAssetWriter from "../../components/CVAssetWriter";
 
 import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
 import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
+import CVReader from "../../components/CVReader";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +59,9 @@ export default class ArticleEditor extends SystemView
     }
     protected get standaloneFileManager() {
         return this.system.getMainComponent(CVStandaloneFileManager, true);
+    }
+    protected get articleReader() {
+        return this.system.getComponent(CVReader);
     }
 
     protected get editorElement() {
@@ -149,6 +153,7 @@ export default class ArticleEditor extends SystemView
         return this.assetWriter.putText(content, this._assetPath)
             .then(() => {
                 this._changed = false;
+                this.articleReader.ins.articleId.set();
                 new Notification(`Article successfully written to '${this._assetPath}'`, "info");
             })
             .catch(error => {
