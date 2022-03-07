@@ -415,6 +415,10 @@ $color-component-meta-light: #d9d998;
   width: 250px;
   height: 50%;
   font-size: 0.85em;
+
+  .sv-import-error-msg {
+    color: red;
+  }
 }
 
 

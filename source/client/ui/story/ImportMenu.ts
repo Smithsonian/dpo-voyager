@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-import Popup, { customElement, html, property } from "@ff/ui/Popup";
+import Popup, { customElement, html } from "@ff/ui/Popup";
 
 import "@ff/ui/Button";
 import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { EDerivativeQuality, TDerivativeQuality } from "client/schema/model";
 import CVModel2 from "client/components/CVModel2";
+import Notification from "@ff/ui/Notification";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,8 +32,9 @@ export default class ImportMenu extends Popup
     protected url: string;
     protected language: CVLanguageManager = null;
     protected filename: string = "";
+    protected errorString: string = "";
     protected modelOptions: {name: string, id: string}[] = [];
-    protected qualitySelection: EDerivativeQuality = EDerivativeQuality.Thumb;
+    protected qualitySelection: EDerivativeQuality = null;
     protected parentSelection: {name: string, id: string} = null;
 
     static show(parent: HTMLElement, language: CVLanguageManager, filename: string): Promise<[EDerivativeQuality, string]>
@@ -68,8 +70,14 @@ export default class ImportMenu extends Popup
 
     confirm()
     {
-        this.dispatchEvent(new CustomEvent("confirm"));
-        this.remove();
+        if(this.qualitySelection === null) {
+            this.errorString = "Please select derivative quality.";
+            this.requestUpdate();
+        }
+        else {
+            this.dispatchEvent(new CustomEvent("confirm"));
+            this.remove();
+        }
     }
 
     protected firstConnected()
@@ -95,7 +103,7 @@ export default class ImportMenu extends Popup
     protected render()
     {
         const language = this.language;
-
+console.log(this.errorString);
         return html`
         <div>
             <div class="ff-flex-column ff-fullsize">
@@ -128,6 +136,9 @@ export default class ImportMenu extends Popup
                 </div>
                 <div class="ff-flex-row sv-centered">
                     <ff-button icon="upload" class="ff-button ff-control" text=${language.getLocalizedString("Import Model")} title=${language.getLocalizedString("Import Model")} @click=${this.confirm}></ff-button>
+                </div>
+                <div class="ff-flex-row sv-centered sv-import-error-msg">
+                    <div>${this.errorString}</div>
                 </div>
             </div>
         </div>

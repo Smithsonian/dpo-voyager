@@ -50,7 +50,8 @@ export default class CVTape extends CObject3D
         endDirection: types.Vector3("End.Direction"),
         boundingBox: types.Object("Scene.BoundingBox", Box3),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
-        localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm)
+        localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
+        enabled: types.Boolean("Tape.Enabled", false),
     };
 
     protected static readonly tapeOuts = {
@@ -130,31 +131,41 @@ export default class CVTape extends CObject3D
 
     update(context)
     {
-        super.update(context);
-
-        const ins = this.ins;
         const lineGeometry = this.line.geometry as BufferGeometry;
+        const { startPin, endPin, line, ins } = this;
+
+        if (ins.enabled.changed) {
+            ins.visible.setValue(ins.enabled.value);
+        }
+
+        super.update(context);
 
         // determine pin scale based on scene/model bounding box
         if (ins.boundingBox.changed && ins.boundingBox.value) {
             ins.boundingBox.value.getSize(_vec3a);
             const radius = _vec3a.length() * 0.5;
 
-            this.startPin.scale.setScalar(radius * 0.003);
-            this.startPin.updateMatrix();
+            startPin.scale.setScalar(radius * 0.003);
+            startPin.updateMatrix();
 
-            this.endPin.scale.setScalar(radius * 0.003);
-            this.endPin.updateMatrix();
+            endPin.scale.setScalar(radius * 0.003);
+            endPin.updateMatrix();
         }
 
         // if tape is visible, listen for pointer events to set tape start/end
-        if (ins.visible.changed) {
-            if (ins.visible.value) {
+        if (ins.enabled.changed) {
+            if (ins.enabled.value) {
                 this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
             }
             else {
                 this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
             }
+        }
+
+        if(ins.visible.changed && ins.visible.value) {
+            startPin.visible = true;
+            endPin.visible = true;
+            line.visible = true;
         }
 
         if (ins.globalUnits.changed) {
@@ -163,7 +174,6 @@ export default class CVTape extends CObject3D
 
         // update tape start point
         if (ins.startPosition.changed || ins.startDirection.changed) {
-            const startPin = this.startPin;
             startPin.position.fromArray(ins.startPosition.value);
             _vec3a.fromArray(ins.startDirection.value);
             startPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
@@ -178,7 +188,6 @@ export default class CVTape extends CObject3D
 
         // update tape end point
         if (ins.endPosition.changed || ins.endDirection.changed) {
-            const endPin = this.endPin;
             endPin.position.fromArray(ins.endPosition.value);
             _vec3a.fromArray(ins.endDirection.value);
             endPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
@@ -202,7 +211,7 @@ export default class CVTape extends CObject3D
     fromData(data: ITape)
     {
         this.ins.copyValues({
-            visible: data.enabled,
+            visible: data.enabled,   // TODO: should probably be visible instead of enabled
             startPosition: data.startPosition,
             startDirection: data.startDirection,
             endPosition: data.endPosition,
