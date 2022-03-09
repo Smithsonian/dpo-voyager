@@ -103,7 +103,7 @@ export default class ImportMenu extends Popup
     protected render()
     {
         const language = this.language;
-console.log(this.errorString);
+
         return html`
         <div>
             <div class="ff-flex-column ff-fullsize">

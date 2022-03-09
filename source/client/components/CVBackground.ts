@@ -16,6 +16,7 @@
  */
 
 import CBackground, { EBackgroundStyle } from "@ff/scene/components/CBackground";
+import { Node } from "@ff/scene/components/CObject3D";
 
 import { IBackground, TBackgroundStyle } from "client/schema/setup";
 
@@ -39,6 +40,12 @@ export default class CVBackground extends CBackground
             this.ins.color0,
             this.ins.color1,
         ];
+    }
+
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+        this.background.layers.set(1);
     }
 
     hide() {

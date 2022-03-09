@@ -31,6 +31,7 @@ import { Dictionary } from "client/../../libs/ff-core/source/types";
 import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2 from "./CVModel2";
 import { EDerivativeUsage } from "client/schema/model";
+import CSelection from "client/../../libs/ff-graph/source/components/CSelection";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +52,9 @@ export default class CVStandaloneFileManager extends Component
 
     protected get documentProvider() {
         return this.getMainComponent(CVDocumentProvider);
+    }
+    protected get selection() {
+        return this.getMainComponent(CSelection);
     }
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
@@ -277,12 +281,14 @@ export default class CVStandaloneFileManager extends Component
                 newModel.node.name = name;
                 newModel.ins.name.setValue(name);
                 newModel.ins.quality.setValue(quality);
+                this.selection.selectNode(newModel.node);
             }
             else {
                 model.derivatives.remove(EDerivativeUsage.Web3D, quality);
                 model.derivatives.createModelAsset(filepath, quality)
                 model.ins.quality.setValue(quality);
                 model.outs.updated.set();
+                this.selection.selectNode(model.node);
             }
 
             if(importQueue.length > 0) {
