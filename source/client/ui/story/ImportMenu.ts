@@ -112,26 +112,26 @@ export default class ImportMenu extends Popup
                     <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
                 </div>
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Derivative Quality")}:</div>
+                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Select Derivative Quality")}:</div>
                 </div>
-                <div class="ff-splitter-section" style="flex-basis: 60%">
+                <div class="ff-splitter-section" style="flex-basis: 70%">
                     <div class="ff-scroll-y">
                         ${Object.keys(EDerivativeQuality).filter(key => typeof EDerivativeQuality[key] === 'number').map((key, index) => this.renderQualityEntry(EDerivativeQuality[key], index))}
                     </div>
                 </div>
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Add to Model")}:</div>
+                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Select Model")}:</div>
                 </div>
-                <div class="ff-splitter-section" style="flex-basis: 40%">
-                    <div class="ff-scroll-y">
-                        <div class="sv-entry" @click=${e => this.onClickParent(e, -1)} ?selected=${ "-1" === this.parentSelection.id }>
-                        <div class="ff-flex-row">
-                            <label class="ff-label ff-off">New Model:</label>
-                            <div class="ff-flex-spacer"></div>
-                            <input id="modelName" tabindex="0" class="ff-property-field ff-input" @change=${this.onNameChange} value=${"Model"+this.modelOptions.length.toString()} touch-action="none" style="touch-action: none;" title="Parent.Name [string]"><div class="ff-fullsize ff-off ff-content"></div></input>
-                        </div>
-                        </div>
+                <div class="ff-splitter-section" style="flex-basis: 30%">
+                    ${this.modelOptions.length > 0 ? html`<div class="ff-scroll-y">
                         ${this.modelOptions.map((option, index) => this.renderParentEntry(option.name, index))}
+                    </div>` : html`<div class="ff-flex-row sv-centered sv-notification" style="height:100%; align-items:center">No Models In Scene</div>`}
+                </div>
+                <div class="sv-entry" @click=${e => this.onClickParent(e, -1)} ?selected=${ "-1" === this.parentSelection.id }>
+                    <div class="ff-flex-row">
+                        <label class="ff-label ff-off">${language.getLocalizedString("Add New Model")}:</label>
+                        <div class="ff-flex-spacer"></div>
+                        <input id="modelName" tabindex="0" class="ff-property-field ff-input" @change=${this.onNameChange} value=${"Model"+this.modelOptions.length.toString()} touch-action="none" style="touch-action: none;" title="Parent.Name [string]"><div class="ff-fullsize ff-off ff-content"></div></input>
                     </div>
                 </div>
                 <div class="ff-flex-row sv-centered">

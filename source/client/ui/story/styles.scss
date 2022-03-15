@@ -429,12 +429,18 @@ $color-component-meta-light: #d9d998;
 // STANDALONE UI
 
 .sv-import-menu {
-  width: 250px;
+  width: 275px;
   height: 50%;
   font-size: 0.85em;
 
   .sv-import-error-msg {
     color: red;
+  }
+
+  .sv-notification {
+    font-size: 0.85em;
+    font-style: italic;
+    color: $menu-color-text-dim;
   }
 
   .ff-label {
