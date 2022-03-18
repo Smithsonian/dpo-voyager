@@ -114,7 +114,10 @@ export default class SceneView extends SystemView
         //window.addEventListener("resize", this.onResize);
         //window.dispatchEvent(new CustomEvent("resize"));
 
-        this.resizeObserver = new ResizeObserver(() => this.view.resize());
+        if(!this.resizeObserver) {
+            this.resizeObserver = new ResizeObserver(() => this.view.resize());
+        }
+        
         this.resizeObserver.observe(this.view.renderer.domElement);
 
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);

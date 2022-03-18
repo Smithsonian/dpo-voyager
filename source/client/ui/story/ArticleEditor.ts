@@ -278,7 +278,13 @@ export default class ArticleEditor extends SystemView
                 const assetUrl = this.assetManager.getAssetUrl(assetPath);
                 // wait until text has been dropped, so we can get a valid selection index
                 setTimeout(() => {
-                    const selection = this._editor.getSelection();
+                    let selection = this._editor.getSelection();
+
+                    if(selection.length === 0) {
+                        this._editor.setSelection(selection.index - assetPath.length, assetPath.length);
+                        selection = this._editor.getSelection();
+                    }
+
                     if (selection) {
                         // replace text with image asset
                         this._editor.deleteText(selection.index, selection.length);
