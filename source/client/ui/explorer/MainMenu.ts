@@ -37,6 +37,8 @@ export default class MainMenu extends DocumentView
 {
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected shareButtonSelected = false;
+    protected intersectionObserver: IntersectionObserver = null;
+    protected isClipped: boolean = false;
 
     protected get fullscreen() {
         return this.system.getMainComponent(CFullscreen);
@@ -69,10 +71,23 @@ export default class MainMenu extends DocumentView
         this.activeDocument.setup.tours.ins.closed.on("value", this.setTourFocus, this);
         this.activeDocument.setup.reader.ins.closed.on("value", this.setReaderFocus, this);
         this.toolProvider.ins.closed.on("value", this.setToolsFocus, this);
+        
+        if(!this.intersectionObserver) {
+            const options = {
+                root: null,
+                rootMargin: "0px",
+                threshold: [1.0]
+            };
+
+            this.intersectionObserver = new IntersectionObserver((entries, obs) => this.onOverflow(entries, obs), options);
+        }
+        this.intersectionObserver.observe(this);
     }
 
     protected disconnected()
     {
+        this.intersectionObserver.disconnect();
+
         this.toolProvider.ins.closed.off("value", this.setToolsFocus, this);
         this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
         this.activeDocument.setup.tours.ins.closed.off("value", this.setTourFocus, this);
@@ -123,22 +138,33 @@ export default class MainMenu extends DocumentView
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 
-        return html`${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
-            @click=${this.onEnterAR}></ff-button>` : null}
-        ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
-            ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
-        ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
-            ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
-        ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
-            ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
-        ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
-            ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-        <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
-            ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
-        ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
-            ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
-        ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
-            ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
+        const upDisabled = this.scrollTop === 0;
+        const scrollUpButton = this.isClipped ? html`<ff-button id="up-btn" class="sv-scroll-btn up" icon="up" title=${language.getLocalizedString("Up")}
+        @click=${() => this.onScrollMenu(false)} ?disabled=${upDisabled}></ff-button>` : null;
+
+        const downDisabled = Math.abs(this.scrollHeight - this.clientHeight - this.scrollTop) < 1 && this.scrollHeight !== this.clientHeight;
+        const scrollDownButton = this.isClipped ? html`<ff-button class="sv-scroll-btn down" icon="down" title=${language.getLocalizedString("Down")}
+        @click=${() => this.onScrollMenu(true)} ?disabled=${downDisabled}></ff-button>` : null;
+
+        return html`
+            ${scrollUpButton}
+            ${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
+                @click=${this.onEnterAR}></ff-button>` : null}
+            ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
+                ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
+            ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
+                ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
+            ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
+                ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
+            ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
+                ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
+            <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
+                ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
+            ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
+                ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
+            ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
+                ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}
+            ${scrollDownButton}`;
     }
 
     protected onToggleReader()
@@ -231,6 +257,18 @@ export default class MainMenu extends DocumentView
         audio.ins.playNarration.set();
     }
 
+    protected onScrollMenu(down: boolean)
+    {
+        const offset = (down ? 40 : -40);
+        this.scrollBy({
+            top: offset,
+            left: 0,
+            behavior: 'auto'
+        });
+
+        this.requestUpdate();
+    }
+
     // TODO: More elegant way to handle focus
     protected setTourFocus()
     {
@@ -278,6 +316,11 @@ export default class MainMenu extends DocumentView
             );
         }
 
+        this.requestUpdate();
+    }
+
+    protected onOverflow(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
+        this.isClipped = !entries[0].isIntersecting;
         this.requestUpdate();
     }
 }

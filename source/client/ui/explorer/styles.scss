@@ -391,6 +391,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   z-index: 1;
 
+  .ff-flex-spacer {
+    height: 100%;
+  }
+
   .ff-button {
     flex: 0 1 auto;
     box-sizing: border-box;
@@ -444,6 +448,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-chrome-header {
   display: flex;
   align-items: flex-start;
+  height: 100%;
 
   .sv-top-bar {
     flex: 1 1 auto;
@@ -522,7 +527,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  margin: $canvas-border-width 0 0 $canvas-border-width;
+  padding: $canvas-border-width $canvas-border-width 0 $canvas-border-width;
+  height: 100%;
+  overflow: hidden;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -570,6 +577,34 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       &:hover, &:focus {
         background-color: $color-primary-light;
       }
+    }
+  }
+
+  .sv-scroll-btn {
+    border-radius: 2px;
+    font-size: 10px;
+    height: $main-menu-button-size/2;
+    background-color: $color-background;
+    z-index: 2;
+    padding: 0px;
+    position: sticky;
+
+    &.up {
+      top: 0px;
+    }
+    
+    &.down {
+      bottom: $canvas-border-width*2;
+      margin-top: $canvas-border-width*2;
+    }
+
+    &:hover {
+      background-color: $color-background-lighter;
+      fill: $color-text;
+    }
+
+    &:focus, &:focus-visible {
+      background-color: $color-background;
     }
   }
 }
