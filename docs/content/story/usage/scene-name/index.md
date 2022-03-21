@@ -6,7 +6,7 @@ weight: 340
 
 You can add or edit a scene title directly from the Voyager Story interface.
 
-**Note: After adding your title don't forget to click 'Save' to write your changes to the scene file!**
+**Note: After adding your title don't forget to click 'Save' (upper right) to write your changes to the scene file!**
 
 ![Numbered diagram showing the location of the scene title, collection tab, and title entry box](scene-title.jpg)
 
