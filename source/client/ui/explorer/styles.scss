@@ -591,6 +591,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
     &.up {
       top: 0px;
+      margin-top: 0px;
     }
     
     &.down {
