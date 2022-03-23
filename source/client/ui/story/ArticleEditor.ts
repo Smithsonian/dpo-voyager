@@ -30,6 +30,8 @@ import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
 
 import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
+import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
+import CVReader from "../../components/CVReader";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +56,12 @@ export default class ArticleEditor extends SystemView
     }
     protected get assetWriter() {
         return this.system.getMainComponent(CVAssetWriter);
+    }
+    protected get standaloneFileManager() {
+        return this.system.getMainComponent(CVStandaloneFileManager, true);
+    }
+    protected get articleReader() {
+        return this.system.getComponent(CVReader);
     }
 
     protected get editorElement() {
@@ -134,12 +142,18 @@ export default class ArticleEditor extends SystemView
 
         // transform absolute to article-relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
+            if((assetUrl as string).startsWith("blob")) {
+                assetUrl = this.standaloneFileManager.blobUrlToFileUrl(assetUrl);
+                return pre + assetUrl + post;
+            }
+
             return pre + this.assetManager.getRelativeAssetPath(assetUrl, basePath) + post;
         });
 
         return this.assetWriter.putText(content, this._assetPath)
             .then(() => {
                 this._changed = false;
+                this.articleReader.ins.articleId.set();
                 new Notification(`Article successfully written to '${this._assetPath}'`, "info");
             })
             .catch(error => {
@@ -162,6 +176,10 @@ export default class ArticleEditor extends SystemView
     {
         super.firstConnected();
         this.classList.add("sv-article-editor");
+
+        // Hack to override Quill sanitization of blob urls.
+        var Image = QuillEditor.import('formats/image');
+        Image.sanitize = function(url) { return url; }
 
         const toolbarOptions = [
             // header formats
@@ -260,7 +278,13 @@ export default class ArticleEditor extends SystemView
                 const assetUrl = this.assetManager.getAssetUrl(assetPath);
                 // wait until text has been dropped, so we can get a valid selection index
                 setTimeout(() => {
-                    const selection = this._editor.getSelection();
+                    let selection = this._editor.getSelection();
+
+                    if(selection.length === 0) {
+                        this._editor.setSelection(selection.index - assetPath.length, assetPath.length);
+                        selection = this._editor.getSelection();
+                    }
+
                     if (selection) {
                         // replace text with image asset
                         this._editor.deleteText(selection.index, selection.length);

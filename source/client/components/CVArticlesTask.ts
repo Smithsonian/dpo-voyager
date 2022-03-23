@@ -33,6 +33,7 @@ import ArticlesTaskView from "../ui/story/ArticlesTaskView";
 import CVMediaManager from "./CVMediaManager";
 import CVAssetWriter from "./CVAssetWriter";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,8 +130,15 @@ export default class CVArticlesTask extends CVTask
             const article = new Article();
             const defaultFolder = CVMediaManager.articleFolder;
             article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[DEFAULT_LANGUAGE]}.html`;
+
+            const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
+            if(standaloneFiles) {
+                standaloneFiles.addFile(article.uri);
+            }
+
             meta.articles.append(article);
             this.reader.ins.articleId.setValue(article.id);
+            this.reader.outs.count.setValue(meta.articles.length);
             languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
         }
 
@@ -145,6 +153,7 @@ export default class CVArticlesTask extends CVTask
             }
             if (ins.delete.changed) {
                 this.deleteArticle(activeArticle);
+                this.reader.outs.count.setValue(meta.articles.length);
             }
             if (ins.title.changed) {
                 activeArticle.title = ins.title.value;
@@ -261,9 +270,10 @@ export default class CVArticlesTask extends CVTask
         const ins = this.ins;
         const outs = this.outs;
         const meta = this.meta;
-        const article = this.reader.activeArticle;
+        let article = this.reader.activeArticle;
 
         if (meta && article && meta.articles.getById(article.id)) {
+            article = meta.articles.getById(article.id);
             ins.title.setValue(article.title, true);
             ins.lead.setValue(article.lead, true);
             ins.tags.setValue(article.tags.join(", "), true);

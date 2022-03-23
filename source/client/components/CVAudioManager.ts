@@ -88,7 +88,7 @@ export default class CVAudioManager extends Component
         const { ins, outs } = this;
 
         if (ins.playNarration.changed) {
-            if(this.audioPlayer) {
+            if(this.audioPlayer && this._narrationId) {
                 if(!this.isPlaying) {
                     this.play(this._narrationId);
                 }
@@ -160,6 +160,12 @@ export default class CVAudioManager extends Component
 
     play(id: string)
     {
+        if(!this.audioPlayer) {
+            // Audio player not initialized. Need to call setupAudio() from a click handler to support all browsers.
+            Notification.show(`Error - Audio Player not initialized.`, "error");
+            return;
+        }
+
         const { outs } = this;
         const clip = this.audioClips[id];
         const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
@@ -168,7 +174,8 @@ export default class CVAudioManager extends Component
         this.audioPlayer.play()
         .then(() => {
             this.isPlaying = true;
-            outs.narrationPlaying.setValue(id === this._narrationId);
+            //outs.narrationPlaying.setValue(id === this._narrationId);
+            outs.narrationPlaying.setValue(true);
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));  
     }
@@ -195,7 +202,7 @@ export default class CVAudioManager extends Component
             this.audioPlayer.onended = this.onEnd;
             //this.audioPlayer.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
 
-            this.ins.playNarration.set();
+            //this.ins.playNarration.set();
         }
     }
 }

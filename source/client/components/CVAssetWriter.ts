@@ -23,6 +23,9 @@ import { INodeComponents } from "../nodes/NVNode";
 
 import CVDocument from "./CVDocument";
 import CVAssetManager from "./CVAssetManager";
+import CVStandaloneFileManager from "./CVStandaloneFileManager"
+import CVAssetReader from "./CVAssetReader";
+import { resolve } from "dns";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +53,9 @@ export default class CVAssetWriter extends Component
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get standaloneFileManager() {
+        return this.getGraphComponent(CVStandaloneFileManager, true);
+    }
 
     putJSON(json: any, assetPath: string): Promise<void>
     {
@@ -59,8 +65,15 @@ export default class CVAssetWriter extends Component
 
     putText(text: string, assetPath: string): Promise<string>
     {
-        const url = this.assetManager.getAssetUrl(assetPath);
-        return fetch.text(url, "PUT", text);
+        const standaloneManager = this.standaloneFileManager;
+        if(standaloneManager) {
+            standaloneManager.addFile(assetPath, [text]);
+            return Promise.resolve(text);
+        }
+        else {
+            const url = this.assetManager.getAssetUrl(assetPath);
+            return fetch.text(url, "PUT", text);
+        }
     }
 
     putDocument(document: CVDocument, components?: INodeComponents, assetPath?: string): Promise<void>

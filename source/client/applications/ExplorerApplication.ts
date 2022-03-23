@@ -50,6 +50,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";
 import CVAnnotationView from "client/components/CVAnnotationView";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +88,8 @@ export interface IExplorerApplicationProps
     bgStyle?: string;
     /** Enables/disables pointer-driven camera controls. */
     controls?: string;
+    /** ISO 639-1 language code to change active component language */
+    lang?: string;
 }
 
 /**
@@ -104,7 +107,7 @@ export default class ExplorerApplication
     
 Voyager - 3D Explorer and Tool Suite
 3D Foundation Project
-(c) 2021 Smithsonian Institution
+(c) 2022 Smithsonian Institution
 
 https://3d.si.edu
 https://github.com/smithsonian/dpo-voyager
@@ -273,6 +276,7 @@ Version: ${ENV_VERSION}
         props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
         props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
         props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
+        props.lang = props.lang || parseUrlParameter("lang") || parseUrlParameter("l");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);
@@ -309,6 +313,10 @@ Version: ${ENV_VERSION}
         if(props.resourceRoot) {
             // Set custom resource path
             this.assetReader.setSystemAssetPath(props.resourceRoot);
+        }
+
+        if(props.lang) {
+            this.setLanguage(props.lang);
         }
 
         if (props.document) {
@@ -604,6 +612,20 @@ Version: ${ENV_VERSION}
         }
         else {
             console.log("Error: enableNavigation param is not valid.");
+        }
+    }
+
+    // set language
+    setLanguage(languageID: string)
+    {
+        const languageIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.language.ins;
+        const id = languageID.toUpperCase();
+
+        if(id in ELanguageType) {
+            languageIns.language.setValue(ELanguageType[id]);
+        }
+        else {
+            console.log("Error: setLanguage param is not a valid language id.");
         }
     }
 }

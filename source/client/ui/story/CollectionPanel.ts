@@ -52,7 +52,7 @@ export default class CollectionPanel extends DocumentView
             <sv-property-view .property=${this.taskProvider.ins.language}></sv-property-view>
             <div class="sv-indent">
                 <div class="sv-label">Title</div>
-                <ff-text-edit name="title" text=${this.activeDocument.ins.title.value} @change=${this.onTextEdit}></ff-text-edit>
+                <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>
             </div>`;
     }
 
@@ -74,8 +74,10 @@ export default class CollectionPanel extends DocumentView
     {
         if (previous) {
             previous.setup.language.outs.language.off("value", this.onUpdate, this);
+            previous.outs.title.off("value", this.onUpdate, this);
         }
         if (next) {
+            next.outs.title.on("value", this.onUpdate, this);
             next.setup.language.outs.language.on("value", this.onUpdate, this);
         }
     }

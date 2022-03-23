@@ -61,7 +61,7 @@ export default class ChromeView extends DocumentView
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
         this.titleElement = this.createElement("div", null);
-        this.titleElement.classList.add("ff-ellipsis", "sv-main-title");
+        //this.titleElement.classList.add("ff-ellipsis", "sv-main-title");
     }
 
     protected disconnected()
@@ -123,7 +123,7 @@ export default class ChromeView extends DocumentView
             }
         }
         else {
-            title = document.outs.title.value || document.name || "Untitled Document";
+            title = document.outs.title.value || document.name || "Missing Title";
         }
 
         titleElement.innerHTML = title;

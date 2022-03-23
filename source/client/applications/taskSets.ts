@@ -26,7 +26,7 @@ import CVAudioTask from "../components/CVAudioTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum ETaskMode { QC, Authoring, Edit, Expert }
+export enum ETaskMode { QC, Authoring, Edit, Expert, Standalone }
 
 export default {
     [ETaskMode.Edit]: [
@@ -60,6 +60,15 @@ export default {
         CVArticlesTask,
         CVToursTask,
         CVAudioTask,
+        CVSettingsTask,
+    ],
+    [ETaskMode.Standalone]: [
+        CVPoseTask,
+        CVCaptureTask,
+        CVDerivativesTask,
+        CVAnnotationsTask,
+        CVArticlesTask,
+        CVToursTask,
         CVSettingsTask,
     ]
 }

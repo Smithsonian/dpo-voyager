@@ -31,6 +31,18 @@
   }
 }
 
+.ff-table {
+  table, th, tbody {
+    border: 0px;
+  }
+}
+
+.ff-popup {
+  @include font-ui-normal;
+  font-size: 16px;
+  color: $color-text;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EXPLORER OVERRIDES
 
@@ -45,12 +57,27 @@
 voyager-story {
   @include fullsize;
   @include font-ui-normal;
-  font-size: 0.85rem;
+  font-size: 16px; //0.85rem;
   line-height: 1.35;
 }
 
 ff-dock-view {
   flex: 1 1 auto;
+  font-size: 0.85em;
+}
+
+ff-tab-header, ff-dock-panel-header {
+  .ff-text {
+    display: inline;
+  }
+
+  .ff-icon {
+    height: 0.94em;
+  }
+
+  label {
+    font-weight: normal;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +93,7 @@ ff-dock-view {
   }
 
   .sv-story-logo {
-    height: 28px;
+    height: 28px !important; 
     margin: 8px;
     align-self: center;
   }
@@ -253,6 +280,7 @@ $color-component-meta-light: #d9d998;
   & > .ff-icon {
     height: 1.2em;
     padding: 4px 4px;
+    box-sizing: content-box;
   }
 }
 
@@ -337,9 +365,9 @@ $color-component-meta-light: #d9d998;
 }
 
 .sv-drop-zone {
-  outline-style: solid;
-  outline-width: 2px;
-  outline-color: blue;
+  border-style: dashed;
+  border-width: 2px;
+  border-color: blue;
 }
 
 .sv-task-option-base-align {
@@ -360,6 +388,10 @@ $color-component-meta-light: #d9d998;
   flex: 0 0 auto;
   display: flex;
   margin: 2px 0;
+  
+  * {
+    box-sizing: content-box;
+  }
 
   .sv-property-name {
     flex: 1 1 25%;
@@ -392,6 +424,31 @@ $color-component-meta-light: #d9d998;
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// STANDALONE UI
+
+.sv-import-menu {
+  width: 275px;
+  height: 50%;
+  font-size: 0.85em;
+
+  .sv-import-error-msg {
+    color: red;
+  }
+
+  .sv-notification {
+    font-size: 0.85em;
+    font-style: italic;
+    color: $menu-color-text-dim;
+  }
+
+  .ff-label {
+    font-weight: normal;
+    padding: 0px;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // QUILL RICH TEXT EDITOR

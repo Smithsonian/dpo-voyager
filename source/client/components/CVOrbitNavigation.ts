@@ -171,6 +171,7 @@ export default class CVOrbitNavigation extends CObject3D
             const scene = this.getGraphComponent(CVScene);
             this._modelBoundingBox = scene.outs.boundingBox.value;
             controller.zoomExtents(this._modelBoundingBox);
+            cameraComponent.ins.zoom.set();
         }
 
         // include lights

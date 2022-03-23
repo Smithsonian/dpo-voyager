@@ -25,6 +25,7 @@ import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +65,9 @@ export default class CVTours extends Component
     }
     protected get language() {
         return this.getGraphComponent(CVLanguageManager);
+    }
+    protected get setup() {
+        return this.getGraphComponent(CVSetup);
     }
 
     get snapshots() {
@@ -165,6 +169,7 @@ export default class CVTours extends Component
 
         const tours = this._tours;
         const machine = this.snapshots;
+        const navigation = this.setup.navigation;
 
         if (ins.enabled.changed) {
 
@@ -243,6 +248,7 @@ export default class CVTours extends Component
         }
 
         if (nextStepIndex >= 0) {
+            navigation.setChanged(true); // disable autoZoom
             // tween to the next step
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
