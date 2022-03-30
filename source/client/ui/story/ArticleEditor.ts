@@ -15,8 +15,46 @@
  * limitations under the License.
  */
 
-import * as QuillEditor from "quill";
-import ImageResize from 'quill-image-resize-module';
+//import * as QuillEditor from "quill";
+//import ImageResize from 'quill-image-resize-module';
+/* Import TinyMCE */
+import tinymce from 'tinymce';
+
+/* Default icons are required for TinyMCE 5.3 or above */
+import 'tinymce/icons/default';
+
+/* A theme is also required */
+import 'tinymce/themes/silver';
+
+//import 'tinymce/models/dom/model';
+
+/* Import the skin */
+import 'tinymce/skins/ui/oxide/skin.css';
+
+/* Import plugins */
+import 'tinymce/plugins/advlist';
+import 'tinymce/plugins/code';
+import 'tinymce/plugins/emoticons';
+import 'tinymce/plugins/emoticons/js/emojis';
+import 'tinymce/plugins/link';
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/table';
+import 'tinymce/plugins/image';
+import 'tinymce/plugins/imagetools';
+
+/* Import premium plugins */
+/* NOTE: Download separately and add these to /src/plugins */
+/* import './plugins/checklist/plugin'; */
+/* import './plugins/powerpaste/plugin'; */
+/* import './plugins/powerpaste/js/wordimport'; */
+
+/* Import content css */
+import contentUiCss from '!!raw-loader!tinymce/skins/ui/oxide/content.min.css';
+import contentCss from '!!raw-loader!tinymce/skins/content/default/content.min.css';
+
+//import { Editor } from '@tiptap/core'
+//import StarterKit from '@tiptap/starter-kit'
+//import Image from '@tiptap/extension-image'
 
 import { html, render } from "@ff/ui/CustomElement";
 import Notification from "@ff/ui/Notification";
@@ -108,7 +146,8 @@ export default class ArticleEditor extends SystemView
         return this.assetReader.getText(assetPath)
         .then(content => this.parseArticle(content, assetPath))
         .then(content => {
-            this._editor.root.innerHTML = content;
+            //this._editor.root.innerHTML = content;
+            tinymce.activeEditor.setContent(content, {format: "raw"});
             this._assetPath = assetPath;
         }).then(() => {
             this._changed = false;
@@ -138,7 +177,7 @@ export default class ArticleEditor extends SystemView
     {
         const basePath = this.assetManager.getAssetBasePath(this._assetPath);
 
-        let content = this._editor.root.innerHTML;
+        let content = tinymce.activeEditor.getContent({format: "raw"}); //this._editor.root.innerHTML;
 
         // transform absolute to article-relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
@@ -163,7 +202,7 @@ export default class ArticleEditor extends SystemView
 
     protected clearArticle()
     {
-        this._editor.root.innerHTML = "";
+        tinymce.activeEditor.setContent("");
         this._assetPath = "";
         this._changed = false;
 
@@ -172,13 +211,50 @@ export default class ArticleEditor extends SystemView
         return Promise.resolve();
     }
 
+    
+
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-article-editor");
 
+        this._container = this.appendElement("div");
+        this._container.classList.add("sv-container");
+        this._container.id = "editor_wrapper"
+
+        tinymce.init({
+            selector: "#editor_wrapper",
+            plugins: "image link lists",
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | link image',
+            skin: false,
+            height: "100%",
+            resize: false,
+            content_css: false,
+            content_style: [contentCss, contentUiCss].join('\n'),
+            images_reuse_filename: true,
+
+            /*images_upload_handler: (file, success, failure, progress) => {console.log(JSON.stringify(file));
+                //this.standaloneFileManager.addFile(file.uri(), [file.blob()]);console.log(this.standaloneFileManager.getFilePath(file.filename()));
+                //return Promise.resolve(this.standaloneFileManager.getFilePath(file.filename()));
+                return Promise.resolve("");
+            },*/
+
+            init_instance_callback: (editor) => {
+                editor.on('dirty', () => this._changed = true);
+            }
+        });
+        tinymce.activeEditor.editorUpload.addFilter((img) => {return false;});
+        /*const editor = new Editor({
+            element: document.querySelector('.sv-article-editor'),
+            extensions: [
+                StarterKit,
+                Image,
+            ],
+            content: '<p>Hello World!</p>',
+            })*/
+
         // Hack to override Quill sanitization of blob urls.
-        var Image = QuillEditor.import('formats/image');
+        /*var Image = QuillEditor.import('formats/image');
         Image.sanitize = function(url) { return url; }
 
         const toolbarOptions = [
@@ -212,21 +288,23 @@ export default class ArticleEditor extends SystemView
             },
             theme: "snow",
             placeholder: "Write, because you have something to say."
-        };
+        };*/
 
-        this._container = this.appendElement("div");
-        this._container.classList.add("sv-container");
+        
 
         this._overlay = this.appendElement("div");
         this._overlay.classList.add("sv-overlay");
 
-        this._editor = new (QuillEditor as any)(this._container, options);
+        /*this._editor = new (QuillEditor as any)(this._container, options);
         this._editor.on("text-change", () => this._changed = true);
         this._editor.root.addEventListener("drop", this.onEditorDrop.bind(this), true);
 
         const toolbarElement = this.toolbarElement;
         const editorElement = this.editorElement;
-        editorElement.classList.add("sv-article");
+        editorElement.classList.add("sv-article");*/
+
+        //tinymce.activeEditor.container.addEventListener("drop", this.onEditorDrop.bind(this), true);
+        tinymce.activeEditor.on("drop", this.onEditorDrop.bind(this));
 
         const customButtons = html`
             <ff-button transparent icon="save" text="Save" title="Save Article" @click=${e => this.saveArticle()}></ff-button>
@@ -235,7 +313,7 @@ export default class ArticleEditor extends SystemView
 
         const container = document.createElement("span");
         container.classList.add("ql-formats", "sv-custom-buttons");
-        toolbarElement.insertBefore(container, toolbarElement.firstChild);
+        this.insertBefore(container, this.firstChild);
         render(customButtons, container);
     }
 
@@ -277,7 +355,7 @@ export default class ArticleEditor extends SystemView
             if (mimeType === "image/jpeg" || mimeType === "image/png") {
                 const assetUrl = this.assetManager.getAssetUrl(assetPath);
                 // wait until text has been dropped, so we can get a valid selection index
-                setTimeout(() => {
+                /*setTimeout(() => {
                     let selection = this._editor.getSelection();
 
                     if(selection.length === 0) {
@@ -290,6 +368,10 @@ export default class ArticleEditor extends SystemView
                         this._editor.deleteText(selection.index, selection.length);
                         this._editor.insertEmbed(selection.index, "image", assetUrl);
                     }
+                });*/
+
+                setTimeout(() => {
+                    tinymce.activeEditor.selection.setContent('<img src="' + assetUrl + '"/>');
                 });
             }
         }

@@ -234,11 +234,15 @@ function createAppConfig(app, isDevMode, isOffline)
                     }
                 },
                 {
+                    test: /content\.css$/i,
+                    use: ['css-loader'],
+                },
+                {
                     // Concatenate CSS
                     test: /\.css$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        "style-loader",
+                        //"style-loader",
                         "css-loader",
                     ]
                 },

@@ -107,6 +107,10 @@ export default class CVStandaloneFileManager extends Component
 
         this.rootMap[filename] = rootPath;
         this.fileMap[uri] = new File(data, filename);
+
+        if(this.runtimeURLs[uri]) {
+            this.runtimeURLs[uri] = null;
+        }
     }
 
     deleteFile(uri: string)
@@ -196,6 +200,9 @@ export default class CVStandaloneFileManager extends Component
                     const baseURL = this.rootMap[filename] + filename;
                     const normalizedURL = baseURL.startsWith("/") ? baseURL.substr(1) : baseURL;  // strip potential leading slash
 
+                    if(this.runtimeURLs[normalizedURL]) {
+                        return this.runtimeURLs[normalizedURL];
+                    }
                     if(this.fileMap[normalizedURL]) {
                         const bloburl = URL.createObjectURL( this.fileMap[normalizedURL] );
                         this.runtimeURLs[normalizedURL] = bloburl;
