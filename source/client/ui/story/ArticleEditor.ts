@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-//import * as QuillEditor from "quill";
-//import ImageResize from 'quill-image-resize-module';
 /* Import TinyMCE */
 import tinymce from 'tinymce';
 
@@ -29,34 +27,22 @@ import 'tinymce/themes/silver';
 //import 'tinymce/models/dom/model';
 
 /* Import the skin */
-import 'tinymce/skins/ui/oxide/skin.css';
+import './editor_css/skin.min.css';
 
 /* Import plugins */
 import 'tinymce/plugins/advlist';
-import 'tinymce/plugins/code';
-import 'tinymce/plugins/emoticons';
-import 'tinymce/plugins/emoticons/js/emojis';
 import 'tinymce/plugins/link';
 import 'tinymce/plugins/lists';
-import 'tinymce/plugins/table';
 import 'tinymce/plugins/image';
-import 'tinymce/plugins/imagetools';
-
-/* Import premium plugins */
-/* NOTE: Download separately and add these to /src/plugins */
-/* import './plugins/checklist/plugin'; */
-/* import './plugins/powerpaste/plugin'; */
-/* import './plugins/powerpaste/js/wordimport'; */
 
 /* Import content css */
-import contentUiCss from '!!raw-loader!tinymce/skins/ui/oxide/content.min.css';
-import contentCss from '!!raw-loader!tinymce/skins/content/default/content.min.css';
+import contentUiCss from '!!raw-loader!./editor_css/content.ui.min.css';
+import contentCss from '!!raw-loader!./editor_css/content.min.css';
 
 //import { Editor } from '@tiptap/core'
 //import StarterKit from '@tiptap/starter-kit'
 //import Image from '@tiptap/extension-image'
 
-import { html, render } from "@ff/ui/CustomElement";
 import Notification from "@ff/ui/Notification";
 import MessageBox from "@ff/ui/MessageBox";
 
@@ -100,13 +86,6 @@ export default class ArticleEditor extends SystemView
     }
     protected get articleReader() {
         return this.system.getComponent(CVReader);
-    }
-
-    protected get editorElement() {
-        return this.getElementsByClassName("ql-editor").item(0) as HTMLDivElement;
-    }
-    protected get toolbarElement() {
-        return this.getElementsByClassName("ql-toolbar").item(0) as HTMLDivElement;
     }
 
     openArticle(assetPath: string)
@@ -225,7 +204,8 @@ export default class ArticleEditor extends SystemView
         tinymce.init({
             selector: "#editor_wrapper",
             plugins: "image link lists",
-            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | link image',
+            toolbar: 'saveButton closeButton | undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | link image',
+            menubar: false,
             skin: false,
             height: "100%",
             resize: false,
@@ -241,80 +221,31 @@ export default class ArticleEditor extends SystemView
 
             init_instance_callback: (editor) => {
                 editor.on('dirty', () => this._changed = true);
-            }
-        });
-        tinymce.activeEditor.editorUpload.addFilter((img) => {return false;});
-        /*const editor = new Editor({
-            element: document.querySelector('.sv-article-editor'),
-            extensions: [
-                StarterKit,
-                Image,
-            ],
-            content: '<p>Hello World!</p>',
-            })*/
-
-        // Hack to override Quill sanitization of blob urls.
-        /*var Image = QuillEditor.import('formats/image');
-        Image.sanitize = function(url) { return url; }
-
-        const toolbarOptions = [
-            // header formats
-            [{ "header": [1, 2, 3, 4, 5, 6, false] }],
-
-            // toggle buttons
-            [ "bold", "italic" ],
-            [{ "script": "sub"}, { "script": "super" }],
-            [ "blockquote", "code-block" ],
-
-            // text alignment
-            [{ "align": "" }, { "align": "center" }, { "align": "right" }],
-
-            // lists, indent
-            [{ "list": "ordered"}, { "list": "bullet" }],
-            [{ "indent": "-1"}, { "indent": "+1" }],
-
-            // remove formatting
-            ["clean"],
-
-            // links, media
-            //["link", "image", "video"],
-        ];
-
-        const options = {
-            //debug: "info",
-            modules: {
-                toolbar: toolbarOptions,
-                imageResize: ImageResize,
+                editor.editorUpload.addFilter((img) => {return false;});
+                editor.on("drop", this.onEditorDrop.bind(this));
             },
-            theme: "snow",
-            placeholder: "Write, because you have something to say."
-        };*/
 
-        
+            setup: (editor) => {
+                editor.ui.registry.addButton('saveButton', {
+                    text: 'Save',
+                    icon: 'save',
+                    onAction: (_) => {
+                        this.saveArticle();
+                    }
+                });
+
+                editor.ui.registry.addButton('closeButton', {
+                    text: 'Close',
+                    icon: 'close',
+                    onAction: (_) => {
+                        this.closeArticle();
+                    }
+                });
+            }
+        });       
 
         this._overlay = this.appendElement("div");
         this._overlay.classList.add("sv-overlay");
-
-        /*this._editor = new (QuillEditor as any)(this._container, options);
-        this._editor.on("text-change", () => this._changed = true);
-        this._editor.root.addEventListener("drop", this.onEditorDrop.bind(this), true);
-
-        const toolbarElement = this.toolbarElement;
-        const editorElement = this.editorElement;
-        editorElement.classList.add("sv-article");*/
-
-        //tinymce.activeEditor.container.addEventListener("drop", this.onEditorDrop.bind(this), true);
-        tinymce.activeEditor.on("drop", this.onEditorDrop.bind(this));
-
-        const customButtons = html`
-            <ff-button transparent icon="save" text="Save" title="Save Article" @click=${e => this.saveArticle()}></ff-button>
-            <ff-button transparent icon="close" text="Close" title="Close Editor" @click=${e => this.closeArticle()}></ff-button>
-        `;
-
-        const container = document.createElement("span");
-        container.classList.add("ql-formats", "sv-custom-buttons");
-        this.insertBefore(container, this.firstChild);
-        render(customButtons, container);
     }
 
     protected connected()
