@@ -166,11 +166,12 @@ export default class CVStandaloneFileManager extends Component
         const documentRoot = documentProvided ? fileArray[fileArray.length-1][0].replace(fileArray[fileArray.length-1][1].name, '') : "";
 
         fileArray.forEach(([path, file]) => {
-            const filenameLower = file.name.toLowerCase();
+            const cleanfileName = decodeURI(file.name);
+            const filenameLower = cleanfileName.toLowerCase();
             if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|png|usdz)$/)) {
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
-                    path = CVMediaManager.articleFolder + "/" + file.name;
+                    path = CVMediaManager.articleFolder + "/" + cleanfileName;
                 }
 
                 // add folders to map
@@ -183,13 +184,14 @@ export default class CVStandaloneFileManager extends Component
 
                 // normalize path relative to document root
                 path = documentProvided ? path.replace(documentRoot, '') : (path.startsWith("/") ? path.substr(1) : path);
-                const rootPath = path.replace(file.name, '');
-                this.rootMap[file.name] = rootPath;
+                const rootPath = path.replace(cleanfileName, '');
+                this.rootMap[cleanfileName] = rootPath;
                 
                 this.fileMap[path] = file;
 
                 this.assetManager.loadingManager.setURLModifier( ( url ) => {
 
+                    url = decodeURI(url);
                     const index = url.lastIndexOf('/');
                     const filename = url.substr(index + 1).replace(/^(\.?\/)/, '');
 
@@ -219,7 +221,7 @@ export default class CVStandaloneFileManager extends Component
                 }
             }
             else {
-                new Notification(`Unhandled file: '${file.name}'`, "warning", 4000);
+                new Notification(`Unhandled file: '${cleanfileName}'`, "warning", 4000);
             }
         });
 
