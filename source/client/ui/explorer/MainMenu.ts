@@ -37,7 +37,7 @@ export default class MainMenu extends DocumentView
 {
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected shareButtonSelected = false;
-    protected intersectionObserver: IntersectionObserver = null;
+    protected resizeObserver: ResizeObserver = null;
     protected isClipped: boolean = false;
 
     protected pointerDown: boolean = false;
@@ -76,22 +76,16 @@ export default class MainMenu extends DocumentView
         this.activeDocument.setup.tours.ins.closed.on("value", this.setTourFocus, this);
         this.activeDocument.setup.reader.ins.closed.on("value", this.setReaderFocus, this);
         this.toolProvider.ins.closed.on("value", this.setToolsFocus, this);
-        
-        if(!this.intersectionObserver) {
-            const options = {
-                root: this.parentElement,
-                rootMargin: "0px",
-                threshold: [1.0]
-            };
 
-            this.intersectionObserver = new IntersectionObserver((entries, obs) => this.onOverflow(entries, obs), options);
+        if(!this.resizeObserver) { 
+            this.resizeObserver = new ResizeObserver(() => this.onResize());
         }
-        this.intersectionObserver.observe(this);
+        this.resizeObserver.observe(this);
     }
 
     protected disconnected()
     {
-        this.intersectionObserver.disconnect();
+        this.resizeObserver.disconnect();
 
         if(this.isClipped) {
             this.enableScroll(false);
@@ -319,9 +313,12 @@ export default class MainMenu extends DocumentView
         this.requestUpdate();
     }
 
-    protected onOverflow(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
-        this.isClipped = !entries[0].isIntersecting;
-        this.enableScroll(this.isClipped);
+    protected onResize() {
+        const clipped = this.scrollHeight > this.clientHeight;
+        if(this.isClipped !== clipped) {
+            this.isClipped = clipped;
+            this.enableScroll(clipped);
+        }
     }
 
     protected onPointerDown(e: PointerEvent) {
@@ -360,6 +357,8 @@ export default class MainMenu extends DocumentView
 
     protected enableScroll(enable: boolean) {
         if(enable) {
+            this.scrollTo({top: this.scrollTop + this.scrollHeight, behavior: "smooth"})
+
             this.onPointerUp = this.onPointerUp.bind(this);
             this.addEventListener("pointerdown", this.onPointerDown);
             this.addEventListener("pointermove", this.onPointerMove);
