@@ -55,6 +55,7 @@ $main-menu-button-size: 38px;
   }
   ::-webkit-scrollbar-thumb {
     background-color: $color-background-lighter;
+    border-radius: 8px;
   }
 }
 
@@ -391,10 +392,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   z-index: 1;
 
-  .ff-flex-spacer {
-    height: 100%;
-  }
-
   .ff-button {
     flex: 0 1 auto;
     box-sizing: border-box;
@@ -449,6 +446,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   display: flex;
   align-items: flex-start;
   height: 100%;
+  position: relative;
 
   .sv-top-bar {
     flex: 1 1 auto;
@@ -524,12 +522,23 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN MENU
 
+.sv-main-menu-wrapper {
+  position: relative;
+  height: 100%;
+  min-width: 50px;
+}
+
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  padding: $canvas-border-width $canvas-border-width 0 $canvas-border-width;
+  padding: $canvas-border-width $canvas-border-width $canvas-border-width $canvas-border-width;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  pointer-events: auto;
+  position: absolute;
+  box-sizing: border-box;
+  overscroll-behavior-y: contain;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -1023,6 +1032,12 @@ $tour-entry-indent: 12px;
       margin: 1px 2px;
     }
   }
+}
+
+.sv-tool-bar-container {
+  position: relative;
+  bottom: 0px;
+  width: 100%;
 }
 
 .sv-tool-controls {

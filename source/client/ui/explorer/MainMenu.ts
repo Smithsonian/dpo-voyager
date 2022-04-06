@@ -40,6 +40,11 @@ export default class MainMenu extends DocumentView
     protected intersectionObserver: IntersectionObserver = null;
     protected isClipped: boolean = false;
 
+    protected pointerDown: boolean = false;
+    protected isDragging: boolean = false;
+    protected dragStart: number = undefined;
+    protected dragPrev: number = undefined;
+
     protected get fullscreen() {
         return this.system.getMainComponent(CFullscreen);
     }
@@ -74,7 +79,7 @@ export default class MainMenu extends DocumentView
         
         if(!this.intersectionObserver) {
             const options = {
-                root: null,
+                root: this.parentElement,
                 rootMargin: "0px",
                 threshold: [1.0]
             };
@@ -87,6 +92,10 @@ export default class MainMenu extends DocumentView
     protected disconnected()
     {
         this.intersectionObserver.disconnect();
+
+        if(this.isClipped) {
+            this.enableScroll(false);
+        }
 
         this.toolProvider.ins.closed.off("value", this.setToolsFocus, this);
         this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
@@ -138,16 +147,8 @@ export default class MainMenu extends DocumentView
         const ARderivatives = models[0] ? models[0].derivatives.getByQuality(EDerivativeQuality.AR) : [];
         const arButtonVisible = this.arManager.outs.available.value && ARderivatives.length > 0 && models.length >= 1;
 
-        const upDisabled = this.scrollTop === 0;
-        const scrollUpButton = this.isClipped ? html`<ff-button id="up-btn" class="sv-scroll-btn up" icon="up" title=${language.getLocalizedString("Up")}
-        @click=${() => this.onScrollMenu(false)} ?disabled=${upDisabled}></ff-button>` : null;
-
-        const downDisabled = Math.abs(this.scrollHeight - this.clientHeight - this.scrollTop) < 1 && this.scrollHeight !== this.clientHeight;
-        const scrollDownButton = this.isClipped ? html`<ff-button class="sv-scroll-btn down" icon="down" title=${language.getLocalizedString("Down")}
-        @click=${() => this.onScrollMenu(true)} ?disabled=${downDisabled}></ff-button>` : null;
 
         return html`
-            ${scrollUpButton}
             ${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
                 @click=${this.onEnterAR}></ff-button>` : null}
             ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
@@ -163,8 +164,7 @@ export default class MainMenu extends DocumentView
             ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
                 ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
             ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
-                ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}
-            ${scrollDownButton}`;
+                ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
     }
 
     protected onToggleReader()
@@ -321,6 +321,58 @@ export default class MainMenu extends DocumentView
 
     protected onOverflow(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
         this.isClipped = !entries[0].isIntersecting;
-        this.requestUpdate();
+        this.enableScroll(this.isClipped);
+    }
+
+    protected onPointerDown(e: PointerEvent) {
+        this.pointerDown = true;
+        this.dragStart = e.clientY;
+    }
+    protected onPointerMove(e: PointerEvent) {
+        if(this.pointerDown) {
+            if(!this.isDragging) {
+                if(Math.abs(this.dragStart - e.clientY) > 4) {
+                    this.isDragging = true;
+                    this.dragPrev = this.dragStart;
+                    [...this.getElementsByClassName("ff-button")].forEach(
+                        element => (element as HTMLElement).style.pointerEvents = "none");
+                }
+            }
+
+            if(this.isDragging) {
+                this.scrollBy({
+                    top: this.dragStart - e.clientY,
+                    left: 0,
+                    behavior: 'auto'
+                });
+                this.dragStart = e.clientY;
+            }
+        }
+    }
+    protected onPointerUp(e: PointerEvent) {
+        this.pointerDown = false;
+        if(this.isDragging) {
+            this.isDragging = false;
+            [...this.getElementsByClassName("ff-button")].forEach(
+                element => (element as HTMLElement).style.pointerEvents = "auto");
+        }
+    }
+
+    protected enableScroll(enable: boolean) {
+        if(enable) {
+            this.onPointerUp = this.onPointerUp.bind(this);
+            this.addEventListener("pointerdown", this.onPointerDown);
+            this.addEventListener("pointermove", this.onPointerMove);
+            this.addEventListener("pointerup", this.onPointerUp);
+            this.ownerDocument.addEventListener("pointerup", this.onPointerUp);     
+            this.ownerDocument.addEventListener("pointercancel", this.onPointerUp);
+        }
+        else {
+            this.removeEventListener("pointerdown", this.onPointerDown);
+            this.removeEventListener("pointermove", this.onPointerMove);
+            this.removeEventListener("pointerup", this.onPointerUp);
+            this.ownerDocument.removeEventListener("pointerup", this.onPointerUp);     
+            this.ownerDocument.removeEventListener("pointercancel", this.onPointerUp);
+        }
     }
 }
