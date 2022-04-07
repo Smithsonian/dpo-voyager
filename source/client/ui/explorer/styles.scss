@@ -49,6 +49,7 @@ $main-menu-button-size: 38px;
   scrollbar-width: thin;
   ::-webkit-scrollbar {
     width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background-color: $color-background-darker;
@@ -531,7 +532,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  padding: $canvas-border-width $canvas-border-width $canvas-border-width $canvas-border-width;
+  padding: $canvas-border-width $canvas-border-width+3 $canvas-border-width $canvas-border-width;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1009,12 +1010,21 @@ $tour-entry-indent: 12px;
 
 .sv-tool-bar {
   color: $color-text;
+  pointer-events: auto;
   
   .sv-tool-buttons {
     flex: 1 1 auto;
     display: flex;
-    justify-content: center;
     margin: 4px;
+    overflow-x: auto;
+
+    .sv-tool-button:first-child {
+        margin-left: auto;
+    }
+    
+    .sv-tool-button:last-child {
+        margin-right: auto;
+    }
   }
 
   .sv-tool-button {

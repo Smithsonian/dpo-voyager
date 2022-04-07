@@ -40,11 +40,6 @@ export default class MainMenu extends DocumentView
     protected resizeObserver: ResizeObserver = null;
     protected isClipped: boolean = false;
 
-    protected pointerDown: boolean = false;
-    protected isDragging: boolean = false;
-    protected dragStart: number = undefined;
-    protected dragPrev: number = undefined;
-
     protected get fullscreen() {
         return this.system.getMainComponent(CFullscreen);
     }
@@ -86,10 +81,6 @@ export default class MainMenu extends DocumentView
     protected disconnected()
     {
         this.resizeObserver.disconnect();
-
-        if(this.isClipped) {
-            this.enableScroll(false);
-        }
 
         this.toolProvider.ins.closed.off("value", this.setToolsFocus, this);
         this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
@@ -251,18 +242,6 @@ export default class MainMenu extends DocumentView
         audio.ins.playNarration.set();
     }
 
-    protected onScrollMenu(down: boolean)
-    {
-        const offset = (down ? 40 : -40);
-        this.scrollBy({
-            top: offset,
-            left: 0,
-            behavior: 'auto'
-        });
-
-        this.requestUpdate();
-    }
-
     // TODO: More elegant way to handle focus
     protected setTourFocus()
     {
@@ -316,62 +295,10 @@ export default class MainMenu extends DocumentView
     protected onResize() {
         const clipped = this.scrollHeight > this.clientHeight;
         if(this.isClipped !== clipped) {
+            if(clipped) {
+                this.scrollTo({top: this.scrollTop + this.scrollHeight, behavior: "smooth"});
+            }
             this.isClipped = clipped;
-            this.enableScroll(clipped);
-        }
-    }
-
-    protected onPointerDown(e: PointerEvent) {
-        this.pointerDown = true;
-        this.dragStart = e.clientY;
-    }
-    protected onPointerMove(e: PointerEvent) {
-        if(this.pointerDown) {
-            if(!this.isDragging) {
-                if(Math.abs(this.dragStart - e.clientY) > 4) {
-                    this.isDragging = true;
-                    this.dragPrev = this.dragStart;
-                    [...this.getElementsByClassName("ff-button")].forEach(
-                        element => (element as HTMLElement).style.pointerEvents = "none");
-                }
-            }
-
-            if(this.isDragging) {
-                this.scrollBy({
-                    top: this.dragStart - e.clientY,
-                    left: 0,
-                    behavior: 'auto'
-                });
-                this.dragStart = e.clientY;
-            }
-        }
-    }
-    protected onPointerUp(e: PointerEvent) {
-        this.pointerDown = false;
-        if(this.isDragging) {
-            this.isDragging = false;
-            [...this.getElementsByClassName("ff-button")].forEach(
-                element => (element as HTMLElement).style.pointerEvents = "auto");
-        }
-    }
-
-    protected enableScroll(enable: boolean) {
-        if(enable) {
-            this.scrollTo({top: this.scrollTop + this.scrollHeight, behavior: "smooth"})
-
-            this.onPointerUp = this.onPointerUp.bind(this);
-            this.addEventListener("pointerdown", this.onPointerDown);
-            this.addEventListener("pointermove", this.onPointerMove);
-            this.addEventListener("pointerup", this.onPointerUp);
-            this.ownerDocument.addEventListener("pointerup", this.onPointerUp);     
-            this.ownerDocument.addEventListener("pointercancel", this.onPointerUp);
-        }
-        else {
-            this.removeEventListener("pointerdown", this.onPointerDown);
-            this.removeEventListener("pointermove", this.onPointerMove);
-            this.removeEventListener("pointerup", this.onPointerUp);
-            this.ownerDocument.removeEventListener("pointerup", this.onPointerUp);     
-            this.ownerDocument.removeEventListener("pointercancel", this.onPointerUp);
         }
     }
 }
