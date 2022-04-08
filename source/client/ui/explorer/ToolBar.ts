@@ -44,8 +44,7 @@ export default class ToolBar extends SystemView
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-bottom-bar-container", "sv-transition", "sv-tool-bar");
-        setTimeout(() => this.classList.remove("sv-transition"), 1);
+        this.classList.add("sv-bottom-bar-container", "sv-tool-bar");
         this.needsFocus = true;
     }
 

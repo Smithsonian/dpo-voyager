@@ -49,12 +49,14 @@ $main-menu-button-size: 38px;
   scrollbar-width: thin;
   ::-webkit-scrollbar {
     width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background-color: $color-background-darker;
   }
   ::-webkit-scrollbar-thumb {
     background-color: $color-background-lighter;
+    border-radius: 8px;
   }
 }
 
@@ -450,6 +452,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-chrome-header {
   display: flex;
   align-items: flex-start;
+  height: 100%;
+  position: relative;
 
   .sv-top-bar {
     flex: 1 1 auto;
@@ -525,10 +529,23 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN MENU
 
+.sv-main-menu-wrapper {
+  position: relative;
+  height: 100%;
+  min-width: 50px;
+}
+
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  margin: $canvas-border-width 0 0 $canvas-border-width;
+  padding: $canvas-border-width $canvas-border-width+3 $canvas-border-width $canvas-border-width;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  pointer-events: auto;
+  position: absolute;
+  box-sizing: border-box;
+  overscroll-behavior-y: contain;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -576,6 +593,35 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       &:hover, &:focus {
         background-color: $color-primary-light;
       }
+    }
+  }
+
+  .sv-scroll-btn {
+    border-radius: 2px;
+    font-size: 10px;
+    height: $main-menu-button-size/2;
+    background-color: $color-background;
+    z-index: 2;
+    padding: 0px;
+    position: sticky;
+
+    &.up {
+      top: 0px;
+      margin-top: 0px;
+    }
+    
+    &.down {
+      bottom: $canvas-border-width*2;
+      margin-top: $canvas-border-width*2;
+    }
+
+    &:hover {
+      background-color: $color-background-lighter;
+      fill: $color-text;
+    }
+
+    &:focus, &:focus-visible {
+      background-color: $color-background;
     }
   }
 }
@@ -979,12 +1025,21 @@ $tour-entry-indent: 12px;
 
 .sv-tool-bar {
   color: $color-text;
+  pointer-events: auto;
   
   .sv-tool-buttons {
     flex: 1 1 auto;
     display: flex;
-    justify-content: center;
     margin: 4px;
+    overflow-x: auto;
+
+    .sv-tool-button:first-child {
+        margin-left: auto;
+    }
+    
+    .sv-tool-button:last-child {
+        margin-right: auto;
+    }
   }
 
   .sv-tool-button {
@@ -1002,6 +1057,12 @@ $tour-entry-indent: 12px;
       margin: 1px 2px;
     }
   }
+}
+
+.sv-tool-bar-container {
+  position: relative;
+  bottom: 0px;
+  width: 100%;
 }
 
 .sv-tool-controls {
