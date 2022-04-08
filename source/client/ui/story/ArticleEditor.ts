@@ -24,7 +24,7 @@ import 'tinymce/icons/default';
 /* A theme is also required */
 import 'tinymce/themes/silver';
 
-//import 'tinymce/models/dom/model';
+import 'tinymce/models/dom/model';
 
 /* Import the skin */
 import './editor_css/skin.min.css';
@@ -209,15 +209,18 @@ export default class ArticleEditor extends SystemView
             skin: false,
             height: "100%",
             resize: false,
+            branding: false,
+            paste_block_drop: true,
+            //automatic_uploads: false,
             content_css: false,
             content_style: [contentCss, contentUiCss].join('\n'),
             images_reuse_filename: true,
 
-            /*images_upload_handler: (file, success, failure, progress) => {console.log(JSON.stringify(file));
+            images_upload_handler: (file, progress) => {console.log(JSON.stringify(file.filename()));
                 //this.standaloneFileManager.addFile(file.uri(), [file.blob()]);console.log(this.standaloneFileManager.getFilePath(file.filename()));
                 //return Promise.resolve(this.standaloneFileManager.getFilePath(file.filename()));
                 return Promise.resolve("");
-            },*/
+            },
 
             init_instance_callback: (editor) => {
                 editor.on('dirty', () => this._changed = true);

@@ -71,7 +71,7 @@
         "style-loader": "^3.3.1",
         "three": "^0.137.5",
         "three-bmfont-text": "git+https://github.com/Smithsonian/three-bmfont-text.git#e611dac13d",
-        "tinymce": "^5.10.3",
+        "tinymce": "^6.0.1",
         "toposort": "^2.0.2",
         "webdav": "^4.7.0",
         "webdav-server": "^2.6.2",
