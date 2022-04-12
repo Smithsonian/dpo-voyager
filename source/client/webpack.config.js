@@ -159,6 +159,7 @@ function createAppConfig(app, isDevMode, isOffline)
             // Fallbacks
             fallback: {
                 "stream": require.resolve("stream-browserify"), // include a polyfill for stream
+                "buffer": require.resolve("buffer"), // include a polyfill for buffer
                 "path": false,
             },
         },

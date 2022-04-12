@@ -30,24 +30,19 @@ import 'tinymce/models/dom/model';
 import './editor_css/skin.min.css';
 
 /* Import plugins */
-import 'tinymce/plugins/advlist';
 import 'tinymce/plugins/link';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/image';
+import 'tinymce/plugins/media';
 
 /* Import content css */
 import contentUiCss from '!!raw-loader!./editor_css/content.ui.min.css';
 import contentCss from '!!raw-loader!./editor_css/content.min.css';
 
-//import { Editor } from '@tiptap/core'
-//import StarterKit from '@tiptap/starter-kit'
-//import Image from '@tiptap/extension-image'
-
 import Notification from "@ff/ui/Notification";
 import MessageBox from "@ff/ui/MessageBox";
 
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
-import AssetTree from "@ff/scene/ui/AssetTree";
 
 import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
@@ -65,7 +60,6 @@ export default class ArticleEditor extends SystemView
 {
     private _container: HTMLDivElement = null;
     private _overlay: HTMLElement = null;
-    private _editor = null;
     private _assetPath: string = "";
     private _changed = false;
 
@@ -201,31 +195,43 @@ export default class ArticleEditor extends SystemView
         this._container.classList.add("sv-container");
         this._container.id = "editor_wrapper"
 
+        this._overlay = this.appendElement("div");
+        this._overlay.classList.add("sv-overlay");
+
         tinymce.init({
             selector: "#editor_wrapper",
-            plugins: "image link lists",
-            toolbar: 'saveButton closeButton | undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | link image',
+            plugins: "image link lists media",
+            toolbar: 'saveButton closeButton | undo redo | link image media | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | styles',
             menubar: false,
             skin: false,
             height: "100%",
             resize: false,
             branding: false,
-            paste_block_drop: true,
-            //automatic_uploads: false,
+            automatic_uploads: true,
             content_css: false,
             content_style: [contentCss, contentUiCss].join('\n'),
-            images_reuse_filename: true,
 
-            images_upload_handler: (file, progress) => {console.log(JSON.stringify(file.filename()));
-                //this.standaloneFileManager.addFile(file.uri(), [file.blob()]);console.log(this.standaloneFileManager.getFilePath(file.filename()));
-                //return Promise.resolve(this.standaloneFileManager.getFilePath(file.filename()));
-                return Promise.resolve("");
-            },
+            images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
+                if(this.standaloneFileManager) {
+                    this.standaloneFileManager.addFile(CVMediaManager.articleFolder + "/" + file.filename(), [file.blob()]);
+                    this.mediaManager.refresh();
+                    return resolve(this.assetManager.getAssetUrl(file.filename()));
+                }
+                else {
+                    this.mediaManager.uploadFile(new File([file.blob()], file.filename()), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
+                        then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + file.filename()))});
+                }
+            }),
 
             init_instance_callback: (editor) => {
                 editor.on('dirty', () => this._changed = true);
-                editor.editorUpload.addFilter((img) => {return false;});
-                editor.on("drop", this.onEditorDrop.bind(this));
+                editor.editorUpload.addFilter((img) => {
+                    const blobInfo = editor.editorUpload.blobCache.getByUri(img.src);
+                    if(blobInfo) {
+                        return true;
+                    }
+                    return false;
+                });
             },
 
             setup: (editor) => {
@@ -244,11 +250,8 @@ export default class ArticleEditor extends SystemView
                         this.closeArticle();
                     }
                 });
-            }
+            },
         });       
-
-        this._overlay = this.appendElement("div");
-        this._overlay.classList.add("sv-overlay");
     }
 
     protected connected()
@@ -274,40 +277,6 @@ export default class ArticleEditor extends SystemView
         // if opened asset is of type text/html, open it in the editor
         else if (event.asset.info.type.startsWith("text/html")) {
             this.openArticle(event.asset.info.path);
-        }
-    }
-
-    protected onEditorDrop(event: DragEvent)
-    {
-        // get the dropped asset path and then the asset from the media manager
-        const assetPath = event.dataTransfer.getData(AssetTree.dragDropMimeType);
-        const asset = assetPath && this.mediaManager.getAssetByPath(assetPath);
-
-        if (asset) {
-            // only jpeg and png images can be dropped
-            const mimeType = asset.info.type;
-            if (mimeType === "image/jpeg" || mimeType === "image/png") {
-                const assetUrl = this.assetManager.getAssetUrl(assetPath);
-                // wait until text has been dropped, so we can get a valid selection index
-                /*setTimeout(() => {
-                    let selection = this._editor.getSelection();
-
-                    if(selection.length === 0) {
-                        this._editor.setSelection(selection.index - assetPath.length, assetPath.length);
-                        selection = this._editor.getSelection();
-                    }
-
-                    if (selection) {
-                        // replace text with image asset
-                        this._editor.deleteText(selection.index, selection.length);
-                        this._editor.insertEmbed(selection.index, "image", assetUrl);
-                    }
-                });*/
-
-                setTimeout(() => {
-                    tinymce.activeEditor.selection.setContent('<img src="' + assetUrl + '"/>');
-                });
-            }
         }
     }
 }
