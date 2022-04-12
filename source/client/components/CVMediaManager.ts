@@ -72,12 +72,20 @@ export default class CVMediaManager extends CAssetManager
         });
     }
 
-    uploadFile(file: File, folder: IAssetEntry): Promise<any>
+    uploadFile(name: string, blob: Blob, folder: IAssetEntry): Promise<any>
     {
-        const url = resolvePathname(folder.info.path + file.name, this.rootUrl);
-        const params: RequestInit = { method: "PUT", credentials: "include", body: file };
-
-        return fetch(url, params).then(() => this.refresh());
+        const filename = decodeURI(name);
+        const url = resolvePathname(folder.info.path + filename, this.rootUrl);
+        
+        if(this.standaloneFileManager) {
+            this.standaloneFileManager.addFile(CVMediaManager.articleFolder + "/" + filename, [blob]);
+            this.refresh();
+            return Promise.resolve();
+        }
+        else {
+            const params: RequestInit = { method: "PUT", credentials: "include", body: new File([blob], filename) };
+            return fetch(url, params).then(() => this.refresh());
+        }
     }
 
     refresh()

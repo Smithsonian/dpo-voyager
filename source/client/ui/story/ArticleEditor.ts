@@ -208,19 +208,14 @@ export default class ArticleEditor extends SystemView
             resize: false,
             branding: false,
             automatic_uploads: true,
+            images_reuse_filename: true,
             content_css: false,
             content_style: [contentCss, contentUiCss].join('\n'),
 
             images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
-                if(this.standaloneFileManager) {
-                    this.standaloneFileManager.addFile(CVMediaManager.articleFolder + "/" + file.filename(), [file.blob()]);
-                    this.mediaManager.refresh();
-                    return resolve(this.assetManager.getAssetUrl(file.filename()));
-                }
-                else {
-                    this.mediaManager.uploadFile(new File([file.blob()], file.filename()), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
-                        then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + file.filename()))});
-                }
+                const filename = file.filename();
+                this.mediaManager.uploadFile(filename, file.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
+                    then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename))});
             }),
 
             init_instance_callback: (editor) => {
@@ -228,7 +223,14 @@ export default class ArticleEditor extends SystemView
                 editor.editorUpload.addFilter((img) => {
                     const blobInfo = editor.editorUpload.blobCache.getByUri(img.src);
                     if(blobInfo) {
-                        return true;
+                        if(this.standaloneFileManager) {
+                            const filename = blobInfo.filename();
+                            this.mediaManager.uploadFile(filename, blobInfo.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/"))
+                            img.src = this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename);
+                        }
+                        else {
+                            return true;
+                        }
                     }
                     return false;
                 });
