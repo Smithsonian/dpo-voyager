@@ -131,12 +131,10 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
 
         this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
-        this.sceneNode.outs.boundingBox.on("value", this.onBoundsUpdate, this);
     }
 
     dispose()
     {
-        this.sceneNode.outs.boundingBox.off("value", this.onBoundsUpdate, this);
         this.assetManager.outs.completed.off("value", this.onLoadingCompleted, this);
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
@@ -361,13 +359,6 @@ export default class CVOrbitNavigation extends CObject3D
     protected onLoadingCompleted(isLoading: boolean)
     {
         if (this.ins.autoZoom.value && !this._hasChanged) {
-            this.ins.zoomExtents.set();
-        }
-    }
-
-    protected onBoundsUpdate()
-    {
-        if (this.ins.autoZoom.value) {
             this.ins.zoomExtents.set();
         }
     }
