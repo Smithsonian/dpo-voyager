@@ -50,6 +50,10 @@ const _box = new Box3();
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
 }
+export interface IModelLoadEvent extends ITypedEvent<"model-load">
+{
+    quality: EDerivativeQuality;
+}
 
 /**
  * Graph component rendering a model or model part.
@@ -670,6 +674,8 @@ export default class CVModel2 extends CObject3D
                 const overlayOptions = ["None"];
                 overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
                 this.ins.overlayMap.setOptions(overlayOptions);
+
+                this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality });
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }
