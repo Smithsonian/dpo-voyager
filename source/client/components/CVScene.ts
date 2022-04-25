@@ -214,11 +214,14 @@ export default class CVScene extends CVNode
             }
         }
         else {
-            if(this.cameras[0]) {
-                const currOffset = this.setup.navigation.ins.maxOffset.value;
-                const zOffset = Math.min(currOffset[2],(this.cameras[0].ins.far.value*2)/3);
-                this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], zOffset]);;
-            };
+
+            const navOffset = this.setup.navigation.ins.offset.value;
+            const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length()
+
+            const maxOffset = 2 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const currOffset = this.setup.navigation.ins.maxOffset.value;
+            const zOffset = Math.min(currOffset[2], maxOffset);
+            this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], zOffset]);
         }
     }
 
