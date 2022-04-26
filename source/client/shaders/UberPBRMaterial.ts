@@ -276,6 +276,8 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         this.shadowSide = material.shadowSide;
         //this.side = material.side;
 
+        this.flatShading = material.flatShading;
+
         return this;
     }
 }
