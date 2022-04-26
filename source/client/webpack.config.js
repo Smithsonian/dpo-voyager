@@ -159,6 +159,7 @@ function createAppConfig(app, isDevMode, isOffline)
             // Fallbacks
             fallback: {
                 "stream": require.resolve("stream-browserify"), // include a polyfill for stream
+                "buffer": require.resolve("buffer"), // include a polyfill for buffer
                 "path": false,
             },
         },
@@ -234,11 +235,15 @@ function createAppConfig(app, isDevMode, isOffline)
                     }
                 },
                 {
+                    test: /content\.css$/i,
+                    use: ['css-loader'],
+                },
+                {
                     // Concatenate CSS
                     test: /\.css$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        "style-loader",
+                        //"style-loader",
                         "css-loader",
                     ]
                 },
