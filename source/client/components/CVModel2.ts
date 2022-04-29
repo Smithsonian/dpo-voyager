@@ -368,8 +368,13 @@ export default class CVModel2 extends CObject3D
             this._boxFrame = new (Box3Helper as any)(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
             this._boxFrame.updateMatrixWorld(true);
-
+        
+            const setup = this.getGraphComponent(CVSetup);
+            if(setup.navigation.ins.autoZoom.value) {
+                setup.navigation.ins.zoomExtents.set();
+            }
             outs.updated.set();
+            this.updateUnitScale();
         }
 
         if (data.derivatives) {
@@ -570,7 +575,7 @@ export default class CVModel2 extends CObject3D
      */
     protected autoLoad(quality: EDerivativeQuality): Promise<void>
     {
-        const sequence = [];
+        const sequence : Derivative[] = [];
 
         const lowestQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.Thumb);
         if (lowestQualityDerivative) {
@@ -589,7 +594,7 @@ export default class CVModel2 extends CObject3D
 
         // load sequence of derivatives one by one
         return sequence.reduce((promise, derivative) => {
-            return promise.then(() => this.loadDerivative(derivative)); 
+            return promise.then(() => { console.log(EDerivativeQuality[derivative.data.quality]); this.loadDerivative(derivative)}); 
         }, Promise.resolve());
     }
 
@@ -676,6 +681,7 @@ export default class CVModel2 extends CObject3D
                 this.ins.overlayMap.setOptions(overlayOptions);
 
                 this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality });
+                //this.getGraphComponent(CVSetup).navigation.ins.zoomExtents.set(); 
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }

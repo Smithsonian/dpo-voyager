@@ -164,14 +164,6 @@ export default class CVOrbitNavigation extends CObject3D
             orbit.setValue(_orientationPresets[preset.getValidatedValue()].slice());
         }
 
-        // zoom extents
-        if (camera && ins.zoomExtents.changed && !this.assetManager.loadingManager.isBusy) {
-            const scene = this.getGraphComponent(CVScene);
-            this._modelBoundingBox = scene.outs.boundingBox.value;
-            controller.zoomExtents(this._modelBoundingBox);
-            cameraComponent.ins.zoom.set();
-        }
-
         // include lights
         if (ins.lightsFollowCamera.changed) {
             const lightTransform = this.getLightTransform();
@@ -201,6 +193,17 @@ export default class CVOrbitNavigation extends CObject3D
             controller.minOffset.fromArray(minOffset.value);
             controller.maxOrbit.fromArray(maxOrbit.value);
             controller.maxOffset.fromArray(maxOffset.value);
+        }
+
+        // zoom extents
+        if (camera && ins.zoomExtents.changed /*&& !this.assetManager.loadingManager.isBusy*/) {
+            const scene = this.getGraphComponent(CVScene);
+            if(scene.models.some(model => model.outs.updated.changed)) {
+                scene.update(null);
+            }
+            this._modelBoundingBox = scene.outs.boundingBox.value;
+            controller.zoomExtents(this._modelBoundingBox);
+            cameraComponent.ins.zoom.set();
         }
 
         return true;
