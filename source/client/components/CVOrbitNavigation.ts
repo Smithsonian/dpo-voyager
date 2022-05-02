@@ -131,12 +131,10 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
 
         this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
-        this.sceneNode.outs.boundingBox.on("value", this.onBoundsUpdate, this);
     }
 
     dispose()
     {
-        this.sceneNode.outs.boundingBox.off("value", this.onBoundsUpdate, this);
         this.assetManager.outs.completed.off("value", this.onLoadingCompleted, this);
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
@@ -164,14 +162,6 @@ export default class CVOrbitNavigation extends CObject3D
         // camera preset
         if (preset.changed && preset.value !== EViewPreset.None) {
             orbit.setValue(_orientationPresets[preset.getValidatedValue()].slice());
-        }
-
-        // zoom extents
-        if (camera && ins.zoomExtents.changed) {
-            const scene = this.getGraphComponent(CVScene);
-            this._modelBoundingBox = scene.outs.boundingBox.value;
-            controller.zoomExtents(this._modelBoundingBox);
-            cameraComponent.ins.zoom.set();
         }
 
         // include lights
@@ -203,6 +193,17 @@ export default class CVOrbitNavigation extends CObject3D
             controller.minOffset.fromArray(minOffset.value);
             controller.maxOrbit.fromArray(maxOrbit.value);
             controller.maxOffset.fromArray(maxOffset.value);
+        }
+
+        // zoom extents
+        if (camera && ins.zoomExtents.changed /*&& !this.assetManager.loadingManager.isBusy*/) {
+            const scene = this.getGraphComponent(CVScene);
+            if(scene.models.some(model => model.outs.updated.changed)) {
+                scene.update(null);
+            }
+            this._modelBoundingBox = scene.outs.boundingBox.value;
+            controller.zoomExtents(this._modelBoundingBox);
+            cameraComponent.ins.zoom.set();
         }
 
         return true;
@@ -361,13 +362,6 @@ export default class CVOrbitNavigation extends CObject3D
     protected onLoadingCompleted(isLoading: boolean)
     {
         if (this.ins.autoZoom.value && !this._hasChanged) {
-            this.ins.zoomExtents.set();
-        }
-    }
-
-    protected onBoundsUpdate()
-    {
-        if (this.ins.autoZoom.value) {
             this.ins.zoomExtents.set();
         }
     }

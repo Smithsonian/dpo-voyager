@@ -19,6 +19,7 @@ import CAssetManager, { IAssetOpenEvent, IFileInfo, IAssetTreeChangeEvent, IAsse
 import Notification from "@ff/ui/Notification";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVAssetManager from "./CVAssetManager";
+import resolvePathname from "resolve-pathname";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +70,22 @@ export default class CVMediaManager extends CAssetManager
                 .catch(error => Notification.show(`Failed to create ${infoText}`));
             }
         });
+    }
+
+    uploadFile(name: string, blob: Blob, folder: IAssetEntry): Promise<any>
+    {
+        const filename = decodeURI(name);
+        const url = resolvePathname(folder.info.path + filename, this.rootUrl);
+        
+        if(this.standaloneFileManager) {
+            this.standaloneFileManager.addFile(CVMediaManager.articleFolder + "/" + filename, [blob]);
+            this.refresh();
+            return Promise.resolve();
+        }
+        else {
+            const params: RequestInit = { method: "PUT", credentials: "include", body: new File([blob], filename) };
+            return fetch(url, params).then(() => this.refresh());
+        }
     }
 
     refresh()

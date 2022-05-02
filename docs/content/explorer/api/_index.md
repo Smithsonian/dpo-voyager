@@ -58,8 +58,10 @@ Methods for external control over camera properties and navigation.
 
 | Name     				 		| Parameters       							   | Description                                                                                         |
 |-------------------------------|----------------------------------------------|----------------------------------------------|
-| setCameraOrbit(yaw, pitch)    | yaw, pitch: angle in degrees 			   	   | Sets yaw and pitch of orbit navigation.      |
-| getCameraOrbit()  			| None								    	   | Returns an array [yaw, pitch] in radians.    |
+| setCameraOrbit(yaw, pitch)    | yaw, pitch: angle in degrees 			| Sets yaw and pitch of orbit navigation.      |
+| getCameraOrbit()  		| None						| Returns an array [yaw, pitch] in radians.    |
+| setCameraOffset(x, y, z)    	| x, y, z: coordinate in scene units 		| Sets offset of orbit navigation.      |
+| getCameraOffset()  		| None						| Returns an array [x, y, z] in scene units. |
 
 ### Misc Methods
 
@@ -72,4 +74,5 @@ Methods for external control over camera properties and navigation.
 
 | Name     				 		| Description                                                                                         |
 |-------------------------------|------------------------------------------------------------------------|
-| annotation-active				| This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.|
+| annotation-active		| This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.|
+| model-load			| This event fires every time a model finishes loading. event.detail will contain the quality [(EDerivativeQuality)](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/schema/model.ts) of the loaded model. This will likely fire multiple times depending on the number of derivatives loaded and unloaded.|
