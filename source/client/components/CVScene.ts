@@ -203,38 +203,34 @@ export default class CVScene extends CVNode
 
     protected updateCameras()
     {
-        // Only dynamically update near/far planes when we are editing a scene.
-        // Otherwise, make sure max zoom is less than far plane.
-        if(!!this.system.getComponent("CVStoryApplication", true)) {
-            if(this.setup.navigation.ins.autoZoom.value) {
-                this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
-            }
-            else {
-                this.updateCameraHelper();
-            }
+        // Make sure max zoom is less than far plane.
+        if(this.setup.navigation.ins.autoZoom.value) {
+            this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
         }
         else {
-
-            const navOffset = this.setup.navigation.ins.offset.value;
-            const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length()
-
-            const maxOffset = 2 * Math.max(orbitRadius, this.outs.boundingRadius.value);
-            const currOffset = this.setup.navigation.ins.maxOffset.value;
-            const zOffset = Math.min(currOffset[2], maxOffset);
-            this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], zOffset]);
+            this.updateCameraHelper();
         }
     }
 
     protected updateCameraHelper = () =>
     {
-        this.cameras.forEach(camera => {
-            const navOffset = this.setup.navigation.ins.offset.value;
-            const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length()
+        const navOffset = this.setup.navigation.ins.offset.value;
+        const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length();
 
+        if(!this.system.getComponent("CVStoryApplication", true)) {
+            const maxOffset = 2 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const currOffset = this.setup.navigation.ins.maxOffset.value;
+            const zOffset = navOffset[2] < currOffset[2] ? Math.min(currOffset[2], maxOffset) : maxOffset;
+            this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], zOffset]);
+        }
+
+        this.cameras.forEach(camera => {
             const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
             const near = far / 1000.0;
-            camera.ins.far.setValue(far);
-            camera.ins.near.setValue(near);
+            if(far < camera.ins.far.value || camera.ins.far.value < this.setup.navigation.ins.maxOffset.value[2]) {
+                camera.ins.far.setValue(far);
+                camera.ins.near.setValue(near);
+            }
         });
     }
 }
