@@ -594,7 +594,7 @@ export default class CVModel2 extends CObject3D
 
         // load sequence of derivatives one by one
         return sequence.reduce((promise, derivative) => {
-            return promise.then(() => { console.log(EDerivativeQuality[derivative.data.quality]); this.loadDerivative(derivative)}); 
+            return promise.then(() => { this.loadDerivative(derivative)}); 
         }, Promise.resolve());
     }
 
