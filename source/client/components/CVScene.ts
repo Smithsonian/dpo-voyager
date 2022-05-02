@@ -231,7 +231,7 @@ export default class CVScene extends CVNode
             const navOffset = this.setup.navigation.ins.offset.value;
             const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length()
 
-            const far = 3 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
             const near = far / 1000.0;
             camera.ins.far.setValue(far);
             camera.ins.near.setValue(near);
