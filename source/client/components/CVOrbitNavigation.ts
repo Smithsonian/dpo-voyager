@@ -87,6 +87,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _scene: CScene = null;
     private _modelBoundingBox: Box3 = null;
     private _hasChanged = false;
+    private _isAutoZooming = false;
 
     constructor(node: Node, id: string)
     {
@@ -196,14 +197,18 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         // zoom extents
-        if (camera && ins.zoomExtents.changed /*&& !this.assetManager.loadingManager.isBusy*/) {
-            const scene = this.getGraphComponent(CVScene);
-            if(scene.models.some(model => model.outs.updated.changed)) {
-                scene.update(null);
+        if (camera && ins.zoomExtents.changed) {
+            if(this._isAutoZooming && !this.ins.autoZoom.value) {/*edge case when loaded event triggers before document parsing */}
+            else {
+                const scene = this.getGraphComponent(CVScene);console.log(this.ins.autoZoom.value);
+                if(scene.models.some(model => model.outs.updated.changed)) {
+                    scene.update(null);
+                }
+                this._modelBoundingBox = scene.outs.boundingBox.value;
+                controller.zoomExtents(this._modelBoundingBox);
+                cameraComponent.ins.zoom.set();
             }
-            this._modelBoundingBox = scene.outs.boundingBox.value;
-            controller.zoomExtents(this._modelBoundingBox);
-            cameraComponent.ins.zoom.set();
+            this._isAutoZooming = false;
         }
 
         return true;
@@ -363,6 +368,7 @@ export default class CVOrbitNavigation extends CObject3D
     {
         if (this.ins.autoZoom.value && !this._hasChanged) {
             this.ins.zoomExtents.set();
+            this._isAutoZooming = true;
         }
     }
 }
