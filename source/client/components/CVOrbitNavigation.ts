@@ -198,13 +198,16 @@ export default class CVOrbitNavigation extends CObject3D
 
         // zoom extents
         if (camera && ins.zoomExtents.changed) {
-            if(this._isAutoZooming && !this.ins.autoZoom.value) {/*edge case when loaded event triggers before document parsing */}
+            const scene = this.getGraphComponent(CVScene);
+            if(scene.models.some(model => model.outs.updated.changed)) {
+                scene.update(null);
+            }
+            this._modelBoundingBox = scene.outs.boundingBox.value;
+            if(this._isAutoZooming && (!this.ins.autoZoom.value || this._modelBoundingBox.isEmpty())) {
+                /*edge case when loaded event triggers before document parsing */
+            }
             else {
-                const scene = this.getGraphComponent(CVScene);console.log(this.ins.autoZoom.value);
-                if(scene.models.some(model => model.outs.updated.changed)) {
-                    scene.update(null);
-                }
-                this._modelBoundingBox = scene.outs.boundingBox.value;
+                controller.camera = cameraComponent.camera;     
                 controller.zoomExtents(this._modelBoundingBox);
                 cameraComponent.ins.zoom.set();
             }
