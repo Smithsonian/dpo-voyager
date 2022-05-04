@@ -42,8 +42,6 @@ Properties can be provided as URL variables or as attributes of the custom HTML 
     <link rel="shortcut icon" type="image/png" href="favicon.png" />
     <link href="/fonts/fonts.css" rel="stylesheet">
 	
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
     <script defer="defer" src="js/voyager-story.min.js"></script>
     <link href="css/voyager-story.min.css" rel="stylesheet">
 </head>
