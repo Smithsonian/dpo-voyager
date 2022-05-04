@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Derivatives Task - Voyager Documentation</title>
+  <title>API Example: Set Language - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-single'>
+<body class='page page-default-list'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -134,9 +134,9 @@
       
     
       
-    
-      
         
+      
+    
       
     
       
@@ -234,7 +234,7 @@
 		  <a href="/dpo-voyager/explorer/api-examples/get-content/">API Example: Get Content</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="">
+		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/explorer/api-examples/language/">API Example: Set Language</a>
 		</li>
 		
@@ -280,7 +280,7 @@
 		  <a href="/dpo-voyager/story/usage/capture-task/">Capture Task</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="active ">
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/story/usage/derivatives-task/">Derivatives Task</a>
 		</li>
 		
@@ -334,51 +334,135 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Derivatives Task</h1>
-<div class="content">
-  <p>Use the Derivatives Task to inspect the various web derivatives your model consists of. Depending on your processing
-pipeline, each model in a scene consists of multiple levels of detail.</p>
-<!-- raw HTML omitted -->
-<ol>
-<li>Select the <!-- raw HTML omitted -->Derivatives<!-- raw HTML omitted -->
-Task in the task bar.</li>
-<li>Select the model you want to inspect. A list of available derivatives appears in the task panel.</li>
-<li>Select the derivative level you would like to inspect.</li>
-</ol>
-<p><img src="derivatives-task.jpg" alt="Derivatives Task"></p>
-<table>
-<thead>
-<tr>
-<th>Level</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Thumb</td>
-<td>The lowest available representation. Always loaded first, with the goal of displaying a first representation of the model as quickly as possible. We recommend using a compressed GLB file with a total size of less than 200k.</td>
-</tr>
-<tr>
-<td>Low</td>
-<td>Used on older mobile devices. Maximum texture size: 1024 x 1024 pixels. Recommended mesh size: ~150k faces.</td>
-</tr>
-<tr>
-<td>Medium</td>
-<td>Used on newer mobile devices. Maximum texture size: 2048 x 2048 pixels. Recommended mesh size: ~150k faces.</td>
-</tr>
-<tr>
-<td>High</td>
-<td>Used on desktop devices. Maximum texture size: 4096 x 4096 pixels. Recommended mesh size: ~150k faces.</td>
-</tr>
-<tr>
-<td>Highest</td>
-<td>Used for quality inspection. Texture size: 4k or 8k. Mesh size: ~500k faces.</td>
-</tr>
-</tbody>
-</table>
-<!-- raw HTML omitted -->
 
+  
+  <h1 class="title">API Example: Set Language</h1>
+  <div class="content">
+    <h4 id="try-it-out">Try it out:</h4>
+<p><link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
+<script type="text/javascript" src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
+<script>
+var l ="https://3d-api.si.edu/content/document/"+"92c986d0-2b8d-43c1-8354-e9a2e80d0f9e"+"/";
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("explorer_wrapper").innerHTML = "<voyager-explorer id='voyager' style='display: block; position: relative; height: 450px'"+""+"root='"+l+"' document='document.json'></voyager-explorer>";
+});
+</script>
+<div id="explorer_wrapper" width="600" height="450">
 </div>
+<script>
+function updateUI(textInput) {
+	window.location = window.location.pathname + "?uiMode=" + textInput.value;
+}
+function setBackgroundColor(color0,color1) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundColor(color0.value, color1.value);
+}
+function setBackgroundStyle(style) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setBackgroundStyle(style.value);
+}
+function toggleAnnotations() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleAnnotations();
+}
+function toggleReader() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleReader();
+}
+function toggleTours() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTours();
+}
+function toggleTools() {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.toggleTools();
+}
+function getCameraOrbit(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const orbitAngles = voyagerElement.getCameraOrbit();
+	
+	displayElement.innerText = "Yaw: " + orbitAngles[0] + "	Pitch: " + orbitAngles[1];
+}
+function setCameraOrbit(yaw, pitch) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOrbit(yaw.value, pitch.value);
+}
+function getCameraOffset(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const offset = voyagerElement.getCameraOffset();
+	
+	displayElement.innerText = "X: " + offset[0].toFixed(3) + "	Y: " + offset[1].toFixed(3) + "	Z: " + offset[2].toFixed(3);
+}
+function setCameraOffset(x, y, z) {
+	var voyagerElement = document.getElementById("voyager");	
+	voyagerElement.setCameraOffset(x.value, y.value, z.value);
+}
+function getArticles(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const articles = voyagerElement.getArticles();
+
+	var articleNames = "";
+	articles.forEach(article => {
+		articleNames += article.title.length > 0 ? article.title : article.titles["EN"];
+		articleNames += " | ";
+	});
+  
+	displayElement.innerText = articleNames;
+}
+function getAnnotations(displayElement) {
+	var voyagerElement = document.getElementById("voyager");
+	const annotations = voyagerElement.getAnnotations();
+
+	var annotationNames = "";
+	annotations.forEach(annotation => {
+		annotationNames += "[id: " + annotation.id + " title: " + annotation.title + "]";
+		annotationNames += " | ";
+	});
+  
+	displayElement.innerText = annotationNames;
+}
+function setActiveAnnotation(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveAnnotation(id.value);
+}
+function setTourStep(stepIdx) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setTourStep(0, stepIdx.value, true);
+}
+function setLanguage(language) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setLanguage(language.value);
+}
+</script>  <!-- raw HTML omitted --></p>
+<p>Change the active language for content and UI elements by entering a supported language code in the box below and clicking the &ldquo;Set Language&rdquo; button.</p>
+<p>The <a href="../../api">setLanguage()</a> function uses language codes from the <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1 Code standard</a>.
+Keep in mind that a language will only be available if the scene contains content in that language. This example scene has both English (en) and Spanish (es) content.</p>
+<p><div style="text-align: center">
+	
+	
+	
+	<label style="display: inline-block;" for=language>language:</label>
+	<input class="sc-param" style="display: inline-block;" id=language></input>
+	
+	<button class="sc-button" style="display: inline-block;" onclick=setLanguage(language)>Set Language</button>
+</div>  <!-- raw HTML omitted --></p>
+<h4 id="how-it-works">How it works:</h4>
+<p>See the annotated javascript from this page below for how to use the <a href="../../api">setLanguage() function</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kd">function</span> <span class="nx">setTourStep</span><span class="p">(</span><span class="nx">stepIdx</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// Get reference to the Explorer element by id
+</span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
+	
+	<span class="c1">// Call the setTourStep function with the value of the 
+</span><span class="c1"></span>	<span class="c1">// option input element as the parameter.
+</span><span class="c1"></span>	<span class="c1">// **Note the hard-coded tour index and interpolate flag.
+</span><span class="c1"></span>	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setTourStep</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">stepIdx</span><span class="p">.</span><span class="nx">value</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+
+  </div>
+
+  
+
 
         </div>
       </div>

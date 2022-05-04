@@ -235,6 +235,10 @@
 		</li>
 		
 		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/language/">API Example: Set Language</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
 		</li>
 		
@@ -396,6 +400,11 @@
 <td>True, False</td>
 <td>Enables/Disables user-driven camera controls. Defaults to &lsquo;True&rsquo;. Useful if driving navigation from external code.</td>
 </tr>
+<tr>
+<td>lang</td>
+<td>valid <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1</a> code</td>
+<td>Sets the active language of the component (where available)</td>
+</tr>
 </tbody>
 </table>
 <h3 id="ui-attributes">UI Attributes</h3>
@@ -488,6 +497,11 @@
 <td>tourIdx, stepIdx: valid integer - interpolate: boolean</td>
 <td>Activates the scene state found at the provided tour and step index. Optional &lsquo;interpolate&rsquo; parameter to control if transition is animated. Defaults to true.</td>
 </tr>
+<tr>
+<td>setLanguage(id)</td>
+<td>id: valid <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1</a> code string</td>
+<td>Changes the active Voyager language to the supplied id if available in the current scene.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="navigation-methods">Navigation Methods</h3>
@@ -510,6 +524,16 @@
 <td>getCameraOrbit()</td>
 <td>None</td>
 <td>Returns an array [yaw, pitch] in radians.</td>
+</tr>
+<tr>
+<td>setCameraOffset(x, y, z)</td>
+<td>x, y, z: coordinate in scene units</td>
+<td>Sets offset of orbit navigation.</td>
+</tr>
+<tr>
+<td>getCameraOffset()</td>
+<td>None</td>
+<td>Returns an array [x, y, z] in scene units.</td>
 </tr>
 </tbody>
 </table>
@@ -547,6 +571,10 @@
 <tr>
 <td>annotation-active</td>
 <td>This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.</td>
+</tr>
+<tr>
+<td>model-load</td>
+<td>This event fires every time a model finishes loading. event.detail will contain the quality <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/schema/model.ts">(EDerivativeQuality)</a> of the loaded model. This will likely fire multiple times depending on the number of derivatives loaded and unloaded.</td>
 </tr>
 </tbody>
 </table>

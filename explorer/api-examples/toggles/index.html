@@ -234,6 +234,10 @@
 		  <a href="/dpo-voyager/explorer/api-examples/get-content/">API Example: Get Content</a>
 		</li>
 		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/language/">API Example: Set Language</a>
+		</li>
+		
 		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/explorer/api-examples/toggles/">API Example: Toggle Displays</a>
 		</li>
@@ -424,6 +428,10 @@ function setActiveAnnotation(id) {
 function setTourStep(stepIdx) {
 	var voyagerElement = document.getElementById("voyager");
 	voyagerElement.setTourStep(0, stepIdx.value, true);
+}
+function setLanguage(language) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setLanguage(language.value);
 }
 </script>  <!-- raw HTML omitted --></p>
 <p>Click any of the buttons below to toggle on and of the respective functionality. This is especially useful if you <a href="../ui-config/">launch Explorer without the related UI visible</a>.</p>
