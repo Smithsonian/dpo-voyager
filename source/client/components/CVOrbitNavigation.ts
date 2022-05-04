@@ -372,7 +372,7 @@ export default class CVOrbitNavigation extends CObject3D
 
     protected onLoadingCompleted(isLoading: boolean)
     {
-        if (this.ins.autoZoom.value && !this._hasChanged) {
+        if (this.ins.autoZoom.value && (!this._hasChanged || this.system.getComponent("CVStandaloneFileManager", true))) {
             this.ins.zoomExtents.set();
             this._isAutoZooming = true;
         }
