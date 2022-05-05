@@ -87,6 +87,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _scene: CScene = null;
     private _modelBoundingBox: Box3 = null;
     private _hasChanged = false;
+    private _hasZoomed = false;
     private _isAutoZooming = false;
 
     constructor(node: Node, id: string)
@@ -213,6 +214,7 @@ export default class CVOrbitNavigation extends CObject3D
                 controller.camera = cameraComponent.camera;
                 controller.zoomExtents(this._modelBoundingBox);
                 cameraComponent.ins.zoom.set();
+                this._hasZoomed = true;
             }
             this._isAutoZooming = false;
         }
@@ -372,7 +374,7 @@ export default class CVOrbitNavigation extends CObject3D
 
     protected onLoadingCompleted(isLoading: boolean)
     {
-        if (this.ins.autoZoom.value && (!this._hasChanged || this.system.getComponent("CVStandaloneFileManager", true))) {
+        if (this.ins.autoZoom.value && (!this._hasChanged || !this._hasZoomed)) {
             this.ins.zoomExtents.set();
             this._isAutoZooming = true;
         }
