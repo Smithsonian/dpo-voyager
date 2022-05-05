@@ -87,6 +87,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _scene: CScene = null;
     private _modelBoundingBox: Box3 = null;
     private _hasChanged = false;
+    private _hasZoomed = false;
     private _isAutoZooming = false;
 
     constructor(node: Node, id: string)
@@ -207,12 +208,14 @@ export default class CVOrbitNavigation extends CObject3D
                 /*edge case when loaded event triggers before document parsing */
             }
             else {
+                controller.camera = cameraComponent.camera;
+
                 // Hack until we have a better way to make sure camera is initialized on first zoom
                 cameraComponent.camera.aspect = controller.camera.aspect;
-                
-                controller.camera = cameraComponent.camera;
+            
                 controller.zoomExtents(this._modelBoundingBox);
                 cameraComponent.ins.zoom.set();
+                this._hasZoomed = true;
             }
             this._isAutoZooming = false;
         }
@@ -372,7 +375,7 @@ export default class CVOrbitNavigation extends CObject3D
 
     protected onLoadingCompleted(isLoading: boolean)
     {
-        if (this.ins.autoZoom.value && !this._hasChanged) {
+        if (this.ins.autoZoom.value && (!this._hasChanged || !this._hasZoomed)) {
             this.ins.zoomExtents.set();
             this._isAutoZooming = true;
         }
