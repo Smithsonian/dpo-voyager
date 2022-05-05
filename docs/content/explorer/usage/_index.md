@@ -32,6 +32,9 @@ If you want to use Voyager to show your own content or wish to make use of the E
 
 Below is the minimum html needed to use Voyager Explorer with comments above each line describing its purpose.
 
+**Note:** The voyager-explorer.min.js endpoint shown below will always give you the most recent version of Voyager. If you want to pin to or test out an older version,
+just use an endpoint like the following with the appropriate version number: https://3d-api.si.edu/resources/js/v0.17.0/voyager-explorer.min.js 
+
 {{<highlight html>}}
 <!DOCTYPE html>
 <html>
@@ -68,7 +71,7 @@ You can set the location of your assets and the name of your scene file using th
 
 **Option 2: URL parameters** 
 
-You can also supply the ['root' and 'document' attributes](../api) of the component through 'root' and 'document' URL parameters appended to the end of the page URL. This can be helpful if you want to create one page that can load different models depending on the link the user clicked to get there.
+You can also supply the ['root' and 'document' attributes](../api) of the component through 'root' and 'document' URL parameters appended to the end of the page URL. This can be helpful if you want to create one page that can load different models depending on the link the user clicked to get there. 
 
 An example of this is below:
 {{<highlight html>}}
