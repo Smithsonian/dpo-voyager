@@ -369,8 +369,8 @@ export default class CVModel2 extends CObject3D
             this.addObject3D(this._boxFrame);
             this._boxFrame.updateMatrixWorld(true);
         
-            const setup = this.getGraphComponent(CVSetup);
-            if(setup.navigation.ins.autoZoom.value) {
+            const setup = this.getGraphComponent(CVSetup, true);
+            if(setup && setup.navigation.ins.autoZoom.value) {
                 setup.navigation.ins.zoomExtents.set();
             }
             outs.updated.set();

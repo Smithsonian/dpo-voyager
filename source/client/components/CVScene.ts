@@ -192,13 +192,16 @@ export default class CVScene extends CVNode
     {
         const {ins, outs} = this; 
         const lightNode = this.graph.findNodeByName("Lights");
-        const lightTransform = lightNode.getComponent(CTransform, true);
-           
-        const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
-        _vec3.setScalar(this.outs.boundingRadius.value * unitScale * 0.05);
-        lightTransform.ins.scale.setValue(_vec3.toArray());
 
-        lightTransform.object3D.updateMatrixWorld(true);
+        if(lightNode) {
+            const lightTransform = lightNode.getComponent(CTransform, true);
+            
+            const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
+            _vec3.setScalar(this.outs.boundingRadius.value * unitScale * 0.05);
+            lightTransform.ins.scale.setValue(_vec3.toArray());
+
+            lightTransform.object3D.updateMatrixWorld(true);
+        }
     }
 
     protected updateCameras()
