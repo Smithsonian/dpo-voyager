@@ -69,10 +69,12 @@ export default class NVScene extends NVNode
                 childNode.fromDocument(document, nodeIndex, pathMap);
             });
         }
-
-        const setupData = document.setups[scene.setup];
-        if (setupData.snapshots) {
-            this.setup.snapshots.fromData(setupData.snapshots, pathMap);
+        
+        if (isFinite(scene.setup)) {
+            const setupData = document.setups[scene.setup];
+            if (setupData.snapshots) {
+                this.setup.snapshots.fromData(setupData.snapshots, pathMap);
+            }
         }
     }
 
