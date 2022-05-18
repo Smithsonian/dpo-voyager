@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -26,6 +26,7 @@ import CVModel2 from "./CVModel2";
 import CVScene from "client/components/CVScene";
 import { EUnitType } from "client/schema/common";
 import unitScaleFactor from "client/utils/unitScaleFactor";
+import { getMeshTransform } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -152,7 +153,7 @@ export default class CVTape extends CObject3D
             endPin.updateMatrix();
         }
 
-        // if tape is visible, listen for pointer events to set tape start/end
+        // if tape is enabled, listen for pointer events to set tape start/end
         if (ins.enabled.changed) {
             if (ins.enabled.value) {
                 this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -163,9 +164,13 @@ export default class CVTape extends CObject3D
         }
 
         if(ins.visible.changed && ins.visible.value) {
-            startPin.visible = true;
-            endPin.visible = true;
-            line.visible = true;
+            const startPos = ins.startPosition.value;
+            const endPos = ins.endPosition.value;
+            if(startPos[0] != endPos[0] && startPos[1] != endPos[1] && startPos[2] != endPos[2]) {
+                startPin.visible = true;
+                endPin.visible = true;
+                line.visible = true;
+            }
         }
 
         if (ins.globalUnits.changed) {
@@ -212,10 +217,10 @@ export default class CVTape extends CObject3D
     {
         this.ins.copyValues({
             visible: data.enabled,   // TODO: should probably be visible instead of enabled
-            startPosition: data.startPosition,
+            /*startPosition: data.startPosition,
             startDirection: data.startDirection,
             endPosition: data.endPosition,
-            endDirection: data.endDirection
+            endDirection: data.endDirection*/
         });
     }
 
@@ -224,11 +229,11 @@ export default class CVTape extends CObject3D
         const ins = this.ins;
 
         return {
-            enabled: ins.visible.cloneValue(),
+            enabled: ins.visible.cloneValue()/*,
             startPosition: ins.startPosition.cloneValue(),
             startDirection: ins.startDirection.cloneValue(),
             endPosition: ins.endPosition.cloneValue(),
-            endDirection: ins.endDirection.cloneValue()
+            endDirection: ins.endDirection.cloneValue()*/
         };
     }
 
@@ -238,11 +243,16 @@ export default class CVTape extends CObject3D
             return;
         }
 
+        // Compensate for any internal transforms the loaded geometry may have
+        const model = event.component as CVModel2;
+        const meshTransform = getMeshTransform(model.object3D, event.object3D);
+        const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+
         // get click position and normal
         const worldMatrix = event.object3D.matrixWorld;
         _mat3.getNormalMatrix(worldMatrix);
 
-        const position = event.view.pickPosition(event).applyMatrix4(worldMatrix); 
+        const position = event.view.pickPosition(event, bounds).applyMatrix4(worldMatrix); 
         const normal = event.view.pickNormal(event).applyMatrix3(_mat3).normalize();
 
         // update pins and measurement line

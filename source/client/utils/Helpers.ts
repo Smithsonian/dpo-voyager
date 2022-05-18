@@ -15,9 +15,30 @@
  * limitations under the License.
  */
 
+import { Matrix4, Object3D } from "three";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export function clamp(value: number, min: number, max: number)
 {
     return Math.min(Math.max(value, min), max);
+}
+
+/** Accumulates transforms from current object to root. */
+export function getMeshTransform(root : Object3D, current: Object3D)
+{
+    var result = new Matrix4();
+    var tempMatrix = new Matrix4();
+
+    result.identity();
+
+    do {
+        tempMatrix.compose(current.position, current.quaternion, current.scale);
+        result.multiply(tempMatrix.invert());
+
+        current = current.parent;
+    }
+    while (root !== current)
+
+    return result;
 }
