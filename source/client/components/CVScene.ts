@@ -28,6 +28,7 @@ import unitScaleFactor from "client/utils/unitScaleFactor";
 import CTransform from "client/../../libs/ff-scene/source/components/CTransform";
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,6 +81,10 @@ export default class CVScene extends CVNode
 
     get setup() {
         return this.getGraphComponent(CVSetup);
+    }
+
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
     }
 
     create()
@@ -206,6 +211,10 @@ export default class CVScene extends CVNode
 
     protected updateCameras()
     {
+        if(this.renderer.views[0].renderer.xr.isPresenting) {
+            return;
+        }
+
         // Make sure max zoom is less than far plane.
         if(this.setup.navigation.ins.autoZoom.value) {
             this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
@@ -226,15 +235,14 @@ export default class CVScene extends CVNode
             const zOffset = navOffset[2] < currOffset[2] ? Math.min(currOffset[2], maxOffset) : maxOffset;
             this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], zOffset]);
         }
-        else {
-            this.cameras.forEach(camera => {
-                const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
-                const near = far / 1000.0;
-                if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
-                    camera.ins.far.setValue(far);
-                    camera.ins.near.setValue(near);
-                }
-            });
-        }
+
+        this.cameras.forEach(camera => {
+            const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const near = far / 1000.0;
+            if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
+                camera.ins.far.setValue(far);
+                camera.ins.near.setValue(near);
+            }
+        });
     }
 }
