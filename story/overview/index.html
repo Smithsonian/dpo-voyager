@@ -337,7 +337,8 @@
 <h1 class="title">Overview</h1>
 <div class="content">
   <p><em>Voyager Story</em> is the creation and authoring application of the Voyager tool suite. The application can be used to create and author <em>Voyager SVX Documents</em>. Documents are files in JSON format containing the description of a Voyager scene or experience.</p>
-<p><em>Voyager Story</em> can be operated in two different modes. Each mode offers a number of tasks.</p>
+<p><em>Voyager Story</em> can be operated in several different modes. Each mode offers a number of tasks.</p>
+<p><strong>Note:</strong> If you are having trouble deploying <em>Voyager Story</em> or are not able to supply a file server for it, try Standalone mode described below.</p>
 <h2 id="qc-mode">QC Mode</h2>
 <p>This mode is aimed at 3D technicians. After a model has been digitized and processed into derivative assets ready for web consumption, QC gives you the following tasks and tools:</p>
 <ul>
@@ -347,18 +348,23 @@
 <li>Settings task: adjust parameters such as material settings</li>
 </ul>
 <div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">QC mode is enabled by supplying the mode=qc URL parameter.
-</code></pre></div><h2 id="authoring-mode">Authoring Mode</h2>
-<p>The authoring tools can be used by curators to stage the model(s) using lights, cameras and props, and to add content (annotations, articles, and tours) to the experience. The following tasks are available in authoring mode:</p>
+</code></pre></div><h2 id="edit-mode">Edit Mode</h2>
+<p>Along with the QC tasks, edit mode allow authoring tools to be used to stage the model(s) using lights, cameras and props, and to add content (annotations, articles, and tours) to the experience. The following tasks are available in edit mode:</p>
 <ul>
 <li>Annotations task: add annotations to specific 3D locations on a model</li>
 <li>Articles task: write and edit articles (documents with text and media), and connect them with annotations and models</li>
 <li>Tours task: create guided tours which guide through the experience in multiple steps</li>
-<li>Settings task: adjust parameters such as material settings</li>
 </ul>
-<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">Authoring mode is enabled by supplying the mode=author URL parameter.
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">Edit mode is enabled by supplying the mode=edit URL parameter.
 </code></pre></div><h2 id="expert-mode">Expert Mode</h2>
 <p><em>Voyager Story</em> actually offers a third mode, called expert mode, which shows all available tasks at once. It also provides a detailed view of all document elements and settings. The expert mode is aimed at - well - experts and developers.</p>
 <div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">Expert mode is enabled by supplying the mode=expert URL parameter.
+</code></pre></div><h2 id="standalone-mode">Standalone Mode</h2>
+<p>By default, <em>Voyager Story</em> requires a WebDAV file server backend to facilitate saving Voyager files directly to your permanent storage location. If you spin up Voyager from the source (<a href="../../introduction/installation/">instructions here</a>)
+a simple server is included. Otherwise, you are responsible for appropriately accessible file storage.</p>
+<p>Standalone mode removes the file server requirement by saving Voyager scenes in browser memory and gives you the
+option to download the complete package directly to your machine. You can try out our deployment of it here: <a href="https://3d.si.edu/voyager-story-standalone">Voyager Standalone</a></p>
+<div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">Standalone mode is enabled by supplying the mode=standalone URL parameter.
 </code></pre></div>
 </div>
 
