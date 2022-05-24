@@ -142,6 +142,7 @@ export default class CVARManager extends Component
     protected lightTransform: CTransform = null;
     protected lightsToReset: CVDirectionalLight[] = [];
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
+    protected annotationsAtLaunch: boolean = false;
 
     update()
     {
@@ -330,6 +331,8 @@ export default class CVARManager extends Component
         featuresToReset.push(setup.tape.ins.visible.value ? 1 : 0);
         featuresToReset.push(setup.slicer.ins.enabled.value ? 1 : 0);
         featuresToReset.push(setup.viewer.ins.shader.value);
+
+        this.annotationsAtLaunch = setup.viewer.ins.annotationsVisible.value;
         
         // Disable extended features (TODO: support some/all of these features)    
         setup.floor.ins.visible.setValue(false);
@@ -339,6 +342,7 @@ export default class CVARManager extends Component
         if(setup.viewer.ins.shader.value !== EShaderMode.Default) {
             setup.viewer.ins.shader.setValue(EShaderMode.Default);
         }
+        setup.viewer.ins.annotationsVisible.setValue(false);
 
         // Set scale to m
         const originalUnits = this.originalUnits = scene.ins.units.getValidatedValue();
@@ -569,6 +573,7 @@ export default class CVARManager extends Component
             });
 
         this.shadow.updateMatrices();
+        this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
     }
 
     protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
