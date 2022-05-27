@@ -28,6 +28,7 @@ import unitScaleFactor from "client/utils/unitScaleFactor";
 import CTransform from "client/../../libs/ff-scene/source/components/CTransform";
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -80,6 +81,10 @@ export default class CVScene extends CVNode
 
     get setup() {
         return this.getGraphComponent(CVSetup);
+    }
+
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
     }
 
     create()
@@ -206,13 +211,11 @@ export default class CVScene extends CVNode
 
     protected updateCameras()
     {
-        // Make sure max zoom is less than far plane.
-        if(this.setup.navigation.ins.autoZoom.value) {
-            this.setup.navigation.ins.offset.once("value", this.updateCameraHelper);
+        if(this.renderer.views[0].renderer.xr.isPresenting) {
+            return;
         }
-        else {
-            this.updateCameraHelper();
-        }
+
+        this.updateCameraHelper();
     }
 
     protected updateCameraHelper = () =>
@@ -221,10 +224,10 @@ export default class CVScene extends CVNode
         const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length();
 
         if(!this.system.getComponent("CVStoryApplication", true)) {
-            const maxOffset = 2 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const maxOffset = 2.5 * Math.max(orbitRadius, this.outs.boundingRadius.value);
             const currOffset = this.setup.navigation.ins.maxOffset.value;
-            const zOffset = navOffset[2] < currOffset[2] ? Math.min(currOffset[2], maxOffset) : maxOffset;
-            this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], zOffset]);
+            //const zOffset = navOffset[2] < currOffset[2] ? Math.min(currOffset[2], maxOffset) : maxOffset;
+            this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], maxOffset]);
         }
 
         this.cameras.forEach(camera => {

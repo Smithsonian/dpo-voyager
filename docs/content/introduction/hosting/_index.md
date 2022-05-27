@@ -12,7 +12,8 @@ Every Voyager release comes with a pre-built distribution package with everythin
 
 Download the distribution package for the [latest Voyager release](https://github.com/Smithsonian/dpo-voyager/releases/latest). Unzip it and copy all of the files to a directory on your web server.
 
-As long as these files are all accessible via your server, you are ready to go!
+**Note:** The prebuilt Voyager package requires WebDAV enabled file server access to any content for the Story component to save changes directly to disk. If this is not available to you, 
+try [installing from source](../../introduction/installation/) which includes a simple server, or ['Standalone' mode](../../story/overview/) when using Story.
 
 ## Use
 

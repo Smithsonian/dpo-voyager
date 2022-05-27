@@ -33,7 +33,7 @@ If you want to use Voyager to show your own content or wish to make use of the E
 Below is the minimum html needed to use Voyager Explorer with comments above each line describing its purpose.
 
 **Note:** The voyager-explorer.min.js endpoint shown below will always give you the most recent version of Voyager. If you want to pin to or test out an older version,
-just use an endpoint like the following with the appropriate version number: https://3d-api.si.edu/resources/js/v0.17.0/voyager-explorer.min.js 
+just use an endpoint like the following with the appropriate version number: https://3d-api.si.edu/resources/js/v0.17.0/voyager-explorer.min.js
 
 {{<highlight html>}}
 <!DOCTYPE html>

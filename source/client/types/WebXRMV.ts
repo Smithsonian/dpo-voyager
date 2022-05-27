@@ -221,3 +221,7 @@ declare type Constructor<T = object> = {
   declare interface WebGLRenderingContext {
     makeXRCompatible(): Promise<void>;
   }
+
+  declare interface WebGL2RenderingContext {
+    makeXRCompatible(): Promise<void>;
+  }
