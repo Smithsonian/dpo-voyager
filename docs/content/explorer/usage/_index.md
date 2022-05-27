@@ -71,7 +71,7 @@ You can set the location of your assets and the name of your scene file using th
 
 **Option 2: URL parameters** 
 
-You can also supply the ['root' and 'document' attributes](../api) of the component through 'root' and 'document' URL parameters appended to the end of the page URL. This can be helpful if you want to create one page that can load different models depending on the link the user clicked to get there.
+You can also supply the ['root' and 'document' attributes](../api) of the component through 'root' and 'document' URL parameters appended to the end of the page URL. This can be helpful if you want to create one page that can load different models depending on the link the user clicked to get there. 
 
 An example of this is below:
 {{<highlight html>}}
