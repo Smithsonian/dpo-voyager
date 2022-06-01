@@ -209,6 +209,7 @@ export default class ArticleEditor extends SystemView
             branding: false,
             automatic_uploads: true,
             images_reuse_filename: true,
+            paste_as_text: true,
             content_css: false,
             content_style: [contentCss, contentUiCss].join('\n'),
 

@@ -150,16 +150,26 @@ export default class StoryApplication
     {
         const props = this.props;
 
-        this.explorer.evaluateProps();
-
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
 
+        // If in standalone mode, remove root and document params that may be present
+        const modeText = props.mode.toLowerCase();
+        if (modeText.startsWith("stand")) {
+            const revisedUrl = new URL(window.location.href);
+            revisedUrl.searchParams.delete("root");
+            revisedUrl.searchParams.delete("document");
+            window.history.replaceState(null,null,revisedUrl);
+            props.root = null;
+            props.document = null;
+        }
+
+        this.explorer.evaluateProps();
+
         const app = this.system.getMainComponent(CVStoryApplication);
         app.referrer = props.referrer;
 
-        const modeText = props.mode.toLowerCase();
         let mode = ETaskMode.Edit;
 
         if (modeText.startsWith("au")) {
