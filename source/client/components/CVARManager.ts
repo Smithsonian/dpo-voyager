@@ -369,7 +369,7 @@ export default class CVARManager extends Component
         this.pulse.pulse(Date.now());  
         scene.update(null);  // force bounding box update so shadow is correct size
         const shadow = this.shadow = new Shadow(this.sceneNode, this.vScene.scene, 0.5);
-        shadow.setIntensity(0.3);
+        shadow.setIntensity(0.0);
 
         // Cache bounding box for placement
         _boundingBox.copy(this.sceneNode.outs.boundingBox.value);
@@ -503,12 +503,17 @@ export default class CVARManager extends Component
             const {position} = scene; 
             const radius =  sceneNode.outs.boundingRadius.value * 2.0 + xrCamera.near; // Math.abs(this.optimalCameraDistance);
 
-            const e = xrCamera.matrixWorld.elements;
+            const pose : XRViewerPose = frame.getViewerPose(refSpace!);
+            const e = pose.views[0].transform.matrix;
 			position.set(-e[ 8 ], -e[ 9 ], -e[ 10 ]).normalize(); 
             position.multiplyScalar(radius);
-            position.add(camera.position); 
+            
+            const xrPos = pose.views[0].transform.position;
+            _vector3.set(xrPos.x, xrPos.y, xrPos.z);
+            position.add(_vector3);
             _boundingBox.getCenter(_vector3);
             position.add(_vector3.negate());
+
             scene.updateMatrix();
             scene.updateMatrixWorld();
 
@@ -573,6 +578,7 @@ export default class CVARManager extends Component
             });
 
         this.shadow.updateMatrices();
+        this.shadow.setIntensity(0.3);
         this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
     }
 
