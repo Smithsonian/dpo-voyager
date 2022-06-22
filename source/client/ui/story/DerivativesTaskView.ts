@@ -61,8 +61,10 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 
     protected onSelectDerivative(event: ISelectDerivativeEvent)
     {
-        const model = this.activeNode.model;
-        model.ins.quality.setValue(event.detail.derivative.data.quality);
+        if(event.detail.derivative) {
+            const model = this.activeNode.model;
+            model.ins.quality.setValue(event.detail.derivative.data.quality);
+        }
     }
 
     protected onActiveNode(previous: NVNode, next: NVNode)
@@ -71,10 +73,12 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
         if (previous && previous.model) {
             previous.model.ins.quality.off("value", this.onUpdate, this);
             previous.model.outs.quality.off("value", this.onUpdate, this);
+            previous.model.outs.updated.off("value", this.onUpdate, this);
         }
         if (next && next.model) {
             next.model.ins.quality.on("value", this.onUpdate, this);
             next.model.outs.quality.on("value", this.onUpdate, this);
+            next.model.outs.updated.on("value", this.onUpdate, this);
         }
 
         super.onActiveNode(previous, next);

@@ -15,21 +15,42 @@
  * limitations under the License.
  */
 
-import * as QuillEditor from "quill";
-import ImageResize from 'quill-image-resize-module';
+/* Import TinyMCE */
+import tinymce from 'tinymce';
 
-import { html, render } from "@ff/ui/CustomElement";
+/* Default icons are required for TinyMCE 5.3 or above */
+import 'tinymce/icons/default';
+
+/* A theme is also required */
+import 'tinymce/themes/silver';
+
+import 'tinymce/models/dom/model';
+
+/* Import the skin */
+import './editor_css/skin.min.css';
+
+/* Import plugins */
+import 'tinymce/plugins/link';
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/image';
+import 'tinymce/plugins/media';
+
+/* Import content css */
+import contentUiCss from '!!raw-loader!./editor_css/content.ui.min.css';
+import contentCss from '!!raw-loader!./editor_css/content.min.css';
+
 import Notification from "@ff/ui/Notification";
 import MessageBox from "@ff/ui/MessageBox";
 
 import SystemView, { customElement } from "@ff/scene/ui/SystemView";
-import AssetTree from "@ff/scene/ui/AssetTree";
 
 import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
 
 import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
+import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
+import CVReader from "../../components/CVReader";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +60,6 @@ export default class ArticleEditor extends SystemView
 {
     private _container: HTMLDivElement = null;
     private _overlay: HTMLElement = null;
-    private _editor = null;
     private _assetPath: string = "";
     private _changed = false;
 
@@ -55,12 +75,11 @@ export default class ArticleEditor extends SystemView
     protected get assetWriter() {
         return this.system.getMainComponent(CVAssetWriter);
     }
-
-    protected get editorElement() {
-        return this.getElementsByClassName("ql-editor").item(0) as HTMLDivElement;
+    protected get standaloneFileManager() {
+        return this.system.getMainComponent(CVStandaloneFileManager, true);
     }
-    protected get toolbarElement() {
-        return this.getElementsByClassName("ql-toolbar").item(0) as HTMLDivElement;
+    protected get articleReader() {
+        return this.system.getComponent(CVReader);
     }
 
     openArticle(assetPath: string)
@@ -100,7 +119,8 @@ export default class ArticleEditor extends SystemView
         return this.assetReader.getText(assetPath)
         .then(content => this.parseArticle(content, assetPath))
         .then(content => {
-            this._editor.root.innerHTML = content;
+            //this._editor.root.innerHTML = content;
+            tinymce.activeEditor.setContent(content, {format: "raw"});
             this._assetPath = assetPath;
         }).then(() => {
             this._changed = false;
@@ -130,16 +150,22 @@ export default class ArticleEditor extends SystemView
     {
         const basePath = this.assetManager.getAssetBasePath(this._assetPath);
 
-        let content = this._editor.root.innerHTML;
+        let content = tinymce.activeEditor.getContent({format: "raw"}); //this._editor.root.innerHTML;
 
         // transform absolute to article-relative URLs
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
+            if((assetUrl as string).startsWith("blob")) {
+                assetUrl = this.standaloneFileManager.blobUrlToFileUrl(assetUrl);
+                return pre + assetUrl + post;
+            }
+
             return pre + this.assetManager.getRelativeAssetPath(assetUrl, basePath) + post;
         });
 
         return this.assetWriter.putText(content, this._assetPath)
             .then(() => {
                 this._changed = false;
+                this.articleReader.ins.articleId.set();
                 new Notification(`Article successfully written to '${this._assetPath}'`, "info");
             })
             .catch(error => {
@@ -149,7 +175,7 @@ export default class ArticleEditor extends SystemView
 
     protected clearArticle()
     {
-        this._editor.root.innerHTML = "";
+        tinymce.activeEditor.setContent("");
         this._assetPath = "";
         this._changed = false;
 
@@ -158,67 +184,76 @@ export default class ArticleEditor extends SystemView
         return Promise.resolve();
     }
 
+    
+
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-article-editor");
 
-        const toolbarOptions = [
-            // header formats
-            [{ "header": [1, 2, 3, 4, 5, 6, false] }],
-
-            // toggle buttons
-            [ "bold", "italic" ],
-            [{ "script": "sub"}, { "script": "super" }],
-            [ "blockquote", "code-block" ],
-
-            // text alignment
-            [{ "align": "" }, { "align": "center" }, { "align": "right" }],
-
-            // lists, indent
-            [{ "list": "ordered"}, { "list": "bullet" }],
-            [{ "indent": "-1"}, { "indent": "+1" }],
-
-            // remove formatting
-            ["clean"],
-
-            // links, media
-            //["link", "image", "video"],
-        ];
-
-        const options = {
-            //debug: "info",
-            modules: {
-                toolbar: toolbarOptions,
-                imageResize: ImageResize,
-            },
-            theme: "snow",
-            placeholder: "Write, because you have something to say."
-        };
-
         this._container = this.appendElement("div");
         this._container.classList.add("sv-container");
+        this._container.id = "editor_wrapper"
 
         this._overlay = this.appendElement("div");
         this._overlay.classList.add("sv-overlay");
 
-        this._editor = new (QuillEditor as any)(this._container, options);
-        this._editor.on("text-change", () => this._changed = true);
-        this._editor.root.addEventListener("drop", this.onEditorDrop.bind(this), true);
+        tinymce.init({
+            selector: "#editor_wrapper",
+            plugins: "image link lists media",
+            toolbar: 'saveButton closeButton | undo redo | link image media | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | styles',
+            menubar: false,
+            skin: false,
+            height: "100%",
+            resize: false,
+            branding: false,
+            automatic_uploads: true,
+            images_reuse_filename: true,
+            content_css: false,
+            content_style: [contentCss, contentUiCss].join('\n'),
 
-        const toolbarElement = this.toolbarElement;
-        const editorElement = this.editorElement;
-        editorElement.classList.add("sv-article");
+            images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
+                const filename = file.filename();
+                this.mediaManager.uploadFile(filename, file.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
+                    then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename))});
+            }),
 
-        const customButtons = html`
-            <ff-button transparent icon="save" text="Save" title="Save Article" @click=${e => this.saveArticle()}></ff-button>
-            <ff-button transparent icon="close" text="Close" title="Close Editor" @click=${e => this.closeArticle()}></ff-button>
-        `;
+            init_instance_callback: (editor) => {
+                editor.on('dirty', () => this._changed = true);
+                editor.editorUpload.addFilter((img) => {
+                    const blobInfo = editor.editorUpload.blobCache.getByUri(img.src);
+                    if(blobInfo) {
+                        if(this.standaloneFileManager) {
+                            const filename = blobInfo.filename();
+                            this.mediaManager.uploadFile(filename, blobInfo.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/"))
+                            img.src = this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename);
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            },
 
-        const container = document.createElement("span");
-        container.classList.add("ql-formats", "sv-custom-buttons");
-        toolbarElement.insertBefore(container, toolbarElement.firstChild);
-        render(customButtons, container);
+            setup: (editor) => {
+                editor.ui.registry.addButton('saveButton', {
+                    text: 'Save',
+                    icon: 'save',
+                    onAction: (_) => {
+                        this.saveArticle();
+                    }
+                });
+
+                editor.ui.registry.addButton('closeButton', {
+                    text: 'Close',
+                    icon: 'close',
+                    onAction: (_) => {
+                        this.closeArticle();
+                    }
+                });
+            },
+        });       
     }
 
     protected connected()
@@ -244,30 +279,6 @@ export default class ArticleEditor extends SystemView
         // if opened asset is of type text/html, open it in the editor
         else if (event.asset.info.type.startsWith("text/html")) {
             this.openArticle(event.asset.info.path);
-        }
-    }
-
-    protected onEditorDrop(event: DragEvent)
-    {
-        // get the dropped asset path and then the asset from the media manager
-        const assetPath = event.dataTransfer.getData(AssetTree.dragDropMimeType);
-        const asset = assetPath && this.mediaManager.getAssetByPath(assetPath);
-
-        if (asset) {
-            // only jpeg and png images can be dropped
-            const mimeType = asset.info.type;
-            if (mimeType === "image/jpeg" || mimeType === "image/png") {
-                const assetUrl = this.assetManager.getAssetUrl(assetPath);
-                // wait until text has been dropped, so we can get a valid selection index
-                setTimeout(() => {
-                    const selection = this._editor.getSelection();
-                    if (selection) {
-                        // replace text with image asset
-                        this._editor.deleteText(selection.index, selection.length);
-                        this._editor.insertEmbed(selection.index, "image", assetUrl);
-                    }
-                });
-            }
         }
     }
 }

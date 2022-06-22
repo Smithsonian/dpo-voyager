@@ -140,10 +140,6 @@ export default class CVSetup extends Component
                 this[name].fromData(featureData);
             }
         }
-
-        if (setupData.snapshots) {
-            this.snapshots.fromData(setupData.snapshots, pathMap);
-        }
     }
 
     toDocument(document: IDocument, sceneIndex: number, pathMap: Map<Component, string>)

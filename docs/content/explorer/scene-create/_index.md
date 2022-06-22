@@ -131,6 +131,11 @@ If you are comfortable with installing and configuring software built from sourc
 
 Cook can also automate generation of additional asset derivatives. Use the "si-voyager-scene", "si-voyager-asset", or "generate-web-gltf" Cook recipes, depending on your needs.
 
-**Option 3: Public instance (Coming Soon!)**
+**Option 3: Public instance**
 
-We are hoping to soon have a public instance of Voyager Story that you can use to create and modify scene files without installing or setting up any additional tools.
+You can you use our publically accessible Voyager Story "Standalone" instance to create your scene. You'll find it at: https://3d.si.edu/voyager-story-standalone 
+Just drag-and-drop your assets into the browser and configure your scene as described in the Voyager Story section of these docs. 
+
+The main difference between this
+version and the traditional deployment is that "Standalone" saves all of your work in browser memory and requires you to download the scene package for permanent storage
+instead of writing changes directly to disk.

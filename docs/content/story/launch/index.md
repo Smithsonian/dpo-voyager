@@ -4,9 +4,8 @@ summary: Embed and use Voyager Story in your own production pipeline.
 weight: 110
 ---
 
-**Currently, the only options for launching Voyager Story require hosting the application yourself in one of the ways described below.
-If you are an end user with no access to this option, please contact us. We are working to host a publically accessible version of Story that end users can use without the need for any installation or setup.**
-
+If you would like to host your own version of Voyager Story, check out the instructions below. **If you just want to use it to create a Voyage scene, try our 
+publically accessible deployment of [Voyager Story Standalone](https://3d.si.edu/voyager-story-standalone).**
 
 ## Web Application
 
@@ -15,6 +14,8 @@ Sample HTML documents are provided as part of the distributable package.
 
 The application can be launched via custom HTML element that can be customized using the following properties.
 Properties can be provided as URL variables or as attributes of the custom HTML element.
+
+**Note:** If you are having trouble deploying Voyager Story or are not able to supply a file server for it, try "Standalone" mode described below.
 
 ### Properties
 
@@ -27,7 +28,7 @@ Properties can be provided as URL variables or as attributes of the custom HTML 
 | texture      | String/URL        | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
 | quality      | "Thumb", "Low", "Medium", "High", "Highest" | For a model/geometry/texture: The quality level of the generated derivative.                              |
 | referrer     | String/URL        | The page URL to navigate to when the user exits the story tool. |
-| mode         | "QC", "Author", "Expert" | Launch in "qc" mode to edit/QC an item. Launch in "author" mode to author items and presentations. Launch in "expert" mode to get access to all tasks/for debugging |
+| mode         | "QC", "Edit", "Expert", "Standalone" | Launch in: "qc" mode to edit/QC an item, "edit" mode to author items and presentations, "expert" mode to get access to all tasks/for debugging, "standalone" mode for scene creation without backend storage. |
 
 ### Example 1: launching the Story tool via custom HTML element
 {{<highlight html>}}
@@ -42,8 +43,6 @@ Properties can be provided as URL variables or as attributes of the custom HTML 
     <link rel="shortcut icon" type="image/png" href="favicon.png" />
     <link href="/fonts/fonts.css" rel="stylesheet">
 	
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
     <script defer="defer" src="js/voyager-story.min.js"></script>
     <link href="css/voyager-story.min.css" rel="stylesheet">
 </head>

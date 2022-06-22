@@ -119,6 +119,7 @@ export default class CVARManager extends Component
     protected cachedView: RenderView = null;
     protected cachedQuality: EDerivativeQuality = null;
     protected cachedNearPlane: number = 0.0;
+    protected cachedFarPlane: number = 0.0;
     protected xrCamera: PerspectiveCamera = null;
     protected hitPlane: Mesh = null;
     protected selectionRing: Mesh = null;
@@ -141,6 +142,7 @@ export default class CVARManager extends Component
     protected lightTransform: CTransform = null;
     protected lightsToReset: CVDirectionalLight[] = [];
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
+    protected annotationsAtLaunch: boolean = false;
 
     update()
     {
@@ -329,6 +331,8 @@ export default class CVARManager extends Component
         featuresToReset.push(setup.tape.ins.visible.value ? 1 : 0);
         featuresToReset.push(setup.slicer.ins.enabled.value ? 1 : 0);
         featuresToReset.push(setup.viewer.ins.shader.value);
+
+        this.annotationsAtLaunch = setup.viewer.ins.annotationsVisible.value;
         
         // Disable extended features (TODO: support some/all of these features)    
         setup.floor.ins.visible.setValue(false);
@@ -338,6 +342,7 @@ export default class CVARManager extends Component
         if(setup.viewer.ins.shader.value !== EShaderMode.Default) {
             setup.viewer.ins.shader.setValue(EShaderMode.Default);
         }
+        setup.viewer.ins.annotationsVisible.setValue(false);
 
         // Set scale to m
         const originalUnits = this.originalUnits = scene.ins.units.getValidatedValue();
@@ -375,11 +380,12 @@ export default class CVARManager extends Component
         const size = Math.max(_vector3.x / this.camera.aspect, _vector3.y);
         const fovFactor = 1 / (2 * Math.tan(this.camera.fov * (180/Math.PI) * 0.5));
         this.optimalCameraDistance = (_vector3b.z + size * fovFactor + _vector3.z * 0.75);*/
-
+        
         this.cachedNearPlane = this.camera.near;
-        if(Math.max(_vector3.x, _vector3.y, _vector3.z) < 0.5) {
-            this.camera.near = 0.01;
-        }
+        this.cachedFarPlane = this.camera.far;
+        // May want to set these to more dynamic values
+        this.vScene.activeCameraComponent.ins.near.setValue(0.01);
+        this.vScene.activeCameraComponent.ins.far.setValue(1000);
     }
 
     protected resetScene() {
@@ -392,7 +398,8 @@ export default class CVARManager extends Component
         }      
         camera.position.set(0, 0, 0);
         camera.rotation.set(0, 0, 0);
-        camera.near = this.cachedNearPlane;
+        this.vScene.activeCameraComponent.ins.near.setValue(this.cachedNearPlane);
+        this.vScene.activeCameraComponent.ins.far.setValue(this.cachedFarPlane);
         camera.updateMatrix(); 
 
         // reset lights
@@ -566,6 +573,7 @@ export default class CVARManager extends Component
             });
 
         this.shadow.updateMatrices();
+        this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
     }
 
     protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {

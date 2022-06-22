@@ -4,6 +4,7 @@ declare module '!raw-loader!*' {
 }
 
 declare module "*.scss";
+declare module "*.css";
 
 // Webpack constant: build version
 declare const ENV_VERSION: string;

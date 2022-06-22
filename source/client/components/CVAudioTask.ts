@@ -32,7 +32,7 @@ export default class CVAudioTask extends CVTask
     static readonly typeName: string = "CVAudioTask";
 
     static readonly text: string = "Audio";
-    static readonly icon: string = "knife";
+    static readonly icon: string = "audio";
 
     protected static readonly ins = {
         create: types.Event("Audio.Create"),

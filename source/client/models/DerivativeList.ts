@@ -144,6 +144,18 @@ export default class DerivativeList
         return derivative;
     }
 
+    remove(usage: EDerivativeUsage, quality: EDerivativeQuality)
+    {
+        const derivative = this.get(usage, quality);
+        if(derivative) {
+            const bin = this.getOrCreateBin(usage);
+            const index = bin.indexOf(derivative);
+            if (index > -1) {
+                bin.splice(index, 1);
+            }
+        }
+    }
+
     createModelAsset(assetPath: string, quality: EDerivativeQuality | string): Derivative
     {
         quality = (typeof quality === "string" ? EDerivativeQuality[quality] : quality) as EDerivativeQuality;

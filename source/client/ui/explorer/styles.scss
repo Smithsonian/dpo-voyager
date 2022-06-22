@@ -49,13 +49,22 @@ $main-menu-button-size: 38px;
   scrollbar-width: thin;
   ::-webkit-scrollbar {
     width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background-color: $color-background-darker;
   }
   ::-webkit-scrollbar-thumb {
     background-color: $color-background-lighter;
+    border-radius: 8px;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MAIN VIEW
+
+voyager-explorer {
+  font-size: 16px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +149,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .ff-viewport-overlay {
+  font-size: 1.0em;
 }
 
 .sv-scene-view {
@@ -183,12 +193,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   .sv-title {
     padding: 0 0 2px 0;
-    font-size: 0.85rem;
     font-weight: bold;
   }
   p {
     @include font-ui-normal;
-    font-size: 0.75rem;
+    font-size: 0.88em;
     line-height: 1.35;
     color: $color-text;
     margin: 0.5em 0;
@@ -262,13 +271,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   .sv-title {
     padding: 1px 0 2px 0;
-    font-size: 0.85rem;
     font-weight: bold;
   }
 
   .sv-content {
     padding: 2px 0;
-    font-size: 0.8rem;
     height: 0;
     overflow: hidden;
     overflow-wrap: break-word;
@@ -277,7 +284,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   p {
     @include font-ui-normal;
-    font-size: 0.75rem;
+    font-size: 0.88em;
     line-height: 1.35;
     color: $color-text;
     margin: 0.5em 0;
@@ -344,6 +351,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   & > .ff-button {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
     width: $main-menu-button-size;
     height: $main-menu-button-size;
     margin: 0 6px 2px 0;
@@ -380,7 +388,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-chrome-view {
   @include font-ui-normal;
-  font-size: 0.85rem;
+  font-size: 0.85em;
   line-height: 1.35;
   color: $color-text;
   @include fullsize;
@@ -444,6 +452,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-chrome-header {
   display: flex;
   align-items: flex-start;
+  height: 100%;
+  position: relative;
 
   .sv-top-bar {
     flex: 1 1 auto;
@@ -459,7 +469,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     margin: $canvas-border-width 8px;
     font-family: "Hind Siliguri", sans-serif;;
     font-weight: normal;
-    font-size: 1.2rem;
+    font-size: 1.412em;
     white-space: pre;
     color: $color-text-light;
     @include noselect;
@@ -495,7 +505,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     margin: $canvas-border-width 8px;
     font-family: "Hind Siliguri", sans-serif;;
     font-weight: normal;
-    font-size: 1.0rem;
+    font-size: 1.176em;
     white-space: pre;
     color: $color-text-light;
     pointer-events: auto;
@@ -519,10 +529,23 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN MENU
 
+.sv-main-menu-wrapper {
+  position: relative;
+  height: 100%;
+  min-width: 50px;
+}
+
 .sv-main-menu {
   display: flex;
   flex-direction: column;
-  margin: $canvas-border-width 0 0 $canvas-border-width;
+  padding: $canvas-border-width $canvas-border-width+3 $canvas-border-width $canvas-border-width;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  pointer-events: auto;
+  position: absolute;
+  box-sizing: border-box;
+  overscroll-behavior-y: contain;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -570,6 +593,35 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       &:hover, &:focus {
         background-color: $color-primary-light;
       }
+    }
+  }
+
+  .sv-scroll-btn {
+    border-radius: 2px;
+    font-size: 10px;
+    height: $main-menu-button-size/2;
+    background-color: $color-background;
+    z-index: 2;
+    padding: 0px;
+    position: sticky;
+
+    &.up {
+      top: 0px;
+      margin-top: 0px;
+    }
+    
+    &.down {
+      bottom: $canvas-border-width*2;
+      margin-top: $canvas-border-width*2;
+    }
+
+    &:hover {
+      background-color: $color-background-lighter;
+      fill: $color-text;
+    }
+
+    &:focus, &:focus-visible {
+      background-color: $color-background;
     }
   }
 }
@@ -748,7 +800,7 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // LANGUAGE MENU
 
-.sv-language-menu {
+.sv-option-menu {
   position: relative;
   width: 225px;
   max-width: 85%;
@@ -760,13 +812,22 @@ $tour-entry-indent: 12px;
   pointer-events: auto;
 
   .ff-title {
-    margin: 0.3em 0 0.3em 0;
+    margin: 0.3em 0 0.3em 0.3em;
+  }
+  .ff-header {
+    padding: 0.3em 0 0.3em 0.3em;
+    background: $menu-color-background-dark;
   }
   .ff-button {
     flex: 0 0 auto;
+    //margin: 4px;
   }
-  .ff-scroll-y {
+  .sv-scroll-offset {
     top: 50px;
+  }
+  .sv-centered {
+    justify-content: center;
+    padding: 0.3em 0 0.3em 0.3em;
   }
 
   .sv-entry {
@@ -940,7 +1001,7 @@ $tour-entry-indent: 12px;
     padding: 2px 4px;
     background-color: $menu-color-background-dark;
     border-radius: 3px;
-    font-size: 0.75rem;
+    font-size: 0.88em;
 
     &:hover {
       background-color: $menu-color-background-hover;
@@ -964,12 +1025,21 @@ $tour-entry-indent: 12px;
 
 .sv-tool-bar {
   color: $color-text;
+  pointer-events: auto;
   
   .sv-tool-buttons {
     flex: 1 1 auto;
     display: flex;
-    justify-content: center;
     margin: 4px;
+    overflow-x: auto;
+
+    .sv-tool-button:first-child {
+        margin-left: auto;
+    }
+    
+    .sv-tool-button:last-child {
+        margin-right: auto;
+    }
   }
 
   .sv-tool-button {
@@ -977,7 +1047,7 @@ $tour-entry-indent: 12px;
     margin: 2px;
     padding: 1px 2px;
     border-radius: 3px;
-    font-size: 0.75rem;
+    font-size: 0.882em;
 
     .ff-text {
       margin: 1px 2px;
@@ -989,12 +1059,18 @@ $tour-entry-indent: 12px;
   }
 }
 
+.sv-tool-bar-container {
+  position: relative;
+  bottom: 0px;
+  width: 100%;
+}
+
 .sv-tool-controls {
   flex: 1 1 auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.75rem;
+  font-size: 0.882em;
 
   .sv-property-view {
     flex: 0 1 auto;
@@ -1062,7 +1138,7 @@ $tour-entry-indent: 12px;
     flex: 0 1 auto;
     height: 26px;
     margin: 2px;
-    font-size: 1rem;
+    font-size: 1.34em;
   }
 
   .ff-button {

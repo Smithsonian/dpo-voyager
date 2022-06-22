@@ -115,7 +115,8 @@ export default class MainView extends CustomElement
                 uiMode: this.getAttribute("uiMode"),
                 bgColor: this.getAttribute("bgColor"),
                 bgStyle: this.getAttribute("bgStyle"),
-                controls: this.getAttribute("controls")
+                controls: this.getAttribute("controls"),
+                lang: this.getAttribute("lang")
             };
 
             this.application = new ExplorerApplication(null, props);
@@ -298,6 +299,13 @@ export default class MainView extends CustomElement
     {
         if(this.application) {
             this.application.setTourStep(tourIdx, stepIdx, interpolate !== undefined ? interpolate : true);
+        }
+    }
+
+    setLanguage(languageID: string)
+    {
+        if(this.application) {
+            this.application.setLanguage(languageID);
         }
     }
 }

@@ -6,7 +6,9 @@ weight: 100
 
 _Voyager Story_ is the creation and authoring application of the Voyager tool suite. The application can be used to create and author _Voyager SVX Documents_. Documents are files in JSON format containing the description of a Voyager scene or experience.
  
- _Voyager Story_ can be operated in two different modes. Each mode offers a number of tasks.
+ _Voyager Story_ can be operated in several different modes. Each mode offers a number of tasks.
+ 
+ **Note:** If you are having trouble deploying _Voyager Story_ or are not able to supply a file server for it, try Standalone mode described below.
 
 ## QC Mode
 
@@ -21,17 +23,16 @@ This mode is aimed at 3D technicians. After a model has been digitized and proce
 QC mode is enabled by supplying the mode=qc URL parameter.
 ```
 
-## Authoring Mode
+## Edit Mode
 
-The authoring tools can be used by curators to stage the model(s) using lights, cameras and props, and to add content (annotations, articles, and tours) to the experience. The following tasks are available in authoring mode:
+Along with the QC tasks, edit mode allow authoring tools to be used to stage the model(s) using lights, cameras and props, and to add content (annotations, articles, and tours) to the experience. The following tasks are available in edit mode:
 
 - Annotations task: add annotations to specific 3D locations on a model
 - Articles task: write and edit articles (documents with text and media), and connect them with annotations and models
 - Tours task: create guided tours which guide through the experience in multiple steps
-- Settings task: adjust parameters such as material settings
 
 ```
-Authoring mode is enabled by supplying the mode=author URL parameter.
+Edit mode is enabled by supplying the mode=edit URL parameter.
 ```
 
 ## Expert Mode
@@ -41,3 +42,15 @@ _Voyager Story_ actually offers a third mode, called expert mode, which shows al
 ```
 Expert mode is enabled by supplying the mode=expert URL parameter.
 ``` 
+
+## Standalone Mode
+
+By default, _Voyager Story_ requires a WebDAV file server backend to facilitate saving Voyager files directly to your permanent storage location. If you spin up Voyager from the source ([instructions here](../../introduction/installation/))
+ a simple server is included. Otherwise, you are responsible for appropriately accessible file storage. 
+ 
+Standalone mode removes the file server requirement by saving Voyager scenes in browser memory and gives you the
+ option to download the complete package directly to your machine. You can try out our deployment of it here: [Voyager Standalone](https://3d.si.edu/voyager-story-standalone)
+ 
+```
+Standalone mode is enabled by supplying the mode=standalone URL parameter.
+```

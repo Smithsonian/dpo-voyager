@@ -35,6 +35,7 @@ import CVSetup from "./CVSetup";
 import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
 import { ELanguageType } from "client/schema/common";
+import CVModel2 from "./CVModel2";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +57,7 @@ export default class CVDocument extends CRenderGraph
     protected static readonly validator = new DocumentValidator();
 
     protected titles: Dictionary<string> = {};
+    protected meta: CVMeta = null;
 
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
@@ -65,7 +67,7 @@ export default class CVDocument extends CRenderGraph
     };
 
     protected static readonly outs = {
-        assetPath: types.AssetPath("Asset.Path", { preset: "document.svx.json" }),
+        assetPath: types.AssetPath("Asset.Path", { preset: "scene.svx.json" }),
         title: types.String("Document.Title"),
     };
 
@@ -145,8 +147,12 @@ export default class CVDocument extends CRenderGraph
         if(ins.title.changed && this.titles) {
             const language = this.setup.language;
             ins.title.setValue(ins.title.value, true);
-            this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;
             outs.title.setValue(ins.title.value);
+
+            if(ins.title.value) {
+                this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;     
+                this.updateTitlesMeta();
+            }
         }
 
         return true;
@@ -177,6 +183,7 @@ export default class CVDocument extends CRenderGraph
 
         if (!mergeParent) {
             this.clearNodeTree();
+            this.ins.title.setValue(null);
         }
 
         // listen to load events on scene meta component
@@ -210,7 +217,7 @@ export default class CVDocument extends CRenderGraph
         }
     }
 
-    appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)
+    appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene) : CVModel2
     {
         if (parent && parent.graph !== this.innerGraph) {
             throw new Error("invalid parent node");
@@ -226,6 +233,8 @@ export default class CVDocument extends CRenderGraph
 
         const model = modelNode.model;
         model.derivatives.createModelAsset(assetPath, quality);
+
+        return model;
     }
 
     appendGeometry(geoPath: string, colorMapPath?: string, occlusionMapPath?: string, normalMapPath?: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene)
@@ -277,6 +286,10 @@ export default class CVDocument extends CRenderGraph
         const propTitle = this.ins.title;
         const language = this.setup.language;
 
+        if(this.meta === null) {
+            this.meta=meta;
+        }
+
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
                 this.titles = meta.collection.get("titles") || {};
@@ -290,6 +303,7 @@ export default class CVDocument extends CRenderGraph
                 const title = this.titles[ELanguageType[language.outs.language.value]];
                 propTitle.setValue(title);
                 this.analytics.setTitle(title);
+                this.meta = meta;
             });
         }
     }
@@ -298,6 +312,13 @@ export default class CVDocument extends CRenderGraph
         const language = this.setup.language;
 
         const newTitle = this.titles[ELanguageType[language.outs.language.value]];
-        this.ins.title.setValue(newTitle ? newTitle : "Missing Title");
+        this.ins.title.setValue(newTitle);
+    }
+
+    protected updateTitlesMeta() {
+        const meta = this.meta;
+        if(meta) {
+            meta.collection.dictionary["titles"] = this.titles; 
+        }
     }
 }

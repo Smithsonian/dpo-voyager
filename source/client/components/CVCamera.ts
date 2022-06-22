@@ -16,6 +16,7 @@
  */
 
 import CCamera, { EProjection } from "@ff/scene/components/CCamera";
+import { Node } from "@ff/scene/components/CObject3D";
 
 import { IDocument, INode, ICamera } from "client/schema/document";
 
@@ -36,6 +37,12 @@ export default class CVCamera extends CCamera
             this.ins.near,
             this.ins.far,
         ]
+    }
+
+    constructor(node: Node, id: string)
+    {
+        super(node, id);
+        this.object3D.layers.enable(1);  // enable rendering of non-pickable layer
     }
 
     fromDocument(document: IDocument, node: INode): number

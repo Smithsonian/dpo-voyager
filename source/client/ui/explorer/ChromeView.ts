@@ -67,7 +67,7 @@ export default class ChromeView extends DocumentView
         this.sonification.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this); // TODO: move to bottom
         this.titleElement = this.createElement("div", null);
-        this.titleElement.classList.add("ff-ellipsis", "sv-main-title");
+        this.titleElement.classList.add("ff-ellipsis");
     }
 
     protected disconnected()
@@ -132,14 +132,16 @@ export default class ChromeView extends DocumentView
             }
         }
         else {
-            title = document.outs.title.value || document.name || "Untitled Document";
+            title = document.outs.title.value || "Missing Title" || document.name;
         }
 
         titleElement.innerHTML = title;
 
         return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
             <div class="sv-chrome-header">
-                ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
+                <div class="sv-main-menu-wrapper">
+                    ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}
+                </div>
                 <div class="sv-top-bar">
                     ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${titleElement}<span class="ff-ellipsis"> </span></div>` : null}
                     ${logoVisible ? html`<sv-logo></sv-logo>` : null}

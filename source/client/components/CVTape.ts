@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -26,6 +26,7 @@ import CVModel2 from "./CVModel2";
 import CVScene from "client/components/CVScene";
 import { EUnitType } from "client/schema/common";
 import unitScaleFactor from "client/utils/unitScaleFactor";
+import { getMeshTransform } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +51,8 @@ export default class CVTape extends CObject3D
         endDirection: types.Vector3("End.Direction"),
         boundingBox: types.Object("Scene.BoundingBox", Box3),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
-        localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm)
+        localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
+        enabled: types.Boolean("Tape.Enabled", false),
     };
 
     protected static readonly tapeOuts = {
@@ -130,30 +132,44 @@ export default class CVTape extends CObject3D
 
     update(context)
     {
-        super.update(context);
-
-        const ins = this.ins;
         const lineGeometry = this.line.geometry as BufferGeometry;
+        const { startPin, endPin, line, ins } = this;
+
+        if (ins.enabled.changed) {
+            ins.visible.setValue(ins.enabled.value);
+        }
+
+        super.update(context);
 
         // determine pin scale based on scene/model bounding box
         if (ins.boundingBox.changed && ins.boundingBox.value) {
             ins.boundingBox.value.getSize(_vec3a);
             const radius = _vec3a.length() * 0.5;
 
-            this.startPin.scale.setScalar(radius * 0.003);
-            this.startPin.updateMatrix();
+            startPin.scale.setScalar(radius * 0.003);
+            startPin.updateMatrix();
 
-            this.endPin.scale.setScalar(radius * 0.003);
-            this.endPin.updateMatrix();
+            endPin.scale.setScalar(radius * 0.003);
+            endPin.updateMatrix();
         }
 
-        // if tape is visible, listen for pointer events to set tape start/end
-        if (ins.visible.changed) {
-            if (ins.visible.value) {
+        // if tape is enabled, listen for pointer events to set tape start/end
+        if (ins.enabled.changed) {
+            if (ins.enabled.value) {
                 this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
             }
             else {
                 this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+            }
+        }
+
+        if(ins.visible.changed && ins.visible.value) {
+            const startPos = ins.startPosition.value;
+            const endPos = ins.endPosition.value;
+            if(startPos[0] != endPos[0] && startPos[1] != endPos[1] && startPos[2] != endPos[2]) {
+                startPin.visible = true;
+                endPin.visible = true;
+                line.visible = true;
             }
         }
 
@@ -163,7 +179,6 @@ export default class CVTape extends CObject3D
 
         // update tape start point
         if (ins.startPosition.changed || ins.startDirection.changed) {
-            const startPin = this.startPin;
             startPin.position.fromArray(ins.startPosition.value);
             _vec3a.fromArray(ins.startDirection.value);
             startPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
@@ -178,7 +193,6 @@ export default class CVTape extends CObject3D
 
         // update tape end point
         if (ins.endPosition.changed || ins.endDirection.changed) {
-            const endPin = this.endPin;
             endPin.position.fromArray(ins.endPosition.value);
             _vec3a.fromArray(ins.endDirection.value);
             endPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
@@ -202,11 +216,11 @@ export default class CVTape extends CObject3D
     fromData(data: ITape)
     {
         this.ins.copyValues({
-            visible: data.enabled,
-            startPosition: data.startPosition,
+            visible: data.enabled,   // TODO: should probably be visible instead of enabled
+            /*startPosition: data.startPosition,
             startDirection: data.startDirection,
             endPosition: data.endPosition,
-            endDirection: data.endDirection
+            endDirection: data.endDirection*/
         });
     }
 
@@ -215,11 +229,11 @@ export default class CVTape extends CObject3D
         const ins = this.ins;
 
         return {
-            enabled: ins.visible.cloneValue(),
+            enabled: ins.visible.cloneValue()/*,
             startPosition: ins.startPosition.cloneValue(),
             startDirection: ins.startDirection.cloneValue(),
             endPosition: ins.endPosition.cloneValue(),
-            endDirection: ins.endDirection.cloneValue()
+            endDirection: ins.endDirection.cloneValue()*/
         };
     }
 
@@ -229,11 +243,16 @@ export default class CVTape extends CObject3D
             return;
         }
 
+        // Compensate for any internal transforms the loaded geometry may have
+        const model = event.component as CVModel2;
+        const meshTransform = getMeshTransform(model.object3D, event.object3D);
+        const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+
         // get click position and normal
         const worldMatrix = event.object3D.matrixWorld;
         _mat3.getNormalMatrix(worldMatrix);
 
-        const position = event.view.pickPosition(event).applyMatrix4(worldMatrix); 
+        const position = event.view.pickPosition(event, bounds).applyMatrix4(worldMatrix); 
         const normal = event.view.pickNormal(event).applyMatrix3(_mat3).normalize();
 
         // update pins and measurement line

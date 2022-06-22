@@ -35,6 +35,7 @@ import CVAnnotationView, { IAnnotationsUpdateEvent, IAnnotationClickEvent } from
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { getMeshTransform } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -175,11 +176,15 @@ export default class CVAnnotationsTask extends CVTask
             _scaling.setScalar(1);
             _mat4.compose(_position, _quat, _scaling);
 
+            const meshTransform = getMeshTransform(model.object3D, event.object3D);
+            const invMeshTransform = meshTransform.clone().invert();
+            const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+
             // add mesh parent transforms in this branch
-            _mat4.copy(_mat4.multiply(this.getMeshTransform(model.object3D, event.object3D).invert()));   
+            _mat4.copy(_mat4.multiply(invMeshTransform));   
             _mat3.getNormalMatrix(_mat4);
 
-            const position = event.view.pickPosition(event).applyMatrix4(_mat4).toArray();
+            const position = event.view.pickPosition(event, bounds).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
 
             const mode = this.ins.mode.getValidatedValue();
@@ -300,25 +305,6 @@ export default class CVAnnotationsTask extends CVTask
         for(let box of textboxes) {
             (box as HTMLElement).blur();
         }
-    }
-
-    /** Accumulates transforms from current object to root. */
-    protected getMeshTransform(root : Object3D, current: Object3D)
-    {
-        var result = new Matrix4();
-        var tempMatrix = new Matrix4();
-
-        result.identity();
-
-        do {
-            tempMatrix.compose(current.position, current.quaternion, current.scale);
-            result.multiply(tempMatrix.invert());
-
-            current = current.parent;
-        }
-        while (root !== current)
-
-        return result;
     }
 
     // Make sure this task language matches document

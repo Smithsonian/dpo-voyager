@@ -51,6 +51,15 @@ export default class NVScene extends NVNode
 
         this.scene.fromDocument(document, scene);
 
+        // serialize additional scene components
+        if (isFinite(scene.meta)) {
+            this.meta.fromDocument(document, scene);
+            pathMap.set(`meta/${scene.meta}`, this.meta);
+        }
+        if (isFinite(scene.setup)) {
+            this.setup.fromDocument(document, sceneIndex, pathMap);
+        }
+
         // serialize node tree
         const nodeIndices = scene.nodes;
         if (nodeIndices) {
@@ -60,14 +69,12 @@ export default class NVScene extends NVNode
                 childNode.fromDocument(document, nodeIndex, pathMap);
             });
         }
-
-        // serialize additional scene components
-        if (isFinite(scene.meta)) {
-            this.meta.fromDocument(document, scene);
-            pathMap.set(`meta/${scene.meta}`, this.meta);
-        }
+        
         if (isFinite(scene.setup)) {
-            this.setup.fromDocument(document, sceneIndex, pathMap);
+            const setupData = document.setups[scene.setup];
+            if (setupData.snapshots) {
+                this.setup.snapshots.fromData(setupData.snapshots, pathMap);
+            }
         }
     }
 

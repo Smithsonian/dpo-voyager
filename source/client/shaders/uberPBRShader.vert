@@ -3,14 +3,7 @@
 
 varying vec3 vViewPosition;
 
-#ifndef FLAT_SHADED
-	varying vec3 vNormal;
-
-	#ifdef USE_TANGENT
-		varying vec3 vTangent;
-		varying vec3 vBitangent;
-	#endif
-#endif
+#include <normal_pars_vertex>
 
 #include <common>
 
@@ -55,15 +48,7 @@ void main() {
 	#include <skinbase_vertex>
 	#include <skinnormal_vertex>
 	#include <defaultnormal_vertex>
-
-#ifndef FLAT_SHADED // Normal computed with derivatives when FLAT_SHADED
-	vNormal = normalize(transformedNormal);
-
-	#ifdef USE_TANGENT
-		vTangent = normalize( transformedTangent );
-		vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
-	#endif
-#endif
+	#include <normal_vertex>
 
 #ifdef MODE_XRAY
     vIntensity = pow(abs(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)))), 3.0);
