@@ -180,11 +180,30 @@ export default class CVAudioManager extends Component
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));  
     }
 
+    playURI(uri: string)
+    {
+        if(!this.audioPlayer) {
+            // Audio player not initialized. Need to call setupAudio() from a click handler to support all browsers.
+            Notification.show(`Error - Audio Player not initialized.`, "error");
+            return;
+        }
+
+        const { outs } = this;      
+        this.audioPlayer.setAttribute("src", uri);
+        this.audioPlayer.play()
+        .then(() => {
+            this.isPlaying = true;
+        })
+        .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));  
+    }
+
     stop()
-    {      
-        this.audioPlayer.pause();
-        this.audioPlayer.currentTime = 0;
-        this.onEnd();
+    {
+        if(this.audioPlayer) {      
+            this.audioPlayer.pause();
+            this.audioPlayer.currentTime = 0;
+            this.onEnd();
+        }
     }
 
     protected onEnd = () => {
@@ -200,9 +219,6 @@ export default class CVAudioManager extends Component
         if(this.audioPlayer === null) {
             this.audioPlayer = document.createElement('audio');
             this.audioPlayer.onended = this.onEnd;
-            //this.audioPlayer.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
-
-            //this.ins.playNarration.set();
         }
     }
 }

@@ -96,6 +96,7 @@ export default class SonifyMenu extends SystemView
         const language = this.language;
         const navigation = this.navigation;
         const sonify = this.sonification;
+        const labels = ["Play", "Stop"];
 
         const preset = navigation.ins.preset;
         const mode = sonify.ins.mode;
@@ -108,8 +109,9 @@ export default class SonifyMenu extends SystemView
 
         return html`<div class="sv-blue-bar" role=region title="Sonification Options" @keydown=${e =>this.onKeyDown(e)}>
                 <div class="sv-section">
-                    <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Close")} @click=${this.onClose}></ff-button>
+                    <ff-button class="sv-section-lead" id="close" transparent icon="close" title=${language.getLocalizedString("Close")} @click=${this.onClose}></ff-button>
                     <div role="region" aria-label="Sonify toolbar" class="sv-tool-controls">
+                        <sv-property-boolean id="intro" .property=${sonify.ins.playIntro} @click=${this.onIntro} .language=${language} .text=${labels} name=${language.getLocalizedString("Audio Intro")}></sv-property-boolean>
                         <sv-property-options role="radiogroup" .property=${preset} .language=${language} name=${language.getLocalizedString("View Direction")} .indexMap=${presetMap}></sv-property-options>
                         <sv-property-options role="radiogroup" .property=${mode} .language=${language} name=${language.getLocalizedString("Mode")} ></sv-property-options>
                         <sv-property-boolean .property=${active} .language=${language} name=${language.getLocalizedString("Start Sonify")}></sv-property-boolean>
@@ -130,10 +132,7 @@ export default class SonifyMenu extends SystemView
             setTimeout(() => {
             const introElement = this.getElementsByClassName("sr-only").item(0) as HTMLElement;
             introElement.innerText = "This feature uses sound to describe the shape of a 3D object. "
-            + "As you move your pointer over the object the sound will change based on how "
-            + "close or far the surface is from you at that point. There are 2 options for type of "
-            + "sound change... frequency and rate of beep. Select a type and then click the start button "
-            + "to try it out!";
+            + "Click the Audio Intro button to hear more about this feature and how to use it.";
             }, 100);
         }
     }
@@ -203,7 +202,17 @@ export default class SonifyMenu extends SystemView
     protected async setFocus()
     {
         await this.updateComplete;
-        const focusElement = this.getElementsByTagName("sv-property-options").item(0) as HTMLElement;
+        const focusElement = this.getElementsByTagName("sv-property-boolean").item(0) as HTMLElement;
         focusElement.focus();
+    }
+
+    protected onIntro() {
+        const buttons = this.getElementsByTagName("ff-button");
+        const status = !this.sonification.outs.introIsPlaying.value;
+        Array.from(buttons).forEach(button => {
+            if(button.parentElement.id !== "intro" && button.id !== "close") {
+                status ? button.setAttribute("disabled", "true") : button.removeAttribute("disabled");
+            }
+        });
     }
 }

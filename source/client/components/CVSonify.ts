@@ -18,15 +18,16 @@
 import Component, { types } from "@ff/graph/Component";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import { WebGLRenderTarget, RGBFormat, NearestFilter, DepthTexture, UnsignedShortType, DepthFormat, UnsignedIntType, Vector3, Color, PlaneGeometry, MeshBasicMaterial, Mesh, DoubleSide, SphereGeometry, BoxGeometry, Box3, Plane, Scene, OrthographicCamera, RGBAFormat, Box2, Vector2 } from "three";
+import { WebGLRenderTarget, NearestFilter, Vector3, Color, PlaneGeometry, Mesh, Box3, Plane, Scene, OrthographicCamera, Box2, Vector2 } from "three";
 import DepthShader from "../shaders/DepthShader";
 import MinMaxShader from "../shaders/MinMaxShader";
-import { EProjection } from "client/../../libs/ff-three/source/UniversalCamera";
 import CVScene from "./CVScene";
 import CVSetup from "./CVSetup";
 import CVAnalytics from "./CVAnalytics";
 import { computeLocalBoundingBox } from "@ff/three/helpers";
 import CVOrbitNavigation from "./CVOrbitNavigation";
+import CVAssetReader from "./CVAssetReader";
+import Notification from "@ff/ui/Notification";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,12 +55,14 @@ export default class CVSonify extends Component
         scanning: types.Boolean("Sonify.Scanning", false),
         visible: types.Boolean("Sonify.Visible", false),
         closed: types.Event("Sonify.Closed"),
+        playIntro: types.Boolean("Sonify.PlayIntro", false),
         mode: types.Enum("Sonify.Mode", ESonifyMode, ESonifyMode.Frequency),
     };
 
     protected static readonly outs = {
         mode: types.Enum("Sonify.Mode", ESonifyMode, ESonifyMode.Frequency),
         scanline: types.Vector2("Sonify.Scanline"),
+        introIsPlaying: types.Boolean("Sonify.IntroIsPlaying", false),
     };
 
     protected get renderer() {
@@ -76,6 +79,9 @@ export default class CVSonify extends Component
     }
     protected get navigation() {
         return this.system.getComponent(CVOrbitNavigation);
+    }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
     }
 
     protected audioCtx: AudioContext = null;
@@ -254,7 +260,7 @@ export default class CVSonify extends Component
                 return false;
             }
 
-            if(this.ins.active.value) {
+            if(this.ins.active.value || ins.scanning.value) {
                 //gainNode.gain.value  = inMode === ESonifyMode.Volume ? _lowVolume : 1.0;
                 osc.frequency.value = 80;
             
@@ -275,15 +281,33 @@ export default class CVSonify extends Component
         
         if(ins.visible.changed) {
             const navigation = this.setup.navigation;
+            const audio = this.setup.audio;
             if(ins.visible.value) {
                 navigation.ins.enabled.setValue(false, true);
                 navigation.ins.preset.on("value", this.onViewChange, this);
+                this.setup.audio.outs.narrationPlaying.on("value", this.audioChanged, this);
+
+                Notification.show(`Sound must be on for this feature to work!.`, "info");
             }
             else {
+                this.setup.audio.outs.narrationPlaying.off("value", this.audioChanged, this);
                 navigation.ins.preset.off("value", this.onViewChange, this);
                 navigation.ins.enabled.setValue(true, true);
+                audio.stop();
             }
         }
+
+        if(ins.playIntro.changed) {
+            const audio = this.setup.audio;
+            if(!ins.playIntro.value) {
+                audio.stop();
+            }
+            else {
+                audio.playURI(this.assetReader.getSystemAssetUrl("SonifyIntro.mp3"));
+                this.outs.introIsPlaying.setValue(true);
+            }
+        }
+
         return true;
     }
 
@@ -377,50 +401,6 @@ export default class CVSonify extends Component
 
         camera.updateProjectionMatrix();
 
-        // TEMP
-        /*camera.getWorldPosition(_target);
-        camera.getWorldDirection(_dir);
-        
-        var geometry = new PlaneGeometry(100, 100);
-        var material = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide, transparent: true, opacity: 0.5 });
-        var mesh = new Mesh(geometry, material);
-        var mesh2 = new Mesh(geometry, material);
-        mesh.lookAt(_target);
-        mesh2.lookAt(_target);
-        const dirNorm = _dir.normalize();
-        const offset = dirNorm.multiplyScalar(camera.near);
-        const newLoc = _target;
-        newLoc.add(offset);
-        mesh.position.set(newLoc.x, newLoc.y, newLoc.z);
-        //sceneComponent.scene.add(mesh);
-
-        //const geometry2 = new SphereGeometry( boundingRadius, 128, 128 );
-        var size = new Vector3();
-        bbox.getSize(size); console.log("Getting bounds: " + JSON.stringify(size));
-        const geometry2 = new BoxGeometry( size.x, size.y, size.z );
-        const geometry3 = new SphereGeometry( 0.5 );
-        const sphere = new Mesh( geometry2, material );
-        const sphere2 = new Mesh( geometry3, material );
-        var center = new Vector3();
-        bbox.getCenter(center);
-        sphere.position.set(center.x, center.y, center.z);
-        //sphere2.position.set(bbox.min.x, bbox.max.y, bbox.max.z); // front
-        //sphere2.position.set(bbox.max.x, bbox.max.y, bbox.min.z); // back
-        //sphere2.position.set(bbox.min.x, bbox.max.y, bbox.min.z); // left + top
-        //sphere2.position.set(bbox.max.x, bbox.max.y, bbox.max.z); // right
-        //sphere2.position.set(bbox.min.x, bbox.min.y, bbox.max.z); // bottom
-        //sceneComponent.scene.add(sphere);
-        //sceneComponent.scene.add(sphere2);
-
-        camera.getWorldPosition(_target);
-        camera.getWorldDirection(_dir);
-        const dirNorm2 = _dir.normalize();
-        const offset2 = dirNorm2.multiplyScalar(camera.far);
-        const newLoc2 = _target;
-        newLoc2.add(offset2);
-        mesh2.position.set(newLoc2.x, newLoc2.y, newLoc2.z);
-        //sceneComponent.scene.add(mesh2);*/
-        // TEMP
 
         let cornerSelect = minBoundsByView[this.navigation.ins.preset.value]
         _target.set(cornerSelect[0] ? bbox.max.x : bbox.min.x, cornerSelect[1] ? bbox.max.y : bbox.min.y, cornerSelect[2] ? bbox.max.z : bbox.min.z);
@@ -549,8 +529,6 @@ export default class CVSonify extends Component
         input |= input >> 1;
         input |= input >> 2;
         input |= input >> 4;
-        //input |= input >> 8;
-        //input |= input >> 16;
         input++;
 
         return input;
@@ -616,7 +594,6 @@ export default class CVSonify extends Component
 
             if(elapsedTime > 2000) {
                 lineCount++;
-                //this.outs.scanline.setValue([scanMin[0], scanMin[1]+(height/20)*lineCount]);
                 elapsedTime = 0;
             }
 
@@ -627,5 +604,10 @@ export default class CVSonify extends Component
 
             this.updateSonification(scanMin[0] + width*(elapsedTime/2000), scanMin[1]+(height/20)*lineCount);
         }, increment);
+    }
+
+    protected audioChanged() {
+        const isPlayingIntro = this.setup.audio.outs.narrationPlaying.value;
+        this.outs.introIsPlaying.setValue(isPlayingIntro && this.ins.visible.value);
     }
 }

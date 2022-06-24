@@ -45,6 +45,11 @@ export default class PropertyBoolean extends CustomElement
     @property({ type: String })
     customLabelStyle = "";
 
+    focus() {
+        const button = this.getElementsByTagName("ff-button")[0] as HTMLElement;
+        button.focus();
+    }
+
     protected firstConnected()
     {
         this.classList.add("sv-property-view", "sv-property-boolean");

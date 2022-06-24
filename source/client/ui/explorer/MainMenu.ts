@@ -260,6 +260,9 @@ export default class MainMenu extends DocumentView
             toolIns.visible.setValue(false);
             viewerIns.annotationsVisible.setValue(false);
             readerIns.enabled.setValue(false);
+
+            const audio = this.activeDocument.setup.audio;
+            audio.setupAudio();  // required for Safari compatibility
         }
         else {
             this.sonification.ins.active.setValue(false);
