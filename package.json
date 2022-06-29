@@ -70,7 +70,7 @@
         "simple-dropzone": "^0.8.1",
         "stream-browserify": "^3.0.0",
         "style-loader": "^3.3.1",
-        "three": "^0.139.2",
+        "three": "^0.141.0",
         "three-bmfont-text": "git+https://github.com/Smithsonian/three-bmfont-text.git#e611dac13d",
         "tinymce": "^6.0.1",
         "toposort": "^2.0.2",
