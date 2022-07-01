@@ -72,6 +72,11 @@ export default class CVMediaManager extends CAssetManager
         });
     }
 
+    getAssetURL(uri: string)
+    {
+        return this.assetManager.getAssetUrl(resolvePathname(uri, this.rootUrl));
+    }
+
     uploadFile(name: string, blob: Blob, folder: IAssetEntry): Promise<any>
     {
         const filename = decodeURI(name);
@@ -109,6 +114,11 @@ export default class CVMediaManager extends CAssetManager
 
     rename(asset: IAssetEntry, name: string): Promise<void>
     {
+        if(name.split('.').length <= 1) {
+            Notification.show(`New name must include file extension`, "error");
+            return Promise.reject();
+        }
+
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
             standaloneManager.renameFile(asset.info.url, name);
