@@ -27,6 +27,7 @@ import CScene from "@ff/scene/components/CScene";
 import RenderView from "@ff/scene/RenderView";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
+import Notification from "@ff/ui/Notification";
 
 import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Material, 
     PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
@@ -206,7 +207,10 @@ export default class CVARManager extends Component
                 optionalFeatures: ['dom-overlay'],
                 domOverlay:
                     {root: this.shadowRoot.querySelector('ff-viewport-overlay')}
-            } ).then( session => this.onSessionStarted(renderer, session) ); //.catch(reason => { console.log("Error starting session: " + reason); }); **TODO
+            } ).then( session => this.onSessionStarted(renderer, session) ).catch(reason => { 
+                console.log("Error starting session: " + reason);
+                Notification.show("AR available but blocked. Please check your browser settings.", "warning");
+            });
         }
     }
 
