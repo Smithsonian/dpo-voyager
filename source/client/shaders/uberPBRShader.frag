@@ -184,11 +184,6 @@ void main() {
 		gl_FragColor *= vec4(zoneColor.rgb, 1.0);
 	#endif
 
-	#ifdef USE_ZONEMAP
-		vec4 zoneColor = texture2D(zoneMap, vUv);
-		gl_FragColor += vec4(zoneColor.rgb, 1.0);
-	#endif
-
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
 	#include <fog_fragment>

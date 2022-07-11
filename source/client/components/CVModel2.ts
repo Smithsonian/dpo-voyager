@@ -133,13 +133,6 @@ export default class CVModel2 extends CObject3D
         ];
     }
 
-    get snapshotProperties() {
-        return [
-            this.ins.visible,
-            this.ins.quality,
-        ];
-    }
-
     private _derivatives = new DerivativeList();
     private _activeDerivative: Derivative = null;
 
