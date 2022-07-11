@@ -22,10 +22,8 @@ import "./PropertyView";
 
 import CVAudioTask from "../../components/CVAudioTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
-import { ITour } from "client/schema/setup";
 import List from "client/../../libs/ff-ui/source/List";
 import { IAudioClip } from "client/schema/meta";
-import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -111,6 +109,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
 
     protected onClickPlay()
     {
+        this.activeDocument.setup.audio.setupAudio();
         this.task.ins.play.set();
     }
 
@@ -179,9 +178,6 @@ export class AudioList extends List<IAudioClip>
 {
     @property({ attribute: false })
     selectedItem: IAudioClip = null;
-
-    /*@property({ attribute: false })
-    language: ELanguageType = null;*/
 
     protected firstConnected()
     {

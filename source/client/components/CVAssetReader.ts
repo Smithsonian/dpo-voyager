@@ -75,10 +75,15 @@ export default class CVAssetReader extends Component
         this.modelLoader.dracoPath = dracoPath;
     }
 
-    setSystemAssetPath(assetPath: string)
+    setSystemAssetPath(assetPath: string) // TODO: Move to CVAssetManager
     {
         this.fontReader.fontPath = assetPath;
         this.systemAssetPath = assetPath;
+    }
+
+    getSystemAssetUrl(assetPath: string) // TODO: Move to CVAssetManager
+    {
+        return (this.systemAssetPath || DEFAULT_SYSTEM_ASSET_PATH) + assetPath;
     }
 
     async getJSON(assetPath: string): Promise<any>
@@ -119,13 +124,13 @@ export default class CVAssetReader extends Component
 
     async getSystemTexture(assetPath: string): Promise<THREE.Texture>
     {
-        const url = (this.systemAssetPath || DEFAULT_SYSTEM_ASSET_PATH) + assetPath;
+        const url = this.getSystemAssetUrl(assetPath);
         return this.textureLoader.get(url);
     }
 
     async getSystemJSON(assetPath: string): Promise<any>
     {
-        const url = (this.systemAssetPath || DEFAULT_SYSTEM_ASSET_PATH) + assetPath;
+        const url = this.getSystemAssetUrl(assetPath);
         return this.jsonLoader.get(url);
     }
 }

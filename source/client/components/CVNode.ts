@@ -62,8 +62,8 @@ export default class CVNode extends CTransform
             _mat4.fromArray(data.matrix);
             _mat4.decompose(_vec3a, _quat, _vec3b);
             _vec3a.toArray(position.value);
-            _euler.setFromQuaternion(_quat, orderTag);
-            _euler.toVector3(_vec3a).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
+            _euler.setFromQuaternion(_quat, orderTag); 
+            _vec3a.setFromEuler(_euler).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
             _vec3b.toArray(scale.value);
 
             position.set();
@@ -77,7 +77,7 @@ export default class CVNode extends CTransform
             if (data.rotation) {
                 _quat.fromArray(data.rotation);
                 _euler.setFromQuaternion(_quat, orderTag);
-                _euler.toVector3(_vec3a).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
+                _vec3a.setFromEuler(_euler).multiplyScalar(MathUtils.RAD2DEG).toArray(rotation.value);
                 rotation.set();
             }
             if (data.scale) {

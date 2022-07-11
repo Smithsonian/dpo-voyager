@@ -59,6 +59,7 @@ export default class CVReader extends Component
     protected static readonly outs = {
         article: types.Object("Article.Active", Article),
         content: types.String("Article.Content"),
+        count: types.Integer("Article.Count"),
         //node: types.Object("Article.Node", NVNode),
     };
 

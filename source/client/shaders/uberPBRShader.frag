@@ -37,14 +37,6 @@ uniform float opacity;
 
 varying vec3 vViewPosition;
 
-#ifndef FLAT_SHADED
-	varying vec3 vNormal;
-
-    #ifdef USE_TANGENT
-        varying vec3 vTangent;
-        varying vec3 vBitangent;
-    #endif
-#endif
 
 #include <common>
 #include <packing>
@@ -70,6 +62,7 @@ varying vec3 vViewPosition;
 #include <envmap_physical_pars_fragment>
 #include <fog_pars_fragment>
 #include <lights_pars_begin>
+#include <normal_pars_fragment>
 #include <lights_physical_pars_fragment>
 #include <shadowmap_pars_fragment>
 #include <bumpmap_pars_fragment>
@@ -189,6 +182,11 @@ void main() {
 	#ifdef USE_ZONEMAP
 		vec4 zoneColor = texture2D(zoneMap, vUv);
 		gl_FragColor *= vec4(zoneColor.rgb, 1.0);
+	#endif
+
+	#ifdef USE_ZONEMAP
+		vec4 zoneColor = texture2D(zoneMap, vUv);
+		gl_FragColor += vec4(zoneColor.rgb, 1.0);
 	#endif
 
 	#include <tonemapping_fragment>

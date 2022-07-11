@@ -25,6 +25,10 @@ import { IDocument, IScene } from "client/schema/document";
 import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";
 import unitScaleFactor from "client/utils/unitScaleFactor";
+import CTransform from "client/../../libs/ff-scene/source/components/CTransform";
+import CVCamera from "./CVCamera";
+import CVSetup from "./CVSetup";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +75,18 @@ export default class CVScene extends CVNode
         return this.getGraphComponents(CVModel2);
     }
 
+    get cameras() {
+        return this.getGraphComponents(CVCamera);
+    }
+
+    get setup() {
+        return this.getGraphComponent(CVSetup);
+    }
+
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
+    }
+
     create()
     {
         super.create();
@@ -93,10 +109,14 @@ export default class CVScene extends CVNode
         if (ins.units.changed) {
             this.updateTransformHierarchy();
             this.updateModelBoundingBox();
+            this.updateLights();
+            this.updateCameras();
             outs.units.setValue(ins.units.value);
         }
         if (ins.modelUpdated.changed) {
             this.updateModelBoundingBox();
+            this.updateLights();
+            this.updateCameras();
         }
         if (ins.sceneTransformed.changed) {
             this.updateModelBoundingBox();
@@ -156,8 +176,7 @@ export default class CVScene extends CVNode
             return;
         }
 
-        const ins = this.ins;
-        const outs = this.outs;
+        const {ins, outs} = this;
         const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
         const object3D = this.models[0].object3D.parent.parent;  // TODO: Should probably crawl all the way up the hierarchy
 
@@ -171,6 +190,53 @@ export default class CVScene extends CVNode
             modelParent.position.multiplyScalar(unitScale);
             modelParent.updateMatrix();
             modelParent.updateMatrixWorld(true);
+        });
+    }
+
+    protected updateLights()
+    {
+        const {ins, outs} = this; 
+        const lightNode = this.graph.findNodeByName("Lights");
+
+        if(lightNode) {
+            const lightTransform = lightNode.getComponent(CTransform, true);
+            
+            const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
+            _vec3.setScalar(this.outs.boundingRadius.value * unitScale * 0.05);
+            lightTransform.ins.scale.setValue(_vec3.toArray());
+
+            lightTransform.object3D.updateMatrixWorld(true);
+        }
+    }
+
+    protected updateCameras()
+    {
+        if(this.renderer.views[0].renderer.xr.isPresenting) {
+            return;
+        }
+
+        this.updateCameraHelper();
+    }
+
+    protected updateCameraHelper = () =>
+    {
+        const navOffset = this.setup.navigation.ins.offset.value;
+        const orbitRadius =  _vec3.set(navOffset[0], navOffset[1], navOffset[2]).length();
+
+        if(!this.system.getComponent("CVStoryApplication", true)) {
+            const maxOffset = 2.5 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const currOffset = this.setup.navigation.ins.maxOffset.value;
+            //const zOffset = navOffset[2] < currOffset[2] ? Math.min(currOffset[2], maxOffset) : maxOffset;
+            this.setup.navigation.ins.maxOffset.setValue([currOffset[0], currOffset[1], maxOffset]);
+        }
+
+        this.cameras.forEach(camera => {
+            const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+            const near = far / 1000.0;
+            if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
+                camera.ins.far.setValue(far);
+                camera.ins.near.setValue(near);
+            }
         });
     }
 }

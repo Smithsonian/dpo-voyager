@@ -23,7 +23,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
 
-import CVModel2 from "./CVModel2";
+import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
@@ -231,15 +231,11 @@ export default class CVViewer extends Component
         });
 
         const views = this.getGraphComponents(CVAnnotationView);
-        const oldTagCloud = this.outs.tagCloud.value.split(",").map(tag => tag.trim()).filter(tag => tag);
         views.forEach(component => {
             const annotations = component.getAnnotations();
             annotations.forEach(annotation => {
                 const tags = annotation.tags;
                 tags.forEach(tag => {
-                    if(!oldTagCloud.includes(tag)) {
-                        this.ins.activeTags.setValue(this.ins.activeTags.value + ", " + tag);
-                    }
                     tagCloud.add(tag)
                 });
             });
@@ -279,9 +275,11 @@ export default class CVViewer extends Component
 
         if (event.add) {
             component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.on<IModelLoadEvent>("model-load", this.onModelLoad, this);
         }
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.off<IModelLoadEvent>("model-load", this.onModelLoad, this);
         }
     }
 
@@ -310,5 +308,10 @@ export default class CVViewer extends Component
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
         }
+    }
+
+    protected onModelLoad(event: IModelLoadEvent) {
+        this.rootElement.dispatchEvent(new CustomEvent('model-load', { detail: EDerivativeQuality[event.quality] }));
+        this.refreshTagCloud();
     }
 }

@@ -32,11 +32,36 @@ export default class ExplorerPanel extends CustomElement
     {
         super();
         this.application = application;
+
+        if(application.system.getComponent("CVStandaloneFileManager", true)) {
+            this.addEventListener('dragenter', this.onDragEnter);
+            this.addEventListener('dragleave', this.onDragLeave);
+            this.addEventListener('drop', this.onDragDrop);
+
+            const fileInput = this.appendElement("input");
+            fileInput.type = "file";
+            fileInput.id = "fileInput";
+        }
     }
 
     protected firstConnected()
     {
         this.classList.add("sv-panel", "sv-explorer-panel");
         this.appendElement(new ExplorerView(this.application));
+    }
+
+    protected onDragEnter(e: MouseEvent) {
+        e.preventDefault();
+        this.classList.add("sv-drop-zone");
+    }
+
+    protected onDragLeave(e: MouseEvent) {
+        e.preventDefault();
+        this.classList.remove("sv-drop-zone");
+    }
+
+    protected onDragDrop(e: MouseEvent) {
+        e.preventDefault();
+        this.classList.remove("sv-drop-zone");
     }
 }

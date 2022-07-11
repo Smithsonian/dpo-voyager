@@ -16,6 +16,7 @@
  */
 
 import download from "@ff/browser/download";
+import { downloadZip } from "client-zip";
 
 import Component, { Node, types } from "@ff/graph/Component";
 
@@ -29,6 +30,9 @@ import { INodeComponents } from "./CVDocument";
 
 import { ETaskMode } from "../applications/taskSets";
 
+import CVMediaManager from "./CVMediaManager";
+import CVMeta from "./CVMeta";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +64,15 @@ export default class CVStoryApplication extends Component
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
     }
+    protected get mediaManager() {
+        return this.system.getMainComponent(CVMediaManager);
+    }
+    protected get meta() {
+        return this.system.getComponent(CVMeta);
+    }
+    protected get standaloneFileManager() {
+        return this.system.getComponent(CVStandaloneFileManager, true);
+    }
 
     constructor(node: Node, id: string)
     {
@@ -87,28 +100,48 @@ export default class CVStoryApplication extends Component
             location.assign(this.referrer);
         }
 
-        const document = this.documentProvider.activeComponent;
+        const cvDocument = this.documentProvider.activeComponent;
 
-        if (document) {
+        if (cvDocument) {
             // in QC mode, only save the model, but no scene data, in all other modes, save everything
             const storyMode = this.taskProvider.ins.mode.getValidatedValue();
             const components: INodeComponents = storyMode === ETaskMode.QC ? { model: true } : null;
 
             if (ins.save.changed) {
-                const data = document.deflateDocument(components);
+                const data = cvDocument.deflateDocument(components);
                 const json = JSON.stringify(data, (key, value) =>
                     typeof value === "number" ? parseFloat(value.toFixed(7)) : value);
 
-                this.assetWriter.putJSON(json, document.assetPath)
-                .then(() => new Notification(`Successfully uploaded file to '${document.assetPath}'`, "info", 4000))
-                .catch(e => new Notification(`Failed to upload file to '${document.assetPath}'`, "error", 8000));
+                if(storyMode !== ETaskMode.Standalone) {
+                    this.assetWriter.putJSON(json, cvDocument.assetPath)
+                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
+                    .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
+                }
+                else {
+                    // Standalone save
+                    const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
+                    const saveFiles = [];
+
+                    const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
+                    saveFiles.push({ name: fileName, lastModified: new Date(), input: json });
+
+                    const files = fileManager.getFiles().filter(file => file != null && !file.name.endsWith(".json"));
+                    files.forEach(file => {
+                        saveFiles.push({ name: fileManager.getFilePath(file.name)+file.name, lastModified: new Date(), input: file });
+                    });
+               
+                    downloadZip(saveFiles).blob().then(blob => { // await for async
+                        const bloburl = URL.createObjectURL(blob);
+                        download.url(bloburl, "voyager-scene.zip");
+                    });
+                }
             }
 
             if (ins.download.changed) {
-                const data = document.deflateDocument(components);
+                const data = cvDocument.deflateDocument(components);
                 const json = JSON.stringify(data, null, 2);
 
-                const fileName = this.assetManager.getAssetName(document.assetPath);
+                const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
                 download.json(json, fileName);
             }
         }

@@ -86,7 +86,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
                 aoMapMix: { value: new Vector3(0.25, 0.25, 0.25) },
                 cutPlaneDirection: { value: new Vector4(0, 0, -1, 0) },
                 cutPlaneColor: { value: new Vector3(1, 0, 0) },
-                zoneMap: {value: null},
+                zoneMap: { value: null },
             }
         ]);
 
@@ -279,6 +279,8 @@ export default class UberPBRMaterial extends MeshStandardMaterial
 
         this.shadowSide = material.shadowSide;
         //this.side = material.side;
+
+        this.flatShading = material.flatShading;
 
         return this;
     }

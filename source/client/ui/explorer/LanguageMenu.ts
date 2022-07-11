@@ -61,7 +61,7 @@ export default class LanguageMenu extends Popup
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-language-menu");
+        this.classList.add("sv-language-menu", "sv-option-menu");
     }
 
     protected renderEntry(language: ILanguageOption, index: number)
@@ -83,7 +83,7 @@ export default class LanguageMenu extends Popup
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div class="ff-flex-row">
-                <div class="ff-scroll-y" role="listbox">
+                <div class="ff-scroll-y sv-scroll-offset" role="listbox">
                     ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
                 </div>
             </div>

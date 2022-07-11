@@ -27,8 +27,8 @@ export type TNormalSpaceType = "Tangent" | "Object";
 export enum EDerivativeUsage { Image2D, Web3D, App3D, iOSApp3D, Print3D, Editorial3D }
 export type TDerivativeUsage = "Image2D" | "Web3D" | "App3D" | "iOSApp3D" | "Print3D" | "Editorial3D";
 
-export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, LOD, Stream, AR }
-export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "LOD" | "Stream" |"AR";
+export enum EDerivativeQuality { Thumb, Low, Medium, High, Highest, AR }
+export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest" | "AR";
 
 export enum EAssetType { Model, Geometry, Image, Texture, Points, Volume }
 export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";

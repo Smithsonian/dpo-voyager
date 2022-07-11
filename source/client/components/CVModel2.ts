@@ -25,7 +25,7 @@ import CObject3D, { IPointerEvent } from "@ff/scene/components/CObject3D";
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "client/schema/document";
-import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType, EAssetType, EMapType } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
@@ -39,6 +39,7 @@ import CVAssetReader from "./CVAssetReader";
 import { Vector3 as LocalVector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +50,10 @@ const _box = new Box3();
 
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
+}
+export interface IModelLoadEvent extends ITypedEvent<"model-load">
+{
+    quality: EDerivativeQuality;
 }
 
 export interface IModelClickEvent extends IPointerEvent
@@ -71,6 +76,7 @@ export default class CVModel2 extends CObject3D
     static readonly rotationOrder = "ZYX";
 
     protected static readonly ins = {
+        name: types.String("Model.Name"),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
@@ -84,6 +90,7 @@ export default class CVModel2 extends CObject3D
         center: types.Event("Model.Center"),
         selected: types.Event("Model.Selected"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
+        overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         override: types.Boolean("Material.Override", false),
         color: types.ColorRGB("Material.BaseColor"),
         opacity: types.Percent("Material.Opacity", 1.0),
@@ -106,6 +113,7 @@ export default class CVModel2 extends CObject3D
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.visible,
             this.ins.quality,
             this.ins.localUnits,
@@ -113,6 +121,7 @@ export default class CVModel2 extends CObject3D
             this.ins.renderOrder,
             this.ins.shadowSide,
             this.ins.shader,
+            this.ins.overlayMap,
             this.ins.override,
             this.ins.color,
             this.ins.opacity,
@@ -143,6 +152,14 @@ export default class CVModel2 extends CObject3D
         super(node, id);
 
         this.object3D = new Group();
+    }
+
+    get snapshotProperties() {
+        return [
+            this.ins.visible,
+            this.ins.quality,
+            this.ins.overlayMap,
+        ];
     }
 
     get derivatives() {
@@ -193,6 +210,10 @@ export default class CVModel2 extends CObject3D
     update()
     {
         const ins = this.ins;
+
+        if (ins.name.changed) {
+            this.node.name = ins.name.value;
+        }
 
         if (ins.tags.changed || ins.activeTags.changed || ins.visible.changed) {
             let visible = ins.visible.value;
@@ -256,6 +277,10 @@ export default class CVModel2 extends CObject3D
 
         if (ins.shader.changed) {
             this.updateShader();
+        }
+
+        if (ins.overlayMap.changed) {
+            this.updateOverlayMap();
         }
 
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
@@ -326,6 +351,8 @@ export default class CVModel2 extends CObject3D
 
         const data = document.models[node.model];
 
+        ins.name.setValue(node.name);
+
         const units = EUnitType[data.units || "cm"];
         ins.localUnits.setValue(isFinite(units) ? units : EUnitType.cm);
 
@@ -357,8 +384,13 @@ export default class CVModel2 extends CObject3D
             this._boxFrame = new (Box3Helper as any)(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
             this._boxFrame.updateMatrixWorld(true);
-
+        
+            const setup = this.getGraphComponent(CVSetup, true);
+            if(setup && setup.navigation.ins.autoZoom.value) {
+                setup.navigation.ins.zoomExtents.set();
+            }
             outs.updated.set();
+            this.updateUnitScale();
         }
 
         if (data.derivatives) {
@@ -473,6 +505,40 @@ export default class CVModel2 extends CObject3D
         });
     }
 
+    updateOverlayMap() {
+        // only update if we are not currently tweening
+        const setup = this.getGraphComponent(CVSetup, true);
+        if (setup && setup.snapshots.outs.tweening.value) {
+            setup.snapshots.outs.end.once("value", () => {
+                this.ins.overlayMap.set();
+                this.update();
+            });
+            return;
+        }
+        const mapURI = this.ins.overlayMap.getOptionText();
+        if (mapURI !== "None") {
+            this.assetReader.getTexture(mapURI).then(texture => {
+                this.object3D.traverse(object => {
+                    const material = object["material"];
+                    if (material && material.isUberPBRMaterial) {
+                        texture.flipY = false;
+                        material.zoneMap = texture;
+                        material.enableZoneMap(true);
+                    }
+                });
+            });
+        }
+        else {
+            this.object3D.traverse(object => {
+                const material = object["material"];
+                if (material && material.isUberPBRMaterial) {
+                    material.enableZoneMap(false);
+                    material.zoneMap = null;
+                }
+            });
+        }
+    }
+
     protected updateMaterial()
     {
         const ins = this.ins;
@@ -534,7 +600,7 @@ export default class CVModel2 extends CObject3D
      */
     protected autoLoad(quality: EDerivativeQuality): Promise<void>
     {
-        const sequence = [];
+        const sequence : Derivative[] = [];
 
         const lowestQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.Thumb);
         if (lowestQualityDerivative) {
@@ -553,7 +619,7 @@ export default class CVModel2 extends CObject3D
 
         // load sequence of derivatives one by one
         return sequence.reduce((promise, derivative) => {
-            return promise.then(() => this.loadDerivative(derivative)); 
+            return promise.then(() => { this.loadDerivative(derivative)}); 
         }, Promise.resolve());
     }
 
@@ -595,6 +661,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 // update bounding box based on loaded derivative
+                this._localBoundingBox.makeEmpty();
                 helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
                 this.outs.updated.set();
 
@@ -632,6 +699,14 @@ export default class CVModel2 extends CObject3D
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
+
+                // set overlay map options
+                const overlayOptions = ["None"];
+                overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
+                this.ins.overlayMap.setOptions(overlayOptions);
+
+                this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality });
+                //this.getGraphComponent(CVSetup).navigation.ins.zoomExtents.set(); 
             })
             .catch(error => Notification.show(`Failed to load model derivative: ${error.message}`));
     }

@@ -93,6 +93,10 @@ export default class MainView extends CustomElement
         return this.application.system.getMainComponent(CVTaskProvider);
     }
 
+    get app() {
+        return this.application;
+    }
+
     constructor(application?: StoryApplication)
     {
         super();
@@ -216,7 +220,7 @@ export default class MainView extends CustomElement
             size: 0.22,
             elements: [{
                 type: "stack",
-                size: 0.2,
+                size: 0.35,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "navigator",
@@ -230,7 +234,7 @@ export default class MainView extends CustomElement
                 }]
             }, {
                 type: "stack",
-                size: 0.8,
+                size: 0.65,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "task",
