@@ -46,7 +46,7 @@ export default class CVTargets extends Component
     protected static readonly ins = {
         enabled: types.Boolean("Targets.Enabled"),
         active: types.Boolean("Targets.Active", false),
-        visible: types.Boolean("Targets.Visible", false),
+        visible: types.Boolean("Targets.Visible", true),
         type: types.Enum("Targets.Type", ETargetType),
         targetIndex: types.Integer("Targets.Index", -1),
         snapshotIndex: types.Integer("Snapshot.Index"),
@@ -289,7 +289,7 @@ export default class CVTargets extends Component
         canvas.style.boxSizing = "border-box";
         canvas.style.position = "absolute";
         canvas.style.zIndex = "2";
-        canvas.style.setProperty("mix-blend-mode", "multiply");
+        //canvas.style.setProperty("mix-blend-mode", "normal");
         ctx.lineWidth = 10;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
@@ -297,7 +297,7 @@ export default class CVTargets extends Component
         ctx.fillStyle = "#FFFFFF";
         ctx.strokeStyle = '#FF0000'
 
-        ctx.fillRect(0,0,dim,dim);
+        ctx.clearRect(0,0,dim,dim);
 
         // if we have a pre-loaded zone texture we need to copy the image
         if(material.zoneMap && material.zoneMap.image) {

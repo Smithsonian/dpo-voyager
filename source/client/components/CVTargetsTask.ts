@@ -36,6 +36,8 @@ import NVNode from "../nodes/NVNode";
 import {Vector2, Raycaster, Scene} from 'three';
 import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
+import CVTaskProvider from "./CVTaskProvider";
+import PainterTaskView from "client/ui/story/PainterTaskView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +59,7 @@ export default class CVTargetsTask extends CVTask
 {
     static readonly typeName: string = "CVTargetsTask";
 
-    static readonly text: string = "Targets";
+    static readonly text: string = "Paint";
     static readonly icon: string = "target";
 
     protected static readonly ins = {
@@ -112,6 +114,9 @@ export default class CVTargetsTask extends CVTask
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get taskProvider() {
+        return this.getMainComponent(CVTaskProvider);
+    }
 
     get zoneCanvas() {
         return this.targets.zoneCanvas;
@@ -146,6 +151,8 @@ export default class CVTargetsTask extends CVTask
     {
         super.create();
         this.startObserving();
+
+        this.taskProvider.activeComponent = this;
     }
 
     dispose()
@@ -256,12 +263,6 @@ export default class CVTargetsTask extends CVTask
             return true;
         }
 
-        if(ins.saveZones.changed)
-        {
-            this.onSave();
-            return true;
-        }
-
         if(ins.zoneColor.changed)
         {
             const newColor = this.colorString;
@@ -288,10 +289,10 @@ export default class CVTargetsTask extends CVTask
                 const newColor = this.colorString;
                 this.ctx.fillStyle = newColor;
                 this.ctx.strokeStyle = newColor;
+                this.ctx.globalCompositeOperation = "source-over"
             }
             else if(ins.paintMode.value == EPaintMode.Erase) {
-                this.ctx.fillStyle = "#FFFFFF";
-                this.ctx.strokeStyle = "#FFFFFF";
+                this.ctx.globalCompositeOperation = "destination-out"
             }
             return true;
         }
@@ -304,8 +305,8 @@ export default class CVTargetsTask extends CVTask
 
         if(ins.zoneClear.changed)
         {
-            this.ctx.fillStyle = "#FFFFFF";
-            this.ctx.fillRect(0,0, this.zoneCanvas.width, this.zoneCanvas.height);
+            //this.ctx.fillStyle = "#FFFFFF";
+            this.ctx.clearRect(0,0, this.zoneCanvas.width, this.zoneCanvas.height);
             this.ctx.fillStyle = this.colorString;
             this.updateZoneTexture();
             return true;
@@ -323,7 +324,7 @@ export default class CVTargetsTask extends CVTask
 
     createView()
     {
-        return new TargetsTaskView(this);
+        return new PainterTaskView(this);
     }
 
     activateTask()
@@ -389,33 +390,39 @@ export default class CVTargetsTask extends CVTask
             }
         }
 
-        if(next && next.model)
+        if(next)
         {
-            this.targets = next.getComponent(CVTargets, true);
-            this.machine = this.targets.snapshots;
-            this.ins.activeNode.setValue(next.name); 
-            this.activeModel = next.model;
-            this.ctx = this.zoneCanvas.getContext('2d');
-            this.ctx.lineWidth = Math.round(this.ins.zoneBrushSize.value);
+            if(next.model) {
+                this.targets = next.getComponent(CVTargets, true);
+                this.machine = this.targets.snapshots;
+                this.activeModel = next.model;
+                this.ctx = this.zoneCanvas.getContext('2d');
+                this.ctx.lineWidth = Math.round(this.ins.zoneBrushSize.value);
 
-            this.targets.outs.targetIndex.on("value", this.onTargetChange, this);
-            this.targets.outs.snapshotIndex.on("value", this.onSnapshotChange, this);
+                this.targets.outs.targetIndex.on("value", this.onTargetChange, this);
+                this.targets.outs.snapshotIndex.on("value", this.onSnapshotChange, this);
 
-            next.model.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-            next.model.on<IPointerEvent>("pointer-down", this.onPointerDown, this);
-            next.model.on<IPointerEvent>("pointer-move", this.onPointerMove, this);
+                next.model.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+                next.model.on<IPointerEvent>("pointer-down", this.onPointerDown, this);
+                next.model.on<IPointerEvent>("pointer-move", this.onPointerMove, this);
 
-            next.model.outs.quality.on("value", this.onQualityChange, this);
+                next.model.outs.quality.on("value", this.onQualityChange, this);
 
-            if(this.targets.material.map) {
-                const baseCtx = this.baseCanvas.getContext('2d');
-                baseCtx.save();
-                baseCtx.scale(1, -1);
-                baseCtx.drawImage(this.targets.material.map.image,0,-this.targets.material.map.image.height);
-                baseCtx.restore();
+                if(this.targets.material.map) {
+                    const baseCtx = this.baseCanvas.getContext('2d');
+                    baseCtx.save();
+                    baseCtx.scale(1, -1);
+                    baseCtx.drawImage(this.targets.material.map.image,0,-this.targets.material.map.image.height);
+                    baseCtx.restore();
+                }
+
+                if(this.targets.targets.length === 0) {
+                    this.ins.createZone.set();
+                }
+
+                this.onTargetChange();
             }
-
-            this.onTargetChange();
+            this.ins.activeNode.setValue(next.name); 
         }
 
         super.onActiveNode(previous, next);
@@ -539,7 +546,12 @@ export default class CVTargetsTask extends CVTask
         this.targets.zoneTexture.transformUv( this.uv );
 
         const brushWidth = this.ins.zoneBrushSize.value;
-        this.ctx.fillRect(Math.floor(this.uv.x*this.zoneCanvas.width)-(brushWidth/2), Math.floor(this.uv.y*this.zoneCanvas.height)-(brushWidth/2), brushWidth, brushWidth);
+        if(this.ins.paintMode.value == EPaintMode.Erase) {
+            this.ctx.clearRect(Math.floor(this.uv.x*this.zoneCanvas.width)-(brushWidth/2), Math.floor(this.uv.y*this.zoneCanvas.height)-(brushWidth/2), brushWidth, brushWidth);
+        }
+        else {
+            this.ctx.fillRect(Math.floor(this.uv.x*this.zoneCanvas.width)-(brushWidth/2), Math.floor(this.uv.y*this.zoneCanvas.height)-(brushWidth/2), brushWidth, brushWidth);
+        }
         this.updateZoneTexture();
     }
 
@@ -559,66 +571,5 @@ export default class CVTargetsTask extends CVTask
         canvas.style.zIndex = "1";
 
         return canvas;
-    }
-
-    protected onSave() {
-        const targets = this.targets;
-        const currentCanvas = this.targets.zoneCanvas;
-    
-        //early out if not active targets
-        if(!targets.ins.active.value) {   
-            //console.log("NO TARGETS");
-            return;
-        }
-
-        const tempCanvas = document.createElement('canvas') as HTMLCanvasElement;
-
-        if(targets.zoneTexture) {  // TODO: always true, need to change
-            const assetBaseName = targets.model.node.name;
-
-            this.qualities.forEach(quality => {
-                const derivative = targets.model.derivatives.select(EDerivativeUsage.Web3D, quality);
-
-                if(derivative.data.quality == quality) {
-                    const asset = derivative.findAsset(EAssetType.Model);
-                    const imageSize : number = +asset.data.imageSize;
-                    const qualityName = EDerivativeQuality[quality].toLowerCase();
-                    const imageName = assetBaseName + "-zonemap-" + qualityName + ".jpg";
-
-                    // generate image data at correct resolution for this derivative
-                    tempCanvas.width = imageSize;
-                    tempCanvas.height = imageSize;
-
-                    tempCanvas.getContext('2d').drawImage(currentCanvas,0,0,currentCanvas.width,currentCanvas.height,0,0,imageSize,imageSize);
-    
-                    const dataURI = tempCanvas.toDataURL();
-                    this.saveTexture(imageName, dataURI, quality);
-
-                    // if needed, add new zonemap asset to derivative
-                    const imageAssets = derivative.findAssets(EAssetType.Image);
-                    if(imageAssets.length === 0 || !imageAssets.some(image => image.data.mapType === EMapType.Zone)) {
-                        const newAsset = derivative.createAsset(EAssetType.Image, imageName);
-                        newAsset.data.mapType = EMapType.Zone;
-                    }
-                }
-            });
-        }
-    }
-
-    protected saveTexture(baseName: string, uri: string, quality: EDerivativeQuality) {
-
-        const fileURL = this.assetManager.getAssetUrl(baseName);
-        const fileName = this.assetManager.getAssetName(baseName);
-        const blob = convert.dataURItoBlob(uri);
-        const file = new File([blob], fileName);
-
-        fetch.file(fileURL, "PUT", file)
-        .then(() => {
-            //this.updateImageMeta(quality, this._mimeType, filePath);
-            new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
-        })
-        .catch(e => {
-            new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
-        });
     }
 }

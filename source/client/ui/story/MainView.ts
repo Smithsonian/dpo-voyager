@@ -225,20 +225,28 @@ export default class MainView extends CustomElement
                 panels: [{
                     contentId: "navigator",
                     text: "Navigator"
-                }, {
+                }/*, {
                     contentId: "assets",
                     text: "Media"
                 }, {
                     contentId: "collection",
                     text: "Collection"
-                }]
+                }*/]
             }, {
                 type: "stack",
-                size: 0.65,
+                size: 0.35,
                 activePanelIndex: 0,
                 panels: [{
                     contentId: "task",
                     text: "Task"
+                }]
+            }, {
+                type: "stack",
+                size: 0.3,
+                activePanelIndex: 0,
+                panels: [{
+                    contentId: "target-editor",
+                    text: "Paint on Texture"   
                 }]
             }]
         }, {
@@ -253,7 +261,7 @@ export default class MainView extends CustomElement
                     contentId: "explorer",
                     text: "Explorer"
                 }]
-            }, {
+            }, /*{
                 type: "stack",
                 size: 0.25,
                 activePanelIndex: 0,
@@ -270,7 +278,7 @@ export default class MainView extends CustomElement
                     contentId: "notes",
                     text: "Note Editor"
                 }]
-            }]
+            }*/]
         }]
     };
 

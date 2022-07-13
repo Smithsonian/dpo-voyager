@@ -91,7 +91,7 @@ export default class TargetPanel extends DocumentView
         const targets = task.targets;
         
         if (!targets) {
-            return html`<div class="ff-placeholder">Please select a model to edit targets.</div>`;
+            return html`<div class="ff-placeholder">Please select a model to paint.</div>`;
         }
 
         const activeTarget = targets.activeTarget;
@@ -115,7 +115,7 @@ export default class TargetPanel extends DocumentView
         <sv-property-view .property=${task.ins.snapshotThreshold} commitonly></sv-property-view>
         </div>` : html`<div class="ff-placeholder"><div>Create a target snapshot to edit.</div></div>`;
 
-        return html`<div class="sv-panel-header">
+        /*return html`<div class="sv-panel-header">
             ${activeButton}
             <ff-button text="Delete" icon="trash" ?disabled=${!activeSnapshot} @click=${this.onClickDelete}></ff-button>
         </div>
@@ -127,7 +127,9 @@ export default class TargetPanel extends DocumentView
             <div class="ff-splitter-section" style="flex-basis: 60%;">
                 ${targetConfigView}
             </div>
-        </div>`;
+        </div>`;*/
+
+        return html`${targetConfigView}`;
     }
 
     protected onClickUpdate()
@@ -299,11 +301,12 @@ export default class TargetPanel extends DocumentView
     {
         const canvas = this.targetsTask.zoneCanvas;
         const clientRect = this.drawBounds;
+        const ctx = canvas.getContext('2d');
 
         let adjX = (x-clientRect.left-this.localOffsetLeft)/(clientRect.width-this.localOffsetLeft*2.0);
         let adjY = (y-clientRect.top-this.localOffsetTop)/(clientRect.height-this.localOffsetTop*2.0);
-        canvas.getContext('2d').lineTo(Math.floor(adjX*canvas.width), Math.floor(adjY*canvas.height));
-        canvas.getContext('2d').stroke();
+        ctx.lineTo(Math.floor(adjX*canvas.width), Math.floor(adjY*canvas.height));
+        ctx.stroke();
 
         //canvas.getContext('2d').fillRect(adjX*canvas.width, adjY*canvas.height, 70, 70);
 

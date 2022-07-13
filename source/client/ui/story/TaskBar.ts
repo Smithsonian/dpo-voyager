@@ -66,29 +66,22 @@ export default class TaskBar extends SystemView
 
     protected render()
     {
-        const tasks = this.taskProvider.scopedComponents;
+        const tasks = []; //this.taskProvider.scopedComponents;
         const activeTask = this.taskProvider.activeComponent;
         const taskMode = this.taskProvider.ins.mode.value;
-        const taskModeText = this.taskProvider.ins.mode.getOptionText();
+        const taskModeText = "Paint";//this.taskProvider.ins.mode.getOptionText();
         const downloadButtonVisible = taskMode !== ETaskMode.Standalone;
         const exitButtonVisible = taskMode !== ETaskMode.Standalone;
-        const saveName = taskMode !== ETaskMode.Standalone ? "Save" : "Download";
+        const saveName = "Save Screenshot";//taskMode !== ETaskMode.Standalone ? "Save" : "Download";
 
         return html`
             <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
             <div class="sv-mode ff-text">${taskModeText}</div>
             <div class="sv-spacer"></div>
-            <div class="sv-divider"></div>
-            <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
-                ${tasks.map((task, index) => html`<ff-button text=${task.text} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
-            </div>
-            <div class="sv-divider"></div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group">
                 <ff-button text=${saveName} icon="save" @click=${this.onClickSave}></ff-button>
-                ${downloadButtonVisible ? html`<ff-button text="Download" icon="download" @click=${this.onClickDownload}></ff-button>` : null}
-                ${exitButtonVisible ? html`<ff-button text="Exit" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
             </div>
         `;
     }

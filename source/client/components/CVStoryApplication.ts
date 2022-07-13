@@ -33,6 +33,7 @@ import { ETaskMode } from "../applications/taskSets";
 import CVMediaManager from "./CVMediaManager";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
+import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +64,9 @@ export default class CVStoryApplication extends Component
     }
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
+    }
+    protected get renderer() {
+        return this.getMainComponent(CRenderer);
     }
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
@@ -108,41 +112,14 @@ export default class CVStoryApplication extends Component
             const components: INodeComponents = storyMode === ETaskMode.QC ? { model: true } : null;
 
             if (ins.save.changed) {
-                const data = cvDocument.deflateDocument(components);
-                const json = JSON.stringify(data, (key, value) =>
-                    typeof value === "number" ? parseFloat(value.toFixed(7)) : value);
-
-                if(storyMode !== ETaskMode.Standalone) {
-                    this.assetWriter.putJSON(json, cvDocument.assetPath)
-                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
-                    .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
+                const renderer = this.renderer;
+                const view = renderer.views[0];
+                if (!view) {
+                    console.warn("can't render to image, no view attached");
+                    return;
                 }
-                else {
-                    // Standalone save
-                    const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
-                    const saveFiles = [];
-
-                    const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
-                    saveFiles.push({ name: fileName, lastModified: new Date(), input: json });
-
-                    const files = fileManager.getFiles().filter(file => file != null && !file.name.endsWith(".json"));
-                    files.forEach(file => {
-                        saveFiles.push({ name: fileManager.getFilePath(file.name)+file.name, lastModified: new Date(), input: file });
-                    });
-               
-                    downloadZip(saveFiles).blob().then(blob => { // await for async
-                        const bloburl = URL.createObjectURL(blob);
-                        download.url(bloburl, "voyager-scene.zip");
-                    });
-                }
-            }
-
-            if (ins.download.changed) {
-                const data = cvDocument.deflateDocument(components);
-                const json = JSON.stringify(data, null, 2);
-
-                const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
-                download.json(json, fileName);
+                const dataURI = view.renderImage(view.canvasWidth, view.canvasHeight, "jpg", 0.85);
+                download.url(dataURI, "screenshot.jpg");
             }
         }
 
