@@ -108,6 +108,7 @@ export default class MainView extends CustomElement
         else {
             const props: IStoryApplicationProps = {
                 document: this.getAttribute("document"),
+                root: this.getAttribute("root"),
                 dracoRoot: this.getAttribute("dracoRoot"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
@@ -117,6 +118,8 @@ export default class MainView extends CustomElement
                 referrer: this.getAttribute("referrer"),
                 mode: this.getAttribute("mode"),
                 expert: this.hasAttribute("expert"),
+
+                uiMode: this.getAttribute("uiMode"),
             };
 
             this.application = new StoryApplication(null, props);
@@ -146,7 +149,7 @@ export default class MainView extends CustomElement
         registry.set("article-editor", () => new EditorPanel(system));
         registry.set("collection", () => new CollectionPanel(system));
 
-        const reset = parseUrlParameter("reset") !== undefined;
+        const reset = true; //parseUrlParameter("reset") !== undefined;
         const state = reset ? null : localStorage.get("voyager-story", MainView.stateKey);
 
         this.state = state || {
@@ -173,13 +176,13 @@ export default class MainView extends CustomElement
     protected disconnected()
     {
         this.storeLayout();
-        localStorage.set("voyager-story", MainView.stateKey, this.state);
+        //localStorage.set("voyager-story", MainView.stateKey, this.state);
     }
 
     protected onUnload()
     {
         this.storeLayout();
-        localStorage.set("voyager-story", MainView.stateKey, this.state);
+        //localStorage.set("voyager-story", MainView.stateKey, this.state);
     }
 
     protected onTaskMode(mode: ETaskMode)
@@ -190,7 +193,7 @@ export default class MainView extends CustomElement
 
     protected storeLayout()
     {
-        const state = this.state;
+        /*const state = this.state;
         const expertMode = this.taskProvider.expertMode;
 
         if (expertMode) {
@@ -198,7 +201,7 @@ export default class MainView extends CustomElement
         }
         else {
             state.regularLayout = this.dockView.getLayout();
-        }
+        }*/
     }
 
     protected restoreLayout()
