@@ -103,6 +103,7 @@ export default class MainView extends CustomElement
         else {
             const props: IStoryApplicationProps = {
                 document: this.getAttribute("document"),
+                root: this.getAttribute("root"),
                 dracoRoot: this.getAttribute("dracoRoot"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
@@ -112,6 +113,8 @@ export default class MainView extends CustomElement
                 referrer: this.getAttribute("referrer"),
                 mode: this.getAttribute("mode"),
                 expert: this.hasAttribute("expert"),
+
+                uiMode: this.getAttribute("uiMode"),
             };
 
             this.application = new StoryApplication(null, props);
