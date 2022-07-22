@@ -23,7 +23,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
 
-import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import CVModel2, { IModelLoadEvent, IOverlayUpdateEvent } from "./CVModel2";
 import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
@@ -46,6 +46,8 @@ export default class CVViewer extends Component
         sortedTags: types.String("Tags.Sorted"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
+        material: types.Option("Renderer.Material",Object.values(EShaderMode).filter((value) => typeof value === "string")
+            .map((value) => value as string ),0),
         toneMapping: types.Boolean("Renderer.ToneMapping", false),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 2),
@@ -119,6 +121,22 @@ export default class CVViewer extends Component
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.shader.setValue(shader));
+        }
+        if (ins.material.changed) {
+            const material = ins.material.getOptionText();
+            const shaderCount = Object.keys(EShaderMode).length/2;
+            if(ins.material.value < shaderCount) {
+                this.getGraphComponents(CVModel2).forEach(model => {
+                    model.ins.overlayMap.setValue(0);
+                    model.ins.shader.setValue(EShaderMode[material]);
+                });
+            }
+            else {
+                this.getGraphComponents(CVModel2).forEach(model => {
+                    model.ins.overlayMap.setValue(model.ins.overlayMap.schema.options.indexOf(material));
+                    model.ins.shader.setValue(EShaderMode.Default);
+                });
+            }
         }
         if (ins.exposure.changed) {
             this.renderer.ins.exposure.setValue(ins.exposure.value);
@@ -259,6 +277,18 @@ export default class CVViewer extends Component
         }
     }
 
+    protected onUpdateOverlay() {
+        const models = this.getGraphComponents(CVModel2);
+        const materialOptions = this.ins.material.schema.options;
+        models.forEach(model => {
+            model.ins.overlayMap.schema.options.forEach((option, idx) => {
+                if(idx > 0 && materialOptions.indexOf(option) == -1) {
+                    materialOptions.push(option);
+                }
+            });
+        });
+    }
+
     protected onAnnotationClick(event: IAnnotationClickEvent)
     {
         const id = event.annotation ? event.annotation.id : "";
@@ -273,10 +303,12 @@ export default class CVViewer extends Component
 
         if (event.add) {
             component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.on<IOverlayUpdateEvent>("overlay-update", this.onUpdateOverlay, this);
             component.on<IModelLoadEvent>("model-load", this.onModelLoad, this);
         }
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.off<IOverlayUpdateEvent>("overlay-update", this.onUpdateOverlay, this);
             component.off<IModelLoadEvent>("model-load", this.onModelLoad, this);
         }
     }

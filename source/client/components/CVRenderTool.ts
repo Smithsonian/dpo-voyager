@@ -21,6 +21,7 @@ import CVDocument from "./CVDocument";
 import CVViewer from "./CVViewer";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
+import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,12 +61,18 @@ export class RenderToolView extends ToolView<CVRenderTool>
             return html``;
         }
 
-        const shader = viewer.ins.shader;
+        const material = viewer.ins.material;
         const language = document.setup.language;
+
+        /*return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
+            <div class="sv-tool-controls">
+                <sv-property-options .property=${shader} .language=${language} name=${language.getLocalizedString("Material")}></sv-property-options>
+            </div>
+        </div>`;*/
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
-                <sv-property-options .property=${shader} .language=${language} name=${language.getLocalizedString("Material")}></sv-property-options>
+                <sv-property-options .property=${material} .language=${language} name=${language.getLocalizedString("Material")}></sv-property-options>
             </div>
         </div>`;
     }

@@ -103,6 +103,9 @@ export default class Asset extends Document<IAsset, IAssetJSON>
         if (data.byteSize > 0) {
             json.byteSize = data.byteSize;
         }
+        if(data.name) {
+            json.name = data.name;
+        }
 
         // for model and geometry assets, save number of faces
         if (data.type === EAssetType.Model || data.type === EAssetType.Geometry) {
@@ -128,6 +131,7 @@ export default class Asset extends Document<IAsset, IAssetJSON>
         data.byteSize = json.byteSize || 0;
         data.numFaces = json.numFaces || 0;
         data.imageSize = json.imageSize || 0;
+        data.name = json.name || undefined;
 
         if (data.type === undefined) {
             data.type = this.guessAssetType();

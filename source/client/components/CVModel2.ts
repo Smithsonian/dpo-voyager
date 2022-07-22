@@ -50,6 +50,9 @@ const _box = new Box3();
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
 }
+export interface IOverlayUpdateEvent extends ITypedEvent<"overlay-update">
+{
+}
 export interface IModelLoadEvent extends ITypedEvent<"model-load">
 {
     quality: EDerivativeQuality;
@@ -379,6 +382,16 @@ export default class CVModel2 extends CObject3D
 
         if (data.derivatives) {
             this.derivatives.fromJSON(data.derivatives);
+
+            // Load overlay options
+            const overlayOptions = ["None"];
+            this.derivatives.getArray().forEach( derivative => {
+                overlayOptions.push(...derivative.findAssets(EAssetType.Texture).filter(image => image.data.mapType === EMapType.Zone && image.data.name !== undefined).map(image => image.data.name));
+            });
+            this.ins.overlayMap.setOptions([...new Set(overlayOptions)]);
+            if(this.ins.overlayMap.schema.options.length > 1) {
+                this.emit<IOverlayUpdateEvent>({ type: "overlay-update" });
+            }
         }
         if (data.material) {
             const material = data.material; 
@@ -480,7 +493,7 @@ export default class CVModel2 extends CObject3D
         });
     }
 
-    updateOverlayMap() {
+    protected updateOverlayMap() {
         // only update if we are not currently tweening
         const setup = this.getGraphComponent(CVSetup, true);
         if (setup && setup.snapshots.outs.tweening.value) {
@@ -490,18 +503,25 @@ export default class CVModel2 extends CObject3D
             });
             return;
         }
-        const mapURI = this.ins.overlayMap.getOptionText();
-        if (mapURI !== "None") {
-            this.assetReader.getTexture(mapURI).then(texture => {
-                this.object3D.traverse(object => {
-                    const material = object["material"];
-                    if (material && material.isUberPBRMaterial) {
-                        texture.flipY = false;
-                        material.zoneMap = texture;
-                        material.enableZoneMap(true);
-                    }
+        const mapName = this.ins.overlayMap.getOptionText();
+        if (mapName !== "None") {
+            const mapAsset = this.activeDerivative.findAssets(EAssetType.Texture).find(image => 
+                {return image.data.mapType === EMapType.Zone && image.data.name === mapName});
+            if(mapAsset) {
+                this.assetReader.getTexture(mapAsset.data.uri).then(texture => {
+                    this.object3D.traverse(object => {
+                        const material = object["material"];
+                        if (material && material.isUberPBRMaterial) {
+                            texture.flipY = false;
+                            material.zoneMap = texture;
+                            material.enableZoneMap(true);
+                        }
+                    });
                 });
-            });
+            }
+            else {
+                console.warn("Overlay ["+mapName+"] not found on this derivative.");
+            }
         }
         else {
             this.object3D.traverse(object => {
@@ -674,11 +694,6 @@ export default class CVModel2 extends CObject3D
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
-
-                // set overlay map options
-                const overlayOptions = ["None"];
-                overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
-                this.ins.overlayMap.setOptions(overlayOptions);
 
                 this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality });
                 //this.getGraphComponent(CVSetup).navigation.ins.zoomExtents.set(); 

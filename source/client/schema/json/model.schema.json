@@ -198,6 +198,10 @@
                         "MetallicRoughness",
                         "Zone"
                     ]
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "required": [

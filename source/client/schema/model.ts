@@ -123,6 +123,7 @@ export interface IAsset
     numFaces?: number;
     imageSize?: number;
     mapType?: TMapType;
+    name?: string;
 }
 
 export interface IPBRMaterialSettings
