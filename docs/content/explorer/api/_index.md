@@ -34,8 +34,8 @@ These attributes configure the initial object load of the component.
 
 | Name     				 			   			| Parameters       							   | Description                                                                                         |
 |-----------------------------------------------|----------------------------------------------|---------------------------------------------|
-| setBackgroundStyle(style)    				    | style: Solid, LinearGradient, RadialGradient | Sets the style of the component background.  |
-| setBackgroundColor(color0, color1[optional])  | color0, color1: any valid css color    	   | Sets the color of the component background. Optional second color for gradient styles.  |
+| setBackgroundStyle( style )    				    | style: Solid, LinearGradient, RadialGradient | Sets the style of the component background.  |
+| setBackgroundColor( color0, color1[optional] )  | color0, color1: any valid css color    	   | Sets the color of the component background. Optional second color for gradient styles.  |
 
 
 ### Feature Methods
@@ -49,19 +49,19 @@ These methods engage Voyager functionality without the native UI.
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
-| setActiveAnnotation(id)| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
-| setTourStep(tourIdx, stepIdx, interpolate[optional]) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
-| setLanguage(id)		 | id: valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code string | Changes the active Voyager language to the supplied id if available in the current scene.  |
+| setActiveAnnotation( id )| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
+| setTourStep( tourIdx, stepIdx, interpolate[optional] ) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
+| setLanguage( id )		 | id: valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code string | Changes the active Voyager language to the supplied id if available in the current scene.  |
 
 ### Navigation Methods
 Methods for external control over camera properties and navigation.
 
 | Name     				 		| Parameters       							   | Description                                                                                         |
 |-------------------------------|----------------------------------------------|----------------------------------------------|
-| setCameraOrbit(yaw, pitch)    | yaw, pitch: angle in degrees 			| Sets yaw and pitch of orbit navigation.      |
-| getCameraOrbit()  		| None						| Returns an array [yaw, pitch] in radians.    |
-| setCameraOffset(x, y, z)    	| x, y, z: coordinate in scene units 		| Sets offset of orbit navigation.      |
-| getCameraOffset()  		| None						| Returns an array [x, y, z] in scene units. |
+| setCameraOrbit( yaw, pitch )    | yaw, pitch: angle in degrees 			| Sets yaw and pitch of orbit navigation.      |
+| getCameraOrbit( type[optional] )| type: min, max, active (default)				| Returns an array [yaw, pitch] in radians.    |
+| setCameraOffset( x, y, z )    	| x, y, z: coordinate in scene units 		| Sets offset of orbit navigation.      |
+| getCameraOffset( type[optional] )| type: min, max, active (default)				| Returns an array [x, y, z] in scene units. |
 
 ### Misc Methods
 
