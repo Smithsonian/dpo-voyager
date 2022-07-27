@@ -468,10 +468,24 @@ Version: ${ENV_VERSION}
     }
 
     // Returns euler angles (yaw/pitch) for orbit navigation
-    getCameraOrbit()
+    getCameraOrbit( type?: string )
     {
         const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
-        return orbitNavIns.orbit.value.slice(0,2);
+        let returnValue = orbitNavIns.orbit.value;
+        if(type) {
+            const type_lower = type.toLowerCase();
+            if(type_lower === "max") {
+                returnValue = orbitNavIns.maxOrbit.value;
+            }
+            else if(type_lower === "min") {
+                returnValue = orbitNavIns.minOrbit.value;
+            }
+            else if(type_lower !== "active") {
+                console.error("Error: getCameraOrbit invalid type param.");
+                return;
+            }
+        }
+        return returnValue.slice(0,2);
     }
 
     // Sets euler angles (yaw/pitch) for orbit navigation
@@ -485,15 +499,29 @@ Version: ${ENV_VERSION}
             orbitNavIns.orbit.setValue([yawNum, pitchNum, 0.0]);
         }
         else {
-            console.log("Error: setCameraOrbit param is not a number.");
+            console.error("Error: setCameraOrbit param is not a number.");
         }
     }
 
     // Returns camera offset vector (x,y,z)
-    getCameraOffset()
+    getCameraOffset( type?: string )
     {
         const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
-        return orbitNavIns.offset.value.slice(0,3);
+        let returnValue = orbitNavIns.offset.value;
+        if(type) {
+            const type_lower = type.toLowerCase();
+            if(type_lower === "max") {
+                returnValue = orbitNavIns.maxOffset.value;
+            }
+            else if(type_lower === "min") {
+                returnValue = orbitNavIns.minOffset.value;
+            }
+            else if(type_lower !== "active") {
+                console.error("Error: getCameraOffset invalid type param.");
+                return;
+            }
+        }
+        return returnValue.slice(0,3);
     }
 
     // Sets camera offset vector (x,y,z)
@@ -516,7 +544,7 @@ Version: ${ENV_VERSION}
             orbitNavIns.offset.setValue([xNum, yNum, zNum]);
         }
         else {
-            console.log("Error: setCameraOffset param is not a number.");
+            console.error("Error: setCameraOffset param is not a number.");
         }
     }
 
@@ -536,7 +564,7 @@ Version: ${ENV_VERSION}
             backgroundIns.color0.setValue(colorArray0);
         }
         else {
-            console.log("Error: Color0 param is invalid.");
+            console.error("Error: Color0 param is invalid.");
         }
 
         if(color1) {
@@ -547,7 +575,7 @@ Version: ${ENV_VERSION}
                 backgroundIns.color1.setValue(colorArray1);
             }
             else {
-                console.log("Error: Color1 param is invalid.");
+                console.error("Error: Color1 param is invalid.");
             }
         }
 
@@ -566,7 +594,7 @@ Version: ${ENV_VERSION}
             backgroundIns.style.setValue(EBackgroundStyle[foundStyle]);
         }
         else {
-            console.log("Error: Style param is invalid.");
+            console.error("Error: Style param is invalid.");
         }
     }
 
@@ -590,7 +618,7 @@ Version: ${ENV_VERSION}
             }
         }
         else {
-            console.log("Error: setTourStep param ["+tour+" "+step+"] is not a valid number.");
+            console.error("Error: setTourStep param ["+tour+" "+step+"] is not a valid number.");
         }
     }
 
@@ -611,7 +639,7 @@ Version: ${ENV_VERSION}
             orbitNavIns.pointerEnabled.setValue(controls);
         }
         else {
-            console.log("Error: enableNavigation param is not valid.");
+            console.error("Error: enableNavigation param is not valid.");
         }
     }
 
@@ -625,7 +653,7 @@ Version: ${ENV_VERSION}
             languageIns.language.setValue(ELanguageType[id]);
         }
         else {
-            console.log("Error: setLanguage param is not a valid language id.");
+            console.error("Error: setLanguage param is not a valid language id.");
         }
     }
 }
