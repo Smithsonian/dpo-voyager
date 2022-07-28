@@ -217,8 +217,8 @@ export default class CVReader extends Component
         if (firstMeta && firstMeta.leadArticle) {
             this.ins.articleId.setValue(firstMeta.leadArticle.id);
         }*/
-        if (this.articles.length === 1) {console.log(this.articles[0].article.id);
-            this.ins.articleId.setValue(this.articles[0].article.id);console.log(this.ins.articleId.value);
+        if (this.articles.length === 1) {
+            this.ins.articleId.setValue(this.articles[0].article.id);
         }
         else {
             this.ins.articleId.setValue("");
