@@ -435,12 +435,12 @@
 </thead>
 <tbody>
 <tr>
-<td>setBackgroundStyle(style)</td>
+<td>setBackgroundStyle( style )</td>
 <td>style: Solid, LinearGradient, RadialGradient</td>
 <td>Sets the style of the component background.</td>
 </tr>
 <tr>
-<td>setBackgroundColor(color0, color1[optional])</td>
+<td>setBackgroundColor( color0, color1[optional] )</td>
 <td>color0, color1: any valid css color</td>
 <td>Sets the color of the component background. Optional second color for gradient styles.</td>
 </tr>
@@ -488,17 +488,17 @@
 <td>Requests an AR session (if available, outcome depends on platform) <strong>*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe</strong></td>
 </tr>
 <tr>
-<td>setActiveAnnotation(id)</td>
+<td>setActiveAnnotation( id )</td>
 <td>id: unique id string</td>
 <td>Activates the annotation with the provided id. Opens annotation content where style permits.</td>
 </tr>
 <tr>
-<td>setTourStep(tourIdx, stepIdx, interpolate[optional])</td>
+<td>setTourStep( tourIdx, stepIdx, interpolate[optional] )</td>
 <td>tourIdx, stepIdx: valid integer - interpolate: boolean</td>
 <td>Activates the scene state found at the provided tour and step index. Optional &lsquo;interpolate&rsquo; parameter to control if transition is animated. Defaults to true.</td>
 </tr>
 <tr>
-<td>setLanguage(id)</td>
+<td>setLanguage( id )</td>
 <td>id: valid <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1</a> code string</td>
 <td>Changes the active Voyager language to the supplied id if available in the current scene.</td>
 </tr>
@@ -516,23 +516,23 @@
 </thead>
 <tbody>
 <tr>
-<td>setCameraOrbit(yaw, pitch)</td>
+<td>setCameraOrbit( yaw, pitch )</td>
 <td>yaw, pitch: angle in degrees</td>
 <td>Sets yaw and pitch of orbit navigation.</td>
 </tr>
 <tr>
-<td>getCameraOrbit()</td>
-<td>None</td>
+<td>getCameraOrbit( type[optional] )</td>
+<td>type: min, max, active (default)</td>
 <td>Returns an array [yaw, pitch] in radians.</td>
 </tr>
 <tr>
-<td>setCameraOffset(x, y, z)</td>
+<td>setCameraOffset( x, y, z )</td>
 <td>x, y, z: coordinate in scene units</td>
 <td>Sets offset of orbit navigation.</td>
 </tr>
 <tr>
-<td>getCameraOffset()</td>
-<td>None</td>
+<td>getCameraOffset( type[optional] )</td>
+<td>type: min, max, active (default)</td>
 <td>Returns an array [x, y, z] in scene units.</td>
 </tr>
 </tbody>
