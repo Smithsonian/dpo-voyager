@@ -243,10 +243,10 @@ export default class MainView extends CustomElement
         }
     }
 
-    getCameraOrbit()
+    getCameraOrbit(type?: string)
     {
         if(this.application) {
-            const orbit = this.application.getCameraOrbit();
+            const orbit = this.application.getCameraOrbit(type ? type : null);
             return orbit;
         }
     }
@@ -258,10 +258,10 @@ export default class MainView extends CustomElement
         }
     }
 
-    getCameraOffset()
+    getCameraOffset(type?: string)
     {
         if(this.application) {
-            const offset = this.application.getCameraOffset();
+            const offset = this.application.getCameraOffset(type ? type : null);
             return offset;
         }
     }

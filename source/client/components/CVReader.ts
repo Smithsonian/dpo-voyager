@@ -213,9 +213,12 @@ export default class CVReader extends Component
             });
         });
 
-        const firstMeta = metas[0];
+        /*const firstMeta = metas[0];
         if (firstMeta && firstMeta.leadArticle) {
             this.ins.articleId.setValue(firstMeta.leadArticle.id);
+        }*/
+        if (this.articles.length === 1) {console.log(this.articles[0].article.id);
+            this.ins.articleId.setValue(this.articles[0].article.id);console.log(this.ins.articleId.value);
         }
         else {
             this.ins.articleId.setValue("");
@@ -241,7 +244,7 @@ export default class CVReader extends Component
         this.ins.setValues({
             enabled: !!data.enabled,
             position: EReaderPosition[data.position] || EReaderPosition.Overlay,
-            articleId: data.articleId || "",
+            //articleId: data.articleId || "",
         });
     }
 
@@ -254,9 +257,9 @@ export default class CVReader extends Component
             position: EReaderPosition[ins.position.value] || "Overlay",
         };
 
-        if (ins.articleId.value) {
+        /*if (ins.articleId.value) {
             data.articleId = ins.articleId.value;
-        }
+        }*/
 
         return data as IReader;
     }
