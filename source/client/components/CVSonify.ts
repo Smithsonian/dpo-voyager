@@ -194,11 +194,11 @@ export default class CVSonify extends Component
                 this.filter = null;
                 this.limiter = null;
 
-                console.log("Stopping Audio");
+                //console.log("Stopping Audio");
             }
 
             if(ins.active.value || ins.scanning.value) {
-                console.log("Playing Audio Context");
+                //console.log("Playing Audio Context");
 
                 this.generateDepthMap();
 
@@ -282,6 +282,7 @@ export default class CVSonify extends Component
         if(ins.visible.changed) {
             const navigation = this.setup.navigation;
             const audio = this.setup.audio;
+            this.onResize();
             if(ins.visible.value) {
                 navigation.ins.enabled.setValue(false, true);
                 navigation.ins.preset.on("value", this.onViewChange, this);
@@ -313,13 +314,6 @@ export default class CVSonify extends Component
 
     protected onPointer(event: IPointerEvent)
     {
-        /*if(event.type === "pointer-up") {
-            this.oscillator.frequency.value = 100;
-            this.gain.gain.value = 1.0;
-            this.bufferSource.loopEnd = 1.0;
-            return;
-        }*/
-
         if(this.isPlaying) {
             this.updateSonification(event.localX, event.localY);
         }
@@ -330,7 +324,7 @@ export default class CVSonify extends Component
         const buffer = this.pickBuffer;
         const limits = this.depthLimits;
 
-        renderer.readRenderTargetPixels(this.convTarget, x, window.innerHeight-y, 1, 1, buffer);
+        renderer.readRenderTargetPixels(this.convTarget, x, this.convTarget.height-y, 1, 1, buffer);
 
         const depth = buffer[3] * 2.337437050015319e-10 
         + buffer[2] * 5.983838848039216e-8 
@@ -362,6 +356,7 @@ export default class CVSonify extends Component
         const scene = sceneComponent && sceneComponent.scene;
         const sceneNode = this.sceneNode;
         const camera = sceneComponent && sceneComponent.activeCamera;
+        const target = this.convTarget;
         //const bbox = /*sceneNode.models.length === 1 ? _box.copy(sceneNode.models[0].localBoundingBox).applyMatrix4(sceneNode.models[0].object3D.matrixWorld)
         //                                             :*/ sceneNode.outs.boundingBox.value;
         
@@ -371,8 +366,8 @@ export default class CVSonify extends Component
         const reducedTargets: WebGLRenderTarget[] = [];
 
         // Create reducing power of 2 render targets for finding min/max depth
-        let height = this.getPowerOfTwo(this.convTarget.height);
-        let width = this.getPowerOfTwo(this.convTarget.width);
+        let height = this.getPowerOfTwo(target.height);
+        let width = this.getPowerOfTwo(target.width);
         while(height > 1 || width > 1) {
             height = Math.max(height/2, 1);
             width = Math.max(width/2, 1);
@@ -421,7 +416,7 @@ export default class CVSonify extends Component
         _point.set(this.scanMin[0], this.scanMin[1]);
         _point2.set(_point.x+this.scanDims[0], _point.y+this.scanDims[1]);
         this.scanBox.set(_point, _point2);
-        this.volumeDist = Math.sqrt(Math.pow((window.innerWidth-this.scanDims[0])/2.0,2.0) + Math.pow((window.innerHeight-this.scanDims[1])/2.0,2.0));
+        this.volumeDist = Math.sqrt(Math.pow((target.width-this.scanDims[0])/2.0,2.0) + Math.pow((target.height-this.scanDims[1])/2.0,2.0));
 
         const renderer = this.renderer.views[0].renderer;  
         
@@ -446,35 +441,35 @@ export default class CVSonify extends Component
 
         // Find depth min/max
         const sceneRTT = new Scene();
-        const plane = new PlaneGeometry( window.innerWidth, window.innerHeight );
+        const plane = new PlaneGeometry( target.width, target.height );
 		const quad = new Mesh( plane );
         quad.position.z = - 100;
         sceneRTT.add(quad);
 
-        const cameraRTT = new OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000 );
+        const cameraRTT = new OrthographicCamera( target.width / - 2, target.width / 2, target.height / 2, target.height / - 2, - 10000, 10000 );
                 cameraRTT.position.z = 100;
                 
         const passes: number[] = [0,1];
 
         passes.forEach(pass => {
-            this.minMaxShader.uniforms.tDepth.value = this.convTarget.texture;
-            this.minMaxShader.uniforms.xStep.value = 1.0 / this.convTarget.width;
-            this.minMaxShader.uniforms.yStep.value = 1.0 / this.convTarget.height;
+            this.minMaxShader.uniforms.tDepth.value = target.texture;
+            this.minMaxShader.uniforms.xStep.value = 1.0 / target.width;
+            this.minMaxShader.uniforms.yStep.value = 1.0 / target.height;
             this.minMaxShader.uniforms.pass.value = pass;
             
-            reducedTargets.forEach(target => {
-                this.minMaxShader.uniforms.xOffset.value = 1.0 / target.width;
-                this.minMaxShader.uniforms.yOffset.value = 1.0 / target.height;
+            reducedTargets.forEach(mTarget => {
+                this.minMaxShader.uniforms.xOffset.value = 1.0 / mTarget.width;
+                this.minMaxShader.uniforms.yOffset.value = 1.0 / mTarget.height;
 
                 sceneRTT.overrideMaterial = this.minMaxShader;
-                renderer.setRenderTarget( target );
+                renderer.setRenderTarget( mTarget );
                 renderer.clear();
                 renderer.render( sceneRTT, cameraRTT );
                 sceneRTT.overrideMaterial = overrideMaterial;
 
-                this.minMaxShader.uniforms.tDepth.value = target.texture;
-                this.minMaxShader.uniforms.xStep.value = 1.0 / target.width;
-                this.minMaxShader.uniforms.yStep.value = 1.0 / target.height;
+                this.minMaxShader.uniforms.tDepth.value = mTarget.texture;
+                this.minMaxShader.uniforms.xStep.value = 1.0 / mTarget.width;
+                this.minMaxShader.uniforms.yStep.value = 1.0 / mTarget.height;
 
                 /*var material = new MeshBasicMaterial( {map:this.minMaxShader.uniforms.tDepth.value} );
                 quad.material = material;
@@ -517,8 +512,9 @@ export default class CVSonify extends Component
     protected onResize = () => 
     {   
         if(this.ins.visible.value) {
+            const view = this.renderer.views[0];
             this.convTarget.dispose();
-            this.convTarget = new WebGLRenderTarget( window.innerWidth, window.innerHeight, { stencilBuffer: false } );
+            this.convTarget = new WebGLRenderTarget( view.canvasWidth, view.canvasHeight, { stencilBuffer: false } );
             this.generateDepthMap();
         }
     }
