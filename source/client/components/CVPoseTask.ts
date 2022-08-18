@@ -108,6 +108,10 @@ export default class CVPoseTask extends CVTask
         // start observing active node and active document changes
         this.startObserving();
 
+        const setup = this.activeDocument.setup;
+        setup.reader.ins.enabled.setValue(false);   // disable reader
+        setup.navigation.ins.zoomExtents.set();     // zoom all viewports
+
         super.activateTask();
     }
 

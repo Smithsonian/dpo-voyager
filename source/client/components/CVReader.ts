@@ -126,6 +126,10 @@ export default class CVReader extends Component
 
         if (ins.enabled.changed) {
             //this.analytics.sendProperty("Reader.Enabled", ins.enabled.value);
+
+            if(ins.enabled.value) {
+                ins.articleId.setValue(this.articles.length === 1 ? this.articles[0].article.id : "");
+            }
         }
         if (ins.articleId.changed) {
             const entry = this._articles[ins.articleId.value] || null;
@@ -212,17 +216,6 @@ export default class CVReader extends Component
                 masterList[article.id] = { article, node };
             });
         });
-
-        /*const firstMeta = metas[0];
-        if (firstMeta && firstMeta.leadArticle) {
-            this.ins.articleId.setValue(firstMeta.leadArticle.id);
-        }*/
-        if (this.articles.length === 1) {
-            this.ins.articleId.setValue(this.articles[0].article.id);
-        }
-        else {
-            this.ins.articleId.setValue("");
-        }
     }
 
     protected updateLanguage()
