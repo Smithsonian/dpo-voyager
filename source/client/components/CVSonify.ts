@@ -288,7 +288,7 @@ export default class CVSonify extends Component
                 navigation.ins.preset.on("value", this.onViewChange, this);
                 this.setup.audio.outs.narrationPlaying.on("value", this.audioChanged, this);
 
-                Notification.show(`Sound must be on for this feature to work!.`, "info");
+                Notification.show(`Reminder: make sure your sound is on for this feature to work!`, "info");
             }
             else {
                 this.setup.audio.outs.narrationPlaying.off("value", this.audioChanged, this);
