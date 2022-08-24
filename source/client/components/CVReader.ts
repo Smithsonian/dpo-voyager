@@ -50,6 +50,7 @@ export default class CVReader extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Reader.Enabled"),
+        visible: types.Boolean("Reader.Visible", true), // TODO: Swap enabled and visible
         closed: types.Event("Reader.Closed"),
         position: types.Enum("Reader.Position", EReaderPosition),
         articleId: types.String("Article.ID"),
@@ -126,6 +127,10 @@ export default class CVReader extends Component
 
         if (ins.enabled.changed) {
             //this.analytics.sendProperty("Reader.Enabled", ins.enabled.value);
+
+            if(ins.enabled.value) {
+                ins.articleId.setValue(this.articles.length === 1 ? this.articles[0].article.id : "");
+            }
         }
         if (ins.articleId.changed) {
             const entry = this._articles[ins.articleId.value] || null;
@@ -212,17 +217,6 @@ export default class CVReader extends Component
                 masterList[article.id] = { article, node };
             });
         });
-
-        /*const firstMeta = metas[0];
-        if (firstMeta && firstMeta.leadArticle) {
-            this.ins.articleId.setValue(firstMeta.leadArticle.id);
-        }*/
-        if (this.articles.length === 1) {console.log(this.articles[0].article.id);
-            this.ins.articleId.setValue(this.articles[0].article.id);console.log(this.ins.articleId.value);
-        }
-        else {
-            this.ins.articleId.setValue("");
-        }
     }
 
     protected updateLanguage()

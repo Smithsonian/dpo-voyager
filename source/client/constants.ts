@@ -5,10 +5,10 @@
 // https://github.com/google/model-viewer/blob/master/packages/model-viewer/src/constants.ts
 
 export const HAS_WEBXR_DEVICE_API = navigator.xr != null &&
-    (self as Window).XRSession != null && navigator.xr.isSessionSupported != null;
+    (self as any).XRSession != null && navigator.xr.isSessionSupported != null;
 
 export const HAS_WEBXR_HIT_TEST_API =
-    HAS_WEBXR_DEVICE_API && (self as Window).XRSession!.prototype.requestHitTestSource;
+    HAS_WEBXR_DEVICE_API && (self as any).XRSession!.prototype.requestHitTestSource;
 
 //export const HAS_RESIZE_OBSERVER = self.ResizeObserver != null;
 
