@@ -88,6 +88,8 @@ export interface IExplorerApplicationProps
     bgStyle?: string;
     /** Enables/disables pointer-driven camera controls. */
     controls?: string;
+    /** Enables/disables reader top-level visibility. */
+    reader?: string;
     /** ISO 639-1 language code to change active component language */
     lang?: string;
 }
@@ -276,6 +278,7 @@ Version: ${ENV_VERSION}
         props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
         props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
         props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
+        props.reader = props.reader || parseUrlParameter("reader") || parseUrlParameter("rdr");
         props.lang = props.lang || parseUrlParameter("lang") || parseUrlParameter("l");
 
         const url = props.root || props.document || props.model || props.geometry;
@@ -370,6 +373,9 @@ Version: ${ENV_VERSION}
         }
         if(props.controls) {
             this.enableNavigation(props.controls);
+        }
+        if(props.reader) {
+            this.enableReader(props.reader);
         }
     }
 
@@ -640,6 +646,27 @@ Version: ${ENV_VERSION}
         }
         else {
             console.error("Error: enableNavigation param is not valid.");
+        }
+    }
+
+    // enable/disable reader visibility
+    enableReader(enable: string)
+    {
+        let enabled = undefined;
+        const enabledLower = enable.toLowerCase();
+        if(enabledLower === "true") {
+            enabled = true;
+        }
+        else if(enabledLower === "false") {
+            enabled = false;
+        }
+
+        if(enabled != undefined) {
+            const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+            readerIns.visible.setValue(enabled);
+        }
+        else {
+            console.error("Error: enableReader param is not valid.");
         }
     }
 

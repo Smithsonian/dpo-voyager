@@ -110,7 +110,7 @@ export default class ContentView extends DocumentView
             tourMenuVisible = tours.ins.enabled.value && tours.outs.tourIndex.value === -1;
         }
         if (reader) {
-            readerVisible = ! tourMenuVisible && reader.ins.enabled.value;
+            readerVisible = ! tourMenuVisible && reader.ins.enabled.value && reader.ins.visible.value;
 
             readerPosition = reader.ins.position.value;
 

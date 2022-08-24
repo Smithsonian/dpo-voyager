@@ -227,7 +227,7 @@ export default class CVARManager extends Component
 
         renderer.xr.enabled = true;
         renderer.xr.setReferenceSpaceType( 'local' );
-        renderer.xr.setSession( session as unknown as THREE.XRSession ); 
+        renderer.xr.setSession( session ); 
     
         session.addEventListener( 'end', this.onSessionEnded ); 
 
@@ -489,7 +489,7 @@ export default class CVARManager extends Component
 
         // Get xr camera from Three.js to set local camera properties. TODO: More efficient use of xrcamera
         if(!xrCamera && this.session) {
-            const xrCameraArray : ArrayCamera = renderer.xr.getCamera(camera) as ArrayCamera;
+            const xrCameraArray : ArrayCamera = renderer.xr.getCamera() as ArrayCamera;
             this.xrCamera = xrCameraArray.cameras[0];
             return;
         }
