@@ -127,10 +127,6 @@ export default class CVReader extends Component
 
         if (ins.enabled.changed) {
             //this.analytics.sendProperty("Reader.Enabled", ins.enabled.value);
-
-            if(ins.enabled.value) {
-                ins.articleId.setValue(this.articles.length === 1 ? this.articles[0].article.id : "");
-            }
         }
         if (ins.articleId.changed) {
             const entry = this._articles[ins.articleId.value] || null;

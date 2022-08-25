@@ -397,9 +397,16 @@ Version: ${ENV_VERSION}
 
     toggleReader()
     {
-        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+        const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
+        const readerIns = reader.ins;
                     
         readerIns.enabled.setValue(!readerIns.enabled.value);
+        readerIns.focus.setValue(readerIns.enabled.value);
+
+        if(readerIns.enabled.value) {
+            readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
+        }
+
         this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
     }
 

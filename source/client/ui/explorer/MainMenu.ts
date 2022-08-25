@@ -154,9 +154,14 @@ export default class MainMenu extends DocumentView
 
     protected onToggleReader()
     {
-        const readerIns = this.activeDocument.setup.reader.ins;
+        const reader = this.activeDocument.setup.reader;
+        const readerIns = reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
         readerIns.focus.setValue(readerIns.enabled.value);
+
+        if(readerIns.enabled.value) {
+            readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
+        }
 
         this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
     }
