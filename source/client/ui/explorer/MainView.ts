@@ -112,10 +112,12 @@ export default class MainView extends CustomElement
                 texture: this.getAttribute("texture"),
                 quality: this.getAttribute("quality"),
                 uiMode: this.getAttribute("uiMode"),
+                uiStyle: this.getAttribute("uiStyle"),
                 bgColor: this.getAttribute("bgColor"),
                 bgStyle: this.getAttribute("bgStyle"),
                 controls: this.getAttribute("controls"),
                 reader: this.getAttribute("reader"),
+                readerPosition: this.getAttribute("reader-position"),
                 lang: this.getAttribute("lang")
             };
 

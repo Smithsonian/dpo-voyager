@@ -23,6 +23,7 @@ import CVDocument from "../../components/CVDocument";
 import CVReader, { IArticleEntry } from "../../components/CVReader";
 import CVLanguageManager from "../../components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import { EUIStyle } from "client/components/CVInterface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +54,7 @@ export default class ReaderView extends DocumentView
     {
         const reader = this.reader;
         const language = this.language;
+        const seamless = this.activeDocument.setup.interface.ins.style.value === EUIStyle.Seamless;
 
         if (!reader) {
             return html`<div class="ff-placeholder">Please select a document to display its articles.</div>`;
@@ -66,9 +68,11 @@ export default class ReaderView extends DocumentView
             </div><div class="sv-right"></div>`;
         }
 
-        return html`<div class="sv-left"></div><div class="sv-article" @keydown=${e =>this.onKeyDown(e, reader.activeArticle.id)} >
-                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
-                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>
+        const buttons = html`<ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
+        <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>`;
+
+        return html`<div class="sv-left"></div><div class="sv-article ${seamless ? "sv-seamless-bg":""}" @keydown=${e =>this.onKeyDown(e, reader.activeArticle.id)} >
+                ${!seamless ? buttons : null}
                 <div role="region" aria-live="polite" aria-atomic="true" title="article" class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }

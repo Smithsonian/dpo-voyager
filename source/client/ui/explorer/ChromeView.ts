@@ -33,7 +33,7 @@ import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import LanguageMenu from "./LanguageMenu";
-import { EUIElements } from "client/components/CVInterface";
+import { EUIElements, EUIStyle } from "client/components/CVInterface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -201,6 +201,10 @@ export default class ChromeView extends DocumentView
                 setup.tours.ins.enabled,
                 setup.tours.outs.tourIndex,
             );
+
+            if(setup.interface.ins.style.value === EUIStyle.Seamless) {
+                this.classList.add("sv-seamless-bg");
+            }
         }
 
         this.requestUpdate();

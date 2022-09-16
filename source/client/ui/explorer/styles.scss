@@ -137,6 +137,14 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       flex: 0 3 16px;
       background-color: $color-paragraph-background;
     }
+    .sv-seamless-bg {
+      background: initial;
+      h1 {
+        &:before {
+          height: 0px; // height of top blue bar
+        }
+      }
+    }
   }
 }
 
@@ -444,6 +452,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       }
     }
   }
+}
+
+.sv-seamless-bg {
+  background: initial;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

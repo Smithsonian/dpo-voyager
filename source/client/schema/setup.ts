@@ -28,8 +28,8 @@ export enum EBackgroundStyle { Solid, LinearGradient, RadialGradient }
 export type TNavigationType = "Orbit" | "Walk";
 export enum ENavigationType { Orbit, Walk }
 
-export type TReaderPosition = "Overlay" | "Left" | "Right";
-export enum EReaderPosition { Overlay, Left, Right }
+export type TReaderPosition = "Overlay" | "Right";
+export enum EReaderPosition { Overlay, Right }
 
 export type TSliceAxis = "X" | "Y" | "Z";
 export enum ESliceAxis { X, Y, Z }

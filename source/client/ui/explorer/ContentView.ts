@@ -33,6 +33,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import ARPrompt from "./ARPrompt";
 import ARMenu from "./ARMenu";
 import CVARManager from "client/components/CVARManager";
+import { EUIStyle } from "client/components/CVInterface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -118,19 +119,14 @@ export default class ContentView extends DocumentView
             if(this.isMobile === true) {
                 readerPosition = EReaderPosition.Overlay;
             }
-
-            /*if(document.documentElement.clientWidth < 1200) {
-                readerPosition = EReaderPosition.Overlay;
-            }
-            else {
-                readerPosition = EReaderPosition.Right;
-            }*/
         }
 
         const sceneView = this.sceneView;
 
         const blurContent =
             (readerVisible && readerPosition === EReaderPosition.Overlay) || tourMenuVisible;
+
+        const seamless = this.activeDocument.setup.interface.ins.style.value === EUIStyle.Seamless;
 
         if (!blurContent) {
             sceneView.classList.remove("sv-blur");
@@ -155,7 +151,7 @@ export default class ContentView extends DocumentView
                     <div class="ff-splitter-section" style="flex-basis: 60%">
                         ${sceneView}
                     </div>
-                    <ff-splitter direction="horizontal"></ff-splitter>
+                    ${!seamless ? html`<ff-splitter direction="horizontal"></ff-splitter>` : null}
                         <div class="ff-splitter-section" style="flex-basis: 40%; max-width: 500px;">
                             <div class="sv-reader-container">
                                 <sv-reader-view .system=${system} @close=${this.onReaderClose} ></sv-reader-view>
@@ -194,6 +190,10 @@ export default class ContentView extends DocumentView
                 next.setup.reader.ins.enabled,
                 next.setup.tours.outs.tourIndex,
             );
+
+            if(next.setup.interface.ins.style.value === EUIStyle.Seamless) {
+                this.classList.add("sv-seamless-bg");
+            }
         }
 
         this.requestUpdate();

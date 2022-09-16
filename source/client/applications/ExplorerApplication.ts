@@ -43,8 +43,8 @@ import NVTools from "../nodes/NVTools";
 import MainView from "../ui/explorer/MainView";
 import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
-import { EUIElements } from "client/components/CVInterface";
-import { EBackgroundStyle } from "client/schema/setup";
+import { EUIElements, EUIStyle } from "client/components/CVInterface";
+import { EBackgroundStyle, EReaderPosition } from "client/schema/setup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 import { clamp } from "client/utils/Helpers"
@@ -82,6 +82,8 @@ export interface IExplorerApplicationProps
     quality?: string;
     /** Mode string starts Explorer in a specific ui configuration, i.e. no UI. */
     uiMode?: string;
+    /** Sets a predefined UI style. Valid options: "Standard", "Seamless" */
+    uiStyle?: string;
     /** Component background colors */
     bgColor?: string;
     /** Component background style */
@@ -90,6 +92,8 @@ export interface IExplorerApplicationProps
     controls?: string;
     /** Enables/disables reader top-level visibility. */
     reader?: string;
+    /** Sets reader position in UI */
+    readerPosition?: string;
     /** ISO 639-1 language code to change active component language */
     lang?: string;
 }
@@ -275,10 +279,12 @@ Version: ${ENV_VERSION}
         props.normals = props.normals || parseUrlParameter("normals") || parseUrlParameter("n");
         props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
         props.uiMode = props.uiMode || parseUrlParameter("uiMode") || parseUrlParameter("u");
+        props.uiStyle = props.uiStyle || parseUrlParameter("uiStyle") || parseUrlParameter("uis");
         props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
         props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
         props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
         props.reader = props.reader || parseUrlParameter("reader") || parseUrlParameter("rdr");
+        props.readerPosition = props.readerPosition || parseUrlParameter("readerPos") || parseUrlParameter("rps");
         props.lang = props.lang || parseUrlParameter("lang") || parseUrlParameter("l");
 
         const url = props.root || props.document || props.model || props.geometry;
@@ -286,10 +292,6 @@ Version: ${ENV_VERSION}
 
         // Config custom UI layout
         if (props.uiMode) {
-            //if (props.uiMode.toLowerCase().indexOf("none") !== -1) {
-            //    this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(0);
-            //}
-
             let elementValues = 0;
             let hasValidParam = false;
             
@@ -305,6 +307,15 @@ Version: ${ENV_VERSION}
 
             if(hasValidParam) {
                 this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(elementValues);
+            }
+        }
+
+        if (props.uiStyle) {
+            const styleStr = props.uiStyle.toLowerCase();
+            if(styleStr === "seamless") {
+                const setup = this.documentProvider.activeComponent.setup;
+                setup.interface.ins.style.setValue(EUIStyle.Seamless);
+                setup.background.ins.noise.setValue(0.0);
             }
         }
 
@@ -376,6 +387,9 @@ Version: ${ENV_VERSION}
         }
         if(props.reader) {
             this.enableReader(props.reader);
+        }
+        if(props.readerPosition) {
+            this.setReaderPosition(props.readerPosition);
         }
     }
 
@@ -674,6 +688,28 @@ Version: ${ENV_VERSION}
         }
         else {
             console.error("Error: enableReader param is not valid.");
+        }
+    }
+
+    // set reader position in UI
+    setReaderPosition(position: string) 
+    {
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+        let newPos = null;
+
+        position = position.toLowerCase();
+        if(position === "right") {
+            newPos = EReaderPosition.Right;
+        }
+        else if(position === "overlay") {
+            newPos = EReaderPosition.Overlay;
+        } 
+
+        if(newPos !== null) {
+            readerIns.position.setValue(newPos);
+        }
+        else {
+            console.error("Error: setReaderPosition param is not valid.");
         }
     }
 
