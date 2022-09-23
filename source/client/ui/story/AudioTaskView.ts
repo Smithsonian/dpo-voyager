@@ -24,6 +24,8 @@ import CVAudioTask from "../../components/CVAudioTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
 import List from "client/../../libs/ff-ui/source/List";
 import { IAudioClip } from "client/schema/meta";
+import Notification from "@ff/ui/Notification";
+import CVMediaManager from "client/components/CVMediaManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +68,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
             <sv-property-view .property=${ins.title}></sv-property-view>
             <sv-property-view .property=${ins.language}></sv-property-view>
             <div class="sv-indent">
-                <sv-property-view id="filename" .property=${ins.filename} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+                <sv-property-view id="filename" .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
                 <div class="sv-commands">
                     <sv-property-boolean .property=${ins.isNarration} .text=${this.optionText} .customLabelStyle=${narrationFlagClass} ?disabled=${narrationEnabled}></sv-property-boolean>
                 </div>
@@ -127,9 +129,31 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
     protected onDropFile(event: DragEvent)
     {
         event.preventDefault();
+        let filename = "";
+        let newFile : File = null;
 
         if(event.dataTransfer.files.length === 1) {
-            this.task.ins.filename.setValue(event.dataTransfer.files.item(0).name);
+            newFile = event.dataTransfer.files.item(0);
+            filename = newFile.name;
+        }
+        else {
+            const filepath = event.dataTransfer.getData("text/plain");
+            if(filepath.length > 0) {
+                filename = filepath;
+            }
+        }
+
+        if(filename.toLowerCase().endsWith(".mp3")) {
+            if(newFile !== null) {
+                const mediaManager = this.system.getMainComponent(CVMediaManager);
+                mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => this.task.ins.filepath.setValue(filename));
+            }
+            else {
+                this.task.ins.filepath.setValue(filename);
+            }
+        }
+        else {
+            Notification.show(`Unable to load - Only .mp3 audio files are currently supported.`, "warning");
         }
 
         const element = document.getElementById("filename");
