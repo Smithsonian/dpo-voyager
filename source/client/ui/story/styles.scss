@@ -310,6 +310,20 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+.sv-panel-locks {
+  padding: 0;
+  font-size: 0.9em;
+
+  .ff-button-group {
+    display: flex;
+  }
+
+  .ff-button {
+    padding: 0 4px;
+    color: $color-text;
+  }
+}
+
 //.sv-dialog {
 //  padding: 4px;
 //}

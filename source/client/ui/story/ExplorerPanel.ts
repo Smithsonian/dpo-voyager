@@ -19,6 +19,8 @@ import ExplorerApplication from "../../applications/ExplorerApplication";
 import ExplorerView from "../explorer/MainView";
 
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
+import ExplorerLockToolbar from "./ExplorerLockToolbar";
+import { relative } from "path";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +49,15 @@ export default class ExplorerPanel extends CustomElement
     protected firstConnected()
     {
         this.classList.add("sv-panel", "sv-explorer-panel");
-        this.appendElement(new ExplorerView(this.application));
+
+        const lockableContainer = this.createElement("div", {position: "relative", flex: "1 1 auto", display: "flex", flexDirection: "row", marginLeft: "auto", marginRight: "auto", width: "100%"});
+        
+        this.appendElement(new ExplorerLockToolbar(lockableContainer));
+        this.appendElement(lockableContainer);
+        
+        const explorerWrapper = document.createElement("div");
+        lockableContainer.appendChild(explorerWrapper);
+        explorerWrapper.appendChild(new ExplorerView(this.application));
     }
 
     protected onDragEnter(e: MouseEvent) {
