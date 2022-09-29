@@ -47,7 +47,7 @@ export default class ExplorerLockToolbar extends SystemView
     {
         return html`<div class="sv-panel-header sv-panel-locks">
             <ff-button-group>
-                <ff-button icon="unlock" @click=${this.unlockAspectRatio}></ff-button>
+                <ff-button text="Full" @click=${this.unlockAspectRatio}></ff-button>
                 <ff-button text="16:9" @click=${e => this.setAspectRatio(9,16)}></ff-button>
                 <ff-button text="20:9" @click=${e => this.setAspectRatio(9,20)}></ff-button>
                 <ff-button text="4:3" @click=${e => this.setAspectRatio(3,4)}></ff-button>

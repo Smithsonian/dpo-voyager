@@ -57,6 +57,10 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
 
     protected render()
     {
+        if(!this.task.audioManager) {
+            return;
+        }
+        
         const ins = this.task.ins;
 
         const narrationFlagClass = "sv-task-option-base-align";

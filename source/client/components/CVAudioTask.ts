@@ -135,6 +135,8 @@ export default class CVAudioTask extends CVTask
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
+        super.onActiveDocument(previous, next);
+
         if (previous) {
             this.ins.activeId.off("value", this.onAudioChange, this);
             previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
