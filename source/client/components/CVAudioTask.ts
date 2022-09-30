@@ -41,7 +41,7 @@ export default class CVAudioTask extends CVTask
         stop: types.Event("Audio.Stop"),
         activeId: types.String("Audio.ActiveId", ""),
         title: types.String("Audio.Title", ""),
-        filename: types.String("Audio.Filename", null),
+        filepath: types.String("Audio.Filepath", null),
         isNarration: types.Boolean("Audio.IsNarration", false),
         language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
     };
@@ -122,9 +122,9 @@ export default class CVAudioTask extends CVTask
             return true;
         }
 
-        if (ins.title.changed || ins.filename.changed) {
+        if (ins.title.changed || ins.filepath.changed) {
             clip.name = ins.title.value;
-            clip.uris[ELanguageType[ins.language.value]] = ins.filename.value;
+            clip.uris[ELanguageType[ins.language.value]] = ins.filepath.value;
         }
         if (ins.isNarration.changed) {
             audioManager.narrationId = ins.isNarration.value ? clip.id : "";
@@ -135,6 +135,8 @@ export default class CVAudioTask extends CVTask
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
+        super.onActiveDocument(previous, next);
+
         if (previous) {
             this.ins.activeId.off("value", this.onAudioChange, this);
             previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
@@ -156,7 +158,7 @@ export default class CVAudioTask extends CVTask
         const clip = audioManager.getAudioClip(ins.activeId.value);
 
         ins.title.setValue(clip ? clip.name : "", true);
-        ins.filename.setValue(clip ? clip.uris[ELanguageType[ins.language.value]] : "", true);
+        ins.filepath.setValue(clip ? clip.uris[ELanguageType[ins.language.value]] : "", true);
         ins.isNarration.setValue(clip ? this.audioManager.narrationId === clip.id : false, true);
     }
 

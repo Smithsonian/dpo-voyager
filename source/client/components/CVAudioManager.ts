@@ -69,6 +69,7 @@ export default class CVAudioManager extends Component
     }
     set narrationId( id: string ) {
         this._narrationId = id;
+        this.outs.narrationEnabled.setValue(id.length > 0);
     }
 
     create()
@@ -117,6 +118,12 @@ export default class CVAudioManager extends Component
 
     removeAudioClip(id: string)
     {
+        if(id == this._narrationId) {
+            if(this.isPlaying) {
+                this.stop();
+            }
+            this.narrationId = "";
+        }
         delete this.audioClips[id];
     }
 

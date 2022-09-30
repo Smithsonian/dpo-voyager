@@ -233,6 +233,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
   pointer-events: auto;
+  overflow-wrap: normal;
 
   &.sv-expanded {
     width: 20%;

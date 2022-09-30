@@ -568,9 +568,9 @@ Version: ${ENV_VERSION}
 
         const div = document.createElement('div');
         div.id = 'temp-color';
-        document.getElementsByTagName("voyager-explorer")[0].appendChild(div);
-
         div.style.color = color0;
+        document.body.appendChild(div);
+    
         if(div.style.color !== '') {
             const convColor0 = getComputedStyle(div).color;
             const colorArray0 = convColor0.split("(")[1].split(")")[0].split(",").map(component => parseInt(component)/255);
@@ -592,7 +592,7 @@ Version: ${ENV_VERSION}
             }
         }
 
-        document.getElementsByTagName("voyager-explorer")[0].removeChild(div);
+        document.body.removeChild(div);
     }
 
     // Set background style (Solid, LinearGradient, RadialGradient)
