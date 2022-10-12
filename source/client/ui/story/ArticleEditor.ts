@@ -124,7 +124,9 @@ export default class ArticleEditor extends SystemView
             this._assetPath = assetPath;
         }).then(() => {
             this._changed = false;
-            this.removeChild(this._overlay);
+            if(this._overlay.parentElement === this) {
+                this.removeChild(this._overlay);
+            }
         });
     }
 
