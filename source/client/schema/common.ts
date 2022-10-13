@@ -25,12 +25,14 @@ export type Quaternion = Vector4;
 export type ColorRGB = Vector3;
 export type ColorRGBA = Vector4;
 
-export type TLanguageType = "EN" | "ES" | "DE";
-export enum ELanguageType { EN, ES, DE }
+export type TLanguageType = "EN" | "ES" | "DE" | "NL" | "JA";
+export enum ELanguageType { EN, ES, DE, NL, JA }
 export enum ELanguageStringType {
     EN = 'English',
     ES = 'Spanish (Español)',
     DE = 'German (Deutsche)',
+    NL = 'Dutch (Nederlands)',
+    JA = 'Japanese (日本語)',
 }
 export const DEFAULT_LANGUAGE = "EN";
 
