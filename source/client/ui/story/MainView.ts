@@ -108,6 +108,7 @@ export default class MainView extends CustomElement
                 document: this.getAttribute("document"),
                 root: this.getAttribute("root"),
                 dracoRoot: this.getAttribute("dracoRoot"),
+                resourceRoot: this.getAttribute("resourceRoot"),
                 model: this.getAttribute("model"),
                 geometry: this.getAttribute("geometry"),
                 texture: this.getAttribute("texture"),
