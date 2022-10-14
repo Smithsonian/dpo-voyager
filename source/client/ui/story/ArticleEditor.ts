@@ -61,7 +61,6 @@ export default class ArticleEditor extends SystemView
     private _container: HTMLDivElement = null;
     private _overlay: HTMLElement = null;
     private _assetPath: string = "";
-    private _changed = false;
 
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
@@ -100,7 +99,7 @@ export default class ArticleEditor extends SystemView
 
     closeArticle()
     {
-        if (this._changed && this._assetPath) {
+        if (tinymce.activeEditor.isDirty() && this._assetPath) {
             return MessageBox.show("Close Article", "Would you like save your changes?", "warning", "yes-no").then(result => {
                 if (result.ok) {
                     return this.writeArticle().then(() => this.clearArticle());
@@ -123,8 +122,10 @@ export default class ArticleEditor extends SystemView
             tinymce.activeEditor.setContent(content, {format: "raw"});
             this._assetPath = assetPath;
         }).then(() => {
-            this._changed = false;
-            this.removeChild(this._overlay);
+            tinymce.activeEditor.setDirty(false);
+            if(this._overlay.parentElement === this) {
+                this.removeChild(this._overlay);
+            }
         });
     }
 
@@ -164,7 +165,7 @@ export default class ArticleEditor extends SystemView
 
         return this.assetWriter.putText(content, this._assetPath)
             .then(() => {
-                this._changed = false;
+                tinymce.activeEditor.setDirty(false);
                 this.articleReader.ins.articleId.set();
                 new Notification(`Article successfully written to '${this._assetPath}'`, "info");
             })
@@ -177,7 +178,7 @@ export default class ArticleEditor extends SystemView
     {
         tinymce.activeEditor.setContent("");
         this._assetPath = "";
-        this._changed = false;
+        tinymce.activeEditor.setDirty(false);
 
         this.appendChild(this._overlay);
 
@@ -222,7 +223,6 @@ export default class ArticleEditor extends SystemView
             }),
 
             init_instance_callback: (editor) => {
-                editor.on('dirty', () => this._changed = true);
                 editor.editorUpload.addFilter((img) => {
                     const blobInfo = editor.editorUpload.blobCache.getByUri(img.src);
                     if(blobInfo) {

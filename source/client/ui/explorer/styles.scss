@@ -229,6 +229,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-standard-annotation, .sv-extended-annotation {
   max-width: 20%;
+  min-width: min-content;
   padding: 0 4px;
   background-color: transparentize(black, 0.5);
   color: $color-text;
