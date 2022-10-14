@@ -302,7 +302,13 @@ export default class CVArticlesTask extends CVTask
         const {ins} = this;
 
         this.synchLanguage();
-        this.onArticleChange();    
+        //this.onArticleChange();
+        
+        // if we don't have a uri for this language, create one so that it is editable
+        if(article && article.uri === undefined) {
+            const defaultFolder = CVMediaManager.articleFolder;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
+        }
     }
 
     // Make sure this task language matches document
