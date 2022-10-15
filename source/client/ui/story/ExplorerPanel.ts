@@ -43,6 +43,7 @@ export default class ExplorerPanel extends CustomElement
             const fileInput = this.appendElement("input");
             fileInput.type = "file";
             fileInput.id = "fileInput";
+            fileInput.style.display = "none";
         }
     }
 
@@ -61,11 +62,20 @@ export default class ExplorerPanel extends CustomElement
     }
 
     protected onDragEnter(e: MouseEvent) {
+        if(e.currentTarget != this || this.contains(e.relatedTarget as HTMLElement)) {
+            return;
+        }
+
         e.preventDefault();
         this.classList.add("sv-drop-zone");
     }
 
     protected onDragLeave(e: MouseEvent) {
+        if(e.currentTarget != this || this.contains(e.relatedTarget as HTMLElement) || 
+            (e.relatedTarget as HTMLElement).getRootNode() instanceof ShadowRoot) {
+            return;
+        }
+
         e.preventDefault();
         this.classList.remove("sv-drop-zone");
     }
