@@ -131,9 +131,10 @@ export default class CVAudioManager extends Component
     {
         const meta = event.object;
 
-        if (event.add) {
+        if (meta.node.typeName === "NVScene" && event.add) {
+            this.audioClips = meta.audio.dictionary;  // needed to support initially empty meta nodes
             meta.once("load", () => {
-                this.audioClips = meta.audio.dictionary || {};
+                this.audioClips = meta.audio.dictionary;
             });
         }
     }
