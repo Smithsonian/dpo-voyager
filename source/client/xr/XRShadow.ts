@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Box3, DirectionalLight, Mesh, PlaneBufferGeometry, ShadowMaterial, Vector3, Object3D} from 'three';
+import {Box3, DirectionalLight, Mesh, PlaneGeometry, ShadowMaterial, Vector3, Object3D} from 'three';
 import CVScene from 'client/components/CVScene';
 
 // Nothing within Offset of the bottom of the model casts a shadow
@@ -62,7 +62,7 @@ export class Shadow extends DirectionalLight {
     this.castShadow = true;
     this.frustumCulled = false;
 
-    this.floor = new Mesh(new PlaneBufferGeometry, this.shadowMaterial);
+    this.floor = new Mesh(new PlaneGeometry, this.shadowMaterial);
     this.floor.rotateX(-Math.PI / 2);
     this.floor.receiveShadow = true;
     this.floor.castShadow = false;
