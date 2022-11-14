@@ -75,6 +75,19 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-content-only, .sv-content-stack {
   .sv-scene-view {
     @include fullsize;
+
+    &:focus {
+      border: 2px solid lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      border: none;
+      outline: 0;
+    }
+
+    &:focus-visible {
+      border: 2px solid lighten($color-primary, 50%);
+    }
   }
 }
 

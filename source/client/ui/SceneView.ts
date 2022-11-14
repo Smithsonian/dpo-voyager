@@ -22,6 +22,7 @@ import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
 import CVDocumentProvider from "client/components/CVDocumentProvider";
+import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +40,7 @@ export default class SceneView extends SystemView
     protected view: RenderQuadView = null;
     protected canvas: HTMLCanvasElement = null;
     protected overlay: HTMLDivElement = null;
+    protected srAnnouncement: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
     protected resizeObserver: ResizeObserver = null;
 
@@ -61,6 +63,7 @@ export default class SceneView extends SystemView
         this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
+        this.addEventListener("keydown", this.manipTarget.onKeyDown);
 
         this.pointerEventsEnabled = true;
     }
@@ -71,7 +74,16 @@ export default class SceneView extends SystemView
 
         // disable default touch action on mobile devices
         this.style.touchAction = "none";
-        this.setAttribute("touch-action", "none");
+        this.setAttribute("touch-action", "none"); 
+
+        this.tabIndex = 0;
+        this.ariaLabel = "Interactive 3D Model. Use mouse, touch, or arrow keys to rotate.";
+        this.setAttribute("role", "application"),
+
+        // Add screen readertext only element
+        this.srAnnouncement = this.appendElement("div");
+        this.srAnnouncement.classList.add("sr-only");
+        this.srAnnouncement.setAttribute("aria-live", "polite");
 
         this.canvas = this.appendElement("canvas", {
             display: "block",
@@ -111,27 +123,24 @@ export default class SceneView extends SystemView
     {
         this.view.attach();
 
-        //window.addEventListener("resize", this.onResize);
-        //window.dispatchEvent(new CustomEvent("resize"));
-
         if(!this.resizeObserver) {
             this.resizeObserver = new ResizeObserver(() => this.view.resize());
         }
         
         this.resizeObserver.observe(this.view.renderer.domElement);
-
+        
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
+        this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.on("value", this.onKeyboardNavigation, this);
     }
 
     protected disconnected()
     {
         this.resizeObserver.disconnect();
 
+        this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
 
         this.view.detach();
-
-        //window.removeEventListener("resize", this.onResize);
     }
 
     protected enablePointerEvents() {
@@ -147,6 +156,7 @@ export default class SceneView extends SystemView
             this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
             this.addEventListener("wheel", this.manipTarget.onWheel);
             this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
+            this.addEventListener("keydown", this.manipTarget.onKeyDown);
 
             // disable default touch action on mobile devices
             this.style.touchAction = "none";
@@ -164,12 +174,28 @@ export default class SceneView extends SystemView
             this.ownerDocument.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
             this.removeEventListener("wheel", this.manipTarget.onWheel);
             this.removeEventListener("contextmenu", this.manipTarget.onContextMenu);
+            this.removeEventListener("keydown", this.manipTarget.onKeyDown);
 
             // enable default touch action on mobile devices
             this.style.touchAction = "auto";
             this.setAttribute("touch-action", "auto");
 
             this.pointerEventsEnabled = false;
+        }
+    }
+
+    protected onKeyboardNavigation() {
+        const navIns = this.system.getComponent(CVOrbitNavigation).ins;
+        const activeNavMode = navIns.keyNavActive.value;
+        switch(activeNavMode) {
+            case EKeyNavMode.Orbit:
+                this.srAnnouncement.textContent = "Orbit " + navIns.orbit.value[0].toFixed(0) + ", " + 
+                    navIns.orbit.value[1].toFixed(0) + ", " + navIns.orbit.value[2].toFixed(0);
+                break;
+            case EKeyNavMode.Pan:
+            case EKeyNavMode.Zoom:
+                this.srAnnouncement.textContent = "Offset " + navIns.offset.value[0].toFixed(0) + ", " +
+                    navIns.offset.value[1].toFixed(0) + ", " + navIns.offset.value[2].toFixed(0);
         }
     }
 

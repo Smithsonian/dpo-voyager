@@ -20,7 +20,7 @@ import { Box3 } from "three";
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
 import CameraController from "@ff/three/CameraController";
-import { IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
+import { IKeyboardEvent, IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 import { EProjection } from "@ff/three/UniversalCamera";
@@ -34,7 +34,8 @@ import CVAssetManager from "./CVAssetManager";
 
 export { EProjection };
 
-export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None }
+export enum EViewPreset { Left, Right, Top, Bottom, Front, Back, None };
+export enum EKeyNavMode { Orbit, Zoom, Pan };
 
 const _orientationPresets = [];
 _orientationPresets[EViewPreset.Left] = [ 0, -90, 0 ];
@@ -79,6 +80,7 @@ export default class CVOrbitNavigation extends CObject3D
         minOffset: types.Vector3("Limits.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
         maxOrbit: types.Vector3("Limits.Max.Orbit", [ 90, Infinity, Infinity ]),
         maxOffset: types.Vector3("Limits.Max.Offset", [ Infinity, Infinity, Infinity ]),
+        keyNavActive: types.Enum("Navigation.KeyNavActive", EKeyNavMode)
     };
 
     ins = this.addInputs<CObject3D, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
@@ -131,6 +133,7 @@ export default class CVOrbitNavigation extends CObject3D
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
+        this.system.on<IKeyboardEvent>("keydown", this.onKeyboard, this);
 
         this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
     }
@@ -141,6 +144,7 @@ export default class CVOrbitNavigation extends CObject3D
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
+        this.system.off<IKeyboardEvent>("keydown", this.onKeyboard, this);
 
         super.dispose();
     }
@@ -369,6 +373,35 @@ export default class CVOrbitNavigation extends CObject3D
         if (this.ins.enabled.value && this._scene.activeCameraComponent) {
             this._controller.setViewportSize(viewport.width, viewport.height);
             this._controller.onTrigger(event);
+            event.stopPropagation = true;
+        }
+
+        this._hasChanged = true;
+    }
+
+    protected onKeyboard(event: IKeyboardEvent)
+    {
+        const viewport = event.viewport;
+
+        // if viewport has it's own camera, don't handle event here
+        if (viewport.camera) {
+            return;
+        }
+
+        if (this.ins.enabled.value && this._scene.activeCameraComponent) {
+            if(event.key.includes("Arrow")) {
+                if(event.ctrlKey) {
+                    this.ins.keyNavActive.setValue(EKeyNavMode.Zoom);
+                }
+                else if(event.shiftKey) {
+                    this.ins.keyNavActive.setValue(EKeyNavMode.Pan);
+                }
+                else {
+                    this.ins.keyNavActive.setValue(EKeyNavMode.Orbit);
+                }
+            }
+            this._controller.setViewportSize(viewport.width, viewport.height);
+            this._controller.onKeypress(event);
             event.stopPropagation = true;
         }
 
