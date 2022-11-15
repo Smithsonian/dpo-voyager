@@ -220,7 +220,7 @@ export default class CVOrbitNavigation extends CObject3D
                 controller.camera = cameraComponent.camera;
             
                 controller.zoomExtents(this._modelBoundingBox);
-                //cameraComponent.ins.zoom.set();
+                cameraComponent.ins.zoom.set();
                 this._hasZoomed = true;
             }
             this._isAutoZooming = false;
