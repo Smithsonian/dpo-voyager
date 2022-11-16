@@ -29,7 +29,7 @@ import UniversalCamera from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
 import Notification from "@ff/ui/Notification";
 
-import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneGeometry, MeshBasicMaterial, ArrayCamera, Material, 
+import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneGeometry, MeshBasicMaterial, ArrayCamera, Material, Camera,
     PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
@@ -494,9 +494,9 @@ export default class CVARManager extends Component
             return;
         }
         else if(xrCamera) {
-            camera.position.setFromMatrixPosition(xrCamera.matrixWorld); 
-            xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
+            renderer.xr.updateCamera(camera as Camera as PerspectiveCamera);
 
+            camera.updateMatrixWorld(true);
             camera.projectionMatrix.fromArray(xrCamera.projectionMatrix.elements);
             camera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
         }
@@ -506,6 +506,8 @@ export default class CVARManager extends Component
             const scene = vScene.scene; 
             const {position} = scene; 
             const radius =  sceneNode.outs.boundingRadius.value * 2.0 + xrCamera.near; // Math.abs(this.optimalCameraDistance);
+
+            xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
 
             const pose : XRViewerPose = frame.getViewerPose(refSpace!);
             const e = pose.views[0].transform.matrix;
