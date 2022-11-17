@@ -14,8 +14,8 @@ These attributes configure the initial object load of the component.
 |--------------|-------------------|---------------------------------------------------------------------------------------------------------------------|
 | root         | Valid URL		   | Path to the root folder (base folder for all assets)                                                                |
 | document     | Valid URL         | Path to the [SVX scene descriptor JSON document](https://smithsonian.github.io/dpo-voyager/document/) to load (relative to the root folder).                                                    |
-| model        | Valid URL         | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder).         |
-| geometry     | Valid URL         | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder).       |
+| model        | Valid URL         | URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder). **Note:** Uncommon - Used when loading a model with no SVX 'document' specified.    |
+| geometry     | Valid URL         | URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder). **Note:** Uncommon - Used when loading a model with no SVX 'document' specified.       |
 | texture      | Valid URL         | If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder). |
 | dracoRoot	   | Valid URL		   | Path to the Draco compression libraries used for glTF models. Defaults to Google CDN.								 |
 | resourceRoot	   | Valid URL	   | Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.			 |
