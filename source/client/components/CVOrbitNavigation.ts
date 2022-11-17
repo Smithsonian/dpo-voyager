@@ -401,7 +401,9 @@ export default class CVOrbitNavigation extends CObject3D
                 }
             }
             this._controller.setViewportSize(viewport.width, viewport.height);
-            this._controller.onKeypress(event);
+            if(this._controller.onKeypress(event)) {
+                event.originalEvent.preventDefault();
+            }
             event.stopPropagation = true;
         }
 
