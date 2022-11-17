@@ -16,8 +16,8 @@
  */
 
 import { Camera, ArrayCamera, PerspectiveCamera, Vector3, Quaternion, Matrix4, Group, 
-    Mesh, RingBufferGeometry, MeshBasicMaterial, BufferGeometry, RawShaderMaterial, 
-    GreaterDepth, CircleBufferGeometry, MathUtils } from "three";
+    Mesh, RingGeometry, MeshBasicMaterial, BufferGeometry, RawShaderMaterial, 
+    GreaterDepth, CircleGeometry, MathUtils } from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
 
@@ -50,7 +50,7 @@ export default class CircleSprite extends AnnotationSprite
     protected anchorMesh: Mesh;
 
     protected ringMesh: Mesh;
-    protected ringGeometry: RingBufferGeometry;
+    protected ringGeometry: RingGeometry;
     protected ringMaterialA: MeshBasicMaterial;
     protected ringMaterialB: MeshBasicMaterial;
 
@@ -76,7 +76,7 @@ export default class CircleSprite extends AnnotationSprite
 
         this.add(this.offset);
 
-        this.ringGeometry = new RingBufferGeometry(0.45, 0.5, 32);
+        this.ringGeometry = new RingGeometry(0.45, 0.5, 32);
 
         this.ringMaterialA = new MeshBasicMaterial();
         this.ringMaterialB = new MeshBasicMaterial({
@@ -97,7 +97,7 @@ export default class CircleSprite extends AnnotationSprite
         );
 
         const innerCircle = new Mesh(
-            new CircleBufferGeometry(0.45, 32),
+            new CircleGeometry(0.45, 32),
             new MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
         );
 

@@ -102,6 +102,11 @@ export default class CVPoseTask extends CVTask
         this.renderer.views.forEach(view => {
             if (view instanceof RenderQuadView) {
                 view.layout = EQuadViewLayout.Quad;
+                view.viewports.forEach(viewport => {
+                    if(viewport.camera) {
+                        viewport.camera.layers.enable(1);
+                    }
+                });
             }
         });
 

@@ -69,7 +69,7 @@ export default class ShareMenu extends Popup
     protected render()
     {
         const url = encodeURIComponent(this.url);
-        const title = encodeURI("Smithsonian Voyager");
+        const title = encodeURI("Check out this interactive 3D model with Smithsonian Voyager:");
         const language = this.language;
 
         const twitterShareUrl = `http://twitter.com/share?text=${title}&url=${url}`;

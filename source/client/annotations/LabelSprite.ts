@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Mesh, CylinderBufferGeometry, MeshPhongMaterial, Camera } from "three";
+import { Mesh, CylinderGeometry, MeshPhongMaterial, Camera } from "three";
 
 import { customElement, html } from "@ff/ui/CustomElement";
 
@@ -35,7 +35,7 @@ export default class LabelSprite extends AnnotationSprite
         super(annotation);
 
         this.cone = new Mesh(
-            new CylinderBufferGeometry(0.3, 0.02, 4),
+            new CylinderGeometry(0.3, 0.02, 4),
             new MeshPhongMaterial({ color: "green" })
         );
 

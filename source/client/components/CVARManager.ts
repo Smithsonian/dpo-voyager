@@ -29,8 +29,8 @@ import UniversalCamera from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
 import Notification from "@ff/ui/Notification";
 
-import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneBufferGeometry, MeshBasicMaterial, ArrayCamera, Material, 
-    PerspectiveCamera, Shape, ShapeBufferGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
+import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneGeometry, MeshBasicMaterial, ArrayCamera, Material, Camera,
+    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
 
 //import * as WebXR from "../types/WebXR";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
@@ -494,9 +494,9 @@ export default class CVARManager extends Component
             return;
         }
         else if(xrCamera) {
-            camera.position.setFromMatrixPosition(xrCamera.matrixWorld); 
-            xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
+            renderer.xr.updateCamera(camera as Camera as PerspectiveCamera);
 
+            camera.updateMatrixWorld(true);
             camera.projectionMatrix.fromArray(xrCamera.projectionMatrix.elements);
             camera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
         }
@@ -506,6 +506,8 @@ export default class CVARManager extends Component
             const scene = vScene.scene; 
             const {position} = scene; 
             const radius =  sceneNode.outs.boundingRadius.value * 2.0 + xrCamera.near; // Math.abs(this.optimalCameraDistance);
+
+            xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
 
             const pose : XRViewerPose = frame.getViewerPose(refSpace!);
             const e = pose.views[0].transform.matrix;
@@ -771,7 +773,7 @@ export default class CVARManager extends Component
 
         // add interaction plane
         const hitPlane = this.hitPlane = new Mesh( 
-            new PlaneBufferGeometry(width, height),
+            new PlaneGeometry(width, height),
             new MeshBasicMaterial()   
         );
         hitPlane.position.set(centerOffsetX, min.y, centerOffsetZ);
@@ -786,7 +788,7 @@ export default class CVARManager extends Component
         this.roundedRect(roundedRectShape, -width/2.0, -height/2.0, width, height, thickness*0.5);
         this.roundedRect(cutOut, -width/2.0 + thickness, -height/2.0 + thickness, width-2*thickness, height-2*thickness, thickness*0.4);
         roundedRectShape.holes.push(cutOut);
-        let geometry = new ShapeBufferGeometry(roundedRectShape);
+        let geometry = new ShapeGeometry(roundedRectShape);
         const selectionRing = this.selectionRing = new Mesh( geometry, new MeshBasicMaterial({ side: DoubleSide, opacity: 0.0 }) );
         selectionRing.position.set(centerOffsetX, min.y, centerOffsetZ);
         selectionRing.rotation.set(-Math.PI / 2.0, 0, 0);

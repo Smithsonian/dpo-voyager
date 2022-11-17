@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Mesh, CylinderBufferGeometry, MeshPhongMaterial, Camera } from "three";
+import { Vector3, Mesh, CylinderGeometry, MeshPhongMaterial, Camera } from "three";
 
 import math from "@ff/core/math";
 import { customElement, html } from "@ff/ui/CustomElement";
@@ -38,7 +38,7 @@ export default class PinSprite extends AnnotationSprite
         super(annotation);
 
         this.pin = new Mesh(
-            new CylinderBufferGeometry(0.25, 0.02, 1, 16, 1),
+            new CylinderGeometry(0.25, 0.02, 1, 16, 1),
             new MeshPhongMaterial({ color: "white" })
         );
         this.pin.geometry.translate(0, 0.5, 0);

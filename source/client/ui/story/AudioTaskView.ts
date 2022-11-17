@@ -150,7 +150,10 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         if(filename.toLowerCase().endsWith(".mp3")) {
             if(newFile !== null) {
                 const mediaManager = this.system.getMainComponent(CVMediaManager);
-                mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => this.task.ins.filepath.setValue(filename));
+                mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => this.task.ins.filepath.setValue(filename)).catch(e => {
+                    Notification.show(`Audio file upload failed.`, "warning");
+                    this.task.ins.filepath.setValue("");
+                });
             }
             else {
                 this.task.ins.filepath.setValue(filename);

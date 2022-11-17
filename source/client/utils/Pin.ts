@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Group, MeshStandardMaterial, Mesh, Vector2, LatheBufferGeometry } from "three";
+import { Group, MeshStandardMaterial, Mesh, Vector2, LatheGeometry } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -84,6 +84,6 @@ export default class Pin extends Group
             vectors.push(new Vector2(points[i], points[i + 1]));
         }
 
-        return new LatheBufferGeometry(vectors, 16);
+        return new LatheGeometry(vectors, 16);
     }
 }
