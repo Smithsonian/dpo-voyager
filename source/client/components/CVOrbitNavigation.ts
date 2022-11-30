@@ -72,6 +72,7 @@ export default class CVOrbitNavigation extends CObject3D
         projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
         autoRotation: types.Boolean("Navigation.AutoRotation", false),
+        autoRotationSpeed: types.Number("Navigation.AutoRotationSpeed", 10),
         zoomExtents: types.Event("Settings.ZoomExtents"),
         autoZoom: types.Boolean("Settings.AutoZoom", true),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
@@ -91,6 +92,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _hasChanged = false;
     private _hasZoomed = false;
     private _isAutoZooming = false;
+    private _autoRotationStartTime = null;
 
     constructor(node: Node, id: string)
     {
@@ -105,6 +107,7 @@ export default class CVOrbitNavigation extends CObject3D
             this.ins.offset,
             this.ins.autoZoom,
             this.ins.autoRotation,
+            this.ins.autoRotationSpeed,
             this.ins.lightsFollowCamera,
             this.ins.minOrbit,
             this.ins.minOffset,
@@ -226,6 +229,11 @@ export default class CVOrbitNavigation extends CObject3D
             this._isAutoZooming = false;
         }
 
+        // auto rotate
+        if (ins.autoRotation.changed) {
+            this._autoRotationStartTime = ins.autoRotation.value ? performance.now() : null;
+        }
+
         return true;
     }
 
@@ -242,7 +250,14 @@ export default class CVOrbitNavigation extends CObject3D
         controller.camera = cameraComponent.camera;
 
         const transform = cameraComponent.transform;
-        const forceUpdate = this.changed;
+        const forceUpdate = this.changed || ins.autoRotation.value;
+
+        if (ins.autoRotation.value && this._autoRotationStartTime) {
+            const now = performance.now();
+            const delta = now - this._autoRotationStartTime;
+            controller.orbit.y = (controller.orbit.y + ins.autoRotationSpeed.value * delta * 0.001) % 360.0;
+            this._autoRotationStartTime = now;
+        }
 
         if (controller.updateCamera(transform.object3D, forceUpdate)) {
             controller.orbit.toArray(ins.orbit.value);
