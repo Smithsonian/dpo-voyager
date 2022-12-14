@@ -182,6 +182,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   box-sizing: border-box;
   position: absolute;
   z-index: 1;
+
+  a:link, a:visited, a:hover, a:active {
+    color: $color-primary;
+  }
+  
   @include noselect;
 }
 
