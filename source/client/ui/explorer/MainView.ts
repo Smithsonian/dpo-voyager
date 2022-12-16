@@ -74,7 +74,7 @@ export default class MainView extends CustomElement
 {
     application: ExplorerApplication = null;
 
-    static get observedAttributes() { return ['root']; }
+    static get observedAttributes() { return ['root', 'document']; }
 
     constructor(application?: ExplorerApplication)
     {
@@ -169,6 +169,10 @@ export default class MainView extends CustomElement
 
         if(this.application && name === "root") {
             this.application.props.root = this.getAttribute("root");
+            this.application.evaluateProps();
+        }
+        else if(this.application && name === "document") {
+            this.application.props.document = this.getAttribute("document");
             this.application.evaluateProps();
         }
         else if(this.application && name === "controls") {
