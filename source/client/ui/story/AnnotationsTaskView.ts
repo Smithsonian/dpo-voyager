@@ -33,6 +33,8 @@ import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnno
 import { TaskView } from "../../components/CVTask";
 import { ELanguageStringType, ELanguageType, TLanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
+import sanitizeHtml from 'sanitize-html';
+
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-annotations-task-view")
@@ -120,7 +122,14 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             const text = event.detail.text;
 
             if (target.name === "lead") {
-                annotations.ins.lead.setValue(text);
+                annotations.ins.lead.setValue(sanitizeHtml(text, 
+                    {
+                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a' ],
+                        allowedAttributes: {
+                          'a': [ 'href' ]
+                        }
+                    }
+                ));
             }
         }
     }

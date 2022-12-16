@@ -146,6 +146,8 @@ export default class CVModel2 extends CObject3D
             this.ins.visible,
             this.ins.quality,
             this.ins.overlayMap,
+            this.ins.override,
+            this.ins.opacity
         ];
     }
 
@@ -394,6 +396,10 @@ export default class CVModel2 extends CObject3D
             });
         }
 
+        if (data.overlayMap) {
+            ins.overlayMap.setValue(data.overlayMap);
+        }
+
         if (data.annotations) {
             this.getComponent(CVAnnotationView).fromData(data.annotations);
         }
@@ -449,6 +455,10 @@ export default class CVModel2 extends CObject3D
                 occlusion: ins.occlusion.value,
                 doubleSided: ins.doubleSided.value
             };
+        }
+
+        if (ins.overlayMap.value !== 0) {
+            data.overlayMap = ins.overlayMap.value;
         }
 
         data.boundingBox = {
@@ -679,6 +689,9 @@ export default class CVModel2 extends CObject3D
                 const overlayOptions = ["None"];
                 overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
                 this.ins.overlayMap.setOptions(overlayOptions);
+                if(this.ins.overlayMap.value !== 0) {
+                    this.ins.overlayMap.set();
+                }
 
                 this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality });
                 //this.getGraphComponent(CVSetup).navigation.ins.zoomExtents.set(); 

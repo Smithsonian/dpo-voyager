@@ -65,7 +65,11 @@ export default class CollectionPanel extends DocumentView
             const text = event.detail.text;
 
             if (target.name === "title") {
-                activeDoc.ins.title.setValue(sanitizeHtml(text));
+                activeDoc.ins.title.setValue(sanitizeHtml(text,
+                    {
+                        allowedTags: [ 'i' ]
+                    }    
+                ));
             }
         }
     }

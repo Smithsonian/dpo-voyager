@@ -21,6 +21,7 @@ import math from "@ff/core/math";
 import FFColor from "@ff/core/Color";
 
 import { customElement, PropertyValues, html, render } from "@ff/ui/CustomElement";
+import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
@@ -161,7 +162,7 @@ class ExtendedAnnotation extends AnnotationElement
         this.titleElement.innerText = this.sprite.annotation.title;
 
         // update content
-        const contentTemplate = html`<p>${this.sprite.annotation.lead}</p>
+        const contentTemplate = html`<p>${unsafeHTML(this.sprite.annotation.lead)}</p>
             ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
 
         render(contentTemplate, this.contentElement);

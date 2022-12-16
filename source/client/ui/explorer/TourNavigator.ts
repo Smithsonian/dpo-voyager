@@ -40,8 +40,10 @@ export default class TourNavigator extends DocumentView
     {
         super.firstConnected();
 
-        this.classList.add("sv-bottom-bar-container", "sv-tour-navigator", "sv-transition");
-        setTimeout(() => this.classList.remove("sv-transition"), 1);
+        this.classList.add("sv-bottom-bar-container", "sv-tour-navigator"/*, "sv-transition"*/); // Chrome bug causing issues with transition
+        //setTimeout(() => this.classList.remove("sv-transition"), 1);
+        //this.addEventListener("transitionend", this.focusActive, { once: true });
+
         this.needsFocus = true;
     }
 
@@ -122,6 +124,12 @@ export default class TourNavigator extends DocumentView
         // go to next tour step
         this.tours.ins.next.set();
     }
+
+    /*protected focusActive()
+    {
+        const container = this.getElementsByClassName("sv-section-trail").item(2) as HTMLElement;
+        container.focus();
+    }*/
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {

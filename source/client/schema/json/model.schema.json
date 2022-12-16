@@ -227,6 +227,9 @@
         "renderOrder": {
             "type": "number"
         },
+        "overlayMap": {
+            "type": "number"
+        },
         "shadowSide": {
             "type": "string",
             "enum": [

@@ -31,6 +31,8 @@ import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
 import CVAssetReader from "client/components/CVAssetReader";
 
+import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3a = new Vector3();
@@ -331,7 +333,7 @@ class CircleAnnotation extends AnnotationElement
         const annotationData = annotation.data;
 
         return html`<div class="sv-title">${annotation.title}</div>
-            <div class="sv-content"><p>${annotation.lead}</p></div>
+            <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
             ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
     }
 

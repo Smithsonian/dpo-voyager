@@ -48,6 +48,7 @@ export interface IModel
 
     visible?: boolean;
     renderOrder?: number;
+    overlayMap?: number;
     shadowSide?: TSideType;
     translation?: Vector3;
     rotation?: Vector4;
