@@ -247,6 +247,13 @@ Version: ${ENV_VERSION}
             });
     }
 
+    reloadDocument()
+    {
+        this.documentProvider.removeActiveDocument();
+        this.documentProvider.createDocument(documentTemplate as any);
+        this.evaluateProps();
+    }
+
     loadModel(modelPath: string, quality: string)
     {
         return this.documentProvider.appendModel(modelPath, quality);

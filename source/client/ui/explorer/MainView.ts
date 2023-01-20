@@ -74,7 +74,7 @@ export default class MainView extends CustomElement
 {
     application: ExplorerApplication = null;
 
-    static get observedAttributes() { return ['root']; }
+    static get observedAttributes() { return ['root', 'document']; }
 
     constructor(application?: ExplorerApplication)
     {
@@ -125,8 +125,6 @@ export default class MainView extends CustomElement
         this.attachShadow({mode: 'open'});
         const shadowRoot = this.shadowRoot;
 
-        this.arManager.shadowRoot = shadowRoot;
-
         // add style
         var styleElement = document.createElement("style");
         styleElement.innerText = styles;
@@ -153,6 +151,7 @@ export default class MainView extends CustomElement
     {
         this.fullscreen.fullscreenElement = this;
         this.viewer.rootElement = this;
+        this.arManager.shadowRoot = this.shadowRoot;
     }
 
     protected disconnected()
@@ -165,14 +164,21 @@ export default class MainView extends CustomElement
 
     attributeChangedCallback(name: string, old: string | null, value: string | null)
     {
+        const app = this.application;
         super.attributeChangedCallback(name, old, value);
 
-        if(this.application && name === "root") {
-            this.application.props.root = this.getAttribute("root");
-            this.application.evaluateProps();
+        if(app && name === "root") {
+            app.props.root = this.getAttribute("root");
+            app.reloadDocument();
+            this.connected();
         }
-        else if(this.application && name === "controls") {
-            this.application.enableNavigation(value);
+        else if(app && name === "document") {
+            app.props.document = this.getAttribute("document");
+            app.reloadDocument();
+            this.connected();
+        }
+        else if(app && name === "controls") {
+            app.enableNavigation(value);
         }
     }
 
