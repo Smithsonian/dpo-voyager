@@ -1,15 +1,22 @@
 {
     "compilerOptions": {
-        "target": "ES6",
-        "module": "commonjs",
+        "lib": ["es2022"],
+        "module": "node16",
+        "target": "es2022",
+        "strict": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
         "sourceMap": true,
-
-        "outDir": "../../services/server/bin",
-        "baseUrl": "../../services/server/bin/node_modules"
+        "types": ["mocha", "chai", "chai-as-promised"],
+        "outDir": "../../dist/server"
     },
     "files": [
         "index.ts"
     ],
+    "include": ["./**/*.ts"],
     "exclude": [
         "node_modules"
     ]
