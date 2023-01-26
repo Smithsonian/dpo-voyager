@@ -50,8 +50,9 @@ export interface SceneProps{
     }
 
     protected render() :TemplateResult {
-      let explorer = `/voyager-explorer.html?root=${this.path}&document=${this.name}.svx.json&referrer=/}`;
-      let story = `/voyager-story.html?root=${this.path}&document=${this.name}.svx.json&referrer=/&mode=Author`;
+      let params = `resourceRoot=/&root=${this.path}&document=${this.name}.svx.json&referrer=/`
+      let explorer = `/voyager-explorer.html?${params}`;
+      let story = `/voyager-story.html?${params}&mode=Author`;
       return html`<div class="scene-card-inner">
         <a href="${explorer}">
           ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="object-fit:contain; background:var(--color-dark);" src="/images/defaultSprite.svg"/>`}
