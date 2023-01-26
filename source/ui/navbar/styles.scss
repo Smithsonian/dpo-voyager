@@ -1,0 +1,54 @@
+@import "@ff/ui/styles/_styles.scss";
+
+:host {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1001;
+  
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+
+  background-color: var(--color-dark);
+  border-bottom: 3px solid #1b1b1b;
+}
+
+nav {
+  max-width: var(--col-width);
+  width:100%;
+  height: var(--nav-height);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  .spacer{
+    flex: 1 1 auto;
+  }
+  .divider, ::slotted(.divider){
+    width: 1px;
+    background-color: var(--color-dark);
+  }
+  .brand {
+    display:flex;
+    align-items: center;
+    sv-logo .sv-full {
+      display: none;
+    }
+  }
+  .navbar{
+    display: flex;
+    align-items: stretch;
+    flex-basis: auto;
+    justify-content: end;
+    ::slotted(.ff-button.ff-control){
+      height:100%;
+      flex: 0 0 auto;
+      box-sizing: border-box;
+      background-color: transparent;
+      padding: 4px 10px !important;
+      font-size: 13px;
+      color: var(--color-light);
+    }
+  }
+}
+

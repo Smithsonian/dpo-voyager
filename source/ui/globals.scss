@@ -1,0 +1,26 @@
+:root{
+  --nav-height: 44px;
+  --col-width: 1320px;
+  --color-primary: #0089bf;
+  --color-secondary: #ffcd00;
+  --color-tertiary: #1b2226;
+
+  --color-dark: #272727;
+  --color-medium: #4e4e4e;
+  --color-hover: #676767;
+  --color-light: #c8c8c8;
+}
+
+
+
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+body{
+  min-height: 100%;
+  width: 100%;
+  padding: var(--nav-height) 0 0 0;
+  margin: 0;
+  display: block;
+}

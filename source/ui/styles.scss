@@ -1,0 +1,184 @@
+
+@import "client/ui/styles";
+@import "assets/fonts/fonts.css";
+
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+main{
+  position: relative;
+  max-width: var(--col-width);
+  margin: auto;
+  color: var(--color-light);
+  h1{
+    color: var(--color-primary);
+  }
+}
+
+corpus-list {
+  display: block;
+  padding: 1rem;
+  .list-grid{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    
+    padding-bottom: 50px;
+  }
+  .drag-overlay{
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dotted var(--color-secondary);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+}
+
+.form-control{
+  display: flex;
+  flex-direction: column;
+  
+  .form-group{
+    padding: 5px 0;
+    &.inline{
+      display:flex;
+      justify-content: stretch;
+      flex-direction: row;
+    }
+  }
+  .divider{
+    width: 1px;
+    background-color: var(--color-dark);
+  }
+  .form-item {
+    position: relative;
+    box-sizing: border-box;
+  }
+  .form-item > input{
+    box-sizing: border-box;
+    padding: 1rem .75rem;
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--color-light);
+    background: var(--color-medium);
+    background-clip: padding-box;
+    border: 1px solid var(--color-medium);
+    border-radius: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  }
+  .form-item > input::placeholder{
+    display:none;
+    color: transparent;
+  }
+  .form-item > input:focus, .form-item > input:not(:placeholder-shown){
+    &[type="text"], &[type="password"]{
+      padding-top: 1.625rem;
+      padding-bottom: .625rem;
+    }
+  }
+  .form-item > input:focus{
+    color: #212529;
+    background-color: var(--color-hover);
+    outline: 0;
+  }
+  
+  .form-item > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+  }
+  input:focus ~ label, input:not(:placeholder-shown) ~label{
+    opacity: .65;
+    transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+  }
+  
+  input[type="submit"] {
+    cursor: pointer;
+    &:hover{
+      background: var(--color-hover);
+    }
+  }
+}
+
+table.list-table {
+  border-collapse: collapse;
+  width: 100%;
+  display: table;
+  background-color: var(--color-medium);
+  color: var(--color-light);
+  tr:last-child {
+    border-bottom: 0;
+  }
+  th, td {
+    text-align: left;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+
+  th {
+    color: var(--color-light);
+    font-weight: bold;
+    background-color: var(--color-dark);
+    border-bottom: solid 2px #d8d8d8;
+    position: sticky;
+    top: 0;
+  }
+  td {
+    border: solid 1px #d8d8d8;
+    border-left: 0;
+    border-right: 0;
+    white-space: nowrap;
+  }
+  tbody tr{
+    transition: background-color 150ms ease-out;
+  }
+  tbody tr:nth-child(2n){
+    background: #5a5a5a;
+  }
+  tbody tr:hover {
+    background: var(--color-hover);
+  }
+}
+
+.ff-button.ff-inline .ff-icon{
+  fill: currentColor;
+}
+
+.ff-button.ff-inline.ff-disabled{
+  user-select: none;
+  pointer-events: none;
+}
+
+#ff-notification-stack {
+  color: var(--color-light);
+  .ff-notification > .ff-icon {
+    padding: 0;
+    margin: 8px;
+  }
+}
