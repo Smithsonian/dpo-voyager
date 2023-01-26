@@ -3,28 +3,28 @@ declare module '!raw-loader!*' {
     export = contents;
 }
 
-declare module '*.scss' {
+declare module '!lit-css-loader*.scss' {
     import {CSSResult} from 'lit-element';
     const css: CSSResult;
     export default css;
 }
-declare module '*.css' {
+declare module '!lit-css-loader*.css' {
     import {CSSResult} from 'lit-element';
     const css: CSSResult;
     export default css;
 }
-declare module '*.svg' {
-    const content: any;
-    export default content;
+
+declare module "*.scss" {
+    import {CSSResult} from 'lit-element';
+    const css: CSSResult;
+    export default css.cssText;
 }
-declare module '*.png' {
-    const content: any;
-    export default content;
+declare module "*.css"{
+    import {CSSResult} from 'lit-element';
+    const css: CSSResult;
+    export default css.cssText;
 }
-declare module '*.jpg' {
-    const content: any;
-    export default content;
-}
+
 
 // Webpack constant: build version
 declare const ENV_VERSION: string;
