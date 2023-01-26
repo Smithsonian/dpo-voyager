@@ -98,7 +98,7 @@ export default class CVReader extends Component
         return this.getMainComponent(CVAnalytics);
     }
     protected get language() {
-        return this.getGraphComponent(CVLanguageManager);
+        return this.getGraphComponent(CVLanguageManager, true);
     }
 
     protected _articles: Dictionary<IArticleEntry>;
@@ -198,6 +198,7 @@ export default class CVReader extends Component
         if (event.remove) {
             event.object.outs.language.off("value", this.updateLanguage, this);
         }
+        this.updateArticles();
     }
 
     protected updateArticles()
@@ -213,6 +214,7 @@ export default class CVReader extends Component
                 masterList[article.id] = { article, node };
             });
         });
+        if(this.language) this.updateLanguage();
     }
 
     protected updateLanguage()
