@@ -388,7 +388,11 @@ export default class CVAnnotationView extends CObject3D
 
     fromData(data: IAnnotation[])
     {
-        data.forEach(annotationJson => this.addAnnotation(new Annotation(annotationJson)));
+        data.forEach(annotationJson => {
+            let annotation = new Annotation(annotationJson);
+            annotation.language = this.language.outs.language.value;
+            this.addAnnotation(annotation);
+        });
         this.emit<ITagUpdateEvent>({ type: "tag-update" });
     }
 
