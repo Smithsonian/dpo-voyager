@@ -5,7 +5,7 @@ node_modules/
 
 dist/
 test/
-files/
+/files/
 services/server/bin/
 services/secrets.env
 
