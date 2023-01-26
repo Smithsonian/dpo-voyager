@@ -1,6 +1,6 @@
 
 import path from "path";
-import {open as openDatabase, Database as IDatabase } from "sqlite";
+import {open as openDatabase, ISqlite, Database as IDatabase } from "sqlite";
 import sqlite from "sqlite3";
 
 export interface DbOptions {
@@ -19,15 +19,25 @@ export interface Database extends IDatabase{
 }
 export interface Transaction extends Database{}
 
-export default async function open({filename, migrate=true} :DbOptions) :Promise<Database> {
+async function openAndConfigure({filename, migrate=true} :DbOptions){
   let db = await openDatabase({
     filename,
     driver: sqlite.Database, 
     mode: sqlite.OPEN_URI|sqlite.OPEN_CREATE|sqlite.OPEN_READWRITE,
   });
-  await db.run(`PRAGMA journal_mode = WAL`);
+  await db.run(`PRAGMA foreign_keys = ON`);
   await db.run(`PRAGMA synchronous = NORMAL`);
+  return db;
+}
 
+
+export default async function open({filename, migrate=true} :DbOptions) :Promise<Database> {
+  let db = await openAndConfigure({
+    filename,
+  });
+  //Required only once but can't be set in migration. Should probably move to some one-time function
+  await db.run(`PRAGMA journal_mode = WAL`);
+  //Must be run with each connections
   if(migrate !== false){
     await db.migrate({
       force: ((migrate === "force")?true: false),
@@ -35,7 +45,7 @@ export default async function open({filename, migrate=true} :DbOptions) :Promise
     });
   }
   (db as Database).beginTransaction = async function(work :TransactionWork<any>, commit :boolean = true){
-    let conn = await openDatabase(db.config) as Transaction;
+    let conn = await openAndConfigure({filename: db.config.filename}) as Transaction;
     conn.beginTransaction = async function(work :TransactionWork<any>){
       return await work(conn);
     }

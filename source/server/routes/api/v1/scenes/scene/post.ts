@@ -6,7 +6,7 @@ import { parse_glb } from "../../../../../utils/glTF";
 
 
 async function getDocument(scene:string, filepath:string){
-  let orig = await import("../../../../../utils/documents/default.svx.json");
+  let {default:orig} = await import("../../../../../utils/documents/default.svx.json");
   let document = JSON.parse(JSON.stringify(orig));
   let meta = await parse_glb(filepath);
 
