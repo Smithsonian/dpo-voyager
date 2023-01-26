@@ -67,6 +67,7 @@ module.exports = function createAppConfig(env, argv)
 
     const config = {
         mode: devMode,
+        cache: {type: "filesystem"},
         entry: {
             "story": "client/ui/story/MainView.ts",
             "corpus": "source/ui/MainView.ts",
