@@ -259,7 +259,7 @@ describe("Web Server Integration", function(){
         .expect(200);
       });
 
-      it("can create a new model", async function(){
+      it("can create a new scene", async function(){
         let content = await fs.readFile(path.join(__dirname, "__test_fixtures/cube.glb"));
         let r = await this.agent.post("/api/v1/scenes/bar")
         .set("Content-Type", "application/octet-stream")
@@ -270,14 +270,65 @@ describe("Web Server Integration", function(){
 
         let {body:doc} = await this.agent.get("/scenes/bar/bar.svx.json").expect(200);
         expect(doc).to.have.property("models").an("array").to.have.length(1);
-        
-
       });
 
-      it("can upload a model in an existing folder", async function(){
+      it("can upload a glb model in an existing scene", async function(){
+        let content = await fs.readFile(path.join(__dirname, "__test_fixtures/cube.glb"));
         await this.agent.put("/scenes/foo/models/baz.glb")
+        .send(content)
+        .expect(201);
+        let {body:doc} = await this.agent.get("/scenes/foo/document.svx.json").expect(200);
+        expect(doc).to.have.property("models").an("array").to.have.length(1);
+        expect(doc).to.have.property("models").deep.equal([
+          {
+            "units": "mm",
+            "boundingBox": {
+              "min": [ -1, -1, -1 ],
+              "max": [ 1, 1, 1.000001 ]
+            },
+            "derivatives": [
+              {
+                "usage": "Web3D",
+                "quality": "Highest",
+                "assets": [
+                  {
+                    "uri": "models/baz.glb",
+                    "type": "Model",
+                    "byteSize": 5500,
+                    "numFaces": 12
+                  }
+                ]
+              }
+            ],
+            "annotations": []
+          }
+        ])
+      });
+
+      it("can upload a usdz model in an existing scene", async function(){
+        await this.agent.put("/scenes/foo/models/baz.usdz")
         .send("xxx\n")
         .expect(201);
+        let {body:doc} = await this.agent.get("/scenes/foo/document.svx.json").expect(200);
+        expect(doc).to.have.property("models").deep.equal([
+          {
+            "units": "mm",
+            "derivatives": [
+              {
+                "usage": "iOSApp3D",
+                "quality": "AR",
+                "assets": [
+                  {
+                    "uri": "models/baz.usdz",
+                    "type": "Model",
+                    "byteSize": 4
+                  }
+                ]
+              }
+            ],
+            "annotations": []
+          }
+        ])
       });
 
       it("can edit a model", async function(){

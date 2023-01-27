@@ -60,6 +60,7 @@
         "chai": "^4.2.0",
         "chai-as-promised": "^7.1.1",
         "mocha": "^8.0.1",
+        "supertest": "^6.3.3",
         "webpack-dev-middleware": "^6.0.1"
     }
 }

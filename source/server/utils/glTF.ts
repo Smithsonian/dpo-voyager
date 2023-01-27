@@ -38,7 +38,7 @@ interface MeshDescription {
 }
 
 
-interface SceneDescription{
+export interface SceneDescription{
   meshes :MeshDescription[];
   bounds :Bounds;
   byteSize ?:number;
