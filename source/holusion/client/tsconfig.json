@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+      "target": "es2017",
+      "module": "es2015",
+      "sourceMap": true,
+      //"strict": true,
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "moduleResolution": "node",
+      //"noUnusedLocals": true,
+      "experimentalDecorators": true,
+
+      "baseUrl": ".",
+      "paths": {
+          "client/*": [ "../../client/*" ],
+          "@ff/core/*": [ "../../../libs/ff-core/source/*" ],
+          "@ff/graph/*": [ "../../../libs/ff-graph/source/*" ],
+          "@ff/browser/*": [ "../../../libs/ff-browser/source/*" ],
+          "@ff/ui/*": [ "../../../libs/ff-ui/source/*" ],
+          "@ff/three/*": [ "../../../libs/ff-three/source/*" ],
+          "@ff/scene/*": [ "../../../libs/ff-scene/source/*" ]
+      }
+  },
+  "files": ["global.d.ts", "MainView.ts"]
+}
