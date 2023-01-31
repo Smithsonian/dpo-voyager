@@ -1,5 +1,6 @@
 
 import { css, LitElement,customElement, property, html, TemplateResult, query } from "lit-element";
+import "@ff/ui/Icon"
 
 
 import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';
@@ -81,9 +82,7 @@ interface ModalOptions{
         <div>${this.body}</div>
         <div>${this.buttons}</div>
         <button id="exit" @click=${this.handleClose}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/>
-          </svg>
+          <ff-icon name="close"></ff-icon>
         </button>
       </dialog>`;
     }
@@ -115,15 +114,11 @@ interface ModalOptions{
 
     dialog >button#exit{
       position: absolute;
-      top:2px;
-      right:2px;
+      top:10px;
+      right:10px;
       width: 20px;
       height: 20px;
       padding:0;
-      color: red;
-      border: 1px solid red;
-      border-radius: 50%;
-      background: white;
       cursor: pointer;
     }
     dialog >button#exit svg{
