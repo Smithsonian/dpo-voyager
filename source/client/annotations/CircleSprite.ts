@@ -210,6 +210,8 @@ export default class CircleSprite extends AnnotationSprite
         let matrixCamera : PerspectiveCamera = null;
         const isShowing = this.annotation.data.visible;
 
+        this.offset.visible = isShowing;
+
         if(camera instanceof ArrayCamera) {
             matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
         }
