@@ -25,9 +25,20 @@ export default function wrap(handler :AsyncRequestHandler):RequestHandler {
 /**
  * Asynchronous wrapper around Response.format().
  * @see Response.format()
+ * 
+ * Additionally, allows the use of req.query.format for unambiguous cases
  */
 export async function wrapFormat(res :Response, handlers :Record<string,()=>Promise<any>|any>) :Promise<any>{
   let p :()=>Promise<void>;
+  let {format} = res.req.query;
+  switch(format){
+    case "zip":
+      if(handlers["application/zip"]) return await handlers["application/zip"]();
+    case "json":
+      if(handlers["application/json"]) return await handlers["application/json"]();
+    case "text":
+      if(handlers["text/plain"]) return await handlers["text/plain"]();
+  }
   res.format(Object.entries(handlers).reduce((h, [type, handler])=>{
     return {...h, [type]:()=>{
       p = handler;

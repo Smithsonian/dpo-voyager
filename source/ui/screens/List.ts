@@ -113,7 +113,11 @@ import i18n from "../state/translate";
                 ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
             </div>`;
         }
-        return html`${(this.mode !=="anonymous")? html`<upload-button @change=${this.onUploadBtnChange}>${this.t("ui.upload")}</upload-button>` : ``}
+        return html`
+            ${(this.mode !=="anonymous")? html`<upload-button @change=${this.onUploadBtnChange}>
+                ${this.t("ui.upload")}
+            </upload-button>` : ``}
+            <a download href="/api/v1/scenes?format=zip">Download as Zip</a>
             <div class="list-grid" style="position:relative;">
             ${this.list.map(l => html`<scene-card .mode=${this.mode} name="${l.name}" />`)}
             ${Object.entries(this.uploads).map(([name, props])=> html`<scene-card name="${name}" thumb="/images/defaultSprite.svg" />`)}
