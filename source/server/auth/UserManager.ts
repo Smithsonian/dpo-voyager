@@ -243,7 +243,7 @@ export default class UserManager {
     if(!isAccessType(role)) throw new BadRequestError(`Bad access type requested : ${role}`);
     let r = await this.db.run(`
       UPDATE scenes
-      SET access = json_set(access, '$.' || user_id, $role)
+      SET access = json_patch(access, json_object( CAST(user_id AS TEXT), $role))
       FROM (SELECT user_id FROM users WHERE username = $username)
       WHERE scene_name = $scene
     `, {$scene: scene, $username: username, $role: role});

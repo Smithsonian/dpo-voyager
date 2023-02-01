@@ -453,16 +453,30 @@ describe("Web Server Integration", function(){
 
       it("can make a model private", async function(){
         await this.agent.patch("/api/v1/scenes/foo/permissions")
-        .send({username: "default", access: null})
+        .send({username: "default", access: "none"})
         .expect(204);
 
         let r = await this.agent.get("/api/v1/scenes/foo/permissions")
         .expect(200)
         .expect("Content-Type", "application/json; charset=utf-8");
         expect(r).to.have.property("body").to.deep.equal([
-          {uid: 0, username: "default", access: null},
+          {uid: 0, username: "default", access: "none"},
           {uid:user.uid, username: user.username, access: "admin"}
         ]);
+      });
+
+      it("can remove a user's special permissions", async function(){
+        await this.agent.patch("/api/v1/scenes/foo/permissions")
+        .send({username: user.username, access: null})
+        .expect(204);
+
+        let r = await this.agent.get("/api/v1/scenes/foo/permissions")
+        .expect(200)
+        .expect("Content-Type", "application/json; charset=utf-8");
+        expect(r).to.have.property("body").to.deep.equal([
+          {uid: 0, username: "default", access: "read"},
+        ]);
+
       });
 
       it("can't fetch user list", async function(){
