@@ -1,11 +1,24 @@
 
 import { css, customElement, property, html, TemplateResult, LitElement } from "lit-element";
+
 import Notification from "@ff/ui/Notification";
+import "@ff/ui/Dropdown";
+import "@ff/ui/Button";
 
 import "client/ui/Spinner";
+
 import "../Size";
 import { nothing } from "lit-html";
 import i18n from "../state/translate";
+
+
+
+const AccessTypes = [
+  "none",
+  "read",
+  "write",
+  "admin"
+] as const;
 
 
 interface ItemEntry{
@@ -21,7 +34,7 @@ interface ItemEntry{
 interface AccessRights{
   uid :number;
   username :string;
-  access :string;
+  access :typeof AccessTypes[number];
 }
 
 /**
@@ -149,60 +162,132 @@ class SceneVersion{
             <h3>${articles.size} article${(1 < articles.size?"s":"")}
           </div>
           <div style="min-width:300px;">
-            <h2>Accès</h2>
-            <table class="list-table">
-              <thead><tr>
-                  <th>${this.t("ui.username")}</th>
-                  <th>${this.t("ui.rights")}</th>
-                  <th></th>
-              </tr></thead>
-              <tbody>
-              ${((!this.permissions?.length)?html`<tr><td colspan=4 style="text-align: center;">${this.t("info.noData",{item: this.scene})}</td</tr>`:nothing)}
-              ${this.permissions.map((p, index) => {
-                return html`<tr>
-                <td title="${p.uid}">${p.username}</td>
-                <td>${p.access}</td>
-                <td>-</td>
-              </tr>`
-              })}
-                <tr>
-                  <form>
-                    <td colspan=3 >add</td>
-                  </form>
-                </tr>
-              </tbody>
-            </table>
+            ${this.renderPermissions()}
           </div>
         </div>
       </div>
       <div>
-        <h2>Historique</h2>
-        <table class="list-table">
-          <thead><tr>
-              <th>${this.t("ui.filename", {count:2})}</th>
-              <th>${this.t("ui.mtime")}</th>
-              <th>${this.t("ui.author", {count: 2})}</th>
-              <th></th>
-          </tr></thead>
-          <tbody>
-          ${(!this.versions?.length)?html`<tr><td colspan=4 style="text-align: center;">${this.t("info.noData",{item: this.scene})}</td</tr>`:nothing}
-          ${this.versions.map((v, index)=>{
-            let name = (3 < v.names.size)? `${this.t("info.etAl", {item: v.names.values().next().value, count:v.names.size})}`: [...v.names.values()].join(", ");
-            let authors = [...v.authors.values()].join(", ")
-            return html`<tr>
-              <td>${name}</td>
-              <td>${new Date(v.start).toLocaleString()}</td>
-              <td>${authors}</td>
-              <td>${index==0?html`Active`:html`<button class="btn btn-restore" @click=${this.onRestore}>Restore</button>`}</td>
-            </tr>`
-          })}
-          </tbody>
-        </table>
+        ${this.renderHistory()}
       </div>`;
     }
+    renderPermissions(){
+      return html`
+        <h2>${this.t("ui.access")}</h2>
+          <table class="list-table">
+            <thead><tr>
+              <th>${this.t("ui.username")}</th>
+              <th>${this.t("ui.rights")}</th>
+            </tr></thead>
+            <tbody>
+            ${((!this.permissions?.length)?html`<tr>
+              <td colspan=4 style="text-align: center;">
+                ${this.t("info.noData",{item: this.scene})}
+              </td>
+            </tr>`:nothing)}
+            ${this.permissions.map((p, index) => {
+              return html`<tr>
+                <td title="${p.uid}">${p.username}</td>
+                <td class="form-control">${this.renderPermissionSelection(p.username, p.access)}</td>
+            </tr>`
+            })}
+              <tr>
+                <td colspan=2 class="form-control" style="padding:0">
+                  <form id="userlogin" style="padding:0" autocomplete="off" @submit=${this.onAddUserPermissions}>
+                    <div class="form-group inline" style="padding:0;border:none;">
+                      <div class="form-item">
+                        <input style="border:none;" type="text" name="username" id="username" placeholder="${this.t("ui.username")}" autocomplete="new-password" required>
+                        <label for="password">${this.t("ui.username")}</label>
+                      </div>
+                      <div class="divider"></div>
+                      <div class="form-item">
+                        <input style="border:none;" type="submit" value="${this.t("ui.add")}" >
+                      </div>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      `;
+    }
+    renderHistory(){
+      return html`
+        <h2>Historique</h2>
+          <table class="list-table">
+            <thead><tr>
+                <th>${this.t("ui.filename", {count:2})}</th>
+                <th>${this.t("ui.mtime")}</th>
+                <th>${this.t("ui.author", {count: 2})}</th>
+                <th></th>
+            </tr></thead>
+            <tbody>
+            ${(!this.versions?.length)?html`<tr><td colspan=4 style="text-align: center;">${this.t("info.noData",{item: this.scene})}</td</tr>`:nothing}
+            ${this.versions.map((v, index)=>{
+              let name = (3 < v.names.size)? `${this.t("info.etAl", {item: v.names.values().next().value, count:v.names.size})}`: [...v.names.values()].join(", ");
+              let authors = [...v.authors.values()].join(", ")
+              return html`<tr>
+                <td>${name}</td>
+                <td>${new Date(v.start).toLocaleString()}</td>
+                <td>${authors}</td>
+                <td>${index==0?html`Active`:html`<button class="btn btn-restore" @click=${this.onRestore}>Restore</button>`}</td>
+              </tr>`
+            })}
+          </tbody>
+        </table>
+      `;
+    }
+
+    renderPermissionSelection(username:string, selected :AccessRights["access"], disabled :boolean = false){
+      const onSelectPermission = (e:Event)=>{
+        let target = (e.target as HTMLSelectElement)
+        let value = target.value as AccessRights["access"];
+        this.grant(username, value)
+        .catch((e)=>{
+          target.value = selected;
+          Notification.show("Failed to grant permissions : "+e.message, "error");
+        })
+      }
+      return html`<span class="form-item"><select .disabled=${disabled} @change=${onSelectPermission}>
+        ${AccessTypes.map(a=>html`<option .selected=${a === selected} value="${a}">${this.t(`ui.${a}`)}</option>`)}
+      </select></span>`
+    }
+
+    onAddUserPermissions = (ev :SubmitEvent)=>{
+      ev.preventDefault();
+      let target = ev.target as HTMLFormElement;
+      let username = target.username.value;
+      this.grant(username, "read").catch(e=>{
+        Notification.show(`Failed to grant read access for ${username}: ${e.message}`);
+      })
+    }
+
     onRestore = (e:MouseEvent)=>{
       let id = (e.target as HTMLButtonElement).name;
       Notification.show(`Restoring document to version ${id}...`, "info");
       //fetch(`/api/v1/scenes/${this.scene}/files/`)
     }
+
+    async grant(username :string, access :AccessRights["access"]){
+      if(access == "none" && username != "default") access = null;
+      let p = fetch(`/api/v1/scenes/${this.scene}/permissions`, {
+        method: "PATCH",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({username:username, access:access})
+      }).then(async (r)=>{
+        if(!r.ok){
+          try{
+            let body = await r.json();
+            throw new Error(`[${r.status}]: ${body.message || r.statusText}`);
+          }catch(e){
+            throw new Error(`[${r.status}] ${r.statusText}`);
+          }
+        }
+      })
+      p.then(()=>{this.fetchPermissions()}).catch(e=>{
+        Notification.show(`Failed to fetch permissions : ${e.message}`);
+      })
+      return p;
+    }
+
+
  }

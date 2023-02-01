@@ -41,9 +41,11 @@ corpus-list {
 }
 
 .form-control{
-  display: flex;
-  flex-direction: column;
-  
+  &form{
+    display: flex;
+    flex-direction: column;
+  }
+
   .form-group{
     padding: 5px 0;
     &.inline{
@@ -52,6 +54,7 @@ corpus-list {
       flex-direction: row;
     }
   }
+
   .divider{
     width: 1px;
     background-color: var(--color-dark);
@@ -62,19 +65,17 @@ corpus-list {
   }
   .form-item > input{
     box-sizing: border-box;
-    padding: 1rem .75rem;
+    padding: 0.35rem .75rem;
     height: calc(3.5rem + 2px);
-    line-height: 1.25;
     display: block;
     width: 100%;
-    padding: .375rem .75rem;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
     color: var(--color-light);
     background: var(--color-medium);
     background-clip: padding-box;
-    border: 1px solid var(--color-medium);
+    border: 1px solid var(--color-light);
     border-radius: 0;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -123,6 +124,15 @@ corpus-list {
     &:hover{
       background: var(--color-hover);
     }
+  }
+
+  .form-item > select{
+    width: 100%;
+    padding: 5px;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
   }
 }
 

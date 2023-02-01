@@ -42,6 +42,34 @@ export default {
     author: {
       fr: "auteur{plural=s}",
       en: "author{plural=s}"
+    },
+    history: {
+      fr: "Historique",
+      en: "History"
+    },
+    access: {
+      fr: "Accès",
+      en: "Access"
+    },
+    add: {
+      fr: "Ajouter",
+      en: "Add"
+    },
+    none: {
+      fr: "aucun",
+      en: "none"
+    },
+    read: {
+      fr: "lecture",
+      en: "read"
+    },
+    write: {
+      fr: "écriture",
+      en: "write"
+    },
+    admin: {
+      fr: "admin",
+      en: "admin"
     }
   },
   info:{
