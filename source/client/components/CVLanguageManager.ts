@@ -110,7 +110,6 @@ export default class CVLanguageManager extends Component
 
         if(language != outs.language.value && ins.language.value === outs.language.value) {
             ins.language.setValue(isFinite(language) ? language : ELanguageType.EN);
-            this.updateLanguage(language);
         }
     }
 

@@ -23,6 +23,7 @@ import CVDocument from "../../components/CVDocument";
 import CVReader, { IArticleEntry } from "../../components/CVReader";
 import CVLanguageManager from "../../components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import CVTours from "client/components/CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,6 +31,7 @@ import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 export default class ReaderView extends DocumentView
 {
     protected reader: CVReader = null;
+    protected tours: CVTours = null;
     protected language: CVLanguageManager = null;
     protected firstRender: boolean = true;
 
@@ -53,10 +55,13 @@ export default class ReaderView extends DocumentView
     {
         const reader = this.reader;
         const language = this.language;
+        const tours = this.tours;
 
         if (!reader) {
             return html`<div class="ff-placeholder">Please select a document to display its articles.</div>`;
         }
+
+        const menuButton = this.tours.ins.enabled.value ? null : html`<ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>`;
 
         if (!reader.activeArticle) {
             const articles = reader.articles;
@@ -68,7 +73,7 @@ export default class ReaderView extends DocumentView
 
         return html`<div class="sv-left"></div><div class="sv-article" @keydown=${e =>this.onKeyDown(e, reader.activeArticle.id)} >
                 <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Close Article Reader")} icon="close" @click=${this.onClickClose}></ff-button>
-                <ff-button class="sv-nav-button" inline title=${language.getLocalizedString("Article Menu")} icon="bars" @click=${this.onClickMenu}></ff-button>
+                ${menuButton}
                 <div role="region" aria-live="polite" aria-atomic="true" title="article" class="sv-container"></div>
             </div><div class="sv-right"></div>`;
     }
@@ -121,12 +126,14 @@ export default class ReaderView extends DocumentView
             previous.setup.language.outs.language.off("value", this.onUpdate, this);
             this.reader.outs.content.off("value", this.onUpdate, this);
             this.reader.outs.article.off("value", this.onUpdate, this);
+            this.tours = null;
             this.language = null;
             this.reader = null;
         }
         if (next) {
             this.reader = next.setup.reader;
             this.language = next.setup.language;
+            this.tours = next.setup.tours;
             this.reader.outs.content.on("value", this.onUpdate, this);
             this.reader.outs.article.on("value", this.onUpdate, this);
             next.setup.language.outs.language.on("value", this.onUpdate, this);

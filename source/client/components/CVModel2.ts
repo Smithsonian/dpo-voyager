@@ -85,6 +85,7 @@ export default class CVModel2 extends CObject3D
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
+        slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
         override: types.Boolean("Material.Override", false),
         color: types.ColorRGB("Material.BaseColor"),
         opacity: types.Percent("Material.Opacity", 1.0),
@@ -116,6 +117,7 @@ export default class CVModel2 extends CObject3D
             this.ins.shadowSide,
             this.ins.shader,
             this.ins.overlayMap,
+            this.ins.slicerEnabled,
             this.ins.override,
             this.ins.color,
             this.ins.opacity,
@@ -147,7 +149,9 @@ export default class CVModel2 extends CObject3D
             this.ins.quality,
             this.ins.overlayMap,
             this.ins.override,
-            this.ins.opacity
+            this.ins.opacity,
+            this.ins.color,
+            this.ins.slicerEnabled
         ];
     }
 

@@ -128,15 +128,17 @@ export default class CVSlicer extends Component
 
         // set the slicing plane in the Uber materials of each scene model
         models.forEach(model => {
-            const object = model.object3D;
-            object.traverse((mesh: Mesh) => {
-                if (mesh.isMesh) {
-                    const material = mesh.material as UberPBRMaterial;
-                    if (material.isUberPBRMaterial) {
-                        this.updateMaterial(material);
+            if(model.ins.slicerEnabled.value) {
+                const object = model.object3D;
+                object.traverse((mesh: Mesh) => {
+                    if (mesh.isMesh) {
+                        const material = mesh.material as UberPBRMaterial;
+                        if (material.isUberPBRMaterial) {
+                            this.updateMaterial(material);
+                        }
                     }
-                }
-            });
+                });
+            }
         });
 
         return true;

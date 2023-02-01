@@ -23,6 +23,7 @@ import CVTours from "../../components/CVTours";
 import DocumentView, { customElement, html } from "./DocumentView";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import CVInterface, { EUIElements } from "client/components/CVInterface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,6 +32,7 @@ export default class TourNavigator extends DocumentView
 {
     protected tours: CVTours;
     protected language: CVLanguageManager;
+    protected interface: CVInterface;
 
     protected needsFocus: boolean = false;
     protected firstRender: boolean = true;
@@ -51,6 +53,7 @@ export default class TourNavigator extends DocumentView
     {
         const tours = this.tours;
         const language = this.language;
+        const ui = this.interface;
         const activeTour = tours.activeTour;
 
         let title, info;
@@ -67,8 +70,10 @@ export default class TourNavigator extends DocumentView
         }
         this.stepTitle = title;
 
+        const exitButton = ui.isShowing(EUIElements.tour_exit) ? html`<ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>` : null;
+
         return html`<div class="sv-blue-bar" role=region title="Tour Navigation" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
-            <ff-button class="sv-section-lead" transparent icon="close" title=${language.getLocalizedString("Exit Tour")} ?disabled=${!activeTour} @click=${this.onClickExit}></ff-button>
+            ${exitButton}
             <div class="ff-ellipsis sv-content" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
@@ -141,6 +146,7 @@ export default class TourNavigator extends DocumentView
         if (next) {
             this.tours = next.setup.tours;
             this.language = next.setup.language;
+            this.interface = next.setup.interface;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
             this.language.outs.language.on("value", this.onUpdate, this);
