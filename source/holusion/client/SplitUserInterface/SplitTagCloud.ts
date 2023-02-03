@@ -38,7 +38,6 @@ export default class SplitTagCloud extends TagCloud {
   }
 
   protected onSelectAnnotation(annotation: Annotation): void {
-    //centerOnAnnotation(annotation.data.position)
-    console.log(`annotation position : `, annotation.data.position)
+    this.dispatchEvent(new CustomEvent("select", {detail: annotation}));
   }
 }

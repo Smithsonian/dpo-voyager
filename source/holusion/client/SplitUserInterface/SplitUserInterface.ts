@@ -32,9 +32,6 @@ export default class SplitUserInterface extends DocumentView
     private _loop :AbortController;
     private readonly app:ExplorerApplication;
 
-
-    private _annotation :Annotation|null = null;
-
     protected get language() {
         return this.system.getMainComponent(CVLanguageManager, true);
     }
@@ -113,9 +110,6 @@ export default class SplitUserInterface extends DocumentView
         `;
     }
 
-    get canRotate(){
-        return (this.activeDocument?.setup.tours.ins.tourIndex.value == -1 && !this._annotation)?true:false;
-    }
 
     protected onCloseTour =()=>{
         this.dispatchEvent(new CustomEvent("select", {
@@ -132,8 +126,17 @@ export default class SplitUserInterface extends DocumentView
         }));
     }
 
-    protected onSelectAnnotation = (event :CustomEvent)=>{
-        this._annotation = event.detail.annotation;
+    protected onSelectAnnotation = (event :CustomEvent<Annotation>)=>{
+      console.log("Select :", event.detail);
+      if("data" in event.detail){
+        this.dispatchEvent(new CustomEvent("select", {
+          detail:{lookAt:event.detail.data.position.join(","), auto:false}
+        }));
+      }else{
+        this.dispatchEvent(new CustomEvent("select", {
+          detail:{auto:"true"}
+        }));
+      }
     }
 
 

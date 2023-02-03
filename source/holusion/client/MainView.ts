@@ -16,14 +16,11 @@
  */
 
 import { LitElement, customElement, property, html, TemplateResult } from "lit-element";
-import CFullscreen from "@ff/scene/components/CFullscreen";
-import CVARManager from "client/components/CVARManager";
-import CVViewer from "client/components/CVViewer";
+import { Box3, MathUtils, Vector3 } from "three";
 
 import Notification from "@ff/ui/Notification";
 
-import ExplorerApplication, { IExplorerApplicationProps } from "client/applications/ExplorerApplication";
-
+import ExplorerApplication from "client/applications/ExplorerApplication";
 
 import "./SplitContentView";
 import "./SplitUserInterface/SplitUserInterface";
@@ -41,6 +38,7 @@ export interface NavigationParams{
     document ?:string;
     auto ?:boolean;
     route ?:string;
+    lookAt ?:string;
 }
 
 export type NavigationEvent = CustomEvent<NavigationParams>;
@@ -73,13 +71,22 @@ export default class MainView extends LitElement
 
     constructor(){
         super();
+
         let sp = new URLSearchParams(window.location.search);
-        let props = {
+        let d = {
             route: decodeURIComponent(sp.get("route") || ""),
             document: decodeURIComponent(sp.get("document")),
             auto: !!sp.get("auto")
         }
-        this.onNavigate(new CustomEvent<NavigationParams>("select", {detail: props}));
+        this.application = new ExplorerApplication(null, {
+            root: d.document,
+            document: "scene.svx.json",
+            resourceRoot:"/", 
+            lang: "FR", 
+            bgColor: "#000000", 
+            bgStyle: "solid"
+        });
+        this.onNavigate(new CustomEvent<NavigationParams>("select", {detail: d}));
     }
 
     public connectedCallback()
@@ -89,22 +96,20 @@ export default class MainView extends LitElement
         Notification.shadowRootNode = this.shadowRoot;
 
         console.log("Start app with root : \"%s\"", this.document);
-        this.application = new ExplorerApplication(null, {root: this.document, document:"scene.svx.json", resourceRoot:"/", lang: "FR", bgColor: "#000000", bgStyle: "solid"});
+
     }
 
     protected render() {
         let system = this.application.system;
         
-        if(this.document !== this.application.props.root){
+        if(this.document && this.document !== this.application.props.root){
+            console.log("reloadDocument : ",this.application.props.root , this.document);
             this.application.props.root = this.document;
             this.application.reloadDocument();
         }
         
-        //this.application.setBackgroundColor("#000000", "#000000")
-        console.log("Render with path :", this.route, this.document, this.auto);
+        console.log("Render with path :", this.document, this.auto);
         let ui :TemplateResult;
-        if(this.auto) this.loop();
-        else this._loop?.abort();
 
         if(!this.route){
             ui = html`<split-object-menu @select=${this.onNavigate}></split-object-menu>`
@@ -130,9 +135,47 @@ export default class MainView extends LitElement
         if(this.document) url.searchParams.set("document", encodeURIComponent(this.document));
         if(this.auto) url.searchParams.set("auto", "true");
         window.history.pushState({},"", url);
+
+        if(ev.detail.lookAt){
+            let coords = ev.detail.lookAt.split(",").map(s=>parseFloat(s));
+            this.lookAt(coords as any);
+        }else if(this.auto){
+            this.loop();
+        }else{
+            this._loop?.abort(); 
+        }
+    }
+    /**
+     * simple ease-in ease-out function for [0..1] interval
+     */
+    easeInOut(t:number):number{
+        return t > 0.5 ? 4*Math.pow((t-1),3)+1 : 4*Math.pow(t,3);
+    }
+    lookAt([x,y,z]:[number, number, number]){
+        this._loop?.abort(); //Intentionally Share the same abort as loop();
+        let control = this._loop = new AbortController();
+
+        //Calculate pitch
+        let rotation = new Vector3(x,0,z);
+        let targetYaw = -17;
+        let targetPitch = rotation.angleTo(new Vector3(1,0,0))*MathUtils.RAD2DEG +90;
+        if(rotation.z>0) targetPitch=-targetPitch;
+        (async ()=>{
+            let start_timestamp = performance.now();
+            let [startYaw, startPitch] = this.application.getCameraOrbit(null);
+            for await (let timestamp of animationLoop()){
+                if(control.signal.aborted) {console.log("break lookAt");break;}
+                let completion = (timestamp - start_timestamp)/750;
+                if(1 < completion ) {console.log("end lookAt", completion);break;}
+                //Simple lerp over 1.5s.
+                let yaw = startYaw*this.easeInOut(1-completion) +targetYaw*this.easeInOut(completion);
+                let pitch = startPitch*this.easeInOut(1-completion) + targetPitch*this.easeInOut(completion);
+                this.application.setCameraOrbit(yaw as any, pitch as any);
+            }
+        })();
     }
 
-    loop ({ timeout=1000, speed=0.01, changeTimeout=360/speed }={}) :void{
+    loop ({ timeout=1000, speed=0.01, target=undefined }={}) :void{
         this._loop?.abort();
         let control = this._loop = new AbortController();
         (async ()=>{
@@ -151,7 +194,8 @@ export default class MainView extends LitElement
                     pitch = n_pitch;
                     idle_since = timestamp;
                     continue;
-                }if ( (idle_since + timeout) <= timestamp){
+                }
+                if ( (idle_since + timeout) <= timestamp){
                     pitch = (((pitch) + last_direction*speed*elapsed) % 360);/* deg/s */
                     this.application.setCameraOrbit(yaw as any, pitch as any);
                 }else{
