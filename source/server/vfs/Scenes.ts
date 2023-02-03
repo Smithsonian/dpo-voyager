@@ -1,4 +1,5 @@
-import { AccessType } from "../auth/UserManager";
+import { AccessType, AccessTypes } from "../auth/UserManager";
+import config from "../utils/config";
 import { ConflictError,  NotFoundError } from "../utils/errors";
 import { Uid } from "../utils/uid";
 import BaseVfs from "./Base";
@@ -7,8 +8,17 @@ import { ItemEntry, ItemProps, Scene } from "./types";
 
 
 export default abstract class ScenesVfs extends BaseVfs{
-   
-  async createScene(name :string, author_id :number = 0) :Promise<number>{
+
+  async createScene(name :string):Promise<number>
+  async createScene(name :string, author_id :number):Promise<number>
+  async createScene(name :string, permissions:Record<string,AccessType>):Promise<number>
+  async createScene(name :string, perms ?:Record<string,AccessType>|number) :Promise<number>{
+    let permissions :Record<string,AccessType> = (typeof perms === "object")? perms : {};
+    //Always provide permissions for default user
+    permissions['0'] ??= (config.public?"read":"none");
+    //If an author_id is provided, it is an administrator
+    if(typeof perms === "number" ) permissions[perms.toString(10)] = "admin";
+
     for(let i=0; i<3; i++){
       try{
         let r = await this.db.get(`
@@ -22,7 +32,7 @@ export default abstract class ScenesVfs extends BaseVfs{
         `, {
           $scene_name:name, 
           $scene_id: Uid.make(),
-          $access: JSON.stringify(author_id? {'0':"read", [author_id.toString(10)]: "admin"}: {'0': "read"})
+          $access: JSON.stringify(permissions)
         });
         return r.scene_id;
       }catch(e){
@@ -57,8 +67,13 @@ export default abstract class ScenesVfs extends BaseVfs{
     `, {$scene_id, $nextName});
     if(!r?.changes) throw new NotFoundError(`no scene found with id: ${$scene_id}`);
   }
-
-  async getScenes() :Promise<Scene[]>{
+  /**
+   * 
+   * @param user_id filter scenes with read access from user_id
+   * @returns 
+   */
+  async getScenes(user_id ?:number) :Promise<Scene[]>{
+    
     return (await this.db.all(`
       SELECT 
         IFNULL(document.ctime, scenes.ctime) as mtime,
@@ -67,9 +82,15 @@ export default abstract class ScenesVfs extends BaseVfs{
         scene_name as name
       FROM scenes
         LEFT JOIN (SELECT MAX(ctime) AS ctime, fk_scene_id FROM documents GROUP BY fk_scene_id) AS document ON fk_scene_id = scene_id
+      ${typeof user_id === "number"? `WHERE 
+        IFNULL(
+          json_extract(scenes.access, '$.' || $user_id),
+          json_extract(scenes.access, '$.0')
+        ) IN (${ AccessTypes.slice(2).map(s=>`'${s}'`).join(", ") })
+      `:""}
       GROUP BY scene_id
       ORDER BY scene_name ASC
-    `)).map(({ctime, mtime, id, ...m})=>({
+    `, {$user_id: user_id?.toString(10)})).map(({ctime, mtime, id, ...m})=>({
       ...m,
       id,
       ctime: BaseVfs.toDate(ctime),
@@ -80,7 +101,7 @@ export default abstract class ScenesVfs extends BaseVfs{
   async getScene(nameOrId :string|number) :Promise<Scene>{
     let key = ((typeof nameOrId =="number")? "scene_id":"scene_name");
     let r = await this.db.get(`
-      SELECT 
+      SELECT
         scene_name AS name,
         scene_id AS id,
         scenes.ctime AS ctime,

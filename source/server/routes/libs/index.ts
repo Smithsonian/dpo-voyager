@@ -5,7 +5,6 @@ import express, { Router} from "express";
 
 const router = Router();
 const rootDir = path.resolve(__dirname, "../../node_modules");
-console.log("ROOT : ", rootDir);
 router.use("/three", express.static(path.join(rootDir, "three/build")));
 router.use("/quill", express.static(path.join(rootDir, "quill/dist")));
 export default router;
