@@ -161,6 +161,18 @@ describe("Web Server Integration", function(){
           "/scenes/foo/"
         ])
       });
+      it("will omit private scenes", async function(){
+        await userManager.grant("foo", "default", "none");
+        let r = await request(this.server).propfind("/scenes")
+        .set("Depth", "1")
+        .expect(207);
+        let root = xml2js(r.text);
+        let elements = root.elements[0]?.elements;
+        let names = elements.map((res :any)=>new URL(res.elements[0].elements[0].text).pathname);
+        expect(names).to.deep.equal([
+          "/scenes/",
+        ]);
+      })
       it("can PROPFIND /scenes/:scene/", async function(){
         await Promise.all([
           vfs.writeFile(dataStream(),{scene:"foo", type:"articles", name:"hello.html", user_id: user.uid}),

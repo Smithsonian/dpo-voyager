@@ -73,6 +73,14 @@ export const canAdmin = _perms.bind(null, AccessTypes.indexOf("admin"));
 export function getUserId(req :Request){
   return (req.session as SafeUser)?.uid || 0;
 }
+export function getUser(req :Request){
+  return {
+    username: "default",
+    uid: 0,
+    isAdministrator:false,
+    ...req.session,
+  } as SafeUser;
+}
 
 export function getFileParams(req :Request):GetFileParams{
   let {scene, type, file} = req.params;

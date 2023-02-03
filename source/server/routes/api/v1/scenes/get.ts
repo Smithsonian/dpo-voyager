@@ -1,13 +1,14 @@
 
 import { Request, Response } from "express";
 import path from "path";
-import { getVfs } from "../../../../utils/locals";
+import { getUser, getUserId, getVfs } from "../../../../utils/locals";
 import { wrapFormat } from "../../../../utils/wrapAsync";
 import { zip } from "../../../../utils/zip";
 
 export default async function getScenes(req :Request, res :Response){
   let vfs = getVfs(req);
-  let scenes = await vfs.getScenes();
+  let u = getUser(req);
+  let scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
 
   await wrapFormat(res, {
     "application/json":()=>res.status(200).send(scenes),

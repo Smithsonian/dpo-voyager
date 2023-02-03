@@ -4,6 +4,8 @@ import {tmpdir} from "os";
 import { expect } from "chai";
 import Vfs, { FileProps, GetFileParams, WriteFileParams } from ".";
 import { Uid } from "../utils/uid";
+import UserManager from "../auth/UserManager";
+import User from "../auth/User";
 
 async function *dataStream(src :Array<Buffer|string> =["foo", "\n"]){
   for(let d of src){
@@ -66,6 +68,7 @@ describe("Vfs", function(){
         let scenes = await vfs.getScenes();
         expect(scenes).to.have.property("length", 0);
       })
+
       it("get a list of scenes", async function(){
         let scene_id = await vfs.createScene("foo");
         //Force ctime
@@ -76,6 +79,7 @@ describe("Vfs", function(){
         expect(scenes[0]).to.have.property("id", scene_id).a("number");
         expect(scenes[0]).to.have.property("name", "foo");
       });
+
       it("get proper ctime and mtime from last document edit", async function(){
         let t2 = new Date();
         let t1 = new Date(Date.now()-100000);
@@ -89,6 +93,21 @@ describe("Vfs", function(){
         expect(scenes).to.have.property("length", 1);
         expect(scenes[0].ctime.valueOf()).to.equal(t1.valueOf());
         expect(scenes[0].mtime.valueOf()).to.equal(t2.valueOf());
+      });
+      
+      describe("with permissions", function(){
+        let userManager :UserManager, user :User;
+        this.beforeEach(async function(){
+          userManager = new UserManager(vfs._db);
+          user = await userManager.addUser("alice", "xxxxxxxx", false);
+        });
+
+        it("can filter accessible scenes by user_id", async function(){
+          let scene_id = await vfs.createScene("foo", user.uid);
+          await run(`UPDATE scenes SET access = json_object("0", "none", "${user.uid}", "admin")`);
+          expect(await vfs.getScenes(0), `private scene shouldn't be returned to default user`).to.have.property("length", 0);
+          expect(await vfs.getScenes(user.uid), `private scene should be returned to its author`).to.have.property("length", 1);
+        });
       });
     });
 

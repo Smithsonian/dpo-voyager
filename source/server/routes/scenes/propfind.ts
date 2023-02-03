@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from "express";
 import xml from 'xml-js';
 import path from "path";
-import { AppLocals } from "../../utils/locals";
+import { AppLocals, getUser } from "../../utils/locals";
 import Vfs, { FileProps, FileType, ItemProps } from "../../vfs";
 
 type DavTAG = "D:href"|"D:response"|"D:propstat"|"D:href"|"D:status"|"D:prop"|"D:getlastmodified"|"D:creationdate"|"D:displayname"|"D:lockdiscovery"|"D:supportedlock"|"D:resourcetype"|"D:getcontentlength"|"D:getcontenttype"|"D:collection"
@@ -178,15 +178,14 @@ async function getSceneFiles(vfs:Vfs, rootUrl:URL, scene_name:string, recurse:nu
   return elements;
 }
 
-async function getScenes(vfs :Vfs, rootUrl:URL, recurse :number):Promise<ElementList>{
-  let scenes = await vfs.getScenes();
+async function getScenes(vfs :Vfs, rootUrl:URL, recurse :number, user_id ?:number):Promise<ElementList>{
+  let scenes = await vfs.getScenes(user_id);
   let elements = (await Promise.all(scenes.map(m=> getSceneFiles(vfs, rootUrl, m.name, recurse-1)))).flat();
-  if (scenes.length == 0) return elements;
   let stats = {
     author: "default",
     author_id: 0,
-    ctime: scenes.reduce((ref, m)=> ((ref < m.ctime)?ref : m.ctime), scenes[0].ctime),
-    mtime: scenes.reduce((ref, m)=> ((m.mtime < ref)?ref : m.mtime), scenes[0].mtime),
+    ctime: scenes.reduce((ref, m)=> ((ref < m.ctime)?ref : m.ctime), scenes[0]?.ctime ?? new Date()),
+    mtime: scenes.reduce((ref, m)=> ((m.mtime < ref)?ref : m.mtime), scenes[0]?.mtime ?? new Date()),
   }
   elements.unshift(Element.fromFile(new URL("scenes/", rootUrl), stats as ItemProps, true));
   return elements;
@@ -198,6 +197,7 @@ async function getScenes(vfs :Vfs, rootUrl:URL, recurse :number):Promise<Element
  * It works a bit backward by always fetching everything from the root, as deep as needed, then filtering out what isn't required when requesting subfolders
  */
 export async function handlePropfind(req :Request, res:Response){
+  let u = getUser(req);
   const {scene:scene_name} = req.params;
   const {vfs} = req.app.locals as AppLocals;
   let recurse = parseInt(req.get("Depth")??"-1");
@@ -210,7 +210,7 @@ export async function handlePropfind(req :Request, res:Response){
   if(scene_name){
     elements =await getSceneFiles(vfs, rootUrl, scene_name, depth);
   }else{
-    elements = await getScenes(vfs, rootUrl, depth);
+    elements = await getScenes(vfs, rootUrl, depth, (u.isAdministrator? undefined: u.uid));
   }
   elements = elements.filter(e=>{
     //@ts-ignore
