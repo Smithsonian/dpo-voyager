@@ -1,0 +1,73 @@
+{
+  "name": "holusion-voyager-explorer",
+  "version": "0.0.7",
+  "description": "Voyager explorer for holographic displays",
+  "main": "main.js",
+  "scripts": {
+    "start": "NODE_ENV=development electron .",
+    "watch": "cd client && webpack --mode=development",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "electron-builder install-app-deps",
+    "build": "cd client && webpack --mode=production",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --publish never"
+  },
+  "build": {
+    "appId": "com.holusion.electron.ethesaurus",
+    "productName": "eThesaurusRex",
+    "asar": true,
+    "publish": [],
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Video"
+    },
+    "directories": {
+      "output": "../../dist"
+    },
+    "extraFiles": [
+      {
+        "from": "../../files/documents.json",
+        "to": "files/documents.json"
+      },
+      {
+        "from": "../../files/scenes",
+        "to": "files/scenes"
+      },
+      {
+        "from": "../../assets",
+        "to": "assets"
+      },
+      {
+        "from": "../../dist",
+        "to": "dist",
+        "filter": [
+          "@(js|css|fonts|language|images)/**",
+          "*.html",
+          "favicon.png"
+        ]
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.uliege.be:P.Hallot/ethesaurus.git"
+  },
+  "author": "Holusion SAS <contact@holusion.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^16.0.1",
+    "electron-builder": "^22.14.5",
+    "lit-css-loader": "^2.0.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "three": "^0.147.0"
+  }
+}

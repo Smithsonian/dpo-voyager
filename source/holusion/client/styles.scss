@@ -1,0 +1,489 @@
+@import "client/ui/styles.scss";
+$menu-color-text: #f0f0f0;
+$color-primary: #0089bf;
+$color-light: #f0f0f0;
+$color-background: transparentize(#363d40, 0.4);
+$color-background-dark: transparentize(#1f2426, 0.2);
+$menu-color-background-darker: transparentize(#050708, 0.15);
+
+:host(.split-mode)//, split UI
+{
+    display: flex;
+    flex-direction: row;
+    height:100vh;
+    font-size: 1rem;
+    color: $menu-color-text;
+
+    >.et-screen{
+        width: 50%;
+        position: relative;
+        top:0;
+        bottom:0;
+    }
+
+    #ff-notification-stack{
+        left:20%;
+        right: calc(50% + 20%);
+        width: auto;
+        max-width: initial;
+    }
+
+    .ff-button{
+        font-size: 1.5rem;
+    }
+}
+
+// main menu
+
+.split-mode-object-menu
+{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin: auto;
+
+    .object-menu-card
+    {
+        width: 13vw;
+        height: 43vh;
+        margin: 0.5rem;
+        padding: 1rem;
+        background: $color-background-darker;
+
+        h1{
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        img{
+            height: 60%;
+            width: 100%;
+            object-fit: cover;
+        }
+    }
+}
+
+
+// object content
+
+.split-userinterface
+{
+    display: flex;
+    flex-direction: column;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    z-index:10;
+    overflow:hidden;
+    font-family:sans-serif;
+
+    .object-content{
+        position:relative;
+        display:flex;
+        height: 70vh;
+
+        .object-content-zone
+        {
+            display:block;
+            background-color:$color-background-dark;
+            flex:2;
+            overflow-y:auto;
+    
+            .object-content
+            {
+                display: none;
+                align-items: center;
+    
+                &.et-active
+                {
+                    display: block;
+                }
+            }
+        }
+
+        .object-nav-zone
+        {
+            flex:1;
+
+            .home-button
+            {
+                font-size: 1.7rem;
+                font-weight: 400;
+                padding: 1.5rem 2rem;
+                text-transform: uppercase;
+                color: white;
+                text-decoration: none;
+            }
+
+            .object-info
+            {
+                margin:1em;
+                padding: 1em;
+                background-color: $color-background-dark;
+            }
+
+            .object-navbar
+            {
+                margin:0;
+                padding:0;
+                font-size:1em;
+
+                li[role=tab]
+                {
+                    display:block;
+                    font-size:1.25em;
+                    cursor:pointer;
+                    padding: 0.2em 1em;
+                    color: $color-light;
+            
+                    &[aria-selected=true]
+                    {
+                        color:$color-primary;
+                        svg{
+                            fill: $color-primary;
+                        }
+                    }
+                    svg
+                    {
+                        fill: $color-light;
+                    }
+                    .ff-button{
+                        justify-content: left;
+                    }
+                }
+            }            
+        }
+    }
+}
+
+
+//touch pad
+
+.touch-controler
+{
+    display:block;
+    position:relative;
+    height: 25vh;
+    width: 30%;
+    margin: 1.5em;
+    background:black;
+    flex-shrink: 0;
+    touch-action: none;
+
+    .zone-corner
+    {
+        position:absolute;
+        border:.1em solid $color-light;
+        width:5em;
+        height:5em;
+        z-index: -1;
+    } 
+    .corner-topleft
+    {
+        left:0;
+        top:0;
+        margin-top:-.375em;
+        margin-left: -.375em;
+        border-bottom: none;
+        border-right: none;
+    }
+    .corner-topright
+    {
+        right:0;
+        top:0;
+        margin-top:-.375em;
+        margin-right: -.375em;
+        border-bottom: none;
+        border-left: none;
+    }
+    .corner-bottomleft
+    {
+        left:0;
+        bottom:0;
+        margin-bottom:-.375em;
+        margin-left: -.375em;
+        border-top: none;
+        border-right: none;
+    }
+    .corner-bottomright
+    {
+        right:0;
+        bottom:0;
+        margin-bottom:-.375em;
+        margin-right: -.375em;
+        border-top: none;
+        border-left: none;
+    }
+}
+
+
+// tour navigator
+
+.tour-entry 
+{
+    margin: 1em;
+    padding: 1em;
+    background:$color-background-darker;
+    position: relative;
+
+    h1{
+        font-family: serif;
+    }
+
+    h1:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 75px;
+        height: 5px;
+        background-color: $color-primary;
+    }
+}
+
+.tour-navigator
+{
+    display:flex;
+    flex-direction: column;
+    height: 100%;
+
+
+    .et-tour-info
+    {
+        padding-top: 2em;
+        
+        .et-tour-article
+        {
+            overflow-y:auto;
+            padding: 0 1em;
+            position:relative;
+            
+            >h1, >h2, >h3{
+                display: none;
+            }
+
+            h3{
+                font-size: 1.15em;
+            }
+        }
+        
+        .et-title
+        {
+            text-align:center;
+            font-size:1.5em;
+            padding: 1rem 0;
+        }
+    }
+
+    .et-inverted-btn
+    {
+        flex-direction: row-reverse;
+    }
+
+    .et-tour-stepper
+    {
+        margin-top:auto;
+        display:flex;
+        justify-content: space-between;
+        background:rgb(64,64,64);
+        align-items: center;
+        height: 6.25rem;
+
+        button{
+            padding: 0 3rem;
+            height: 2em;
+        }
+    }
+    
+    .et-step-count
+    {
+        padding: 0.5em 1em;
+    }
+
+    .tour-return
+    {
+        width: 10em;
+        text-transform: uppercase;
+        background: $color-primary;
+        padding: .25em 1em;
+        z-index: 10;
+
+        img
+        {
+            height: 1em;
+            margin:0 .25em;
+        };
+    }
+
+    .nav-button
+    {
+        padding: 1rem 3rem;
+        text-transform: uppercase;
+        border: .1em solid $color-primary;
+    }    
+}
+
+//annotations
+
+.sv-tag-cloud
+{
+    height: 100%;
+
+    .tag-cloud{
+        width: 100%;
+
+        .sv-tag-button{
+            margin: 0.5rem;
+            background-color: $color-background-darker;
+            border-left: $color-primary 5px solid;
+
+            &[selected]{
+                background-color: $color-primary;
+            }
+        }
+
+        .tag-descriptions{
+
+            .tag-description{
+                background-color: $color-background-darker;
+                padding: 1rem;
+                margin: 0.5rem;
+                cursor: pointer;
+                display: none;
+
+                &[selected]{
+                    display: block;
+                }
+
+                h2{
+                    text-align: center;
+                }
+            }            
+        }
+
+    }
+
+}
+
+// toolbar
+
+.sv-tool-bar-container
+{
+    width: 100%;
+    height: 100%;
+    font-size: 1.5rem;
+
+    .sv-tool-bar
+    {
+        height: 100%;
+        color: inherit;
+    }
+    .sv-blue-bar
+    {
+        flex-direction: column-reverse;
+        margin-bottom: auto;
+        background: none;
+        border: none;
+    }
+
+    #mainmenu 
+    {
+        .ff-button
+        {
+            border-radius: 0;
+
+            &[icon="close"], &[icon="tape"] 
+            {
+                display: none;
+            }
+            &[selected]
+            {
+                background-color: $color-primary;
+            }
+            .ff-icon
+            {
+                fill:$color-light;
+            }
+        }
+    }
+    #toolmenu
+    {
+        .ff-button
+        {
+            border-radius: 0;
+
+            &[selected]
+            {
+                background-color: $color-primary;                
+            }
+            &[icon="close"], &[icon="cog"]
+            {
+                display: none;                
+            }
+        }
+
+        .ff-color-edit
+        {
+            right: auto;
+            top: auto;
+            background-color: $color-background-dark;
+            z-index: 100;
+        }
+
+        .sv-light-tool-view
+        {
+            flex-direction: column-reverse;
+        }
+    }
+}
+
+//overlay
+
+.sv-content-view
+{
+    overflow:visible;
+    left: 100%;
+    width: 100%;
+    
+    .ff-splitter-section
+    {
+        background-color: $color-background;
+
+        &.et-scene-section
+        {
+            position:initial;
+        }
+    }
+
+    .sv-scene-view
+    {
+        overflow:visible;
+        
+        canvas
+        {
+            position:absolute;
+            width:100%;
+        }
+
+        &.sv-blur
+        {
+            filter:none;
+
+            .et-effect-layer
+            {
+                position:absolute;
+                top:0;
+                left:0;
+                width:100%;
+                height:100%;
+                backdrop-filter: brightness(60%) blur(5px);
+                
+            }
+        }
+    }
+    .sv-content-split .sv-reader-container
+    {
+        bottom:5em;
+    }
+}

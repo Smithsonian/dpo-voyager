@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{title}}</title>
+    <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+    <link href="/fonts/fonts.css" rel="stylesheet">
+
+    <style>
+        body { background: #303030; height:100vh; margin:0}
+    </style>
+
+        {{#if isDevelopment}}
+        <script src="/libs/three/three.js"></script>
+        {{else}}
+        <script src="/libs/three/three.min.js"></script>
+        {{/if}}
+
+</head>
+<body>
+{{{element}}}
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "moduleResolution": "node",
+    "module": "System",
+    "target": "ES2022"
+  },
+  "exclude": ["node_modules", "dist", "build"],
+  "typeAcquisition": {
+    "include": []
+  }
+}
