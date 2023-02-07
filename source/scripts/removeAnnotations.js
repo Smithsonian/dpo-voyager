@@ -1,7 +1,7 @@
 
 
 let cookie = [...process.argv].pop();
-if(!cookie || !cookie.startsWith("session=")) throw new Error`Provide an authorization cookie for this script to work`;
+if(!cookie || !cookie.startsWith("session=")) throw new Error(`Provide an authorization cookie for this script to work`);
 
 let url = "http://localhost:8000";
 let opts = {

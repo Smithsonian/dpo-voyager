@@ -12,3 +12,15 @@ curl -XPOST -H "Content-Type: application/json" -d '{"username":"<...>", "passwo
 ```
 
 Then restart the application to enable permissions management
+
+## Deployment
+
+Local (testing): *from the project's root*
+
+    npm run build-server
+    npm start
+
+Deployment: 
+
+    docker buid . -t ethesaurus
+    docker run --rm -it --port 8000:8000 --volume "$(pwd)/files:/app/files" --name ethesaurus ethesaurus

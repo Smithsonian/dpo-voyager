@@ -1,0 +1,7 @@
+/files/
+/doc/
+/docs/_site/
+/dist/
+**/node_modules/
+/.git/
+*.tar.gz

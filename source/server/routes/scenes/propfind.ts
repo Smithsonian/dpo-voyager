@@ -202,8 +202,8 @@ export async function handlePropfind(req :Request, res:Response){
   const {vfs} = req.app.locals as AppLocals;
   let recurse = parseInt(req.get("Depth")??"-1");
   if(!Number.isSafeInteger(recurse)) throw new Error("Invalid Depth header : "+req.get("Depth"));
-  let rootUrl = new URL(`${req.protocol}://${req.hostname}${req.app.locals.port?`:${req.app.locals.port}`:""}`);
-
+  let host = (req.app.get("trust proxy")? req.get("X-Forwarded-Host") : null) ?? req.get("Host");
+  let rootUrl = new URL(`${req.protocol}://${host}`);
   let p = path.normalize(req.path);
   let depth = (recurse == -1)? -1 : recurse + p.split("/").length + (p.endsWith("/")?-1:0);
   let elements :ElementList;

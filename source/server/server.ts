@@ -13,6 +13,7 @@ import {AppLocals} from "./utils/locals";
 import openDatabase from './vfs/helpers/db';
 import Vfs from "./vfs";
 import importAll from "./vfs/helpers/import";
+import config from "./utils/config";
 
 
 export default async function createServer(rootDir :string, /*istanbul ignore next */{
@@ -34,10 +35,10 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
 
   const app = express();
   app.disable('x-powered-by');
-
+  app.set("trust proxy", config.trust_proxy);
 
   // MIGRATION FROM WEBDAV
-  if((migrate && ((await userManager.userCount())) <= 1)){
+  if((migrate && ((await userManager.userCount())) <= 2)){
     await importAll(fileDir, fileDir);
     console.log("Application is in open mode");
     app.locals.isOpen = true; //Allow arbitrary users creation

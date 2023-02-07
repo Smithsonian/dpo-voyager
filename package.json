@@ -5,7 +5,7 @@
     "scripts": {
         "start": "npm run server",
         "server": "cd source/server/ && npm start",
-        "watch": "NODE_ENV=development nodemon -e ts,js -w source/server -w source/ui/webpack.config.js -x ts-node source/server/index.ts",
+        "watch": "MIGRATIONS_PATH=\"source/server/migrations\" NODE_ENV=development nodemon -e ts,js -w source/server -w source/ui/webpack.config.js -x ts-node source/server/index.ts",
         "build-dev": "cd source/client; webpack --mode=development --env=app=all; cd ../..",
         "build-dev-local": "cd source/client; webpack --mode=development --env=app=all --local=true; cd ../..",
         "build-prod": "cd source/client; webpack --mode=production --env=app=all; cd ../..",

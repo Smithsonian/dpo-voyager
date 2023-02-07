@@ -6,6 +6,7 @@ const values = {
   port: [8000 as number, toUInt ],
   migrations_path: [ path.join(process.cwd(), "migrations"), toPath],
   root_dir: [ process.cwd(), toPath],
+  trust_proxy: [true as boolean, toBool],
 } as const;
 
 type Converter<T> = (s:string)=>T;
