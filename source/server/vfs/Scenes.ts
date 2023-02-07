@@ -16,6 +16,7 @@ export default abstract class ScenesVfs extends BaseVfs{
     let permissions :Record<string,AccessType> = (typeof perms === "object")? perms : {};
     //Always provide permissions for default user
     permissions['0'] ??= (config.public?"read":"none");
+    permissions['1'] ??= "read";
     //If an author_id is provided, it is an administrator
     if(typeof perms === "number" ) permissions[perms.toString(10)] = "admin";
 
@@ -83,8 +84,9 @@ export default abstract class ScenesVfs extends BaseVfs{
       FROM scenes
         LEFT JOIN (SELECT MAX(ctime) AS ctime, fk_scene_id FROM documents GROUP BY fk_scene_id) AS document ON fk_scene_id = scene_id
       ${typeof user_id === "number"? `WHERE 
-        IFNULL(
+        COALESCE(
           json_extract(scenes.access, '$.' || $user_id),
+          ${0 < user_id ? `json_extract(access, '$.1'),`:""}
           json_extract(scenes.access, '$.0')
         ) IN (${ AccessTypes.slice(2).map(s=>`'${s}'`).join(", ") })
       `:""}

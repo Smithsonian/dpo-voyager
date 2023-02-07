@@ -54,10 +54,11 @@ describe("import", function(){
       let stats = await expect(importAll(srcDir, outDir)).to.be.fulfilled;
       expect(stats).to.have.property("users", 1);
       let users = await db.all(`SELECT * FROM users`);
-      expect(users).to.have.property("length", 2);
+      expect(users).to.have.property("length", 3);
       expect(users[0]).to.have.property("username", "default");
-      expect(users[1]).to.have.property("username", "foo");
-      expect(users[1]).to.have.property("password", "$scrypt$N=16$r=2$p=1$salt$LujVzsDpII5VRQoJQw_Qjw");
+      expect(users[1]).to.have.property("username", "any");
+      expect(users[2]).to.have.property("username", "foo");
+      expect(users[2]).to.have.property("password", "$scrypt$N=16$r=2$p=1$salt$LujVzsDpII5VRQoJQw_Qjw");
     });
 
     describe("handle special data", function(){

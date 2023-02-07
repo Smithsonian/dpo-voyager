@@ -36,7 +36,7 @@ export default class User implements SafeUser {
     this.email = email;
   }
   static createDefault(){
-    return new User({uid: 0, username: "anonymous", password: ""});
+    return new User({uid: 0, username: "default", password: ""});
   }
     /**
    * Make a user safe for export and public use (remove password field)

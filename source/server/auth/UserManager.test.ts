@@ -64,14 +64,6 @@ describe("UserManager methods", function(){
       await expect(UserManager.open({filename:":memory:", migrate:"force"})).to.be.fulfilled;
     })
   });
-  describe("getDefaultUser()", function(){
-    it("returns a valid user", async function(){
-      await expect(userManager.getDefaultUser()).to.eventually.include({
-        isDefaultUser: true,
-        isAdministrator: false,
-      });
-    });
-  })
 
   describe("addUser()", function(){
     it("creates a user", async function(){
@@ -162,6 +154,13 @@ describe("UserManager methods", function(){
     it("can return default permissions", async function(){
       let access = await userManager.getAccessRights("foo", user.uid);
       expect(access).to.equal("read");
+    });
+    it("can set permissions for any user", async function(){
+      for(let role of AccessTypes.slice(2)/*read and more */){
+        await userManager.grant("foo", "any", role);
+        let access = await userManager.getAccessRights("foo", user.uid);
+        expect(access).to.equal(role);
+      }
     });
     it("can set user permissions", async function(){
       for(let role of AccessTypes){

@@ -83,8 +83,9 @@ CREATE TABLE config (
 --128 bytes of data is the default best for sha1
 INSERT INTO keys (key_data) VALUES (randomblob(16));
 
---we rely strongly on default id always being 0
+--we rely strongly on default id always being 0 and "any" being 1
 INSERT INTO users (user_id, username) VALUES(0, "default");
+INSERT INTO users (user_id, username) VALUES(1, "any");
 
 PRAGMA foreign_keys = ON;
 

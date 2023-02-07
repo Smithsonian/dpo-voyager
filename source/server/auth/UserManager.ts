@@ -35,11 +35,16 @@ export const AccessTypes = [
   "write",
   "admin"
 ] as const;
+
 export function isAccessType(type :any) :type is AccessType{
   return AccessTypes.indexOf(type) !== -1;
 }
+
 export type AccessType = typeof AccessTypes[number];
 
+
+export const any_id = 1 as const;
+export const default_id = 0 as const;
 
 export default class UserManager {
 
@@ -165,9 +170,6 @@ export default class UserManager {
     return UserManager.deserialize(u);
   }
 
-  async getDefaultUser() :Promise<User>{
-    return User.createDefault();
-  }
   
   /**
    * List users
@@ -179,7 +181,7 @@ export default class UserManager {
     return (await this.db.all<StoredUser[]>(`
       SELECT ${safe?"user_id, username, email, isAdministrator":"*"} 
       FROM users
-      WHERE user_id != 0`)).map(u=>UserManager.deserialize(u));
+      WHERE user_id NOT IN (0, 1)`)).map(u=>UserManager.deserialize(u));
   }
 
   async userCount() :Promise<number>{
@@ -255,6 +257,7 @@ export default class UserManager {
     return (await this.db.get(`
       SELECT COALESCE(
         json_extract(access, '$.' || $uid),
+        ${0 < uid? `json_extract(access, '$.1'),`:""}
         json_extract(access, '$.0')
       ) AS access
       FROM scenes

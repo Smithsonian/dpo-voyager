@@ -458,6 +458,7 @@ describe("Web Server Integration", function(){
         .expect("Content-Type", "application/json; charset=utf-8");
         expect(r, JSON.stringify(r.body)).to.have.property("body").to.deep.equal([
           {uid:0, username: "default", access: "read"},
+          {uid:1, username: "any", access: "read"},
           {uid:user.uid, username: user.username, access: "admin"},
           {uid:dave.uid, username: dave.username, access: "write"},
         ]);
@@ -473,6 +474,7 @@ describe("Web Server Integration", function(){
         .expect("Content-Type", "application/json; charset=utf-8");
         expect(r).to.have.property("body").to.deep.equal([
           {uid: 0, username: "default", access: "none"},
+          {uid:1, username: "any", access: "read"},
           {uid:user.uid, username: user.username, access: "admin"}
         ]);
       });
@@ -487,6 +489,7 @@ describe("Web Server Integration", function(){
         .expect("Content-Type", "application/json; charset=utf-8");
         expect(r).to.have.property("body").to.deep.equal([
           {uid: 0, username: "default", access: "read"},
+          {uid:1, username: "any", access: "read"},
         ]);
 
       });
@@ -543,7 +546,7 @@ describe("Web Server Integration", function(){
       expect(res.body).to.have.property("length", 2);
       for(let user of res.body){
         expect(user).to.have.property("username").a("string");
-        expect(user).to.have.property("uid").a("number");
+        expect(user).to.have.property("uid").a("number").above(1);
         expect(user).not.to.have.property("password");
       }
     })
@@ -586,6 +589,7 @@ describe("Web Server Integration", function(){
       let doc_id = await vfs.writeDoc("{}", scene, user.uid);
       expect(await userManager.getPermissions(scene)).to.deep.equal([
         {uid: 0, username: "default", access: "read"},
+        {uid:1, username: "any", access: "read"},
         {uid: user.uid, username: user.username, access: "admin"},
       ]);
       let f = await vfs.createFile(props, {hash: "xxxxxx", size:10});
@@ -594,6 +598,7 @@ describe("Web Server Integration", function(){
       expect(await vfs.getFileProps(props)).to.have.property("author", "default");
       expect(await userManager.getPermissions(scene)).to.deep.equal([
         {uid: 0, username: "default", access: "read"},
+        {uid:1, username: "any", access: "read"},
       ]);
     });
   });
