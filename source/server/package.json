@@ -4,6 +4,7 @@
     "description": "eThesaurus application, based on Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "public": false,
     "scripts": {
+        "start": "ROOT_DIR=\"$(pwd)/../..\" node ./dist/server/index.js",
         "test": "mocha",
         "build": "tsc -b ."
     },

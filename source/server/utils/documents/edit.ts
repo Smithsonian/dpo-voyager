@@ -1,7 +1,6 @@
 import ref from "./default.svx.json";
 
 import {IDocument, INode, IScene} from "../../../client/schema/document"
-import { SceneDescription } from "../glTF";
 import { IAsset, IBoundingBox, IDerivative, IModel, TDerivativeQuality, TDerivativeUsage } from "../../../client/schema/model";
 
 export interface Document extends IDocument{

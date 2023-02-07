@@ -16,6 +16,7 @@
  */
 
 import createServer from "./server";
+import config from "./utils/config";
 
 //@ts-ignore
 import("source-map-support").then((s)=>{
@@ -30,11 +31,10 @@ import("source-map-support").then((s)=>{
 const port: number = parseInt(process.env["VOYAGER_SERVER_PORT"]|| "8000") ;
 const devMode: boolean = process.env["NODE_ENV"] !== "production";
 
-const rootDir = process.cwd();
 
 (async ()=>{
-    console.info("Serve directory : "+rootDir);
-    const app = await createServer(rootDir, {verbose:devMode});
+    console.info("Serve directory : "+config.root_dir);
+    const app = await createServer(config.root_dir, {verbose:devMode});
     
     app.listen(port, () => {
         console.info(`Server ready and listening on port ${port}\n`);

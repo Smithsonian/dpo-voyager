@@ -11,7 +11,11 @@
         "moduleResolution": "node",
         "sourceMap": true,
         "types": ["mocha", "chai", "chai-as-promised"],
-        "outDir": "../../dist/server"
+        "outDir": "./dist",
+        "rootDir": "..",
+        "paths": {
+            "@ff/core/types": [ "./utils/documents/types" ],
+        }
     },
     "files": [
         "index.ts"

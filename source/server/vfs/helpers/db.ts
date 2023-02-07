@@ -1,7 +1,7 @@
 
-import path from "path";
 import {open as openDatabase, ISqlite, Database as IDatabase } from "sqlite";
 import sqlite from "sqlite3";
+import config from "../../utils/config";
 
 export interface DbOptions {
   filename:string;
@@ -41,7 +41,7 @@ export default async function open({filename, migrate=true} :DbOptions) :Promise
   if(migrate !== false){
     await db.migrate({
       force: ((migrate === "force")?true: false),
-      migrationsPath: path.resolve(__dirname, "../../migrations"),
+      migrationsPath: config.migrations_path,
     });
   }
   (db as Database).beginTransaction = async function(work :TransactionWork<any>, commit :boolean = true){

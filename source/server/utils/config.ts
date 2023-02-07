@@ -1,9 +1,11 @@
-
+import path from "path"
 
 const values = {
   public: [true as boolean, toBool],
   brand: ["eCorpus" as string, toString],
   port: [8000 as number, toUInt ],
+  migrations_path: [ path.join(process.cwd(), "migrations"), toPath],
+  root_dir: [ process.cwd(), toPath],
 } as const;
 
 type Converter<T> = (s:string)=>T;
@@ -18,6 +20,9 @@ type Config = {
 
 function toString(s:string):string{
   return s;
+}
+function toPath(s:string):string{
+  return path.normalize(s);
 }
 
 function toUInt(s:string):number{
