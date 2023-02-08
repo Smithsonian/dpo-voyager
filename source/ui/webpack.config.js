@@ -70,6 +70,7 @@ module.exports = function createAppConfig(env, argv)
         cache: {type: "filesystem"},
         entry: {
             "story": "client/ui/story/MainView.ts",
+            "explorer": "client/ui/explorer/MainView.ts",
             "corpus": "source/ui/MainView.ts",
         },
 
@@ -130,8 +131,15 @@ module.exports = function createAppConfig(env, argv)
                 filename: `voyager-story.html`,
                 template: path.join(dirs.source, "ui", "story.hbs"),
                 title: "Voyager Story",
-                templateParameters:{...hbsParams, element: `<voyager-story></voyager-story>`},
+                templateParameters:{...hbsParams, quill:true, element: `<voyager-story></voyager-story>`},
                 chunks : ['story'],
+            }),
+            new HTMLWebpackPlugin({
+                filename: `voyager-explorer.html`,
+                template: path.join(dirs.source, "ui", "story.hbs"),
+                title: "Voyager Explorer",
+                templateParameters:{...hbsParams, quill:false, element: `<voyager-explorer></voyager-explorer>`},
+                chunks : ['explorer'],
             }),
             new HTMLWebpackPlugin({
                 filename: `ecorpus-main.html`,
