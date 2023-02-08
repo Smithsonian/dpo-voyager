@@ -74,6 +74,10 @@ export default {
     administration: {
       fr: "Administration",
       en: "Administration"
+    },
+    reportBug: {
+      fr: "Signaler un bug",
+      en: "Report a bug"
     }
   },
   info:{

@@ -118,7 +118,7 @@ export default class MainView extends i18n(LitElement){
         ${this.renderContent()}
       </main>
       <footer>
-        <div style="margin:auto">Holusion © <a href="mailto:contact@holusion.com"> Report a bug</a></div>
+        <div style="margin:auto">Holusion © <a href="mailto:contact@holusion.com">${this.t("ui.reportBug")}</a></div>
         <change-locale style="flex:none"></change-locale>
       </footer>
       <modal-dialog></modal-dialog>
