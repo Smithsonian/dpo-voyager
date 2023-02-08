@@ -109,15 +109,18 @@ export default class MainView extends i18n(LitElement){
 
     return html`
       <corpus-navbar>
-        <nav-link icon="file" href="/ui/doc" text="Documentation"></nav-link>
-        ${(this.user?.isAdministrator)?html`<nav-link icon="file" text="${this.t("ui.users")}" href="/ui/users" ></nav-link>`:""}
-        <change-locale></change-locale>
+        <nav-link href="/ui/doc" text="Documentation"></nav-link>
+        ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users" ></nav-link>`:""}
         <div class="divider"></div>
         <user-button .username=${this.user?.username}></user-button>
       </corpus-navbar>
       <main>
         ${this.renderContent()}
       </main>
+      <footer>
+        <div style="margin:auto">Holusion © <a href="mailto:contact@holusion.com"> Report a bug</a></div>
+        <change-locale style="flex:none"></change-locale>
+      </footer>
       <modal-dialog></modal-dialog>
       <div id="ff-notification-stack"></div>
     `;

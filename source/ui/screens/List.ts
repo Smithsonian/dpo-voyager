@@ -4,7 +4,8 @@ import Notification from "@ff/ui/Notification";
 
 import "client/ui/Spinner";
 import "../SceneCard";
-import "../UploadButton"
+import "../UploadButton";
+import "./LandingPage";
 import { SceneProps } from "../SceneCard";
 import i18n from "../state/translate";
 
@@ -105,24 +106,29 @@ import i18n from "../state/translate";
     }
 
     protected render() :TemplateResult {
-        if(!this.list){
-            return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`;
-        }else if (this.list.length == 0 && Object.keys(this.uploads).length == 0){
-            return html`<div style="padding-bottom:100px;padding-top:20px;position:relative;" class="list-grid" >
-                <h1>No scenes available</h1>
-                ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
+
+        const cardlist = ()=>{
+            if(!this.list){
+                return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`;
+            }else if (this.list.length == 0 && Object.keys(this.uploads).length == 0){
+                return html`<div style="padding-bottom:100px;padding-top:20px;position:relative;" class="list-grid" >
+                    <h1>No scenes available</h1>
+                    ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
+                </div>`;
+            }
+            return html`
+                ${(this.mode !=="anonymous")? html`<upload-button @change=${this.onUploadBtnChange}>
+                    ${this.t("ui.upload")}
+                </upload-button>` : ``}
+                <a download href="/api/v1/scenes?format=zip">Download as Zip</a>
+                <div class="list-grid" style="position:relative;">
+                ${this.list.map(l => html`<scene-card .mode=${this.mode} name="${l.name}" />`)}
+                ${Object.entries(this.uploads).map(([name, props])=> html`<scene-card name="${name}" thumb="/images/defaultSprite.svg" />`)}
+                ${(this.mode !=="anonymous")&& this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
             </div>`;
         }
-        return html`
-            ${(this.mode !=="anonymous")? html`<upload-button @change=${this.onUploadBtnChange}>
-                ${this.t("ui.upload")}
-            </upload-button>` : ``}
-            <a download href="/api/v1/scenes?format=zip">Download as Zip</a>
-            <div class="list-grid" style="position:relative;">
-            ${this.list.map(l => html`<scene-card .mode=${this.mode} name="${l.name}" />`)}
-            ${Object.entries(this.uploads).map(([name, props])=> html`<scene-card name="${name}" thumb="/images/defaultSprite.svg" />`)}
-            ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
-        </div>`;
+
+        return (this.mode !=="anonymous")? cardlist() : html`<landing-page></landing-page>`;
     }
 
     ondragenter = (ev)=>{

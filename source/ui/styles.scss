@@ -11,9 +11,14 @@ main{
   max-width: var(--col-width);
   margin: auto;
   color: var(--color-light);
+  min-height:calc(100vh - 88px);
   h1{
     color: var(--color-primary);
   }
+}
+
+a{
+  color:white;
 }
 
 corpus-list {
@@ -191,4 +196,11 @@ table.list-table {
     padding: 0;
     margin: 8px;
   }
+}
+
+footer{
+  color: var(--color-light);
+  height: 44px;
+  background-color: var(--color-dark);
+  display:flex;
 }

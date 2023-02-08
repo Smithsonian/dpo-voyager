@@ -70,6 +70,10 @@ export default {
     admin: {
       fr: "admin",
       en: "admin"
+    },
+    administration: {
+      fr: "Administration",
+      en: "Administration"
     }
   },
   info:{
