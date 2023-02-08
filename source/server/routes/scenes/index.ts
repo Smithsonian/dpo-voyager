@@ -2,7 +2,7 @@ import { NextFunction, Request, Response, Router } from "express";
 
 import {handlePropfind} from "./propfind";
 import {handlePutFile, handlePutDocument} from "./put";
-import { canRead, canWrite, isUser } from "../../utils/locals";
+import { canRead, canWrite, isAdministrator, isUser } from "../../utils/locals";
 import wrap from "../../utils/wrapAsync";
 import bodyParser from "body-parser";
 
@@ -13,6 +13,7 @@ import handleDeleteFile from "./delete/file";
 import { FileTypes } from "../../vfs";
 import handleCopyFile from "./copy/file";
 import handleCopyDocument from "./copy/document";
+import handleDeleteScene from "./delete/scene";
 
 /**
  * trivial middleware that ensure req.params.file == req.params.model
@@ -31,7 +32,7 @@ router.propfind("/", wrap(handlePropfind));
 router.use("/:scene", canRead);
 router.propfind("/:scene", wrap(handlePropfind));
 router.propfind("/:scene/*", wrap(handlePropfind));
-
+router.delete("/:scene", isAdministrator, wrap(handleDeleteScene));
 
 router.get("/:scene/:file(*.svx.json)", wrap(handleGetDocument));
 router.put("/:scene/:file(*.svx.json)", 

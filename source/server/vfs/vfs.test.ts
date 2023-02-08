@@ -127,6 +127,13 @@ describe("Vfs", function(){
         });
       })
 
+      describe("archiveScene()", function(){
+        it("set access rights to none", async function(){
+          await vfs.archiveScene("foo");
+          expect(await vfs.getScenes(0)).to.have.property("length", 0);
+        });
+      });
+
       describe("createFile()", function(){
         it("can create an empty file", async function(){
           let r = await vfs.createFile( {scene: "foo", type: "articles", name: "foo.txt", user_id: 0}, {hash: null, size: 0});

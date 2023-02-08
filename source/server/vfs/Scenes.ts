@@ -3,7 +3,7 @@ import config from "../utils/config";
 import { ConflictError,  NotFoundError } from "../utils/errors";
 import { Uid } from "../utils/uid";
 import BaseVfs from "./Base";
-import { ItemEntry, ItemProps, Scene } from "./types";
+import { FileTypes, ItemEntry, ItemProps, Scene } from "./types";
 
 
 
@@ -55,9 +55,23 @@ export default abstract class ScenesVfs extends BaseVfs{
   /**
    * WARNING: should not be used in normal operations
    * It will irrecorevably delete all associated resources
+   * @see archiveScene
    */
-  async removeScene($scene_id:number){
-    let r = await this.db.run(`DELETE FROM scenes WHERE scene_id = $scene_id`, {$scene_id});
+  async removeScene(scene:number|string){
+    let r = await this.db.run(`DELETE FROM scenes WHERE ${typeof scene ==="number"? "scene_id": "scene_name"} = $scene`, {$scene:scene});
+    if(!r?.changes) throw new NotFoundError(`No scene found matching : ${scene}`);
+  }
+  /**
+   * set a scene access to "none" for everyone
+   * @see UserManager.grant for a more granular setup
+   */
+  async archiveScene(scene :number|string){
+    let r = await this.db.run(`
+      UPDATE scenes 
+      SET access = json_object('0', 'none')
+      WHERE ${typeof scene ==="number"? "scene_id": "scene_name"} = $scene
+    `, {$scene: scene});
+    if(!r?.changes) throw new NotFoundError(`No scene found matching : ${scene}`);
   }
 
   async renameScene($scene_id :number, $nextName :string){

@@ -10,7 +10,7 @@ import "client/ui/Spinner";
 import "../Size";
 import { nothing } from "lit-html";
 import i18n from "../state/translate";
-
+import {getLogin} from "../state/auth";
 
 
 const AccessTypes = [
@@ -154,20 +154,24 @@ class SceneVersion{
         }
         let size = this.versions.reduce((s, v)=>s+v.size, 0);
         
-        return html`
-        <h1>${this.scene}</h1>
-        <div style="display:flex;flex-wrap:wrap;">
-          <div style="flex-grow: 1; min-width:300px;">
-            <h3>Total size: <b-size b=${size}></b-size>
-            <h3>${articles.size} article${(1 < articles.size?"s":"")}
-          </div>
-          <div style="min-width:300px;">
-            ${this.renderPermissions()}
+        return html`<div>
+          <h1>${this.scene}</h1>
+          <div style="display:flex;flex-wrap:wrap;">
+            <div style="flex-grow: 1; min-width:300px;">
+              <h3>Total size: <b-size b=${size}></b-size>
+              <h3>${articles.size} article${(1 < articles.size?"s":"")}
+            </div>
+            <div style="min-width:300px;">
+              ${this.renderPermissions()}
+            </div>
           </div>
         </div>
-      </div>
-      <div>
-        ${this.renderHistory()}
+        <div>
+          ${this.renderHistory()}
+        </div>
+        ${getLogin()?.isAdministrator? html`<div style="padding: 10px 0;display:flex;color:red;justify-content:end;">
+        <div><ff-button icon="trash" text="Delete" @click=${this.onDelete}</div>
+        </div>`:null}
       </div>`;
     }
     renderPermissions(){
@@ -289,5 +293,16 @@ class SceneVersion{
       return p;
     }
 
+    onDelete = ()=>{
+      if(!confirm("Delete permanently "+this.scene+"?")) return;
+      Notification.show("Deleting scene "+this.scene, "warning");
+      fetch(`/scenes/${this.scene}?archive=false`, {method:"DELETE"})
+      .then(()=>{
+        window.dispatchEvent(new CustomEvent("navigate", {detail: {href:"/ui/"}}));
+      }, (e)=>{
+        console.error(e);
+        Notification.show(`Failed to remove ${this.scene} : ${e.message}`);
+      });
+    }
 
  }
