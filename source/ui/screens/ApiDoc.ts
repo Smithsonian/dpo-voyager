@@ -4,11 +4,6 @@ import { customElement, property, html, TemplateResult, LitElement, css } from "
 import "@ff/ui/Button";
 
 import "client/ui/Spinner";
-import Modal from "../Modal";
-import "../SceneCard";
-import HttpError from "../state/HttpError";
-import Icon from "@ff/ui/Icon";
-import { nothing } from "lit-html";
 
 
 /**

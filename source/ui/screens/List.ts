@@ -3,10 +3,9 @@ import { css, customElement, property, html, TemplateResult, LitElement } from "
 import Notification from "@ff/ui/Notification";
 
 import "client/ui/Spinner";
-import "../SceneCard";
-import "../UploadButton";
+import "../composants/UploadButton";
 import "./LandingPage";
-import { SceneProps } from "../SceneCard";
+import { SceneProps } from "../composants/SceneCard";
 import i18n from "../state/translate";
 
 

@@ -13,19 +13,39 @@ export type I18nDict = {
 
 export default {
   ui:{
-    users:{
+    users: {
       "fr": "Utilisateurs",
       "en": "Users"
     },
-    upload:{
+    upload: {
       "fr": "Créer une scène",
       "en": "Upload a scene"
     },
-    username:{
-      "fr": "nom",
-      "en": "username"
+    username: {
+      "fr": "Nom d'utilisateur",
+      "en": "Username"
     },
-    filename:{
+    password: {
+      "fr": "Mot de passe",
+      "en": "Password"
+    },
+    passwordConfirm: {
+      "fr": "Confirmer le mot de passe",
+      "en": "PasswordConfirm"
+    },
+    changePassword: {
+      "fr": "Changer le mot de passe",
+      "en": "Change password"
+    },
+    login: {
+      "fr": "Connexion",
+      "en": "Login"
+    },
+    logout: {
+      "fr": "Se déconnecter",
+      "en": "Logout"
+    },
+    filename: {
       fr:"fichier",
       fr_plural: "fichiers",
       en:"filename",

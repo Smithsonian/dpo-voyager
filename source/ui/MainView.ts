@@ -6,17 +6,17 @@ import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./st
 
 import "./globals.scss";
 
-import "./UploadButton";
-import "./navbar/NavLink";
-import "./navbar/Navbar";
-import "./navbar/UserButton";
-import "./navbar/ChangeLocale";
+import "./composants/UploadButton";
+import "./composants/navbar/NavLink";
+import "./composants/navbar/Navbar";
+import "./composants/navbar/UserButton";
+import "./composants/navbar/ChangeLocale";
 import "./screens/List";
 import "./screens/Users";
 import "./screens/SceneHistory";
 import "./screens/FileHistory";
 import "./screens/ApiDoc";
-import "./Modal";
+import "./composants/Modal";
 
 interface Route{
   pattern :RegExp;
@@ -24,7 +24,7 @@ interface Route{
 }
 
 import { getLogin, offLogin, onLogin, updateLogin, UserSession } from './state/auth';
-import Modal from './Modal';
+import Modal from './composants/Modal';
 import i18n from './state/translate';
 
 /**

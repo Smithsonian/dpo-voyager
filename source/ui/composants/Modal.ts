@@ -3,7 +3,7 @@ import { css, LitElement,customElement, property, html, TemplateResult, query } 
 import "@ff/ui/Icon"
 
 
-import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';
+import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!../styles.scss';
 
 interface ModalOptions{
   header :TemplateResult|string;

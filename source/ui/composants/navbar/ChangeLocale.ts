@@ -1,6 +1,6 @@
 import { LitElement, html, customElement, property, css, TemplateResult } from 'lit-element';
 import Button from "@ff/ui/Button";
-import i18n, {Localization} from '../state/translate';
+import i18n, {Localization} from '../../state/translate';
 
 @customElement("change-locale")
 export default class ChangeLocale extends i18n(Button){
