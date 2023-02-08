@@ -17,7 +17,7 @@
 
 import Component, { types } from "@ff/graph/Component";
 import { ILanguage, ILanguageOption } from "client/schema/setup";
-import { ELanguageType, TLanguageType, ELanguageStringType } from "client/schema/common";
+import { ELanguageType, TLanguageType, ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
 import { ITagUpdateEvent } from "./CVModel2";
 
@@ -136,7 +136,14 @@ export default class CVLanguageManager extends Component
         if(dictionary === undefined) {
             return text;
         }
-
+        if(ENV_DEVELOPMENT && typeof dictionary[text] === "undefined" 
+            && ELanguageType[this.ins.language.value] != DEFAULT_LANGUAGE 
+            && this.ins.language.value == this.outs.language.value //Prevent showing this message if dictionary is loading
+        ){
+            console.groupCollapsed(`Missing translation string "${text}" for "${ELanguageType[this.ins.language.value]}`);
+            console.trace();
+            console.groupEnd();
+        }
         return dictionary[text] || text;
     }
 
