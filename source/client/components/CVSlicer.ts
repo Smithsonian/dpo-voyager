@@ -64,6 +64,7 @@ export default class CVSlicer extends Component
     get settingProperties() {
         return [
             this.ins.enabled,
+            this.ins.color
         ];
     }
 
