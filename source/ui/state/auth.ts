@@ -9,6 +9,7 @@ export interface UserSession{
   uid :number;
   username :string;
   isAdministrator :boolean;
+  isDefaultUser: boolean;
 }
 
 function setSession(s ?:UserSession){

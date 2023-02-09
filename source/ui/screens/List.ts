@@ -31,9 +31,9 @@ import { repeat } from "lit-html/directives/repeat";
     @property()
     dragover = false;
 
-
-    @property({type :String})
-    mode :"anonymous"|"user"|"administrator";
+    get isUser(){
+        return (this.user && !this.user.isDefaultUser);
+    }
 
     constructor()
     {
@@ -110,30 +110,30 @@ import { repeat } from "lit-html/directives/repeat";
     }
 
     protected render() :TemplateResult {
-
-        const cardlist = ()=>{
-            if(!this.list){
-                return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`;
-            }else if (this.list.length == 0 && Object.keys(this.uploads).length == 0){
-                return html`<div style="padding-bottom:100px;padding-top:20px;position:relative;" class="list-grid" >
-                    <h1>No scenes available</h1>
-                    ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
-                </div>`;
-            }
-            return html`
-                ${(this.mode !=="anonymous")? html`<upload-button @change=${this.onUploadBtnChange}>
-                    ${this.t("ui.upload")}
-                </upload-button>` : ``}
-                <div class="list-grid" style="position:relative;">
-                ${repeat([
-                    ...this.list,
-                    ...Object.keys(this.uploads).map(name=>({name})),
-                ],({name})=>name , ({name}) => html`<scene-card .mode=${this.mode} name="${name}" />`)}
-                ${(this.mode !=="anonymous")&& this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
+        if(!this.isUser){
+            return html`<landing-page></landing-page>`;
+        }
+        let mode = (this.user?"write":"read")
+        if(!this.list){
+            return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`;
+        }else if (this.list.length == 0 && Object.keys(this.uploads).length == 0){
+            return html`<div style="padding-bottom:100px;padding-top:20px;position:relative;" class="list-grid" >
+                <h1>No scenes available</h1>
+                ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
             </div>`;
         }
+        return html`
+            <upload-button @change=${this.onUploadBtnChange}>
+                ${this.t("ui.upload")}
+            </upload-button>
+            <div class="list-grid" style="position:relative;">
+            ${repeat([
+                ...this.list,
+                ...Object.keys(this.uploads).map(name=>({name})),
+            ],({name})=>name , ({name}) => html`<scene-card .mode=${mode} name="${name}" />`)}
+            ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
+        </div>`;
 
-        return (this.mode !=="anonymous")? cardlist() : html`<landing-page></landing-page>`;
     }
 
     ondragenter = (ev)=>{
@@ -144,11 +144,11 @@ import { repeat } from "lit-html/directives/repeat";
     }
     ondragover = (ev)=>{
         ev.preventDefault()
-        if(this.mode !=="anonymous") this.dragover = true;
+        if(this.isUser) this.dragover = true;
     }
     ondrop = (ev)=>{
         ev.preventDefault();
-        if(this.mode ==="anonymous") return;
+        if(!this.isUser) return;
 
         this.dragover = false;
         for(let item of [...ev.dataTransfer.items]){
