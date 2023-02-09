@@ -57,13 +57,14 @@ export default class SplitUserInterface extends DocumentView
     }
     protected disconnected(): void {
         super.disconnected();
-        this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
+        this.activeDocument?.setup.language.outs.language.off("value", this.onUpdate, this);
     }
 
     
     protected render()
     {
         const document = this.activeDocument;
+        if(!document) return null;
         const setup = document.setup;
 
         const tours = setup.tours.tours;
