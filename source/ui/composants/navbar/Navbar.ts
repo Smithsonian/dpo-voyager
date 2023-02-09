@@ -19,7 +19,12 @@ import "client/ui/Logo";
 
   protected render() :TemplateResult {
   return html`<nav>
-    <div class="brand"> <a style="display:flex; align-items:center; color:#c8c8c8;text-decoration:none;font-weight:bold" href="/"><img style="height:32px; padding: 0px 10px;" src="/images/logo-planete.png" alt="logo planete"> E-Corpus</a> </div>
+    <div class="brand">
+      <a style="display:flex; align-items:center; color:#c8c8c8;text-decoration:none;font-weight:bold" href="/">
+        <img style="height:32px; padding: 0px 10px;" src="/images/logo-planete.png" alt="logo eCorpus">
+        <span>eCorpus</span>
+      </a>
+    </div>
     <div class="spacer"></div>
     <div class="navbar"><slot>no-content</slot></div>
   </nav>`;

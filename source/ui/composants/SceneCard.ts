@@ -22,7 +22,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
  export default class SceneCard extends LitElement
  {
     static _assets = new WebDAVProvider();
-    @property()
+    @property({attribute: false})
     thumb :string;
 
     @property()
@@ -52,7 +52,6 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
         });
     }
     public disconnectedCallback(): void {
-      this.thumb = null;
     }
 
     protected render() :TemplateResult {
@@ -72,6 +71,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
         </div>
       </div>`;
     }
+
     static styles = [css`
       :host {
         display: block;

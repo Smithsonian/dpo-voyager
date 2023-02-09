@@ -1,10 +1,12 @@
 
+import { LitElement, property } from "lit-element";
 import HttpError from "./HttpError";
-import StateChangeEvent from "./StateChangeEvent";
+import { Constructor } from "./mixins";
 
 const LOGIN_STATE = "login-state";
 
 export interface UserSession{
+  uid :number;
   username :string;
   isAdministrator :boolean;
 }
@@ -67,4 +69,37 @@ export function onLogin(callback :(user :UserSession)=>any){
 }
 export function offLogin(callback){
   return window.removeEventListener(LOGIN_STATE, callback);
+}
+
+
+
+export declare class WithUser{
+  public user :UserSession|undefined;
+  public onLoginChange(u :UserSession|undefined):any;
+}
+
+export function withUser<T extends Constructor<LitElement>>(baseClass:T) : T & Constructor<WithUser> {
+
+  class WithUser extends baseClass{
+    @property({attribute: false, type: Object})
+    public user :UserSession|undefined;
+    connectedCallback(){
+      super.connectedCallback();
+      onLogin(this.onLoginCallback);
+    }
+
+    disconnectedCallback(){
+      super.disconnectedCallback();
+      offLogin(this.onLoginCallback);
+    }
+    private onLoginCallback = (u :UserSession|undefined)=>{
+      if(!u ||!this.user || !Object.keys(u).every(k=>u[k] === this.user[k])){
+        this.onLoginChange(u);
+        this.user = u;
+      }
+    }
+    public onLoginChange(u:UserSession|undefined){}
+
+  }
+  return WithUser;
 }

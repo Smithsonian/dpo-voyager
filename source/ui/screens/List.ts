@@ -7,6 +7,8 @@ import "../composants/UploadButton";
 import "./LandingPage";
 import { SceneProps } from "../composants/SceneCard";
 import i18n from "../state/translate";
+import { UserSession, withUser } from "../state/auth";
+import { repeat } from "lit-html/directives/repeat";
 
 
 
@@ -14,7 +16,7 @@ import i18n from "../state/translate";
  * Main UI view for the Voyager Explorer application.
  */
  @customElement("corpus-list")
- export default class List extends i18n(LitElement)
+ export default class List extends withUser(i18n(LitElement))
  {
     @property()
     list : SceneProps[];
@@ -45,7 +47,10 @@ import i18n from "../state/translate";
         super.connectedCallback();
         this.fetchScenes();
     }
-    
+    public onLoginChange (u: UserSession|undefined){
+        super.onLoginChange(u);
+        this.fetchScenes();
+    }
     async fetchScenes(){
         fetch("/api/v1/scenes").then(async (r)=>{
             if(!r.ok) throw new Error(`[${r.status}]: ${r.statusText}`);
@@ -119,10 +124,11 @@ import i18n from "../state/translate";
                 ${(this.mode !=="anonymous")? html`<upload-button @change=${this.onUploadBtnChange}>
                     ${this.t("ui.upload")}
                 </upload-button>` : ``}
-                <a download href="/api/v1/scenes?format=zip">Download as Zip</a>
                 <div class="list-grid" style="position:relative;">
-                ${this.list.map(l => html`<scene-card .mode=${this.mode} name="${l.name}" />`)}
-                ${Object.entries(this.uploads).map(([name, props])=> html`<scene-card name="${name}" thumb="/images/defaultSprite.svg" />`)}
+                ${repeat([
+                    ...this.list,
+                    ...Object.keys(this.uploads).map(name=>({name})),
+                ],({name})=>name , ({name}) => html`<scene-card .mode=${this.mode} name="${name}" />`)}
                 ${(this.mode !=="anonymous")&& this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
             </div>`;
         }

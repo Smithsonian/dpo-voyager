@@ -23,7 +23,7 @@ Icon.add("plus",  html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 
  * Main UI view for the Voyager Explorer application.
  */
  @customElement("users-list")
- export default class UsersList extends LitElement
+ export default class AdminScreen extends LitElement
  {
     @property({type: Array})
     list : User[];
@@ -108,32 +108,43 @@ Icon.add("plus",  html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 
         }else if(this.loading){
             return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`
         }
-        return html`<div class="users-list" style="position:relative;">
-            <table class="list-table">
-                <thead><tr>
-                    <th>uid</th>
-                    <th>username</th>
-                    <th>
-                        admin?
-                    </th>
-                    <th>
-                        <div style="display:flex;justify-content:end">
-                            <div style="display:block;flex-grow:0;">
-                                <ff-button class="secondary" inline icon="plus" @click=${this.createUserOpen}></ff-button>
+        return html`<div>
+            <div class="users-list" style="position:relative;">
+                <h1>Users</h1>
+                <table class="list-table">
+                    <thead><tr>
+                        <th>uid</th>
+                        <th>username</th>
+                        <th>
+                            admin?
+                        </th>
+                        <th>
+                            <div style="display:flex;justify-content:end">
+                                <div style="display:block;flex-grow:0;">
+                                    <ff-button class="secondary" inline icon="plus" @click=${this.createUserOpen}></ff-button>
+                                </div>
                             </div>
-                        </div>
-                    </th>
-                </tr></thead>
-                <tbody>
-                ${(!this.list?.length)?html`<tr><td colspan=4 style="text-align: center;">No user registered. Click the <ff-icon name="plus"></ff-icon> to add one</td</tr>`:nothing}
-                ${this.list.map(u=>html`<tr>
-                    <td style="font-family:monospace;">${u.uid}</td>
-                    <td>${u.username}</td>
-                    <td><input type="checkbox" .checked=${u.isAdministrator} disabled></td>
-                    <td><ff-button class="secondary" style="color:var(--color-dark);opacity:0.8" inline icon="trash" @click=${this.createUserOpen} disabled></ff-button></td>
-                </tr>`)}
-                </tbody>
-            </table>
+                        </th>
+                    </tr></thead>
+                    <tbody>
+                    ${(!this.list?.length)?html`<tr><td colspan=4 style="text-align: center;">No user registered. Click the <ff-icon name="plus"></ff-icon> to add one</td</tr>`:nothing}
+                    ${this.list.map(u=>html`<tr>
+                        <td style="font-family:monospace;">${u.uid}</td>
+                        <td>${u.username}</td>
+                        <td><input type="checkbox" .checked=${u.isAdministrator} disabled></td>
+                        <td><ff-button class="secondary" style="color:var(--color-dark);opacity:0.8" inline icon="trash" @click=${this.createUserOpen} disabled></ff-button></td>
+                    </tr>`)}
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h1>Tools</h1>
+                <ul>
+                    <li>
+                        <a  download href="/api/v1/scenes?format=zip">Download scenes as Zip</a>
+                    </li>
+                </ul>
+            </div>
         </div>`;
     }
  }

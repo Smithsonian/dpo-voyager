@@ -1,6 +1,5 @@
 
 @import "client/ui/styles";
-@import "assets/fonts/fonts.css";
 
 *, ::before, ::after {
   box-sizing: border-box;
@@ -10,8 +9,11 @@ main{
   position: relative;
   max-width: var(--col-width);
   margin: auto;
+
   color: var(--color-light);
-  min-height:calc(100vh - 88px);
+  min-height: calc(100vh - var(--nav-height) * 2);
+  padding-top: .67em;
+  
   h1{
     color: var(--color-primary);
   }

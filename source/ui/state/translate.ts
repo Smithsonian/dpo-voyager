@@ -1,6 +1,5 @@
-import Notification from "@ff/ui/Notification";
 import { LitElement } from "lit-element";
-import { off } from "process";
+import { Constructor } from "./mixins";
 
 import strings, { I18nDict, Language, LocalizedString } from "./strings";
 
@@ -8,7 +7,7 @@ import strings, { I18nDict, Language, LocalizedString } from "./strings";
 let languages :Language[] = ["en", "fr"];
 
 function getDefaultLanguage() :Language{
-  return navigator.languages.find(l=>(languages.indexOf(l.split(/[-_]/)[0].toLowerCase() as any) !== -1)) as Language;
+  return navigator.languages.map(l=>l.split(/[-_]/)[0].toLowerCase() as any).find(l=>(languages.indexOf(l) !== -1)) as Language;
 }
 
 class EventEmitter<T>{
@@ -89,8 +88,6 @@ export class Localization extends EventEmitter<{language :Language, loaded :bool
 }
 
 
-
-type Constructor<T = {}> = new (...args: any[]) => T;
 export declare class I18n{
   /**
    * "ui.users" will return the string contained in {ui:{users:{fr:"Utilisateurs", en: "Users"}}}

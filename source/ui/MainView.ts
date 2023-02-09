@@ -12,7 +12,7 @@ import "./composants/navbar/Navbar";
 import "./composants/navbar/UserButton";
 import "./composants/navbar/ChangeLocale";
 import "./screens/List";
-import "./screens/Users";
+import "./screens/Admin";
 import "./screens/SceneHistory";
 import "./screens/FileHistory";
 import "./screens/ApiDoc";
@@ -23,7 +23,7 @@ interface Route{
   content :(parent :MainView, params :Record<string,string>)=> TemplateResult;
 }
 
-import { getLogin, offLogin, onLogin, updateLogin, UserSession } from './state/auth';
+import { getLogin, offLogin, onLogin, updateLogin, UserSession, withUser } from './state/auth';
 import Modal from './composants/Modal';
 import i18n from './state/translate';
 
@@ -46,51 +46,37 @@ function toRegex(path:string|RegExp){
 
 
 @customElement("ecorpus-main")
-export default class MainView extends i18n(LitElement){
+export default class MainView extends i18n(withUser(LitElement)){
   @property({type: Object})
   route :URL = new URL(window.location as any);
 
-  @property({attribute: false})
-  user :UserSession|undefined;
 
   static readonly routes :Route[]=  [
     {pattern: "/ui/", content: (parent :MainView)=>{
-      let list_mode = "anonymous";
-      if(parent.user?.isAdministrator) list_mode = "administrator";
-      else if(parent.user?.username) list_mode = "user";
-      return html`<corpus-list .mode=${list_mode}></corpus-list>`;
+      return html`<corpus-list></corpus-list>`;
     }},
     {pattern: "/ui/doc/", content: ()=>html`<api-doc></api-doc>`},
     {pattern: "/ui/users/", content: (parent :MainView) => html`<users-list></users-list>`},
     {pattern: "/ui/scenes/:id/", content: (parent, params) => html`<scene-history scene="${params.id}"></scene-history>`},
     {pattern: "/ui/scenes/:id/files/:type/:name", content: (parent, params) => html`<file-history scene="${params.id}" type="${params.type}" name="${params.name}"></file-history>`},
   ].map(r=>({...r, pattern: toRegex(r.pattern)}));
-  
-  onLoginCallback = (user :UserSession)=>{
-    console.log("onLogin : ", user);
-    this.user = user;
-  }
+
 
   connectedCallback(): void {
     super.connectedCallback();
     Notification.shadowRootNode = this.shadowRoot;
-    this.user = getLogin();
     updateLogin().catch(e => {
       Modal.show({header: "Error", body: e.message});
-    })
-    onLogin(this.onLoginCallback);
-
-    window.addEventListener("navigate", (ev :CustomEvent)=>{
-      const url = new URL(ev.detail.href, this.route);
-      console.log("Navigate to :",url);
-      window.history.pushState({},"", url);
-      this.route = url;
     });
+
+    window.addEventListener("navigate", this.onNavigate);
+    window.addEventListener("popstate", this.onPopState);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    offLogin(this.onLoginCallback);
+    window.removeEventListener("navigate", this.onNavigate);
+    window.removeEventListener("popstate", this.onPopState);
   }
 
   renderContent(){
@@ -103,14 +89,10 @@ export default class MainView extends i18n(LitElement){
   }
 
   render() {
-    let list_mode = "anonymous";
-    if(this.user?.isAdministrator) list_mode = "administrator";
-    else if(this.user?.username) list_mode = "user";
-
     return html`
       <corpus-navbar>
         <nav-link href="/ui/doc" text="Documentation"></nav-link>
-        ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users" ></nav-link>`:""}
+        ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users"></nav-link>`:""}
         <div class="divider"></div>
         <user-button .username=${this.user?.username}></user-button>
       </corpus-navbar>
@@ -126,4 +108,14 @@ export default class MainView extends i18n(LitElement){
     `;
   }
   static styles = [styles];
+
+
+  onNavigate = (ev :CustomEvent)=>{
+    const url = new URL(ev.detail.href, this.route);
+    window.history.pushState({},"", url);
+    this.route = url;
+  }
+  onPopState = (e:PopStateEvent)=>{
+    this.route = new URL(document.location.href, this.route);
+  }
 }
