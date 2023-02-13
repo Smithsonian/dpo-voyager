@@ -165,6 +165,7 @@ async function getSceneFiles(vfs:Vfs, rootUrl:URL, scene_name:string, recurse:nu
     elements.push(
       Element.fromFile(new URL("articles/", sceneUrl), scene, true),
       Element.fromFile(new URL("videos/", sceneUrl), scene, true),
+      Element.fromFile(new URL("models/", sceneUrl), scene, true),
     )
   }
   if(recurse <= -1|| 5 <= recurse){
