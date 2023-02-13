@@ -1,6 +1,7 @@
 
 import { LitElement, customElement, property, html, TemplateResult, css } from "lit-element";
 import WebDAVProvider from "@ff/scene/assets/WebDAVProvider";
+import i18n from "../state/translate";
 
 
 
@@ -19,7 +20,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
  * Main UI view for the Voyager Explorer application.
  */
  @customElement("scene-card")
- export default class SceneCard extends LitElement
+ export default class SceneCard extends i18n(LitElement)
  {
     static _assets = new WebDAVProvider();
     @property({attribute: false})
@@ -57,7 +58,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
     protected render() :TemplateResult {
       let params = `resourceRoot=/&root=${this.path}&document=${this.name}.svx.json&referrer=/`
       let explorer = `/voyager-explorer.html?${params}`;
-      let story = `/voyager-story.html?${params}&mode=Edit`;
+      let story = `/voyager-story.html?${params}&lang=${this.language.toUpperCase()}&mode=Edit`;
       return html`<div class="scene-card-inner">
         <a href="${explorer}">
           ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="object-fit:contain; background:var(--color-dark);" src="/images/defaultSprite.svg"/>`}
