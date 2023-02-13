@@ -18,13 +18,18 @@ import "../composants/UserLogin"
     protected render() :TemplateResult {
 
         return html`
-        <div class="landing-page">
-            <img src="/images/sketch_ethesaurus.png" alt="sketch représentant l'application voyager et son utilisation dans une borne holographique">
-            <div class="user-login">
-                <h2>${this.t("ui.login")}</h2>
-                <user-login></user-login>
+            <div class="landing-page">
+                <div class="illustration">
+                    <img src="/images/sketch_ethesaurus.png" alt="sketch représentant l'application voyager et son utilisation dans une borne holographique">
+                    <p>${this.t("info.lead")}</p>
+                </div>
+                
+                <div class="user-login">
+                    <h2>${this.t("ui.login")}</h2>
+                    <user-login></user-login>
+                </div>
             </div>
-        </div>`
+        `
     }
 
     static styles = [styles, css`
@@ -33,25 +38,24 @@ import "../composants/UserLogin"
         flex-direction: row;
         align-items: center;
         min-height: calc(100vh - 88px - 2rem);
+        flex-wrap: wrap;
+    }
+    .illustration{
+        width:67%;
+        min-width:300px;
+        flex: 1 1 auto;
     }
     .user-login {
         background-color: var(--color-dark);
         width: 33%;
         padding: 1rem;
+        min-width:300px;
+        flex: 1 1 auto;
     }
-    img {
-        width: 66%;
-    }
-    @media (max-width: 768px) {
-        .landing-page{
-            flex-direction: column;
-        }
-        .user-login {
-            width: 100%;
-        }
-        img {
-            width: 100%;
-        }
+    img{
+        display: block;
+        max-width: 100%;
+        height: auto;
     }
     `];
  }
