@@ -148,6 +148,12 @@ class NodeTree extends Tree<NVNode>
         }
     }
 
+
+    protected onNodeDblClick(event: MouseEvent, node: NVNode)
+    {
+        
+    }
+
     protected onContainerClick()
     {
         this.nodeProvider.activeNode = null;

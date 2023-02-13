@@ -19,8 +19,9 @@ import { customElement, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Splitter";
 import "@ff/ui/Button";
+import "@ff/ui/Icon";
 
-import { EDerivativeUsage } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 
 import CVDerivativesTask from "../../components/CVDerivativesTask";
 import { TaskView } from "../../components/CVTask";
@@ -28,35 +29,40 @@ import { TaskView } from "../../components/CVTask";
 import "./DerivativeList";
 import { ISelectDerivativeEvent } from "./DerivativeList";
 import NVNode from "client/nodes/NVNode";
+import CVLanguageManager from "client/components/CVLanguageManager";
+import DerivativeMenu from "./DerivativeMenu";
+import Notification from "@ff/ui/Notification";
+import CSelection from "@ff/graph/components/CSelection";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-derivatives-task-view")
 export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 {
+    get model(){
+        return this.activeNode?.model;
+    }
     protected render()
     {
-        const node = this.activeNode;
-        const model = node && node.model;
+        const model = this.model;
 
         if (!model) {
             return html`<div class="sv-placeholder">Please select a model node to inspect its derivatives</div>`;
         }
 
-        const derivatives = model.derivatives.getByUsage(EDerivativeUsage.Web3D);
+        const derivatives = model.derivatives.getArray();
 
         const requestedQuality = model.ins.quality.value;
         const activeDerivative = model.derivatives.get(EDerivativeUsage.Web3D, requestedQuality);
 
         const loadedQuality = model.outs.quality.value;
         const loadedDerivative = model.derivatives.get(EDerivativeUsage.Web3D, loadedQuality);
-
-        const detailView = activeDerivative ? html`` : null;
-
-        return html`<div class="ff-flex-row ff-flex-wrap">
-        </div>
-        <sv-derivative-list .data=${derivatives} .selectedItem=${activeDerivative} .loadedItem=${loadedDerivative} @select=${this.onSelectDerivative}></sv-derivative-list>
-        ${detailView}`
+        return html`
+            <div class="ff-flex-row ff-flex-wrap">
+                <ff-button @click=${this.onAddDerivative} icon="create" text="Add Derivative"></ff-button>
+            </div>
+            <sv-derivative-list .data=${derivatives} .selectedItem=${activeDerivative} .loadedItem=${loadedDerivative} @remove=${this.onRemoveDerivative} @select=${this.onSelectDerivative}></sv-derivative-list>
+        `
     }
 
     protected onSelectDerivative(event: ISelectDerivativeEvent)
@@ -65,6 +71,10 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
             const model = this.activeNode.model;
             model.ins.quality.setValue(event.detail.derivative.data.quality);
         }
+    }
+    protected onRemoveDerivative(ev:ISelectDerivativeEvent){
+        this.activeNode.model.derivatives.remove(ev.detail.derivative.data.usage, ev.detail.derivative.data.quality);
+        this.requestUpdate();
     }
 
     protected onActiveNode(previous: NVNode, next: NVNode)
@@ -82,5 +92,17 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
         }
 
         super.onActiveNode(previous, next);
+    }
+
+    protected onAddDerivative(event :MouseEvent){
+        DerivativeMenu.show(this, this.system).then(([usage, quality, asset])=>{
+            let filepath = asset.info.path;
+            console.log("Add derivative :", EDerivativeQuality[quality], asset);
+            this.model.derivatives.remove(EDerivativeUsage.Web3D, quality);
+            this.model.derivatives.createModelAsset(filepath, quality)
+            this.model.ins.quality.setValue(quality);
+            this.model.outs.updated.set();
+            this.system.getMainComponent(CSelection).selectNode(this.model.node);
+        }).catch(e=>Notification.show("Failed to add derivative : "+e.message, "error"));
     }
 }

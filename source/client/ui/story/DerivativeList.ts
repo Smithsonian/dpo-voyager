@@ -18,7 +18,7 @@
 import { customElement, property, html } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
-import Derivative, { EDerivativeUsage, EDerivativeQuality } from "../../models/Derivative";
+import Derivative, { EDerivativeUsage, EDerivativeQuality} from "../../models/Derivative";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -48,9 +48,11 @@ class DerivativeList extends List<Derivative>
     protected renderItem(item: Derivative)
     {
         const isLoaded = item === this.loadedItem;
-
-        return html`<ff-icon name=${isLoaded ? "check" : "empty"}></ff-icon>
-            <span>${EDerivativeUsage[item.data.usage]} - ${EDerivativeQuality[item.data.quality]}</span>`;
+        return html`<div style="display:flex;justify-content:stretch;">
+            <ff-icon name=${isLoaded ? "check" : "empty"}></ff-icon>
+            <span title=${item.data.assets.map(a=>a.data.uri).join("\n")} style="flex: 1 1 auto;">${EDerivativeUsage[item.data.usage]} - ${EDerivativeQuality[item.data.quality]}</span>
+            <ff-icon name="trash" @click=${(e)=>this.onRemoveItem(e, item)}></ff-icon>
+        </div>`;
     }
 
     protected isItemSelected(item: Derivative)
@@ -63,6 +65,14 @@ class DerivativeList extends List<Derivative>
         this.dispatchEvent(new CustomEvent("select", {
             detail: { derivative: item }
         }));
+    }
+
+    protected onRemoveItem(event :MouseEvent, item :Derivative){
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent("remove", {
+            detail: { derivative: item }
+        }));
+        return false;
     }
 
     protected onClickEmpty(event: MouseEvent)

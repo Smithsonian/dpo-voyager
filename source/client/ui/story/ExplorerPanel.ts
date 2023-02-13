@@ -24,6 +24,7 @@ import { relative } from "path";
 import { IStoryApplicationProps } from "client/applications/StoryApplication";
 import { SimpleDropzone } from 'simple-dropzone';
 import CVMediaManager from "client/components/CVMediaManager";
+import Tree from "@ff/ui/Tree";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -88,8 +89,17 @@ export default class ExplorerPanel extends CustomElement
         this.classList.remove("sv-drop-zone");
     }
 
-    protected onDragDrop(e: MouseEvent) {
+    protected onDragDrop(e: DragEvent) {
         e.preventDefault();
         this.classList.remove("sv-drop-zone");
+        for(let item of e.dataTransfer.items){
+            if(item.type !== Tree.dragDropMimeType) continue;
+            let mediaManager = this.application.system.getComponent(CVMediaManager);
+            item.getAsString((s)=>{
+                let asset = mediaManager.getAssetByPath(s);
+                //Undefined behavior if multiple assets are openned
+                mediaManager.open(asset);
+            });
+        }
     }
 }

@@ -42,6 +42,7 @@ import NVoyagerStory from "../nodes/NVoyagerStory";
 import MainView from "../ui/story/MainView";
 import CVTaskProvider, { ETaskMode } from "../components/CVTaskProvider";
 import CVStandaloneFileManager from "client/components/CVStandaloneFileManager";
+import CVModelEditor from "client/components/CVModelEditor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -189,6 +190,8 @@ export default class StoryApplication
             props.dragdrop = true;
             app.createComponent(CVStandaloneFileManager);
         }
+
+        app.createComponent(CVModelEditor);
 
         this.mediaManager.rootUrl = this.assetManager.baseUrl;
 

@@ -33,6 +33,7 @@ import CVAudioTask from "../components/CVAudioTask";
 
 import NVVoyagerStory from "../nodes/NVoyagerStory";
 import NVTasks from "../nodes/NVTasks";
+import CVModelEditor from "client/components/CVModelEditor";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +43,7 @@ const types = [
     CVAssetWriter,
     CVMediaManager,
     CVStandaloneFileManager,
+    CVModelEditor,
 
     CVTaskProvider,
     CVSettingsTask,
