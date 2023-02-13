@@ -3,7 +3,6 @@ import { css, customElement, html, LitElement, TemplateResult } from "lit-elemen
 
 import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';;
 
-import "client/ui/Logo";
 
 /**
  * Main UI view for the Voyager Explorer application.
