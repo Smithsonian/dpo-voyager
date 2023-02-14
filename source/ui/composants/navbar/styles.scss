@@ -10,8 +10,8 @@
   align-items: baseline;
   justify-content: center;
 
-  background-color: var(--color-dark);
-  border-bottom: 3px solid #1b1b1b;
+  background-color: var(--color-primary);
+  border-bottom: 1px solid var(--color-dark);
 }
 
 nav {
@@ -31,9 +31,9 @@ nav {
   .brand {
     display:flex;
     align-items: center;
-    sv-logo .sv-full {
-      display: none;
-    }
+  }
+  .brand:hover {
+    filter: brightness(1.2)
   }
   .navbar{
     display: flex;

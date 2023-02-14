@@ -1,11 +1,11 @@
 
-import { css, customElement, property, html, TemplateResult } from "lit-element";
+import { css, LitElement, customElement, property, html, TemplateResult } from "lit-element";
 
 
 import "../Modal";
 import Modal from "../Modal";
 import "../UserLogin"
-import Button from "@ff/ui/Button";
+import "@ff/ui/Button";
 import { doLogout } from "../../state/auth";
 import i18n from "../../state/translate";
 
@@ -13,8 +13,12 @@ import i18n from "../../state/translate";
  * Main UI view for the Voyager Explorer application.
  */
  @customElement("user-button")
- export default class UserMenu extends i18n(Button)
+ export default class UserMenu extends i18n(LitElement)
  {
+  createRenderRoot() {
+    return this;
+  }
+
     @property()
     username :string;
     
@@ -76,11 +80,9 @@ import i18n from "../../state/translate";
 
     protected render() :TemplateResult {
       if(!this.username){
-        return html`<a @click=${this.onLoginOpen}>
-          ${this.t("ui.login")}
-        </a>`;
+        return html`<ff-button style="height:100%" @click=${this.onLoginOpen} text=${this.t("ui.login")}></ff-button>`;
       }else{
-        return html`<a @click=${this.onUserDataOpen}>${this.username}</a>`;
+        return html`<ff-button style="height:100%" @click=${this.onUserDataOpen} text=${this.username}></ff-button>`;
       }
     }
     static styles = css`

@@ -29,20 +29,21 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
     @property()
     name :string;
 
-    get path (){
-      return `/scenes/${this.name}/`
-    }
     @property()
     url :string;
 
-
     @property({type :String})
-    mode :"anonymous"|"user"|"administrator";
+    mode :"read"|"write";    
+
+    get path (){
+      return `/scenes/${this.name}/`
+    }
 
     constructor()
     {
         super();
     }
+
     public connectedCallback(): void {
         super.connectedCallback();
         if(this.thumb ) return;
@@ -52,6 +53,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
           this.thumb = thumbProps.url;
         });
     }
+
     public disconnectedCallback(): void {
     }
 
@@ -61,15 +63,15 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
       let story = `/voyager-story.html?${params}&lang=${this.language.toUpperCase()}&mode=Edit`;
       return html`<div class="scene-card-inner">
         <a href="${explorer}">
-          ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="object-fit:contain; background:var(--color-dark);" src="/images/defaultSprite.svg"/>`}
-          <h4 class="card-title">${this.name}</h4>
+          ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="background:radial-gradient(circle, #103040 0, #0b0b0b 100%);" src="/images/defaultSprite.svg"/>`}
+          <div class="tools">
+            <h4 class="card-title">${this.name}</h4>
+            ${this.mode === "write"? html`
+              <a class="btn tool-properties" href="/ui/scenes/${this.name}/" title="propriétés de l'objet">${settingsIcon}</ff-icon></a>
+              <a class="btn tool-link" href="${story}"> story ➝</a>
+            `: null}
+          </div>        
         </a>
-        <div class="tools">
-          ${this.mode !=="anonymous"? html`
-            <a class="btn" href="/ui/scenes/${this.name}/" title="propriétés de l'objet">${settingsIcon}</ff-icon></a>
-            <a class="btn" href="${story}"> story ➝</a>
-          `:""}
-        </div>
       </div>`;
     }
 
@@ -98,14 +100,15 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
       }
 
       a, button{
-        color: var(--color-primary);
+        color: var(--color-light);
         text-decoration: none;
       }
+
+
       .scene-card-inner{
+        position: relative;
         box-sizing: border-box;
-        padding-bottom: 1rem;
-        background: var(--color-dark);
-        transition: background-color 0.2s ease 0s;
+        padding: 0;
         width: 100%;
         height: 100%;
         display: flex;
@@ -114,45 +117,72 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
         border-radius: 4px;
       }
 
-      .scene-card-inner:hover{
-        filter: brightness(1.3);
+      .scene-card-inner > a:hover{
+        filter: brightness(1.2);
       }
 
       .scene-card-inner img {
           object-fit: cover;
-          aspect-ratio: 16 / 9;
+          aspect-ratio: 1 / 1;
           width: 100%;
-          height: auto;
-          border-radius: 4px 4px 0 0;
+          height: 100%;
+          border-radius: 4px;
           transition: filter 0.2s ease 0s;
       }
 
-      .tools, .card-title{
-        padding: 0 1rem;
-      }
 
       .tools{
-        display: flex;
-        justify-content: space-between;
+        position: absolute;
+        inset: 1rem;
+      }
+      .tools > *{
+        background: rgba(0, 0, 0, 0.4);
+        padding: .75rem;
+        margin: 0;
+      }
+      .tools .card-title{
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        max-width: 80%;
+        border-radius: 4px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      .tools .tool-properties {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        height:24px;
+        width:24px;
+      }
+
+      .tools .tool-link {
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
       }
 
       .tools .btn{
-        color: white;
+        color: var(--color-light);
         border-radius: 4px;
       }
-      .tools .btn:hover{
-        filter: brightness(1.2);
-      }
 
+      .tools .btn:hover{
+        color: white;
+      }
       .tools a:hover{
         text-decoration: underline;
       }
-      
+
       .tools svg{
         width: inherit;
         height: inherit;
         fill: currentColor;
       }
+      
   `]
  
  }

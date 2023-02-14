@@ -96,20 +96,27 @@ interface ModalOptions{
       left: 0;
       right: 0;
       z-index: 999;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.5);
     }
     dialog{
       top: max(100px, 15vh);
       min-width: 30vw;
       max-width: calc(100vw - 20px);
-      border: 1px solid var(--color-tertiary);
-      border-radius: 4px;
-      background-color: #343434;
+      border: none;
+      background-color: var(--color-dark);
       color: var(--color-light);
       box-shadow: 0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.24);
     }
     h2{
-      color: var(--color-primary);
+      color: var(--color-tertiary);
+    }
+
+    .ff-button.ff-control{
+      color: white;
+      background: var(--color-tertiary);
+    }
+    .ff-button.ff-control:hover{
+      background: var(--color-secondary);
     }
 
     dialog >button#exit{

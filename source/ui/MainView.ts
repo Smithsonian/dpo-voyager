@@ -91,8 +91,8 @@ export default class MainView extends i18n(withUser(LitElement)){
   render() {
     return html`
       <corpus-navbar>
-        <nav-link href="/ui/doc" text="Documentation"></nav-link>
-        ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users"></nav-link>`:""}
+        <nav-link href="/ui/doc" text="Documentation" transparent></nav-link>
+        ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users" transparent></nav-link>`:""}
         <div class="divider"></div>
         <user-button .username=${this.user?.username}></user-button>
       </corpus-navbar>

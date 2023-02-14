@@ -1,13 +1,13 @@
 :root{
   --nav-height: 44px;
   --col-width: 1320px;
-  --color-primary: #0089bf;
-  --color-secondary: #ffcd00;
-  --color-tertiary: #1b2226;
+  --color-primary: #00517d;
+  --color-secondary: #f96;
+  --color-tertiary: #00a5e8;
 
-  --color-dark: #272727;
-  --color-medium: #4e4e4e;
-  --color-hover: #676767;
+  --color-dark: #103040;
+  --color-medium: #00517d;
+  --color-hover: #004164;
   --color-light: #c8c8c8;
 }
 
@@ -18,6 +18,9 @@
 }
 
 body{
+  background: radial-gradient(circle, #103040 0, #0b0b0b 60%, #0b0b0b 100%);
+  background-attachment: fixed;
+
   min-height: 100%;
   width: 100%;
   padding: var(--nav-height) 0 0 0;

@@ -15,7 +15,7 @@ main{
   padding-top: .67em;
   
   h1{
-    color: var(--color-primary);
+    color: var(--color-tertiary);
   }
 }
 
@@ -45,6 +45,22 @@ corpus-list {
     border-radius: 4px;
     pointer-events: none;
   }
+}
+
+nav-link{
+  color: var(--color-light);
+  &:hover, &:focus{
+    color: white;
+  }
+}
+
+user-button .ff-button.ff-control , .ff-button.ff-control:focus{
+    background-color: var(--color-tertiary);
+    color: white;
+
+    &:hover{
+      background-color: var(--color-secondary);
+    }
 }
 
 .form-control{
@@ -80,9 +96,8 @@ corpus-list {
     font-weight: 400;
     line-height: 1.5;
     color: var(--color-light);
-    background: var(--color-medium);
+    background: var(--color-primary);
     background-clip: padding-box;
-    border: 1px solid var(--color-light);
     border-radius: 0;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -100,7 +115,7 @@ corpus-list {
     }
   }
   .form-item > input:focus{
-    color: #212529;
+    color: var(--color-light);
     background-color: var(--color-hover);
     outline: 0;
   }
@@ -127,9 +142,11 @@ corpus-list {
   }
   
   input[type="submit"] {
+    background-color: var(--color-tertiary);
+    color: white;
     cursor: pointer;
     &:hover{
-      background: var(--color-hover);
+      background: var(--color-secondary);
     }
   }
 
@@ -162,12 +179,11 @@ table.list-table {
     color: var(--color-light);
     font-weight: bold;
     background-color: var(--color-dark);
-    border-bottom: solid 2px #d8d8d8;
     position: sticky;
     top: 0;
   }
   td {
-    border: solid 1px #d8d8d8;
+    border: solid 1px var(--color-light);
     border-left: 0;
     border-right: 0;
     white-space: nowrap;
@@ -176,9 +192,6 @@ table.list-table {
     transition: background-color 150ms ease-out;
   }
   tbody tr:nth-child(2n){
-    background: #5a5a5a;
-  }
-  tbody tr:hover {
     background: var(--color-hover);
   }
 }
