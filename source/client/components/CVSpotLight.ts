@@ -52,6 +52,14 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         ];
     }
 
+    dispose(): void {
+        if(this.ins.shadowEnabled.value) {
+            this.light.shadow.map.dispose();
+        }
+
+        super.dispose()
+    }
+
     fromDocument(document: IDocument, node: INode): number
     {
         if (!isFinite(node.light)) {
