@@ -64,9 +64,8 @@ export default class ObjectContent extends SystemView
         return html`
             <div class="object-nav-zone">
                 <div class="home-button">
-                    <a title="${this.language.getLocalizedString("To home screen")}" @click=${this.onReturn}>	
-                        &#10094; ${this.language.getLocalizedString("Home")}
-                    </a>                
+                    <ff-button icon="triangle-left" text="Retour vers la liste d'objets" title="${this.language.getLocalizedString("To home screen")}" @click=${this.onReturn}>
+                    </ff-button>                
                 </div>
                 <div class="object-info">
                     <h1>${this.title}</h1>

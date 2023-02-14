@@ -25,6 +25,7 @@ import ExplorerApplication from "client/applications/ExplorerApplication";
 import "./SplitContentView";
 import "./SplitUserInterface/SplitUserInterface";
 import  "./SplitModeObjectMenu";
+import  "./SplitOverlay";
 
 //@ts-ignore
 import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!client/ui/explorer/styles.scss';
@@ -120,6 +121,7 @@ export default class MainView extends LitElement
         return html`<div class="et-screen et-container-1">
             ${ui}
             <split-content-view .system=${system}></split-content-view>
+            <split-overlay .system=${system}></split-overlay>
         </div>
         <div id="${Notification.stackId}"></div>`
     }

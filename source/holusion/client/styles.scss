@@ -42,6 +42,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     justify-content: center;
     width: 100%;
     margin: auto;
+    font-family: sans-serif;
 
     .object-menu-card
     {
@@ -108,12 +109,15 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
 
             .home-button
             {
-                font-size: 1.7rem;
-                font-weight: 400;
-                padding: 1.5rem 2rem;
-                text-transform: uppercase;
-                color: white;
-                text-decoration: none;
+                padding: 1rem;
+                color:$color-light;
+                ff-button{
+                    font-size: 1.7rem;
+                    padding: 1rem
+                }
+                svg{
+                    fill: $color-light;
+                }
             }
 
             .object-info
@@ -165,7 +169,6 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     display:block;
     position:relative;
     height: 25vh;
-    width: 30%;
     margin: 1.5em;
     background:black;
     flex-shrink: 0;
@@ -228,7 +231,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     position: relative;
 
     h1{
-        font-family: serif;
+        font-family:serif;
     }
 
     h1:before {
@@ -439,6 +442,76 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
 }
 
 //overlay
+
+.split-overlay
+{
+    font-family: sans-serif;  
+    width: 100%;
+    height:100vh;
+    position: absolute;
+    top:0;
+    left:100%;
+    
+    .title{
+        padding: 2rem;
+        padding-bottom: 1rem;
+        margin-left: 0.5rem;
+        position: relative;
+
+        h2:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 2rem;
+            width: 100px;
+            height: 5px;
+            background-color: $color-primary;
+        }        
+    }
+
+
+    &.animation{
+        .title{
+            animation: 6s ease-in slidein;
+            opacity:0;
+            @keyframes slidein {
+                0% {
+                    margin-left: -2rem;
+                    opacity: 0;
+                }
+                10% {
+                    margin-left: 0.5rem;
+                    opacity: 1;
+                }
+                90% {
+                    margin-left: 0.5rem;
+                    opacity: 1;
+                }
+                100% {
+                    margin-left: -2rem;
+                    opacity: 0;
+                }
+            }
+        }
+        h2:after{
+            animation: 6s ease-in underlineslidein;
+            @keyframes underlineslidein {
+                0% {
+                    width: 0px;
+                }
+                10% {
+                    width: 100px;
+                }
+                90% {
+                    width: 100px;
+                }
+                100% {
+                    width: 0;
+                }
+            }
+        }
+    }
+}
 
 .sv-content-view
 {
