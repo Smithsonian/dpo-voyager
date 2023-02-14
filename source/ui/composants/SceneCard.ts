@@ -56,7 +56,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
     }
 
     protected render() :TemplateResult {
-      let params = `resourceRoot=/&root=${this.path}&document=${this.name}.svx.json&referrer=/`
+      let params = `resourceRoot=/&root=${this.path}&referrer=/`
       let explorer = `/voyager-explorer.html?${params}`;
       let story = `/voyager-story.html?${params}&lang=${this.language.toUpperCase()}&mode=Edit`;
       return html`<div class="scene-card-inner">

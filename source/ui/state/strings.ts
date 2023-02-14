@@ -114,6 +114,10 @@ export default {
     lead:{
       fr: "eCorpus est un modèle de base de données d'objets 3D développé par holusion et utilisant un éditeur et visualisateur enrichi issu du projet DPO-Voyager du smithsonian institute",
       en: "eCorpus is a database of 3D objects developped by holusion using and extending an open-source viewer made by the Smithsonian Institute"
+    },
+    useStandalone:{
+      fr: "tester le mode standalone",
+      en: "test standalone mode"
     }
   },
   errors:{

@@ -10,7 +10,7 @@ import i18n from "../state/translate";
 import { UserSession, withUser } from "../state/auth";
 import { repeat } from "lit-html/directives/repeat";
 
-
+import "../composants/TaskButton";
 
 /**
  * Main UI view for the Voyager Explorer application.
@@ -123,9 +123,12 @@ import { repeat } from "lit-html/directives/repeat";
             </div>`;
         }
         return html`
-            <upload-button @change=${this.onUploadBtnChange}>
-                ${this.t("ui.upload")}
-            </upload-button>
+            <div class="list-tasks">
+                <task-button><upload-button @change=${this.onUploadBtnChange}>
+                    ${this.t("ui.upload")}
+                </upload-button></task-button>
+                <task-button><a href="/voyager-story.html?resourceRoot=/&lang=${this.language.toUpperCase()}&mode=Standalone&referrer=/">${this.t("info.useStandalone")}</a></task-button>
+            </div>
             <div class="list-grid" style="position:relative;">
             ${repeat([
                 ...this.list,
