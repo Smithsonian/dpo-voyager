@@ -88,6 +88,8 @@ ff-tab-header, ff-dock-panel-header {
   background-color: $color-background-dark;
   border-bottom: 3px solid $color-background-darker;
 
+  overflow: auto;
+
   .ff-group {
     align-items: stretch;
   }
@@ -96,6 +98,10 @@ ff-tab-header, ff-dock-panel-header {
     height: 28px !important; 
     margin: 8px;
     align-self: center;
+
+    @media (max-width: 1080px){
+      display: none;
+    }
   }
 
   .sv-mode {
@@ -106,6 +112,10 @@ ff-tab-header, ff-dock-panel-header {
     margin: 4px;
     background-color: darken($color-secondary, 5%);
     color: $color-background-dark;
+
+    @media (max-width: 1080px){
+      display: none;
+    }
   }
 
   .sv-spacer {
@@ -133,6 +143,12 @@ ff-tab-header, ff-dock-panel-header {
 
       .ff-icon {
         fill: $color-text-light;
+      }
+    }
+
+    .ff-text {
+      @media (max-width: 850px){
+        display: none;
       }
     }
   }
