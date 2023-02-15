@@ -1,4 +1,5 @@
 
+import { createHash } from "crypto";
 import { Request, Response } from "express";
 import path from "path";
 import { getUser, getUserId, getVfs } from "../../../../utils/locals";
@@ -9,7 +10,12 @@ export default async function getScenes(req :Request, res :Response){
   let vfs = getVfs(req);
   let u = getUser(req);
   let scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
-
+  let eTag = createHash("sha256")
+  for(let scene of scenes){
+    eTag.update(`${scene.name}:${scene.mtime.getTime().toString(32)};`);
+  }
+  res.set("ETag", "W/"+eTag.digest("base64url"));
+  
   await wrapFormat(res, {
     "application/json":()=>res.status(200).send(scenes),
 
@@ -35,9 +41,11 @@ export default async function getScenes(req :Request, res :Response){
           }
         }
       }
-      res.set("Content-Disposition", `attachment; filename="scenes.zip`);
+
+      res.set("Content-Disposition", `attachment; filename="scenes.zip"`);
       //FIXME : it would be possible to compute content-length ahead of time 
       // but we need to take into account the size of all zip headers
+      // It would also allow for strong ETag generation, which would be desirable
       res.status(200);
       for await (let data of zip(getFiles())){
         await new Promise<void>(resolve=>{
