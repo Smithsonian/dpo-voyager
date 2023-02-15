@@ -47,7 +47,7 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
         super.connectedCallback();
         if(this.thumb ) return;
         SceneCard._assets.get(this.path, false).then(p=>{
-          let thumbProps = p.find(f=> f.name == `${this.name}-image-thumb.jpg`);
+          let thumbProps = p.find(f=> f.name.endsWith(`-image-thumb.jpg`));
           if(!thumbProps) return console.log("No thumbnail for", this.name);
           this.thumb = thumbProps.url;
         });

@@ -150,7 +150,7 @@ async function getSceneFiles(vfs:Vfs, rootUrl:URL, scene_name:string, recurse:nu
   elements.push(Element.fromFile(sceneUrl, scene, true));
   if(recurse <= -1 || 2 <= recurse ){
     elements.push(
-      Element.fromFile(new URL(`${scene_name}.svx.json`, sceneUrl), scene, false),
+      Element.fromFile(new URL(`scene.svx.json`, sceneUrl), scene, false),
       ...files.models.map(f=> Element.fromFile(
         new URL(path.join("models", f.name), sceneUrl),
         f
