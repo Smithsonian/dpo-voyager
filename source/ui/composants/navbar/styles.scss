@@ -10,8 +10,8 @@
   align-items: baseline;
   justify-content: center;
 
-  background-color: var(--color-primary);
-  border-bottom: 1px solid var(--color-dark);
+  background-color: $color-background-dark;
+  border-bottom: 3px solid $color-background-darker;
 }
 
 nav {

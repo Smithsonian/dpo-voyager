@@ -121,9 +121,7 @@ interface FileProps extends Scene{
                     <td>${((m.hash)? html`<b-size .b=${m.size}></b-size>` : html`<ff-icon name="trash"></ff-icon>`)}</td>
                     <td>${m.author}</td>
                     <td>
-                      <button class="btn btn-restore" name="${m.generation}" @click=${this.onRestore}>
-                        Restore
-                      </button>
+                      <ff-button class="btn-restore" name="${m.generation}" text="Restore" @click=${this.onRestore}></ff-button>
                     </td>
                 </tr>`)}
                 </tbody>

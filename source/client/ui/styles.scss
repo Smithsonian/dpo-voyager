@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 //@import "../../../libs/ff-ui/source/styles/dark";
@@ -28,6 +31,9 @@
 // now loaded from index page, via fonts.css
 //@import url('https://fonts.googleapis.com/css?family=Amiri:400,700');
 //@import url('https://fonts.googleapis.com/css?family=Hind+Siliguri:400,700');
+
+// Holusion overrides
+@import "../../ui/variables.scss";
 
 .sv-article {
   h1 {

@@ -1,4 +1,4 @@
-
+@import "./variables.scss";
 @import "client/ui/styles";
 
 *, ::before, ::after {
@@ -10,12 +10,12 @@ main{
   max-width: var(--col-width);
   margin: auto;
 
-  color: var(--color-light);
+  color: $color-light;
   min-height: calc(100vh - var(--nav-height) * 2);
   padding-top: .67em;
   
   h1{
-    color: var(--color-tertiary);
+    color: $color-primary-light;
   }
 }
 
@@ -41,27 +41,54 @@ corpus-list {
     right: 0;
     z-index: 2;
     background: rgba(0, 0, 0, 0.3);
-    border: 2px dotted var(--color-secondary);
+    border: 2px dotted $color-secondary;
     border-radius: 4px;
     pointer-events: none;
   }
 }
 
 nav-link{
-  color: var(--color-light);
+  color: $color-light;
   &:hover, &:focus{
     color: white;
   }
 }
 
-user-button .ff-button.ff-control , .ff-button.ff-control:focus{
-    background-color: var(--color-tertiary);
+.ff-button.ff-control {
+  background: $color-background-light;
+  color: white;
+
+  &:hover, &:focus{
+    background-color: $color-background-lighter;
+  }
+
+  &[selected] {
+    background-color: $color-primary;
+
+    &:hover, &:focus {
+      background-color: $color-primary-light;
+    }
+  }
+
+  &.btn-restore {
+    background-color: darken($color-primary, 10%);
     color: white;
 
     &:hover{
-      background-color: var(--color-secondary);
-    }
+      background-color: darken($color-primary, 7%);
+    }    
+  }
+
+  &.btn-danger {
+    background-color: $color-danger;
+    color: white;
+
+    &:hover{
+      background-color: lighten($color-danger, 7%);
+    }    
+  }
 }
+
 
 .form-control{
   &form{
@@ -80,7 +107,7 @@ user-button .ff-button.ff-control , .ff-button.ff-control:focus{
 
   .divider{
     width: 1px;
-    background-color: var(--color-dark);
+    background-color: $color-light;
   }
   .form-item {
     position: relative;
@@ -95,8 +122,8 @@ user-button .ff-button.ff-control , .ff-button.ff-control:focus{
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
-    color: var(--color-light);
-    background: var(--color-primary);
+    color: $color-light;
+    background: $color-primary;
     background-clip: padding-box;
     border-radius: 0;
     -webkit-appearance: none;
@@ -115,7 +142,7 @@ user-button .ff-button.ff-control , .ff-button.ff-control:focus{
     }
   }
   .form-item > input:focus{
-    color: var(--color-light);
+    color: $color-light;
     background-color: var(--color-hover);
     outline: 0;
   }
@@ -142,11 +169,11 @@ user-button .ff-button.ff-control , .ff-button.ff-control:focus{
   }
   
   input[type="submit"] {
-    background-color: var(--color-tertiary);
+    background-color: $color-primary-light;
     color: white;
     cursor: pointer;
     &:hover{
-      background: var(--color-secondary);
+      background: $color-secondary;
     }
   }
 
@@ -165,7 +192,7 @@ table.list-table {
   width: 100%;
   display: table;
   background-color: var(--color-medium);
-  color: var(--color-light);
+  color: $color-light;
   tr:last-child {
     border-bottom: 0;
   }
@@ -176,14 +203,14 @@ table.list-table {
   }
 
   th {
-    color: var(--color-light);
+    color: $color-light;
     font-weight: bold;
-    background-color: var(--color-dark);
+    background-color: $color-dark;
     position: sticky;
     top: 0;
   }
   td {
-    border: solid 1px var(--color-light);
+    border: solid 1px $color-light;
     border-left: 0;
     border-right: 0;
     white-space: nowrap;
@@ -206,7 +233,7 @@ table.list-table {
 }
 
 #ff-notification-stack {
-  color: var(--color-light);
+  color: $color-light;
   .ff-notification > .ff-icon {
     padding: 0;
     margin: 8px;
@@ -214,8 +241,8 @@ table.list-table {
 }
 
 footer{
-  color: var(--color-light);
+  color: $color-light;
   height: 44px;
-  background-color: var(--color-dark);
+  background-color: $color-dark;
   display:flex;
 }

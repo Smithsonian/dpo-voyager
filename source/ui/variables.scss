@@ -1,0 +1,27 @@
+
+$color-primary: #00517d; // blue
+$color-primary-light: #00a5e8;
+$color-primary-dark: darken($color-primary, 8%);
+
+$color-secondary: #f96; // orange
+$color-secondary-light: lighten($color-secondary, 15%);
+$color-secondary-dark: darken($color-secondary, 15%);
+
+$color-tertiary: #103040; // Holusion dark blue
+
+$color-text: #eee;
+$color-text-light: #eee;
+$color-text-dark: #a0a0a0;
+$color-text-disabled: #808080;
+$color-icon: #eee b4 0a0;
+$color-icon-disabled: #808080;
+
+$color-focus: $color-secondary-light;
+ 
+$section-border: 1px solid transparentize($color-primary, 0.5);
+
+$color-light: #eee;
+$color-dark: #103040;
+$color-danger: #dc3545;
+
+$color-background: #343434;

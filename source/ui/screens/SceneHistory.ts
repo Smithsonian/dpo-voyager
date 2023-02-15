@@ -170,7 +170,7 @@ class SceneVersion{
           ${this.renderHistory()}
         </div>
         ${getLogin()?.isAdministrator? html`<div style="padding: 10px 0;display:flex;color:red;justify-content:end;">
-        <div><ff-button icon="trash" text="Delete" @click=${this.onDelete}</div>
+        <div><ff-button class="btn-danger" icon="trash" text="Delete" @click=${this.onDelete}</div>
         </div>`:null}
       </div>`;
     }
@@ -233,7 +233,7 @@ class SceneVersion{
                 <td>${name}</td>
                 <td>${new Date(v.start).toLocaleString()}</td>
                 <td>${authors}</td>
-                <td>${index==0?html`Active`:html`<button class="btn btn-restore" @click=${this.onRestore}>Restore</button>`}</td>
+                <td>${index==0?html`Active`:html`<ff-button class="btn-restore" @click=${this.onRestore} text="Restore"></ff-button>`}</td>
               </tr>`
             })}
           </tbody>

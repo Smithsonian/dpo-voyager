@@ -1,15 +1,20 @@
+@import "./variables.scss";
+
 :root{
   --nav-height: 44px;
   --col-width: 1320px;
-  --color-primary: #00517d;
-  --color-secondary: #f96;
-  --color-tertiary: #00a5e8;
+  --color-primary: #{$color-primary};
+  --color-secondary: #{$color-secondary};
+  --color-tertiary: #{$color-tertiary};
 
-  --color-dark: #103040;
-  --color-medium: #00517d;
-  --color-hover: #004164;
-  --color-light: #c8c8c8;
+  --color-dark: #{$color-tertiary};
+  --color-medium: #{$color-primary};
+  --color-hover: #{$color-primary-dark};
+  --color-light: #{$color-text};
+
+  --color-danger: #{$color-danger};
 }
+
 
 
 
@@ -30,5 +35,5 @@ body{
 }
 
 h1{
-  font-family: "Impact", "Charcoal", "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", "sans-serif";
+  font-family: "Charcoal", "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", "sans-serif";
 }
