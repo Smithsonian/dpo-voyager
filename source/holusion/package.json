@@ -1,6 +1,6 @@
 {
   "name": "holusion-voyager-explorer",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Voyager explorer for holographic displays",
   "main": "main.js",
   "scripts": {
@@ -33,14 +33,6 @@
     },
     "extraFiles": [
       {
-        "from": "../../files/documents.json",
-        "to": "files/documents.json"
-      },
-      {
-        "from": "../../files/scenes",
-        "to": "files/scenes"
-      },
-      {
         "from": "../../assets",
         "to": "assets"
       },
@@ -68,6 +60,7 @@
   },
   "dependencies": {
     "express": "^4.17.1",
+    "node-stream-zip": "^1.15.0",
     "three": "^0.147.0"
   }
 }
