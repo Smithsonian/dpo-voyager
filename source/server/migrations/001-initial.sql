@@ -80,7 +80,7 @@ CREATE TABLE config (
   value BLOB
 );
 
---128 bytes of data is the default best for sha1
+--128 bits of data is the default best for sha1
 INSERT INTO keys (key_data) VALUES (randomblob(16));
 
 --we rely strongly on default id always being 0 and "any" being 1

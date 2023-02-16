@@ -7,7 +7,7 @@ import { BadRequestError } from "../../../utils/errors";
 import { canAdmin, canRead, getUserManager, isAdministrator, isUser } from "../../../utils/locals";
 import wrap from "../../../utils/wrapAsync";
 import bodyParser from "body-parser";
-import { getLogin, postLogin } from "./login";
+import { getLogin, getLoginLink, postLogin } from "./login";
 import { postLogout } from "./logout";
 import postScene from "./scenes/scene/post";
 import getScenes from "./scenes/get";
@@ -23,8 +23,9 @@ import handleDeleteUser from "./users/uid/delete";
 
 const router = Router();
 
-router.get("/login", getLogin);
+router.get("/login", wrap(getLogin));
 router.post("/login", bodyParser.json(), postLogin);
+router.get("/login/:username/link", isAdministrator, wrap(getLoginLink));
 router.post("/logout", postLogout);
 
 
