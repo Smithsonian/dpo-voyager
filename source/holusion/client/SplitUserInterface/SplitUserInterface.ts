@@ -9,7 +9,6 @@ import CVDocument from "client/components/CVDocument";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { ITourMenuSelectEvent } from "client/ui/explorer/TourMenu";
 import CVViewer from "client/components/CVViewer";
-import { EUIElements } from "client/components/CVInterface";
 
 
 import "../TouchController";
@@ -18,12 +17,6 @@ import "../SplitModeObjectMenu";
 import "./ObjectContent";
 import "./TourSelector";
 
-
-async function *animationLoop() :AsyncGenerator<DOMHighResTimeStamp>{
-    while(true){
-      yield await new Promise(resolve =>window.requestAnimationFrame(resolve));
-    }
-  }
 
 @customElement("split-user-interface")
 export default class SplitUserInterface extends DocumentView
@@ -79,7 +72,6 @@ export default class SplitUserInterface extends DocumentView
         const activeLanguage = language.outs.language.value;
 
         let tabs = [];
-        console.log("render : ", document, selectedTour);
 
         if(document && tours.length !== 0){
             tabs.push([
@@ -105,7 +97,7 @@ export default class SplitUserInterface extends DocumentView
         return html`
             <object-content title="${document.ins.title.value}" .system=${this.system} .content=${tabs} @return=${this.toHomeScreen}></object-content>
             <div style="margin:auto; width: 30%; position:relative">
-                <touch-controller .system=${this.system} ></touch-controller>
+                <touch-controller></touch-controller>
                 <div style="position:absolute; top:40%;right:-200px;"><ff-button style="padding:1rem" text="Reset camera" @click=${this.onResetCamera}></ff-button></div>            
             </div>
 

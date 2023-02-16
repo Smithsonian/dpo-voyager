@@ -19,9 +19,7 @@ import CustomElement, { customElement, property, html } from "@ff/ui/CustomEleme
 import "@ff/ui/Button";
 
 import { ITour } from "client/schema/setup";
-import System, { IComponentEvent } from "@ff/graph/System";
 import "./TourNavigator"
-import CVTours from "client/components/CVTours";
 import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////

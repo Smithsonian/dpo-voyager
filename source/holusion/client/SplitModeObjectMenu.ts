@@ -53,20 +53,10 @@ export interface IDocumentParams
      {
         super.firstConnected();
         this.classList.add("split-object-menu");
-         
-        fetch("/documents.json").then(async (res)=>{
-            if(!res.ok) throw new Error(`[${res.status}]: ${res.statusText}`);
-            let body = await res.json();
-            if(!Array.isArray(body.documents) || body.documents.length == 0)throw new Error(`Bad documents list : `+ body);
-            this.docs = body.documents;
-            localStorage.setItem("playlist-documents", JSON.stringify(this.docs));
-            let idx = Math.floor(Math.random()*this.docs.length);
-            this.dispatchEvent(new CustomEvent("select", {
-                detail: `/?root=${this.docs[idx].root}`
-            }));
-        }).catch(e=>{
-            Notification.show("Failed to get documents : "+e.message, "error");
-        });
+        let idx = Math.floor(Math.random()*this.docs.length);
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: `/?root=${this.docs[idx].root}`
+        }));
         let index = 0;
         this.loop = setInterval(()=>{
             index = ++index % this.docs.length;

@@ -31,6 +31,7 @@ import  "./SplitOverlay";
 import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!client/ui/explorer/styles.scss';
 //@ts-ignore
 import splitStyles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';
+import { IDocumentParams } from "./SplitModeObjectMenu";
 
 
 
@@ -61,6 +62,9 @@ export default class MainView extends LitElement
     application: ExplorerApplication = null;
     private _loop :AbortController;
 
+    @property({type:Object})
+    public docs :IDocumentParams[];
+
     @property()
     public document :string;
 
@@ -69,25 +73,12 @@ export default class MainView extends LitElement
     
     @property({type: Boolean})
     private auto :boolean;
-
     constructor(){
         super();
-
         let sp = new URLSearchParams(window.location.search);
-        let d = {
-            route: decodeURIComponent(sp.get("route") || ""),
-            document: decodeURIComponent(sp.get("document")),
-            auto: !!sp.get("auto")
-        }
-        this.application = new ExplorerApplication(null, {
-            root: d.document,
-            document: "scene.svx.json",
-            resourceRoot:"/", 
-            lang: "FR", 
-            bgColor: "#000000", 
-            bgStyle: "solid"
-        });
-        this.onNavigate(new CustomEvent<NavigationParams>("select", {detail: d}));
+        this.route ??= decodeURIComponent(sp.get("route") || "");
+        this.document ??= decodeURIComponent(sp.get("document"));
+        this.auto ??= !!sp.get("auto");
     }
 
     public connectedCallback()
@@ -95,12 +86,32 @@ export default class MainView extends LitElement
         super.connectedCallback();
         this.classList.add("split-mode");
         Notification.shadowRootNode = this.shadowRoot;
+         
+        fetch("/documents.json").then(async (res)=>{
+            if(!res.ok) throw new Error(`[${res.status}]: ${res.statusText}`);
+            let body = await res.json();
+            if(!Array.isArray(body.documents) || body.documents.length == 0)throw new Error(`Bad documents list : `+ body);
+            
+            this.docs = body.documents;
+            if(!this.document || this.document == "null") this.document = body.documents[0].root;
+            console.log("Document :", this.document );
+            this.application = new ExplorerApplication(null, {
+                root: this.document,
+                document: "scene.svx.json",
+                resourceRoot:"/", 
+                lang: "FR", 
+                bgColor: "#000000", 
+                bgStyle: "solid"
+            });
 
-        console.log("Start app with root : \"%s\"", this.document);
-
+        }).catch(e=>{
+            Notification.show("Failed to get documents : "+e.message, "error");
+        });
     }
 
     protected render() {
+        if(!this.docs) return html`<h1 style="color:white">Loading...</h1>`;
+
         let system = this.application.system;
         
         if(this.document && this.document !== this.application.props.root){
@@ -113,7 +124,7 @@ export default class MainView extends LitElement
         let ui :TemplateResult;
 
         if(!this.route){
-            ui = html`<split-object-menu @select=${this.onNavigate}></split-object-menu>`
+            ui = html`<split-object-menu .docs=${this.docs} @select=${this.onNavigate}></split-object-menu>`
         }else{
             ui = html`<split-user-interface @select=${this.onNavigate} .system=${system}></split-user-interface>`
         }
