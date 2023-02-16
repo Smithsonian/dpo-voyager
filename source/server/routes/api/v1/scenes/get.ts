@@ -11,10 +11,17 @@ export default async function getScenes(req :Request, res :Response){
   let u = getUser(req);
   let scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
   let eTag = createHash("sha256")
+  let lastModified = 0;
   for(let scene of scenes){
-    eTag.update(`${scene.name}:${scene.mtime.getTime().toString(32)};`);
+    let mtime = scene.mtime.getTime();
+    eTag.update(`${scene.name}:${mtime.toString(32)};`);
+    if(lastModified < mtime) lastModified = mtime;
   }
   res.set("ETag", "W/"+eTag.digest("base64url"));
+  res.set("Last-Modified", new Date(lastModified).toUTCString());
+  if( req.fresh){
+    return res.status(304).send("Not Modified");
+  }
   
   await wrapFormat(res, {
     "application/json":()=>res.status(200).send(scenes),
