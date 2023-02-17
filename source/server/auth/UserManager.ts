@@ -158,18 +158,18 @@ export default class UserManager {
 
 
   /**
-   * Reads users file and checks users validity
+   * Reads users file and checks users validity.
+   * Also allow requests by email
    * @throws {BadRequestError} is username is invalid
    * @throws {NotFoundError} is username is not found
    * @throws {Error} if fs.readFile fails (generally with error.code == ENOENT)
    */
   async getUserByName(username : string) :Promise<User>{
-    if(!UserManager.isValidUserName(username)) throw new BadRequestError(`Invalid user name`);
-    let u = await this.db.get<StoredUser>(`SELECT * FROM users WHERE username = $username`, {$username: username});
+    if(!UserManager.isValidUserName(username) && username.indexOf("@")== -1) throw new BadRequestError(`Invalid user name`);
+    let u = await this.db.get<StoredUser>(`SELECT * FROM users WHERE username = $username OR email = $username`, {$username: username});
     if(!u) throw new NotFoundError(`no user with username ${username}`);
     return UserManager.deserialize(u);
   }
-
   
   /**
    * List users
@@ -207,16 +207,15 @@ export default class UserManager {
   }
   /**
    * Performs any necessary checks and create a new user
-   * @param username 
    * @param password clear-text password
-   * @param isAdministrator 
    */
-  async addUser(username : string, password : string, isAdministrator : boolean = false) : Promise<User>{ 
+  async addUser(username : string, password : string, isAdministrator : boolean = false, email ?:string) : Promise<User>{ 
     if(!UserManager.isValidUserName(username)) throw new Error(`Invalid username : ${username}`);
     if(password.length < 8) throw new Error(`Password too short (min. 8 char long)`);
     let user = new User({
       username, 
       password: await UserManager.formatPassword(password), 
+      email: email,
       isAdministrator, 
       uid: 0,
     });
@@ -234,6 +233,11 @@ export default class UserManager {
       }
     }
     return user;
+  }
+
+  async setEmail(uid :number, email :string){
+    let r = await this.db.run(`UPDATE users SET email = $email WHERE user_id = $uid`, {$uid: uid, $email: email});
+    if(!r?.changes) throw new NotFoundError(`No user matching : ${uid}`);
   }
 
   async removeUser(uid :number){

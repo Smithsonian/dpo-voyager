@@ -1,8 +1,10 @@
 import { createHmac } from "crypto";
 import { Request, RequestHandler, Response } from "express";
-import User from "../../../auth/User";
-import { BadRequestError, ForbiddenError } from "../../../utils/errors";
-import { getUserManager } from "../../../utils/locals";
+import User, { SafeUser } from "../../../auth/User";
+import { BadRequestError, ForbiddenError, HTTPError } from "../../../utils/errors";
+import { getHost, getUser, getUserManager } from "../../../utils/locals";
+import sendmail from "../../../utils/mails/send";
+import { recoverAccount } from "../../../utils/mails/templates";
 /**
  * 
  * @type {RequestHandler}
@@ -57,31 +59,69 @@ export async function getLogin(req :Request, res:Response){
   res.status(204).send();
 };
 
+
+function makeLoginLink(user :User, key :string){
+  let expires = new Date(Date.now()+ 1000*60*60*24*30); //1 month
+  let params = Buffer.from(JSON.stringify({
+    uid: user.uid.toString(10),
+    username: user.username,
+    expires: expires.toISOString(),
+  })).toString("base64url");
+
+  let sig = createHmac("sha512", key).update(params).digest("base64url");
+
+  return {
+    params,
+    expires,
+    sig,
+  };
+}
+
+function makeRedirect(opts:ReturnType<typeof makeLoginLink>, redirect :URL) :URL{
+  let url = new URL("/api/v1/login", redirect.toString());
+  url.searchParams.set("payload", opts.params);
+  url.searchParams.set("sig", opts.sig);
+  url.searchParams.set("redirect", redirect.pathname);
+  return url;
+}
+
+
 export async function getLoginLink(req :Request, res :Response){
   let {username} = req.params;
   let userManager = getUserManager(req);
   let user = await userManager.getUserByName(username);
   let key = (await userManager.getKeys())[0];
 
-  let payload = Buffer.from(JSON.stringify({
-    uid: user.uid.toString(10),
-    username: username,
-    expires: new Date(Date.now()+ 1000*60*60*24*30).toISOString(), //1 month
-  })).toString("base64url");
-
-  let sig = createHmac("sha512", key).update(payload).digest("base64url");
+  let payload = makeLoginLink(user, key);
   res.format({
     "text/plain":()=>{
-      let host = (req.app.get("trust proxy")? req.get("X-Forwarded-Host") : null) ?? req.get("Host");
-      let rootUrl = new URL(`${req.protocol}://${host}`);
-      rootUrl.pathname = "/api/v1/login";
-      rootUrl.searchParams.set("payload", payload);
-      rootUrl.searchParams.set("sig", sig);
-      rootUrl.searchParams.set("redirect", "/");
-      res.status(200).send(rootUrl.toString());
+      let rootUrl = getHost(req);
+      res.status(200).send(makeRedirect(payload, rootUrl).toString());
     },
     "application/json":()=>{
-      res.status(200).send({payload, sig});
+      res.status(200).send(payload);
     }
   })
+}
+
+
+export async function sendLoginLink(req :Request, res :Response){
+  let {username} = req.params;
+  let requester = getUser(req);
+  let userManager = getUserManager(req);
+
+  let user = await userManager.getUserByName(username);
+  if(!user.email){
+    throw new BadRequestError(`Requested user has no registered email`);
+  }
+  let key = (await userManager.getKeys())[0];
+  let payload = makeLoginLink(user, key);
+  let link = makeRedirect(
+    payload, 
+    getHost(req)
+  );
+  let content = recoverAccount({link: link.toString(), expires:payload.expires});
+  await sendmail(user.email, content);
+  console.log("sent an account recovery mail to :", user.email);
+  res.status(204).send();
 }

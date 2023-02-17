@@ -203,8 +203,9 @@ describe("Web Server Integration", function(){
         expect(found.sort().map(s=>new URL(s).pathname)).to.deep.equal([
           "/scenes/foo/",
           "/scenes/foo/foo-image-thumb.jpg",
+          "/scenes/foo/models/",
           "/scenes/foo/models/foo.glb",
-          "/scenes/foo/foo.svx.json",
+          "/scenes/foo/scene.svx.json",
           "/scenes/foo/articles/",
           "/scenes/foo/articles/hello.html",
           "/scenes/foo/videos/",

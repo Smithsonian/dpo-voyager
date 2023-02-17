@@ -51,6 +51,18 @@ describe("UserManager static methods", function(){
       )).to.be.rejectedWith("Malformed");
     });
   });
+
+  describe("isValidUsername()", function(){
+    it("returns a boolean", function(){
+      expect(UserManager.isValidUserName("xxxx")).to.be.true;
+    });
+    it("rejects usernames under 3 chars long", function(){
+      expect(UserManager.isValidUserName("xx")).to.be.false;
+    });
+    it("rejects possible emails", function(){
+      expect(UserManager.isValidUserName("foo@example.com")).to.be.false;
+    });
+  })
 });
 
 describe("UserManager methods", function(){
@@ -127,6 +139,11 @@ describe("UserManager methods", function(){
     });
     it("throws if user doesn't exist", async function(){
       await expect(userManager.getUserByName("foo")).to.be.rejectedWith(NotFoundError);
+    })
+    it("finds by email", async function(){
+      let user = await userManager.addUser("foo", "12345678", false, "foo@example.com");
+      await expect(userManager.getUserByName("foo@example.com")).to.eventually.deep.equal(user);
+
     })
   })
 

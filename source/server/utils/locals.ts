@@ -96,3 +96,8 @@ export function getVfs(req :Request){
   if(!vfs) throw new InternalError("Badly configured app : vfs is not defined in app.locals");
   return vfs;
 }
+
+export function getHost(req :Request) :URL{
+  let host = (req.app.get("trust proxy")? req.get("X-Forwarded-Host") : null) ?? req.get("Host");
+  return new URL(`${req.protocol}://${host}`);
+}

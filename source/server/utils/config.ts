@@ -7,6 +7,8 @@ const values = {
   migrations_path: [ path.join(process.cwd(), "migrations"), toPath],
   root_dir: [ process.cwd(), toPath],
   trust_proxy: [true as boolean, toBool],
+  hostname: ["ecorpus.holusion.net", toString],
+  smart_host: ["localhost" as string, toString]
 } as const;
 
 type Converter<T> = (s:string)=>T;

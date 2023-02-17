@@ -23,6 +23,9 @@ RUN npm run build-server
 FROM node:16
 ARG PORT=8000
 
+ENV PUBLIC=false
+ENV PORT=${PORT}
+
 WORKDIR /app
 COPY source/server/package*.json /app/
 RUN npm ci --omit=dev

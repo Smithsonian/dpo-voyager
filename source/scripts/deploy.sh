@@ -9,5 +9,5 @@ $DOCKER rm ethesaurus || echo "ethesaurus container does not exist"
 $DOCKER run -d \
   --net dashboard_default -p 8000:8000 \
   --volume ethesaurus:/app/files \
-  -e PORT=8000 -e PUBLIC=false \
+  -e PUBLIC=false -e SMART_HOST=marx.holusion.net \
   --name ethesaurus ethesaurus

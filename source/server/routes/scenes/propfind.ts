@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from "express";
 import xml from 'xml-js';
 import path from "path";
-import { AppLocals, getUser } from "../../utils/locals";
+import { AppLocals, getHost, getUser } from "../../utils/locals";
 import Vfs, { FileProps, FileType, ItemProps } from "../../vfs";
 
 type DavTAG = "D:href"|"D:response"|"D:propstat"|"D:href"|"D:status"|"D:prop"|"D:getlastmodified"|"D:creationdate"|"D:displayname"|"D:lockdiscovery"|"D:supportedlock"|"D:resourcetype"|"D:getcontentlength"|"D:getcontenttype"|"D:collection"
@@ -203,8 +203,8 @@ export async function handlePropfind(req :Request, res:Response){
   const {vfs} = req.app.locals as AppLocals;
   let recurse = parseInt(req.get("Depth")??"-1");
   if(!Number.isSafeInteger(recurse)) throw new Error("Invalid Depth header : "+req.get("Depth"));
-  let host = (req.app.get("trust proxy")? req.get("X-Forwarded-Host") : null) ?? req.get("Host");
-  let rootUrl = new URL(`${req.protocol}://${host}`);
+  
+  let rootUrl = getHost(req);
   let p = path.normalize(req.path);
   let depth = (recurse == -1)? -1 : recurse + p.split("/").length + (p.endsWith("/")?-1:0);
   let elements :ElementList;
