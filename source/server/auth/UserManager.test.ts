@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 
 import {expect} from "chai";
-import { NotFoundError, UnauthorizedError } from "../utils/errors";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "../utils/errors";
 import User from "./User";
 import openDatabase from "../vfs/helpers/db";
 import { Uid } from "../utils/uid";
@@ -124,6 +124,36 @@ describe("UserManager methods", function(){
     it("expects a valid uid", async function(){
       await expect(userManager.removeUser(10)).to.be.rejectedWith("404");
     });
+  })
+
+  describe("patchUser", function(){
+    let u:User;
+    this.beforeEach(async function(){
+      u = await userManager.addUser("bob", "abcdefghij");
+    });
+    [
+      ["email", "foo@example.com"],
+      ["username", "bar"],
+      ["isAdministrator", true],
+    ].forEach(([key, value])=>{
+      it(`can change a ${key}`, async function(){
+        let updated = await userManager.patchUser(u.uid, {[key as string]: value});
+        expect(updated).to.have.property(key as string, value);
+        expect(updated).to.deep.equal({
+          ...u,
+          [key as string]: value,
+        })
+      });
+    });
+    it("rejects invalid values", async function(){
+      await expect(userManager.patchUser(u.uid, {username:"x"})).to.be.rejectedWith(BadRequestError);
+    })
+    it("rejects invalid properties", async function(){
+      await expect(userManager.patchUser(u.uid, {foo:"bar"} as any)).to.be.rejectedWith(BadRequestError);
+    })
+    it("throw 404 if user doesn't exist", async function(){
+      await expect(userManager.patchUser(2, {username:"bar"})).to.be.rejectedWith(NotFoundError);
+    })
   })
 
   describe("getUsers()", function(){

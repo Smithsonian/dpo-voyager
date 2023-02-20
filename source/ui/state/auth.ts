@@ -8,11 +8,12 @@ const LOGIN_STATE = "login-state";
 export interface UserSession{
   uid :number;
   username :string;
+  email :string;
   isAdministrator :boolean;
   isDefaultUser: boolean;
 }
 
-function setSession(s ?:UserSession){
+export function setSession(s ?:UserSession){
   window.localStorage.setItem(LOGIN_STATE, (s && s.username)?JSON.stringify(s): "");
   window.dispatchEvent(new Event(LOGIN_STATE));
 }
@@ -87,6 +88,7 @@ export function withUser<T extends Constructor<LitElement>>(baseClass:T) : T & C
     connectedCallback(){
       super.connectedCallback();
       onLogin(this.onLoginCallback);
+      this.onLoginCallback(getLogin());
     }
 
     disconnectedCallback(){

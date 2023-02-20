@@ -20,6 +20,9 @@ import getPermissions from "./scenes/scene/permissions/get";
 import patchPermissions from "./scenes/scene/permissions/patch";
 import postUser from "./users/post";
 import handleDeleteUser from "./users/uid/delete";
+import { handlePatchUser } from "./users/uid/patch";
+
+
 
 const router = Router();
 
@@ -40,6 +43,7 @@ router.get("/users", isAdministrator, wrap(async (req, res)=>{
 
 router.post("/users", isAdministrator, bodyParser.json(), wrap(postUser));
 router.delete("/users/:uid", isAdministrator, wrap(handleDeleteUser));
+router.patch("/users/:uid", bodyParser.json(), wrap(handlePatchUser));
 
 router.get("/scenes", wrap(getScenes));
 router.post("/scenes/:scene", isUser, wrap(postScene));

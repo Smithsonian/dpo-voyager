@@ -107,9 +107,6 @@ interface ModalOptions{
       color: var(--color-light);
       box-shadow: 0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.24);
     }
-    h2{
-      color: var(--color-tertiary);
-    }
 
     .ff-button.ff-control{
       color: white;
@@ -129,6 +126,7 @@ interface ModalOptions{
       cursor: pointer;
     }
     dialog >button#exit svg{
+      fill: var(--color-secondary);
       width:100%;
       height: 100%;
     }

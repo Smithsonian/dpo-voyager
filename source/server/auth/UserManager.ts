@@ -61,8 +61,9 @@ export default class UserManager {
    * @see UserManager.deserialize() 
    */
   static isValidUserName(username :string){
-    return /^[\w]{3,40}$/.test(username)
+    return UserManager.isValid.username(username);
   }
+  
   static isValidPasswordHash(hash :string) :boolean{
     try{
       UserManager.parsePassword(hash);
@@ -71,6 +72,19 @@ export default class UserManager {
     }
     return true;
   }
+
+  static isValid = {
+    username(username :string|any){
+      return typeof username ==="string" &&/^[\w]{3,40}$/.test(username)
+    },
+    password(password:string|any){
+      return typeof password ==="string" && 8 < password.length
+    },
+    email(email:string|any){
+      return typeof email === "string" && /^[^@]+@[^@]+\.[^@]+$/.test(email);
+    }
+  } as const;
+  
   /**
    * 
    * @param pw a password string as encoded by formatPassword()
@@ -235,9 +249,30 @@ export default class UserManager {
     return user;
   }
 
-  async setEmail(uid :number, email :string){
-    let r = await this.db.run(`UPDATE users SET email = $email WHERE user_id = $uid`, {$uid: uid, $email: email});
-    if(!r?.changes) throw new NotFoundError(`No user matching : ${uid}`);
+  async patchUser($uid :number, u :Partial<User>){
+    let values = [], params :Partial<Record<`\$${keyof User}`,any>> = {$uid};
+    let keys = ["username", "password", "email", "isAdministrator"] as Array<keyof User & keyof typeof UserManager.isValid>;
+    for(let key of keys){
+      let value = u[key];
+      let validator = UserManager.isValid[key];
+      if(typeof value === "undefined") continue;
+      if(typeof validator === "function" && !validator(value)){
+        throw new BadRequestError(`Bad value for ${key}: ${value}`);
+      }
+      values.push(`${key} = $${key}`);
+      params[`\$${key}`] = u[key];
+    }
+    if(values.length === 0){
+      throw new BadRequestError(`Provide at least one valid value to change`);
+    }
+    let r = await this.db.get<StoredUser|undefined>(`
+      UPDATE users 
+      SET ${values.join(", ")} 
+      WHERE user_id = $uid
+      RETURNING *
+    `, params);
+    if(!r) throw new NotFoundError(`Can't find user with uid : ${$uid}`);
+    return UserManager.deserialize(r);
   }
 
   async removeUser(uid :number){

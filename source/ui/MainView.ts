@@ -16,6 +16,7 @@ import "./screens/Admin";
 import "./screens/SceneHistory";
 import "./screens/FileHistory";
 import "./screens/ApiDoc";
+import "./screens/UserSettings";
 import "./composants/Modal";
 
 interface Route{
@@ -56,6 +57,7 @@ export default class MainView extends i18n(withUser(LitElement)){
       return html`<corpus-list></corpus-list>`;
     }},
     {pattern: "/ui/doc/", content: ()=>html`<api-doc></api-doc>`},
+    {pattern: "/ui/user/", content: ()=>html`<user-settings></user-settings>`},
     {pattern: "/ui/users/", content: (parent :MainView) => html`<users-list></users-list>`},
     {pattern: "/ui/scenes/:id/", content: (parent, params) => html`<scene-history scene="${params.id}"></scene-history>`},
     {pattern: "/ui/scenes/:id/files/:type/:name", content: (parent, params) => html`<file-history scene="${params.id}" type="${params.type}" name="${params.name}"></file-history>`},
@@ -94,7 +96,7 @@ export default class MainView extends i18n(withUser(LitElement)){
         <nav-link href="/ui/doc" text="Documentation" transparent></nav-link>
         ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users" transparent></nav-link>`:""}
         <div class="divider"></div>
-        <user-button .username=${this.user?.username}></user-button>
+        <user-button .user=${this.user}></user-button>
       </corpus-navbar>
       <main>
         ${this.renderContent()}

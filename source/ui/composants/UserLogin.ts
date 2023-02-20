@@ -40,16 +40,16 @@ import Modal from "./Modal";
     }
 
     protected render() :TemplateResult {
-      return html`<form id="userlogin" class="form-control" @submit=${this.onLoginSubmit}>
+      return html`<form id="userlogin" class="form-control form-modal" @submit=${this.onLoginSubmit}>
       <div class="form-group">
         <div class="form-item">
-          <input type="text" name="username" id="username" placeholder="${this.t("ui.username")}" required>
+          <input type="text" autocomplete="username" name="username" id="username" placeholder="${this.t("ui.username")}" required>
           <label for="username">${this.t("ui.username")}</label>
         </div>
       </div>
       <div class="form-group">
         <div class="form-item">
-          <input type="password" name="password" id="password" placeholder="${this.t("ui.password")}" required>
+          <input type="password" autocomplete="current-password" name="password" id="password" placeholder="${this.t("ui.password")}" required>
           <label for="password">${this.t("ui.password")}</label>
         </div>
       </div>

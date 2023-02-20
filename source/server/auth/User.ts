@@ -45,6 +45,7 @@ export default class User implements SafeUser {
     return {
       uid: u.uid,
       username: u.username,
+      email: u.email,
       isAdministrator: !!u.isAdministrator,
       isDefaultUser: u.isDefaultUser ?? true,
     };

@@ -87,19 +87,26 @@ Icon.add("email", html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
     createUserOpen(){
         Modal.show({
             header: "Create new user",
-            body: html`<form id="userlogin" autocomplete="off" class="form-control" @submit=${this.onCreateUser}>
-              <div class="form-item">
-                <input type="text" name="username" id="username" autocomplete="off" placeholder="Username" required>
-                <label for="username">Username</label>
-              </div>
-              <div class="form-item">
-                <input type="password" name="password" id="password" autocomplete="new-password" placeholder="Password" required>
-                <label for="password">Password</label>
-              </div>
-              <input type="checkbox" name="isAdministrator" id="isAdministrator">
-              <div class="form-item">
-                <input type="submit" value="Connect" >
-              </div>
+            body: html`<form id="userlogin" autocomplete="off" class="form-control form-modal" @submit=${this.onCreateUser}>
+                <div class="form-item">
+                    <input type="text" name="username" id="username" autocomplete="off" placeholder="Username" required>
+                    <label for="username">Username</label>
+                </div>
+                <div class="form-group">
+                    <div class="form-item">
+                        <input type="password" name="password" id="password" autocomplete="new-password" placeholder="Password" required>
+                        <label for="password">Password</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-checkbox">
+                        <input type="checkbox" name="isAdministrator" id="isAdministrator">
+                        <label for="isAdministrator">Is administrator</label>
+                    </div>
+                </div>
+                <div class="form-item" style="margin-top: 15px">
+                    <input type="submit" value="Create" >
+                </div>
             </form>`,
           });
     }

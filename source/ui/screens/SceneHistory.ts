@@ -198,11 +198,9 @@ class SceneVersion{
                 <td colspan=2 class="form-control" style="padding:0">
                   <form id="userlogin" style="padding:0" autocomplete="off" @submit=${this.onAddUserPermissions}>
                     <div class="form-group inline" style="padding:0;border:none;">
-                      <div class="form-item">
-                        <input style="border:none;" type="text" name="username" id="username" placeholder="${this.t("ui.username")}" autocomplete="new-password" required>
-                        <label for="password">${this.t("ui.username")}</label>
+                      <div class="form-item" style="width:100%">
+                        <input style="border:none;" type="text" name="username" id="username" placeholder="${this.t("ui.username")}" required>
                       </div>
-                      <div class="divider"></div>
                       <div class="form-item">
                         <input style="border:none;" type="submit" value="${this.t("ui.add")}" >
                       </div>

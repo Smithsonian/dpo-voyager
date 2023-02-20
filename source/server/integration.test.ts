@@ -495,6 +495,12 @@ describe("Web Server Integration", function(){
 
       });
 
+      it("can PATCH himself", async function(){
+        await this.agent.patch(`/api/v1/users/${user.uid}`)
+        .send({username: "dave"})
+        .expect(200);
+      })
+
       it("can't fetch user list", async function(){
         await this.agent.get("/api/v1/users")
         .expect(401);

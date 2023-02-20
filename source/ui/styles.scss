@@ -91,6 +91,7 @@ nav-link{
 
 
 .form-control{
+
   &form{
     display: flex;
     flex-direction: column;
@@ -113,59 +114,79 @@ nav-link{
     position: relative;
     box-sizing: border-box;
   }
+
   .form-item > input{
     box-sizing: border-box;
     padding: 0.35rem .75rem;
-    height: calc(3.5rem + 2px);
     display: block;
     width: 100%;
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
     color: $color-light;
-    background: $color-primary;
+    background: $color-dark;
     background-clip: padding-box;
     border-radius: 0;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
   }
-  .form-item > input::placeholder{
-    display:none;
-    color: transparent;
+  .form-item > label{
+    opacity: 0.7;
   }
-  .form-item > input:focus, .form-item > input:not(:placeholder-shown){
-    &[type="text"], &[type="password"]{
-      padding-top: 1.625rem;
-      padding-bottom: .625rem;
+
+  &.form-modal{
+    .form-item > input{
+      background: $color-primary;
+      height: calc(3.5rem + 2px);
     }
-  }
-  .form-item > input:focus{
-    color: $color-light;
-    background-color: var(--color-hover);
-    outline: 0;
-  }
-  
-  .form-item > label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    padding: 5px;
-    overflow: hidden;
-    text-align: start;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    pointer-events: none;
-    border: 1px solid transparent;
-    transform-origin: 0 0;
-    transition: opacity .1s ease-in-out,transform .1s ease-in-out;
-  }
-  input:focus ~ label, input:not(:placeholder-shown) ~label{
-    opacity: .65;
-    transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+
+    .form-item > input::placeholder{
+      display:none;
+      color: transparent;
+    }
+    .form-item > input:focus, .form-item > input:not(:placeholder-shown){
+      &[type="text"], &[type="password"]{
+        padding-top: 1.625rem;
+        padding-bottom: .625rem;
+      }
+    }
+    .form-item > input:focus{
+      color: $color-light;
+      background-color: var(--color-hover);
+      outline: 0;
+    }
+    
+    .form-item > label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 5px;
+      overflow: hidden;
+      text-align: start;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      pointer-events: none;
+      border: 1px solid transparent;
+      transform-origin: 0 0;
+      transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+    }
+
+    input:focus ~ label, input:not(:placeholder-shown) ~label{
+      opacity: .65;
+    } 
+    .form-item{
+      input:focus ~ label, input:not(:placeholder-shown) ~label{
+        opacity: .65;
+        transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+      } 
+    }
+    input[type="submit"] {
+      background-color: $color-primary-light;
+    }
+
   }
   
   input[type="submit"] {
@@ -176,6 +197,16 @@ nav-link{
       background: $color-secondary;
     }
   }
+
+  .form-checkbox{
+    display: flex;
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }    
+  }
+
 
   .form-item > select{
     width: 100%;

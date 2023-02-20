@@ -15,12 +15,7 @@ export const postLogin :RequestHandler = (req, res, next)=>{
   if(!username) throw new BadRequestError("username not provided");
   if(!password) throw new BadRequestError("password not provided");
   userManager.getUserByNamePassword(username, password).then(user=>{
-    let safeUser = {
-      username: user.username,
-      uid: user.uid,
-      isDefaultUser: !!user.isDefaultUser,
-      isAdministrator: !!user.isAdministrator,
-    };
+    let safeUser = User.safe(user);
     Object.assign(req.session as any, safeUser);
     res.status(200).send({...safeUser, code: 200, message: "OK"});
   }, next);

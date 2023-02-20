@@ -37,6 +37,22 @@ export default {
       "fr": "Changer le mot de passe",
       "en": "Change password"
     },
+    saveChanges: {
+      "fr": "Enregistrer les modifications",
+      "en": "Save changes"
+    },
+    submit: {
+      "fr": "Envoyer",
+      "en": "Submit",
+    },
+    userSettings: {
+      "fr": "Paramètres utilisateur",
+      "en": "User settings",
+    },
+    email: {
+      "fr": "adresse email",
+      "en": "email address"
+    },
     login: {
       "fr": "Connexion",
       "en": "Login"
@@ -118,7 +134,7 @@ export default {
     useStandalone:{
       fr: "tester le mode standalone",
       en: "test standalone mode"
-    }
+    },
   },
   errors:{
     '404':{
