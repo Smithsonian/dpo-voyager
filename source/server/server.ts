@@ -1,14 +1,15 @@
 
 import path from "path";
 import cookieSession from "cookie-session";
-import express from "express";
+import express, { Router } from "express";
+import { engine } from 'express-handlebars';
 import morgan from "morgan";
 
 import UserManager from "./auth/UserManager";
 import { HTTPError } from "./utils/errors";
 import { mkdir } from "fs/promises";
 
-import {AppLocals} from "./utils/locals";
+import {AppLocals, getHost} from "./utils/locals";
 
 import openDatabase from './vfs/helpers/db';
 import Vfs from "./vfs";
@@ -76,11 +77,56 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
     }));
   }
 
+
+  app.engine('.hbs', engine({
+    extname: '.hbs',
+
+  }));
+  app.set('view engine', '.hbs');
+  app.set('views', config.templates_path);
+
+
   app.get("/", (req, res)=> res.redirect("/ui/"));
+
   /* istanbul ignore next */
-  app.get(["/ui", "/ui/*"],(req, res, next)=>{
-    req.url = "/ecorpus-main.html";
-    next("route");
+  app.get("/ui/:scene", (req, res)=>{
+    let {scene} = req.params;
+    let {lang} = req.query;
+    let host = getHost(req);
+    let referrer = new URL(req.get("Referrer")||`/ui/`, host);
+    let thumb = new URL(`/scenes/${encodeURIComponent(scene)}/scene-image-thumb.jpg`, host);
+
+    res.render("explorer", {
+      title: `${scene}: Explorer`,
+      scene,
+      thumb: thumb.toString(),
+      referrer: referrer.toString(),
+      lang: ((typeof lang === "string")?lang.toUpperCase():"FR"),
+    });
+  });
+
+  app.get("/ui/:scene/edit",(req, res)=>{
+    let {scene} = req.params;
+    let {lang} = req.query;
+    let host = getHost(req);
+    let referrer = new URL(req.get("Referrer")||`/ui/`, host);
+    let thumb = new URL(`/scenes/${encodeURIComponent(scene)}/scene-image-thumb.jpg`, host);
+    
+    res.render("story", {
+      title: `${scene}: Story Editor`,
+      scene,
+      thumb: thumb.toString(),
+      referrer: referrer.toString(),
+      mode: "Edit",
+      lang: ((typeof lang === "string")?lang.toUpperCase():"FR"),
+    });
+  });
+
+  app.get(["/ui/", "/ui/*"],(req, res)=>{
+    res.render("home", {
+      title: "eCorpus",
+      thumb: "/images/sketch_ethesaurus.png"
+    });
   });
 
   /* istanbul ignore next */

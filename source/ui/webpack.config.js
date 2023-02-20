@@ -76,7 +76,7 @@ module.exports = function createAppConfig(env, argv)
 
         output: {
             path: dirs.output,
-            filename: isDevMode ? "js/[name].dev.js" : "js/[name].min.js",
+            filename: "js/[name].js",
             publicPath: '/',
         },
 
@@ -112,7 +112,7 @@ module.exports = function createAppConfig(env, argv)
         optimization: {
             //concatenateModules: false,
             minimize: !isDevMode,
-            emitOnErrors: true, //Should be disabled when possible
+            emitOnErrors: !isDevMode, //Should be disabled when possible
         },
 
         plugins: [
@@ -123,30 +123,8 @@ module.exports = function createAppConfig(env, argv)
                 ENV_VERSION: JSON.stringify("e-corpus-"+version+(isDevMode?"-dev":"")),
             }),
             new MiniCssExtractPlugin({
-                filename: isDevMode ? "css/[name].dev.css" : "css/[name].min.css",
+                filename: "css/[name].css",
                 //allChunks: true
-            }),
-
-            new HTMLWebpackPlugin({
-                filename: `voyager-story.html`,
-                template: path.join(dirs.source, "ui", "story.hbs"),
-                title: "Voyager Story",
-                templateParameters:{...hbsParams, quill:true, element: `<voyager-story></voyager-story>`},
-                chunks : ['story'],
-            }),
-            new HTMLWebpackPlugin({
-                filename: `voyager-explorer.html`,
-                template: path.join(dirs.source, "ui", "story.hbs"),
-                title: "Voyager Explorer",
-                templateParameters:{...hbsParams, quill:false, element: `<voyager-explorer></voyager-explorer>`},
-                chunks : ['explorer'],
-            }),
-            new HTMLWebpackPlugin({
-                filename: `ecorpus-main.html`,
-                template: path.join(dirs.source, "ui", "corpus.hbs"),
-                title: "EThesaurus Corpus",
-                templateParameters:{...hbsParams, element: `<ecorpus-main></ecorpus-main>`},
-                chunks : ['corpus'],
             }),
         ],
 

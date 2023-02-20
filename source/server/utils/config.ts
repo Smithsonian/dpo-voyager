@@ -5,6 +5,7 @@ const values = {
   brand: ["eCorpus" as string, toString],
   port: [8000 as number, toUInt ],
   migrations_path: [ path.join(process.cwd(), "migrations"), toPath],
+  templates_path: [ path.join(process.cwd(), "templates"), toPath],
   root_dir: [ process.cwd(), toPath],
   trust_proxy: [true as boolean, toBool],
   hostname: ["ecorpus.holusion.net", toString],

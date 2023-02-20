@@ -1,6 +1,24 @@
 @import "./variables.scss";
 @import "client/ui/styles";
 
+
+:root{
+  --nav-height: 44px;
+  --col-width: 1320px;
+  --color-primary: #{$color-primary};
+  --color-secondary: #{$color-secondary};
+  --color-tertiary: #{$color-tertiary};
+
+  --color-dark: #{$color-tertiary};
+  --color-medium: #{$color-primary};
+  --color-hover: #{$color-primary-dark};
+  --color-light: #{$color-text};
+
+  --color-danger: #{$color-danger};
+}
+
+
+
 *, ::before, ::after {
   box-sizing: border-box;
 }

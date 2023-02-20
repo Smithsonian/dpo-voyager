@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import path from "path";
 import createServer from "./server";
 import config from "./utils/config";
 
@@ -33,7 +34,8 @@ const devMode: boolean = process.env["NODE_ENV"] !== "production";
 
 
 (async ()=>{
-    console.info("Serve directory : "+config.root_dir);
+    let root = path.resolve(config.root_dir);
+    console.info("Serve directory : "+root);
     const app = await createServer(config.root_dir, {verbose:devMode});
     
     app.listen(port, () => {
