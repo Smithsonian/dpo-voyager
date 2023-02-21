@@ -41,7 +41,7 @@ describe("Web Server Integration", function(){
     ["/ui/", "/ui/users"].forEach(function(path){
       it(`GET ${path}`, async function(){
         await request(this.server).get(path)
-        .expect("Content-Type", "text/html; charset=UTF-8")
+        .expect("Content-Type", "text/html; charset=utf-8")
         .expect(200);
       })
     });

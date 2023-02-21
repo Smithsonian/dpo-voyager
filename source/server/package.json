@@ -29,11 +29,12 @@
             "js",
             "ts"
         ],
+        "loader": "ts-node/esm",
         "require": [
-            "ts-node/register",
             "./tests-common.ts"
         ],
-        "spec": "**/*.test.ts"
+        "ignore": "./node_modules/**/*",
+        "spec": "./**/*.test.ts"
     },
     "dependencies": {
         "body-parser": "^1.20.1",
