@@ -100,7 +100,7 @@ export default abstract class ScenesVfs extends BaseVfs{
       ${typeof user_id === "number"? `WHERE 
         COALESCE(
           json_extract(scenes.access, '$.' || $user_id),
-          ${0 < user_id ? `json_extract(access, '$.1'),`:""}
+          ${0 < user_id ? `json_extract(scenes.access, '$.1'),`:""}
           json_extract(scenes.access, '$.0')
         ) IN (${ AccessTypes.slice(2).map(s=>`'${s}'`).join(", ") })
       `:""}

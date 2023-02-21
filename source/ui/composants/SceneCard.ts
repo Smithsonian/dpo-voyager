@@ -51,6 +51,8 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
           let thumbProps = p.find(f=> f.name.endsWith(`-image-thumb.jpg`));
           if(!thumbProps) return console.log("No thumbnail for", this.name);
           this.thumb = thumbProps.url;
+        }, (e)=>{
+          console.warn("Failed to PROPFIND %s :", this.path, e);
         });
     }
 

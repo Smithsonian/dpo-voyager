@@ -13,7 +13,7 @@ export default async function getScenes(req :Request, res :Response){
   let eTag = createHash("sha256")
   let lastModified = 0;
   for(let scene of scenes){
-    let mtime = scene.mtime.getTime();
+    let mtime = scene.mtime.valueOf();
     eTag.update(`${scene.name}:${mtime.toString(32)};`);
     if(lastModified < mtime) lastModified = mtime;
   }

@@ -31,6 +31,8 @@ import "../composants/TaskButton";
     @property()
     dragover = false;
 
+    #loading = new AbortController();
+
     get isUser(){
         return (this.user && !this.user.isDefaultUser);
     }
@@ -52,11 +54,13 @@ import "../composants/TaskButton";
         this.fetchScenes();
     }
     async fetchScenes(){
-        fetch("/api/v1/scenes").then(async (r)=>{
+        this.#loading.abort();
+        this.#loading = new AbortController();
+        fetch("/api/v1/scenes", {signal: this.#loading.signal}).then(async (r)=>{
             if(!r.ok) throw new Error(`[${r.status}]: ${r.statusText}`);
             this.list = (await r.json()) as SceneProps[];
         }).catch((e)=> {
-            console.error(e);
+            if(e.name == "AbortError") return;
             Notification.show(`Failed to fetch scenes list : ${e.message}`, "error");
         });
     }
@@ -157,8 +161,8 @@ import "../composants/TaskButton";
         for(let item of [...ev.dataTransfer.items]){
             
             let file = item.getAsFile();
-            if( !/.glb/.test(file.name) || item.kind !== "file"){
-                Notification.show(`${file.name} is not a valid. Only accept .glb files` , "error", 4000);
+            if( !/\.glb$/i.test(file.name) || item.kind !== "file"){
+                Notification.show(`${file.name} is not valid. This method only accepts .glb files` , "error", 4000);
                 continue;
             };
             this.upload(file)
@@ -167,10 +171,9 @@ import "../composants/TaskButton";
 
     onUploadBtnChange = (ev)=>{
         ev.preventDefault();
-        console.warn("change");
         for(let file of [...ev.detail.files]){
-            if( !/.glb/.test(file.name)){
-                Notification.show(`${file.name} is not a valid. Only accept .glb files` , "error", 4000);
+            if( !/\.glb$/i.test(file.name)){
+                Notification.show(`${file.name} is not valid. This method only accepts .glb files` , "error", 4000);
                 continue;
             };
             this.upload(file)
