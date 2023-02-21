@@ -158,6 +158,10 @@ nav-link{
       background: $color-primary;
       height: calc(3.5rem + 2px);
     }
+    &[disabled] .form-item > input, .form-item > input:disabled {
+      background: $color-primary-dark;
+      pointer-events: none;
+    }
 
     .form-item > input::placeholder{
       display:none;
@@ -169,7 +173,7 @@ nav-link{
         padding-bottom: .625rem;
       }
     }
-    .form-item > input:focus{
+    .form-item > input:focus:not(:disabled){
       color: $color-light;
       background-color: var(--color-hover);
       outline: 0;
@@ -201,9 +205,6 @@ nav-link{
         transform: scale(.85) translateY(-.5rem) translateX(.15rem);
       } 
     }
-    input[type="submit"] {
-      background-color: $color-primary-light;
-    }
 
   }
   
@@ -211,7 +212,7 @@ nav-link{
     background-color: $color-primary-light;
     color: white;
     cursor: pointer;
-    &:hover{
+    &:hover:not(:disabled){
       background: $color-secondary;
     }
   }

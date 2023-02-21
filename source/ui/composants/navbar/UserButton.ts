@@ -29,7 +29,7 @@ import i18n from "../../state/translate";
     onLoginOpen = ()=>{
       Modal.show({
         header: this.t("ui.login"),
-        body: html`<user-login></user-login>`,
+        body: html`<user-login @close=${()=>Modal.close()}></user-login>`,
       });
     }
 
