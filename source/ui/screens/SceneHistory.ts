@@ -158,8 +158,12 @@ class SceneVersion{
           <h1>${this.scene}</h1>
           <div style="display:flex;flex-wrap:wrap;">
             <div style="flex-grow: 1; min-width:300px;">
-              <h3>Total size: <b-size b=${size}></b-size>
-              <h3>${articles.size} article${(1 < articles.size?"s":"")}
+              <h3>Total size: <b-size b=${size}></b-size></h3>
+              <h3>${articles.size} article${(1 < articles.size?"s":"")}</h3>
+              <div style="max-width: 300px">
+                <a class="ff-button ff-control btn-primary" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/edit?lang=${this.language.toUpperCase()}`}>${this.t("ui.editScene")}</a>
+                <a class="ff-button ff-control btn-primary" style="margin-top:10px" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/view?lang=${this.language.toUpperCase()}`}>${this.t("ui.viewScene")}</a>  
+              </div>
             </div>
             <div style="min-width:300px;">
               ${this.renderPermissions()}
@@ -302,5 +306,4 @@ class SceneVersion{
         Notification.show(`Failed to remove ${this.scene} : ${e.message}`);
       });
     }
-
  }

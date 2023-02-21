@@ -86,14 +86,14 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   app.set('views', config.templates_path);
 
 
-  app.get("/", (req, res)=> res.redirect("/ui/"));
+  app.get("/", (req, res)=> res.redirect("/ui/scenes"));
 
   /* istanbul ignore next */
-  app.get("/ui/:scene", (req, res)=>{
+  app.get("/ui/scenes/:scene/view", (req, res)=>{
     let {scene} = req.params;
     let {lang} = req.query;
     let host = getHost(req);
-    let referrer = new URL(req.get("Referrer")||`/ui/`, host);
+    let referrer = new URL(req.get("Referrer")||`/ui/scenes/`, host);
     let thumb = new URL(`/scenes/${encodeURIComponent(scene)}/scene-image-thumb.jpg`, host);
 
     res.render("explorer", {
@@ -105,11 +105,11 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
     });
   });
 
-  app.get("/ui/:scene/edit",(req, res)=>{
+  app.get("/ui/scenes/:scene/edit",(req, res)=>{
     let {scene} = req.params;
     let {lang} = req.query;
     let host = getHost(req);
-    let referrer = new URL(req.get("Referrer")||`/ui/`, host);
+    let referrer = new URL(req.get("Referrer")||`/ui/scenes/`, host);
     let thumb = new URL(`/scenes/${encodeURIComponent(scene)}/scene-image-thumb.jpg`, host);
     
     res.render("story", {

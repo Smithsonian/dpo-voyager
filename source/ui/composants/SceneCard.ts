@@ -60,8 +60,8 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
     }
 
     protected render() :TemplateResult {
-      let explorer = `/ui/${encodeURIComponent(this.name)}?lang=${this.language.toUpperCase()}`;
-      let story = `/ui/${encodeURIComponent(this.name)}/edit?lang=${this.language.toUpperCase()}`;
+      let explorer = `/ui/scenes/${encodeURIComponent(this.name)}/view?lang=${this.language.toUpperCase()}`;
+      let story = `/ui/scenes/${encodeURIComponent(this.name)}/edit?lang=${this.language.toUpperCase()}`;
       return html`<div class="scene-card-inner">
         <a href="${explorer}">
           ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="background:radial-gradient(circle, #103040 0, #0b0b0b 100%);" src="/images/defaultSprite.svg"/>`}

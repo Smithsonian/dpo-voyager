@@ -88,6 +88,14 @@ nav-link{
     }
   }
 
+  &.btn-primary {
+    background-color: $color-primary;
+
+    &:hover{
+      background-color: $color-primary-light;
+    }
+  }
+
   &.btn-restore {
     background-color: darken($color-primary, 10%);
     color: white;
@@ -104,6 +112,11 @@ nav-link{
     &:hover{
       background-color: lighten($color-danger, 7%);
     }    
+  }
+
+  @at-root a#{&} {
+    text-decoration: none;
+    padding: 8px;
   }
 }
 

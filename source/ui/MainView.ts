@@ -53,7 +53,7 @@ export default class MainView extends i18n(withUser(LitElement)){
 
 
   static readonly routes :Route[]=  [
-    {pattern: "/ui/", content: (parent :MainView)=>{
+    {pattern: "/ui/scenes/", content: (parent :MainView)=>{
       return html`<corpus-list></corpus-list>`;
     }},
     {pattern: "/ui/doc/", content: ()=>html`<api-doc></api-doc>`},

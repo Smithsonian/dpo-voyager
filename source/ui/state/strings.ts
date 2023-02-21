@@ -115,6 +115,14 @@ export default {
       fr: "Signaler un bug",
       en: "Report a bug"
     },
+    editScene: {
+      fr: "Éditer la scène",
+      en: "Edit scene"
+    },
+    viewScene: {
+      fr: "Afficher la scène",
+      en: "Edit scene"
+    },
     recoverPassword:{
       fr: "mot de passe oublié?",
       en: "recover your password"

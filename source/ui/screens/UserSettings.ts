@@ -121,7 +121,7 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
     .catch(e=>{
       Notification.show("Failed to logout "+ e.message, "error");
     });
-    window.dispatchEvent(new CustomEvent("navigate", {detail: {href: "/ui"}}));
+    window.dispatchEvent(new CustomEvent("navigate", {detail: {href: "/ui/scenes/"}}));
   }
   static styles = []
 }
