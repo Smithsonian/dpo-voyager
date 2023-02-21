@@ -32,6 +32,8 @@ RUN npm ci --omit=dev
 
 COPY ./assets /app/assets
 COPY ./source/server/migrations /app/migrations
+COPY ./source/server/templates /app/templates
+
 COPY --from=build /app/dist /app/dist
 COPY --from=build /app/source/server/dist/server /app/server
 
