@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Matrix4, Quaternion, Euler, MathUtils } from "three";
+import { Vector3, Matrix4, Quaternion, Euler, MathUtils, EulerOrder } from "three";
 
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 
@@ -56,7 +56,7 @@ export default class CVNode extends CTransform
     {
         const { position, rotation, order, scale } = this.ins;
 
-        const orderTag = ERotationOrder[order.getValidatedValue()];
+        const orderTag = ERotationOrder[order.getValidatedValue()] as EulerOrder;
 
         if (data.matrix) {
             _mat4.fromArray(data.matrix);
