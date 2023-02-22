@@ -64,6 +64,7 @@ export default class CVSlicer extends Component
     get settingProperties() {
         return [
             this.ins.enabled,
+            this.ins.color
         ];
     }
 
@@ -152,7 +153,8 @@ export default class CVSlicer extends Component
             enabled: data.enabled || false,
             axis: ESliceAxis[data.axis] || ESliceAxis.X,
             position: data.position || 0,
-            inverted: data.inverted || false
+            inverted: data.inverted || false,
+            color: data.color || [ 0, 0.61, 0.87 ]
         });
     }
 
@@ -165,6 +167,7 @@ export default class CVSlicer extends Component
             axis: ESliceAxis[ins.axis.getValidatedValue()] as TSliceAxis,
             position: ins.position.value,
             inverted: ins.inverted.value,
+            color: ins.color.value
         };
     }
 
