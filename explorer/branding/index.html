@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>Annotations Task - Voyager Documentation</title>
+  <title>How To: Customize Voyager branding - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-single'>
+<body class='page page-default-list'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -134,9 +134,9 @@
       
     
       
-    
-      
         
+      
+    
       
     
       
@@ -205,7 +205,7 @@
     </li>
 		
     
-    <li class="">
+    <li class="active ">
       <a href="/dpo-voyager/explorer/branding/">How To: Customize Voyager branding</a>
     </li>
 		
@@ -293,7 +293,7 @@
 		  <a href="/dpo-voyager/story/usage/settings-task/">Settings Task</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="active ">
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/story/usage/annotations-task/">Annotations Task</a>
 		</li>
 		
@@ -339,77 +339,60 @@
         </div>
         <div class="col-12 col-md-9">
           
-<h1 class="title">Annotations Task</h1>
-<div class="content">
-  <p>Use the Annotations Task to annotate a model in 3D space.</p>
-<!-- raw HTML omitted -->
-<ol>
-<li>Select the <!-- raw HTML omitted -->Annotations<!-- raw HTML omitted -->
-Task in the task bar.</li>
-<li>Select the model you want to annotate.</li>
-<li>In the task panel, select the <!-- raw HTML omitted -->Create<!-- raw HTML omitted -->
-button.</li>
-<li>Click on the model to place an annotation.</li>
-<li>Adjust the properties of the new annotation such as appearance and content.</li>
-</ol>
-<ul>
-<li>Created annotations appear in a list in the task panel. Click an annotation to display its properties. If you don&rsquo;t see the list, make sure the right model is selected.</li>
-<li>To reposition an annotation, select it from the list, then select the <!-- raw HTML omitted -->Move<!-- raw HTML omitted -->
-button and click the new position on the model.</li>
-<li>To delete an annotation, select it from the list, then click the <!-- raw HTML omitted -->Delete<!-- raw HTML omitted -->
-button.</li>
-<li>You can also select an annotation directly by clicking it in the Explorer panel.</li>
-</ul>
-<p><img src="annotations-task.jpg" alt="Annotations Task"></p>
-<h5 id="annotation-properties">Annotation Properties</h5>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Title</td>
-<td>The title text of the annotation.</td>
-</tr>
-<tr>
-<td>Lead</td>
-<td>The lead text of the annotation. Not all annotation styles are able to display the lead text.</td>
-</tr>
-<tr>
-<td>Tags</td>
-<td>The tags associated with the annotation. Tags must be separated by comma. If one or multiple tags are provided, the annotation is only visible if the user selects at least one of the tags in the tag cloud.</td>
-</tr>
-<tr>
-<td>Style</td>
-<td>The basic style of the annotation. Currently only <strong>Standard</strong> and <strong>Extended</strong> should be used. The <strong>Extended</strong> annotation opens when clicked and reveals its lead text.</td>
-</tr>
-<tr>
-<td>Scale</td>
-<td>Changes the size of the annotation. The effect depends on the annotation style.</td>
-</tr>
-<tr>
-<td>Offset</td>
-<td>Changes the position of the annotation. The effect depends on the annotation style.</td>
-</tr>
-<tr>
-<td>Color</td>
-<td>Sets the color of the annotation. The effect depends on the annotation style.</td>
-</tr>
-<tr>
-<td>Article</td>
-<td>Select an article to be displayed with the annotation. If an article is selected, the annotation will show a <strong>read more</strong> link. Clicking the link opens the article.</td>
-</tr>
-<tr>
-<td>Image</td>
-<td>Displays an image with the annotation (not yet available).</td>
-</tr>
-</tbody>
-</table>
 
-</div>
+  
+  <h1 class="title">How To: Customize Voyager branding</h1>
+  <div class="content">
+    <p><em>TL;DR - Replace the default SVG logos/spinner in the Voyager assets/images folder.</em></p>
+<p>The default distribution of Voyager Explorer has a logo in the upper-right corner and loading spinner that can both be customized.</p>
+<p>These images are found in the &lsquo;assets/images/&rsquo; folder of the Voyager package. By default, Voyager points 
+to a <a href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/">CDN</a> for the asset folder. <strong>So to customize any images, you will have to have your own copy of 
+the asset folder and point to it using the <a href="../api">&lsquo;resourceRoot&rsquo; configuration attribute</a>.</strong></p>
+<h3 id="how-do-i-change-the-voyager-explorer-logo">How do I change the Voyager Explorer logo?</h3>
+<p><strong>Option 1: No logo</strong></p>
+<p>If you prefer to have no logo at all, see <a href="../api-examples/ui-config/">API Example: UI Configuration</a> for information on how to customize 
+what UI components are displayed in Voyager.</p>
+<p><strong>Option 2: Adding your own logo</strong></p>
+<ul>
+<li>
+<p>Step 1: Configure Voyager for a custom resource folder</p>
+<p>If you have deployed your own Voyager package, simply point the component to the local &lsquo;assets&rsquo; folder using the <a href="../api">&lsquo;resourceRoot&rsquo; attribute</a>. For a default 
+installation using the provided sample pages, this could just be the relative path &lsquo;./&rsquo;. If you have changed the folder structure or your landing page is hosted elsewhere,
+update the path accordingly.</p>
+<p>If you are not using a local Voyager package, you will still need to have a copy of the &lsquo;assets&rsquo; folder. You can grab it from the [most recent GitHub distribution]
+(<a href="https://github.com/Smithsonian/dpo-voyager/releases/latest">https://github.com/Smithsonian/dpo-voyager/releases/latest</a>) or <a href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/">CDN</a>. Put this folder somewhere accessible
+online and then point your resourceRoot path to it as described above.</p>
+</li>
+<li>
+<p>Step 2: Get/create an appropriate logo</p>
+<p>There are two Voyager logos, small and full. Small is displayed when the title element and logo element begin to overlap to allow as much room for the title as possible.
+The full logo displays at all other times.</p>
+<p>Logos must be in the <a href="https://developer.mozilla.org/en-US/docs/Web/SVG">SVG</a> format.</p>
+<p><strong>Small</strong>: This logo image should be square and look legible at 40px by 40px.</p>
+<p><strong>Full</strong>: This logo image should follow a 2:9 aspect ration (height:width) and look legible at 40px by 180px. If your logo is not long enough to fill that space, add padding to the left-hand
+side of the image.</p>
+</li>
+<li>
+<p>Step 3: Replace default images</p>
+<p>Name your new logos &lsquo;logo-sm.svg&rsquo; and &lsquo;logo-full.svg&rsquo; and replace the default logos in your assets/images folder by the same name. The file names <strong>must</strong> be the same for Voyager
+to successfully find them.</p>
+</li>
+</ul>
+<h3 id="how-do-i-change-the-voyager-explorer-loading-spinner">How do I change the Voyager Explorer loading spinner?</h3>
+<ul>
+<li>
+<p>Follow &lsquo;Step 1&rsquo; from the logo instructions above to configure your resource folder.</p>
+</li>
+<li>
+<p>Create a new square spinner image in the <a href="https://developer.mozilla.org/en-US/docs/Web/SVG">SVG</a> format that looks good at 120px by 120px and save it as &lsquo;spinner.svg&rsquo;.
+Replace the default spinner in your assets/images folder by the same name. The file name <strong>must</strong> be the same for Voyager to successfully find it.</p>
+</li>
+</ul>
+
+  </div>
+
+  
+
 
         </div>
       </div>
