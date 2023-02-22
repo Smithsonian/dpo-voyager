@@ -128,10 +128,10 @@ import "../composants/TaskButton";
         }
         return html`
             <div class="list-tasks">
-                <task-button><upload-button @change=${this.onUploadBtnChange}>
+                <upload-button class="ff-button ff-control btn-primary" style="padding:8px; margin-right:5px" @change=${this.onUploadBtnChange}>
                     ${this.t("ui.upload")}
-                </upload-button></task-button>
-                <task-button><a href="/voyager-story.html?resourceRoot=/&lang=${this.language.toUpperCase()}&mode=Standalone&referrer=/">${this.t("info.useStandalone")}</a></task-button>
+                </upload-button>
+                <a class="ff-button ff-control btn-primary" href="/voyager-story.html?resourceRoot=/&lang=${this.language.toUpperCase()}&mode=Standalone&referrer=/">${this.t("info.useStandalone")}</a></task-button>
             </div>
             <div class="list-grid" style="position:relative;">
             ${repeat([

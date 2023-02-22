@@ -561,14 +561,14 @@ describe("Web Server Integration", function(){
     it("can create a user", async function(){
       await this.agent.post("/api/v1/users")
       .set("Content-Type", "application/json")
-      .send({username: "Carol", password: "abcdefghij", isAdministrator: false})
+      .send({username: "Carol", password: "abcdefghij", isAdministrator: false, email: "carol@foo.com"})
       .expect(200);
     });
 
     it("can create an admin", async function(){
       await this.agent.post("/api/v1/users")
       .set("Content-Type", "application/json")
-      .send({username: "Dave", password: "abcdefghij", isAdministrator: true})
+      .send({username: "Dave", password: "abcdefghij", isAdministrator: true, email: "dave@foo.com"})
       .expect(200);
     });
 

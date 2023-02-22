@@ -123,9 +123,25 @@ export default {
       fr: "Afficher la scène",
       en: "Edit scene"
     },
-    recoverPassword:{
+    recoverPassword: {
       fr: "mot de passe oublié?",
       en: "recover your password"
+    },
+    createUser: {
+      fr: "Créer un nouvel utilisateur",
+      en: "Create new user"
+    },
+    isAdministrator: {
+      fr: "Est administrateur",
+      en: "Is Administrator"
+    },
+    create: {
+      fr: "Créer",
+      en: "Create"
+    },
+    tools: {
+      fr: "Outils",
+      en: "Tools"
     }
   },
   info:{
@@ -150,6 +166,10 @@ export default {
     recoverPasswordLead: {
       fr: "veuillez fournir votre identifiant ou votre email et nous vous enverrons un lien de connexion",
       en: "please provide your username or email and we will send you a recovery link"
+    },
+    userDeleteConfirm: {
+      fr : "Êtes-vous sûr de vouloir supprimer l'utilisateur {username}",
+      en : "Are you sure you want to delete user {username} ?"
     }
   },
   errors:{
@@ -160,6 +180,10 @@ export default {
     '404_text':{
       fr:"Pas de route correspondant à {route}",
       en:"No route matching {route}"
+    },
+    createUser: {
+      fr: "Erreur à la création de l'utilisateur",
+      en: "Error creating user"
     }
   }
 }

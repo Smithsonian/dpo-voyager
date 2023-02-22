@@ -75,6 +75,11 @@ nav-link{
 .ff-button.ff-control {
   background: $color-background-light;
   color: white;
+  margin-top: 5px;
+
+  svg {
+    fill: white;
+  }
 
   &:hover, &:focus{
     background-color: $color-background-lighter;
@@ -91,8 +96,16 @@ nav-link{
   &.btn-primary {
     background-color: $color-primary;
 
-    &:hover{
+    &:hover:not(:disabled){
       background-color: $color-primary-light;
+    }
+  }
+
+  &.btn-secondary {
+    background-color: $color-primary-light;
+
+    &:hover:not(:disabled){
+      background-color: $color-secondary;
     }
   }
 
@@ -117,6 +130,7 @@ nav-link{
   @at-root a#{&} {
     text-decoration: none;
     padding: 8px;
+    white-space:nowrap;
   }
 }
 
@@ -167,7 +181,7 @@ nav-link{
   }
 
   &.form-modal{
-    .form-item > input{
+    .form-item > input:not([type="submit"]){
       background: $color-primary;
       height: calc(3.5rem + 2px);
     }
@@ -300,6 +314,14 @@ table.list-table {
   .ff-notification > .ff-icon {
     padding: 0;
     margin: 8px;
+  }
+}
+
+.list-tasks{
+  display: flex;
+  flex-wrap: wrap;
+  .ff-button{
+    max-width: 250px;
   }
 }
 
