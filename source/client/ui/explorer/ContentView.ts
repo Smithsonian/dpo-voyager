@@ -33,6 +33,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import ARPrompt from "./ARPrompt";
 import ARMenu from "./ARMenu";
 import CVARManager from "client/components/CVARManager";
+import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +43,7 @@ export default class ContentView extends DocumentView
     protected sceneView: SceneView = null;
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected isMobile: boolean = null;
+    protected assetPath: string = "";
 
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
@@ -61,6 +63,9 @@ export default class ContentView extends DocumentView
     protected get arManager() {
         return this.system.getMainComponent(CVARManager);
     }
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
+    }
 
     protected firstConnected()
     {
@@ -74,6 +79,7 @@ export default class ContentView extends DocumentView
     {
         super.connected();
         this.assetManager.outs.busy.on("value", this.onUpdate, this);
+        this.assetPath = this.assetReader.getSystemAssetUrl("");
     }
 
     protected disconnected()
@@ -174,7 +180,7 @@ export default class ContentView extends DocumentView
         }
 
         return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
-            <sv-spinner ?visible=${isLoading}></sv-spinner>`;
+            <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>`;
     }
 
     protected onReaderClose()

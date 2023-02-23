@@ -160,6 +160,7 @@ export interface ISlicer
     axis: TSliceAxis;
     inverted: boolean;
     position: number;
+    color: number[];
 }
 
 export type ITours = ITour[];

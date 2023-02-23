@@ -117,20 +117,18 @@
     width: 0;
     max-width: 40px;
 
-    .sv-sunburst {
+    .sv-logo-sm {
     }
   }
 
   .sv-full {
     flex: 1 0 180px;
     display: flex;
+    height: 100%;
 
-    .sv-sunburst {
-      flex: 0 0 14%;
-    }
-    .sv-smithsonian {
-      flex: 0 0 83%;
-      margin-left: 3%;
+    .sv-logo-full {
+      flex: auto;
+      height: 100%;
     }
   }
 

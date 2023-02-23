@@ -77,6 +77,7 @@ export default class CVReader extends Component
     get snapshotProperties() {
         return [
             this.ins.enabled,
+            this.ins.position,
             this.ins.articleId,
         ];
     }
