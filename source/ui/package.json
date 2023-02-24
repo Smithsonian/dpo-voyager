@@ -9,6 +9,8 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "lit-css-loader": "^2.0.0"
+    "@types/showdown": "^2.0.0",
+    "lit-css-loader": "^2.0.0",
+    "showdown": "^2.1.0"
   }
 }

@@ -1,5 +1,6 @@
 import { LitElement, html, customElement, property, css } from 'lit-element';
 import Button from "@ff/ui/Button";
+import { navigate } from '../../state/router';
 
 @customElement("nav-link")
 export default class NavLink extends Button{
@@ -8,8 +9,10 @@ export default class NavLink extends Button{
 
 
   onclick = (ev :MouseEvent)=>{
+    super.onClick(ev);
     ev.preventDefault();
-    window.dispatchEvent(new CustomEvent<HTMLElement>("navigate", {detail: this}));
+    console.log("Event : ", ev);
+    navigate(this);
     return false;
   }
 }

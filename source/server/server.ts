@@ -1,12 +1,12 @@
 
 import path from "path";
 import cookieSession from "cookie-session";
-import express, { Router } from "express";
+import express, { NextFunction, Request, Response, Router } from "express";
 import { engine } from 'express-handlebars';
 import morgan from "morgan";
 
 import UserManager from "./auth/UserManager";
-import { HTTPError } from "./utils/errors";
+import { HTTPError, NotFoundError } from "./utils/errors";
 import { mkdir } from "fs/promises";
 
 import {AppLocals, getHost} from "./utils/locals";
@@ -15,6 +15,7 @@ import openDatabase from './vfs/helpers/db';
 import Vfs from "./vfs";
 import importAll from "./vfs/helpers/import";
 import config from "./utils/config";
+import wrap from "./utils/wrapAsync";
 
 
 export default async function createServer(rootDir :string, /*istanbul ignore next */{
@@ -26,7 +27,7 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   const staticDir = path.resolve(rootDir, "dist/");
   const assetsDir = path.resolve(rootDir, "assets/");
   const fileDir = path.resolve(rootDir, "files/");
-  const docDir = path.resolve(rootDir, "doc/");
+  const docDir = path.resolve(rootDir, "source/docs/");
 
   await Promise.all([fileDir].map(d=>mkdir(d, {recursive: true})));
   let db = await openDatabase({filename: path.join(fileDir, "database.db"), migrate: true});
@@ -146,7 +147,9 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   }
   app.use("/", express.static(assetsDir));
   // documentation server
-  app.use("/doc", express.static(docDir));
+  let docOpts =  {extensions:["md", "html"], index:["index.md", "index.html"]}
+  app.use("/doc", express.static(docDir, {...docOpts, fallthrough: true}));
+  app.use("/doc/:lang(fr)", express.static(path.join(docDir, "en"), docOpts));
 
   app.use("/libs", (await import("./routes/libs")).default);
 
@@ -174,6 +177,9 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
       "text/html": ()=>{
         // send error page
         res.status(code).render("error", { error });
+      },
+      "text/plain": ()=>{
+        res.status(code).send(error.message);
       },
       default: ()=> res.status(code).send(error.message),
     });

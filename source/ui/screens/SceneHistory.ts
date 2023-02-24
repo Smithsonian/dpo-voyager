@@ -11,6 +11,7 @@ import "../Size";
 import { nothing } from "lit-html";
 import i18n from "../state/translate";
 import {getLogin} from "../state/auth";
+import { navigate } from "../state/router";
 
 
 const AccessTypes = [
@@ -300,7 +301,7 @@ class SceneVersion{
       Notification.show("Deleting scene "+this.scene, "warning");
       fetch(`/scenes/${this.scene}?archive=false`, {method:"DELETE"})
       .then(()=>{
-        window.dispatchEvent(new CustomEvent("navigate", {detail: {href:"/ui/"}}));
+        navigate(this, "/ui/");
       }, (e)=>{
         console.error(e);
         Notification.show(`Failed to remove ${this.scene} : ${e.message}`);

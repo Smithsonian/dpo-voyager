@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "es2017",
-        "module": "es2015",
+        "module": "es2020",
         "sourceMap": true,
         //"strict": true,
         "esModuleInterop": true,
@@ -20,8 +20,5 @@
             "@ff/three/*": [ "../../libs/ff-three/source/*" ],
             "@ff/scene/*": [ "../../libs/ff-scene/source/*" ]
         }
-    },
-    "references": [
-        { "path":  "../../libs/tsconfig.json" },
-    ]
+    }
 }

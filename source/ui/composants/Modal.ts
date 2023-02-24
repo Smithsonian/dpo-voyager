@@ -1,6 +1,6 @@
 
 import { css, LitElement,customElement, property, html, TemplateResult, query } from "lit-element";
-import "@ff/ui/Icon"
+import "./Icon"
 
 
 import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!../styles.scss';

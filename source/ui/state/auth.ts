@@ -1,7 +1,6 @@
 
-import { LitElement, property } from "lit-element";
+import { LitElement, Constructor, property } from "lit-element";
 import HttpError from "./HttpError";
-import { Constructor } from "./mixins";
 
 const LOGIN_STATE = "login-state";
 

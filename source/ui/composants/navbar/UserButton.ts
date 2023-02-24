@@ -8,6 +8,7 @@ import "../UserLogin"
 import Button from "@ff/ui/Button";
 import { doLogout, setSession, UserSession } from "../../state/auth";
 import i18n from "../../state/translate";
+import { navigate } from "../../state/router";
 
 /**
  * Main UI view for the Voyager Explorer application.
@@ -33,16 +34,11 @@ import i18n from "../../state/translate";
       });
     }
 
-
-    onUserDataOpen = (ev :MouseEvent)=>{
-      window.dispatchEvent(new CustomEvent("navigate", {detail: {href: "/ui/user/"}}));
-    }
-
     protected render() :TemplateResult {
       if(!this.user?.username){
         return html`<ff-button style="height:100%" @click=${this.onLoginOpen} text=${this.t("ui.login")}></ff-button>`;
       }else{
-        return html`<ff-button style="height:100%" @click=${this.onUserDataOpen} text=${this.user.username}></ff-button>`;
+        return html`<ff-button style="height:100%" @click=${()=>navigate(this, "/ui/user/")} text=${this.user.username}></ff-button>`;
       }
     }
 

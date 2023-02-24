@@ -1,5 +1,4 @@
-import { LitElement } from "lit-element";
-import { Constructor } from "./mixins";
+import { LitElement, Constructor } from "lit-element";
 
 import strings, { I18nDict, Language, LocalizedString } from "./strings";
 
@@ -117,7 +116,7 @@ export default function i18n<T extends Constructor<LitElement>>(baseClass:T) : T
       this.#T.off("update", this.onTranslationChange);
     }
     onTranslationChange = ()=>{
-      this.requestUpdate();
+      this.requestUpdate("language");
     }
     t(key:string, params ?:Record<string, any>){
       return this.#T.getString(key, params);

@@ -15,7 +15,7 @@ import "./screens/List";
 import "./screens/Admin";
 import "./screens/SceneHistory";
 import "./screens/FileHistory";
-import "./screens/ApiDoc";
+import "./screens/DocScreen";
 import "./screens/UserSettings";
 import "./composants/Modal";
 
@@ -27,6 +27,7 @@ interface Route{
 import { getLogin, offLogin, onLogin, updateLogin, UserSession, withUser } from './state/auth';
 import Modal from './composants/Modal';
 import i18n from './state/translate';
+import { route, router } from './state/router';
 
 /**
  * Simplified from path-to-regex for our simple use-case
@@ -47,22 +48,17 @@ function toRegex(path:string|RegExp){
 
 
 @customElement("ecorpus-main")
-export default class MainView extends i18n(withUser(LitElement)){
-  @property({type: Object})
-  route :URL = new URL(window.location as any);
-
-
-  static readonly routes :Route[]=  [
-    {pattern: "/ui/scenes/", content: (parent :MainView)=>{
-      return html`<corpus-list></corpus-list>`;
-    }},
-    {pattern: "/ui/doc/", content: ()=>html`<api-doc></api-doc>`},
-    {pattern: "/ui/user/", content: ()=>html`<user-settings></user-settings>`},
-    {pattern: "/ui/users/", content: (parent :MainView) => html`<users-list></users-list>`},
-    {pattern: "/ui/scenes/:id/", content: (parent, params) => html`<scene-history scene="${params.id}"></scene-history>`},
-    {pattern: "/ui/scenes/:id/files/:type/:name", content: (parent, params) => html`<file-history scene="${params.id}" type="${params.type}" name="${params.name}"></file-history>`},
-  ].map(r=>({...r, pattern: toRegex(r.pattern)}));
-
+export default class MainView extends router(i18n(withUser(LitElement))){
+  @route()
+  static "/ui/scenes/" =()=> html`<corpus-list></corpus-list>`;
+  @route()
+  static "/ui/doc/.*" = ()=> html`<doc-screen path="/ui/doc/"></doc-screen>`;
+  @route()
+  static "/ui/user/" = ()=> html`<user-settings></user-settings>`
+  @route()
+  static "/ui/users/" = ()=> html`<users-list></users-list>`;
+  @route()
+  static "/ui/scenes/:id/" = (parent, params) => html`<scene-history scene="${params.id}"></scene-history>`;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -70,24 +66,6 @@ export default class MainView extends i18n(withUser(LitElement)){
     updateLogin().catch(e => {
       Modal.show({header: "Error", body: e.message});
     });
-
-    window.addEventListener("navigate", this.onNavigate);
-    window.addEventListener("popstate", this.onPopState);
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    window.removeEventListener("navigate", this.onNavigate);
-    window.removeEventListener("popstate", this.onPopState);
-  }
-
-  renderContent(){
-    for(let route of MainView.routes){
-      let m = route.pattern.exec(this.route.pathname);
-      if(!m) continue;
-      return route.content(this, m.groups);
-    }
-    return html`<div><h1>${this.t("errors.404")}</h1><div>${this.t("errors.404_text", {route: this.route.pathname})}</div></div>`;
   }
 
   render() {
@@ -110,14 +88,4 @@ export default class MainView extends i18n(withUser(LitElement)){
     `;
   }
   static styles = [styles];
-
-
-  onNavigate = (ev :CustomEvent)=>{
-    const url = new URL(ev.detail.href, this.route);
-    window.history.pushState({},"", url);
-    this.route = url;
-  }
-  onPopState = (e:PopStateEvent)=>{
-    this.route = new URL(document.location.href, this.route);
-  }
 }

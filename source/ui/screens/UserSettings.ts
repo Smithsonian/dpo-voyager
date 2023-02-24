@@ -2,6 +2,7 @@ import { customElement, property, html, TemplateResult, LitElement, css } from "
 import Notification from "@ff/ui/Notification";
 import { doLogout, setSession, withUser, UserSession } from "../state/auth";
 import i18n from "../state/translate";
+import { navigate } from "../state/router";
 
 
 
@@ -121,7 +122,7 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
     .catch(e=>{
       Notification.show("Failed to logout "+ e.message, "error");
     });
-    window.dispatchEvent(new CustomEvent("navigate", {detail: {href: "/ui/scenes/"}}));
+    navigate(this, "/ui/scenes/");
   }
   static styles = []
 }
