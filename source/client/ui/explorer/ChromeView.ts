@@ -34,6 +34,7 @@ import { ITourMenuSelectEvent } from "./TourMenu";
 import DocumentView, { customElement, html } from "./DocumentView";
 import LanguageMenu from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
+import CVAssetReader from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,9 +43,14 @@ export default class ChromeView extends DocumentView
 {
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected titleElement: HTMLDivElement;
+    protected assetPath: string = "";
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
+    }
+
+    protected get assetReader() {
+        return this.system.getMainComponent(CVAssetReader);
     }
 
     protected firstConnected()
@@ -62,6 +68,7 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
+        this.assetPath = this.assetReader.getSystemAssetUrl("");
     }
 
     protected disconnected()
@@ -135,7 +142,7 @@ export default class ChromeView extends DocumentView
                 </div>
                 <div class="sv-top-bar">
                     ${titleVisible ? html`<div role="heading" class="ff-ellipsis sv-main-title">${titleElement}<span class="ff-ellipsis"> </span></div>` : null}
-                    ${logoVisible ? html`<sv-logo></sv-logo>` : null}
+                    ${logoVisible ? html`<sv-logo .assetPath=${this.assetPath}></sv-logo>` : null}
                 </div>
             </div>
             <div class="ff-flex-spacer"></div>

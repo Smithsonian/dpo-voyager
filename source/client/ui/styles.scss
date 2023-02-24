@@ -123,17 +123,18 @@
     width: 0;
     max-width: 40px;
 
+    .sv-logo-sm {
+    }
   }
 
   .sv-full {
     flex: 1 0 127px;
     display: flex;
+    height: 100%;
 
-    .sv-h {
-      flex: 0 0 30%;
-    }
-    .sv-holusion {
-      flex: 0 0 70%;
+    .sv-logo-full {
+      flex: auto;
+      height: 100%;
     }
   }
 
