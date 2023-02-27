@@ -20,7 +20,7 @@ import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./st
   return html`<nav>
     <div class="brand">
       <a style="display:flex; align-items:center; color:#c8c8c8;text-decoration:none;font-weight:bold" href="/">
-        <img style="height:32px; padding: 0px 10px;" src="/images/logo-planete.png" alt="logo eCorpus">
+        <img style="height:32px; padding: 0px 10px;" src="/images/logo-ecorpus.png" alt="logo eCorpus">
         <span>eCorpus</span>
       </a>
     </div>
