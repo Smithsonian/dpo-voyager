@@ -142,7 +142,7 @@ export default abstract class FilesVfs extends BaseVfs{
       ORDER BY generation DESC
       LIMIT 1
     `, {$scene: scene, $type: type, $name: name});
-    if(!r || !r.ctime || (!r.hash && !archive)) throw new NotFoundError();
+    if(!r || !r.ctime || (!r.hash && !archive)) throw new NotFoundError(`${scene}/${type}/${name}${archive?" incl. archives":""}`);
     return {
       ...r,
       ctime: BaseVfs.toDate(r.ctime), //z specifies the string as UTC != localtime
