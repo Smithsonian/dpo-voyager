@@ -32,6 +32,8 @@ import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!clie
 //@ts-ignore
 import splitStyles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';
 import { IDocumentParams } from "./SplitModeObjectMenu";
+import CVDocumentProvider from "client/components/CVDocumentProvider";
+import SceneView from "client/ui/SceneView";
 
 
 
@@ -103,10 +105,26 @@ export default class MainView extends LitElement
                 bgColor: "#000000", 
                 bgStyle: "solid"
             });
-
+            /* This is all a workaround for this issue:
+             * https://github.com/Smithsonian/dpo-voyager/issues/185
+             * and should be deleted once it's solved.
+             */
+            console.log("register listener", this.application.system.getMainComponent(CVDocumentProvider));
+            this.application.system.getMainComponent(CVDocumentProvider).on("active-component",(e)=>{
+                if((e as any).next) return;
+                let scene :SceneView = (this.shadowRoot.querySelector(".sv-content-view") as any)?.sceneView;
+                if(!scene){
+                    Notification.show("Failed dispose renderer", "warning");
+                }
+                (scene as any).view.renderer.dispose();
+            });
         }).catch(e=>{
             Notification.show("Failed to get documents : "+e.message, "error");
         });
+    }
+
+    protected firstUpdated(_changedProperties: Map<string | number | symbol, unknown>): void {
+
     }
 
     protected render() {
