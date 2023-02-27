@@ -26,7 +26,7 @@ export default class Spinner extends CustomElement
     visible = false;
 
     @property({ type: String })
-    assetPath = "";
+    assetPath = "/";
 
     protected static readonly template = html`<div class="sv-spinner-wheel"><svg viewBox="0 0 101.64261 101.4383" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><g transform="translate(-67.120928,-102.35083)"><circle style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#bfbfbf;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:12, 12;stroke-dashoffset:0;stroke-opacity:1" id="path77" cx="117.94224" cy="152.9675" r="49.321297" /></g></svg></div>`;
 
