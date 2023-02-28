@@ -45,7 +45,7 @@ router.post("/users", isAdministrator, bodyParser.json(), wrap(postUser));
 router.delete("/users/:uid", isAdministrator, wrap(handleDeleteUser));
 router.patch("/users/:uid", bodyParser.json(), wrap(handlePatchUser));
 
-router.get("/scenes", wrap(getScenes));
+router.get("/scenes", bodyParser.json(), wrap(getScenes));
 router.post("/scenes/:scene", isUser, wrap(postScene));
 
 router.use("/scenes/:scene", canRead);

@@ -2,6 +2,7 @@
 import { createHash } from "crypto";
 import { Request, Response } from "express";
 import path from "path";
+import { HTTPError } from "../../../../utils/errors";
 import { getUser, getUserId, getVfs } from "../../../../utils/locals";
 import { wrapFormat } from "../../../../utils/wrapAsync";
 import { zip } from "../../../../utils/zip";
@@ -9,14 +10,24 @@ import { zip } from "../../../../utils/zip";
 export default async function getScenes(req :Request, res :Response){
   let vfs = getVfs(req);
   let u = getUser(req);
-  let scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
+  let names = req.body?.scenes;
+
+  let scenes :Awaited<ReturnType<typeof vfs.getScenes>>;
+  if(names && Array.isArray(names)){
+    scenes = await Promise.all(names.map(name=>vfs.getScene(name)));
+  }else{
+    scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
+  }
+
   let eTag = createHash("sha256")
   let lastModified = 0;
+  
   for(let scene of scenes){
     let mtime = scene.mtime.valueOf();
     eTag.update(`${scene.name}:${mtime.toString(32)};`);
     if(lastModified < mtime) lastModified = mtime;
   }
+
   res.set("ETag", "W/"+eTag.digest("base64url"));
   res.set("Last-Modified", new Date(lastModified).toUTCString());
   if( req.fresh){
@@ -40,11 +51,16 @@ export default async function getScenes(req :Request, res :Response){
               filename: path.join("scenes", scene.name, file.type, file.name)
             }
           }
-          let sceneDoc = await vfs.getDoc(scene.id);
-          yield {
-            filename: `${root}/scene.svx.json`,
-            mtime: sceneDoc.mtime,
-            stream: [Buffer.from(sceneDoc.data)]
+          try{
+            let sceneDoc = await vfs.getDoc(scene.id);
+            yield {
+              filename: `${root}/scene.svx.json`,
+              mtime: sceneDoc.mtime,
+              stream: [Buffer.from(sceneDoc.data)]
+            }
+          }catch(e){
+            if((e as HTTPError).code != 404) throw e;
+            //Ignore errors if scene has no document
           }
         }
       }

@@ -393,6 +393,15 @@ describe("Vfs", function(){
           expect(scene).to.have.property("name", "foo");
           expect(scene).to.have.property("author", "default");
         });
+        it("get an empty scene", async function(){
+          let id = await vfs.createScene("empty");
+          let scene = await vfs.getScene("empty");
+          expect(scene).to.have.property("ctime").instanceof(Date);
+          expect(scene).to.have.property("mtime").instanceof(Date);
+          expect(scene).to.have.property("id", id).a("number");
+          expect(scene).to.have.property("name", "empty");
+          expect(scene).to.have.property("author", "default");
+        })
       });
 
       describe("getPermissions()", function(){

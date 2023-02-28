@@ -121,11 +121,11 @@ export default abstract class ScenesVfs extends BaseVfs{
         scene_name AS name,
         scene_id AS id,
         scenes.ctime AS ctime,
-        documents.ctime AS mtime,
-        user_id AS author_id,
-        username AS author
+        IFNULL(documents.ctime, scenes.ctime) AS mtime,
+        IFNULL(user_id, 0) AS author_id,
+        IFNULL(username, 'default') AS author
       FROM scenes 
-      INNER JOIN documents ON fk_scene_id = scene_id
+      LEFT JOIN documents ON fk_scene_id = scene_id
       LEFT JOIN users ON fk_author_id = user_id
       WHERE ${key} = $value
       ORDER BY generation DESC

@@ -1,16 +1,12 @@
 import fs from "fs/promises";
 import path from "path";
 import {tmpdir} from "os";
-import timers from 'timers/promises';
 
 import request from "supertest";
 import { expect } from "chai";
-import { once } from "events";
-import getScenes from "./get";
-import express, { Application, Request, Response } from "express";
-import { EventEmitter, PassThrough } from "stream";
-import { ClientRequest, ServerResponse } from "http";
-import wrap from "../../../../utils/wrapAsync";
+
+import express, { Application } from "express";
+
 import Vfs from "../../../../vfs";
 
 
@@ -27,7 +23,7 @@ describe("GET /api/v1/scenes", function(){
 
     app = express();
     app.locals.vfs = vfs;
-    app.get("/scenes", wrap(getScenes));
+    app.use("/", (await import("../index")).default);
   });
   this.afterEach(async function(){
     await vfs.close();
@@ -46,4 +42,42 @@ describe("GET /api/v1/scenes", function(){
     .expect("Content-Type", "application/json; charset=utf-8");
     expect(r.body).to.have.property("length", 2);
   });
+  
+  it("can send a zip file", async function(){
+    let r = await request(app).get("/scenes")
+    .set("Accept", "application/zip")
+    .expect(200)
+    .expect("Content-Type", "application/zip");
+  });
+
+  describe("can get a list of scenes", function(){
+    let scenes:number[];
+    this.beforeEach(async ()=>{
+      scenes = await Promise.all([
+        vfs.createScene("s1"),
+        vfs.createScene("s2"),
+      ]);
+    });
+
+    it("by name", async function(){
+      let r = await request(app).get("/scenes")
+      .set("Accept", "application/json")
+      .set("Content-Type", "application/json")
+      .send({scenes: ["s1", "s2"]})
+      .expect(200)
+      .expect("Content-Type", "application/json; charset=utf-8");
+      expect(r.body).to.have.property("length", 2);
+    });
+    
+    it("by ids", async function(){
+      let r = await request(app).get("/scenes")
+      .set("Accept", "application/json")
+      .set("Content-Type", "application/json")
+      .send({scenes: scenes})
+      .expect(200)
+      .expect("Content-Type", "application/json; charset=utf-8");
+      expect(r.body).to.have.property("length", 2);
+    });
+  })
+
 });
