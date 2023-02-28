@@ -319,9 +319,11 @@ table.list-table {
 
 .list-tasks{
   display: flex;
+  justify-content: flex-start;
   flex-wrap: wrap;
+  gap: 5px;
   .ff-button{
-    max-width: 250px;
+    flex: 0 0 auto;
   }
 }
 

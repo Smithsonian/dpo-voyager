@@ -5,21 +5,23 @@ import Notification from "@ff/ui/Notification";
 import "client/ui/Spinner";
 import "../composants/UploadButton";
 import "./LandingPage";
-import { SceneProps } from "../composants/SceneCard";
+import "../composants/SceneCard";
+import "../composants/ListItem";
+
 import i18n from "../state/translate";
 import { UserSession, withUser } from "../state/auth";
 import { repeat } from "lit-html/directives/repeat";
 
 import "../composants/TaskButton";
+import { withScenes } from "../state/withScenes";
+import { navigate } from "../state/router";
 
 /**
  * Main UI view for the Voyager Explorer application.
  */
  @customElement("corpus-list")
- export default class List extends withUser(i18n(LitElement))
+ export default class List extends withScenes( withUser( i18n( LitElement )))
  {
-    @property()
-    list : SceneProps[];
 
     @property({type: Object})
     uploads :{[name :string]:{
@@ -31,7 +33,11 @@ import "../composants/TaskButton";
     @property()
     dragover = false;
 
-    #loading = new AbortController();
+    @property({type: Boolean})
+    compact :boolean = false;
+
+    @property({type: Array, attribute: false})
+    selection = [];
 
     get isUser(){
         return (this.user && !this.user.isDefaultUser);
@@ -41,28 +47,14 @@ import "../composants/TaskButton";
     {
         super();
     }
+
     createRenderRoot() {
         return this;
     }
       
-    public connectedCallback(): void {
-        super.connectedCallback();
-        this.fetchScenes();
-    }
     public onLoginChange (u: UserSession|undefined){
         super.onLoginChange(u);
         this.fetchScenes();
-    }
-    async fetchScenes(){
-        this.#loading.abort();
-        this.#loading = new AbortController();
-        fetch("/api/v1/scenes", {signal: this.#loading.signal}).then(async (r)=>{
-            if(!r.ok) throw new Error(`[${r.status}]: ${r.statusText}`);
-            this.list = (await r.json()) as SceneProps[];
-        }).catch((e)=> {
-            if(e.name == "AbortError") return;
-            Notification.show(`Failed to fetch scenes list : ${e.message}`, "error");
-        });
     }
 
     upload(file :File){
@@ -113,6 +105,21 @@ import "../composants/TaskButton";
         })();
     }
 
+    onSelectChange = (ev :Event)=>{
+        let target = (ev.target as HTMLInputElement);
+        let selected = target.checked;
+        let name = target.name;
+        this.selection = selected? [...this.selection, name] : this.selection.filter(n=>n !== name);
+    }
+
+    private renderScene(mode :string, {name} :{name :string}){
+        const selected = this.selection.indexOf(name) != -1;
+        if(this.compact){
+            return html`<list-item .onChange=${this.onSelectChange} name="${name}"></list-item>`;
+        }
+        return html`<scene-card .mode=${mode} name="${name}" />`
+    }
+
     protected render() :TemplateResult {
         if(!this.isUser){
             return html`<landing-page></landing-page>`;
@@ -126,21 +133,34 @@ import "../composants/TaskButton";
                 ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
             </div>`;
         }
+
+
         return html`
             <div class="list-tasks">
-                <upload-button class="ff-button ff-control btn-primary" style="padding:8px; margin-right:5px" @change=${this.onUploadBtnChange}>
+                <upload-button class="ff-button ff-control btn-primary" @change=${this.onUploadBtnChange}>
                     ${this.t("ui.upload")}
                 </upload-button>
+                
                 <a class="ff-button ff-control btn-primary" href="/voyager-story.html?resourceRoot=/&lang=${this.language.toUpperCase()}&mode=Standalone&referrer=/">${this.t("info.useStandalone")}</a></task-button>
+                
+                ${this.selection.length?html`<a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
+                    this.selection.map(name=>`name=${encodeURIComponent(name)}`).join("&")
+                    }&format=zip"
+                    Download Zip
+                </a>`: null}
+
+                <button class="ff-button ff-control btn-primary btn-icon" @click=${()=>navigate(this, null, {compact: !this.compact}) }>
+                    <ff-icon name="${this.compact?"list":"grid"}"></ff-icon>
+                </button>
+                
             </div>
-            <div class="list-grid" style="position:relative;">
+            <div class="${this.compact?"list":"list-grid"}" style="position:relative;">
             ${repeat([
                 ...this.list,
                 ...Object.keys(this.uploads).map(name=>({name})),
-            ],({name})=>name , ({name}) => html`<scene-card .mode=${mode} name="${name}" />`)}
+            ],({name})=>name , (scene)=>this.renderScene(mode, scene))}
             ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
         </div>`;
-
     }
 
     ondragenter = (ev)=>{

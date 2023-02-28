@@ -60,19 +60,16 @@ describe("GET /api/v1/scenes", function(){
     });
 
     it("by name", async function(){
-      let r = await request(app).get("/scenes")
+      let r = await request(app).get("/scenes?name=s1&name=s2")
       .set("Accept", "application/json")
-      .set("Content-Type", "application/json")
-      .send({scenes: ["s1", "s2"]})
       .expect(200)
       .expect("Content-Type", "application/json; charset=utf-8");
       expect(r.body).to.have.property("length", 2);
     });
     
     it("by ids", async function(){
-      let r = await request(app).get("/scenes")
+      let r = await request(app).get(`/scenes?${scenes.map(id=>`id=${id}`).join("&")}`)
       .set("Accept", "application/json")
-      .set("Content-Type", "application/json")
       .send({scenes: scenes})
       .expect(200)
       .expect("Content-Type", "application/json; charset=utf-8");

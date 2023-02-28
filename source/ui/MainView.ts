@@ -1,4 +1,4 @@
-import { LitElement, html, customElement, property, TemplateResult } from 'lit-element';
+import { LitElement, html, customElement } from 'lit-element';
 
 import Notification from "@ff/ui/Notification";
 
@@ -19,12 +19,7 @@ import "./screens/DocScreen";
 import "./screens/UserSettings";
 import "./composants/Modal";
 
-interface Route{
-  pattern :RegExp;
-  content :(parent :MainView, params :Record<string,string>)=> TemplateResult;
-}
-
-import { getLogin, offLogin, onLogin, updateLogin, UserSession, withUser } from './state/auth';
+import { updateLogin, withUser } from './state/auth';
 import Modal from './composants/Modal';
 import i18n from './state/translate';
 import { route, router } from './state/router';
@@ -50,7 +45,7 @@ function toRegex(path:string|RegExp){
 @customElement("ecorpus-main")
 export default class MainView extends router(i18n(withUser(LitElement))){
   @route()
-  static "/ui/scenes/" =()=> html`<corpus-list></corpus-list>`;
+  static "/ui/scenes/" =({search})=> html`<corpus-list .compact=${(search as URLSearchParams).has("compact")}></corpus-list>`;
   @route()
   static "/ui/doc/.*" = ()=> html`<doc-screen path="/ui/doc/"></doc-screen>`;
   @route()
@@ -58,7 +53,7 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   @route()
   static "/ui/users/" = ()=> html`<users-list></users-list>`;
   @route()
-  static "/ui/scenes/:id/" = (parent, params) => html`<scene-history scene="${params.id}"></scene-history>`;
+  static "/ui/scenes/:id/" = ({parent, params}) => html`<scene-history scene="${params.id}"></scene-history>`;
 
   connectedCallback(): void {
     super.connectedCallback();

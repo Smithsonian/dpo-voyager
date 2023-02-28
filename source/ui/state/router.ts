@@ -1,6 +1,12 @@
 import { Constructor, html, LitElement, property, TemplateResult } from "lit-element";
 
-export type RouteHandler<T extends Router = any> =  (parent :T, params :{[key:string]:string})=> TemplateResult;
+export interface RouteParams<T extends Router = any>{
+  parent :T;
+  params :{[key:string]:string};
+  search :URLSearchParams;
+}
+
+export type RouteHandler<T extends Router = any> =  (props :RouteParams<T>)=> TemplateResult;
 
 export interface Route{
   pattern :RegExp;
@@ -40,7 +46,7 @@ export function router<T extends Constructor<LitElement>>(baseClass:T) : T & Con
       for(let [pattern, content] of Router.routes.entries()){
         let m = pattern.exec(current);
         if(!m) continue;
-        return content(this, m.groups);
+        return content({parent:this, params: m.groups, search: this.route.searchParams});
       }
       return html`<h1>Error :</h1>
         <p>${current} Not Found in this router</p>
@@ -57,14 +63,14 @@ export function router<T extends Constructor<LitElement>>(baseClass:T) : T & Con
     }
 
     onNavigate(ev :CustomEvent<HTMLLinkElement|{href:string|URL}>){
-      let href = ev.detail.href.toString();
-      if(!this.inPath(href)) return;
-      //Not found
+
+      const url = (ev.detail.href instanceof URL)? ev.detail.href: new URL(ev.detail.href, window.location.href);
+
+      if(!this.inPath(url.pathname) && this.path != "/") return;
+
       ev.stopPropagation();
-      const url = new URL(href, window.location.href);
       if(!url.pathname.endsWith("/")) url.pathname += "/";
       window.history.pushState({},"", url);
-      console.error("No route found in base router matching ", href);
       this.requestUpdate();
     }
 
@@ -92,11 +98,19 @@ export function route(pattern ?:string|RegExp){
 /**
  * Internal navigation that changes window.location without refreshing the page
  */
-export function navigate(that :HTMLElement,href ?:string|URL, ){
-  href ??= (that as HTMLLinkElement)?.href;
-  if(!href) return console.error("Bad navigate target :", href, that);
+export function navigate(that :HTMLElement,href ?:string|URL, queries?:Record<string,string|true|false|null>){
+  let url = href ?? (that as HTMLLinkElement)?.href ?? window.location.href;
+  if(!url) return console.error("Bad navigate target :", href, that);
+  if(!(url instanceof URL)) url = new URL(url, window.location.href);
+  if(queries){
+    for(let [key, value] of Object.entries(queries)){
+      if(value === null || value === false) url.searchParams.delete(key);
+      else url.searchParams.set(key, value.toString());
+    }
+  }
+  console.log("Navigate to :", url.toString(), "with queries : ", queries);
   (that ?? this).dispatchEvent(new CustomEvent("navigate", {
-    detail: {href: href},
+    detail: {href: url},
     bubbles: true,
     composed: true
   }));

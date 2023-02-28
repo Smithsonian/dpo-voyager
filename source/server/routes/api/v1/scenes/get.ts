@@ -10,11 +10,27 @@ import { zip } from "../../../../utils/zip";
 export default async function getScenes(req :Request, res :Response){
   let vfs = getVfs(req);
   let u = getUser(req);
-  let names = req.body?.scenes;
+  let {id: ids, name: names} = req.query;
+
+  let scenesList = [];
+  if(Array.isArray(ids)){
+    for(let id of ids){
+      if(typeof id !== "string") continue;
+      let n = parseInt(id);
+      if(Number.isNaN(n)) continue;
+      scenesList.push(n);
+    }
+  }
+  if(Array.isArray(names)){
+    for(let name of names){
+      if(typeof name !== "string") continue;
+      scenesList.push(name);
+    }
+  }
 
   let scenes :Awaited<ReturnType<typeof vfs.getScenes>>;
-  if(names && Array.isArray(names)){
-    scenes = await Promise.all(names.map(name=>vfs.getScene(name)));
+  if(0 < scenesList.length){
+    scenes = await Promise.all(scenesList.map(name=>vfs.getScene(name)));
   }else{
     scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
   }
