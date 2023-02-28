@@ -39,6 +39,16 @@ handler.get("/scenes/*", wrap(async (req, res)=>{
   }
 }));
 
+
+handler.get("/files/list", wrap(async (req, res)=>{
+  res.set("Content-Type", "application/json");
+  res.status(200).send([
+    "scenes.zip",
+    "more_scenes.zip"
+  ]);
+}));
+
+
 handler.get("/documents.json", wrap(async (req, res)=>{
   let dataCache = req.app.locals.dataCache;
   let entries = await dataCache.entries();
