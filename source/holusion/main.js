@@ -4,7 +4,7 @@ const { once } = require('events');
 
 const handle = require("./handler");
 
-const isProduction = process.env["NODE_ENV"] !== "development";
+const isProduction = process.env["NODE_ENV"] !== "development" || process.platform == "win32";
 
 let windowOptions = {
   backgroundColor: "#000000",
@@ -28,11 +28,12 @@ if(!isProduction){
   })
 }
 
+const zip = app.getPath("cache");
 
 (async ()=>{
   if(!isProduction) console.log("Running in development mode.");
   const [server] = await Promise.all([
-    handle(),
+    handle({zip}),
     app.whenReady(),
   ]);
   const win = new BrowserWindow(windowOptions);

@@ -1,7 +1,6 @@
 'use strict';
 const https = require("https");
 const {once} = require("events");
-const { constants } = require("fs");
 const fs = require("fs/promises");
 const StreamZip = require("node-stream-zip");
 const path = require("path");
@@ -26,7 +25,7 @@ module.exports = class DataCache{
     this.#dir = dir;
   }
 
-  static async Open(dir=path.join(process.env["HOME"], ".cache", "eCorpus")){
+  static async Open(dir){
     await fs.mkdir(dir, {recursive: true});
     let dc = new DataCache(dir);
     return dc;

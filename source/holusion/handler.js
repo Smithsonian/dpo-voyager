@@ -101,8 +101,8 @@ handler.use(function(req, res) {
   })
 });
 
-module.exports = async function handle(port=0){
-  let dataCache = await DataCache.Open();
+module.exports = async function handle({port=0, zip}){
+  let dataCache = await DataCache.Open(zip);
   handler.locals.dataCache = dataCache;
   return await new Promise(resolve=>{
     let server = handler.listen(port, ()=>resolve(server));
