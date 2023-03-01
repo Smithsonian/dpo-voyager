@@ -1,10 +1,33 @@
-@import "client/ui/styles.scss";
+////////////////////////////////////////////////
+/* 
+- variables
+- split UI
+
+    - main menu
+
+    - object view
+        - object content
+        - touch pad
+        - tour navigator
+        - annotations
+        - toolbar
+
+    - settings view
+
+    - overlay
+*/
+////////////////////////////////////////////////
+
+@import "../../ui/styles.scss";
+
 $menu-color-text: #f0f0f0;
-$color-primary: #0089bf;
 $color-light: #f0f0f0;
 $color-background: transparentize(#363d40, 0.4);
 $color-background-dark: transparentize(#1f2426, 0.2);
 $menu-color-background-darker: transparentize(#050708, 0.15);
+
+$color-primary-dark:  transparentize(#1f2426, 0.2);
+
 
 :host(.split-mode)//, split UI
 {
@@ -33,7 +56,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     }
 }
 
-// main menu
+////// main menu //////
 
 .split-mode-object-menu
 {
@@ -64,7 +87,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     }
 }
 
-
+/////// object view ///////
 // object content
 
 .split-userinterface
@@ -143,9 +166,9 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
             
                     &[aria-selected=true]
                     {
-                        color:$color-primary;
+                        color:$color-primary-light;
                         svg{
-                            fill: $color-primary;
+                            fill: $color-primary-light;
                         }
                     }
                     svg
@@ -162,7 +185,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
 }
 
 
-//touch pad
+// touch pad
 
 .touch-controller
 {
@@ -241,7 +264,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
         left: 0;
         width: 75px;
         height: 5px;
-        background-color: $color-primary;
+        background-color: $color-primary-light;
     }
 }
 
@@ -308,7 +331,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     {
         width: 10em;
         text-transform: uppercase;
-        background: $color-primary;
+        background: $color-primary-light;
         padding: .25em 1em;
         z-index: 10;
 
@@ -323,11 +346,11 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     {
         padding: 1rem 3rem;
         text-transform: uppercase;
-        border: .1em solid $color-primary;
+        border: .1em solid $color-primary-light;
     }    
 }
 
-//annotations
+// annotations
 
 .sv-tag-cloud
 {
@@ -339,10 +362,10 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
         .sv-tag-button{
             margin: 0.5rem;
             background-color: $color-background-darker;
-            border-left: $color-primary 5px solid;
+            border-left: $color-primary-light 5px solid;
 
             &[selected]{
-                background-color: $color-primary;
+                background-color: $color-primary-light;
             }
         }
 
@@ -402,7 +425,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
             }
             &[selected]
             {
-                background-color: $color-primary;
+                background-color: $color-primary-light;
             }
             .ff-icon
             {
@@ -418,7 +441,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
 
             &[selected]
             {
-                background-color: $color-primary;                
+                background-color: $color-primary-light;                
             }
             &[icon="close"], &[icon="cog"]
             {
@@ -438,10 +461,22 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
         {
             flex-direction: column-reverse;
         }
+
+        .sv-tool-controls
+        {
+            .ff-button {
+                height: auto;
+            }
+
+            .sv-property-color > .ff-button {
+                height: 3rem;
+                width: 3rem;
+            }
+        }
     }
 }
 
-//settings-view
+////// settings view //////
 
 .settings-view
 {
@@ -458,15 +493,16 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
 
     .settings{
         padding:1rem;
+        width: 50%;
+        margin: auto;
 
         .files-list{
-            max-width: 30%;
-
             .ff-button{
                 justify-content: left;
                 overflow: hidden;
                 flex-wrap: nowrap;
-                padding: 1rem;
+                margin-top: 5px;
+                padding: 0.5rem;
             }
         }
     }
@@ -475,8 +511,18 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
         width: 3rem;
         height: 3rem;
     }
+
+    .form-item{
+        background-color: $color-primary-dark;
+
+    }
+    .form-control.form-modal .form-item > input:not([type="submit"]){
+        background-color: $color-primary-dark;
+    }
 }
-//overlay
+
+
+////// overlay //////
 
 .split-overlay
 {
@@ -500,7 +546,7 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
             left: 2rem;
             width: 100px;
             height: 5px;
-            background-color: $color-primary;
+            background-color: $color-primary-light;
         }        
     }
 
