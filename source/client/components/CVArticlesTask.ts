@@ -30,7 +30,7 @@ import CVMeta from "./CVMeta";
 import CVTask from "./CVTask";
 
 import ArticlesTaskView from "../ui/story/ArticlesTaskView";
-import CVMediaManager from "./CVMediaManager";
+import CVMediaManager, { IAssetRenameEvent } from "./CVMediaManager";
 import CVAssetWriter from "./CVAssetWriter";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
@@ -157,14 +157,16 @@ export default class CVArticlesTask extends CVTask
             }
             if (ins.title.changed) {
                 activeArticle.title = ins.title.value;
-                if (!activeAsset) {
+                /*if (!activeAsset) {
                     const uri = this.getSafeArticlePath(ins.title.value + "-" + ELanguageType[ins.language.value]);
                     activeArticle.uri = uri;
                     ins.uri.setValue(uri, true);
-                }
+                }*/
             }
             if (ins.uri.changed) {
                 activeArticle.uri = ins.uri.value;
+                const name = activeArticle.uri.split("/").pop();
+                this.mediaManager.rename(activeAsset, name);
             }
             if (ins.lead.changed || ins.tags.changed) {
                 activeArticle.lead = ins.lead.value;
@@ -238,12 +240,14 @@ export default class CVArticlesTask extends CVTask
     {
         if (previous) {
             previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
+            this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
             this.reader.outs.article.off("value", this.onArticleChange, this);
             this.reader = null;
         }
         if (next) {
             this.reader = next.setup.reader;
             this.reader.outs.article.on("value", this.onArticleChange, this);
+            this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
             next.setup.language.outs.language.on("value", this.onDocumentLanguageChange, this);
         }
     }
@@ -319,6 +323,16 @@ export default class CVArticlesTask extends CVTask
         if(ins.language.value !== languageManager.outs.language.value)
         {
             ins.language.setValue(languageManager.outs.language.value, true);
+        }
+    }
+
+    // Handle potential media manager name change
+    protected onAssetRename(event: IAssetRenameEvent) {
+        const article: Article = this.articles.find(e => e.uri === event.oldPath);
+
+        if(article !== undefined) {
+            article.uri = event.newPath;
+            this.onArticleChange();
         }
     }
 }

@@ -20,10 +20,17 @@ import Notification from "@ff/ui/Notification";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVAssetManager from "./CVAssetManager";
 import resolvePathname from "resolve-pathname";
+import { ITypedEvent } from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IAssetOpenEvent };
+
+export interface IAssetRenameEvent extends ITypedEvent<"asset-rename">
+{
+    oldPath: string;
+    newPath: string;
+}
 
 export default class CVMediaManager extends CAssetManager
 {
@@ -119,13 +126,17 @@ export default class CVMediaManager extends CAssetManager
             return Promise.reject();
         }
 
+        const parts = asset.info.path.split("/");
+        parts.pop();
+        const newPath = parts.join("/") + "/" + name;
+
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
             standaloneManager.renameFile(asset.info.url, name);
-            return this.refresh();
+            return this.refresh().then(() => this.emit<IAssetRenameEvent>({ type: "asset-rename", oldPath: asset.info.path, newPath: newPath }));
         }
         else {
-            return super.rename(asset, name);
+            return super.rename(asset, name).then(() => this.emit<IAssetRenameEvent>({ type: "asset-rename", oldPath: asset.info.path, newPath: newPath }));
         }
     }
 
