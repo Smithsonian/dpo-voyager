@@ -32,25 +32,26 @@ export default class SettingsView extends DocumentView
       if(!res.ok) throw new Error(`[${res.status}]: ${res.statusText}`);
       this.files = await res.json();
     })
-    
   }
+
 
   protected render()
   {
-    if(this.isOpen){
-      return html`<div class="settings">
-        <ff-button class="open-btn" style="position:absolute; right:0; top:0" @click=${this.onClose} icon="close"></ff-button>
-        <h1>Paramètres</h1>
-        <h2>Télécharger mes scènes</h2>
-        <div class="files-list">
-          ${this.files.map(file=> html`<ff-button icon="file" text=${file}></ff-button>`)}
-        </div>
-      </div>`;
-    }
-    else{
+    const filesList = this.files?
+     html`${this.files.map(file=> html`<ff-button icon="file" text=${file}></ff-button>`)}`:
+     html`Aucun fichier trouvé`;
+
+    if(!this.isOpen){
       return html`<ff-button class="open-btn" @click=${this.onOpen} icon="cog"></ff-button>`
     }
-    
+    return html`<div class="settings">
+      <ff-button class="open-btn" style="position:absolute; right:0; top:0" @click=${this.onClose} icon="close"></ff-button>
+      <h1>Paramètres</h1>
+      <h2>Télécharger mes scènes</h2>
+      <div class="files-list">
+        ${filesList}
+      </div>
+    </div>`;
   }
 
   onClose = ()=>{
