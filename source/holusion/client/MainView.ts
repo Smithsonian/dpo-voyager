@@ -142,7 +142,7 @@ export default class MainView extends LitElement
         let ui :TemplateResult;
 
         if(!this.route){
-            ui = html`<split-object-menu .docs=${this.docs} @select=${this.onNavigate}></split-object-menu>`
+            ui = html`<split-object-menu .system=${system} .docs=${this.docs} @select=${this.onNavigate}></split-object-menu>`
         }else{
             ui = html`<split-user-interface @select=${this.onNavigate} .system=${system}></split-user-interface>`
         }

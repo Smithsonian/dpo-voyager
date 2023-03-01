@@ -42,8 +42,8 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     justify-content: center;
     width: 100%;
     margin: auto;
+    padding:0.5rem;
     font-family: sans-serif;
-
     .object-menu-card
     {
         width: 13vw;
@@ -441,6 +441,41 @@ $menu-color-background-darker: transparentize(#050708, 0.15);
     }
 }
 
+//settings-view
+
+.settings-view
+{
+    font-family: sans-serif;
+    position: absolute;
+    top:0;
+    right:0;
+
+    &.visible{
+        width: 100%;
+        height:100vh;
+        background-color: #303030;
+    }
+
+    .settings{
+        padding:1rem;
+
+        .files-list{
+            max-width: 30%;
+
+            .ff-button{
+                justify-content: left;
+                overflow: hidden;
+                flex-wrap: nowrap;
+                padding: 1rem;
+            }
+        }
+    }
+    .open-btn{
+        margin: 1rem;
+        width: 3rem;
+        height: 3rem;
+    }
+}
 //overlay
 
 .split-overlay

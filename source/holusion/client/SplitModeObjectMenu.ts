@@ -15,14 +15,11 @@
  * limitations under the License.
  */
 
- import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
- import "@ff/ui/Button";
- 
-import Notification from "@ff/ui/Notification";
-import System from "@ff/graph/System";
-import SplitUserInterface from "SplitUserInterface/SplitUserInterface";
- 
- 
+import DocumentView, { property, customElement, html } from "client/ui/explorer/DocumentView";
+import {  System } from "@ff/scene/ui/SystemView";
+import "@ff/ui/Button";
+
+import "./SplitUserInterface/SettingsView.ts"
 
 export interface IDocumentParams
 {
@@ -34,23 +31,26 @@ export interface IDocumentParams
     thumbnail:string;
 }
 
-
-
- 
  @customElement("split-object-menu")
- export default class SplitModeObjectMenu extends CustomElement
+ export default class SplitModeObjectMenu extends DocumentView
  {
     private loop :number;
+
     @property({attribute:false, type: Array })
     docs :IDocumentParams[];
 
-
-    constructor(){
-        super();
+    constructor(system :System)
+    {
+        super(system);
         this.docs = JSON.parse(localStorage.getItem("playlist-documents") || "[]") as IDocumentParams[] ;
     }
+    
+    connectedCallback() {
+        super.connectedCallback()
+    }
+
      protected firstConnected()
-     {
+    {
         super.firstConnected();
         this.classList.add("split-object-menu");
         let idx = Math.floor(Math.random()*this.docs.length);
@@ -64,15 +64,15 @@ export interface IDocumentParams
                 detail: {document: this.docs[index].root, auto: true}
             }));
         }, 360/0.01) as any;
-     }
+    }
      
-     disconnected(): void {
+    disconnected(): void {
         console.log("Disconnect menu")
         clearInterval(this.loop);
-     }
+    }
  
-     protected renderEntry(object: IDocumentParams, index: number)
-     {
+    protected renderEntry(object: IDocumentParams, index: number)
+    {
         return html`<a class="object-menu-card" @click=${()=>this.onClickObject(object, index)}>
             <img src=${object.thumbnail} />
             <div class="object-menu-header">
@@ -80,23 +80,24 @@ export interface IDocumentParams
                 <p>${object.caption}</p>
             </div>
         </a>`;
-     }
- 
-     protected render()
-     {
+    }
+
+    protected render()
+    {
         if(!this.docs)
         {
             return html`Chargement...`;
         }
         return html`<div class="split-mode-object-menu ff-scroll-y">
             ${this.docs.map((obj, index) => this.renderEntry(obj, index))}
-        </div>`;
-     }
- 
-     protected onClickObject = (document: IDocumentParams, index: number)=>{
+        </div>
+        <settings-view .system=${this.system}></settings-view>`;
+    }
+
+    protected onClickObject = (document: IDocumentParams, index: number)=>{
         clearInterval(this.loop);
         this.dispatchEvent(new CustomEvent("select", {
             detail: {document: document.root, route: "scene", auto: true}
         }));
-     }
+    }
  }
