@@ -45,6 +45,8 @@ function toRegex(path:string|RegExp){
 @customElement("ecorpus-main")
 export default class MainView extends router(i18n(withUser(LitElement))){
   @route()
+  static "/ui/" =({search})=> html`<corpus-list .compact=${(search as URLSearchParams).has("compact")}></corpus-list>`;
+  @route()
   static "/ui/scenes/" =({search})=> html`<corpus-list .compact=${(search as URLSearchParams).has("compact")}></corpus-list>`;
   @route()
   static "/ui/doc/.*" = ()=> html`<doc-screen path="/ui/doc/"></doc-screen>`;
