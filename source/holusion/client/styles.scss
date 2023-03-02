@@ -37,11 +37,16 @@ $color-primary-dark:  transparentize(#1f2426, 0.2);
     font-size: 1rem;
     color: $menu-color-text;
 
-    >.et-screen{
+    >.split-screen-touch{
+        background: #303030;
         width: 50%;
         position: relative;
         top:0;
         bottom:0;
+    }
+    >.split-screen-view{
+        position: relative;
+        width: 50%;
     }
 
     #ff-notification-stack{
@@ -497,12 +502,15 @@ $color-primary-dark:  transparentize(#1f2426, 0.2);
         margin: auto;
 
         .files-list{
+            padding: 0;
+            display:flex;
+            flex-direction: column;
+            gap: .5rem;
             .ff-button{
                 justify-content: left;
                 overflow: hidden;
                 flex-wrap: nowrap;
-                margin-top: 5px;
-                padding: 0.5rem;
+                padding: 1.5rem 1rem;
             }
         }
     }
@@ -526,12 +534,10 @@ $color-primary-dark:  transparentize(#1f2426, 0.2);
 
 .split-overlay
 {
-    font-family: sans-serif;  
-    width: 100%;
-    height:100vh;
+    font-family: sans-serif;
+
     position: absolute;
-    top:0;
-    left:100%;
+    inset: 0;
     
     .title{
         padding: 2rem;
@@ -597,9 +603,8 @@ $color-primary-dark:  transparentize(#1f2426, 0.2);
 .sv-content-view
 {
     overflow:visible;
-    left: 100%;
-    width: 100%;
-    
+    position: absolute;
+    inset: 0;
     .ff-splitter-section
     {
         background-color: $color-background;

@@ -16,24 +16,26 @@
  */
 
 import { LitElement, customElement, property, html, TemplateResult } from "lit-element";
-import { Box3, MathUtils, Vector3 } from "three";
+import { MathUtils, Vector3 } from "three";
 
 import Notification from "@ff/ui/Notification";
 
 import ExplorerApplication from "client/applications/ExplorerApplication";
-
-import "./SplitContentView";
-import "./SplitUserInterface/SplitUserInterface";
-import  "./SplitModeObjectMenu";
-import  "./SplitOverlay";
+import CVDocumentProvider from "client/components/CVDocumentProvider";
+import SceneView from "client/ui/SceneView";
 
 //@ts-ignore
 import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!client/ui/explorer/styles.scss';
 //@ts-ignore
 import splitStyles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';
+
+
+import "./SplitContentView";
+import "./SplitUserInterface/SplitUserInterface";
+import "./SplitUserInterface/SettingsView.ts";
+import  "./SplitOverlay";
 import { IDocumentParams } from "./SplitModeObjectMenu";
-import CVDocumentProvider from "client/components/CVDocumentProvider";
-import SceneView from "client/ui/SceneView";
+import CVViewer from "client/components/CVViewer";
 
 
 
@@ -75,6 +77,15 @@ export default class MainView extends LitElement
     
     @property({type: Boolean})
     private auto :boolean;
+
+    @property({attribute: false, type: Object})
+    error :Error|null = null;
+
+
+    protected get viewer() {
+        return this.application.system.getComponent(CVViewer);
+    }
+
     constructor(){
         super();
         let sp = new URLSearchParams(window.location.search);
@@ -83,79 +94,111 @@ export default class MainView extends LitElement
         this.auto ??= !!sp.get("auto");
     }
 
-    public connectedCallback()
-    {
-        super.connectedCallback();
-        this.classList.add("split-mode");
-        Notification.shadowRootNode = this.shadowRoot;
-         
+    private fetch(){
         fetch("/documents.json").then(async (res)=>{
-            if(!res.ok) throw new Error(`[${res.status}]: ${res.statusText}`);
+            if(!res.ok) throw new Error(`[${res.status}]: ${await res.text()}`);
             let body = await res.json();
             if(!Array.isArray(body.documents) || body.documents.length == 0)throw new Error(`Bad documents list : `+ body);
             
             this.docs = body.documents;
-            if(!this.document || this.document == "null") this.document = body.documents[0].root;
+            if(!this.document || this.document == "null" || !this.docs.find(({root})=>root == this.document)) this.document = this.docs[0].root;
             console.log("Document :", this.document );
-            this.application = new ExplorerApplication(null, {
-                root: this.document,
-                document: "scene.svx.json",
-                resourceRoot:"/", 
-                lang: "FR", 
-                bgColor: "#000000", 
-                bgStyle: "solid"
-            });
-            /* This is all a workaround for this issue:
-             * https://github.com/Smithsonian/dpo-voyager/issues/185
-             * and should be deleted once it's solved.
-             */
-            console.log("register listener", this.application.system.getMainComponent(CVDocumentProvider));
-            this.application.system.getMainComponent(CVDocumentProvider).on("active-component",(e)=>{
-                if((e as any).next) return;
-                let scene :SceneView = (this.shadowRoot.querySelector(".sv-content-view") as any)?.sceneView;
-                if(!scene){
-                    Notification.show("Failed dispose renderer", "warning");
-                }
-                (scene as any).view.renderer.dispose();
-            });
+            this.error = null;
         }).catch(e=>{
+            this.error = e;
             Notification.show("Failed to get documents : "+e.message, "error");
         });
     }
 
-    protected firstUpdated(_changedProperties: Map<string | number | symbol, unknown>): void {
+    public connectedCallback()
+    {
+        super.connectedCallback();
+        this.classList.add("split-mode");
 
-    }
+        Notification.shadowRootNode = this.shadowRoot;
+         
+        this.error = null;
 
-    protected render() {
-        if(!this.docs) return html`<h1 style="color:white">Loading...</h1>`;
-
-        let system = this.application.system;
+        this.application = new ExplorerApplication(null, {
+            root: null,
+            document: "scene.svx.json",
+            resourceRoot:"/", 
+            lang: "FR", 
+            bgColor: "#000000", 
+            bgStyle: "solid",
+            quality: "Highest",
+        }, true);
         
-        if(this.document && this.document !== this.application.props.root){
+
+        /* This is all a workaround for this issue:
+         * https://github.com/Smithsonian/dpo-voyager/issues/185
+         * and should be deleted once it's solved.
+         */
+        console.log("register listener", this.application.system.getMainComponent(CVDocumentProvider));
+        this.application.system.getMainComponent(CVDocumentProvider).on("active-component",(e)=>{
+            if((e as any).next) return;
+            let scene :SceneView = (this.shadowRoot.querySelector(".sv-content-view") as any)?.sceneView;
+            if(!scene){
+                Notification.show("Failed dispose renderer", "warning");
+            }
+            (scene as any).view.renderer.dispose();
+        });
+        this.fetch();
+    }
+    
+    protected update(changedProperties: Map<string | number | symbol, unknown>): void {
+        if(!this.error && this.docs && this.document && this.document !== this.application.props.root){
             console.log("reloadDocument : ",this.application.props.root , this.document);
             this.application.props.root = this.document;
             this.application.reloadDocument();
+            this.viewer.rootElement = this;
         }
-        
-        console.log("Render with path :", this.document, this.auto);
-        let ui :TemplateResult;
-
-        if(!this.route){
-            ui = html`<split-object-menu .system=${system} .docs=${this.docs} @select=${this.onNavigate}></split-object-menu>`
+        super.update(changedProperties);
+    }
+    protected render() {
+        console.log("render");
+        let ui :TemplateResult, view :TemplateResult;
+        if(this.error){
+            ui = html`<div class="et-screen et-container-1">
+                <h1 style="color:white">Error</h1>
+                <p>${this.error.message}</p>
+                <div id="${Notification.stackId}"></div>
+            </div>`;
+        }else if(!this.docs || !this.document){
+            ui = html`
+                <h1 style="color:white">Loading...</h1>
+                <div id="${Notification.stackId}"></div>
+            `;
         }else{
-            ui = html`<split-user-interface @select=${this.onNavigate} .system=${system}></split-user-interface>`
+            let system = this.application.system;
+            console.log("Render with path :", this.document, this.auto);
+            if(!this.route){
+                ui = html`<split-object-menu .system=${system} .docs=${this.docs} @select=${this.onNavigate}></split-object-menu>`
+            }else{
+                ui = html`<split-user-interface @select=${this.onNavigate} .system=${system}></split-user-interface>`
+            }
+            view = html`
+                <split-content-view class="" .system=${system}></split-content-view>
+                <split-overlay .system=${system}></split-overlay>
+            `;
         }
 
-        return html`<div class="et-screen et-container-1">
+        view ??= html`<div style="padding-top:30vh; margin:auto;height:100%;overflow:hidden"><sv-logo style="transform: scale(4)"></sv-logo></div>`;
+        console.log("vIEW", view);
+        return html`
+        <div class="split-screen-touch">
             ${ui}
-            <split-content-view .system=${system}></split-content-view>
-            <split-overlay .system=${system}></split-overlay>
+            <settings-view @change=${this.onChange} .system=${this.application.system}></settings-view>
+        </div>
+        <div class="split-screen-view">
+            ${view}
         </div>
         <div id="${Notification.stackId}"></div>`
     }
 
-
+    onChange = ()=>{
+        this.fetch();
+    }
     onNavigate = (ev :NavigationEvent)=>{
         console.log("Navigate to :", ev.detail);
         ["route", "document", "auto"].forEach((key)=>{
@@ -241,6 +284,7 @@ export default class MainView extends LitElement
         this._loop?.abort();
         this.application.dispose();
         this.application = null;
+        this.viewer.rootElement = null;
     }
 
     static styles = [styles, splitStyles];

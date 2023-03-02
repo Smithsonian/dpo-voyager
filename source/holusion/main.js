@@ -1,4 +1,5 @@
 'use strict';
+const path = require("path");
 const { app, BrowserWindow } = require('electron');
 const { once } = require('events');
 
@@ -28,10 +29,10 @@ if(!isProduction){
   })
 }
 
-const zip = app.getPath("cache");
+const zip = path.join(app.getPath("cache"), app.getName());
 
 (async ()=>{
-  if(!isProduction) console.log("Running in development mode.");
+  if(!isProduction) console.log("Running in development mode using cache dir :"+zip);
   const [server] = await Promise.all([
     handle({zip}),
     app.whenReady(),

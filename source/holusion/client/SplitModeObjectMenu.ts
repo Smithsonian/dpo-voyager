@@ -19,7 +19,6 @@ import DocumentView, { property, customElement, html } from "client/ui/explorer/
 import {  System } from "@ff/scene/ui/SystemView";
 import "@ff/ui/Button";
 
-import "./SplitUserInterface/SettingsView.ts"
 
 export interface IDocumentParams
 {
@@ -90,8 +89,7 @@ export interface IDocumentParams
         }
         return html`<div class="split-mode-object-menu ff-scroll-y">
             ${this.docs.map((obj, index) => this.renderEntry(obj, index))}
-        </div>
-        <settings-view .system=${this.system}></settings-view>`;
+        </div>`;
     }
 
     protected onClickObject = (document: IDocumentParams, index: number)=>{
