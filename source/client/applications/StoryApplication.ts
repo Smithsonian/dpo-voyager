@@ -56,6 +56,8 @@ export interface IStoryApplicationProps extends IExplorerApplicationProps
     mode?: string;
     /** When set to true, application displays additional expert level tools. */
     expert?: boolean;
+    /** When set to true, application supports dragging and dropping files. */
+    dragdrop?: boolean;
 }
 
 /**
@@ -153,6 +155,7 @@ export default class StoryApplication
         props.referrer = props.referrer || parseUrlParameter("referrer");
         props.mode = props.mode || parseUrlParameter("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
+        props.dragdrop = props.dragdrop || false; 
 
         // If in standalone mode, remove root and document params that may be present
         const modeText = props.mode.toLowerCase();
@@ -183,10 +186,16 @@ export default class StoryApplication
         }
         else if (modeText.startsWith("stand")) {
             mode = ETaskMode.Standalone;
+            props.dragdrop = true;
             app.createComponent(CVStandaloneFileManager);
         }
 
         this.mediaManager.rootUrl = this.assetManager.baseUrl;
+
+        // if dragging/dropping have to assume that a non-loading url is still valid
+        if(props.dragdrop === true) {
+            this.assetManager.ins.baseUrlValid.setValue(true);
+        }
 
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);

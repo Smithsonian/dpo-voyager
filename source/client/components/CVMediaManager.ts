@@ -93,6 +93,18 @@ export default class CVMediaManager extends CAssetManager
         }
     }
 
+    ingestFiles(files: Map<string, File>)
+    {
+        if(this.standaloneFileManager) {
+            this.standaloneFileManager.onFileDrop(files);
+        }
+        else {
+            const fileList = new DataTransfer();
+            files.forEach(file => fileList.items.add(file));
+            this.uploadFiles(fileList.files, this.root);
+        }
+    }
+
     refresh()
     {
         const standaloneManager = this.standaloneFileManager;

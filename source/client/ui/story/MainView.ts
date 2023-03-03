@@ -117,6 +117,7 @@ export default class MainView extends CustomElement
                 referrer: this.getAttribute("referrer"),
                 mode: this.getAttribute("mode"),
                 expert: this.hasAttribute("expert"),
+                dragdrop: this.hasAttribute("dragdrop"),
 
                 uiMode: this.getAttribute("uiMode"),
             };

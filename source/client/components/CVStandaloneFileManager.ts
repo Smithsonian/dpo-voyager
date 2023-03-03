@@ -22,7 +22,7 @@ import CVDocumentProvider from "./CVDocumentProvider";
 
 import Notification from "@ff/ui/Notification";
 
-import { SimpleDropzone } from 'simple-dropzone';
+//import { SimpleDropzone } from 'simple-dropzone';
 import ExplorerApplication from "client/applications/ExplorerApplication";
 import MainView from "client/ui/story/MainView";
 import CVMediaManager from "./CVMediaManager";
@@ -140,18 +140,18 @@ export default class CVStandaloneFileManager extends Component
 
     update()
     {
-        if(!this.isConfigured) {
+        /*if(!this.isConfigured) {
             const explorerPanel = document.getElementsByClassName('sv-explorer-panel')[0];
             const input = document.querySelector('#fileInput');
             const dropZone = new SimpleDropzone(explorerPanel, input);
             dropZone.on('drop', ({files}: any) => this.onFileDrop(files));
             this.isConfigured = true;
-        }
+        }*/
 
         return false;
     }
     
-    protected onFileDrop(files: Map<string, File>)
+    onFileDrop(files: Map<string, File>)
     {
         const fileArray = Array.from(files);
         const hasDoc = this.documentLoaded;
