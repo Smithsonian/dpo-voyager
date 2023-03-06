@@ -175,6 +175,9 @@ nav-link{
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    &:invalid:not(:placeholder-shown):not(:focus){
+      outline: $color-danger solid 1px;
+    }
   }
   .form-item > label{
     opacity: 0.7;

@@ -37,7 +37,7 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
         <div class="form-group">
           <div class="form-item">
             <label for="username">${this.t("ui.username")}</label>
-            <input type="text" autocomplete="username" name="username" id="username" placeholder="username" value="${this.user.username || ""}">
+            <input type="text" autocomplete="username" minlength="3" name="username" id="username" placeholder="username" value="${this.user.username || ""}">
           </div>
         </div>
         <div class="form-group">
@@ -58,13 +58,13 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
         <div class="form-group">
           <div class="form-item">
             <label for="password">${this.t("ui.password")}</label>
-            <input type="password" autocomplete="new-password" name="password" id="password" placeholder="${this.t("ui.password")}" required>
+            <input type="password" autocomplete="new-password" minlength="8" name="password" id="password" placeholder="${this.t("ui.password")}" required>
           </div>
         <div class="form-group">
         </div>
           <div class="form-item">
             <label for="password-confirm">${this.t("ui.passwordConfirm")}</label>
-            <input type="password" autocomplete="new-password" name="password-confirm" id="password-confirm" placeholder="${this.t("ui.passwordConfirm")}" required>
+            <input type="password" autocomplete="new-password" minlength="8" name="password-confirm" id="password-confirm" placeholder="${this.t("ui.passwordConfirm")}" required>
           </div>
         <div class="form-group">
         </div>
@@ -113,7 +113,7 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
       Notification.show("Done", "info");
     }).catch(e=>{
       console.error(e);
-      Notification.show(`Save failed : ${e.message}`);
+      Notification.show(`Save failed : ${e.message}`, "error");
     });
   }
 
