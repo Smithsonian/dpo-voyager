@@ -38,7 +38,7 @@ describe("Web Server Integration", function(){
       await fs.writeFile(path.join(this.dir, "dist", "ecorpus-main.html"), "<html></html>");
     });
 
-    ["/ui/", "/ui/users"].forEach(function(path){
+    ["/ui/scenes/", "/ui/users"].forEach(function(path){
       it(`GET ${path}`, async function(){
         await request(this.server).get(path)
         .expect("Content-Type", "text/html; charset=utf-8")

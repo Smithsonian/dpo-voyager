@@ -78,7 +78,7 @@ export default class UserManager {
       return typeof username ==="string" &&/^[\w]{3,40}$/.test(username)
     },
     password(password:string|any){
-      return typeof password ==="string" && 8 < password.length
+      return typeof password ==="string" && 8 <= password.length
     },
     email(email:string|any){
       return typeof email === "string" && /^[^@]+@[^@]+\.[^@]+$/.test(email);
@@ -265,6 +265,7 @@ export default class UserManager {
     if(values.length === 0){
       throw new BadRequestError(`Provide at least one valid value to change`);
     }
+    if(params["$password"]) params["$password"] = await UserManager.formatPassword(params["$password"]);
     let r = await this.db.get<StoredUser|undefined>(`
       UPDATE users 
       SET ${values.join(", ")} 

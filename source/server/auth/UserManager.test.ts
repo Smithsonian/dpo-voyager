@@ -52,16 +52,32 @@ describe("UserManager static methods", function(){
     });
   });
 
-  describe("isValidUsername()", function(){
-    it("returns a boolean", function(){
-      expect(UserManager.isValidUserName("xxxx")).to.be.true;
+  describe("isValid", function(){
+    let tests :Record<keyof typeof UserManager.isValid, [string, boolean][]> = {
+      username:[
+        ["foo", true],
+        ["x", false],
+        ["foo@example.com", false]
+      ],
+      password:[
+        ["12345678", true]
+      ],
+      email:[
+        ["foo@example.com", true],
+      ]
+    };
+    for(let key of Object.keys(tests) as [keyof typeof UserManager.isValid]){
+      let values = (tests as any)[key] as [string, boolean][];
+      for(let [value, res] of values){
+        it(`${key}(${value}) => ${res}`, function(){
+          expect(UserManager.isValid[key](value)).to.equal(res);
+        });
+      }
+    }
+    it("tests every keys", function(){
+      expect(Object.keys(UserManager.isValid).sort()).to.deep.equal((Object.keys(tests).sort()));
     });
-    it("rejects usernames under 3 chars long", function(){
-      expect(UserManager.isValidUserName("xx")).to.be.false;
-    });
-    it("rejects possible emails", function(){
-      expect(UserManager.isValidUserName("foo@example.com")).to.be.false;
-    });
+
   })
 });
 
@@ -153,6 +169,11 @@ describe("UserManager methods", function(){
     })
     it("throw 404 if user doesn't exist", async function(){
       await expect(userManager.patchUser(2, {username:"bar"})).to.be.rejectedWith(NotFoundError);
+    })
+    it("encodes passwords", async function(){
+      let next = await userManager.patchUser(u.uid, {password: "12345678"});
+      expect(next).to.have.property("password").not.equal("12345678");
+      expect(UserManager.isValidPasswordHash(next.password as string),`encoded password should be a valid password hash. Got : ${next.password}`).to.be.true;
     })
   })
 
