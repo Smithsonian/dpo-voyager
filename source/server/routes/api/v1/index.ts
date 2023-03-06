@@ -26,6 +26,18 @@ import { handlePatchUser } from "./users/uid/patch";
 
 const router = Router();
 
+/** Configure cache behaviour for the whole API
+ * Settings can be changed individually further down the line
+ */
+router.use((req, res, next)=>{
+  //Browser should always make the request
+  res.set("Cache-Control", "max-age=0, must-revalidate");
+  next();
+})
+router.use("/login", (req, res, next)=>{
+  res.append("Cache-Control", "private");
+  next();
+});
 router.get("/login", wrap(getLogin));
 router.post("/login", bodyParser.json(), postLogin);
 router.get("/login/:username/link", isAdministrator, wrap(getLoginLink));

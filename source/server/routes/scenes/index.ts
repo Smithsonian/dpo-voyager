@@ -26,6 +26,13 @@ function ifFileMatchesScene(req :Request, res :Response, next :NextFunction){
 }
 
 const router = Router();
+/** Configure cache behaviour for everything under `/scenes/**`
+ * Settings can be changed individually further down the line
+ */
+router.use((req, res, next)=>{
+  res.set("Cache-Control", "max-age=0, must-revalidate");
+  next();
+});
 
 router.propfind("/", wrap(handlePropfind));
 

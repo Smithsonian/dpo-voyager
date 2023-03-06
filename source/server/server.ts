@@ -87,7 +87,22 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   app.set('views', config.templates_path);
 
 
-  app.get("/", (req, res)=> res.redirect("/ui/scenes"));
+  app.get(["/", "/ui/"], (req, res)=> res.redirect("/ui/scenes"));
+
+  /**
+   * Set permissive cache-control for ui pages
+   */
+  app.use(["/ui", "/js", "/css", "/doc", "/language"], (req, res, next)=>{
+    res.set("Cache-Control", `max-age=${30*60}, public`);
+    next();
+  });
+  /**
+   * Set even more permissive cache-control for static assets
+   */
+  app.use(["/images", "/fonts", "/favicon.png"], (req, res, next)=>{
+    res.set("Cache-Control", `max-age=${60*60*24*30*12}, public`);
+    next();
+  });
 
   /* istanbul ignore next */
   app.get("/ui/scenes/:scene/view", (req, res)=>{

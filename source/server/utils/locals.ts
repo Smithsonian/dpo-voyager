@@ -29,11 +29,15 @@ export function getFileDir(req :Request) :string{
 }
 
 export function isUser(req: Request, res:Response, next :NextFunction){
+  res.append("Cache-Control", "private");
+  
   if((req.session as User).uid ) next();
   else next(new UnauthorizedError());
 }
 
 export function isAdministrator(req: Request, res:Response, next :NextFunction){
+  res.append("Cache-Control", "private");
+  
   if((req.session as User).isAdministrator || req.app.locals.isOpen) next();
   else next(new UnauthorizedError());
 }
@@ -46,7 +50,11 @@ function _perms(check:number,req :Request, res :Response, next :NextFunction){
   let {isAdministrator=false, uid = 0} = (req.session ??{})as SafeUser;
   if(!scene) throw new BadRequestError("no scene parameter in this request");
   if(check < 0 || AccessTypes.length <= check) throw new InternalError(`Bad permission level : ${check}`);
+
+  res.append("Cache-Control", "private");
+
   if(isAdministrator || (req.app as any).isOpen === true) return next();
+  
   let userManager = getUserManager(req);
   (res.locals.access? Promise.resolve(res.locals.access):
     userManager.getAccessRights(scene, uid).then(a=>{ res.locals.access = a; return a })
