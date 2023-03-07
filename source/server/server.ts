@@ -104,7 +104,6 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
     next();
   });
 
-  /* istanbul ignore next */
   app.get("/ui/scenes/:scene/view", (req, res)=>{
     let {scene} = req.params;
     let {lang} = req.query;
@@ -134,6 +133,20 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
       thumb: thumb.toString(),
       referrer: referrer.toString(),
       mode: "Edit",
+      lang: ((typeof lang === "string")?lang.toUpperCase():"FR"),
+    });
+  });
+  
+  app.get("/ui/standalone", (req, res)=>{
+    let {lang} = req.query;
+    let host = getHost(req);
+    let referrer = new URL(req.get("Referrer")||`/ui/scenes/`, host);
+
+    res.render("story", {
+      title: `Standalone Story`,
+      mode: "Standalone",
+      thumb: "/images/sketch_ethesaurus.png",
+      referrer: referrer.toString(),
       lang: ((typeof lang === "string")?lang.toUpperCase():"FR"),
     });
   });

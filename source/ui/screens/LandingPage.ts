@@ -22,7 +22,7 @@ import "../composants/UserLogin"
                 <div class="illustration">
                     <img src="/images/sketch_ethesaurus.png" alt="sketch représentant l'application voyager et son utilisation dans une borne holographique">
                     <p>${this.t("info.lead")}</p>
-                    <p style="text-align:right"> <a href="/voyager-story.html?resourceRoot=/&lang=${this.language.toUpperCase()}&mode=Standalone&referrer=/">${this.t("info.useStandalone")}</a></p>
+                    <p style="text-align:right"> <a href="/ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a></p>
                 </div>
                 
                 <div class="user-login">
