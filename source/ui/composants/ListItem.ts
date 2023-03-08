@@ -17,9 +17,9 @@ export default class ListItem extends LitElement{
       ${(this.onChange? html`<span class="pill">
         <input type="checkbox" name="${this.name}" @change=${this.onChange} name="isAdministrator" id="isAdministrator">
       </span>`:null)}
-      <span class="name">
+      <slot class="name">
         ${this.name}
-      </span>
+      </slot>
     `
   }
   static styles = css`

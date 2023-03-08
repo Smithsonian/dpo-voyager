@@ -16,6 +16,19 @@ import "../composants/TaskButton";
 import { withScenes } from "../state/withScenes";
 import { navigate } from "../state/router";
 
+
+interface Scene{
+    ctime :Date;
+    mtime :Date;
+    author_id :number;
+    author :string;
+    id :number;
+    name :string;
+}
+interface Upload{
+    name :string;
+}
+
 /**
  * Main UI view for the Voyager Explorer application.
  */
@@ -112,12 +125,25 @@ import { navigate } from "../state/router";
         this.selection = selected? [...this.selection, name] : this.selection.filter(n=>n !== name);
     }
 
-    private renderScene(mode :string, {name} :{name :string}){
-        const selected = this.selection.indexOf(name) != -1;
+    private renderScene(mode :string, scene:Scene|Upload){
+        const selected = this.selection.indexOf(scene.name) != -1;
         if(this.compact){
-            return html`<list-item .onChange=${this.onSelectChange} name="${name}"></list-item>`;
+            return html`<list-item name="${scene.name}" .onChange=${this.onSelectChange}>
+                ${"author" in scene? html`<div style="
+                    display:flex; 
+                    flex: 1 1 auto;
+                    gap: 1rem;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                ">
+                    <span style="flex: 1 0 6rem;overflow: hidden;text-overflow: ellipsis;">${scene.name}</span>
+                    <span style="flex: 0 5 auto">(${scene.author})</span>
+                    <span style="flex: 1 0 5rem;overflow: hidden;text-align: right;">${scene.mtime}</span>
+            </div>`:scene.name}
+            </list-item>`;
         }
-        return html`<scene-card .mode=${mode} name="${name}" />`
+        return html`<scene-card .mode=${mode} name="${scene.name}" />`
     }
 
     protected render() :TemplateResult {
@@ -143,9 +169,9 @@ import { navigate } from "../state/router";
                 
                 <a class="ff-button ff-control btn-primary" href="//ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a></task-button>
                 
-                ${this.selection.length?html`<a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
+                ${(this.compact && this.selection.length)?html`<a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
                     this.selection.map(name=>`name=${encodeURIComponent(name)}`).join("&")
-                    }&format=zip"
+                    }&format=zip">
                     Download Zip
                 </a>`: null}
 
