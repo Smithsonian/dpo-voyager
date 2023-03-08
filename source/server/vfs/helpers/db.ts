@@ -25,6 +25,7 @@ async function openAndConfigure({filename, migrate=true} :DbOptions){
     driver: sqlite.Database, 
     mode: sqlite.OPEN_URI|sqlite.OPEN_CREATE|sqlite.OPEN_READWRITE,
   });
+  //Must be run with each connections
   await db.run(`PRAGMA foreign_keys = ON`);
   await db.run(`PRAGMA synchronous = NORMAL`);
   return db;
@@ -35,25 +36,32 @@ export default async function open({filename, migrate=true} :DbOptions) :Promise
   let db = await openAndConfigure({
     filename,
   });
-  //Required only once but can't be set in migration. Should probably move to some one-time function
-  await db.run(`PRAGMA journal_mode = WAL`);
-  //Must be run with each connections
+  
   if(migrate !== false){
     await db.migrate({
       force: ((migrate === "force")?true: false),
       migrationsPath: config.migrations_path,
     });
   }
-  (db as Database).beginTransaction = async function(work :TransactionWork<any>, commit :boolean = true){
-    let conn = await openAndConfigure({filename: db.config.filename}) as Transaction;
-    conn.beginTransaction = async function(work :TransactionWork<any>){
-      return await work(conn);
-    }
-    if(commit) await conn.run(`BEGIN TRANSACTION`);
+  
+  async function performTransaction<T>(this:Database|Transaction, work :TransactionWork<T>, commit :boolean=true):Promise<T>{
+    // See : https://www.sqlite.org/lang_savepoint.html
+    if(commit) await this.run(`SAVEPOINT VFS_TRANSACTION`);
     try{
-      let res = await work(conn);
-      if(commit) await conn.run("END TRANSACTION");
+      let res = await work(this);
+      if(commit) await this.run("RELEASE SAVEPOINT VFS_TRANSACTION");
       return res;
+    }catch(e){
+      if(commit) await this.run("ROLLBACK TRANSACTION TO VFS_TRANSACTION").catch(e=>{});
+      throw e;
+    }
+  }
+
+  (db as Database).beginTransaction = async function<T>(work :TransactionWork<T>, commit :boolean = true):Promise<T>{
+    let conn = await openAndConfigure({filename: db.config.filename}) as Transaction;
+    conn.beginTransaction = performTransaction.bind(conn) as any;
+    try{
+      return await (performTransaction as typeof performTransaction<T>).call(conn, work, commit);
     }finally{
       //Close will automatically rollback the transaction if it wasn't committed
       await conn.close();

@@ -7,6 +7,7 @@ import { parse_glb } from "../../../../../utils/glTF";
 
 async function getDocument(scene:string, filepath:string){
   let {default:orig} = await import("../../../../../utils/documents/default.svx.json");
+  //dumb inefficient Deep copy because we want to mutate the doc in-place
   let document = JSON.parse(JSON.stringify(orig));
   let meta = await parse_glb(filepath);
 
@@ -57,7 +58,6 @@ export default async function postScene(req :Request, res :Response){
   let vfs = getVfs(req);
   let user_id = getUserId(req);
   let {scene} = req.params;
-  //dumb inefficient Deep copy because we want to mutate the doc in-place
   let scene_id = await vfs.createScene(scene, user_id);
   try{
     let f = await vfs.writeFile(req, {user_id, scene: scene, type: "models", name: `${scene}.glb`});

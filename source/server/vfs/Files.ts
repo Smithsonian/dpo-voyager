@@ -195,22 +195,22 @@ export default abstract class FilesVfs extends BaseVfs{
     }));
   }
   async removeFile(params :WriteFileParams) :Promise<number>{
-    return await this.db.beginTransaction<number>(async tr=>{
+    return await this.isolate<number>(async function(tr){
       //Check if file does exist
-      let prev = await this.getFileProps.bind({db: tr})({...params, archive: true});
+      let prev = await tr.getFileProps({...params, archive: true});
       if(!prev.hash){
         throw new ConflictError(`File ${params.scene}/${params.type}/${params.name} is already deleted`);
       }
-      let f = await this.createFile.bind({db: tr})(params, {hash: null, size: 0});
+      let f = await tr.createFile(params, {hash: null, size: 0});
       return f.id;
 
     })
   }
   
   async renameFile(props :WriteFileParams, nextName :string) :Promise<number>{
-    return await this.db.beginTransaction<number>(async tr=>{
+    return await this.isolate<number>(async tr=>{
       let scene_id :number = ((typeof props.scene === "string")?
-        await tr.get<{scene_id:number}>(`SELECT scene_id FROM scenes WHERE scene_name = $name`, {$name : props.scene})
+        await tr.db.get<{scene_id:number}>(`SELECT scene_id FROM scenes WHERE scene_name = $name`, {$name : props.scene})
           .then(r=>{
             if(!r) throw new NotFoundError(`No scene with id ${props.scene}`);
             return r.scene_id;
@@ -218,9 +218,9 @@ export default abstract class FilesVfs extends BaseVfs{
         : props.scene
       );
       //Get current file
-      let thisFile = await this.getFileProps.bind({db: tr})(props);
+      let thisFile = await tr.getFileProps(props);
       //Get dest file
-      let destFile = await this.getFileProps.bind({db: tr})({...props, name: nextName, archive: true})
+      let destFile = await tr.getFileProps({...props, name: nextName, archive: true})
       .catch(e=>{
         if(e.code == 404) return  {generation:0, hash:null};
         throw e;
@@ -229,8 +229,8 @@ export default abstract class FilesVfs extends BaseVfs{
         throw new ConflictError(`A file named ${nextName} with type ${thisFile.type} already exists in scene ${scene_id}`);
       }
 
-      await this.createFile.bind({db: tr})(props, {hash: null, size: 0});
-      let f = await this.createFile.bind({db: tr})({ ...props, name: nextName}, thisFile);
+      await tr.createFile(props, {hash: null, size: 0});
+      let f = await tr.createFile({ ...props, name: nextName}, thisFile);
 
       if(!f?.id)  throw new NotFoundError(`can't create renamed file`);
       return f.id;

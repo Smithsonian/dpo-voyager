@@ -41,6 +41,33 @@ describe("Vfs", function(){
     await Vfs.Open(this.dir);
     await expect(fs.access(path.join(this.dir, "uploads"))).to.be.fulfilled;
   });
+  describe("isolate", function(){
+    it("can rollback on error", async function(){
+      let vfs = await Vfs.Open(this.dir);
+      await expect(vfs.isolate(async (vfs)=>{
+        await vfs.createScene("foo");
+        await vfs.createScene("foo");
+      })).to.be.rejected;
+      expect(await vfs.getScenes()).to.have.property("length", 0);
+    });
+    it("can be nested", async function(){
+      let vfs = await Vfs.Open(this.dir);
+      let scenes = await expect(vfs.isolate( async (v2)=>{
+        //This isolate rolls back but since we don't propagate the error
+        //the parent will succeed
+        await v2.isolate(async (v3)=>{
+          await v3.createScene("foo");
+          //Force this transaction to roll back
+          throw new Error("TEST");
+        }).catch(e=>{
+          if(e.message !== "TEST") throw e;
+        });
+        return await v2.getScenes();
+      })).to.be.fulfilled;
+      expect(scenes).to.have.property("length", 0);
+    });
+  });
+
   describe("", function(){
     let vfs :Vfs; 
     //@ts-ignore
