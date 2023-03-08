@@ -90,13 +90,30 @@ export default abstract class ScenesVfs extends BaseVfs{
   async getScenes(user_id ?:number) :Promise<Scene[]>{
     
     return (await this.db.all(`
+      WITH RECURSIVE last_docs AS (
+        SELECT 
+          documents.ctime AS mtime, 
+          documents.fk_author_id AS fk_author_id,
+          documents.fk_scene_id AS fk_scene_id
+        FROM
+          documents
+          INNER JOIN(
+            SELECT MAX(generation) AS generation, fk_scene_id FROM documents GROUP BY fk_scene_id
+          ) AS last_docs
+          ON 
+            last_docs.fk_scene_id = documents.fk_scene_id 
+            AND last_docs.generation = documents.generation
+      )
       SELECT 
-        IFNULL(document.ctime, scenes.ctime) as mtime,
-        scenes.ctime as ctime,
-        scene_id as id,
-        scene_name as name
+        IFNULL(mtime, scenes.ctime) as mtime,
+        scenes.ctime AS ctime,
+        scene_id AS id,
+        scene_name AS name,
+        IFNULL(user_id, 0) AS author_id,
+        IFNULL(username, "default") AS author
       FROM scenes
-        LEFT JOIN (SELECT MAX(ctime) AS ctime, fk_scene_id FROM documents GROUP BY fk_scene_id) AS document ON fk_scene_id = scene_id
+        LEFT JOIN last_docs AS document ON fk_scene_id = scene_id
+        LEFT JOIN users ON fk_author_id = user_id
       ${typeof user_id === "number"? `WHERE 
         COALESCE(
           json_extract(scenes.access, '$.' || $user_id),

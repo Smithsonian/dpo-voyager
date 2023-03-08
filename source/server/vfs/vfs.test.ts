@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import {tmpdir} from "os";
 import { expect } from "chai";
-import Vfs, { FileProps, GetFileParams, WriteFileParams } from ".";
+import Vfs, { FileProps, GetFileParams, Scene, WriteFileParams } from ".";
 import { Uid } from "../utils/uid";
 import UserManager from "../auth/UserManager";
 import User from "../auth/User";
@@ -16,6 +16,17 @@ async function *dataStream(src :Array<Buffer|string> =["foo", "\n"]){
 
 async function empty(dir :string){
   return (await fs.readdir(dir)).length == 0;
+}
+
+function sceneProps(id:number):{[P in keyof Required<Scene>]: Function|any}{
+  return {
+    ctime: Date,
+    mtime: Date,
+    id: id,
+    name: "foo",
+    author: "default",
+    author_id: 0,
+  };
 }
 
 describe("Vfs", function(){
@@ -71,13 +82,19 @@ describe("Vfs", function(){
 
       it("get a list of scenes", async function(){
         let scene_id = await vfs.createScene("foo");
-        //Force ctime
         let scenes = await vfs.getScenes();
         expect(scenes).to.have.property("length", 1);
-        expect(scenes[0]).to.have.property("ctime").instanceof(Date);
-        expect(scenes[0]).to.have.property("mtime").instanceof(Date);
-        expect(scenes[0]).to.have.property("id", scene_id).a("number");
-        expect(scenes[0]).to.have.property("name", "foo");
+        let scene = scenes[0];
+
+        let props = sceneProps(scene_id);
+        let key:keyof Scene;
+        for(key in props){
+          if(typeof props[key] === "function"){
+            expect(scene).to.have.property(key).instanceof(props[key]);
+          }else{
+            expect(scene).to.have.property(key, props[key]);
+          }
+        }
       });
 
       it("get proper ctime and mtime from last document edit", async function(){
@@ -94,6 +111,7 @@ describe("Vfs", function(){
         expect(scenes[0].ctime.valueOf()).to.equal(t1.valueOf());
         expect(scenes[0].mtime.valueOf()).to.equal(t2.valueOf());
       });
+
       
       describe("with permissions", function(){
         let userManager :UserManager, user :User;
@@ -108,6 +126,15 @@ describe("Vfs", function(){
           expect(await vfs.getScenes(0), `private scene shouldn't be returned to default user`).to.have.property("length", 0);
           expect(await vfs.getScenes(user.uid), `private scene should be returned to its author`).to.have.property("length", 1);
         });
+
+        it("get proper author id and name", async function(){
+          let scene_id = await vfs.createScene("foo", user.uid);
+          await vfs.writeDoc("{}", scene_id, user.uid);
+          let scenes = await vfs.getScenes();
+          expect(scenes).to.have.property("length", 1);
+          expect(scenes[0]).to.have.property("author", user.username);
+          expect(scenes[0]).to.have.property("author_id", user.uid);
+        })
       });
     });
 
@@ -385,13 +412,17 @@ describe("Vfs", function(){
           await expect(vfs.getScene("bar")).to.be.rejectedWith("scene_name");
         })
         it("get a valid scene", async function(){
-          //Force ctime
           let scene = await vfs.getScene("foo");
-          expect(scene).to.have.property("ctime").instanceof(Date);
-          expect(scene).to.have.property("mtime").instanceof(Date);
-          expect(scene).to.have.property("id", scene_id).a("number");
-          expect(scene).to.have.property("name", "foo");
-          expect(scene).to.have.property("author", "default");
+
+          let props = sceneProps(scene_id);
+          let key:keyof Scene;
+          for(key in props){
+            if(typeof props[key] === "function"){
+              expect(scene).to.have.property(key).instanceof(props[key]);
+            }else{
+              expect(scene).to.have.property(key, props[key]);
+            }
+          }
         });
         it("get an empty scene", async function(){
           let id = await vfs.createScene("empty");

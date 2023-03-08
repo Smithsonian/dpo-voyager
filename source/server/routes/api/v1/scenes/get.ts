@@ -3,7 +3,7 @@ import { createHash } from "crypto";
 import { Request, Response } from "express";
 import path from "path";
 import { HTTPError } from "../../../../utils/errors";
-import { getUser, getUserId, getVfs } from "../../../../utils/locals";
+import { getUser, getVfs } from "../../../../utils/locals";
 import { wrapFormat } from "../../../../utils/wrapAsync";
 import { zip } from "../../../../utils/zip";
 
@@ -21,11 +21,14 @@ export default async function getScenes(req :Request, res :Response){
       scenesList.push(n);
     }
   }
+
   if(Array.isArray(names)){
     for(let name of names){
       if(typeof name !== "string") continue;
       scenesList.push(name);
     }
+  }else if(typeof names === "string"){
+    scenesList.push(names);
   }
 
   let scenes :Awaited<ReturnType<typeof vfs.getScenes>>;
