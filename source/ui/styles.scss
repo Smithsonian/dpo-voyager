@@ -75,7 +75,6 @@ nav-link{
 .ff-button.ff-control {
   background: $color-background-light;
   color: white;
-  margin-top: 5px;
 
   svg {
     fill: white;
@@ -149,6 +148,10 @@ nav-link{
       justify-content: stretch;
       flex-direction: row;
     }
+  }
+
+  .ff-button.ff-control{
+    margin-top: 5px;
   }
 
   .divider{
