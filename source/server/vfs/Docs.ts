@@ -40,12 +40,14 @@ export default abstract class DocsVfs extends BaseVfs{
   async getDoc($scene_id :number, generation ?:number) :Promise<DocProps>{
     let r = await this.db.get(`
       SELECT
+        "scene.svx.json" AS name,
         doc_id AS id,
         scenes.ctime AS ctime, 
         documents.ctime AS mtime,
         fk_author_id AS author_id,
         username AS author,
         data,
+        LENGTH(CAST(data AS BLOB)) AS size,
         generation
       FROM documents 
         INNER JOIN scenes
@@ -65,15 +67,44 @@ export default abstract class DocsVfs extends BaseVfs{
     };
   }
 
-  async getDocHistory($scene_id :number) :Promise<DocProps[]>{
-    let r = await this.db.all(`
+  async getDocById(id :number) :Promise<DocProps>{
+    let r = await this.db.get(`
       SELECT
+        "scene.svx.json" AS name,
         doc_id AS id,
         ctime AS ctime, 
         ctime AS mtime,
         fk_author_id AS author_id,
         username AS author,
         data,
+        LENGTH(CAST(data AS BLOB)) AS size,
+        generation
+      FROM documents 
+        INNER JOIN users
+          ON fk_author_id = user_id
+      WHERE doc_id = $id
+      ORDER BY generation DESC
+      LIMIT 1
+    `, {$id: id});
+    if(!r) throw new NotFoundError(`No document for doc_id ${id}`);
+    return {
+      ...r,
+      ctime: BaseVfs.toDate(r.ctime),
+      mtime: BaseVfs.toDate(r.mtime),
+    };
+  }
+
+  async getDocHistory($scene_id :number) :Promise<DocProps[]>{
+    let r = await this.db.all(`
+      SELECT
+      "scene.svx.json" AS name,
+        doc_id AS id,
+        ctime AS ctime, 
+        ctime AS mtime,
+        fk_author_id AS author_id,
+        username AS author,
+        data,
+        LENGTH(CAST(data AS BLOB)) AS size,
         generation
       FROM documents 
         INNER JOIN users

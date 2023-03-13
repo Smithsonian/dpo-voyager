@@ -21,6 +21,7 @@ import patchPermissions from "./scenes/scene/permissions/patch";
 import postUser from "./users/post";
 import handleDeleteUser from "./users/uid/delete";
 import { handlePatchUser } from "./users/uid/patch";
+import { postSceneHistory } from "./scenes/scene/history/post";
 
 
 
@@ -62,6 +63,7 @@ router.post("/scenes/:scene", isUser, wrap(postScene));
 
 router.use("/scenes/:scene", canRead);
 router.get("/scenes/:scene/history", wrap(getSceneHistory));
+router.post("/scenes/:scene/history/:id", wrap(postSceneHistory));
 router.get("/scenes/:scene", wrap(getScene));
 router.get("/scenes/:scene/files", wrap(getFiles));
 router.get("/scenes/:scene/files/:type(articles|images|models)/:file/history", wrap(getFileHistory));

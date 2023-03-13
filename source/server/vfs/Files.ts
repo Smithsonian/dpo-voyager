@@ -119,6 +119,33 @@ export default abstract class FilesVfs extends BaseVfs{
     });
   }
 
+  async getFileById(id :number) :Promise<FileProps>{
+    let r = await this.db.get(`
+      SELECT
+        file_id AS id,
+        size,
+        hash,
+        generation,
+        first.ctime AS ctime,
+        files.ctime AS mtime,
+        type,
+        name,
+        files.fk_author_id AS author_id,
+        username AS author
+      FROM files 
+        INNER JOIN (SELECT MIN(ctime) AS ctime, pathref FROM files GROUP BY pathref ) AS first
+          ON files.pathref = first.pathref
+        INNER JOIN users ON files.fk_author_id = user_id
+      WHERE id = $id
+    `, {$id: id});
+    if(!r || !r.ctime) throw new NotFoundError(`No file found with id : ${id}`);
+    return {
+      ...r,
+      ctime: BaseVfs.toDate(r.ctime), //z specifies the string as UTC != localtime
+      mtime: BaseVfs.toDate(r.mtime),
+    };
+  }
+
   async getFileProps({scene, type, name, archive = false} :GetFileParams) :Promise<FileProps>{
     let is_string = typeof scene === "string";
     let r = await this.db.get(`

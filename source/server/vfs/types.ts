@@ -37,12 +37,14 @@ export interface ItemProps{
   author_id :number;
   author :string;
   id :number;
+  name :string;
 }
+
 /** any item stored in a scene, with a name that identifies it */
 export interface ItemEntry extends ItemProps{
-  name :string;
   generation :number;
   size :number;
+  type: FileType|"documents";
 }
 
 export interface FileProps extends ItemProps{
@@ -59,11 +61,11 @@ export interface GetFileResult extends FileProps{
 
 
 export interface Scene extends ItemProps{
-  name :string;
-  id :number;
 }
 
 export interface DocProps extends ItemProps{
   data: string;
   generation :number;
+  name :"scene.svx.json";
+  size :number;
 }

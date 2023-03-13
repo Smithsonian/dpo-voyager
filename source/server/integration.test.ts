@@ -4,32 +4,24 @@ import {tmpdir} from "os";
 
 import request from "supertest";
 import createServer from "./server";
-import { expect } from "chai";
 import Vfs, { DocProps, WriteFileParams } from "./vfs";
 import User from "./auth/User";
 import { Element, xml2js } from "xml-js";
 import UserManager from "./auth/UserManager";
 
-async function *dataStream(src :Array<Buffer|string> =["foo", "\n"]){
-  for(let d of src){
-    let b = Buffer.isBuffer(d)?d: Buffer.from(d);
-    yield await Promise.resolve(b);
-  }
-}
 
 
 describe("Web Server Integration", function(){
   let vfs :Vfs, userManager :UserManager, user :User, admin :User;
   this.beforeEach(async function(){
-    this.dir = await fs.mkdtemp(path.join(tmpdir(), `eThesaurus_integration_test`));
-    this.server = await createServer(this.dir, {verbose: false, migrate: false, clean:false});
-    vfs = this.server.locals.vfs;
-    userManager = this.server.locals.userManager;
+    let locals = await createIntegrationContext(this);
+    vfs = locals.vfs;
+    userManager = locals.userManager;
     user = await userManager.addUser("bob", "12345678");
     admin = await userManager.addUser("alice", "12345678", true);
   });
   this.afterEach(async function(){
-    await fs.rm(this.dir, {recursive: true});
+    await cleanIntegrationContext(this);
   });
 
   describe("html content", function(){
@@ -46,99 +38,6 @@ describe("Web Server Integration", function(){
       })
     });
   });
-
-  describe("/api/v1/login", function(){
-    it("sets a cookie", async function(){
-      this.agent = request.agent(this.server);
-      await this.agent.post("/api/v1/login")
-      .send({username: user.username, password: "12345678"})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(200)
-      .expect('set-cookie', /session=/);
-    });
-    it("can get login status (not connected)", async function(){
-      await request(this.server).get("/api/v1/login")
-      .set("Accept", "application/json")
-      .expect(200)
-      .expect({isAdministrator:false, isDefaultUser: true});
-    });
-    
-    it("can get login status (connected)", async function(){
-      this.agent = request.agent(this.server);
-      await this.agent.post("/api/v1/login")
-      .send({username: user.username, password: "12345678"})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(200);
-      await this.agent.get("/api/v1/login")
-      .set("Accept", "application/json")
-      .expect(200)
-      .expect({
-        username: user.username, 
-        uid: user.uid,
-        isAdministrator:false,
-        isDefaultUser:false
-      });
-    });
-
-    it("can get login status (admin)", async function(){
-      this.agent = request.agent(this.server);
-      await this.agent.post("/api/v1/login")
-      .send({username: admin.username, password: "12345678"})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(200);
-      await this.agent.get("/api/v1/login")
-      .set("Accept", "application/json")
-      .expect(200)
-      .expect({
-        username: admin.username, 
-        uid: admin.uid,
-        isAdministrator:true,
-        isDefaultUser:false
-      });
-    });
-
-    it("send a proper error if username is missing", async function(){
-      this.agent = request.agent(this.server);
-      let res = await this.agent.post("/api/v1/login")
-      .send({/*no username */ password: "12345678"})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(400);
-      expect(res.body).to.have.property("message").match(/username not provided/);
-    });
-    it("send a proper error if password is missing", async function(){
-      this.agent = request.agent(this.server);
-      let res = await this.agent.post("/api/v1/login")
-      .send({username: user.username /*no password */})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(400);
-      expect(res.body).to.have.property("message").match(/password not provided/);
-    });
-    it("can logout", async function(){
-      let agent = request.agent(this.server);
-      await agent.post("/api/v1/login")
-      .send({username: user.username, password: "12345678"})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(200)
-      .expect('set-cookie', /session=/);
-
-      await agent.post("/api/v1/logout")
-      .expect(200);
-
-      await agent.get("/api/v1/login")
-      .expect(200)
-      .expect({
-        isDefaultUser: true,
-        isAdministrator: false,
-      });
-    });
-  });
-
 
   describe("permissions", function(){
     let scene_id :number;

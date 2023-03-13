@@ -3,7 +3,7 @@ import config from "../utils/config";
 import { ConflictError,  NotFoundError } from "../utils/errors";
 import { Uid } from "../utils/uid";
 import BaseVfs from "./Base";
-import { FileTypes, ItemEntry, ItemProps, Scene } from "./types";
+import { DocProps, FileProps, FileTypes, ItemEntry, ItemProps, Scene } from "./types";
 
 
 
@@ -162,13 +162,14 @@ export default abstract class ScenesVfs extends BaseVfs{
    * @todo handle size limit and pagination
    * @bug 
    */
-  async getSceneHistory(id :number) :Promise<ItemEntry[]>{
+  async getSceneHistory(id :number) :Promise<Array<ItemEntry>>{
 
     let entries = await this.db.all(`
-      SELECT name, id, generation, ctime, username AS author, author_id, size
+      SELECT name, type, id, generation, ctime, username AS author, author_id, size
       FROM(
         SELECT 
-          "scene.svx.json" as name,
+          "scene.svx.json" AS name,
+          "documents" AS type,
           doc_id AS id,
           generation,
           ctime,
@@ -178,7 +179,8 @@ export default abstract class ScenesVfs extends BaseVfs{
         WHERE fk_scene_id = $scene
         UNION ALL
         SELECT
-          type || "/" || name AS name,
+          name,
+          type,
           file_id AS id,
           generation,
           ctime,

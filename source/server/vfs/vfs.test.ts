@@ -479,8 +479,8 @@ describe("Vfs", function(){
           expect(history).to.have.property("length", 4);
           //Couln't easily test ctime sort
           expect(history.map(e=>e.name)).to.deep.equal([
-            "models/foo.glb",
-            "models/foo.glb",
+            "foo.glb",
+            "foo.glb",
             "scene.svx.json",
             "scene.svx.json",
           ])

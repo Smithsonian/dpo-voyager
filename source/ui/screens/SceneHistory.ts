@@ -24,6 +24,7 @@ const AccessTypes = [
 
 interface ItemEntry{
   name :string;
+  type :string;
   id :number;
   generation :number;
   ctime :string;
@@ -179,6 +180,7 @@ class SceneVersion{
         </div>`:null}
       </div>`;
     }
+
     renderPermissions(){
       return html`
         <h2>${this.t("ui.access")}</h2>
@@ -236,7 +238,7 @@ class SceneVersion{
                 <td>${name}</td>
                 <td>${new Date(v.start).toLocaleString()}</td>
                 <td>${authors}</td>
-                <td>${index==0?html`Active`:html`<ff-button class="btn-restore" @click=${this.onRestore} text="Restore"></ff-button>`}</td>
+                <td>${index==0?html`Active`:html`<ff-button class="btn-restore"  @click=${()=>this.onRestore(v.entries.slice(-1)[0])} text="Restore"></ff-button>`}</td>
               </tr>`
             })}
           </tbody>
@@ -268,10 +270,19 @@ class SceneVersion{
       })
     }
 
-    onRestore = (e:MouseEvent)=>{
-      let id = (e.target as HTMLButtonElement).name;
-      Notification.show(`Restoring document to version ${id}...`, "info");
-      //fetch(`/api/v1/scenes/${this.scene}/files/`)
+    onRestore = (i :ItemEntry)=>{
+      console.log("Restore : ", i);
+      let id = i.id
+      Notification.show(`Restoring document to version ${i.type}/${i.name}#${i.generation}...`, "info");
+      this.versions = null;
+      fetch(`/api/v1/scenes/${this.scene}/history/${id}`, {
+        method: "POST",
+      }).then(async (r)=>{
+        if(!r.ok) throw new Error(`Failed to restore [${r.status}]: ${await r.json()}`);
+        Notification.show("Restoration completed.", "info")
+      }).catch(e=>{
+        Notification.show(`Failed to restore : ${e.message}`, 'error');
+      }).finally(()=>this.fetchScene())
     }
 
     async grant(username :string, access :AccessRights["access"]){
