@@ -181,6 +181,17 @@ export default class CVMediaManager extends CAssetManager
         }).catch(e => {});
     }
 
+    uploadFiles(files: FileList, folder: IAssetEntry): Promise<any>
+    {
+        const standaloneManager = this.standaloneFileManager;
+        if(standaloneManager) {
+            ; // TODO - considering removing this support
+        }
+        else {
+            return super.uploadFiles(files, folder);
+        }
+    }
+
     refresh()
     {
         const standaloneManager = this.standaloneFileManager;
