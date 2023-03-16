@@ -103,6 +103,6 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
             this.model.ins.quality.setValue(quality);
             this.model.outs.updated.set();
             this.system.getMainComponent(CSelection).selectNode(this.model.node);
-        }).catch(e=>Notification.show("Failed to add derivative : "+e.message, "error"));
+        }).catch(e=>{if(e) Notification.show("Failed to add derivative : "+e.message, "error")});
     }
 }

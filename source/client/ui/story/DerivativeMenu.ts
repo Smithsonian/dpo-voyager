@@ -107,6 +107,11 @@ export default class DerivativeMenu extends Popup
         </div>`;
     }
 
+    private hasModel = (node :IAssetEntry)=>{
+        return /\.(gltf|glb|usdz)$/.test(node.info.name)
+            || node.children.some(this.hasModel);
+    }
+
     protected render()
     {
         const language = this.system.getComponent(CVLanguageManager);
@@ -142,7 +147,7 @@ export default class DerivativeMenu extends Popup
                 </div>
                 <div class="ff-splitter-section">
                     <div class="ff-scroll-y">
-                        <ff-asset-tree class="ff-flex-item-stretch" .system=${this.system} path=""></ff-asset-tree>
+                        <ff-asset-tree class="ff-flex-item-stretch" .filter=${this.hasModel} .system=${this.system} path=""></ff-asset-tree>
                     </div>
                 </div>
                 <div class="ff-flex-row sv-centered">
