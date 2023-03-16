@@ -21,12 +21,12 @@ import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVAssetManager from "./CVAssetManager";
 import resolvePathname from "resolve-pathname";
 import ExplorerApplication from "client/applications/ExplorerApplication";
-import MainView from "client/ui/story/MainView";
+import MainView from "client/ui/explorer/MainView";
 import CVDocumentProvider from "./CVDocumentProvider";
 import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2 from "./CVModel2";
 import { EDerivativeUsage } from "client/schema/model";
-import CSelection from "client/../../libs/ff-graph/source/components/CSelection";
+import CSelection from "@ff/graph/components/CSelection";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -122,9 +122,9 @@ export default class CVMediaManager extends CAssetManager
             const cleanfileName = decodeURI(file.name);
             const filenameLower = cleanfileName.toLowerCase();
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|png|usdz)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz)$/)) {
 
-                if(!documentProvided && filenameLower.match(/\.(jpg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
+                if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
                 }
 
@@ -133,12 +133,13 @@ export default class CVMediaManager extends CAssetManager
                 normalizedPath = normalizedPath.startsWith("/") ? normalizedPath.substr(1) : normalizedPath;
 
                 if (filenameLower.match(/\.(svx.json)$/)) {
-                    const mainView : MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
-                    const explorer : ExplorerApplication = mainView.app.explorerApp;
+                    const mainView : MainView = document.getElementsByTagName('voyager-explorer')[0] as MainView;
+                    const explorer : ExplorerApplication = mainView.application;
             
                     this.uploadFile(normalizedPath, file, this.root).then(() => {
-                        explorer.loadDocument(normalizedPath);
-                        this.getMainComponent(CVDocumentProvider).refreshDocument();
+                        explorer.loadDocument(normalizedPath).then(() =>
+                            this.getMainComponent(CVDocumentProvider).refreshDocument()
+                        );
                     }); 
                 }
                 else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {

@@ -84,10 +84,6 @@ export default class StoryApplication
         return this.system.getMainComponent(CVDocumentProvider);
     }
 
-    get explorerApp() {
-        return this.explorer;
-    }
-
     constructor(parent: HTMLElement, props?: IStoryApplicationProps)
     {
         // create the embedded explorer application, parse properties, start loading/presenting

@@ -192,7 +192,7 @@ export default class CVStandaloneFileManager extends Component
         if(filenameLower.match(/\.(html)$/)) {
             info.type = "text/html"
         }
-        else if(filenameLower.match(/\.(jpg)$/)) {
+        else if(filenameLower.match(/\.(jpg|jpeg)$/)) {
             info.type = "image/jpeg"
         }
         else if(filenameLower.match(/\.(png)$/)) {
