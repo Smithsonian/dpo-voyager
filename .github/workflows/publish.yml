@@ -10,7 +10,7 @@ env:
   DEPLOY_HOST: ecorpus.holusion.com
 
 concurrency: 
-  group: ${{ github.ref }}
+  group: publish-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   build-and-push:

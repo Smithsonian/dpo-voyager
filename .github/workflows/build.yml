@@ -2,7 +2,7 @@ name: Build and Test
 on:
   push:
 concurrency: 
-  group: ${{ github.ref }}
+  group: build-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   build-ui:
