@@ -34,12 +34,28 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       - name: Build and push
+        id: push
         uses: docker/build-push-action@v4
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-
+      - name: set up ssh configuration
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p "$HOME/.ssh"
+          echo "$PRIVATE_KEY" > "$HOME/.ssh/id_rsa"
+          chmod 600 "$HOME/.ssh/id_rsa"
+          ssh-keyscan -t rsa $DEPLOY_HOST > "$HOME/.ssh/known_hosts"
+      - name: create service
+        run: >
+          docker service --host ssh://github@$DEPLOY_HOST
+          --with-registry-auth create
+          --restart-condition on-failure
+          --restart-max-attempts 2
+          --mount type=volume,source=ecorpus-main,destination=/app/files
+          --name ecorpus
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
     
