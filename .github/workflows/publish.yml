@@ -53,11 +53,7 @@ jobs:
           ssh-keyscan -t rsa $DEPLOY_HOST > "$HOME/.ssh/known_hosts"
       - name: create service
         run: >
-          docker -H ssh://github@$DEPLOY_HOST:22 service create
+          docker -H ssh://github@$DEPLOY_HOST:22 service update
           --with-registry-auth
-          --restart-condition on-failure
-          --restart-max-attempts 2
-          --mount type=volume,source=ecorpus-main,destination=/app/files
-          --name ecorpus
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
-    
+          --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
+          ecorpus
