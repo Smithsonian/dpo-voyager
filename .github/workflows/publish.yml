@@ -43,6 +43,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
+          
       - name: set up ssh configuration
         env:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -51,9 +52,9 @@ jobs:
           echo "$PRIVATE_KEY" > "$HOME/.ssh/id_rsa"
           chmod 600 "$HOME/.ssh/id_rsa"
           ssh-keyscan -t rsa $DEPLOY_HOST > "$HOME/.ssh/known_hosts"
-      - name: create service
+      - name: update service
         run: >
           docker -H ssh://github@$DEPLOY_HOST:22 service update
           --with-registry-auth
           --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
-          ecorpus
+          ecorpus_main
