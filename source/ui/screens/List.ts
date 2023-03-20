@@ -167,7 +167,7 @@ interface Upload{
                     ${this.t("ui.upload")}
                 </upload-button>
                 
-                <a class="ff-button ff-control btn-primary" href="//ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a></task-button>
+                <a class="ff-button ff-control btn-primary" href="/ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a></task-button>
                 
                 ${(this.compact && this.selection.length)?html`<a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
                     this.selection.map(name=>`name=${encodeURIComponent(name)}`).join("&")
