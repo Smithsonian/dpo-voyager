@@ -24,7 +24,6 @@ const AccessTypes = [
 
 interface ItemEntry{
   name :string;
-  type :string;
   id :number;
   generation :number;
   ctime :string;
@@ -272,11 +271,12 @@ class SceneVersion{
 
     onRestore = (i :ItemEntry)=>{
       console.log("Restore : ", i);
-      let id = i.id
-      Notification.show(`Restoring document to version ${i.type}/${i.name}#${i.generation}...`, "info");
+      Notification.show(`Restoring to ${i.name}#${i.generation}...`, "info");
       this.versions = null;
-      fetch(`/api/v1/scenes/${this.scene}/history/${id}`, {
+      fetch(`/api/v1/scenes/${this.scene}/history/`, {
         method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(i)
       }).then(async (r)=>{
         if(!r.ok) throw new Error(`Failed to restore [${r.status}]: ${await r.json()}`);
         Notification.show("Restoration completed.", "info")

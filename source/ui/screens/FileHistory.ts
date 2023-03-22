@@ -56,7 +56,7 @@ interface FileProps extends Scene{
 
     
     async fetchHistory(){
-      return fetch(`/api/v1/scenes/${this.scene}/files/${this.type}/${this.name}/history`).then(async (r)=>{
+      return fetch(`/api/v1/scenes/${this.scene}/files/${this.name}/history`).then(async (r)=>{
         if(!r.ok) throw new Error(`[${r.status}]: ${r.statusText}`);
         this.history = ((await r.json()) as FileProps[]);
         console.log("File History : ", this.history);
