@@ -39,7 +39,7 @@ export default async function open({filename, migrate=true} :DbOptions) :Promise
   
   if(migrate !== false){
     await db.migrate({
-      force: ((migrate === "force")?true: false),
+      force: config.force_migration,
       migrationsPath: config.migrations_path,
     });
   }

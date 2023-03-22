@@ -1,13 +1,12 @@
 
 import { Request, Response } from "express";
 import toCsv from "../../../../../../../../../utils/csv";
-import { getVfs } from "../../../../../../../../../utils/locals";
-import { FileType, GetFileResult } from "../../../../../../../../../vfs";
+import { getFileParams, getVfs } from "../../../../../../../../../utils/locals";
+import { GetFileResult } from "../../../../../../../../../vfs";
 
 export default async function getFileHistory(req :Request, res :Response){
   let vfs = getVfs(req);
-  let { scene, file, type} = req.params;
-  let history = await vfs.getFileHistory({scene, type: type as FileType, name: file});
+  let history = await vfs.getFileHistory(getFileParams(req));
 
   res.format({
     "application/json":()=>res.status(200).send(history),

@@ -6,14 +6,12 @@ const values = {
   port: [8000 as number, toUInt ],
   migrations_path: [ path.join(process.cwd(), "migrations"), toPath],
   templates_path: [ path.join(process.cwd(), "templates"), toPath],
+  force_migration: [false as boolean, toBool],
   root_dir: [ process.cwd(), toPath],
   trust_proxy: [true as boolean, toBool],
   hostname: ["ecorpus.holusion.net", toString],
-  smart_host: ["localhost" as string, toString]
+  smart_host: ["localhost" as string, toString],
 } as const;
-
-type Converter<T> = (s:string)=>T;
-type Conf<T=any> = [T, Converter<T>];
 
 
 type Key = keyof typeof values;
@@ -25,6 +23,7 @@ type Config = {
 function toString(s:string):string{
   return s;
 }
+
 function toPath(s:string):string{
   return path.normalize(s);
 }

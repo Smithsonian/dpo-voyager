@@ -3,7 +3,7 @@ import config from "../utils/config";
 import { ConflictError,  NotFoundError } from "../utils/errors";
 import { Uid } from "../utils/uid";
 import BaseVfs from "./Base";
-import { DocProps, FileProps, FileTypes, ItemEntry, ItemProps, Scene } from "./types";
+import { ItemEntry, Scene } from "./types";
 
 
 
@@ -159,17 +159,17 @@ export default abstract class ScenesVfs extends BaseVfs{
   /**
    * Get every version of anything contained in this scene.
    * This could get quite large...
+   * It doesn't have any of the filters `listFiles` has.
    * @todo handle size limit and pagination
-   * @bug 
+   * @see listFiles for a list of current files.
    */
   async getSceneHistory(id :number) :Promise<Array<ItemEntry>>{
-
     let entries = await this.db.all(`
-      SELECT name, type, id, generation, ctime, username AS author, author_id, size
+      SELECT name, mime, id, generation, ctime, username AS author, author_id, size
       FROM(
         SELECT 
           "scene.svx.json" AS name,
-          "documents" AS type,
+          "application/si-dpo-3d.document+json" AS mime,
           doc_id AS id,
           generation,
           ctime,
@@ -180,7 +180,7 @@ export default abstract class ScenesVfs extends BaseVfs{
         UNION ALL
         SELECT
           name,
-          type,
+          mime,
           file_id AS id,
           generation,
           ctime,
@@ -190,7 +190,7 @@ export default abstract class ScenesVfs extends BaseVfs{
         WHERE fk_scene_id = $scene
       )
       INNER JOIN users ON author_id = user_id
-      ORDER BY ctime DESC, name ASC, generation DESC
+      ORDER BY ctime DESC, name DESC, generation DESC
     `, {$scene: id});
 
     return entries.map(m=>({

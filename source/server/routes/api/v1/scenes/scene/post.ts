@@ -58,7 +58,7 @@ export default async function postScene(req :Request, res :Response){
   let {scene} = req.params;
   let scene_id = await vfs.createScene(scene, user_id);
   try{
-    let f = await vfs.writeFile(req, {user_id, scene: scene, type: "models", name: `${scene}.glb`});
+    let f = await vfs.writeFile(req, {user_id, scene: scene,  mime:"model/gltf-binary", name: `models/${scene}.glb`});
     let document = await getDocument(scene, vfs.filepath(f));
     await vfs.writeDoc(JSON.stringify(document), scene_id, user_id);
   }catch(e){

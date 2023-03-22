@@ -33,6 +33,7 @@ export default abstract class CleanVfs extends BaseVfs{
     let objects = await this.db.all(`SELECT DISTINCT hash AS hash FROM files`);
     let missing = 0;
     for(let object of objects){
+      if(object.hash === "directory" || object.hash === null) continue;
       try{
         await fs.access(this.filepath(object), constants.R_OK)
       }catch(e){

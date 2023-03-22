@@ -3,8 +3,7 @@ import { Request, Response } from "express";
 import path from "path";
 import { getVfs } from "../../../../../utils/locals";
 import { wrapFormat } from "../../../../../utils/wrapAsync";
-import { asyncMap, zip } from "../../../../../utils/zip";
-import { FileProps, FileType, GetFileResult } from "../../../../../vfs";
+import { zip } from "../../../../../utils/zip";
 
 
 
@@ -12,7 +11,7 @@ import { FileProps, FileType, GetFileResult } from "../../../../../vfs";
 export default async function getScene(req :Request, res :Response){
   let vfs = getVfs(req);
   let {scene} = req.params;
-  let {id} = await vfs.getScene(scene);
+  let {id, mtime} = await vfs.getScene(scene);
   await wrapFormat(res, {
     "application/json": async ()=>{
       let doc = await vfs.getDoc(id);
@@ -21,48 +20,22 @@ export default async function getScene(req :Request, res :Response){
     "application/zip": async ()=>{
       
       async function *getFiles(){
-        let files = (await vfs.listFiles(id, false))
+        let folders = await vfs.listFolders(id);
+        let files = (await vfs.listFiles(id, false, true))
         .filter(f=>f.hash);
+
         yield {
           filename: `${scene}/`,
           isDirectory: true,
-          mtime: files.reduce((mtime, file)=> {
-            if(file.mtime.valueOf() < mtime.valueOf() ) return mtime;
-            else return file.mtime;       
-          }, new Date(0))
+          mtime,
         }
-        yield {
-          filename: `${scene}/media/`,
-          isDirectory: true,
-          mtime: files.reduce((mtime, file)=> {
-            if(["images","articles"].indexOf(file.type) == -1) return mtime; 
-            if(file.mtime.valueOf() < mtime.valueOf() ) return mtime;
-            else return file.mtime;       
-          }, new Date(0))
-        }
-        yield {
-          filename: `${scene}/media/images/`,
-          isDirectory: true,
-          mtime: files.reduce((mtime, file)=> {
-            if(file.type == "images") return mtime; 
-            if(file.mtime.valueOf() < mtime.valueOf() ) return mtime;
-            else return file.mtime;       
-          }, new Date(0))
-        }
-        yield {
-          filename: `${scene}/media/articles/`,
-          isDirectory: true,
-          mtime: files.reduce((mtime, file)=> {
-            if(file.type == "articles") return mtime; 
-            if(file.mtime.valueOf() < mtime.valueOf() ) return mtime;
-            else return file.mtime;       
-          }, new Date(0))
-        }
+
         for(let file of files){
-          let f = await vfs.getFile({scene: id, name: file.name, type: file.type});
+          let f = await vfs.getFile({scene: id, name: file.name});
           yield {
-            filename: path.join(scene, f.type, f.name),
+            filename: path.join(scene, f.name),
             mtime: f.mtime,
+            folder: f.mime == "text/directory",
             stream: f.stream,
           }
         }

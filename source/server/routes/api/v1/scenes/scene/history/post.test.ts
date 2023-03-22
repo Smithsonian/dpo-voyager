@@ -9,7 +9,7 @@ import { randomBytes } from "crypto";
 
 
 
-describe("POST /api/v1/scenes/:scene/history/:id", function(){
+describe("POST /api/v1/scenes/:scene/history", function(){
   let vfs :Vfs, userManager :UserManager, user :User, admin :User;
   let titleSlug :string, scene_id :number;
 
@@ -52,10 +52,13 @@ describe("POST /api/v1/scenes/:scene/history/:id", function(){
     let {data} = await vfs.getDocById(point);
     await antidate();
 
-    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history/${point.toString(10)}`)
+    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
+    .set("Content-Type", "application/json")
+    .send({type: "document", id: point })
     .expect("Content-Type", "application/json; charset=utf-8")
     .expect(200);
-    expect(res.body).to.have.property("changes", 1);
+    expect(res.body).to.have.property("changes");
+    expect(Object.keys(res.body.changes)).to.have.property("length", 1);
 
     let docs = await vfs.getDocHistory(scene_id);
     expect(docs).to.have.property("length", 6);
@@ -66,54 +69,65 @@ describe("POST /api/v1/scenes/:scene/history/:id", function(){
 
   it("restores other files in the scene", async function(){
     await vfs.writeDoc(`{"id": 1}`, scene_id);
-    let ref = await vfs.writeFile(dataStream(["hello"]), {type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid });
     await antidate(); //otherwise ordering of files of different names with the same timestamp is unclear
+    let ref = await vfs.writeFile(dataStream(["hello"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
     await vfs.writeDoc(`{"id": 2}`, scene_id);
-    await vfs.writeFile(dataStream(["world"]), {type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid });
+    await vfs.writeFile(dataStream(["world"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
 
-    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history/${ref.id.toString(10)}`)
+    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
+    .set("Content-Type", "application/json")
+    .send({name: ref.name, generation: ref.generation })
     .expect("Content-Type", "application/json; charset=utf-8")
     .expect(200);
-    expect(res.body).to.have.property("changes", 2);
+    expect(res.body).to.have.property("changes");
+    expect(Object.keys(res.body.changes)).to.deep.equal(["scene.svx.json", "articles/hello.txt"]);
     let doc = await vfs.getDoc(scene_id);
     expect(doc).to.have.property("data", `{"id": 1}`);
-    expect(await vfs.getFileProps({name: "hello.txt", type: "articles", scene: scene_id})).to.have.property("hash", ref.hash);
+    expect(await vfs.getFileProps({name: "articles/hello.txt", scene: scene_id})).to.have.property("hash", ref.hash);
   });
 
   it("delete a file if needed", async function(){
     let id = await vfs.writeDoc(`{"id": 1}`, scene_id);
-    await vfs.writeFile(dataStream(["hello"]), {type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid });
+    await antidate();
+    await vfs.writeFile(dataStream(["hello"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
     let ref = await vfs.getDocById(id);
     
-    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history/${id.toString(10)}`)
+    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
+    .set("Content-Type", "application/json")
+    .send({type: "document", id })
     .expect("Content-Type", "application/json; charset=utf-8")
     .expect(200);
-    expect(res.body).to.have.property("changes", 1);
+    
+    expect(res.body).to.have.property("changes");
+    expect(Object.keys(res.body.changes)).to.deep.equal(["articles/hello.txt"]);
 
     let doc = await vfs.getDoc(scene_id);
     expect(doc).to.deep.equal(ref);
-
+    
     let allFiles = await vfs.listFiles(scene_id, true);
-    expect(allFiles).to.have.property("length", 1);
+    expect(allFiles, JSON.stringify(allFiles, null, 2)).to.have.property("length", 1);
     expect(allFiles[0]).to.have.property("hash", null);
     expect(allFiles[0]).to.have.property("size", 0);
   });
 
   it("restore a file to deleted state", async function(){
     await vfs.writeDoc(`{"id": 1}`, scene_id);
-    await vfs.writeFile(dataStream(["hello"]), {type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid });
-    let ref = await  vfs.createFile({type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid }, {hash: null, size: 0});
-    await vfs.writeFile(dataStream(["world"]), {type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid });
+    await antidate();
+    await vfs.writeFile(dataStream(["hello"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
+    let ref = await  vfs.removeFile({mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
+    await vfs.writeFile(dataStream(["world"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
 
     let allFiles = await vfs.listFiles(scene_id, true);
     expect(allFiles).to.have.property("length", 1);
     expect(allFiles[0]).to.have.property("hash" ).ok;
 
-    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history/${ref.id.toString(10)}`)
+    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
+    .set("Content-Type", "application/json")
+    .send({type: "file", id: ref })
     .expect("Content-Type", "application/json; charset=utf-8")
     .expect(200);
-    expect(res.body).to.have.property("changes", 1);
-
+    expect(res.body).to.have.property("changes");
+    expect(Object.keys(res.body.changes)).to.deep.equal(['articles/hello.txt']);
 
     allFiles = await vfs.listFiles(scene_id, true);
     expect(allFiles).to.have.property("length", 1);
@@ -124,11 +138,13 @@ describe("POST /api/v1/scenes/:scene/history/:id", function(){
   });
 
   it("refuses to delete a document", async function(){
-    let ref = await vfs.writeFile(dataStream(["hello"]), {type: "articles", name:"hello.txt", scene: scene_id, user_id: user.uid });
+    let ref = await vfs.writeFile(dataStream(["hello"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
     await antidate();
     await vfs.writeDoc(`{"id": 1}`, scene_id);
 
-    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history/${ref.id.toString(10)}`)
+    let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
+    .set("Content-Type", "application/json")
+    .send({type: "document", id: ref.id })
     .expect("Content-Type", "application/json; charset=utf-8")
     .expect(400);
     

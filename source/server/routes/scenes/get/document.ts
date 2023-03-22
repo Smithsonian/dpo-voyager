@@ -1,7 +1,6 @@
 
 import { getUserId, getVfs } from "../../../utils/locals";
 import { Request, Response } from "express";
-import { FileType } from "../../../vfs";
 import { createHash } from "crypto";
 
 

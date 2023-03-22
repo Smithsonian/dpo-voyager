@@ -63,14 +63,17 @@ export default async function getScenes(req :Request, res :Response){
       async function *getFiles(){
         for(let scene of scenes){
           let root = `scenes/${scene.name}`
-          let files = await vfs.listFiles(scene.id, false);
+          let files = await vfs.listFiles(scene.id, false, true);
+
+
           for(let file of files ){
-            let props = await vfs.getFile({scene:scene.id, name: file.name, type: file.type});
             yield {
-              ...props,
-              filename: path.join("scenes", scene.name, file.type, file.name)
+              ...( file.mime === "text/directory"? file:await vfs.getFile({scene:scene.id, name: file.name})),
+              filename: path.join("scenes", scene.name, file.name),
+              isDirectory: file.mime == "text/directory",
             }
           }
+
           try{
             let sceneDoc = await vfs.getDoc(scene.id);
             yield {

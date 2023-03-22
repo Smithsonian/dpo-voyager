@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import path from "path";
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from "../../../utils/errors";
 import { getFileParams, getUserId, getVfs } from "../../../utils/locals";
-import { FileType } from "../../../vfs";
 
 
 

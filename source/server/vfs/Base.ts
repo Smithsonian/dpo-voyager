@@ -1,7 +1,7 @@
 
 import open, {Database} from "./helpers/db";
 import path from "path";
-import { InternalError } from "../utils/errors";
+import { InternalError, NotFoundError } from "../utils/errors";
 import { FileProps } from "./types";
 
 
@@ -38,7 +38,13 @@ export default abstract class BaseVfs{
   }
   
   public filepath(f :FileProps|string|{hash:string}){
-    return path.join(this.objectsDir, typeof f ==="string"?f:f.hash);
+    if(typeof f ==="string"){
+      return path.join(this.objectsDir, f);
+    }else if(f.hash){
+      return path.join(this.objectsDir, f.hash)
+    }else{
+      throw new NotFoundError(`No file matching ${f}`);
+    }
   }
 
   abstract close() :Promise<any>;

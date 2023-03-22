@@ -6,6 +6,7 @@ import Vfs, { FileProps, GetFileParams, Scene, WriteFileParams } from ".";
 import { Uid } from "../utils/uid";
 import UserManager from "../auth/UserManager";
 import User from "../auth/User";
+import { BadRequestError, ConflictError, NotFoundError } from "../utils/errors";
 
 async function *dataStream(src :Array<Buffer|string> =["foo", "\n"]){
   for(let d of src){
@@ -159,7 +160,7 @@ describe("Vfs", function(){
         });
 
         it("can filter accessible scenes by user_id", async function(){
-          let scene_id = await vfs.createScene("foo", user.uid);
+          await vfs.createScene("foo", user.uid);
           await run(`UPDATE scenes SET access = json_object("0", "none", "${user.uid}", "admin")`);
           expect(await vfs.getScenes(0), `private scene shouldn't be returned to default user`).to.have.property("length", 0);
           expect(await vfs.getScenes(user.uid), `private scene should be returned to its author`).to.have.property("length", 1);
@@ -173,6 +174,56 @@ describe("Vfs", function(){
           expect(scenes[0]).to.have.property("author", user.username);
           expect(scenes[0]).to.have.property("author_id", user.uid);
         })
+      });
+    });
+
+    describe("createFolder(), removeFolder(), listFolders()", function(){
+      let scene_id :number;
+      this.beforeEach(async function(){
+        scene_id = await vfs.createScene("foo", 0);
+      })
+
+      it("create a folder in a scene", async function(){
+        await vfs.createFolder({scene:scene_id, name: "videos", user_id: 0});
+        let folders = await vfs.listFolders(scene_id)
+        expect(folders.map(f=>f.name)).to.deep.equal(["articles", "models", "videos"]);
+      });
+
+      it("create a tree of folders", async function(){
+        await vfs.createFolder({scene:scene_id, name: "articles/videos",  user_id: 0});
+        let folders = await vfs.listFolders(scene_id)
+        expect(folders.map(f=>f.name)).to.deep.equal(["articles", "articles/videos", "models"]);
+      });
+
+      it("throws an error if folder exists", async function(){
+        await vfs.createFolder({scene: scene_id, name: "videos",  user_id: 0});
+        await expect( vfs.createFolder({scene: scene_id, name: "videos",  user_id: 0}) ).to.be.rejectedWith(ConflictError);
+      });
+
+      it("throws an error if folder doesn't exist", async function(){
+        await expect(vfs.removeFolder({scene: scene_id, name: "videos", user_id: 0})).to.be.rejectedWith(NotFoundError);
+      });
+
+      it("remove a scene's folder", async function(){
+        await vfs.createFolder({scene:scene_id, name: "videos", user_id: 0});
+        await vfs.removeFolder({scene: scene_id, name: "videos", user_id: 0});
+        let folders = await vfs.listFolders(scene_id)
+        expect(folders.map(f=>f.name)).to.deep.equal(["articles", "models"]);
+        await vfs.createFolder({scene:scene_id, name: "videos", user_id: 0});
+        folders = await vfs.listFolders(scene_id)
+        expect(folders.map(f=>f.name).sort()).to.deep.equal(["videos", "models", "articles"].sort());
+      });
+
+      it("removeFolder() removes all files in the folder", async function(){
+        let userManager = new UserManager(vfs._db);
+        let user = await userManager.addUser("alice", "xxxxxxxx", false);
+        await vfs.createFolder({scene:scene_id, name: "videos", user_id: 0});
+        await vfs.writeFile(dataStream(), {scene: scene_id, name: "videos/foo.mp4", mime:"video/mp4", user_id: 0});
+
+        await vfs.removeFolder({scene: scene_id, name: "videos", user_id: user.uid });
+
+        let files = await vfs.listFiles(scene_id);
+        expect(files).to.deep.equal([]);
       });
     });
 
@@ -201,21 +252,24 @@ describe("Vfs", function(){
 
       describe("createFile()", function(){
         it("can create an empty file", async function(){
-          let r = await vfs.createFile( {scene: "foo", type: "articles", name: "foo.txt", user_id: 0}, {hash: null, size: 0});
+          let r = await vfs.createFile( {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0}, {hash: null, size: 0});
           expect(r).to.have.property("id");
           expect(r).to.have.property("generation", 1);
-        })
+          expect(r).to.have.property("hash", null);
+        });
+
         it("can create a dummy file", async function(){
-          let r = await vfs.createFile( {scene: "foo", type: "articles", name: "foo.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
+          let r = await vfs.createFile( {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
         })
+
         it("autoincrements generation", async function(){
-          await vfs.createFile( {scene: "foo", type: "articles", name: "foo.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
-          let r = await vfs.createFile( {scene: "foo", type: "articles", name: "foo.txt", user_id: 0}, {hash: "yyyyy", size: 150});
+          await vfs.createFile( {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
+          let r = await vfs.createFile( {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0}, {hash: "yyyyy", size: 150});
           expect(r).to.have.property("generation", 2);
         })
         it("can copy a file", async function(){
-          let foo = await vfs.createFile( {scene: "foo", type: "articles", name: "foo.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
-          let bar = await vfs.createFile( {scene: "foo", type: "articles", name: "bar.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
+          let foo = await vfs.createFile( {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
+          let bar = await vfs.createFile( {scene: "foo", mime: "text/html", name: "articles/bar.txt", user_id: 0}, {hash: "xxxxxx", size: 150});
           expect(bar).to.have.property("id").not.equal(foo.id);
           expect(bar).to.have.property("generation", 1);
           expect(bar).to.have.property("hash", foo.hash);
@@ -225,16 +279,16 @@ describe("Vfs", function(){
       })
       describe("writeFile()", function(){
         it("can upload a file (relative)", async function(){
-          let r = await vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0});
+          let r = await vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0});
           expect(r).to.have.property("id").a("number");
           expect(r).to.have.property("generation", 1);
-          await expect(fs.access(path.join(this.dir, "objects", r.hash)), "can't access object file").to.be.fulfilled;
+          await expect(fs.access(path.join(this.dir, "objects", r.hash as any)), "can't access object file").to.be.fulfilled;
           await expect(empty(this.uploads));
         });
 
         it("can upload a file (absolute)", async function(){
           let r = await expect(
-            vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0})
+            vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0})
           ).to.be.fulfilled;
           expect(r).to.have.property("generation", 1);
           expect(r).to.have.property("id").a("number");
@@ -243,20 +297,20 @@ describe("Vfs", function(){
           await expect(empty(this.uploads));
         });
         it("gets proper generation", async function(){
-          await vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0});
+          await vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0});
           for(let i=2; i < 5; i++){
-            let foo = await vfs.writeFile(dataStream(["bar","\n"]), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0});
+            let foo = await vfs.writeFile(dataStream(["bar","\n"]), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0});
             expect(foo).to.have.property("generation", i);
           }
-          let bar = await vfs.writeFile(dataStream(["bar","\n"]), {scene: "foo", type: "articles", name: "bar.txt", user_id: 0});
+          let bar = await vfs.writeFile(dataStream(["bar","\n"]), {scene: "foo", mime: "text/html", name: "articles/bar.txt", user_id: 0});
           expect(bar).to.have.property("generation", 1);
         });
         it("can upload over an existing file", async function(){
           await expect(
-            vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0})
+            vfs.writeFile(dataStream(["foo","\n"]), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0})
           ).to.eventually.have.property("generation", 1);
           let r = await expect(
-            vfs.writeFile(dataStream(["bar","\n"]), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0})
+            vfs.writeFile(dataStream(["bar","\n"]), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0})
           ).to.be.fulfilled;
 
           expect(r).to.have.property("generation", 2);
@@ -269,7 +323,7 @@ describe("Vfs", function(){
             yield Promise.resolve(Buffer.from("foo"));
             yield Promise.reject(new Error("CONNRESET"));
           }
-          await expect(vfs.writeFile(badStream(), {scene: "foo", type: "articles", name: "foo.txt", user_id: 0})).to.be.rejectedWith("CONNRESET");
+          await expect(vfs.writeFile(badStream(), {scene: "foo", mime: "text/html", name: "articles/foo.txt", user_id: 0})).to.be.rejectedWith("CONNRESET");
           await expect(fs.access(path.join(this.dir, "foo.txt")), "can't access foo.txt").to.be.rejectedWith("ENOENT");
           await expect(empty(this.uploads));
         });
@@ -279,9 +333,9 @@ describe("Vfs", function(){
 
       describe("", function(){
         let r:FileProps, ctime :Date;
-        let props :GetFileParams = {scene: "foo", type: "articles", name: "foo.txt"};
+        let props :GetFileParams = {scene: "foo", name: "articles/foo.txt"};
         this.beforeEach(async function(){
-          r = await vfs.writeFile(dataStream(["foo","\n"]), {...props, user_id: 0} );
+          r = await vfs.writeFile(dataStream(["foo","\n"]), {...props, mime: "text/html", user_id: 0} );
           ctime = r.ctime;
         });
         describe("getFileProps", function(){
@@ -326,6 +380,10 @@ describe("Vfs", function(){
           });
           it("throw 404 error if file doesn't exist", async function(){
             await expect(vfs.getFile({...props, name: "bar.html"})).to.be.rejectedWith("404");
+          });
+
+          it("won't try to open a folder", async function(){
+            await expect(vfs.getFile({scene: props.scene, name: "articles"})).to.be.rejectedWith(BadRequestError);
           });
         });
   
@@ -384,7 +442,8 @@ describe("Vfs", function(){
           it("rename a file", async function(){
             await vfs.renameFile({...props, user_id: 0}, "bar.txt");
             await expect(vfs.getFileProps(props), "old file should not be reported anymore").to.be.rejectedWith("404");
-            await expect(vfs.getFileProps({...props, name: "bar.txt"})).to.be.fulfilled;
+            let file = await expect(vfs.getFileProps({...props, name: "bar.txt"})).to.be.fulfilled;
+            expect(file).to.have.property("mime", "text/html");
           });
           
           it("throw 404 error if file doesn't exist", async function(){
@@ -407,6 +466,18 @@ describe("Vfs", function(){
             await vfs.renameFile({...props, user_id: 0}, "bar.txt");
             //move it back in place after it was deleted
             await vfs.renameFile({...props, name: "bar.txt", user_id: 0}, props.name);
+            let hist = await vfs.getFileHistory(props);
+            expect(hist.map(f=>`${f.name}#${f.generation}: ${f.hash}`)).to.deep.equal([
+              `articles/foo.txt#3: tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw`,
+              `articles/foo.txt#2: null`,
+              `articles/foo.txt#1: tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw`
+            ]);
+            await expect(vfs.getFile({...props, name: "bar.txt"})).to.be.rejectedWith(NotFoundError);
+          });
+          it("can move in a folder", async function(){
+            await vfs.renameFile({...props, user_id: 0}, "articles/bar.txt");
+            await expect(vfs.getFileProps(props)).to.be.rejectedWith(NotFoundError);
+            expect(await vfs.getFileProps({...props, name: "articles/bar.txt"})).to.have.property("hash", "tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw");
           });
         });
       })
@@ -480,25 +551,25 @@ describe("Vfs", function(){
       })
 
       describe("getSceneHistory()", function(){
+        let default_folders = 2
         it("get an ordered history of all writes to a scene", async function(){
-          let fileProps :WriteFileParams = {user_id: 0, scene:scene_id, type: "models", name:"foo.glb"}
+          let fileProps :WriteFileParams = {user_id: 0, scene:scene_id, mime: "model/gltf-binary", name:"models/foo.glb"}
           await vfs.writeFile(dataStream(), fileProps);
           await vfs.writeDoc("{}", scene_id, 0);
           await vfs.writeFile(dataStream(), fileProps);
           await vfs.writeDoc("{}", scene_id, 0);
           let history = await vfs.getSceneHistory(scene_id);
-          expect(history).to.have.property("length", 4);
+          expect(history).to.have.property("length", 4 + default_folders);
           //Couln't easily test ctime sort
           expect(history.map(e=>e.name)).to.deep.equal([
-            "foo.glb",
-            "foo.glb",
             "scene.svx.json",
             "scene.svx.json",
-          ])
-          expect(history.map(e=>e.generation)).to.deep.equal([2,1,2,1]);
-          for(let e of history){
-            expect(e).to.have.property("size").a("number").above(0);
-          }
+            "models/foo.glb",
+            "models/foo.glb",
+            "models",
+            "articles",
+          ]);
+          expect(history.map(e=>e.generation)).to.deep.equal([2,1,2,1,1,1]);
         });
         it("reports proper size for data strings", async function(){
           //By default sqlite counts string length as char length and not byte length
@@ -506,8 +577,8 @@ describe("Vfs", function(){
           expect(str.length).not.to.equal(Buffer.byteLength(str));
           await vfs.writeDoc(str, scene_id, 0);
           let history = await vfs.getSceneHistory(scene_id);
-          expect(history).to.have.property("length", 1);
-          expect(history[0]).to.have.property("size", Buffer.byteLength(str));
+          expect(history).to.have.property("length", 1+ default_folders);
+          expect(history.find(f=>f.name == "scene.svx.json")).to.have.property("size", Buffer.byteLength(str));
         })
         it.skip("supports pagination");
       });
@@ -516,41 +587,46 @@ describe("Vfs", function(){
         let tref = new Date("2022-12-08T10:49:46.196Z");
 
         it("Get files created for a scene", async function(){
-          let f1 = await vfs.writeFile(dataStream(), {user_id: 0, scene:"foo", type: "models", name:"foo.glb"});
-          let f2 = await vfs.writeFile(dataStream(), {user_id: 0, scene:"foo", type: "images", name:"foo.jpg"});
+          let f1 = await vfs.writeFile(dataStream(), {user_id: 0, scene:"foo", mime: "model/gltf-binary", name:"models/foo.glb"});
+          let f2 = await vfs.writeFile(dataStream(), {user_id: 0, scene:"foo",  mime: "image/jpeg", name:"foo.jpg"});
           await run(`UPDATE files SET ctime = $t`, {$t:tref.toISOString()});
           let files = await vfs.listFiles(scene_id);
-          expect(files).to.deep.equal([{
-            size: 4,
-            hash: 'tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw',
-            generation: 1,
-            id: f1.id,
-            name: 'foo.glb',
-            type: 'models',
-            ctime: tref,
-            mtime: tref,
-            author_id: 0,
-            author: "default",
-          },{
-            size: 4,
-            hash: 'tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw',
-            generation: 1,
-            id: f2.id,
-            name: 'foo.jpg',
-            type: 'images',
-            ctime: tref,
-            mtime: tref,
-            author_id: 0,
-            author: "default",
-          }]);
+          expect(files).to.deep.equal([
+            {
+              size: 4,
+              hash: 'tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw',
+              generation: 1,
+              id: f2.id,
+              name: 'foo.jpg',
+              mime: "image/jpeg",
+              ctime: tref,
+              mtime: tref,
+              author_id: 0,
+              author: "default",
+            },{
+              size: 4,
+              hash: 'tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw',
+              generation: 1,
+              id: f1.id,
+              name: 'models/foo.glb',
+              mime: "model/gltf-binary",
+              ctime: tref,
+              mtime: tref,
+              author_id: 0,
+              author: "default",
+            }
+          ]);
         });
 
         it("Groups files versions", async function(){
           let tnext = new Date(tref.getTime()+8000);
-          let f1 = await vfs.writeFile(dataStream(), {user_id: 0, scene:"foo", type: "models", name:"foo.glb"});
-          let f2 = await vfs.writeFile(dataStream(["hello world", "\n"]), {user_id: 0, scene:"foo", type: "models", name:"foo.glb"});
-          await expect(all("SELECT * FROM files")).to.eventually.have.property("length", 2);
+          let originalFiles = (await all("SELECT * FROM files")).length
+          let f1 = await vfs.writeFile(dataStream(["foo", "\n"]), {user_id: 0, scene:"foo",  mime: "model/gltf-binary", name:"models/foo.glb"});
+          let del = await  vfs.createFile({user_id: 0, scene:"foo", mime: "model/gltf-binary", name:"models/foo.glb"}, {hash: null, size: 0});
+          let f2 = await vfs.writeFile(dataStream(["hello world", "\n"]), {user_id: 0, scene:"foo", mime: "model/gltf-binary", name:"models/foo.glb"});
+          await expect(all("SELECT * FROM files")).to.eventually.have.property("length", 3+originalFiles);
           await run(`UPDATE files SET ctime = $t WHERE file_id = $id`, {$t:tref.toISOString(), $id:f1.id});
+          await run(`UPDATE files SET ctime = $t WHERE file_id = $id`, {$t:tref.toISOString(), $id:del.id});
           await run(`UPDATE files SET ctime = $t WHERE file_id = $id`, {$t:tnext.toISOString(), $id:f2.id});
 
           let files = await vfs.listFiles(scene_id);
@@ -558,10 +634,10 @@ describe("Vfs", function(){
           expect(files).to.deep.equal([{
             size: 12,
             hash: 'qUiQTy8PR5uPgZdpSzAYSw0u0cHNKh7A-4XSmaGSpEc',
-            generation: 2,
+            generation: 3,
             id: f2.id,
-            name: 'foo.glb',
-            type: 'models',
+            name: 'models/foo.glb',
+            mime: "model/gltf-binary",
             ctime: tref,
             mtime: tnext,
             author_id: 0,
@@ -570,11 +646,21 @@ describe("Vfs", function(){
         });
 
         it("returns only files that are not removed", async function(){
-          let props :WriteFileParams = {user_id: 0, scene:"foo", type: "models", name:"foo.glb"}
+          let props :WriteFileParams = {user_id: 0, scene:"foo", mime: "model/gltf-binary", name:"models/foo.glb"}
           let f1 = await vfs.writeFile(dataStream(), props);
           await vfs.removeFile(props);
           let files = await vfs.listFiles(scene_id);
           expect(files).to.have.property("length", 0);
+        });
+
+        it("can get a list of archived files", async function(){
+          await vfs.writeFile(dataStream(["foo", "\n"]), {user_id: 0, scene: scene_id, mime: "text/html", name:"articles/hello.txt"});
+          let del = await  vfs.createFile({user_id: 0, scene: scene_id, name:"articles/hello.txt"}, {hash: null, size: 0});
+
+          let files = await vfs.listFiles(scene_id, true);
+          expect(files).to.have.property("length", 1);
+          expect(files[0]).to.have.property("hash", null);
+          expect(files[0]).to.have.property("id", del.id);
         });
       });
       

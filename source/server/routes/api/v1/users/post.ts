@@ -18,5 +18,5 @@ export default async function postUser(req :Request, res :Response){
   if(isAdministrator && typeof isAdministrator !== "boolean") throw new BadRequestError("bad value for admin");
   if(!email) throw new BadRequestError("email not provided");
   let u = await userManager.addUser(username, password, isAdministrator, email);
-  res.status(200).send(User.safe(u));
+  res.status(201).send(User.safe(u));
 };

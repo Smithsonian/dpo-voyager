@@ -12,7 +12,7 @@ describe("Database.beginTransaction()", function(){
   this.beforeEach(async function(){
     db = await open({
       filename: path.join(os.tmpdir(),`${(this.currentTest as any).title.replace(/[^a-zA-Z0-9]/g,"-")}-${uid(5)}.db`),
-      migrate:"force",
+      migrate: true,
     });
     await db.exec(`
       CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT UNIQUE);

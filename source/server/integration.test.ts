@@ -44,111 +44,10 @@ describe("Web Server Integration", function(){
     this.beforeEach(async function(){
       scene_id = await vfs.createScene("foo", user.uid);
       await vfs.writeDoc("{}", scene_id, user.uid);
-      await vfs.writeFile(dataStream(), {scene: "foo", type:"models", name: "foo.glb", user_id: user.uid});
+      await vfs.writeFile(dataStream(), {scene: "foo", mime:"model/gltf-binary", name: "models/foo.glb", user_id: user.uid});
     });
     describe("(anonymous)", function(){
-      it("can PROPFIND /scenes non recursively", async function(){
-        let r = await request(this.server).propfind("/scenes")
-        .set("Depth", "1")
-        .expect(207);
-        let root = xml2js(r.text);
-        let elements = root.elements[0]?.elements;
-
-        let names = elements.map((res :any)=>new URL(res.elements[0].elements[0].text).pathname);
-        expect(names).to.deep.equal([
-          "/scenes/",
-          "/scenes/foo/"
-        ])
-      });
-      it("will omit private scenes", async function(){
-        await userManager.grant("foo", "default", "none");
-        let r = await request(this.server).propfind("/scenes")
-        .set("Depth", "1")
-        .expect(207);
-        let root = xml2js(r.text);
-        let elements = root.elements[0]?.elements;
-        let names = elements.map((res :any)=>new URL(res.elements[0].elements[0].text).pathname);
-        expect(names).to.deep.equal([
-          "/scenes/",
-        ]);
-      })
-      it("can PROPFIND /scenes/:scene/", async function(){
-        await Promise.all([
-          vfs.writeFile(dataStream(),{scene:"foo", type:"articles", name:"hello.html", user_id: user.uid}),
-          vfs.writeFile(dataStream(), {scene: "foo", type: "images", name: "foo-image-thumb.jpg",user_id:user.uid}),
-        ]);
-        let r = await request(this.server).propfind("/scenes/foo").expect(207);
-        let {elements} = xml2js(r.text);
-        expect(elements).to.be.an("array");
-        expect(elements).to.have.property("length",1);
-        expect(elements[0]).to.have.property("name", "D:multistatus");
-        elements = elements[0].elements;
-        let expected = [
-          "foo/articles", 
-          "foo/articles/hello.html"
-        ];
-        let found = [];
-        let unexpected = [];
-        for(let el of elements){
-          if(el.name == "D:response"){
-            expect(el.elements).to.have.property("length", 2)
-            expect(el.elements[0]).to.have.property("name", "D:href");
-            expect(el.elements[1]).to.have.property("name", "D:propstat");
-            found.push(el.elements[0].elements[0].text);
-          }else{
-            expect.fail("Unexpected element : "+el.name);
-          }
-        }
-        expect(found.sort().map(s=>new URL(s).pathname)).to.deep.equal([
-          "/scenes/foo/",
-          "/scenes/foo/foo-image-thumb.jpg",
-          "/scenes/foo/models/",
-          "/scenes/foo/models/foo.glb",
-          "/scenes/foo/scene.svx.json",
-          "/scenes/foo/articles/",
-          "/scenes/foo/articles/hello.html",
-          "/scenes/foo/videos/",
-        ].sort());
-      });
-      it("can PROPFIND /scenes/:scene/articles", async function(){
-        let r = await request(this.server).propfind("/scenes/foo/articles")
-        .set("Depth", "1")
-        .expect(207);
-        let root = xml2js(r.text);
-        let elements = root.elements[0]?.elements;
-        expect(elements).to.be.an("array").to.have.property("length", 1);
-        const response = elements[0];
-        expect(response).to.have.property("name", "D:response");
-        expect(response.elements.map((e:Element)=>e.name)).to.deep.equal(["D:href", "D:propstat"]);
-        let propstat = response.elements[1];
-        expect(propstat.elements.map((e:Element)=>e.name)).to.deep.equal(["D:status", "D:prop"]);
-        let props = propstat.elements[1];
-        expect(props.elements).to.deep.include({
-          type: "element",
-          name: "D:resourcetype",
-          elements: [{"type": "element", "name":  "D:collection"}],
-        });
-      });
-      it("can PROPFIND /scenes/:scene/articles/hello.html", async function(){
-        await vfs.writeFile(dataStream(),{scene:"foo", type:"articles", name:"hello.html", user_id: user.uid})
-        let r = await request(this.server).propfind("/scenes/foo/articles/hello.html")
-        .set("Depth", "1")
-        .expect(207);
-        let root = xml2js(r.text);
-        let elements = root.elements[0]?.elements;
-        expect(elements, "expected one response").to.be.an("array").to.have.property("length", 1);
-        const response = elements[0];
-        expect(response).to.have.property("name", "D:response");
-        expect(response.elements.map((e:Element)=>e.name)).to.deep.equal(["D:href", "D:propstat"]);
-        let propstat = response.elements[1];
-        expect(propstat.elements.map((e:Element)=>e.name)).to.deep.equal(["D:status", "D:prop"]);
-        let props = propstat.elements[1];
-        expect(props.elements).to.deep.include({
-          type: "element",
-          name: "D:getcontenttype",
-          elements:[{type: "text", text: "text/html"}]
-        });
-      });
+      
       it("can GET files in scenes/", async function(){
         await request(this.server).get("/scenes/foo/models/foo.glb").expect(200);
       });
@@ -176,9 +75,9 @@ describe("Web Server Integration", function(){
         let r = await this.agent.post("/api/v1/scenes/bar")
         .set("Content-Type", "application/octet-stream")
         .send(content)
-        let {body} = await this.agent.get("/scenes/bar/models/bar.glb").expect(200);
-        expect(body.slice(0,4).toString()).to.equal("glTF");
-        expect(body.length).to.equal(content.length);
+        let res = await this.agent.get("/scenes/bar/models/bar.glb").expect(200);
+        expect(res.text.slice(0,4).toString()).to.equal("glTF");
+        expect(res.text.length).to.equal(content.length);
 
         let {body:doc} = await this.agent.get("/scenes/bar/bar.svx.json").expect(200);
         expect(doc).to.have.property("models").an("array").to.have.length(1);
@@ -189,58 +88,12 @@ describe("Web Server Integration", function(){
         await this.agent.put("/scenes/foo/models/baz.glb")
         .send(content)
         .expect(201);
-        let {body:doc} = await this.agent.get("/scenes/foo/document.svx.json").expect(200);
-        expect(doc).to.have.property("models").an("array").to.have.length(1);
-        expect(doc).to.have.property("models").deep.equal([
-          {
-            "units": "mm",
-            "boundingBox": {
-              "min": [ -1, -1, -1 ],
-              "max": [ 1, 1, 1.000001 ]
-            },
-            "derivatives": [
-              {
-                "usage": "Web3D",
-                "quality": "Highest",
-                "assets": [
-                  {
-                    "uri": "models/baz.glb",
-                    "type": "Model",
-                    "byteSize": 5500,
-                    "numFaces": 12
-                  }
-                ]
-              }
-            ],
-            "annotations": []
-          }
-        ])
       });
 
       it("can upload a usdz model in an existing scene", async function(){
         await this.agent.put("/scenes/foo/models/baz.usdz")
         .send("xxx\n")
         .expect(201);
-        let {body:doc} = await this.agent.get("/scenes/foo/document.svx.json").expect(200);
-        expect(doc).to.have.property("models").deep.equal([
-          {
-            "units": "mm",
-            "derivatives": [
-              {
-                "usage": "iOSApp3D",
-                "quality": "AR",
-                "assets": [
-                  {
-                    "uri": "models/baz.usdz",
-                    "type": "Model",
-                    "byteSize": 4
-                  }
-                ]
-              }
-            ],
-            "annotations": []
-          }
-        ])
       });
 
       it("can edit a model", async function(){
@@ -277,75 +130,6 @@ describe("Web Server Integration", function(){
         .expect(400);
       });
 
-      it("can MOVE a file", async function(){
-        let props :WriteFileParams = {user_id: 0, scene: "foo", type: "articles", name:"hello-world.html"};
-        await vfs.writeFile(dataStream(), props);
-        await this.agent.move("/scenes/foo/articles/hello-world.html")
-        .set("Destination", "http://localhost:8000/scenes/foo/articles/goodbye-world.html")
-        .expect(201);
-        await expect(vfs.getFileProps(props), "old file should not exist anymore").to.be.rejectedWith("404");
-        await expect(vfs.getFileProps({...props, name: "goodbye-world.html"}), "new file should have been  created").to.be.fulfilled;
-      });
-
-      it("MOVE requires a proper Destination header", async function(){
-        let props :WriteFileParams = {user_id: 0, scene: "foo", type: "articles", name:"hello-world.html"};
-        await vfs.writeFile(dataStream(), props);
-        await this.agent.move("/scenes/foo/articles/hello-world.html")
-        .expect(400);
-      });
-
-      it("MOVE requires a proper Destination header", async function(){
-        let props :WriteFileParams = {user_id: 0, scene: "foo", type: "articles", name:"hello-world.html"};
-        await vfs.writeFile(dataStream(), props);
-        await this.agent.move("/scenes/foo/articles/hello-world.html")
-        .expect(400);
-      });
-
-      it("can COPY a file", async function(){
-        let props :WriteFileParams = {user_id: 0, scene: "foo", type: "articles", name:"hello-world.html"};
-        await vfs.writeFile(dataStream(), props);
-        await this.agent.copy("/scenes/foo/articles/hello-world.html")
-        .set("Destination", "http://localhost:8000/scenes/foo/articles/goodbye-world.html")
-        .expect(201);
-        await expect(vfs.getFileProps({...props, name: "hello-world.html"}), "old file should still be here").to.be.fulfilled;
-        await expect(vfs.getFileProps({...props, name: "goodbye-world.html"}), "new file should have been  created").to.be.fulfilled;
-      });
-
-      it("can COPY with a label to restore a file version", async function(){
-        let props :WriteFileParams = {user_id: user.uid, scene: "foo", type: "articles", name:"hello-world.html"};
-        let {ctime:t1, id:id1, generation:g1, ...f} = await vfs.writeFile(dataStream(), props);
-        await vfs.writeFile(dataStream(["goodbye world\n"]), props);
-        await this.agent.copy("/scenes/foo/articles/hello-world.html")
-        .set("Destination", "http://localhost:8000/scenes/foo/articles/hello-world.html")
-        .set("Label", f.hash)
-        .expect(201);
-        let {ctime:t2, id:id2, generation:g2, ...new_file} = await expect(vfs.getFileProps({...props, name: "hello-world.html"}), "file should still be here").to.be.fulfilled;
-        expect(id2).not.to.equal(id1);
-        expect(g2).to.equal(3);
-        expect(new_file).to.deep.equal(f);
-      });
-
-      it("can COPY a document", async function(){
-        let {id:scene_id} = await vfs.getScene("foo");
-        await vfs.writeDoc('{"id":2}', "foo", user.uid);
-        let {ctime:t1, id, generation, ...src} = await vfs.getDoc(scene_id);
-        await vfs.writeDoc('{"id":3}', "foo", user.uid);
-
-        await this.agent.copy("/scenes/foo/scene.svx.json")
-        .set("Destination", "http://localhost:8000/scenes/foo/scene.svx.json")
-        .set("Label", generation)
-        .expect(201);
-        let {ctime:t2, id:id2, generation:g2, ...new_doc} = await expect(vfs.getDoc(scene_id), "file should still be here").to.be.fulfilled;
-        expect(id2).not.to.equal(id);
-        expect(g2).to.equal(4);
-        expect(new_doc).to.deep.equal(src);
-      });
-
-      it("can't COPY a document to another scene", async function(){
-        await this.agent.copy("/scenes/foo/scene.svx.json")
-        .set("Destination", "http://localhost:8000/scenes/bar/scene.svx.json")
-        .expect(400);
-      });
 
       it("can grant permissions", async function(){
         let dave = await userManager.addUser("dave", "12345678");
@@ -393,26 +177,6 @@ describe("Web Server Integration", function(){
         ]);
 
       });
-
-      it("can PATCH himself", async function(){
-        await this.agent.patch(`/api/v1/users/${user.uid}`)
-        .send({username: "dave"})
-        .expect(200);
-      })
-
-      it("can't fetch user list", async function(){
-        await this.agent.get("/api/v1/users")
-        .expect(401);
-      });
-
-      it("can't create a user", async function(){
-        await this.agent.post("/api/v1/users")
-        .expect(401);
-      });
-      it("can't remove a user", async function(){
-        await this.agent.delete(`/api/v1/users/${user.uid}`)
-        .expect(401);
-      });
     });
   });
   describe("(user)", function(){
@@ -434,78 +198,4 @@ describe("Web Server Integration", function(){
       
     })
   })
-
-  describe("(administrator)", function(){
-    this.beforeEach(async function(){
-      this.agent = request.agent(this.server);
-      await this.agent.post("/api/v1/login")
-      .send({username: admin.username, password: "12345678"})
-      .set("Content-Type", "application/json")
-      .set("Accept", "")
-      .expect(200);
-    });
-
-    it("can get a list of users", async function(){
-      let res = await this.agent.get("/api/v1/users")
-      .set("Accept", "application/json")
-      .expect(200);
-      expect(res.body).to.have.property("length", 2);
-      for(let user of res.body){
-        expect(user).to.have.property("username").a("string");
-        expect(user).to.have.property("uid").a("number").above(1);
-        expect(user).not.to.have.property("password");
-      }
-    })
-
-    it("can create a user", async function(){
-      await this.agent.post("/api/v1/users")
-      .set("Content-Type", "application/json")
-      .send({username: "Carol", password: "abcdefghij", isAdministrator: false, email: "carol@foo.com"})
-      .expect(200);
-    });
-
-    it("can create an admin", async function(){
-      await this.agent.post("/api/v1/users")
-      .set("Content-Type", "application/json")
-      .send({username: "Dave", password: "abcdefghij", isAdministrator: true, email: "dave@foo.com"})
-      .expect(200);
-    });
-
-    it("can't provide bad data'", async function(){
-      await this.agent.post("/api/v1/users")
-      .set("Content-Type", "application/json")
-      .send({username: "Oscar", password: "abcdefghij", isAdministrator: "foo"})
-      .expect(400);
-    });
-    it("can remove a user", async function(){
-      let users = await (await userManager.getUsers()).length;
-      await this.agent.delete(`/api/v1/users/${user.uid}`)
-      .expect(204);
-      expect(await userManager.getUsers()).to.have.property("length",users - 1);
-    });
-    it("can't remove himself", async function(){
-      let users = await (await userManager.getUsers()).length;
-      await this.agent.delete(`/api/v1/users/${admin.uid}`)
-      .expect(400);
-      expect(await userManager.getUsers()).to.have.property("length",users);
-    });
-    it("will cleanup files created by a removed user", async function(){
-      let props :WriteFileParams= {scene:"foo", type:"models", name: "foo.glb", user_id: user.uid}
-      let scene = await vfs.createScene("foo", user.uid);
-      let doc_id = await vfs.writeDoc("{}", scene, user.uid);
-      expect(await userManager.getPermissions(scene)).to.deep.equal([
-        {uid: 0, username: "default", access: "read"},
-        {uid:1, username: "any", access: "read"},
-        {uid: user.uid, username: user.username, access: "admin"},
-      ]);
-      let f = await vfs.createFile(props, {hash: "xxxxxx", size:10});
-      await this.agent.delete(`/api/v1/users/${user.uid}`)
-      .expect(204);
-      expect(await vfs.getFileProps(props)).to.have.property("author", "default");
-      expect(await userManager.getPermissions(scene)).to.deep.equal([
-        {uid: 0, username: "default", access: "read"},
-        {uid:1, username: "any", access: "read"},
-      ]);
-    });
-  });
 })

@@ -1,8 +1,9 @@
 
 import { NextFunction, Request, RequestHandler, Response } from "express";
+import {basename, dirname} from "path";
 import User, { SafeUser } from "../auth/User";
 import UserManager, { AccessType, AccessTypes } from "../auth/UserManager";
-import Vfs, { FileTypes, GetFileParams, isFileType } from "../vfs";
+import Vfs, { GetFileParams } from "../vfs";
 import { BadRequestError, ForbiddenError, HTTPError, InternalError, UnauthorizedError } from "./errors";
 
 export interface AppLocals extends Record<string, any>{
@@ -35,10 +36,25 @@ export function isUser(req: Request, res:Response, next :NextFunction){
   else next(new UnauthorizedError());
 }
 
+/**
+ * Special case to allow user creation if no user exists in the database
+ */
+export function isAdministratorOrOpen(req: Request, res:Response, next :NextFunction){
+  isAdministrator(req, res, (err)=>{
+    if(!err) return next();
+    Promise.resolve().then(async ()=>{
+      let userManager = getUserManager(req);
+      let users = (await userManager.getUsers());
+      if(users.length == 0) return;
+      else throw err;
+    }).then(()=>next(), next);
+  });
+}
+
 export function isAdministrator(req: Request, res:Response, next :NextFunction){
   res.append("Cache-Control", "private");
   
-  if((req.session as User).isAdministrator || req.app.locals.isOpen) next();
+  if((req.session as User).isAdministrator) next();
   else next(new UnauthorizedError());
 }
 
@@ -53,7 +69,7 @@ function _perms(check:number,req :Request, res :Response, next :NextFunction){
 
   res.append("Cache-Control", "private");
 
-  if(isAdministrator || (req.app as any).isOpen === true) return next();
+  if(isAdministrator) return next();
   
   let userManager = getUserManager(req);
   (res.locals.access? Promise.resolve(res.locals.access):
@@ -91,11 +107,11 @@ export function getUserId(req :Request){
 }
 
 export function getFileParams(req :Request):GetFileParams{
-  let {scene, type, file} = req.params;
+  let {scene, name} = req.params;
   if(!scene) throw new BadRequestError(`Scene parameter not provided`);
-  if(!isFileType(type)) throw new BadRequestError(`Bad file type ${type}`);
-  if(!file) throw new BadRequestError(`File parameter not provided`);
-  return {scene, type, name:file};
+  if(!name) throw new BadRequestError(`File parameter not provided`);
+
+  return {scene, name};
 }
 
 export function getVfs(req :Request){

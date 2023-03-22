@@ -33,10 +33,10 @@ global.createIntegrationContext = async function(c :Mocha.Context){
   let {default:createServer} = await import("./server");
   let titleSlug = c.currentTest?.title.replace(/[^\w]/g, "_") ?? `eThesaurus_integration_test`;
   c.dir = await fs.mkdtemp(path.join(tmpdir(), titleSlug));
-  c.server = await createServer(c.dir, {verbose: false, migrate: false, clean:false});
+  c.server = await createServer(c.dir, {verbose: false, migrate: true, clean:false});
   return c.server.locals;
 }
 
 global.cleanIntegrationContext = async function(c :Mocha.Context){
-  await fs.rm(c.dir, {recursive: true});
+  if(c.dir) await fs.rm(c.dir, {recursive: true});
 }

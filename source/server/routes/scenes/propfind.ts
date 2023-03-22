@@ -2,7 +2,23 @@ import { Request, RequestHandler, Response } from "express";
 import xml from 'xml-js';
 import path from "path";
 import { AppLocals, getHost, getUser } from "../../utils/locals";
-import Vfs, { FileProps, FileType, ItemProps } from "../../vfs";
+import Vfs, { FileProps, ItemProps } from "../../vfs";
+
+interface ElementProps{
+  ctime:Date;
+  mtime:Date;
+  isDirectory ?:boolean;
+}
+
+interface DirElementProps extends ElementProps{
+  isDirectory :true;
+}
+
+interface FileElementProps extends ElementProps{
+  size :number;
+  mime :string;
+}
+
 
 type DavTAG = "D:href"|"D:response"|"D:propstat"|"D:href"|"D:status"|"D:prop"|"D:getlastmodified"|"D:creationdate"|"D:displayname"|"D:lockdiscovery"|"D:supportedlock"|"D:resourcetype"|"D:getcontentlength"|"D:getcontenttype"|"D:collection"
 
@@ -25,9 +41,12 @@ class Element{
       ]
     };
   }
-  static fromProps(filename :string, props :ItemProps|FileProps, isDirectory:boolean = false) :Element{
+
+
+
+  static fromProps(filename :string, props :FileElementProps|DirElementProps|ElementProps) :Element{
     if(typeof props.mtime.toUTCString != "function") console.log("from props : ", filename, props);
-    let infos :ElementList=  [
+    let infos :ElementList =  [
       {
         "type": "element",
         "name": "D:getlastmodified",
@@ -45,7 +64,7 @@ class Element{
           }
         ]
       },
-      (isDirectory?{
+      (("isDirectory" in props && props.isDirectory)?{
         "type": "element",
         "name": "D:resourcetype",
         "elements": [{"type": "element", "name":  "D:collection"}]
@@ -73,28 +92,14 @@ class Element{
         ]
       })
     }
-    if('type' in props ){
-      let contentType :string = "application/octet-stream";
-      if(props.type === "articles"){
-        contentType = "text/html"; 
-      }else if(props.type === "images"){
-        if(/\.jpe?g$/i.test(props.name)){
-          contentType = "image/jpeg";
-        }else if(/\.png$/i.test(props.name)){
-          contentType = "image/png";
-        }else if(/\.webp$/i.test(props.name)){
-          contentType = "image/webp";
-        }
-      }else if(props.type =="models"){
-        contentType = "model/gltf-binary";
-      }
+    if('mime' in props && !(props as any).isDirectory ){
       infos.push({
         "type": "element",
         "name": "D:getcontenttype",
         "elements": [
           {
             "type": "text",
-            "text": contentType,
+            "text": props.mime,
           }
         ]
       })
@@ -107,7 +112,7 @@ class Element{
       "elements": infos
     }
   }
-  static fromFile(href :URL, stats :ItemProps, isDirectory :boolean = false) :Element{
+  static fromFile(href :URL, stats :FileElementProps|DirElementProps|ElementProps) :Element{
     return {
       "type": "element",
       "name": "D:response",
@@ -127,7 +132,7 @@ class Element{
           "name": "D:propstat",
           "elements": [ 
             Element.fromOK(),
-            Element.fromProps(path.basename(href.toString()), stats, isDirectory),
+            Element.fromProps(path.basename(href.toString()), stats),
           ]
         },
       ]
@@ -142,40 +147,32 @@ interface TextElement{
 async function getSceneFiles(vfs:Vfs, rootUrl:URL, scene_name:string, recurse:number){
   let elements :ElementList = [];
   let scene = await vfs.getScene(scene_name);
-  let files :Record<FileType,FileProps[]> = (await vfs.listFiles(scene.id)).reduce((o, f)=>{
-    o[f.type].push(f);
-    return o;
-  }, ({models:[], images:[], articles:[]} as any));
+
   let sceneUrl = new URL(path.join("scenes", scene_name)+"/", rootUrl);
-  elements.push(Element.fromFile(sceneUrl, scene, true));
+  elements.push(Element.fromFile(sceneUrl, {...scene, isDirectory: true}));
+
   if(recurse <= -1 || 2 <= recurse ){
+
+    let files :FileProps[] = await vfs.listFiles(scene.id, false, true);
+    
     elements.push(
-      Element.fromFile(new URL(`scene.svx.json`, sceneUrl), scene, false),
-      ...files.models.map(f=> Element.fromFile(
-        new URL(path.join("models", f.name), sceneUrl),
-        f
-      )),
-      ...files.images.map(f=> Element.fromFile(
-        new URL(f.name, sceneUrl),
-        f
-      )),
+      Element.fromFile(new URL(`scene.svx.json`, sceneUrl),  {...scene}),
+      ...files.filter(f => recurse <= -1 || f.name.split("/").length +1 <= recurse ).map(f => {
+        let isDirectory =  f.mime == "text/directory"
+        return Element.fromFile(
+          new URL(f.name + (isDirectory? "/": ""), sceneUrl),
+          {
+            ctime: f.ctime,
+            mtime: f.mtime,
+            size: f.size,
+            isDirectory,
+            mime: f.mime,
+          }
+        );
+      }),
     )
   }
-  if(recurse <= -1|| 3 <= recurse){
-    elements.push(
-      Element.fromFile(new URL("articles/", sceneUrl), scene, true),
-      Element.fromFile(new URL("videos/", sceneUrl), scene, true),
-      Element.fromFile(new URL("models/", sceneUrl), scene, true),
-    )
-  }
-  if(recurse <= -1|| 5 <= recurse){
-    elements.push(
-      ...files.articles.map(f=> Element.fromFile(
-        new URL(path.join("articles", f.name), sceneUrl),
-        f
-      ))
-    )
-  }
+
   return elements;
 }
 
@@ -183,12 +180,13 @@ async function getScenes(vfs :Vfs, rootUrl:URL, recurse :number, user_id ?:numbe
   let scenes = await vfs.getScenes(user_id);
   let elements = (await Promise.all(scenes.map(m=> getSceneFiles(vfs, rootUrl, m.name, recurse-1)))).flat();
   let stats = {
+    isDirectory: true,
     author: "default",
     author_id: 0,
     ctime: scenes.reduce((ref, m)=> ((ref < m.ctime)?ref : m.ctime), scenes[0]?.ctime ?? new Date()),
     mtime: scenes.reduce((ref, m)=> ((m.mtime < ref)?ref : m.mtime), scenes[0]?.mtime ?? new Date()),
   }
-  elements.unshift(Element.fromFile(new URL("scenes/", rootUrl), stats as ItemProps, true));
+  elements.unshift(Element.fromFile(new URL("scenes/", rootUrl), stats));
   return elements;
 }
 
@@ -220,6 +218,7 @@ export async function handlePropfind(req :Request, res:Response){
     let uri = new URL(href, ).pathname;
     return uri.indexOf(p) !==-1;
   });
+
   res.set({
     "DAV": "1,2",
     "Content-Type": "application/xml;charset=utf-8",

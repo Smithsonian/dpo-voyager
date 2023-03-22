@@ -12,7 +12,6 @@ import {AppLocals, getHost} from "./utils/locals";
 
 import openDatabase from './vfs/helpers/db';
 import Vfs from "./vfs";
-import importAll from "./vfs/helpers/import";
 import config from "./utils/config";
 
 
@@ -28,7 +27,7 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   const docDir = path.resolve(rootDir, "source/docs/");
 
   await Promise.all([fileDir].map(d=>mkdir(d, {recursive: true})));
-  let db = await openDatabase({filename: path.join(fileDir, "database.db"), migrate: true});
+  let db = await openDatabase({filename: path.join(fileDir, "database.db"), migrate: migrate});
   const vfs = await Vfs.Open(fileDir, {db});
   const userManager = new UserManager(db);
 
@@ -37,13 +36,6 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   app.disable('x-powered-by');
   app.set("trust proxy", config.trust_proxy);
 
-  // MIGRATION FROM WEBDAV
-  if((migrate && ((await userManager.userCount())) <= 2)){
-    await importAll(fileDir, fileDir);
-    console.log("Application is in open mode");
-    app.locals.isOpen = true; //Allow arbitrary users creation
-  }
-  // END OF MIGRATION
 
   if(clean) setTimeout(()=>{
     //Clean file system after a while to prevent delaying startup

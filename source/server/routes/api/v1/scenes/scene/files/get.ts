@@ -2,7 +2,6 @@
 import { Request, Response } from "express";
 import toCsv from "../../../../../../utils/csv";
 import { getVfs } from "../../../../../../utils/locals";
-import { FileType, GetFileResult } from "../../../../../../vfs";
 
 
 

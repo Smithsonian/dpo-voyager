@@ -4,7 +4,7 @@ import { Router } from "express";
 import User from "../../../auth/User";
 import UserManager from "../../../auth/UserManager";
 import { BadRequestError } from "../../../utils/errors";
-import { canAdmin, canRead, getUserManager, isAdministrator, isUser } from "../../../utils/locals";
+import { canAdmin, canRead, getUserManager, isAdministrator, isAdministratorOrOpen, isUser } from "../../../utils/locals";
 import wrap from "../../../utils/wrapAsync";
 import bodyParser from "body-parser";
 import { getLogin, getLoginLink, sendLoginLink, postLogin } from "./login";
@@ -58,7 +58,7 @@ router.get("/users", isAdministrator, wrap(async (req, res)=>{
   res.status(200).send(users);
 }));
 
-router.post("/users", isAdministrator, bodyParser.json(), wrap(postUser));
+router.post("/users", isAdministratorOrOpen, bodyParser.json(), wrap(postUser));
 router.delete("/users/:uid", isAdministrator, wrap(handleDeleteUser));
 router.patch("/users/:uid", bodyParser.json(), wrap(handlePatchUser));
 
@@ -67,7 +67,7 @@ router.post("/scenes/:scene", isUser, wrap(postScene));
 
 router.use("/scenes/:scene", canRead);
 router.get("/scenes/:scene/history", wrap(getSceneHistory));
-router.post("/scenes/:scene/history/:id", wrap(postSceneHistory));
+router.post("/scenes/:scene/history", bodyParser.json(), wrap(postSceneHistory));
 router.get("/scenes/:scene", wrap(getScene));
 router.get("/scenes/:scene/files", wrap(getFiles));
 router.get("/scenes/:scene/files/:type(articles|images|models)/:file/history", wrap(getFileHistory));
