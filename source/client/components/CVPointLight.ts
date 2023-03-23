@@ -51,7 +51,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
     }
 
     dispose(): void {
-        if(this.ins.shadowEnabled.value) {
+        if(this.ins.shadowEnabled.value && this.light.shadow.map) {
             this.light.shadow.map.dispose();
         }
 

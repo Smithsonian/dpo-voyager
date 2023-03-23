@@ -50,7 +50,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
     }
 
     dispose(): void {
-        if(this.ins.shadowEnabled.value) {
+        if(this.ins.shadowEnabled.value && this.light.shadow.map) {
             this.light.shadow.map.dispose();
         }
 
