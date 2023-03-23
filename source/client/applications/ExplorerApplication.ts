@@ -139,8 +139,6 @@ Version: ${ENV_VERSION}
     constructor(parent: HTMLElement, props?: IExplorerApplicationProps, embedded?: boolean)
     {
         this.props = props || {};
-        console.log(ExplorerApplication.splashMessage);
-
         // register components
         const registry = new TypeRegistry();
 
