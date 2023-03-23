@@ -34,6 +34,7 @@ import 'tinymce/plugins/link';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/image';
 import 'tinymce/plugins/media';
+import 'tinymce/plugins/code';
 
 /* Import content css */
 import contentUiCss from '!!raw-loader!./editor_css/content.ui.min.css';
@@ -202,8 +203,8 @@ export default class ArticleEditor extends SystemView
 
         tinymce.init({
             selector: "#editor_wrapper",
-            plugins: "image link lists media",
-            toolbar: 'saveButton closeButton | undo redo | link image media | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | styles',
+            plugins: "image link lists media code",
+            toolbar: 'saveButton closeButton | undo redo | link image media | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | styles |code',
             menubar: false,
             skin: false,
             height: "100%",
