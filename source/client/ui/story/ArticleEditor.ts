@@ -221,7 +221,24 @@ export default class ArticleEditor extends SystemView
                 this.mediaManager.uploadFile(filename, file.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
                     then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename))});
             }),
-
+            file_picker_callback: (callback, value, meta) =>{
+                const mediaManager = this.mediaManager;
+                const assetManager = this.assetManager;
+                let accept = meta.filetype == "image"?"image/*":"video/*";
+                let input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', accept);
+                input.onchange = function () {
+                    let file = input.files[0];
+                    Notification.show("Started file upload", "info");
+                    mediaManager.uploadFile(file.name, file, mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
+                    then( () => { 
+                        callback(assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + file.name), {title: file.name});
+                        Notification.show("File uploaded", "info");
+                    });
+                };
+                input.click();
+            },
             init_instance_callback: (editor) => {
                 editor.editorUpload.addFilter((img) => {
                     const blobInfo = editor.editorUpload.blobCache.getByUri(img.src);
