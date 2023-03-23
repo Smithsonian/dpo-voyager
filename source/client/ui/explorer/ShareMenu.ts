@@ -22,6 +22,7 @@ import "@ff/ui/TextEdit";
 import TextEdit from "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import { DEFAULT_LANGUAGE, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,8 +50,10 @@ export default class ShareMenu extends Popup
         this.language = language;
         this.position = "center";
         this.modal = true;
-
-        this.url = window.location.href;
+        let match = /\/scenes\/([^/]+).*?/.exec(window.location.href); 
+        let u = new URL((match?`/scenes/${match[1]}/view`:""), window.location.href);
+        u.searchParams.set("lang", ELanguageType[language.ins.language.value]);
+        this.url = u.toString();
     }
 
     close()
@@ -69,13 +72,13 @@ export default class ShareMenu extends Popup
     protected render()
     {
         const url = encodeURIComponent(this.url);
-        const title = encodeURI("Check out this interactive 3D model with Smithsonian Voyager:");
+        const title = encodeURI("Check out this interactive 3D model with eCorpus Voyager:");
         const language = this.language;
 
         const twitterShareUrl = `http://twitter.com/share?text=${title}&url=${url}`;
         const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
         const linkedInShareUrl = `https://www.linkedin.com/shareArticle?url=${url}&mini=true&title=${title}`;
-        const iFrameEmbedCode = `<iframe name="Smithsonian Voyager" src="${this.url}" width="800" height="450" allow="xr; xr-spatial-tracking; fullscreen"></iframe>`;
+        const iFrameEmbedCode = `<iframe name="eCorpus Voyager" src="${this.url}" width="800" height="450" allow="xr; xr-spatial-tracking; fullscreen"></iframe>`;
 
         const emailUrl = `mailto:?subject=${title}&body=${url}`;
 
