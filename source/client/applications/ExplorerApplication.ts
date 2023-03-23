@@ -358,7 +358,10 @@ Version: ${ENV_VERSION}
             // if nothing else specified, try to read "scene.svx.json" from the current folder
             this.loadDocument("scene.svx.json", undefined)
             .then(() => this.postLoadHandler(props))
-            .catch(() => {});
+            .catch((e) => {
+                console.error(e);
+                Notification.show(`Error loading document : ${e.message}`, "error");
+            });
         }
     }
 
