@@ -15,7 +15,6 @@ import "./screens/List";
 import "./screens/Admin";
 import "./screens/SceneHistory";
 import "./screens/FileHistory";
-import "./screens/DocScreen";
 import "./screens/UserSettings";
 import "./composants/Modal";
 
@@ -49,8 +48,6 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   @route()
   static "/ui/scenes/" =({search})=> html`<corpus-list .compact=${(search as URLSearchParams).has("compact")}></corpus-list>`;
   @route()
-  static "/ui/doc/.*" = ()=> html`<doc-screen path="/ui/doc/"></doc-screen>`;
-  @route()
   static "/ui/user/" = ()=> html`<user-settings></user-settings>`
   @route()
   static "/ui/users/" = ()=> html`<users-list></users-list>`;
@@ -68,7 +65,7 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   render() {
     return html`
       <corpus-navbar>
-        <nav-link href="/ui/doc" text="Documentation" transparent></nav-link>
+        <nav-link href="https://ethesaurus.holusion.com" text="Documentation" transparent></nav-link>
         ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users" transparent></nav-link>`:""}
         <div class="divider"></div>
         <user-button .user=${this.user}></user-button>
