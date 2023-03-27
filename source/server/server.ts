@@ -56,7 +56,8 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
     name: 'session',
     keys: await userManager.getKeys(),
     // Cookie Options
-    maxAge: 31 * 24 * 60 * 60 * 1000 // 1 month
+    maxAge: 31 * 24 * 60 * 60 * 1000, // 1 month
+    sameSite: "strict"
   }));
 
 
