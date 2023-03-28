@@ -18,6 +18,9 @@ export default class AdminStatsScreen extends i18n(LitElement) {
   @property({attribute: false})
   stats :Record<string, Record<string, any>>;
 
+  @property({attribute: false})
+  scenes :{mtime:string, name:string}[] =[];
+
   fetchStats(){
     fetch("/api/v1/stats", {
       headers:{"Accept":"application/json"}
@@ -31,6 +34,27 @@ export default class AdminStatsScreen extends i18n(LitElement) {
     });
   }
 
+  fetchScenes(){
+    fetch("/api/v1/scenes", {
+      headers:{"Accept":"application/json"}
+    }).then(async r=>{
+      let b = await r.json();
+      if(!r.ok) throw new Error(b.message);
+      let now = new Date();
+      now.setHours(0,0,0,0);
+
+      this.scenes = b.filter(scene=>{
+        return now.valueOf() < new Date(scene.mtime).valueOf();
+      });
+    }).catch(e=>{
+      console.error(e);
+      Notification.show(`Failed to fetch server stats : ${e.message}`, "error");
+    });
+  }
+
+
+
+
   createRenderRoot() {
     return this;
   }
@@ -38,6 +62,7 @@ export default class AdminStatsScreen extends i18n(LitElement) {
   public connectedCallback(): void {
     super.connectedCallback();
     this.fetchStats();
+    this.fetchScenes();
   }
 
   protected render(): unknown {
@@ -45,7 +70,7 @@ export default class AdminStatsScreen extends i18n(LitElement) {
       return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`
     }
     return html`<div style="max-width:1200px; margin: auto;">
-      <h1>Server Statistics</h1>
+      <h2>Server Statistics</h2>
       <h3>Files statistics</h3>
       <ul>
         <li>Total number of scenes: ${this.stats.files.scenes}</li>
@@ -59,6 +84,10 @@ export default class AdminStatsScreen extends i18n(LitElement) {
         <li>Load average (1 min): ${Math.floor(100*this.stats.process.load[0] / this.stats.process.cores)}%</li>
         <li>Load average (15 min): ${Math.floor(100*this.stats.process.load[2] / this.stats.process.cores)}%</li>
       </ul>
+      ${this.scenes?.length? html`<h2>Scenes modified today :</h2>
+      <ul>
+      ${this.scenes.map(scene=>html`<li><a href="/ui/scenes/${scene.name}/">${scene.name} (${new Date(scene.mtime).toLocaleString(this.language)})</a></li>`)}
+      </ul>`: null}
     </div>`;
   }
 }
