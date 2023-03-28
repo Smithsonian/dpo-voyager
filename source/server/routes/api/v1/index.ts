@@ -22,6 +22,7 @@ import postUser from "./users/post";
 import handleDeleteUser from "./users/uid/delete";
 import { handlePatchUser } from "./users/uid/patch";
 import { postSceneHistory } from "./scenes/scene/history/post";
+import handleGetStats from "./stats";
 
 
 
@@ -35,6 +36,9 @@ router.use((req, res, next)=>{
   res.set("Cache-Control", "max-age=0, must-revalidate");
   next();
 })
+
+router.get("/stats", isAdministrator, wrap(handleGetStats));
+
 router.use("/login", (req, res, next)=>{
   res.append("Cache-Control", "private");
   next();

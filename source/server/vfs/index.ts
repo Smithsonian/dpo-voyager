@@ -8,6 +8,7 @@ import FilesVfs from "./Files";
 import DocsVfs from "./Docs";
 import ScenesVfs from "./Scenes";
 import CleanVfs from "./Clean";
+import StatsVfs from "./Stats";
 
 export * from "./types";
 
@@ -45,8 +46,8 @@ class Vfs extends BaseVfs{
   }
 }
 
-interface Vfs extends FilesVfs, DocsVfs, ScenesVfs, CleanVfs {};
-applyMixins(Vfs, [FilesVfs, DocsVfs, ScenesVfs, CleanVfs]);
+interface Vfs extends FilesVfs, DocsVfs, ScenesVfs, StatsVfs, CleanVfs {};
+applyMixins(Vfs, [FilesVfs, DocsVfs, ScenesVfs, StatsVfs, CleanVfs]);
 
 export default Vfs;
 
