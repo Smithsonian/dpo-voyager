@@ -7,7 +7,7 @@ import "@ff/ui/Button";
 
 import "client/ui/Spinner";
 
-import "../Size";
+import "../composants/Size";
 import { nothing } from "lit-html";
 import i18n from "../state/translate";
 import {getLogin} from "../state/auth";

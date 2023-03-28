@@ -3,7 +3,7 @@ import { css, customElement, property, html, TemplateResult, LitElement } from "
 import Notification from "@ff/ui/Notification";
 
 import "client/ui/Spinner";
-import "../Size";
+import "../composants/Size";
 import HttpError from "../state/HttpError";
 
 interface Scene{

@@ -50,7 +50,7 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   @route()
   static "/ui/user/" = ()=> html`<user-settings></user-settings>`
   @route()
-  static "/ui/users/" = ()=> html`<users-list></users-list>`;
+  static "/ui/admin/.*" = ()=> html`<admin-panel></admin-panel>`;
   @route()
   static "/ui/scenes/:id/" = ({parent, params}) => html`<scene-history scene="${params.id}"></scene-history>`;
 
@@ -65,10 +65,10 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   render() {
     return html`
       <corpus-navbar>
-        <nav-link href="https://ethesaurus.holusion.com" text="Documentation" transparent></nav-link>
-        ${(this.user?.isAdministrator)?html`<nav-link text="${this.t("ui.administration")}" href="/ui/users" transparent></nav-link>`:""}
+        <nav-link href="https://ethesaurus.holusion.com" text="Documentation"></nav-link>
+        ${(this.user?.isAdministrator)?html`<nav-link .selected=${this.isActive("/ui/admin/")} text="${this.t("ui.administration")}" href="/ui/admin/"></nav-link>`:""}
         <div class="divider"></div>
-        <user-button .user=${this.user}></user-button>
+        <user-button .selected=${this.isActive("/ui/user/")} .user=${this.user}></user-button>
       </corpus-navbar>
       <main>
         ${this.renderContent()}

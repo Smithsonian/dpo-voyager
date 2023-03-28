@@ -4,13 +4,13 @@ import { customElement, property, html, TemplateResult, LitElement, css } from "
 import "@ff/ui/Button";
 
 import "client/ui/Spinner";
-import Modal from "../composants/Modal";
-import "../composants/SceneCard";
-import HttpError from "../state/HttpError";
-import "../composants/Icon";
+import Modal from "../../composants/Modal";
+import "../../composants/SceneCard";
+import HttpError from "../../state/HttpError";
+import "../../composants/Icon";
 import { nothing } from "lit-html";
 import Notification from "@ff/ui/Notification";
-import i18n from "../state/translate";
+import i18n from "../../state/translate";
 
 interface User {
     uid :string;
@@ -22,7 +22,7 @@ interface User {
  * Main UI view for the Voyager Explorer application.
  */
  @customElement("users-list")
- export default class AdminScreen extends i18n(LitElement)
+ export default class UsersScreen extends i18n(LitElement)
  {
     @property({type: Array})
     list : User[];
@@ -150,7 +150,6 @@ interface User {
         }
         return html`<div>
             <div class="users-list" style="position:relative;">
-                <h1>${this.t("ui.users")}</h1>
                 <table class="list-table">
                     <thead><tr>
                         <th>uid</th>
@@ -181,14 +180,6 @@ interface User {
                     </tr>`)}
                     </tbody>
                 </table>
-            </div>
-            <div>
-                <h1>${this.t("ui.tools")}</h1>
-                <ul>
-                    <li>
-                        <a  download href="/api/v1/scenes?format=zip">Download scenes as Zip</a>
-                    </li>
-                </ul>
             </div>
         </div>`;
     }

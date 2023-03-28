@@ -17,21 +17,34 @@ export declare class Router{
   path :string;
   static routes :Route[];
   get route() :URL;
+  isActive(pathname :string, strict?:boolean) :boolean;
   renderContent() :TemplateResult;
 }
 
 export function router<T extends Constructor<LitElement>>(baseClass:T) : T & Constructor<Router> {
   class Router extends baseClass{
+
     @property({type: String})
     path ="/";
 
     static routes = new Map<RegExp,RouteHandler>();
+
     get route(){
       return new URL(window.location.href);
     }
 
-    inPath(href :string){
-      return href.indexOf(this.path) == 0;
+
+    /** checks if the given pathname is currently active */
+    public isActive(pathname :string, strict = false){
+      let base = new URL(window.location.href);
+      base.pathname = this.path;
+      let u = new URL(pathname, base);
+      return (strict?  this.route.pathname == u.pathname : this.route.pathname.indexOf(u.pathname) == 0);
+    }
+
+    /** checks if a pathname is contained in this router's base path */
+    private inPath(pathname :string){
+      return pathname.indexOf(this.path) == 0;
     }
     
     renderContent(){
@@ -65,13 +78,17 @@ export function router<T extends Constructor<LitElement>>(baseClass:T) : T & Con
     onNavigate(ev :CustomEvent<HTMLLinkElement|{href:string|URL}>){
 
       const url = (ev.detail.href instanceof URL)? ev.detail.href: new URL(ev.detail.href, window.location.href);
+      if(url.hostname != window.location.hostname) return window.location.href = url.toString();
 
-      if(!this.inPath(url.pathname) && this.path != "/") return;
+      if(!this.inPath(url.pathname) && this.path != "/") return; //Return to bubble up the stack
+      ev.stopPropagation(); //Handle the route change
 
-      ev.stopPropagation();
       if(!url.pathname.endsWith("/")) url.pathname += "/";
       window.history.pushState({},"", url);
       this.requestUpdate();
+      window.dispatchEvent(new CustomEvent("navigate", {
+        detail: {href: url.toString()}
+      }))
     }
 
 
@@ -108,7 +125,7 @@ export function navigate(that :HTMLElement,href ?:string|URL, queries?:Record<st
       else url.searchParams.set(key, value.toString());
     }
   }
-  console.log("Navigate to :", url.toString(), "with queries : ", queries);
+  console.debug("Navigate to :", url.toString(), "with queries : ", queries);
   (that ?? this).dispatchEvent(new CustomEvent("navigate", {
     detail: {href: url},
     bubbles: true,
@@ -124,20 +141,19 @@ export declare class Link{
 export function link<T extends Constructor<LitElement>>(baseClass:T) : T & Constructor<Link>{
   class Link extends baseClass{
     href :string;
+
     connectedCallback(){
       super.connectedCallback();
       this.addEventListener("click", this.onClick);
     }
+
     disconnectedCallback(): void {
       super.disconnectedCallback();
       this.removeEventListener("click", this.onClick);
     }
-    onClick = ()=>{
-      this.dispatchEvent(new CustomEvent("navigate", {
-        detail: {href: this.href},
-        bubbles: true,
-        composed: true
-      }));
+
+    onClick = (ev ?:MouseEvent)=>{
+      navigate(this);
     }
   }
   return Link;

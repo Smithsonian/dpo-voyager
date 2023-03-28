@@ -1,5 +1,5 @@
 
-import { css, LitElement, customElement, property, html, TemplateResult } from "lit-element";
+import { css, LitElement, customElement, property, html, TemplateResult, PropertyValues } from "lit-element";
 
 import Notification from "@ff/ui/Notification";
 import "../Modal";
@@ -13,34 +13,41 @@ import { navigate } from "../../state/router";
 /**
  * Main UI view for the Voyager Explorer application.
  */
- @customElement("user-button")
- export default class UserMenu extends i18n(LitElement)
- {  
-  createRenderRoot() {
-    return this;
-  }
-    @property({type: Object})
-    user :UserSession;
-    
-    constructor()
-    {
-        super();
-    }
+@customElement("user-button")
+export default class UserMenu extends i18n(Button){
+  @property()
+  href = "/ui/user/";
 
-    onLoginOpen = ()=>{
+  @property({type: Object})
+  user :UserSession;
+  
+  constructor()
+  {
+      super();
+  }
+
+  override onClick = (ev :MouseEvent)=>{
+    if(this.user?.username){
+      navigate(this);
+    }else{
       Modal.show({
         header: this.t("ui.login"),
         body: html`<user-login @close=${()=>Modal.close()}></user-login>`,
       });
     }
+    return false;
+  }
 
-    protected render() :TemplateResult {
-      if(!this.user?.username){
-        return html`<ff-button style="height:100%" @click=${this.onLoginOpen} text=${this.t("ui.login")}></ff-button>`;
-      }else{
-        return html`<ff-button style="height:100%" @click=${()=>navigate(this, "/ui/user/")} text=${this.user.username}></ff-button>`;
-      }
+  protected shouldUpdate(changedProperties: PropertyValues)
+  {
+    let s = super.shouldUpdate(changedProperties);
+    if(changedProperties.has("user") || changedProperties.has("language")){
+      this.text = this.user?.username || this.t("ui.login");
+      return true;
     }
+    return s;
+  }
+
 
  
- }
+}

@@ -142,6 +142,10 @@ export default {
     tools: {
       fr: "Outils",
       en: "Tools"
+    },
+    stats: {
+      fr: "Statistiques",
+      en: "Statistics"
     }
   },
   info:{

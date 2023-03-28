@@ -25,7 +25,10 @@ export default class Size extends LitElement{
   @property({type: Number})
   b :number;
   
+  @property({type: Boolean})
+  i :boolean = false;
+
   render(){
-    return html`${formatBytes(this.b)}`;
+    return html`${formatBytes(this.b, !this.i)}`;
   }
 }
