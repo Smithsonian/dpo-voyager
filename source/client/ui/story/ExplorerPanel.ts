@@ -21,6 +21,9 @@ import ExplorerView from "../explorer/MainView";
 import CustomElement, { customElement, property } from "@ff/ui/CustomElement";
 import ExplorerLockToolbar from "./ExplorerLockToolbar";
 import { relative } from "path";
+import { IStoryApplicationProps } from "client/applications/StoryApplication";
+import { SimpleDropzone } from 'simple-dropzone';
+import CVMediaManager from "client/components/CVMediaManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +38,7 @@ export default class ExplorerPanel extends CustomElement
         super();
         this.application = application;
 
-        if(application.system.getComponent("CVStandaloneFileManager", true)) {
+        if((application.props as IStoryApplicationProps).dragdrop === true) {
             this.addEventListener('dragenter', this.onDragEnter);
             this.addEventListener('dragleave', this.onDragLeave);
             this.addEventListener('drop', this.onDragDrop);
@@ -44,6 +47,11 @@ export default class ExplorerPanel extends CustomElement
             fileInput.type = "file";
             fileInput.id = "fileInput";
             fileInput.style.display = "none";
+
+            const dropZone = new SimpleDropzone(this, fileInput);
+
+            const mediaManager = application.system.getComponent(CVMediaManager);
+            dropZone.on('drop', ({files}: any) => mediaManager.ingestFiles(files));
         }
     }
 

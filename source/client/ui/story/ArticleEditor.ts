@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2023 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,6 +157,7 @@ export default class ArticleEditor extends SystemView
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
             if((assetUrl as string).startsWith("blob")) {
                 assetUrl = this.standaloneFileManager.blobUrlToFileUrl(assetUrl);
+                assetUrl = assetUrl.replace(CVMediaManager.articleFolder + "/", '');
                 return pre + assetUrl + post;
             }
 
