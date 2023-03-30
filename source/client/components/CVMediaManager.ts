@@ -28,6 +28,8 @@ import ImportMenu from "client/ui/story/ImportMenu";
 import CVModel2 from "./CVModel2";
 import { EDerivativeUsage } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
+import CVMeta from "./CVMeta";
+import Article from "client/models/Article";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +52,13 @@ export default class CVMediaManager extends CAssetManager
     }
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
+    }
+    protected get meta() {
+        return this.system.getComponent(CVMeta, true);
+    }
+    protected get articles() {
+        const meta = this.meta;
+        return meta ? meta.articles.items : null;
     }
 
     create()
@@ -233,11 +242,22 @@ export default class CVMediaManager extends CAssetManager
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
             standaloneManager.renameFile(asset.info.url, name);
-            return this.refresh().then(() => this.emit<IAssetRenameEvent>({ type: "asset-rename", oldPath: asset.info.path, newPath: newPath }));
+            return this.refresh().then(() => this.postRenameHandler(asset.info.path, newPath));
         }
         else {
-            return super.rename(asset, name).then(() => this.emit<IAssetRenameEvent>({ type: "asset-rename", oldPath: asset.info.path, newPath: newPath }));
+            return super.rename(asset, name).then(() => this.postRenameHandler(asset.info.path, newPath));
         }
+    }
+
+    protected postRenameHandler(oldPath: string, newPath: string)
+    {
+        // If this asset is an article, change the uri for the data object as well
+        const article: Article = this.articles.find(e => e.uri === oldPath);
+        if(article !== undefined) {
+            article.uri = newPath;
+        }
+
+        this.emit<IAssetRenameEvent>({ type: "asset-rename", oldPath: oldPath, newPath: newPath })
     }
 
     delete(asset: IAssetEntry)
