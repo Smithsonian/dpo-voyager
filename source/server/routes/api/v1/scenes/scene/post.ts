@@ -10,16 +10,14 @@ async function getDocument(scene:string, filepath:string){
   //dumb inefficient Deep copy because we want to mutate the doc in-place
   let document = JSON.parse(JSON.stringify(orig));
   let meta = await parse_glb(filepath);
+  let mesh = meta.meshes[0]; //Take the first mesh for its name
+  document.nodes.push({
+    "name": mesh?.name ?? scene,
+    "model": 0,
+    "meta": 0
+  } as any);
+  document.scenes[0].nodes.push(document.nodes.length -1);
 
-  for(let [index, mesh] of meta.meshes.entries()){
-    let node = {
-      "name": mesh.name ?? scene,
-      "model": 0,
-      "meta": 0
-    }
-    document.nodes.push(node as any);
-    document.scenes[0].nodes.push(document.nodes.length -1);
-  }
   document.models = [{
     "units": "mm",
     "boundingBox": meta.bounds,
@@ -31,7 +29,7 @@ async function getDocument(scene:string, filepath:string){
           "uri": `models/${scene}.glb`,
           "type": "Model",
           "byteSize": meta.byteSize,
-          "numFaces": meta.meshes[0].numFaces,
+          "numFaces": meta.meshes.reduce((acc, m)=> acc+m.numFaces, 0),
           "imageSize": 8192
         }
       ]
