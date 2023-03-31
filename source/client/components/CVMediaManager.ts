@@ -53,12 +53,8 @@ export default class CVMediaManager extends CAssetManager
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
     }
-    protected get meta() {
-        return this.system.getComponent(CVMeta, true);
-    }
-    protected get articles() {
-        const meta = this.meta;
-        return meta ? meta.articles.items : null;
+    protected get metas() {
+        return this.system.getComponents(CVMeta);
     }
 
     create()
@@ -252,10 +248,12 @@ export default class CVMediaManager extends CAssetManager
     protected postRenameHandler(oldPath: string, newPath: string)
     {
         // If this asset is an article, change the uri for the data object as well
-        const article: Article = this.articles.find(e => e.uri === oldPath);
-        if(article !== undefined) {
-            article.uri = newPath;
-        }
+        this.metas.forEach(meta => {
+            const article: Article = meta.articles.items.find(e => e.uri === oldPath);
+            if(article !== undefined) {
+                article.uri = newPath;
+            }
+        });
 
         this.emit<IAssetRenameEvent>({ type: "asset-rename", oldPath: oldPath, newPath: newPath })
     }
