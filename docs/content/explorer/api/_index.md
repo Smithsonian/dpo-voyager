@@ -24,6 +24,7 @@ These attributes configure the initial object load of the component.
 | controls	   | True, False	   | Enables/Disables user-driven camera controls. Defaults to 'True'. Useful if driving navigation from external code.  |
 | reader	   | True, False	   | Enables/Disables visibility of reader UI. Defaults to 'True'. Overrides activation triggers like toggleReader()  |
 | lang 		   | valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code | Sets the active language of the component (where available) |
+| dragdrop	   | | If present, enables dragging and dropping files into Story. Enabled by default in Standalone mode. **Note:** Voyager does *not* handle access control. Enabling this feature increases the importance of securing your server-side I/O. 
 
 ### UI Attributes
 

@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2023 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import CVAssetManager from "../../components/CVAssetManager";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVAssetWriter from "../../components/CVAssetWriter";
 
-import CVMediaManager, { IAssetOpenEvent } from "../../components/CVMediaManager";
+import CVMediaManager, { IAssetOpenEvent, IAssetRenameEvent } from "../../components/CVMediaManager";
 import CVStandaloneFileManager from "../../components/CVStandaloneFileManager";
 import CVReader from "../../components/CVReader";
 
@@ -157,6 +157,7 @@ export default class ArticleEditor extends SystemView
         content = content.replace(/(src=\")(.*?)(\")/g, (match, pre, assetUrl, post) => {
             if((assetUrl as string).startsWith("blob")) {
                 assetUrl = this.standaloneFileManager.blobUrlToFileUrl(assetUrl);
+                assetUrl = assetUrl.replace(CVMediaManager.articleFolder + "/", '');
                 return pre + assetUrl + post;
             }
 
@@ -263,10 +264,12 @@ export default class ArticleEditor extends SystemView
     {
         super.connected();
         this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+        this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
     }
 
     protected disconnected()
     {
+        this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
         this.mediaManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
         super.disconnected();
     }
@@ -282,6 +285,14 @@ export default class ArticleEditor extends SystemView
         // if opened asset is of type text/html, open it in the editor
         else if (event.asset.info.type.startsWith("text/html")) {
             this.openArticle(event.asset.info.path);
+        }
+    }
+
+    protected onRenameAsset(event: IAssetRenameEvent)
+    {
+        // update asset path
+        if(event.oldPath === this._assetPath ) {
+            this._assetPath = event.newPath;
         }
     }
 }

@@ -127,7 +127,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         if (target.name === "tags") {
             task.ins.tags.setValue(text);
         }
-        if (target.name === "uri") {
+        if (target.name === "uri" && !event.detail.isEditing) {
             task.ins.uri.setValue(text);
         }
     }

@@ -156,6 +156,9 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-article {
   position: relative;
   padding: 5px 8px 0 16px;
+  user-select: text;
+  -moz-user-select: text;
+  -webkit-user-select: text;
 }
 
 .sv-content-overlay {

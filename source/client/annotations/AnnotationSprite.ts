@@ -147,7 +147,7 @@ export class AnnotationElement extends SpriteElement
         //this.onClick = this.onClick.bind(this);
         this.discardEvent = this.discardEvent.bind(this);
 
-        this.addEventListener("pointerdown", this.discardEvent);
+        //this.addEventListener("pointerdown", this.discardEvent);
         //this.addEventListener("pointermove", this.discardEvent);
         //this.addEventListener("pointerup", this.discardEvent);
         this.addEventListener("pointercancel", this.discardEvent);

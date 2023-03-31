@@ -20,6 +20,7 @@ import filenamify from "filenamify";
 import { Node, types } from "@ff/graph/Component";
 
 import MessageBox from "@ff/ui/MessageBox";
+import Notification from "@ff/ui/Notification";
 
 import Article from "../models/Article";
 
@@ -30,7 +31,7 @@ import CVMeta from "./CVMeta";
 import CVTask from "./CVTask";
 
 import ArticlesTaskView from "../ui/story/ArticlesTaskView";
-import CVMediaManager from "./CVMediaManager";
+import CVMediaManager, { IAssetRenameEvent } from "./CVMediaManager";
 import CVAssetWriter from "./CVAssetWriter";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
@@ -112,7 +113,6 @@ export default class CVArticlesTask extends CVTask
         const outs = this.outs;
         const meta = this.meta;
         const activeArticle = this.activeArticle;
-        const activeAsset = activeArticle ? this.mediaManager.getAssetByPath(activeArticle.uri) : null;
 
         if(!this.activeDocument) {
             return false;
@@ -136,48 +136,55 @@ export default class CVArticlesTask extends CVTask
                 standaloneFiles.addFile(article.uri);
             }
 
+            this.createEditArticle(article);
+            
             meta.articles.append(article);
-            this.reader.ins.articleId.setValue(article.id);
             this.reader.outs.count.setValue(meta.articles.length);
             languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
         }
-
-        if (activeArticle) {
-            if (ins.edit.changed) {
-                if (activeAsset) {
-                    this.mediaManager.open(activeAsset);
-                }
-                else if (activeArticle.uri) {
-                    this.createEditArticle(activeArticle);
-                }
-            }
-            if (ins.delete.changed) {
-                this.deleteArticle(activeArticle);
-                this.reader.outs.count.setValue(meta.articles.length);
-            }
-            if (ins.title.changed) {
-                activeArticle.title = ins.title.value;
-                if (!activeAsset) {
-                    const uri = this.getSafeArticlePath(ins.title.value + "-" + ELanguageType[ins.language.value]);
-                    activeArticle.uri = uri;
-                    ins.uri.setValue(uri, true);
-                }
-            }
-            if (ins.uri.changed) {
-                activeArticle.uri = ins.uri.value;
-            }
-            if (ins.lead.changed || ins.tags.changed) {
-                activeArticle.lead = ins.lead.value;
-                activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
-            }
-        }
         else {
-            if (ins.edit.changed) {
-                this.mediaManager.open(null);
-            }
-        }
+            if (activeArticle) {
+                if (ins.uri.changed) {
+                    activeArticle.uri = ins.uri.value;
+                    ins.edit.set();
+                }
 
-        outs.article.set();
+                const activeAsset = activeArticle ? this.mediaManager.getAssetByPath(activeArticle.uri) : null;
+
+                if (ins.edit.changed) {
+                    if (activeAsset) {
+                        this.mediaManager.open(activeAsset);
+                    }
+                    else {
+                        new Notification(`Unable to find article: '${activeArticle.uri}'. Check asset name.`, "error", 4000);
+                        this.mediaManager.open(null);
+                    }
+                }
+                if (ins.delete.changed) {
+                    this.deleteArticle(activeArticle);
+                    this.reader.outs.count.setValue(meta.articles.length);
+                }
+                if (ins.title.changed) {
+                    activeArticle.title = ins.title.value;
+                    /*if (!activeAsset) {
+                        const uri = this.getSafeArticlePath(ins.title.value + "-" + ELanguageType[ins.language.value]);
+                        activeArticle.uri = uri;
+                        ins.uri.setValue(uri, true);
+                    }*/
+                }
+                if (ins.lead.changed || ins.tags.changed) {
+                    activeArticle.lead = ins.lead.value;
+                    activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                }
+            }
+            else {
+                if (ins.edit.changed) {
+                    this.mediaManager.open(null);
+                }
+            }
+
+            outs.article.set();
+        }
 
         return true;
     }
@@ -217,6 +224,7 @@ export default class CVArticlesTask extends CVTask
             const asset = this.mediaManager.getAssetByPath(uri);
             if (asset) {
                 this.mediaManager.open(asset);
+                this.reader.ins.articleId.setValue(article.id);
             }
         })
         .catch(error => MessageBox.show("Error", `Failed to create article at '${uri}'`, "error"));
@@ -238,12 +246,14 @@ export default class CVArticlesTask extends CVTask
     {
         if (previous) {
             previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
+            this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
             this.reader.outs.article.off("value", this.onArticleChange, this);
             this.reader = null;
         }
         if (next) {
             this.reader = next.setup.reader;
             this.reader.outs.article.on("value", this.onArticleChange, this);
+            this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
             next.setup.language.outs.language.on("value", this.onDocumentLanguageChange, this);
         }
     }
@@ -320,5 +330,10 @@ export default class CVArticlesTask extends CVTask
         {
             ins.language.setValue(languageManager.outs.language.value, true);
         }
+    }
+
+    // Handle potential media manager name change
+    protected onAssetRename(event: IAssetRenameEvent) {
+        this.onArticleChange();
     }
 }
