@@ -25,6 +25,7 @@ import { ISnapshots } from "client/schema/setup";
 import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
+import CVTours from "./CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -149,13 +150,15 @@ export default class CVSnapshots extends CTweenMachine
         });
 
         data.states.forEach(state => {
-            this.setState({
-                id: state.id,
-                curve: state.curve !== undefined ? EEasingCurve[state.curve] : EEasingCurve.EaseQuad,
-                duration: state.duration !== undefined ? state.duration : 2,
-                threshold: state.threshold !== undefined ? state.threshold : 0.5,
-                values: state.values.filter((value, index) => !missingTargets.has(index)),
-            });
+            if(state.id !== CVTours.sceneSnapshotId) {
+                this.setState({
+                    id: state.id,
+                    curve: state.curve !== undefined ? EEasingCurve[state.curve] : EEasingCurve.EaseQuad,
+                    duration: state.duration !== undefined ? state.duration : 2,
+                    threshold: state.threshold !== undefined ? state.threshold : 0.5,
+                    values: state.values.filter((value, index) => !missingTargets.has(index)),
+                });
+            }
         });
     }
 

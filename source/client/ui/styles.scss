@@ -74,12 +74,12 @@
   }
 
   ul {
-    padding-left: 0.5em;
-    list-style: square inside;
+    padding-inline-start: 2.5em;
+    list-style: disc outside;
   }
   ol {
-    padding-left: 0.5em;
-    list-style: decimal inside;
+    padding-inline-start: 2.5em;
+    list-style: decimal outside;
   }
   a:link, a:visited, a:hover, a:active {
     color: $color-primary;
