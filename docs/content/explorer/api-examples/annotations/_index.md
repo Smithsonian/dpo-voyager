@@ -8,7 +8,7 @@ weight: 130
 
 {{< explorer "d8c62be8-4ebc-11ea-b77f-2e728ce88125" >}}  <br>
   
-Activate an annotation by specifying the unique id of a specific animation in the box below and clicking the "Activate" button.
+Activate an annotation by specifying the unique id of a specific annotation in the box below and clicking the "Activate" button.
 For the example model try the ids "ELDyp7AvKp8A" or "Y1KN8HQHKaxT".
 
 If the id supplied is not valid, no annotation will be activated (and as a resulted, any currently activated one will be deactivated).
@@ -26,7 +26,7 @@ function setActiveAnnotation(id) {
 	// Get reference to the Explorer element by id
 	var voyagerElement = document.getElementById("voyager");
 	
-	// Call the activateAnnotation function with the value of the 
+	// Call the setActiveAnnotation function with the value of the 
 	// option input element as the parameter
 	voyagerElement.setActiveAnnotation(id.value);
 }

@@ -697,6 +697,14 @@ Version: ${ENV_VERSION}
             console.error("Error: setLanguage param is not a valid language id.");
         }
     }
+
+    // set the active article
+    setActiveArticle(id: string)
+    {
+        const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
+        reader.ins.enabled.setValue(true);
+        reader.ins.articleId.setValue(id);
+    }
 }
 
 window["VoyagerExplorer"] = ExplorerApplication;

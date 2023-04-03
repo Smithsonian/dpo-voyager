@@ -301,6 +301,13 @@ export default class MainView extends CustomElement
         }
     }
 
+    setActiveArticle(id: string)
+    {
+        if(this.application) {
+            this.application.setActiveArticle(id);
+        }
+    }
+
     setTourStep(tourIdx: string, stepIdx: string, interpolate?: boolean)
     {
         if(this.application) {
