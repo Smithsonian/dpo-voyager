@@ -33,8 +33,6 @@ export default async function handleGetFile(req :Request, res :Response){
   res.set("Content-Type", getContentType(type, name));
   res.set("Content-Length", f.size.toString(10));
   res.status(200);
-  for await (let d of f.stream){
-    res.write(d);
-  }
-  res.end();
+
+  f.stream.pipe(res);
 };
