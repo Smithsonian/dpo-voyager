@@ -28,6 +28,7 @@ ARG PORT=8000
 
 ENV PUBLIC=false
 ENV PORT=${PORT}
+ENV NODE_ENV=production
 
 WORKDIR /app
 COPY source/server/package*.json /app/

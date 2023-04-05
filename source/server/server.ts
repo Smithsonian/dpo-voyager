@@ -1,12 +1,11 @@
 
 import path from "path";
 import cookieSession from "cookie-session";
-import express, { NextFunction, Request, Response, Router } from "express";
+import express from "express";
 import { engine } from 'express-handlebars';
-import morgan from "morgan";
 
 import UserManager from "./auth/UserManager";
-import { HTTPError, NotFoundError } from "./utils/errors";
+import { HTTPError } from "./utils/errors";
 import { mkdir } from "fs/promises";
 
 import {AppLocals, getHost} from "./utils/locals";
@@ -15,7 +14,6 @@ import openDatabase from './vfs/helpers/db';
 import Vfs from "./vfs";
 import importAll from "./vfs/helpers/import";
 import config from "./utils/config";
-import wrap from "./utils/wrapAsync";
 
 
 export default async function createServer(rootDir :string, /*istanbul ignore next */{
@@ -69,13 +67,9 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   
   /* istanbul ignore next */
   if (verbose) {
-    //Requests logging
+    let {default: morgan} = await import("morgan"); 
+    //Requests logging is enabled only in dev mode as a proxy would handle it in production
     app.use(morgan(process.stdout.isTTY?"dev": "tiny", {
-      skip: function(req, res){
-        if(400 <= res.statusCode) return false; //Log all errors
-        if(req.originalUrl.indexOf("/scenes") == 0) return false; //Log all requests to /scenes
-        return true;
-      }
     }));
   }
 
