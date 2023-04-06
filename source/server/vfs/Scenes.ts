@@ -122,7 +122,7 @@ export default abstract class ScenesVfs extends BaseVfs{
         ) IN (${ AccessTypes.slice(2).map(s=>`'${s}'`).join(", ") })
       `:""}
       GROUP BY scene_id
-      ORDER BY scene_name ASC
+      ORDER BY LOWER(scene_name) ASC
     `, {$user_id: user_id?.toString(10)})).map(({ctime, mtime, id, ...m})=>({
       ...m,
       id,

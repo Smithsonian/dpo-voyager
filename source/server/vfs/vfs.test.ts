@@ -139,6 +139,17 @@ describe("Vfs", function(){
         expect(scenes[0].mtime.valueOf()).to.equal(t2.valueOf());
       });
 
+      it("orders by names, case-insensitive and ascending", async function(){
+        await Promise.all([
+          vfs.createScene("a1"),
+          vfs.createScene("aa"),
+          vfs.createScene("Ab"),
+        ]);
+        let scenes = await vfs.getScenes();
+        let names = scenes.map(s=>s.name);
+        expect(names).to.deep.equal(["a1", "aa", "Ab"]);
+      });
+
       
       describe("with permissions", function(){
         let userManager :UserManager, user :User;
