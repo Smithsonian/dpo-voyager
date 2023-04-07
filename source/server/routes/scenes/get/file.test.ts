@@ -1,15 +1,8 @@
-import fs from "fs/promises";
-import path from "path";
-import {tmpdir} from "os";
 
 import request from "supertest";
-import { expect } from "chai";
-
-import express, { Application } from "express";
 import User from "../../../auth/User";
 import UserManager from "../../../auth/UserManager";
 import Vfs from "../../../vfs";
-import { Element, xml2js } from "xml-js";
 
 
 
