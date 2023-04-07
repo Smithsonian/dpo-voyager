@@ -132,18 +132,16 @@ export default class CVArticlesTask extends CVTask
         if (meta && ins.create.changed) {
             const article = new Article();
             const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[DEFAULT_LANGUAGE]}.html`;
 
-            const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
-            if(standaloneFiles) {
-                standaloneFiles.addFile(article.uri);
-            }
+            //Set language first otherwise other keys are in the wrong locale
+            article.language = ins.language.value;
+            article.title = languageManager.getLocalizedString("New Article");
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
+
 
             this.createEditArticle(article);
-            
             meta.articles.append(article);
             this.reader.outs.count.setValue(meta.articles.length);
-            languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
         }
         else if(activeArticle && ins.version.changed) {
             this.createEditArticle(activeArticle);
@@ -247,7 +245,12 @@ export default class CVArticlesTask extends CVTask
     {
         const uri = article.uri;
 
-        this.assetWriter.putText(`<h1>${article.title}</h1>`, uri)
+        const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
+        if(standaloneFiles) {
+            standaloneFiles.addFile(uri);
+        }
+
+        return this.assetWriter.putText(`<h1>${article.title}</h1>`, uri)
         .then(() => this.mediaManager.refresh())
         .then(() => {
             const asset = this.mediaManager.getAssetByPath(uri);
