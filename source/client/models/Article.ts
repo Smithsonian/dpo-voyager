@@ -111,7 +111,9 @@ export default class Article extends Document<IArticle>
         return {
             id: Document.generateId(),
             title: "New Article",
-            titles: {},
+            titles: {
+                [DEFAULT_LANGUAGE]: "New Article"
+            },
             lead: "",
             leads: {},
             tags: [],
