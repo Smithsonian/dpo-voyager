@@ -40,7 +40,7 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   if(clean) setTimeout(()=>{
     //Clean file system after a while to prevent delaying startup
     vfs.clean().catch(e=>console.error(e));
-  }, 12000);
+  }, 60000);
 
   app.use(cookieSession({
     name: 'session',
