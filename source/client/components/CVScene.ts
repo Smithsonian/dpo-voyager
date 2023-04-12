@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Box3 } from "three";
+import { Vector3, Box3, Plane } from "three";
 
 import { IComponentEvent, types } from "@ff/graph/Component";
 
@@ -29,10 +29,12 @@ import CTransform from "client/../../libs/ff-scene/source/components/CTransform"
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
+import CVDirectionalLight from "./CVDirectionalLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new Vector3();
+const _vec3b = new Vector3();
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -199,13 +201,34 @@ export default class CVScene extends CVNode
         const lightNode = this.graph.findNodeByName("Lights");
 
         if(lightNode) {
-            const lightTransform = lightNode.getComponent(CTransform, true);
-            
+            const lightTransform = lightNode.getComponent(CTransform, true);       
             const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
-            _vec3.setScalar(this.outs.boundingRadius.value * unitScale * 0.05);
-            lightTransform.ins.scale.setValue(_vec3.toArray());
+            const meterScale = unitScaleFactor(EUnitType.m, ins.units.value);
+            const plane = new Plane;
+            
+            // Scale position and size by unit factor
+            lightTransform.children.forEach(light => {
+                const lightTrans = light.getComponent(CTransform, true);
+                const dirLight = light.getComponent(CVDirectionalLight);
 
-            lightTransform.object3D.updateMatrixWorld(true);
+                // calculate light distance from object plane
+                dirLight.light.getWorldPosition(_vec3);
+                dirLight.light.target.getWorldPosition(_vec3b);
+                const dir = _vec3b.sub(_vec3).normalize();
+                plane.set(dir, 0);
+                const distance = Math.abs(plane.distanceToPoint(_vec3));
+
+                // if inside the object bounds, shift it out along its direction vector
+                if(distance < this.outs.boundingRadius.value) {
+                    _vec3.copy(dir.negate().multiplyScalar(this.outs.boundingRadius.value*1.1));
+                }
+
+                // account for any scene unit changes
+                _vec3.multiplyScalar(unitScale);
+                lightTrans.ins.position.setValue(_vec3.toArray());
+                _vec3.setScalar(meterScale*0.2); // light helper always 20cm
+                lightTrans.ins.scale.setValue(_vec3.toArray());
+            });
         }
     }
 
