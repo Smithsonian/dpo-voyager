@@ -41,11 +41,11 @@ export default class GeometryReader
         return GeometryReader.extensions.indexOf(extension) >= 0;
     }
 
-    get(url: string): Promise<BufferGeometry>
+    get(url: string, extension =  url.split(".").pop().toLowerCase()): Promise<BufferGeometry>
     {
-        const extension = url.split(".").pop().toLowerCase();
+        return new Promise(async (resolve, reject) => {
 
-        return new Promise((resolve, reject) => {
+            
             if (extension === "obj") {
                 this.objLoader.load(url, result => {
                     const geometry = result.children[0].geometry;

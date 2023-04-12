@@ -163,8 +163,7 @@ export default class DerivativeList
 
         const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
 
-        const asset = new Asset();
-        asset.setModel(assetPath);
+        const asset = new Asset({uri:assetPath} as any);
         derivative.addAsset(asset);
 
         return derivative;

@@ -41,6 +41,14 @@ export interface IAssetRenameEvent extends ITypedEvent<"asset-rename">
     newPath: string;
 }
 
+export enum EFileTypes{
+    Model,
+    Image,
+    Scene,
+    Resource,
+    Other,
+}
+
 export default class CVMediaManager extends CAssetManager
 {
     static readonly typeName: string = "CVMediaManager";
@@ -113,11 +121,20 @@ export default class CVMediaManager extends CAssetManager
         }
     }
 
+    getFileType(name :string) :EFileTypes{
+        const nameLower = name.toLowerCase();
+        if(nameLower.match(/\.(?:gltf|glb|obj|ply|usdz)$/)) return EFileTypes.Model;
+        if(nameLower.match(/\.(?:jpe?g|png)$/)) return EFileTypes.Image;
+        if(nameLower.match(/\.(?:svx\.json)$/)) return EFileTypes.Scene;
+        if(nameLower.match(/\.(?:bin|html)$/)) return EFileTypes.Resource;
+        return EFileTypes.Other;
+    }
+
     ingestFiles(files: Map<string, File>)
     {
         // If a scene file has been dropped, push to end
         const fileArray = Array.from(files);
-        const docIndex = fileArray.findIndex( (element) => { return element[0].toLowerCase().indexOf(".svx.json") > -1 });
+        const docIndex = fileArray.findIndex( (element) => this.getFileType(element[0]) === EFileTypes.Scene);
         const documentProvided : boolean = docIndex > -1;
         if(documentProvided) {
             fileArray.push(fileArray.splice(docIndex,1)[0]);
@@ -127,42 +144,40 @@ export default class CVMediaManager extends CAssetManager
                 this.standaloneFileManager.reload();
             }
         }
-
+        
         const documentRoot = documentProvided ? fileArray[fileArray.length-1][0].replace(fileArray[fileArray.length-1][1].name, '') : "";
 
         fileArray.forEach(([path, file]) => {
             const cleanfileName = decodeURI(file.name);
-            const filenameLower = cleanfileName.toLowerCase();
+            const fileType = this.getFileType(cleanfileName);
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz)$/)) {
+            if(fileType === EFileTypes.Other){
+                new Notification(`Unhandled file: '${cleanfileName}'`, "warning", 4000);
+                return;
+            }
+            if(!documentProvided && fileType == EFileTypes.Image && !fileArray.some(entry => this.getFileType(entry[0]) === EFileTypes.Model)) {
+                path = CVMediaManager.articleFolder + "/" + cleanfileName;
+            }
 
-                if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
-                    path = CVMediaManager.articleFolder + "/" + cleanfileName;
-                }
+            // normalize path relative to document root
+            let normalizedPath = documentProvided ? path.replace(documentRoot, '') : path;
+            normalizedPath = normalizedPath.startsWith("/") ? normalizedPath.substr(1) : normalizedPath;
 
-                // normalize path relative to document root
-                let normalizedPath = documentProvided ? path.replace(documentRoot, '') : path;
-                normalizedPath = normalizedPath.startsWith("/") ? normalizedPath.substr(1) : normalizedPath;
-
-                if (filenameLower.match(/\.(svx.json)$/)) {
-                    const mainView : MainView = document.getElementsByTagName('voyager-explorer')[0] as MainView;
-                    const explorer : ExplorerApplication = mainView.application;
-            
-                    this.uploadFile(normalizedPath, file, this.root).then(() => {
-                        explorer.loadDocument(normalizedPath).then(() =>
-                            this.getMainComponent(CVDocumentProvider).refreshDocument()
-                        );
-                    }); 
-                }
-                else if (!documentProvided && filenameLower.match(/\.(gltf|glb)$/)) {
-                    this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
-                }
-                else {
-                    this.uploadFile(normalizedPath, file, this.root);
-                }
+            if (fileType === EFileTypes.Scene) {
+                const mainView : MainView = document.getElementsByTagName('voyager-explorer')[0] as MainView;
+                const explorer : ExplorerApplication = mainView.application;
+        
+                this.uploadFile(normalizedPath, file, this.root).then(() => {
+                    explorer.loadDocument(normalizedPath).then(() =>
+                        this.getMainComponent(CVDocumentProvider).refreshDocument()
+                    );
+                });
+            }
+            else if (!documentProvided && fileType === EFileTypes.Model) {
+                this.uploadFile(normalizedPath, file, this.root).then(() => this.handleModelImport(normalizedPath));
             }
             else {
-                new Notification(`Unhandled file: '${cleanfileName}'`, "warning", 4000);
+                this.uploadFile(normalizedPath, file, this.root);
             }
         });
     }

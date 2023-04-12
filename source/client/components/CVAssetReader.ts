@@ -107,7 +107,7 @@ export default class CVAssetReader extends Component
     async getGeometry(assetPath: string): Promise<THREE.BufferGeometry>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return this.geometryLoader.get(url);
+        return this.geometryLoader.get(url, assetPath.split(".").pop().toLowerCase());
     }
 
     async getTexture(assetPath: string): Promise<THREE.Texture>
