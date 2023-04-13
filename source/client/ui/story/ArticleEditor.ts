@@ -282,8 +282,8 @@ export default class ArticleEditor extends SystemView
                 this.closeArticle();
             }
         }
-        // if opened asset is of type text/html, open it in the editor
-        else if (event.asset.info.type.startsWith("text/html")) {
+        // if opened asset is of type text/*, open it in the editor
+        else if (event.asset.info.type.startsWith("text/")) {
             this.openArticle(event.asset.info.path);
         }
     }
