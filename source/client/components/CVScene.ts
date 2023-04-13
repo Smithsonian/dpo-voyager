@@ -205,26 +205,28 @@ export default class CVScene extends CVNode
             const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
             const meterScale = unitScaleFactor(EUnitType.m, ins.units.value);
             const plane = new Plane;
+
+            lightTransform.ins.scale.setValue([1.0,1.0,1.0]);  // Hack to avoid dealing with group scaling
             
             // Scale position and size by unit factor
             lightTransform.children.forEach(light => {
                 const lightTrans = light.getComponent(CTransform, true);
                 const dirLight = light.getComponent(CVDirectionalLight);
 
-                // calculate light distance from object plane
-                dirLight.light.getWorldPosition(_vec3);
-                dirLight.light.target.getWorldPosition(_vec3b);
+                _vec3.copy(dirLight.light.position);
+                _vec3b.copy(dirLight.light.target.position);
                 const dir = _vec3b.sub(_vec3).normalize();
-                plane.set(dir, 0);
-                const distance = Math.abs(plane.distanceToPoint(_vec3));
+                dir.applyEuler(lightTrans.object3D.rotation);
 
-                // if inside the object bounds, shift it out along its direction vector
-                if(distance < this.outs.boundingRadius.value) {
-                    _vec3.copy(dir.negate().multiplyScalar(this.outs.boundingRadius.value*1.1));
-                }
+                // standardize directional lights to always point at the origin
+                _vec3.copy(dir.negate().multiplyScalar(this.outs.boundingRadius.value*1.2));
 
                 // account for any scene unit changes
                 _vec3.multiplyScalar(unitScale);
+                if(dirLight.ins.shadowEnabled.value) {
+                    dirLight.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
+                    dirLight.light.shadow.camera.far = this.outs.boundingRadius.value*3.0;
+                }
                 lightTrans.ins.position.setValue(_vec3.toArray());
                 _vec3.setScalar(meterScale*0.2); // light helper always 20cm
                 lightTrans.ins.scale.setValue(_vec3.toArray());
