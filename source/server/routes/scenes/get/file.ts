@@ -1,3 +1,4 @@
+import {pipeline} from "node:stream/promises";
 
 import { getFileParams, getUserId, getVfs } from "../../../utils/locals";
 import { Request, Response } from "express";
@@ -21,6 +22,8 @@ export default async function handleGetFile(req :Request, res :Response){
   res.set("Content-Type", f.mime);
   res.set("Content-Length", f.size.toString(10));
   res.status(200);
-
-  f.stream.pipe(res);
+  pipeline(
+    f.stream,
+    res,
+  );
 };

@@ -1,3 +1,6 @@
+import {ClientRequest} from "http"
+import {Readable} from "stream";
+import timers from "node:timers/promises";
 
 import request from "supertest";
 import User from "../../../auth/User";
@@ -8,7 +11,7 @@ import Vfs from "../../../vfs";
 
 describe("GET /scenes/:scene/:filename(.*)", function(){
   
-  let vfs :Vfs, userManager :UserManager, user :User, admin :User, scene_id :number;
+  let vfs :Vfs, userManager :UserManager, user :User, admin :User;
 
   this.beforeEach(async function(){
     let locals = await createIntegrationContext(this);
@@ -23,7 +26,7 @@ describe("GET /scenes/:scene/:filename(.*)", function(){
   });
 
   it("can get a public scene's file", async function(){
-    scene_id = await vfs.createScene("foo", {"0":"read"});
+    let scene_id = await vfs.createScene("foo", {"0":"read"});
     await vfs.writeDoc("{}", scene_id, user.uid);
     await vfs.writeFile(dataStream(), {scene: "foo", mime:"model/gltf-binary", name: "models/foo.glb", user_id: user.uid});
 
@@ -34,7 +37,7 @@ describe("GET /scenes/:scene/:filename(.*)", function(){
   });
 
   it("can't get a private scene's file", async function(){
-    scene_id = await vfs.createScene("foo", {"0":"none", [user.uid]: "admin"});
+    let scene_id = await vfs.createScene("foo", {"0":"none", [user.uid]: "admin"});
     await vfs.writeDoc("{}", scene_id, user.uid);
     await vfs.writeFile(dataStream(), {scene: "foo", mime:"model/gltf-binary", name: "models/foo.glb", user_id: user.uid});
 
@@ -43,7 +46,7 @@ describe("GET /scenes/:scene/:filename(.*)", function(){
   });
 
   it("can get an owned scene's file", async function(){
-    scene_id = await vfs.createScene("foo", {"0":"none", [user.uid]: "admin"});
+    let scene_id = await vfs.createScene("foo", {"0":"none", [user.uid]: "admin"});
     await vfs.writeDoc("{}", scene_id, user.uid);
     await vfs.writeFile(dataStream(), {scene: "foo", mime:"model/gltf-binary", name: "models/foo.glb", user_id: user.uid});
     let agent = request.agent(this.server);
@@ -61,7 +64,7 @@ describe("GET /scenes/:scene/:filename(.*)", function(){
   });
 
   it("is case-sensitive", async function(){
-    scene_id = await vfs.createScene("foo", {"0":"read", [user.uid]: "admin"});
+    let scene_id = await vfs.createScene("foo", {"0":"read", [user.uid]: "admin"});
     await vfs.writeDoc("{}", scene_id, user.uid);
     await vfs.writeFile(dataStream(), {scene: "foo", mime:"model/gltf-binary", name: "models/foo.glb", user_id: user.uid});
     await vfs.writeFile(dataStream(["FOO\n"]), {scene: "foo", mime:"model/gltf-binary", name: "models/FOO.GLB", user_id: user.uid});
@@ -77,6 +80,46 @@ describe("GET /scenes/:scene/:filename(.*)", function(){
     .expect(200)
     .expect("Content-Type", "model/gltf-binary")
     .expect("foo\n");
+  });
+
+  it("can abort responses", async function(){
+    await vfs.createScene("foo", {"0":"write"});
+
+    let orig = vfs.getFile;
+    let stream = (Readable.from(["hello", "world", "\n"]) as any).map((s:string)=>new Promise(r=>setTimeout(()=>r(s), 4)));
+    let d = stream.destroy;
+    let calls:Array<Error|undefined> = [];
+    stream.destroy = function(e :Error|undefined){
+      calls.push(e);
+      return d.call(stream, e);
+    }
+    try{
+      vfs.getFile = (()=>Promise.resolve({
+        id: 1,
+        name: "models/foo.glb",
+        hash: "tbudgBSg-bHWHiHnlteNzN8TUvI80ygS9IULh4rklEw",
+        generation: 1,
+        size: 10,
+        mtime: new Date("2023-04-13T09:03:21.506Z"),
+        ctime: new Date("2023-04-13T09:03:21.506Z"),
+        mime: "model/gltf-binary",
+        author_id: 0,
+        author: "default",
+        stream,
+      }));
+
+      let test = request(this.server).get("/scenes/foo/models/foo.glb")
+      .buffer(false)
+      .send();
+      setTimeout(()=>(test as any).req.socket.destroy(), 6);
+      await expect(test).to.be.rejectedWith(/socket hang up/); //
+      await timers.setTimeout(2);
+      expect(calls, "stream.destroy() should be called on aborted requests").to.have.property("length", 1);
+
+    }finally{
+      vfs.getFile = orig;
+    }
+
   });
 
 });
