@@ -22,7 +22,7 @@ export default async function handleGetFile(req :Request, res :Response){
   res.set("Content-Type", f.mime);
   res.set("Content-Length", f.size.toString(10));
   res.status(200);
-  pipeline(
+  await pipeline(
     f.stream,
     res,
   );
