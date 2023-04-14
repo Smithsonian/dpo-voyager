@@ -228,7 +228,7 @@ export default class CVScene extends CVNode
                     dirLight.light.shadow.camera.far = this.outs.boundingRadius.value*4.0;
                 }
                 lightTrans.ins.position.setValue(_vec3.toArray());
-                _vec3.setScalar(meterScale*0.2); // light helper always 20cm
+                _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2);
                 lightTrans.ins.scale.setValue(_vec3.toArray());
             });
         }
