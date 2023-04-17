@@ -39,7 +39,7 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
 
   if(clean) setTimeout(()=>{
     //Clean file system after a while to prevent delaying startup
-    vfs.clean().catch(e=>console.error(e));
+    vfs.clean().then(()=>console.log("Cleanup done."), e=> console.error("Cleanup failed :", e));
   }, 60000);
 
   app.use(cookieSession({
