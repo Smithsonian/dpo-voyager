@@ -65,8 +65,8 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   render() {
     return html`
       <corpus-navbar>
-        <nav-link href="https://ethesaurus.holusion.com" text="Documentation"></nav-link>
-        ${(this.user?.isAdministrator)?html`<nav-link .selected=${this.isActive("/ui/admin/")} text="${this.t("ui.administration")}" href="/ui/admin/"></nav-link>`:""}
+        <nav-link href="https://ethesaurus.holusion.com" >Documentation</nav-link>
+        ${(this.user?.isAdministrator)?html`<nav-link .selected=${this.isActive("/ui/admin/")} href="/ui/admin/">${this.t("ui.administration")}</nav-link>`:""}
         <div class="divider"></div>
         <user-button .selected=${this.isActive("/ui/user/")} .user=${this.user}></user-button>
       </corpus-navbar>

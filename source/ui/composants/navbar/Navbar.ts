@@ -1,7 +1,7 @@
 
 import { css, customElement, html, LitElement, TemplateResult } from "lit-element";
 
-import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';;
+import styles from '!lit-css-loader?{"specifier":"lit-element"}!sass-loader!./styles.scss';
 
 
 /**

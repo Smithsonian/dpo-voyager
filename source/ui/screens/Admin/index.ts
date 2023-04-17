@@ -35,9 +35,9 @@ export default class AdminScreen extends router( withUser( i18n(LitElement) ) ) 
     }
     return html`<div>
       <nav>
-          <nav-link .selected=${this.isActive("", true)} href="${this.path}" text="Home"></nav-link>
-          <nav-link .selected=${this.isActive("users")} href="${this.path}users" text="${this.t("ui.users")}"></nav-link>
-          <nav-link .selected=${this.isActive("stats")} href="${this.path}stats" text="${this.t("ui.stats")}"></nav-link>
+          <nav-link .selected=${this.isActive("", true)} href="${this.path}">Home</nav-link>
+          <nav-link .selected=${this.isActive("users")} href="${this.path}users">${this.t("ui.users")}</nav-link>
+          <nav-link .selected=${this.isActive("stats")} href="${this.path}stats">${this.t("ui.stats")}</nav-link>
       </nav>
       <section>
         ${this.renderContent()}

@@ -1,6 +1,7 @@
+@import "../../variables.scss";
 @import "@ff/ui/styles/_styles.scss";
 
-:host {
+:host(corpus-navbar) {
   position: fixed;
   top: 0;
   width: 100%;
@@ -40,15 +41,60 @@ nav {
     align-items: stretch;
     flex-basis: auto;
     justify-content: end;
-    ::slotted(.ff-button.ff-control){
+    ::slotted(.ff-button.ff-control), ::slotted(.nav-link){
       height:100%;
       flex: 0 0 auto;
       box-sizing: border-box;
       background-color: transparent;
-      padding: 4px 10px !important;
       font-size: 13px;
-      color: var(--color-light);
+      color: $color-light;
+    }
+    ::slotted(.ff-button.ff-control){
+      padding: 4px 10px !important;
     }
   }
 }
 
+:host(.nav-link){
+  position: relative;
+  flex-wrap: wrap;
+  color: inherit;
+  font-size: 13px;
+  
+  slot{
+    padding: 5px;
+    margin: 3px;
+    white-space: nowrap;
+  }
+
+  > a {
+    color: inherit;
+    font-size: inherit;
+    background-color: transparent;
+    transition: background-color 0.2s ease 0s;
+    svg { fill: currentColor; }
+
+    &:hover, &:focus{
+      color: white;
+      background-color: $color-background-lighter;
+    }
+  
+    &.selected {
+      background-color: $color-primary;
+      &:hover, &:focus {
+        background-color: $color-primary-light;
+      }
+    }
+
+    cursor: pointer;
+    text-decoration: none;
+    height:100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1 1 auto;
+    box-sizing: border-box;
+    padding: 4px 10px;
+    white-space:nowrap;
+  }
+}

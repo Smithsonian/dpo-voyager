@@ -2,21 +2,6 @@
 @import "client/ui/styles";
 
 
-:root{
-  --nav-height: 44px;
-  --col-width: 1320px;
-  --color-primary: #{$color-primary};
-  --color-secondary: #{$color-secondary};
-  --color-tertiary: #{$color-tertiary};
-
-  --color-dark: #{$color-tertiary};
-  --color-medium: #{$color-primary};
-  --color-hover: #{$color-primary-dark};
-  --color-light: #{$color-text};
-
-  --color-danger: #{$color-danger};
-}
-
 
 
 *, ::before, ::after {
@@ -65,12 +50,6 @@ corpus-list {
   }
 }
 
-nav-link{
-  color: $color-light;
-  &:hover, &:focus{
-    color: white;
-  }
-}
 
 .ff-button.ff-control {
   background: $color-background-light;

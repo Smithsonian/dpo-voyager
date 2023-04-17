@@ -1,20 +1,19 @@
 
-import { css, LitElement, customElement, property, html, TemplateResult, PropertyValues } from "lit-element";
+import { customElement, property, html, PropertyValues, css } from "lit-element";
 
-import Notification from "@ff/ui/Notification";
 import "../Modal";
 import Modal from "../Modal";
 import "../UserLogin"
-import Button from "@ff/ui/Button";
-import { doLogout, setSession, UserSession } from "../../state/auth";
+import { UserSession } from "../../state/auth";
 import i18n from "../../state/translate";
 import { navigate } from "../../state/router";
+import NavLink from "./NavLink";
 
 /**
  * Main UI view for the Voyager Explorer application.
  */
 @customElement("user-button")
-export default class UserMenu extends i18n(Button){
+export default class UserMenu extends i18n(NavLink){
   @property()
   href = "/ui/user/";
 
@@ -24,6 +23,10 @@ export default class UserMenu extends i18n(Button){
   constructor()
   {
       super();
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
   }
 
   override onClick = (ev :MouseEvent)=>{
@@ -42,12 +45,10 @@ export default class UserMenu extends i18n(Button){
   {
     let s = super.shouldUpdate(changedProperties);
     if(changedProperties.has("user") || changedProperties.has("language")){
-      this.text = this.user?.username || this.t("ui.login");
+      this.innerHTML = this.user?.username || this.t("ui.login");
       return true;
     }
     return s;
   }
-
-
  
 }
