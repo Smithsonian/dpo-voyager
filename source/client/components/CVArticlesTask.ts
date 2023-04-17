@@ -287,18 +287,19 @@ export default class CVArticlesTask extends CVTask
 
         if (meta && article && meta.articles.getById(article.id)) {
             article = meta.articles.getById(article.id);
-            ins.title.setValue(article.title, true);
-            ins.lead.setValue(article.lead, true);
-            ins.tags.setValue(article.tags.join(", "), true);
 
             // if we don't have a uri for this language, create one so that it is editable
-            if(article.uri === undefined) {
+            (article.uri ? Promise.resolve(): (()=>{
                 const defaultFolder = CVMediaManager.articleFolder;
                 article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
-            }
-
-            ins.uri.setValue(article.uri, true);
-            outs.article.setValue(article);
+                return this.createEditArticle(article)
+            })()).then(()=>{
+                ins.title.setValue(article.title, true);
+                ins.lead.setValue(article.lead, true);
+                ins.tags.setValue(article.tags.join(", "), true);
+                ins.uri.setValue(article.uri, true);
+                outs.article.setValue(article);
+            });
         }
         else {
             ins.title.setValue("", true);
