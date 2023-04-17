@@ -1,5 +1,6 @@
 
 import path from "path";
+import util from "util";
 import cookieSession from "cookie-session";
 import express from "express";
 import { engine } from 'express-handlebars';
@@ -174,15 +175,23 @@ export default async function createServer(rootDir :string, /*istanbul ignore ne
   app.use("/scenes", (await import("./routes/scenes")).default);
 
   app.use("/api/v1", (await import("./routes/api/v1")).default);
+
+
+  const log_errors = process.env["TEST"] !== 'true';
+  const isTTY = process.stderr.isTTY;
+
   // error handling
   // istanbul ignore next
   //@ts-ignore
   app.use((error, req, res, next) => {
-    process.env["TEST"] == 'true' || console.error(error);
+    if(log_errors) console.error(isTTY ? error : util.inspect(error, {
+      compact: 3,
+      breakLength: Infinity,
+    }).replace(/\n/g,"\\n"));
     
     if (res.headersSent) {
-      console.warn("Error happened after headers were sent for %s : %s", req.method, req.originalUrl);
-        return next(error);
+      console.warn("An error happened after headers were sent for %s : %s", req.method, req.originalUrl);
+      return next(error);
     }
     let code = (error instanceof HTTPError )? error.code : 500;
     res.format({
