@@ -1,4 +1,5 @@
 import {ClientRequest} from "http"
+import {once} from "events";
 import {Readable} from "stream";
 import timers from "node:timers/promises";
 
@@ -111,9 +112,12 @@ describe("GET /scenes/:scene/:filename(.*)", function(){
       let test = request(this.server).get("/scenes/foo/models/foo.glb")
       .buffer(false)
       .send();
-      setTimeout(()=>(test as any).req.socket.destroy(), 6);
-      await expect(test).to.be.rejectedWith(/socket hang up/); //
-      await timers.setTimeout(2);
+      setTimeout(()=>(test as any).req.socket.end(), 5);
+      let [err] = await Promise.all([
+        once(stream, "close").catch(e=>e),
+        expect(test).to.be.rejectedWith(/socket hang up/),
+      ]);
+      expect(err).to.have.property("code", "ERR_STREAM_PREMATURE_CLOSE");
       expect(calls, "stream.destroy() should be called on aborted requests").to.have.property("length", 1);
 
     }finally{

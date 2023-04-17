@@ -22,8 +22,12 @@ export default async function handleGetFile(req :Request, res :Response){
   res.set("Content-Type", f.mime);
   res.set("Content-Length", f.size.toString(10));
   res.status(200);
-  await pipeline(
-    f.stream,
-    res,
-  );
+  try{
+    await pipeline(
+      f.stream,
+      res,
+    );
+  }catch(e){
+    if((e as any).code != "ERR_STREAM_PREMATURE_CLOSE") throw e;
+  }
 };
