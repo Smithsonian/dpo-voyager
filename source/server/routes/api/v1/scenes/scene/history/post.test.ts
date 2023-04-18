@@ -144,12 +144,29 @@ describe("POST /api/v1/scenes/:scene/history", function(){
 
     let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
     .set("Content-Type", "application/json")
-    .send({type: "document", id: ref.id })
+    .send({type: "file", id: ref.id })
     .expect("Content-Type", "application/json; charset=utf-8")
     .expect(400);
-    
+    expect(res.text).to.match(/Trying to remove scene document for /);
     expect(await vfs.getDoc(scene_id)).to.have.property("data", `{"id": 1}`);
   });
 
+  it("requires proper file identifier", async function(){
+    let docId = await vfs.writeDoc(`{"id": 1}`, scene_id);
+    let ref = await vfs.writeFile(dataStream(["hello"]), {mime: "text/html", name:"articles/hello.txt", scene: scene_id, user_id: user.uid });
 
+    let bodies = [
+      {name: ref.name}, //no generation
+      {id: docId } //no type leads to collision with doc ids and file ids.
+    ];
+
+    for(let body of bodies){
+      let res = await request(this.server).post(`/api/v1/scenes/${titleSlug}/history`)
+      .set("Content-Type", "application/json")
+      .send(body)
+      .expect("Content-Type", "application/json; charset=utf-8")
+      .expect(400);
+      expect(res.text).to.match(/History restoration requires/);
+    }
+  });
 });

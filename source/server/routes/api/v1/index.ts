@@ -13,7 +13,6 @@ import postScene from "./scenes/scene/post";
 import getScenes from "./scenes/get";
 import getSceneHistory from "./scenes/scene/history/get";
 import getFiles from "./scenes/scene/files/get";
-import getFileHistory from "./scenes/scene/files/type/file/history/get";
 
 import getScene from "./scenes/scene/get";
 import getPermissions from "./scenes/scene/permissions/get";
@@ -70,7 +69,6 @@ router.get("/scenes/:scene/history", wrap(getSceneHistory));
 router.post("/scenes/:scene/history", bodyParser.json(), wrap(postSceneHistory));
 router.get("/scenes/:scene", wrap(getScene));
 router.get("/scenes/:scene/files", wrap(getFiles));
-router.get("/scenes/:scene/files/:type(articles|images|models)/:file/history", wrap(getFileHistory));
 router.get("/scenes/:scene/permissions", wrap(getPermissions));
 router.patch("/scenes/:scene/permissions", canAdmin, bodyParser.json(), wrap(patchPermissions));
 
