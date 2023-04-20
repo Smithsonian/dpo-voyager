@@ -1,4 +1,4 @@
-import { css, CSSResultGroup, customElement, html, LitElement, property } from "lit-element";
+import { css, customElement, html, LitElement, property } from "lit-element";
 
 
 
@@ -11,23 +11,29 @@ export default class ListItem extends LitElement{
   @property({type :String})
   name :string;
 
+  @property({type :String})
+  href :string = "";
+
+  @property()
+  thumb :string;
+
   protected render(): unknown {
 
     return html`
+      <a href=${this.href} class="list-item">
+        <slot class="name">
+          ${this.name}
+        </slot>
+      </a>
       ${(this.onChange? html`<span class="pill">
         <input type="checkbox" name="${this.name}" @change=${this.onChange} name="isAdministrator" id="isAdministrator">
       </span>`:null)}
-      <slot class="name">
-        ${this.name}
-      </slot>
     `
   }
   static styles = css`
     :host{
       display: block;
       flex: 1 1 auto;
-      background: rgba(0, 0, 0, 0.3);
-      margin: 4px 0;
       display: flex;
       align-items: center;
     }
@@ -35,11 +41,26 @@ export default class ListItem extends LitElement{
       padding: 6px;
     }
     .pill input{
-      width: 25px;
-      height: 25px;
+      width: 20px;
+      height: 20px;
     }
-    .name{
-      font-size: 120%;
+    .list-item{
+      display:flex; 
+      flex: 1 1 auto;
+      gap: 1rem;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      background: #000a;
+      padding: 1rem;
+      border-bottom: 1px solid #103040;
+    }
+    .list-item:hover{
+      background: #071922
+    }
+    a{
+      text-decoration: none;
+      color: inherit;
     }
   `;
 }

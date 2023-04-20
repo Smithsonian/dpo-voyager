@@ -16,6 +16,7 @@ import "./screens/Admin";
 import "./screens/SceneHistory";
 import "./screens/FileHistory";
 import "./screens/UserSettings";
+import "./screens/Home"
 import "./composants/Modal";
 
 import { updateLogin, withUser } from './state/auth';
@@ -44,7 +45,7 @@ function toRegex(path:string|RegExp){
 @customElement("ecorpus-main")
 export default class MainView extends router(i18n(withUser(LitElement))){
   @route()
-  static "/ui/" =({search})=> html`<corpus-list .compact=${(search as URLSearchParams).has("compact")}></corpus-list>`;
+  static "/ui/" =({search})=> html`<home-page .compact=${(search as URLSearchParams).has("compact")}></home-page>`;
   @route()
   static "/ui/scenes/" =({search})=> html`<corpus-list .compact=${(search as URLSearchParams).has("compact")}></corpus-list>`;
   @route()
@@ -65,6 +66,7 @@ export default class MainView extends router(i18n(withUser(LitElement))){
   render() {
     return html`
       <corpus-navbar>
+        <nav-link .selected=${this.isActive("/ui/scenes/")} href="/ui/scenes/">Collection</nav-link>
         <nav-link href="https://ethesaurus.holusion.com" >Documentation</nav-link>
         ${(this.user?.isAdministrator)?html`<nav-link .selected=${this.isActive("/ui/admin/")} href="/ui/admin/">${this.t("ui.administration")}</nav-link>`:""}
         <div class="divider"></div>

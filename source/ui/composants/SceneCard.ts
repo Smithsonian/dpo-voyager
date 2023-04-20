@@ -1,19 +1,10 @@
-
 import { LitElement, customElement, property, html, TemplateResult, css } from "lit-element";
 import WebDAVProvider from "@ff/scene/assets/WebDAVProvider";
 import i18n from "../state/translate";
+import { AccessType, AccessTypes, Scene } from "../state/withScenes";
 
 
 
-export interface SceneProps{
-  name  :string;
-  uid   :number;
-  ctime :string;
-  mtime :string;
-}
-
-
-const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24"><path d="M12 20q-.825 0-1.412-.587Q10 18.825 10 18q0-.825.588-1.413Q11.175 16 12 16t1.413.587Q14 17.175 14 18q0 .825-.587 1.413Q12.825 20 12 20Zm0-6q-.825 0-1.412-.588Q10 12.825 10 12t.588-1.413Q11.175 10 12 10t1.413.587Q14 11.175 14 12q0 .825-.587 1.412Q12.825 14 12 14Zm0-6q-.825 0-1.412-.588Q10 6.825 10 6t.588-1.412Q11.175 4 12 4t1.413.588Q14 5.175 14 6t-.587 1.412Q12.825 8 12 8Z"/></svg>`
 
 
 /**
@@ -23,37 +14,52 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
  export default class SceneCard extends i18n(LitElement)
  {
     static _assets = new WebDAVProvider();
-    @property({attribute: false})
+    @property()
     thumb :string;
 
     @property()
     name :string;
 
     @property()
-    url :string;
+    time :string;
 
     @property({type :String})
-    mode :"read"|"write";    
+    access :AccessType = "none";
+
+    @property({type:String})
+    cardStyle :"list"|"grid";
+
+    @property({type: Function})
+    onChange :(ev :Event)=>any;
 
     get path (){
       return `/scenes/${this.name}/`
+    }
+
+    can(a :AccessType) :boolean{
+      return AccessTypes.indexOf(a ) <= AccessTypes.indexOf(this.access);
     }
 
     constructor()
     {
         super();
     }
-
+ 
     public connectedCallback(): void {
         super.connectedCallback();
-        if(this.thumb ) return;
-        SceneCard._assets.get(this.path, false).then(p=>{
-          let thumbProps = p.find(f=> f.name.endsWith(`-image-thumb.jpg`));
-          if(!thumbProps) return console.log("No thumbnail for", this.name);
-          this.thumb = thumbProps.url;
-        }, (e)=>{
-          console.warn("Failed to PROPFIND %s :", this.path, e);
-        });
+
+        if(this.cardStyle == "list") this.classList.add("card-list");
+        if(this.cardStyle == "grid") this.classList.add("card-grid");
+        
+        if(!this.thumb ){
+          SceneCard._assets.get(this.path, false).then(p=>{
+            let thumbProps = p.find(f=> f.name.endsWith(`-image-thumb.jpg`));
+            if(!thumbProps) return console.log("No thumbnail for", this.name);
+            this.thumb = thumbProps.url;
+          }, (e)=>{
+            console.warn("Failed to PROPFIND %s :", this.path, e);
+          });
+        }
     }
 
     public disconnectedCallback(): void {
@@ -62,128 +68,125 @@ const settingsIcon = html`<svg xmlns="http://www.w3.org/2000/svg" height="24" wi
     protected render() :TemplateResult {
       let explorer = `/ui/scenes/${encodeURIComponent(this.name)}/view?lang=${this.language.toUpperCase()}`;
       let story = `/ui/scenes/${encodeURIComponent(this.name)}/edit?lang=${this.language.toUpperCase()}`;
-      return html`<div class="scene-card-inner">
-        <a href="${explorer}">
-          ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="background:radial-gradient(circle, #103040 0, #0b0b0b 100%);" src="/images/defaultSprite.svg"/>`}
-          <div class="tools">
-            <h4 class="card-title">${this.name}</h4>
-            ${this.mode === "write"? html`
-              <a class="btn tool-properties" href="/ui/scenes/${this.name}/" title="propriétés de l'objet">${settingsIcon}</ff-icon></a>
-              <a class="btn tool-link" href="${story}"> story ➝</a>
-            `: null}
-          </div>        
-        </a>
-      </div>`;
+      return html`
+        <div class="scene-card-inner ${this.cardStyle == "list" ? "scene-card-inner-list": ""}" }>
+            <div style="display:flex; flex:auto; align-items:center;">
+              <a href="${explorer}">
+                ${this.thumb? html`<img src="${this.thumb}"/>`: html`<img style="background:radial-gradient(circle, #103040 0, #0b0b0b 100%);" src="/images/defaultSprite.svg" />`}
+              </a>
+              <div class="infos">
+                <h4 class="card-title">${this.name}</h4>
+                <p class="card-ctime">${new Date(this.time).toLocaleString(this.language)}</p>
+              </div>          
+            </div>
+            <div class="tools">
+              <a href="${explorer}"><ff-icon name="eye"></ff-icon>${this.t("ui.view")}</a>
+              ${this.can("write")? html`<a class="tool-link" href="${story}"><ff-icon name="edit"></ff-icon>${this.t("ui.edit")}</a>`:null}
+              ${this.can("admin")? html`<a class="tool-properties" href="/ui/scenes/${this.name}/" title="propriétés de l'objet"><ff-icon name="admin"></ff-icon>${this.t("ui.admin")}</a>`:null}
+            </div>
+        </div>
+        ${(this.onChange? html`<span class="pill">
+            <input type="checkbox" name="${this.name}" @change=${this.onChange} name="isAdministrator" id="isAdministrator">
+        </span>`:null)}`;
     }
 
     static styles = [css`
       :host {
-        display: block;
         width: 100%;
-        flex: 0 0 auto;
-        padding: 1rem .5rem;
+        display: flex;
+        align-items: center;
       }
-
-      @media (min-width: 576px){
-        :host{
-          width: calc(100% / 2);
-        }
-      }
-      @media (min-width: 992px){
-        :host{
-          width: calc(100% / 3);
-        }
-      }
-      @media (min-width: 1200px){
-        :host{
-          width: calc(100% / 4);
-        }
-      }
-
-      a, button{
-        color: var(--color-light);
-        text-decoration: none;
-      }
-
 
       .scene-card-inner{
-        position: relative;
+        background-color: #000a;
         box-sizing: border-box;
-        padding: 0;
+        padding: 1rem;
         width: 100%;
         height: 100%;
-        display: flex;
-        flex-direction: column;
-        text-align: center;
         border-radius: 4px;
+        border: 1px solid #103040;
       }
 
-      .scene-card-inner > a:hover{
-        filter: brightness(1.2);
+      .scene-card-inner:hover{
+        background-color: #071922;
+      }
+
+      @media (min-width: 664px){
+        .scene-card-inner-list{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+      }
+
+      .scene-card-inner-list{
+        padding: 0.5rem;
       }
 
       .scene-card-inner img {
-          object-fit: cover;
-          aspect-ratio: 1 / 1;
-          width: 100%;
-          height: 100%;
-          border-radius: 4px;
-          transition: filter 0.2s ease 0s;
+        aspect-ratio: 1 / 1;
+        width: 70px;
+        height: fit-content;
+        border-radius: 4px;
+        border: #103040 solid 1px;
       }
-
+      .scene-card-inner-list img{
+        height: auto;
+      }
+      .infos{
+        width: 70%;
+      }
+      .infos > *{
+        padding: 0 0.75rem;
+      }
 
       .tools{
-        position: absolute;
-        inset: 1rem;
+        margin-top: 0.5rem;
+        display:flex;
+        justify-content: space-around;
       }
-      .tools > *{
-        background: rgba(0, 0, 0, 0.4);
-        padding: .75rem;
-        margin: 0;
+
+      .scene-card-inner-list .tools{
+        margin: 0rem;
       }
-      .tools .card-title{
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        max-width: 80%;
-        border-radius: 4px;
+
+      .tools a{
+        font-size: smaller;
+        width: 100%;
+        margin: 2px;
+        color: #eee;
+        text-decoration: none;
+        display: flex;
+        justify-content: center;
+        padding: 0 0.5rem;
+      }
+      .tools a:hover{
+        color: rgb(0, 165, 232);
+      }
+
+      .card-title{
+        margin:0;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
       }
-
-      .tools .tool-properties {
-        position: absolute;
-        bottom: 0px;
-        left: 0px;
-        height:24px;
-        width:24px;
+      .card-ctime{
+        color: #6c757d;
+        font-size: smaller;
       }
-
-      .tools .tool-link {
-        position: absolute;
-        bottom: 0px;
-        right: 0px;
-      }
-
-      .tools .btn{
-        color: var(--color-light);
-        border-radius: 4px;
-      }
-
-      .tools .btn:hover{
-        color: white;
-      }
-      .tools a:hover{
-        text-decoration: underline;
-      }
-
       .tools svg{
         width: inherit;
-        height: inherit;
+        height: 1rem;
         fill: currentColor;
+        margin-right: 4px;
       }
-      
+      .pill{
+        padding: 6px;
+      }
+      .pill input{
+        width: 20px;
+        height: 20px;
+      }
   `]
  
  }

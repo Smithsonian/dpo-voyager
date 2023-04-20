@@ -59,7 +59,11 @@ export function router<T extends Constructor<LitElement>>(baseClass:T) : T & Con
       for(let [pattern, content] of Router.routes.entries()){
         let m = pattern.exec(current);
         if(!m) continue;
-        return content({parent:this, params: m.groups, search: this.route.searchParams});
+        let params = {};
+        for(let [k,v] of Object.entries(m.groups??{})){
+          params[k] = decodeURIComponent(v);
+        }
+        return content({parent:this, params, search: this.route.searchParams});
       }
       return html`<h1>Error :</h1>
         <p>${current} Not Found in this router</p>

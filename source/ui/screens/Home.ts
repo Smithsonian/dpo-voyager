@@ -12,7 +12,9 @@ import { UserSession, withUser } from "../state/auth";
 import { repeat } from "lit-html/directives/repeat";
 
 import "../composants/TaskButton";
-import { withScenes, Scene } from "../state/withScenes";
+import { withScenes, Scene, AccessType } from "../state/withScenes";
+
+
 
 interface Upload{
     name :string;
@@ -21,8 +23,8 @@ interface Upload{
 /**
  * Main UI view for the Voyager Explorer application.
  */
- @customElement("corpus-list")
- export default class List extends withScenes( withUser( i18n( LitElement )))
+ @customElement("home-page")
+ export default class HomePage extends withScenes( withUser( i18n( LitElement )))
  {
 
     @property({type: Object})
@@ -35,12 +37,17 @@ interface Upload{
     @property()
     dragover = false;
 
+    @property({type: Boolean})
+    compact :boolean = false;
+
     @property({type: Array, attribute: false})
     selection = [];
 
     get isUser(){
         return (this.user && !this.user.isDefaultUser);
     }
+
+    access = ["read", "write", "admin"] as AccessType[];
 
     constructor()
     {
@@ -50,7 +57,7 @@ interface Upload{
     createRenderRoot() {
         return this;
     }
-      
+
     public onLoginChange (u: UserSession|undefined){
         super.onLoginChange(u);
         this.fetchScenes();
@@ -59,7 +66,7 @@ interface Upload{
     upload(file :File){
         console.log("Upload File : ", file);
         let sceneName = file.name.split(".").slice(0,-1).join(".");
-    
+
         const setError = ({code, message})=>{
             Notification.show(`Can't  create ${sceneName}: ${message}`, "error", 4000);
             delete this.uploads[sceneName];
@@ -86,7 +93,7 @@ interface Upload{
                     setTimeout(setDone, 0);
                 }
             }
-    
+
             xhr.upload.onprogress = function onUploadProgress(evt){
                 if(evt.lengthComputable){
                     console.log("Progress : ", Math.floor(evt.loaded/evt.total*100));
@@ -98,7 +105,7 @@ interface Upload{
             xhr.onerror = function onUploadError(){
                 setError({code: xhr.status, message: xhr.statusText});
             }
-    
+
             xhr.open('POST', `/api/v1/scenes/${sceneName}`);
             xhr.send(file);
         })();
@@ -112,91 +119,85 @@ interface Upload{
     }
 
     private renderScene(mode :string, scene:Scene|Upload){
-
-        return html`<scene-card cardStyle="list" 
+        return html`<scene-card 
+            cardStyle="grid" 
             .mode=${mode} 
             name=${scene.name} 
             .thumb=${(scene as Scene).thumb} 
-            .time=${(scene as Scene).mtime}
+            .time=${(("mtime" in scene)?scene.mtime: false)}
             access=${(("access" in scene)?((this.user?.isAdministrator)?"admin":scene.access): "none")}
-            .onChange=${this.onSelectChange}
-        />`
+        />`;
+    }
+
+    private renderSceneCompact(scene:Scene|Upload){
+        return html`
+            <list-item name="${scene.name}" href="/ui/scenes/${scene.name}/" thumb=${(scene as Scene).thumb}}>
+                ${"author" in scene? html`
+                <span style="flex: 1 0 6rem;overflow: hidden;text-overflow: ellipsis">${scene.name}</span>
+                <span style="flex: 0 5 auto; font-size:smaller">${scene.author}</span>
+                <span style="flex: 1 0 5rem;overflow: hidden;text-align: right;; font-size:smaller">${new Date(scene.ctime).toLocaleString()}</span>
+            `:scene.name}
+            </list-item>
+        `;
     }
 
     protected render() :TemplateResult {
         if(!this.isUser){
             return html`<landing-page></landing-page>`;
         }
-
         let mode = (this.user?"write":"read")
-
-
         if(!this.list){
             return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`;
         }
-
+        //All scenes where I am mentioned as a user, with read|write|admin sorted by last modified
+        let scenes = this.list.sort((a, b) => new Date(b.mtime).valueOf() - new Date(a.mtime).valueOf());
+        // Scenes where I am admin (max 4 last modified)
+        let myScenes = scenes.filter((s:Scene)=> s.access.user == "admin").slice(0, 4);
+        //Scenes where I can at least write (max 4 last created) - skipped if it has the same members as myScenes
+        let recentScenes = this.list.filter((s:Scene)=> (s.access.user == "admin" || s.access.user == "write")).sort((a, b) => new Date(b.ctime).valueOf() - new Date(a.ctime).valueOf()).slice(0, 4 - Math.min(Object.keys(this.uploads).length, 4));
+        
+        let uploads = Object.keys(this.uploads).map(name=>({name}));
+        
         return html`
-            <div class="toolbar section">
-                <div class="list-tasks form-control">
-                    <div class="form-item" style="display:flex">
-                        <input type="search" id="model-search" placeholder=${this.t("ui.searchScene")} @change=${this.onSearchChange}>
-                        <button class="ff-button ff-control btn-primary" style="margin-top:0" type="submit"><ff-icon name="search"></ff-icon></button>
+        <h2>${this.t("info.homeHeader")}</h2>
+        <div class="list-tasks" style="margin-bottom:1rem">
+            <upload-button class="ff-button ff-control btn-primary" @change=${this.onUploadBtnChange}>
+                ${this.t("ui.upload")}
+            </upload-button>
+            <a class="ff-button ff-control btn-primary" href="/ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a>
+        </div>
+
+        ${(this.list.length == 0 && Object.keys(this.uploads).length == 0)?null: html`
+            ${(myScenes.length > 0) ? 
+                html`
+                <div class="section">
+                    <h3>${this.t("ui.myScenes")}</h3>
+                    <div class="list-grid" style="position:relative; margin-top:20px">
+                        ${myScenes.map((scene)=>this.renderScene(mode, scene))}
                     </div>
-                    <h4>${this.t("ui.newScene")}</h4>
-                    <upload-button class="ff-button ff-control btn-primary" style="padding:8px" @change=${this.onUploadBtnChange}>
-                        ${this.t("ui.upload")}
-                    </upload-button>
-                    
-                    <a class="ff-button ff-control btn-primary" href="/ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a>
-                    
-                    ${(this.selection.length)?html`
-                    <h4>${this.t("ui.tools")}</h4>
-                    <a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
-                        this.selection.map(name=>`name=${encodeURIComponent(name)}`).join("&")
-                        }&format=zip">
-                        Download Zip
-                    </a>`: null}
-              
                 </div>
+            `: null}
+        ${(uploads.length === 0 && recentScenes.some(s=>myScenes.indexOf(s) == -1))? html`<div class="section">
+                <h3>${this.t("ui.ctimeSection")}</h3>
+                <div class="list-grid" style="position:relative;">
+                ${repeat([
+                    ...uploads,
+                    ...recentScenes,
+                ],({name})=>name , (scene)=>this.renderScene(mode, scene))}
+                </div>
+            </div>`: null}
+
+        <div class="section">
+            <h3>${this.t("ui.mtimeSection")}</h3>
+            <div class="list" style="position:relative;">
+                ${repeat([
+                    ...scenes.slice(0, 8),
+                ],({name})=>name , (scene)=>this.renderSceneCompact(scene))}
             </div>
-            <div class="list-grid list-items section">
-                ${(this.list.length == 0 && Object.keys(this.uploads).length == 0)?
-                    html`<h4>No scenes available</h1>`:
-                    repeat([
-                        ...Object.keys(this.uploads).map(name=>({name})),
-                        ...this.list,
-                    ],({name})=>name , (scene)=>this.renderScene(mode, scene))
-                }
-                ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
-            </div>`;
-    }
-
-    ondragenter = (ev)=>{
-        ev.preventDefault();
-    }
-    ondragleave = ()=>{
-        this.dragover = false;
-    }
-    ondragover = (ev)=>{
-        ev.preventDefault()
-        if(this.isUser) this.dragover = true;
-    }
-    ondrop = (ev)=>{
-        ev.preventDefault();
-        if(!this.isUser) return;
-
-        this.dragover = false;
-        for(let item of [...ev.dataTransfer.items]){
-            
-            let file = item.getAsFile();
-            if( !/\.glb$/i.test(file.name) || item.kind !== "file"){
-                Notification.show(`${file.name} is not valid. This method only accepts .glb files` , "error", 4000);
-                continue;
-            };
-            this.upload(file)
-        }
-    }
-
+        </div>
+        `}
+    `}
+    
     onUploadBtnChange = (ev)=>{
         ev.preventDefault();
         for(let file of [...ev.detail.files]){
@@ -206,13 +207,6 @@ interface Upload{
             };
             this.upload(file)
         }
-    }
-
-    onSearchChange = (ev)=>{
-        ev.preventDefault();
-        this.match = ev.target.value;
-        this.fetchScenes()
-        console.log("list items find : ",this.list)
     }
 
  }

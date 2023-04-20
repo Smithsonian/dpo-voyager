@@ -18,6 +18,7 @@ describe("/api/v1/login", function(){
   this.afterEach(async function(){
     await cleanIntegrationContext(this);
   });
+
   it("sets a cookie", async function(){
     this.agent = request.agent(this.server);
     await this.agent.post("/api/v1/login")
@@ -27,6 +28,7 @@ describe("/api/v1/login", function(){
     .expect(200)
     .expect('set-cookie', /session=/);
   });
+
   it("can get login status (not connected)", async function(){
     await request(this.server).get("/api/v1/login")
     .set("Accept", "application/json")
@@ -79,6 +81,7 @@ describe("/api/v1/login", function(){
     .expect(400);
     expect(res.body).to.have.property("message").match(/username not provided/);
   });
+
   it("send a proper error if password is missing", async function(){
     this.agent = request.agent(this.server);
     let res = await this.agent.post("/api/v1/login")
@@ -88,6 +91,7 @@ describe("/api/v1/login", function(){
     .expect(400);
     expect(res.body).to.have.property("message").match(/password not provided/);
   });
+  
   it("can logout", async function(){
     let agent = request.agent(this.server);
     await agent.post("/api/v1/login")
@@ -106,5 +110,43 @@ describe("/api/v1/login", function(){
       isDefaultUser: true,
       isAdministrator: false,
     });
+  });
+  describe("Authorization header", function(){
+    it("can use header to authenticate a request", async function(){
+      let res = {
+        username: user.username, 
+        uid: user.uid,
+        isAdministrator: false,
+        isDefaultUser: false
+      };
+
+      //Manually build the header
+      await request(this.server).get("/api/v1/login")
+      .set("Authorization", `Basic ${Buffer.from(`${user.username}:12345678`).toString("base64")}`)
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect(res);
+
+      //make supertest build the header
+      await request(this.server).get("/api/v1/login")
+      .auth(user.username, "12345678")
+      .set("Accept", "application/json")
+      .expect(200)
+      .expect(res);
+    });
+  
+    it("rejects bad header", async function(){
+      // Missing the "Basic " part
+      await request(this.server).get("/api/v1/login")
+      .set("Authorization", `${Buffer.from(`${user.username}:12345678`).toString("base64")}`)
+      .expect(400);
+    });
+    it("rejects bad user:password", async function(){
+      // Missing the "Basic " part
+      await request(this.server).get("/api/v1/login")
+      .auth(user.username, "badPassword")
+      .expect(401);
+    })
+
   });
 });

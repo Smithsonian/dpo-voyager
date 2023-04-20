@@ -26,15 +26,13 @@ a{
   color:white;
 }
 
-corpus-list {
+corpus-list, home-page {
   display: block;
   padding: 1rem;
   .list-grid{
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    
-    padding-bottom: 50px;
   }
   .drag-overlay{
     position: absolute;
@@ -48,8 +46,73 @@ corpus-list {
     border-radius: 4px;
     pointer-events: none;
   }
+  .section{
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    border: #103040 1px solid;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    h3{
+      margin-top: 0;
+    }
+  }
 }
 
+home-page{
+  .list-tasks{
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 5px;
+    .ff-button{
+      flex: 0 0 auto;
+    }
+  }
+}
+
+corpus-list{
+  display:flex;
+  gap: 10px;
+  .list-tasks{
+    padding: 0.5rem;
+    width: 300px;
+  }
+  .toolbar, .list-items{
+    height: fit-content;
+  }
+
+  .list-items{
+    width: 100%;
+  }
+
+  @media (max-width: 1024px){
+    flex-direction: column;
+    .list-tasks{
+      width: 100%;
+    }    
+  }
+}
+
+
+scene-card{
+  &.card-grid{
+    padding: 0.5rem;
+
+    @media (min-width: 576px){
+      width: calc(100% / 2);
+    }
+    @media (min-width: 992px){
+      width: calc(100% / 3);
+    }
+    @media (min-width: 1200px){
+      width: calc(100% / 4);
+    }
+  }
+
+  &.card-list{
+    padding: 0.2rem;
+  }
+}
 
 .ff-button.ff-control {
   background: $color-background-light;
@@ -238,7 +301,6 @@ corpus-list {
     }    
   }
 
-
   .form-item > select{
     width: 100%;
     padding: 5px;
@@ -246,6 +308,9 @@ corpus-list {
     border: none;
     color: inherit;
     cursor: pointer;
+    option{
+      background: $color-primary;
+    }
   }
 }
 
@@ -299,16 +364,6 @@ table.list-table {
   .ff-notification > .ff-icon {
     padding: 0;
     margin: 8px;
-  }
-}
-
-.list-tasks{
-  display: flex;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 5px;
-  .ff-button{
-    flex: 0 0 auto;
   }
 }
 

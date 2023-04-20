@@ -1,0 +1,17 @@
+{
+  "name": "thumbnails",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node  --experimental-fetch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sebastien DUMETZ <s.dumetz@holusion.com>",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^10.0.1",
+    "puppeteer": "^19.9.1"
+  }
+}

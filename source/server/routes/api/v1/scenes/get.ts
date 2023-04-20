@@ -2,15 +2,18 @@
 import { createHash } from "crypto";
 import { Request, Response } from "express";
 import path from "path";
+import { AccessType } from "../../../../auth/UserManager";
 import { HTTPError } from "../../../../utils/errors";
-import { getUser, getVfs } from "../../../../utils/locals";
+import { getHost, getUser, getVfs } from "../../../../utils/locals";
 import { wrapFormat } from "../../../../utils/wrapAsync";
 import { zip } from "../../../../utils/zip";
 
 export default async function getScenes(req :Request, res :Response){
   let vfs = getVfs(req);
   let u = getUser(req);
-  let {id: ids, name: names} = req.query;
+  let {id: ids, name: names, match, access } = req.query;
+
+  access = ((Array.isArray(access))?access : (access?[access]:undefined)) as any;
 
   let scenesList = [];
   if(Array.isArray(ids)){
@@ -35,8 +38,12 @@ export default async function getScenes(req :Request, res :Response){
   if(0 < scenesList.length){
     scenes = await Promise.all(scenesList.map(name=>vfs.getScene(name)));
   }else{
-    scenes = await vfs.getScenes(u.isAdministrator?undefined: u.uid);
+    /**@fixme ugly hach to bypass permissions when not performing a search */
+    scenes = await vfs.getScenes((u.isAdministrator && !access && !match)?undefined: u.uid, {match: match as string, access: access as AccessType[]});
   }
+
+  //canonicalize scenes' thumb names
+  scenes = scenes.map(s=>({...s, thumb: (s.thumb? new URL(encodeURI(path.join("/scenes/", s.name, s.thumb)), getHost(req)).toString() : undefined)}))
 
   let eTag = createHash("sha256")
   let lastModified = 0;
