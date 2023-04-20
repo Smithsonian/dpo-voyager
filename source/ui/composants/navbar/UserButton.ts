@@ -27,9 +27,11 @@ export default class UserMenu extends i18n(NavLink){
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.innerHTML = this.user?.username || this.t("ui.login");
   }
 
   override onClick = (ev :MouseEvent)=>{
+    ev.preventDefault();
     if(this.user?.username){
       navigate(this);
     }else{

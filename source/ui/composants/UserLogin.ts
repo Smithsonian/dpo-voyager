@@ -82,7 +82,7 @@ import Modal from "./Modal";
           </div>
         </div>
         <div style="text-align:right;">
-          <a @click=${()=>this.mode = "recover"}>${this.t("ui.recoverPassword")}</a>
+          <a style="cursor:pointer;" @click=${()=>this.mode = "recover"}>${this.t("ui.recoverPassword")}</a>
         </div>
       </form>`
     }
@@ -117,7 +117,6 @@ import Modal from "./Modal";
     }
     static styles = [styles, css`
       :host {
-        cursor: pointer;
       }
     `];
  

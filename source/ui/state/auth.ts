@@ -87,7 +87,7 @@ export function withUser<T extends Constructor<LitElement>>(baseClass:T) : T & C
     connectedCallback(){
       super.connectedCallback();
       onLogin(this.onLoginCallback);
-      this.onLoginCallback(getLogin());
+      this.user = getLogin();
     }
 
     disconnectedCallback(){
