@@ -276,7 +276,7 @@ export default class CVModel2 extends CObject3D
         }
 
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
-            ins.color.changed || ins.opacity.changed ||
+            ins.color.changed || ins.opacity.changed || ins.doubleSided.changed ||
                 ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
             this.updateMaterial();
         }
