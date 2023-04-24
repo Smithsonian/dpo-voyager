@@ -26,6 +26,17 @@ a{
   color:white;
 }
 
+.section{
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  border: $color-dark 1px solid;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  h3{
+    margin-top: 0;
+  }
+}
+
 corpus-list, home-page {
   display: block;
   padding: 1rem;
@@ -45,16 +56,6 @@ corpus-list, home-page {
     border: 2px dotted $color-secondary;
     border-radius: 4px;
     pointer-events: none;
-  }
-  .section{
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
-    border: #103040 1px solid;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    h3{
-      margin-top: 0;
-    }
   }
 }
 
@@ -114,6 +115,33 @@ scene-card{
   }
 }
 
+.list-item{
+    display:flex; 
+    flex: 1 1 auto;
+    gap: 1rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    background: #000a;
+    padding: 1rem;
+    border-bottom: 1px solid $color-dark;
+    text-decoration: none;
+    &:hover{
+      background: #071922
+    }
+}
+
+.tooltip{
+  div{
+    display: none;
+  }
+  &.visible{
+    div{
+      display: block;
+    }
+  }
+}
+
 .ff-button.ff-control {
   background: $color-background-light;
   color: white;
@@ -148,15 +176,6 @@ scene-card{
     &:hover:not(:disabled){
       background-color: $color-secondary;
     }
-  }
-
-  &.btn-restore {
-    background-color: darken($color-primary, 10%);
-    color: white;
-
-    &:hover{
-      background-color: darken($color-primary, 7%);
-    }    
   }
 
   &.btn-danger {
@@ -318,7 +337,7 @@ table.list-table {
   border-collapse: collapse;
   width: 100%;
   display: table;
-  background-color: var(--color-medium);
+  background-color:#000a;;
   color: $color-light;
   tr:last-child {
     border-bottom: 0;
@@ -337,17 +356,15 @@ table.list-table {
     top: 0;
   }
   td {
-    border: solid 1px $color-light;
+    border-bottom: solid 1px $color-dark;
     border-left: 0;
     border-right: 0;
     white-space: nowrap;
   }
-  tbody tr{
+  tbody tr:hover{
+    background-color: #071922;
     transition: background-color 150ms ease-out;
-  }
-  tbody tr:nth-child(2n){
-    background: var(--color-hover);
-  }
+  }  
 }
 
 .ff-button .ff-icon{

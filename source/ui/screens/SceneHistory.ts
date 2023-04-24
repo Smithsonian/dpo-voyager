@@ -156,14 +156,14 @@ class SceneVersion{
         let size = this.versions.reduce((s, v)=>s+v.size, 0);
         
         return html`<div>
-          <h1>${this.scene}</h1>
-          <div style="display:flex;flex-wrap:wrap;">
+          <h2>${this.scene}</h2>
+          <div class="section" style="display:flex;flex-wrap:wrap;">
             <div style="flex-grow: 1; min-width:300px;">
               <h3>Total size: <b-size b=${size}></b-size></h3>
               <h3>${articles.size} article${(1 < articles.size?"s":"")}</h3>
               <div style="max-width: 300px">
-                <a class="ff-button ff-control btn-primary" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/edit?lang=${this.language.toUpperCase()}`}>${this.t("ui.editScene")}</a>
-                <a class="ff-button ff-control btn-primary" style="margin-top:10px" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/view?lang=${this.language.toUpperCase()}`}>${this.t("ui.viewScene")}</a>  
+                <a class="ff-button ff-control btn-primary" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/edit?lang=${this.language.toUpperCase()}`}><ff-icon name="edit"></ff-icon>  ${this.t("ui.editScene")}</a>
+                <a class="ff-button ff-control btn-primary" style="margin-top:10px" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/view?lang=${this.language.toUpperCase()}`}><ff-icon name="eye"></ff-icon>  ${this.t("ui.viewScene")}</a>  
               </div>
             </div>
             <div style="min-width:300px;">
@@ -171,11 +171,11 @@ class SceneVersion{
             </div>
           </div>
         </div>
-        <div>
+        <div class="section">
           ${this.renderHistory()}
         </div>
         ${getLogin()?.isAdministrator? html`<div style="padding: 10px 0;display:flex;color:red;justify-content:end;">
-        <div><ff-button class="btn-danger" icon="trash" text="Delete" @click=${this.onDelete}</div>
+        <div><ff-button class="btn-danger" icon="trash" text="Delete" @click=${this.onDelete}></ff-button></div>
         </div>`:null}
       </div>`;
     }
@@ -208,7 +208,7 @@ class SceneVersion{
                         <input style="border:none;" type="text" name="username" id="username" placeholder="${this.t("ui.username")}" required>
                       </div>
                       <div class="form-item">
-                        <input style="border:none;" type="submit" value="${this.t("ui.add")}" >
+                        <input class="ff-button ff-control btn-primary" style="border:none; margin:0" type="submit" value="${this.t("ui.add")}" >
                       </div>
                     </div>
                   </form>
@@ -218,31 +218,32 @@ class SceneVersion{
           </table>
       `;
     }
+
     renderHistory(){
       return html`
         <h2>Historique</h2>
-          <table class="list-table">
-            <thead><tr>
-                <th>${this.t("ui.filename", {count:2})}</th>
-                <th>${this.t("ui.mtime")}</th>
-                <th>${this.t("ui.author", {count: 2})}</th>
-                <th></th>
-            </tr></thead>
-            <tbody>
-            ${(!this.versions?.length)?html`<tr><td colspan=4 style="text-align: center;">${this.t("info.noData",{item: this.scene})}</td</tr>`:nothing}
-            ${this.versions.map((v, index)=>{
-              let name = (3 < v.names.size)? `${this.t("info.etAl", {item: v.names.values().next().value, count:v.names.size})}`: [...v.names.values()].join(", ");
-              let authors = [...v.authors.values()].join(", ")
-              return html`<tr>
-                <td>${name}</td>
-                <td>${new Date(v.start).toLocaleString()}</td>
-                <td>${authors}</td>
-                <td>${index==0?html`Active`:html`<ff-button class="btn-restore"  @click=${()=>this.onRestore(v.entries.slice(-1)[0])} text="Restore"></ff-button>`}</td>
-              </tr>`
-            })}
-          </tbody>
-        </table>
-      `;
+        ${this.versions.map((v, index)=>{
+
+          let name = (3 < v.names.size)? html`${v.names.values().next().value} <span style="text-decoration:underline; cursor:pointer" @click=${(e)=>e.target.parentNode.classList.toggle("visible")}>${this.t("info.etAl", {count:v.names.size})}</span>`
+            : [...v.names.values()].join(", ");
+
+          let authors = [...v.authors.values()].join(", ")
+
+          return html`
+            <div class="list-item" name="${name}">
+              <div style="flex: 1 0 6rem;overflow: hidden;text-overflow: ellipsis">
+                <div class="tooltip" style="margin-bottom:5px" >${name}
+                  <div><ul style="opacity:0.7">${[...v.names.values()].map((n, index)=>html`<li>${n}</li>`)}</ul></div>
+                </div>
+                
+                <div style=""><b>${authors}</b> <span style="opacity:0.6; font-size: smaller">${new Date(v.start).toLocaleString()}</span></div>
+              </div>
+
+              ${index==0?html`<ff-button disabled transparent text="active">active</ff-button>`:html`<ff-button class="btn-primary" style="flex:initial; height:fit-content;" title="restore" @click=${()=>this.onRestore(v.entries.slice(-1)[0])} text="restore" icon="restore"></ff-button>`}
+            </div>
+          `
+        })}
+        `
     }
 
     renderPermissionSelection(username:string, selected :AccessRights["access"], disabled :boolean = false){

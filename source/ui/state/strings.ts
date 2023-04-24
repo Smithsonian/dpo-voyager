@@ -182,10 +182,10 @@ export default {
       en:"No data available for {item}"
     },
     etAl:{
-      fr:"{item} et {count} autre",
-      fr_plural:"{item} et {count} autres",
-      en:"{item} and {count} other",
-      en_plural:"{item} and {count} others",
+      fr:" et {count} autre",
+      fr_plural:" et {count} autres",
+      en:" and {count} other",
+      en_plural:" and {count} others",
     },
     lead:{
       fr: "eCorpus est un modèle de base de données d'objets 3D développé par holusion et utilisant un éditeur et visualisateur enrichi issu du projet DPO-Voyager du smithsonian institute",
