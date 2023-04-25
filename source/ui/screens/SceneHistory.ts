@@ -156,8 +156,8 @@ class SceneVersion{
         let size = this.versions.reduce((s, v)=>s+v.size, 0);
         
         return html`<div>
-          <h2>${this.scene}</h2>
-          <div class="section" style="display:flex;flex-wrap:wrap;">
+          <h1 style="color:white">${this.scene}</h1>
+          <div style="display:flex;flex-wrap:wrap;">
             <div style="flex-grow: 1; min-width:300px;">
               <h3>Total size: <b-size b=${size}></b-size></h3>
               <h3>${articles.size} article${(1 < articles.size?"s":"")}</h3>
@@ -166,7 +166,7 @@ class SceneVersion{
                 <a class="ff-button ff-control btn-primary" style="margin-top:10px" href=${`/ui/scenes/${encodeURIComponent(this.scene)}/view?lang=${this.language.toUpperCase()}`}><ff-icon name="eye"></ff-icon>  ${this.t("ui.viewScene")}</a>  
               </div>
             </div>
-            <div style="min-width:300px;">
+            <div style="min-width:300px;" class="section">
               ${this.renderPermissions()}
             </div>
           </div>
@@ -222,27 +222,29 @@ class SceneVersion{
     renderHistory(){
       return html`
         <h2>Historique</h2>
-        ${this.versions.map((v, index)=>{
+        <div class="list-items">
+          ${this.versions.map((v, index)=>{
 
-          let name = (3 < v.names.size)? html`${v.names.values().next().value} <span style="text-decoration:underline; cursor:pointer" @click=${(e)=>e.target.parentNode.classList.toggle("visible")}>${this.t("info.etAl", {count:v.names.size})}</span>`
-            : [...v.names.values()].join(", ");
+            let name = (3 < v.names.size)? html`${v.names.values().next().value} <span style="text-decoration:underline; cursor:pointer" @click=${(e)=>e.target.parentNode.classList.toggle("visible")}>${this.t("info.etAl", {count:v.names.size})}</span>`
+              : [...v.names.values()].join(", ");
 
-          let authors = [...v.authors.values()].join(", ")
+            let authors = [...v.authors.values()].join(", ")
 
-          return html`
-            <div class="list-item" name="${name}">
-              <div style="flex: 1 0 6rem;overflow: hidden;text-overflow: ellipsis">
-                <div class="tooltip" style="margin-bottom:5px" >${name}
-                  <div><ul style="opacity:0.7">${[...v.names.values()].map((n, index)=>html`<li>${n}</li>`)}</ul></div>
+            return html`
+              <div class="list-item" name="${name}">
+                <div style="flex: 1 0 6rem;overflow: hidden;text-overflow: ellipsis">
+                  <div class="tooltip" style="margin-bottom:5px" >${name}
+                    <div><ul style="opacity:0.7">${[...v.names.values()].map((n, index)=>html`<li>${n}</li>`)}</ul></div>
+                  </div>
+                  
+                  <div style=""><b>${authors}</b> <span style="opacity:0.6; font-size: smaller">${new Date(v.start).toLocaleString()}</span></div>
                 </div>
-                
-                <div style=""><b>${authors}</b> <span style="opacity:0.6; font-size: smaller">${new Date(v.start).toLocaleString()}</span></div>
-              </div>
 
-              ${index==0?html`<ff-button disabled transparent text="active">active</ff-button>`:html`<ff-button class="btn-primary" style="flex:initial; height:fit-content;" title="restore" @click=${()=>this.onRestore(v.entries.slice(-1)[0])} text="restore" icon="restore"></ff-button>`}
-            </div>
-          `
-        })}
+                ${index==0?html`<ff-button disabled transparent text="active">active</ff-button>`:html`<ff-button class="btn-primary" style="flex:initial; height:fit-content;" title="restore" @click=${()=>this.onRestore(v.entries.slice(-1)[0])} text="restore" icon="restore"></ff-button>`}
+              </div>
+            `
+          })}
+        </div>
         `
     }
 

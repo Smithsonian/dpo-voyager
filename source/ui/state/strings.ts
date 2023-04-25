@@ -128,8 +128,8 @@ export default {
       en: "recover your password"
     },
     createUser: {
-      fr: "Créer un nouvel utilisateur",
-      en: "Create new user"
+      fr: "Nouvel utilisateur",
+      en: "Create User"
     },
     isAdministrator: {
       fr: "Est administrateur",
@@ -174,6 +174,10 @@ export default {
     searchScene:{
       fr: "rechercher un modèle",
       en: "search model"
+    },
+    delete:{
+      fr: "supprimer",
+      en: "delete"
     }
   },
   info:{
@@ -206,7 +210,11 @@ export default {
     homeHeader: {
       fr: "Système de gestion de scènes 3D",
       en: "3D Scene Management System"
-    },    
+    },
+    userManager: {
+      fr: "Gestion des utilisateurs",
+      en: "User Manager"
+    }
   },
   errors:{
     '404':{

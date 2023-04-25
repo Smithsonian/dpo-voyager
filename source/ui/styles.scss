@@ -115,20 +115,34 @@ scene-card{
   }
 }
 
-.list-item{
-    display:flex; 
-    flex: 1 1 auto;
-    gap: 1rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    background: #000a;
-    padding: 1rem;
-    border-bottom: 1px solid $color-dark;
-    text-decoration: none;
-    &:hover{
-      background: #071922
-    }
+.list-items{
+  .list-item{
+      display:flex; 
+      flex: 1 1 auto;
+      gap: 1rem;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      background: #000a;
+      padding: 1rem;
+      border-bottom: 1px solid $color-dark;
+      text-decoration: none;
+      &:hover{
+        background: #071922
+      }
+  }
+  .list-item:nth-child(2n){
+    background: #000;
+  }
+}
+
+.users-list{
+  .ff-button:hover{
+    filter:brightness(1.5);
+  }
+  .ff-icon svg{
+    height: 1.2rem;
+  }
 }
 
 .tooltip{
@@ -337,7 +351,7 @@ table.list-table {
   border-collapse: collapse;
   width: 100%;
   display: table;
-  background-color:#000a;;
+  background-color:#000a;
   color: $color-light;
   tr:last-child {
     border-bottom: 0;
@@ -360,6 +374,9 @@ table.list-table {
     border-left: 0;
     border-right: 0;
     white-space: nowrap;
+  }
+  tbody tr:nth-child(2n){
+    background: #000c;
   }
   tbody tr:hover{
     background-color: #071922;

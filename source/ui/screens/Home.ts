@@ -189,7 +189,7 @@ interface Upload{
 
         <div class="section">
             <h3>${this.t("ui.mtimeSection")}</h3>
-            <div class="list" style="position:relative;">
+            <div class="list list-items" style="position:relative;">
                 ${repeat([
                     ...scenes.slice(0, 8),
                 ],({name})=>name , (scene)=>this.renderSceneCompact(scene))}

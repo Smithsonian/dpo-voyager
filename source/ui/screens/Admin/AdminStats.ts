@@ -71,23 +71,30 @@ export default class AdminStatsScreen extends i18n(LitElement) {
     }
     return html`<div style="max-width:1200px; margin: auto;">
       <h2>Server Statistics</h2>
-      <h3>Files statistics</h3>
-      <ul>
-        <li>Total number of scenes: ${this.stats.files.scenes}</li>
-        <li>Total number of files: ${this.stats.files.files}</li>
-        <li>Last modification: ${new Date(this.stats.files.mtime).toLocaleString(this.language)}</li>
-        <li>Total disk usage: <b-size i b=${this.stats.files.size}></b-size></li>
-      </ul>
-      <h3>Performance statistics</h3>
-      <ul>
-        <li>Free memory: <b-size b=${this.stats.process.freemem}></b-size></li>
-        <li>Load average (1 min): ${Math.floor(100*this.stats.process.load[0] / this.stats.process.cores)}%</li>
-        <li>Load average (15 min): ${Math.floor(100*this.stats.process.load[2] / this.stats.process.cores)}%</li>
-      </ul>
-      ${this.scenes?.length? html`<h2>Scenes modified today :</h2>
-      <ul>
-      ${this.scenes.map(scene=>html`<li><a href="/ui/scenes/${scene.name}/">${scene.name} (${new Date(scene.mtime).toLocaleString(this.language)})</a></li>`)}
-      </ul>`: null}
+      <div class="section">
+        <h3>Files statistics</h3>
+        <ul>
+          <li>Total number of scenes: ${this.stats.files.scenes}</li>
+          <li>Total number of files: ${this.stats.files.files}</li>
+          <li>Last modification: ${new Date(this.stats.files.mtime).toLocaleString(this.language)}</li>
+          <li>Total disk usage: <b-size i b=${this.stats.files.size}></b-size></li>
+        </ul>      
+      </div>
+      <div class="section">
+        <h3>Performance statistics</h3>
+        <ul>
+          <li>Free memory: <b-size b=${this.stats.process.freemem}></b-size></li>
+          <li>Load average (1 min): ${Math.floor(100*this.stats.process.load[0] / this.stats.process.cores)}%</li>
+          <li>Load average (15 min): ${Math.floor(100*this.stats.process.load[2] / this.stats.process.cores)}%</li>
+        </ul>      
+      </div>
+      ${this.scenes?.length? html`
+      <div class="section">
+        <h2>Scenes modified today :</h2>
+        <ul>
+        ${this.scenes.map(scene=>html`<li><a href="/ui/scenes/${scene.name}/">${scene.name} (${new Date(scene.mtime).toLocaleString(this.language)})</a></li>`)}
+        </ul>
+      </div>`: null}
     </div>`;
   }
 }

@@ -1,8 +1,6 @@
 
 import { customElement, property, html, TemplateResult, LitElement, css } from "lit-element";
 
-import "@ff/ui/Button";
-
 import "client/ui/Spinner";
 import Modal from "../../composants/Modal";
 import "../../composants/SceneCard";
@@ -149,7 +147,9 @@ interface User {
             return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`
         }
         return html`<div>
-            <div class="users-list" style="position:relative;">
+            <h2>${this.t("info.userManager")}</h2>
+            <ff-button style="max-width: 200px; margin-bottom: 15px" class="btn-primary" icon="plus" text=${this.t("ui.createUser")} @click=${this.createUserOpen}></ff-button>
+            <div class="users-list section" style="position:relative;">
                 <table class="list-table">
                     <thead><tr>
                         <th>uid</th>
@@ -158,11 +158,7 @@ interface User {
                             admin?
                         </th>
                         <th>
-                            <div style="display:flex;justify-content:end;margin: -15px -10px;">
-                                <div style="display:block;flex-grow:0;">
-                                    <ff-button class="btn-secondary" icon="plus" @click=${this.createUserOpen}></ff-button>
-                                </div>
-                            </div>
+
                         </th>
                     </tr></thead>
                     <tbody>
@@ -170,11 +166,11 @@ interface User {
                     ${this.list.map(u=>html`<tr>
                         <td style="font-family:monospace;">${u.uid}</td>
                         <td>${u.username}</td>
-                        <td><input type="checkbox" .checked=${u.isAdministrator} disabled></td>
+                        <td><input style="width:20px; height:20px" type="checkbox" .checked=${u.isAdministrator} disabled></td>
                         <td>
                             <div style="display:flex; justify-content:end;gap:.6rem;">
-                            <ff-button class="secondary" style=${u.isAdministrator ? "color:var(--color-danger);opacity:0.5":"color:var(--color-danger)"} inline icon="trash" @click=${()=>this.deleteUserOpen(u)} ?disabled=${u.isAdministrator}></ff-button>
-                            <ff-button class="secondary" style="color:var(--color-light);opacity:0.8" inline icon="key" @click=${()=>this.createLoginLink(u)}></ff-button>
+                            <ff-button style=${u.isAdministrator ? "color:var(--color-light);opacity:0.2":"color:var(--color-danger)"} inline icon="trash" title=${this.t("ui.delete")} @click=${()=>this.deleteUserOpen(u)} ?disabled=${u.isAdministrator}></ff-button>
+                            <ff-button style="color:var(--color-text-dark)" inline icon="key" title="login link" @click=${()=>this.createLoginLink(u)}></ff-button>
                             </div>
                         </td>
                     </tr>`)}

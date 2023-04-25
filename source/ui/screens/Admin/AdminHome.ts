@@ -41,10 +41,10 @@ export default class AdminHomeScreen extends i18n(LitElement) {
 
   protected render(): unknown {
     return html`
-      <h1>Welcome to the administration section</h1>
+      <h2>Welcome to the administration section</h2>
 
-      <div>
-        <h1>${this.t("ui.tools")}</h1>
+      <div class="section">
+        <h3>${this.t("ui.tools")}</h3>
           <ul>
               <li>
                   <a  download href="/api/v1/scenes?format=zip">Download all scenes as Zip</a>
