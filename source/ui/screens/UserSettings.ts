@@ -28,11 +28,11 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
     }
     return html`
     <div class="user-form">
-      <h1>${this.t("ui.userSettings")}</h1>
+      <h2>${this.t("ui.userSettings")}</h2>
 
-      <form id="userlogin" class="form-control" style="max-width:500px" @submit=${this.onChangeUserSubmit}>
+      <form id="userlogin" class="form-control section" style="max-width:500px" @submit=${this.onChangeUserSubmit}>
       <div class="form-group">
-        <h2>Modifier le profil</h2>
+        <h3>Modifier le profil</h3>
       </div>
         <div class="form-group">
           <div class="form-item">
@@ -51,9 +51,9 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
         </div>
       </form>
 
-      <form id="userlogin" class="form-control" style="max-width:500px" @submit=${this.onChangePasswordSubmit}>
+      <form id="userlogin" class="form-control section" style="max-width:500px" @submit=${this.onChangePasswordSubmit}>
         <div class="form-group">
-          <h2>${this.t("ui.changePassword")}</h2>
+          <h3>${this.t("ui.changePassword")}</h3>
         </div>
         <div class="form-group">
           <div class="form-item">
@@ -74,8 +74,8 @@ export default class UserSettings extends i18n(withUser(LitElement)) {
         </div>
       </form>
 
-      <div style="padding-top:15px; max-width:500px">
-        <h2>${this.t("ui.logout")}</h2>
+      <div class="section" style="padding-top:15px; max-width:500px">
+        <h3>${this.t("ui.logout")}</h3>
         <ff-button text="${this.t("ui.logout")}" icon="cross" @click=${this.onLogout}></ff-button>
       </div>
     </div>`;
