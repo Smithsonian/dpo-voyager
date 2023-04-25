@@ -216,6 +216,7 @@ export default class ArticleEditor extends SystemView
             content_css: false,
             content_style: [contentCss, contentUiCss].join('\n'),
             convert_urls: false,
+            image_caption: true,
 
             images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
                 const filename = file.filename();
