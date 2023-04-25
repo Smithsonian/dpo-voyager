@@ -127,47 +127,58 @@ interface Upload{
         if(!this.isUser){
             return html`<landing-page></landing-page>`;
         }
-
         let mode = (this.user?"write":"read")
-
 
         if(!this.list){
             return html`<div style="margin-top:10vh"><sv-spinner visible/></div>`;
         }
+        let orderTypes = ["alphabet","ctime","mtime"]
 
         return html`
-            <div class="toolbar section">
+            <div class="toolbar">
                 <div class="list-tasks form-control">
-                    <div class="form-item" style="display:flex">
+                    <div class="form-item" style="display:flex; margin-bottom:10px">
                         <input type="search" id="model-search" placeholder=${this.t("ui.searchScene")} @change=${this.onSearchChange}>
                         <button class="ff-button ff-control btn-primary" style="margin-top:0" type="submit"><ff-icon name="search"></ff-icon></button>
                     </div>
-                    <h4>${this.t("ui.newScene")}</h4>
-                    <upload-button class="ff-button ff-control btn-primary" style="padding:8px" @change=${this.onUploadBtnChange}>
-                        ${this.t("ui.upload")}
-                    </upload-button>
-                    
-                    <a class="ff-button ff-control btn-primary" href="/ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a>
-                    
+                    <div class="section">
+                        <h4 style="margin-top:0">${this.t("ui.newScene")}</h4>
+                        <upload-button class="ff-button ff-control btn-primary" style="padding:8px" @change=${this.onUploadBtnChange}>
+                            ${this.t("ui.upload")}
+                        </upload-button>
+                        
+                        <a class="ff-button ff-control btn-primary" href="/ui/standalone/?lang=${this.language.toUpperCase()}">${this.t("info.useStandalone")}</a>
+                    </div>
                     ${(this.selection.length)?html`
-                    <h4>${this.t("ui.tools")}</h4>
-                    <a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
-                        this.selection.map(name=>`name=${encodeURIComponent(name)}`).join("&")
-                        }&format=zip">
-                        Download Zip
-                    </a>`: null}
-              
+                    <div class="section">
+                        <h4 style="margin-top:0">${this.t("ui.tools")}</h4>
+                        <a class="ff-button ff-control btn-primary btn-icon" download href="/api/v1/scenes?${
+                            this.selection.map(name=>`name=${encodeURIComponent(name)}`).join("&")
+                            }&format=zip">
+                            Download Zip
+                        </a>
+                    </div>`: null}
                 </div>
             </div>
-            <div class="list-grid list-items section">
-                ${(this.list.length == 0 && Object.keys(this.uploads).length == 0)?
-                    html`<h4>No scenes available</h1>`:
-                    repeat([
-                        ...Object.keys(this.uploads).map(name=>({name})),
-                        ...this.list,
-                    ],({name})=>name , (scene)=>this.renderScene(mode, scene))
-                }
-                ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}
+            <div class="list-grid list-items">
+                <div class="form-control" style="margin-left:auto; padding:10px">
+                    <span>${this.t("ui.sortBy")}</span>
+                    <span class="form-item"><select style="width:auto" @change=${this.onSelectOrder}>
+                        ${orderTypes.map(a=>html`<option value="${a}">${this.t(`ui.${a}`)}</option>`)}
+                    </select></span>                        
+                </div>
+
+                <div class="section" style="width:100%">
+                    ${(this.list.length == 0 && Object.keys(this.uploads).length == 0)?
+                        html`<h4>No scenes available</h1>`:
+                        repeat([
+                            ...Object.keys(this.uploads).map(name=>({name})),
+                            ...this.list,
+                        ],({name})=>name , (scene)=>this.renderScene(mode, scene))
+                    }
+                    ${this.dragover ?html`<div class="drag-overlay">Drop item here</div>`:""}                
+                </div>
+
             </div>`;
     }
 
@@ -215,4 +226,13 @@ interface Upload{
         console.log("list items find : ",this.list)
     }
 
+    onSelectOrder = (ev)=>{
+        let value = ev.target.value;
+
+        if(value == "alphabet") this.list.sort((a, b) => a.name.localeCompare(b.name));
+        if(value == "ctime") this.list.sort((a, b) => new Date(b.ctime).valueOf() - new Date(a.ctime).valueOf());
+        if(value == "mtime") this.list.sort((a, b) => new Date(b.mtime).valueOf() - new Date(a.mtime).valueOf());
+        
+        this.requestUpdate();
+    }
  }

@@ -335,14 +335,18 @@ scene-card{
   }
 
   .form-item > select{
+    border: 0 !important; 
     width: 100%;
     padding: 5px;
     background: none;
     border: none;
     color: inherit;
+    background: #071922;
     cursor: pointer;
     option{
-      background: $color-primary;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
   }
 }

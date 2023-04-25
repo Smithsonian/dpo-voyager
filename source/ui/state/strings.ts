@@ -75,6 +75,10 @@ export default {
       fr: "dernière modification",
       en: "modification time"
     },
+    ctime: {
+      fr: "dernière création",
+      en: "creation time"
+    },
     author: {
       fr: "auteur{plural=s}",
       en: "author{plural=s}"
@@ -178,6 +182,14 @@ export default {
     delete:{
       fr: "supprimer",
       en: "delete"
+    },
+    alphabet:{
+      fr: "ordre alphabethique",
+      en: "alphabetical"
+    },
+    sortBy:{
+      fr: "Trier par",
+      en: "Sort by"
     }
   },
   info:{
