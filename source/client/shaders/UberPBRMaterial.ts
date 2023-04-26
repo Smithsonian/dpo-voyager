@@ -253,31 +253,4 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     enableZoneMap(enabled) {
         this.defines["USE_ZONEMAP"] = enabled;
     }
-
-    copyStandardMaterial(material: MeshStandardMaterial): this
-    {
-        this.color = material.color;
-        this.opacity = material.opacity;
-        this.transparent = material.opacity < 1 || !!material.alphaMap || material.transparent;
-        this.alphaTest = material.alphaTest;
-
-        this.roughness = material.roughness;
-        this.roughnessMap = material.roughnessMap;
-
-        this.metalness = material.metalness;
-        this.metalnessMap = material.metalnessMap;
-
-        this.map = material.map;
-        this.aoMap = material.aoMap;
-        this.aoMapIntensity = material.aoMapIntensity;
-
-        this.normalMap = material.normalMap;
-
-        this.shadowSide = material.shadowSide;
-        //this.side = material.side;
-
-        this.flatShading = material.flatShading;
-
-        return this;
-    }
 }

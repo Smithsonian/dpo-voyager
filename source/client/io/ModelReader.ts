@@ -119,7 +119,7 @@ export default class ModelReader
 
                 // copy properties from previous material
                 if (material.type === "MeshStandardMaterial") {
-                    uberMat.copyStandardMaterial(material);
+                    uberMat.copy(material);
                 }
 
                 // check if the material's normal map uses object space (indicated in glTF extras)
