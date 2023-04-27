@@ -223,6 +223,10 @@
 		  <a href="/dpo-voyager/explorer/api-examples/annotations/">API Example: Annotations</a>
 		</li>
 		
+		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/articles/">API Example: Articles</a>
+		</li>
+		
 		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
 		</li>
@@ -429,6 +433,10 @@ function getAnnotations(displayElement) {
 function setActiveAnnotation(id) {
 	var voyagerElement = document.getElementById("voyager");
 	voyagerElement.setActiveAnnotation(id.value);
+}
+function setActiveArticle(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveArticle(id.value);
 }
 function setTourStep(stepIdx) {
 	var voyagerElement = document.getElementById("voyager");

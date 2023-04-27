@@ -224,6 +224,10 @@
 		</li>
 		
 		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/articles/">API Example: Articles</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
 		</li>
 		
@@ -418,7 +422,7 @@
 <tr>
 <td>dragdrop</td>
 <td></td>
-<td>If present, enables dragging and dropping files into Story. Enabled by default in Standalone mode. <strong>Note:</strong> Voyager does <em>not</em> handle access control, so enabling this feature increases the importance of securing your server-side I/O.</td>
+<td>If present, enables dragging and dropping files into Story. Enabled by default in Standalone mode. <strong>Note:</strong> Voyager does <em>not</em> handle access control. Enabling this feature increases the importance of securing your server-side I/O.</td>
 </tr>
 </tbody>
 </table>
@@ -506,6 +510,11 @@
 <td>setActiveAnnotation( id )</td>
 <td>id: unique id string</td>
 <td>Activates the annotation with the provided id. Opens annotation content where style permits.</td>
+</tr>
+<tr>
+<td>setActiveArticle( id )</td>
+<td>id: unique id string</td>
+<td>Activates the article with the provided id. Bad/missing id opens article list.</td>
 </tr>
 <tr>
 <td>setTourStep( tourIdx, stepIdx, interpolate[optional] )</td>

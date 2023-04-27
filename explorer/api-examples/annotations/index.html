@@ -224,6 +224,10 @@
 		</li>
 		
 		<li style="padding-left: 15px" class="">
+		  <a href="/dpo-voyager/explorer/api-examples/articles/">API Example: Articles</a>
+		</li>
+		
+		<li style="padding-left: 15px" class="">
 		  <a href="/dpo-voyager/explorer/api-examples/background/">API Example: Background Properties</a>
 		</li>
 		
@@ -430,6 +434,10 @@ function setActiveAnnotation(id) {
 	var voyagerElement = document.getElementById("voyager");
 	voyagerElement.setActiveAnnotation(id.value);
 }
+function setActiveArticle(id) {
+	var voyagerElement = document.getElementById("voyager");
+	voyagerElement.setActiveArticle(id.value);
+}
 function setTourStep(stepIdx) {
 	var voyagerElement = document.getElementById("voyager");
 	voyagerElement.setTourStep(0, stepIdx.value, true);
@@ -439,7 +447,7 @@ function setLanguage(language) {
 	voyagerElement.setLanguage(language.value);
 }
 </script>  <!-- raw HTML omitted --></p>
-<p>Activate an annotation by specifying the unique id of a specific animation in the box below and clicking the &ldquo;Activate&rdquo; button.
+<p>Activate an annotation by specifying the unique id of a specific annotation in the box below and clicking the &ldquo;Activate&rdquo; button.
 For the example model try the ids &ldquo;ELDyp7AvKp8A&rdquo; or &ldquo;Y1KN8HQHKaxT&rdquo;.</p>
 <p>If the id supplied is not valid, no annotation will be activated (and as a resulted, any currently activated one will be deactivated).</p>
 <p>Depending on the annotation style, activating may also expand the annotation to reveal additional text. 
@@ -459,7 +467,7 @@ To find unknown annotation ids try the getAnnotations() function. <a href="../ge
 	<span class="c1">// Get reference to the Explorer element by id
 </span><span class="c1"></span>	<span class="kd">var</span> <span class="nx">voyagerElement</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&#34;voyager&#34;</span><span class="p">);</span>
 	
-	<span class="c1">// Call the activateAnnotation function with the value of the 
+	<span class="c1">// Call the setActiveAnnotation function with the value of the 
 </span><span class="c1"></span>	<span class="c1">// option input element as the parameter
 </span><span class="c1"></span>	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setActiveAnnotation</span><span class="p">(</span><span class="nx">id</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
 <span class="p">}</span>
