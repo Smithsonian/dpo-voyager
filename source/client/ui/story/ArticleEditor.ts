@@ -216,6 +216,7 @@ export default class ArticleEditor extends SystemView
             content_css: false,
             content_style: [contentCss, contentUiCss].join('\n'),
             convert_urls: false,
+            image_caption: true,
 
             images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
                 const filename = file.filename();
@@ -282,8 +283,8 @@ export default class ArticleEditor extends SystemView
                 this.closeArticle();
             }
         }
-        // if opened asset is of type text/html, open it in the editor
-        else if (event.asset.info.type.startsWith("text/html")) {
+        // if opened asset is of type text/*, open it in the editor
+        else if (event.asset.info.type.startsWith("text/")) {
             this.openArticle(event.asset.info.path);
         }
     }

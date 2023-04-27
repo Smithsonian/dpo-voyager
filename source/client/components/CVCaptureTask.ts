@@ -111,7 +111,7 @@ export default class CVCaptureTask extends CVTask
         const configuration = this.configuration;
         //configuration.interfaceVisible = false;
         //configuration.annotationsVisible = false;
-        configuration.bracketsVisible = false;
+        configuration.bracketsVisible = true;
         //configuration.gridVisible = false;
     }
 

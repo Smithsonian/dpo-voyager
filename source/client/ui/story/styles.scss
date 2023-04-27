@@ -88,6 +88,8 @@ ff-tab-header, ff-dock-panel-header {
   background-color: $color-background-dark;
   border-bottom: 3px solid $color-background-darker;
 
+  overflow: auto;
+
   .ff-group {
     align-items: stretch;
   }

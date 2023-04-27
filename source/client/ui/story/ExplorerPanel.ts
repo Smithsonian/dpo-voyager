@@ -80,7 +80,7 @@ export default class ExplorerPanel extends CustomElement
 
     protected onDragLeave(e: MouseEvent) {
         if(e.currentTarget != this || this.contains(e.relatedTarget as HTMLElement) || 
-            (e.relatedTarget as HTMLElement).getRootNode() instanceof ShadowRoot) {
+            (e.relatedTarget && (e.relatedTarget as HTMLElement).getRootNode() instanceof ShadowRoot)) {
             return;
         }
 

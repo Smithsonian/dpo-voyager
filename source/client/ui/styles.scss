@@ -82,6 +82,22 @@
   img {
     max-width: 100%;
   }
+  
+  figure.align-left {
+    float: left;
+  }
+  
+  figure.align-right {
+    float: right;
+  }
+  
+  figure.image figcaption {
+    color: #999;
+    display: block;
+    margin-top: 0.25rem;
+    text-align: center;
+    -webkit-user-modify: read-only;
+  }
 }
 
 

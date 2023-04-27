@@ -71,7 +71,7 @@ export default class CVMediaManager extends CAssetManager
 
     protected rootUrlChanged(): Promise<any>
     {
-        if(this.assetManager.ins.baseUrlValid.value) {
+        if(this.assetManager.ins.baseUrlValid.value && !this.standaloneFileManager) {
             return this.createArticleFolder();
         }
         return Promise.resolve();
