@@ -368,6 +368,9 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         if (this.ins.enabled.value && this._scene.activeCameraComponent) {
+            if (event.type === "pointer-down" && window.getSelection().type !== "None") {
+                window.getSelection().removeAllRanges();
+            }
             this._controller.setViewportSize(viewport.width, viewport.height);
             this._controller.onPointer(event);
             event.stopPropagation = true;
