@@ -124,7 +124,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             if (target.name === "lead") {
                 annotations.ins.lead.setValue(sanitizeHtml(text, 
                     {
-                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a' ],
+                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'sup', 'sub' ],
                         allowedAttributes: {
                           'a': [ 'href' ]
                         }
