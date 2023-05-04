@@ -150,8 +150,9 @@ export default class CVLanguageManager extends Component
     protected updateLanguage = (language: ELanguageType) => 
     {
         const { ins, outs } = this;
-
-        outs.language.setValue(language);
-        this.emit<ITagUpdateEvent>({ type: "tag-update" });
+        if(ins.language.value === language){
+            outs.language.setValue(language);
+            this.emit<ITagUpdateEvent>({ type: "tag-update" });
+        }
     }
 }
