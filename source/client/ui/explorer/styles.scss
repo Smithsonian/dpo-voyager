@@ -604,6 +604,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-chrome-header {
   display: flex;
   align-items: flex-start;
+  padding-top: env(safe-area-inset-top);
   height: 100%;
   position: relative;
 
@@ -641,6 +642,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   bottom: 0;
   right: 0;
   //z-index: -1;
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 
   .sv-bottom-bar {
     flex: 1 1 auto;
@@ -670,6 +672,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-main-menu-wrapper {
   position: relative;
   height: 100%;
+  padding-left: env(safe-area-inset-left);
   min-width: 50px;
 }
 
@@ -1172,6 +1175,7 @@ $tour-entry-indent: 12px;
     flex-wrap: wrap;
     justify-content: center;
     margin: 4px;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .sv-tag-button {
