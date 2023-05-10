@@ -68,6 +68,7 @@ export default class CVOrbitNavigation extends CObject3D
     protected static readonly ins = {
         enabled: types.Boolean("Settings.Enabled", true),
         pointerEnabled: types.Boolean("Settings.PointerEnabled", true),
+        isInUse: types.Boolean("Camera.IsInUse", false),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
         projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
@@ -81,7 +82,8 @@ export default class CVOrbitNavigation extends CObject3D
         minOffset: types.Vector3("Limits.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
         maxOrbit: types.Vector3("Limits.Max.Orbit", [ 90, Infinity, Infinity ]),
         maxOffset: types.Vector3("Limits.Max.Offset", [ Infinity, Infinity, Infinity ]),
-        keyNavActive: types.Enum("Navigation.KeyNavActive", EKeyNavMode)
+        keyNavActive: types.Enum("Navigation.KeyNavActive", EKeyNavMode),
+        promptActive: types.Boolean("Navigation.PromptActive", false)
     };
 
     ins = this.addInputs<CObject3D, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
@@ -192,7 +194,7 @@ export default class CVOrbitNavigation extends CObject3D
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
 
         // orbit, offset and limits
-        if (orbit.changed || offset.changed) {
+        if (orbit.changed || offset.changed) {console.log("MOVED");
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
         }
@@ -233,6 +235,9 @@ export default class CVOrbitNavigation extends CObject3D
         if (ins.autoRotation.changed) {
             this._autoRotationStartTime = ins.autoRotation.value ? performance.now() : null;
         }
+        if (ins.promptActive.changed && !this._autoRotationStartTime) {
+            this._autoRotationStartTime = ins.promptActive.value ? performance.now() : null;
+        }
 
         return true;
     }
@@ -250,13 +255,18 @@ export default class CVOrbitNavigation extends CObject3D
         controller.camera = cameraComponent.camera;
 
         const transform = cameraComponent.transform;
-        const forceUpdate = this.changed || ins.autoRotation.value;
+        const forceUpdate = this.changed || ins.autoRotation.value || ins.promptActive.value;
 
-        if (ins.autoRotation.value && this._autoRotationStartTime) {
+        if ((ins.autoRotation.value || ins.promptActive.value) && this._autoRotationStartTime) {
             const now = performance.now();
-            const delta = now - this._autoRotationStartTime;
-            controller.orbit.y = (controller.orbit.y + ins.autoRotationSpeed.value * delta * 0.001) % 360.0;
-            this._autoRotationStartTime = now;
+            const delta = (now - this._autoRotationStartTime) * 0.001;
+            if(ins.autoRotation.value) {
+                controller.orbit.y = (controller.orbit.y + ins.autoRotationSpeed.value * delta) % 360.0;
+                this._autoRotationStartTime = now;
+            }
+            else {
+                controller.orbit.y = Math.sin((delta%2.0) * Math.PI) * 20.0;
+            }
         }
 
         if (controller.updateCamera(transform.object3D, forceUpdate)) {
@@ -268,6 +278,10 @@ export default class CVOrbitNavigation extends CObject3D
             // if camera has moved, set preset to "None"
             if (ins.preset.value !== EViewPreset.None && !ins.preset.changed) {
                 ins.preset.setValue(EViewPreset.None, true);
+            }
+            
+            if(!ins.isInUse.value && this._hasChanged) {
+                ins.isInUse.setValue(true);
             }
 
             if (transform) {

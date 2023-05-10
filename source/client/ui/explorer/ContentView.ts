@@ -25,6 +25,7 @@ import CVDocument from "../../components/CVDocument";
 
 import SceneView from "../SceneView";
 import "../Spinner";
+import "./ActionPrompt"
 import "./ReaderView";
 
 import DocumentView, { customElement, html } from "./DocumentView";
@@ -56,6 +57,9 @@ export default class ContentView extends DocumentView
     }
     protected get tours() {
         return this.activeDocument ? this.activeDocument.setup.tours : null;
+    }
+    protected get navigation() {
+        return this.activeDocument ? this.activeDocument.setup.navigation : null;
     }
     protected get renderer() {
         return this.system.getMainComponent(CRenderer);
@@ -97,9 +101,11 @@ export default class ContentView extends DocumentView
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
         let tourMenuVisible = false;
+        let isInUse = false;
 
         const reader = this.reader;
         const tours = this.tours;
+        const navigation = this.navigation;
 
         // TODO - Hack, figure out a better place for this.
         const overlayElement = this.arManager.shadowRoot.querySelector('ff-viewport-overlay');
@@ -124,13 +130,10 @@ export default class ContentView extends DocumentView
             if(this.isMobile === true) {
                 readerPosition = EReaderPosition.Overlay;
             }
-
-            /*if(document.documentElement.clientWidth < 1200) {
-                readerPosition = EReaderPosition.Overlay;
-            }
-            else {
-                readerPosition = EReaderPosition.Right;
-            }*/
+        }
+        if(navigation) {
+            isInUse = navigation.ins.isInUse.value;
+            navigation.ins.promptActive.setValue(!isLoading && isInitialLoad && !isInUse);
         }
 
         const sceneView = this.sceneView;
@@ -180,7 +183,8 @@ export default class ContentView extends DocumentView
         }
 
         return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
-            <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>`;
+            <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+            ${!isLoading && isInitialLoad && !isInUse ? html`<sv-action-prompt></sv-action-prompt>` : null}`;
     }
 
     protected onReaderClose()
@@ -199,6 +203,7 @@ export default class ContentView extends DocumentView
                 next.setup.reader.ins.position,
                 next.setup.reader.ins.enabled,
                 next.setup.tours.outs.tourIndex,
+                next.setup.navigation.ins.isInUse
             );
         }
 

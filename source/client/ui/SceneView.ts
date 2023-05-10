@@ -51,16 +51,17 @@ export default class SceneView extends SystemView
         super(system);
 
         //this.onResize = this.onResize.bind(this);
+        this.onPointerUpOrCancel = this.onPointerUpOrCancel.bind(this);
 
         this.manipTarget = new ManipTarget();
 
-        this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
+        this.addEventListener("pointerdown", this.onPointerDown);
         this.addEventListener("pointermove", this.manipTarget.onPointerMove);
-        this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-        this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+        this.addEventListener("pointerup", this.onPointerUpOrCancel);
+        this.addEventListener("pointercancel", this.onPointerUpOrCancel);
         this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
-        this.ownerDocument.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
-        this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+        this.ownerDocument.addEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
+        this.ownerDocument.addEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
         this.addEventListener("keydown", this.manipTarget.onKeyDown);
@@ -147,13 +148,13 @@ export default class SceneView extends SystemView
         const needsEnabled = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.value;
 
         if(needsEnabled && !this.pointerEventsEnabled) {
-            this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
+            this.addEventListener("pointerdown", this.onPointerDown);
             this.addEventListener("pointermove", this.manipTarget.onPointerMove);
-            this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-            this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+            this.addEventListener("pointerup", this.onPointerUpOrCancel);
+            this.addEventListener("pointercancel", this.onPointerUpOrCancel);
             this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
-            this.ownerDocument.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
-            this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.ownerDocument.addEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
+            this.ownerDocument.addEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
             this.addEventListener("wheel", this.manipTarget.onWheel);
             this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
             this.addEventListener("keydown", this.manipTarget.onKeyDown);
@@ -165,13 +166,13 @@ export default class SceneView extends SystemView
             this.pointerEventsEnabled = true;
         }
         else if(!needsEnabled && this.pointerEventsEnabled) {
-            this.removeEventListener("pointerdown", this.manipTarget.onPointerDown);
+            this.removeEventListener("pointerdown", this.onPointerDown);
             this.removeEventListener("pointermove", this.manipTarget.onPointerMove);
-            this.removeEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-            this.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+            this.removeEventListener("pointerup", this.onPointerUpOrCancel);
+            this.removeEventListener("pointercancel", this.onPointerUpOrCancel);
             this.ownerDocument.removeEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
-            this.ownerDocument.removeEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
-            this.ownerDocument.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.ownerDocument.removeEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
+            this.ownerDocument.removeEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
             this.removeEventListener("wheel", this.manipTarget.onWheel);
             this.removeEventListener("contextmenu", this.manipTarget.onContextMenu);
             this.removeEventListener("keydown", this.manipTarget.onKeyDown);
@@ -181,6 +182,20 @@ export default class SceneView extends SystemView
             this.setAttribute("touch-action", "auto");
 
             this.pointerEventsEnabled = false;
+        }
+    }
+
+    protected onPointerDown(event: PointerEvent) {
+        if(this.pointerEventsEnabled) {
+            this.style.cursor = "grabbing";
+            this.manipTarget.onPointerDown(event);
+        }
+    }
+
+    protected onPointerUpOrCancel(event: PointerEvent) {
+        if(this.pointerEventsEnabled) {
+            this.style.cursor = "grab";
+            this.manipTarget.onPointerUpOrCancel(event);
         }
     }
 
