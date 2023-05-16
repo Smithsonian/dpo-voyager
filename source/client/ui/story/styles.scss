@@ -441,6 +441,16 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+.sv-addnode-menu{
+  width: 275px;
+  min-height: 300px;
+  height: auto;
+  font-size: 0.85em;
+  .sv-error-msg {
+    color: red;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // STANDALONE UI
 

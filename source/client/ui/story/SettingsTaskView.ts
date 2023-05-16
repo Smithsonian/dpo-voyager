@@ -101,7 +101,6 @@ export class SettingsTree extends Tree<ITreeNode>
     protected createNodeTreeNode(node: Node): ITreeNode
     {
         const components = node.components.getArray().filter(component => component["settingProperties"]);
-
         return {
             id: node.id,
             text: node.displayName,
@@ -121,7 +120,6 @@ export class SettingsTree extends Tree<ITreeNode>
         const root: Partial<ITreeNode> = {
             children: []
         };
-
         properties.forEach(property => {
             const fragments = property.path.split(".");
             let node = root;

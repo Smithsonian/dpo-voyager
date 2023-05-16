@@ -15,32 +15,26 @@
  * limitations under the License.
  */
 
-import CPointLight from "@ff/scene/components/CPointLight";
+import CAmbientLight from "@ff/scene/components/CAmbientLight";
 
 import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
-import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVPointLight extends CPointLight implements ICVLight
+export default class CVAmbienLight extends CAmbientLight implements ICVLight
 {
-    static readonly typeName: string = "CVPointLight";
-    static readonly type: TLightType = "point";
+    static readonly typeName: string = "CVAmbientLight";
+    static readonly type: TLightType = "ambient";
 
-    static readonly text: string = "Point Light";
+    static readonly text: string = "Ambient Light";
     static readonly icon: string = "bulb";
 
     get settingProperties() {
         return [
             this.ins.color,
             this.ins.intensity,
-            this.ins.distance,
-            this.ins.decay,
-            this.ins.shadowEnabled,
-            this.ins.shadowResolution,
-            this.ins.shadowBlur,
         ];
     }
 
@@ -52,10 +46,6 @@ export default class CVPointLight extends CPointLight implements ICVLight
     }
 
     dispose(): void {
-        if(this.ins.shadowEnabled.value && this.light.shadow.map) {
-            this.light.shadow.map.dispose();
-        }
-
         super.dispose()
     }
 
@@ -68,8 +58,8 @@ export default class CVPointLight extends CPointLight implements ICVLight
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== CVPointLight.type) {
-            throw new Error("light type mismatch: not a point light");
+        if (data.type !== CVAmbienLight.type) {
+            throw new Error("light type mismatch: not an ambient light");
         }
 
         data.point = data.point || {} as any;
@@ -77,15 +67,6 @@ export default class CVPointLight extends CPointLight implements ICVLight
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-
-            position: ins.position.schema.preset,
-
-            distance: data.point.distance || ins.distance.schema.preset,
-            decay: data.point.decay !== undefined ? data.point.decay : ins.decay.schema.preset,
-
-            shadowEnabled: data.shadowEnabled || false,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
         });
 
         return node.light;
@@ -98,24 +79,9 @@ export default class CVPointLight extends CPointLight implements ICVLight
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
-            point: {
-                distance: ins.distance.value,
-                decay: ins.decay.value,
-            },
         } as ILight;
 
-        data.type = CVPointLight.type;
-
-        if (ins.shadowEnabled.value) {
-            data.shadowEnabled = true;
-
-            if (!ins.shadowBlur.isDefault()) {
-                data.shadowBlur = ins.shadowBlur.value;
-            }
-            if (!ins.shadowResolution.isDefault()) {
-                data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
-            }
-        }
+        data.type = CVAmbienLight.type;
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

@@ -16,17 +16,20 @@
  */
 
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
+import { Node } from "@ff/graph/Component";
 
-import { IDocument, INode, ILight, ColorRGB } from "client/schema/document";
+import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
+import CVNode from "./CVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class CVDirectionalLight extends CDirectionalLight implements ICVLight
 {
     static readonly typeName: string = "CVDirectionalLight";
+    static readonly type: TLightType = "directional";
 
     static readonly text: string = "Directional Light";
     static readonly icon: string = "bulb";
@@ -35,6 +38,8 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         return [
             this.ins.color,
             this.ins.intensity,
+            this.ins.elevation,
+            this.ins.azimuth,
             this.ins.shadowEnabled,
             this.ins.shadowSize,
             this.ins.shadowResolution,
@@ -66,17 +71,17 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "directional") {
-            throw new Error("light type mismatch: not a directional light");
+        if (data.type !== CVDirectionalLight.type) {
+            throw new Error(`light type mismatch: not a directional light (${data.type})`);
         }
+
+        data.dir = data.dir || {} as any;
 
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
+            elevation: (data.dir.elevation !== undefined)? data.dir.elevation : ins.elevation.schema.preset,
+            azimuth: (data.dir.azimuth !== undefined)? data.dir.azimuth : ins.azimuth.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-
-            position: ins.position.schema.preset,
-            target: ins.target.schema.preset,
-
             shadowEnabled: data.shadowEnabled || false,
             shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
@@ -92,10 +97,14 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
-            intensity: ins.intensity.value
+            intensity: ins.intensity.value,
+            dir: {
+                elevation: ins.elevation.value,
+                azimuth: ins.azimuth.value,
+            }
         } as ILight;
 
-        data.type = "directional";
+        data.type = CVDirectionalLight.type;
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;

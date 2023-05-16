@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-import { Vector3, Box3, Plane } from "three";
+import { Vector3, Box3, Plane, Object3D, PerspectiveCamera, OrthographicCamera, Spherical } from "three";
 
 import { IComponentEvent, types } from "@ff/graph/Component";
+import Property from "@ff/graph/Property";
 
 import { EUnitType, TUnitType } from "client/schema/common";
 import { IDocument, IScene } from "client/schema/document";
@@ -29,12 +30,13 @@ import CTransform from "client/../../libs/ff-scene/source/components/CTransform"
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import CVDirectionalLight from "./CVDirectionalLight";
+import { CLight } from "./CVLight";
+import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const _vec3 = new Vector3();
-const _vec3b = new Vector3();
+const _sph = new Spherical();
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -203,33 +205,29 @@ export default class CVScene extends CVNode
         if(lightNode) {
             const lightTransform = lightNode.getComponent(CTransform, true);       
             const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
-            const meterScale = unitScaleFactor(EUnitType.m, ins.units.value);
-            const plane = new Plane;
 
             lightTransform.ins.scale.setValue([1.0,1.0,1.0]);  // Hack to avoid dealing with group scaling
             
-            // Scale position and size by unit factor
+            // Scale position by unit factor
             lightTransform.children.forEach(light => {
-                const lightTrans = light.getComponent(CTransform, true);
-                const dirLight = light.getComponent(CVDirectionalLight);
-
-                _vec3.copy(dirLight.light.position);
-                _vec3b.copy(dirLight.light.target.position);
-                const dir = _vec3b.sub(_vec3).normalize();
-                dir.applyEuler(lightTrans.object3D.rotation);
-
-                // standardize directional lights to always point at the origin
-                _vec3.copy(dir.negate().multiplyScalar(this.outs.boundingRadius.value*1.2));
-
-                // account for any scene unit changes
-                _vec3.multiplyScalar(unitScale);
-                if(dirLight.ins.shadowEnabled.value) {
-                    dirLight.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
-                    dirLight.light.shadow.camera.far = this.outs.boundingRadius.value*4.0;
+                const lights = light.getComponents(CLight) as Array<CLight>;
+                for(let lightNode of lights){
+                    if(lightNode instanceof CDirectionalLight){
+                        _sph.phi = (90 - lightNode.ins.elevation.value) * 2*Math.PI/360;
+                        _sph.theta = (90 -lightNode.ins.azimuth.value) * 2*Math.PI/360;
+                        _sph.radius = this.outs.boundingRadius.value*unitScale;
+                        lightNode.light.position.setFromSpherical(_sph);
+                        lightNode.light.updateMatrix();
+                    }
+    
+                    if(lightNode.ins.shadowEnabled.value) {
+                        if("shadowSize" in lightNode.ins){
+                            (lightNode.ins.shadowSize as Property<number>).setValue(this.outs.boundingRadius.value*2.0);
+                        }
+                        (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far = this.outs.boundingRadius.value*4.0;
+                    }
                 }
-                lightTrans.ins.position.setValue(_vec3.toArray());
-                _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2);
-                lightTrans.ins.scale.setValue(_vec3.toArray());
+                
             });
         }
     }

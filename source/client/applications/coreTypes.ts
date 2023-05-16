@@ -76,8 +76,20 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
 import CVAudioManager from "client/components/CVAudioManager";
+import CVAmbienLight from "client/components/CVAmbientLight";
+import CVHemisphereLight from "client/components/CVHemisphereLight";
+import CVRectLight from "client/components/CVRectLight";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+export const lightTypes = [
+    CVDirectionalLight,
+    CVPointLight,
+    CVSpotLight,
+    CVAmbienLight,
+    CVHemisphereLight,
+    CVRectLight,
+] as const;
 
 const types = [
     CGraph,
@@ -107,9 +119,7 @@ const types = [
     CVAnnotations,
     CVAnnotationView,
     CVCamera,
-    CVDirectionalLight,
-    CVPointLight,
-    CVSpotLight,
+    ...lightTypes,
 
     CVInterface,
     CVViewer,

@@ -27,7 +27,7 @@ import { ISetup } from "./setup";
 export { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB };
 
 export type TCameraType = "perspective" | "orthographic";
-export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere";
+export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere"| "rect";
 
 /**
  * Encapsulates a node tree representing a renderable scene.
@@ -130,6 +130,17 @@ export interface ILight
 
     point?: IPointLightProps;
     spot?: ISpotLightProps;
+    hemi?: IHemisphereLightProps;
+    dir?: IDirLightProps;
+}
+
+/**
+ * Properties for directional lights
+ */
+export interface IDirLightProps
+{
+    elevation :number;
+    azimuth :number;
 }
 
 /**
@@ -148,4 +159,8 @@ export interface ISpotLightProps extends IPointLightProps
 {
     angle: number;
     penumbra: number;
+}
+
+export interface IHemisphereLightProps {
+    ground :ColorRGB;
 }
