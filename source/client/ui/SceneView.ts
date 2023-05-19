@@ -23,6 +23,7 @@ import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
 import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
+import CVTape from "client/components/CVTape";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,7 @@ export default class SceneView extends SystemView
     protected resizeObserver: ResizeObserver = null;
 
     protected pointerEventsEnabled: boolean = false;
+    protected measuring: boolean = false;
 
     constructor(system?: System)
     {
@@ -132,12 +134,14 @@ export default class SceneView extends SystemView
         
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
         this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.on("value", this.onKeyboardNavigation, this);
+        this.system.getComponent(CVTape).ins.enabled.on("value", this.onMeasure, this);
     }
 
     protected disconnected()
     {
         this.resizeObserver.disconnect();
 
+        this.system.getComponent(CVTape).ins.enabled.off("value", this.onMeasure, this);
         this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
 
@@ -187,14 +191,14 @@ export default class SceneView extends SystemView
 
     protected onPointerDown(event: PointerEvent) {
         if(this.pointerEventsEnabled) {
-            this.style.cursor = "grabbing";
+            this.style.cursor = this.measuring ? "default" : "grabbing";
             this.manipTarget.onPointerDown(event);
         }
     }
 
     protected onPointerUpOrCancel(event: PointerEvent) {
         if(this.pointerEventsEnabled) {
-            this.style.cursor = "grab";
+            this.style.cursor = this.measuring ? "default" : "grab";
             this.manipTarget.onPointerUpOrCancel(event);
         }
     }
@@ -212,6 +216,11 @@ export default class SceneView extends SystemView
                 this.srAnnouncement.textContent = "Offset " + navIns.offset.value[0].toFixed(0) + ", " +
                     navIns.offset.value[1].toFixed(0) + ", " + navIns.offset.value[2].toFixed(0);
         }
+    }
+
+    protected onMeasure() {
+        this.measuring = this.system.getComponent(CVTape).ins.enabled.value;
+        this.style.cursor = this.measuring ? "default" : "grab";
     }
 
     /*protected onResize()

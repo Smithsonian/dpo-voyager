@@ -32,6 +32,6 @@ export default class ActionPrompt extends CustomElement
 
     protected render()
     {
-        return html`<div class="sv-prompt"><div class="sv-action-prompt">${ActionPrompt.icon}</div></div>`;
+        return html`<div class="sv-prompt"><div id="prompt" class="sv-action-prompt">${ActionPrompt.icon}</div></div>`;
     }
 }

@@ -1212,11 +1212,8 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // OVERLAYS
 
-@keyframes wiggle { 25% { transform:translateX(-100%); } 50% { transform:translateX(0%); } 75% { transform:translateX(100%); } }
-
 .sv-action-prompt {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   fill: $menu-color-text-dim;
-  animation:wiggle 2s linear infinite;
 }

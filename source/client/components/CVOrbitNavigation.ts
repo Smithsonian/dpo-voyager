@@ -261,11 +261,24 @@ export default class CVOrbitNavigation extends CObject3D
             const now = performance.now();
             const delta = (now - this._autoRotationStartTime) * 0.001;
             if(ins.autoRotation.value) {
+                // auto-rotation function
                 controller.orbit.y = (controller.orbit.y + ins.autoRotationSpeed.value * delta) % 360.0;
                 this._autoRotationStartTime = now;
             }
             else {
-                controller.orbit.y = Math.sin((delta%2.0) * Math.PI) * 20.0;
+                // prompt rotation function
+                const pause = 1.0;
+                let deltaMod = delta%(2.0+2.0*pause);
+                if((deltaMod > 1.0 && deltaMod < 1.0 + pause) || deltaMod > 2.0 + pause) {
+                    deltaMod = 0.0;
+                }
+                else if(deltaMod > 1.0) {
+                    deltaMod -= 1.0;
+                }
+                controller.orbit.y = Math.sin((deltaMod) * Math.PI) * 20.0;
+
+                const prompt = document.getElementsByTagName("voyager-explorer")[0].shadowRoot.getElementById("prompt");
+                (prompt as HTMLElement).style.transform = `translateX(${-4*controller.orbit.y}px)`;
             }
         }
 
