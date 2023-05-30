@@ -95,6 +95,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _hasZoomed = false;
     private _isAutoZooming = false;
     private _autoRotationStartTime = null;
+    private _initYOrbit = null;
 
     constructor(node: Node, id: string)
     {
@@ -194,7 +195,7 @@ export default class CVOrbitNavigation extends CObject3D
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
 
         // orbit, offset and limits
-        if (orbit.changed || offset.changed) {console.log("MOVED");
+        if (orbit.changed || offset.changed) {
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
         }
@@ -236,6 +237,7 @@ export default class CVOrbitNavigation extends CObject3D
             this._autoRotationStartTime = ins.autoRotation.value ? performance.now() : null;
         }
         if (ins.promptActive.changed && !this._autoRotationStartTime) {
+            this._initYOrbit = controller.orbit.y;
             this._autoRotationStartTime = ins.promptActive.value ? performance.now() : null;
         }
 
@@ -266,19 +268,26 @@ export default class CVOrbitNavigation extends CObject3D
                 this._autoRotationStartTime = now;
             }
             else {
+                const prompt = document.getElementsByTagName("voyager-explorer")[0].shadowRoot.getElementById("prompt") as HTMLElement;
+
                 // prompt rotation function
-                const pause = 1.0;
-                let deltaMod = delta%(2.0+2.0*pause);
-                if((deltaMod > 1.0 && deltaMod < 1.0 + pause) || deltaMod > 2.0 + pause) {
+                const pause = 2.0;
+                const period = 1.5;
+                const cycle = 2.0 * period;
+                const fadeLength = 0.2 * period;
+                let deltaMod = delta % (cycle + pause);
+                if(deltaMod > cycle && deltaMod < cycle + pause) {
+                    prompt.style.opacity = deltaMod < cycle + fadeLength ? `${1.0 - ((deltaMod - cycle) / fadeLength)}` : "0.0";
                     deltaMod = 0.0;
                 }
-                else if(deltaMod > 1.0) {
-                    deltaMod -= 1.0;
+                else if(deltaMod < fadeLength) {
+                    prompt.style.opacity = deltaMod < fadeLength ? `${deltaMod / fadeLength}` : "1.0";
                 }
-                controller.orbit.y = Math.sin((deltaMod) * Math.PI) * 20.0;
-
-                const prompt = document.getElementsByTagName("voyager-explorer")[0].shadowRoot.getElementById("prompt");
-                (prompt as HTMLElement).style.transform = `translateX(${-4*controller.orbit.y}px)`;
+                
+                const promptOffset = Math.sin((deltaMod/period) * Math.PI) * 20.0;
+                controller.orbit.y = this._initYOrbit + promptOffset;
+        
+                prompt.style.transform = `translateX(${-4*promptOffset}px)`;
             }
         }
 
