@@ -151,10 +151,13 @@ export default class CVSetup extends Component
             pathMap.set(this[name], `scenes/${sceneIndex}/setup/${name}`);
         }
 
-        // save current tours state
+        // save current tours state (or remove cached if current is empty)
         const tourData = this["tours"].toData();
         if (tourData) {
             setupData["tours"] = tourData;
+        }
+        else if (setupData["tours"]) {
+            delete setupData["tours"];
         }
 
         const snapshotData = this.snapshots.toData(pathMap);
