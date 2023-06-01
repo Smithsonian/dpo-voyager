@@ -192,14 +192,14 @@ export default class SceneView extends SystemView
 
     protected onPointerDown(event: PointerEvent) {
         if(this.pointerEventsEnabled) {
-            this.style.cursor = this.measuring ? "default" : "grabbing";
+            this.style.cursor = this.style.cursor == "default" ? "default" : "grabbing";
             this.manipTarget.onPointerDown(event);
         }
     }
 
     protected onPointerUpOrCancel(event: PointerEvent) {
         if(this.pointerEventsEnabled) {
-            this.style.cursor = this.measuring ? "default" : "grab";
+            this.style.cursor = this.style.cursor == "default" ? "default" : "grab";
             this.manipTarget.onPointerUpOrCancel(event);
         }
     }
