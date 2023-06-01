@@ -40,9 +40,16 @@ import sanitizeHtml from 'sanitize-html';
 @customElement("sv-annotations-task-view")
 export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 {
+    protected sceneview : HTMLElement = null;
+    
     protected connected()
     {
         super.connected();
+
+        // get sceneview for cursor updates
+        const explorer = (this.getRootNode() as Element).getElementsByTagName("voyager-explorer")[0];
+        this.sceneview = explorer.shadowRoot.querySelector(".sv-scene-view") as HTMLElement;
+        
         this.task.on("update", this.onUpdate, this);
         this.task.ins.language.on("value", this.onUpdate, this);
     }
@@ -51,6 +58,10 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         this.task.ins.language.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
+
+        // set cursor to grab when leaving
+        this.sceneview.style.cursor = "grab";
+
         super.disconnected();
     }
 
@@ -60,8 +71,13 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const annotations = node && node.getComponent(CVAnnotationView, true);
 
         if (!annotations) {
+            // set cursor to grab
+            this.sceneview.style.cursor = "grab";
+
             return html`<div class="sv-placeholder">Please select a model to edit its annotations</div>`;
         }
+
+        this.sceneview.style.cursor = this.task.ins.mode.value > 0 ? "default" : "grab";
 
         const inProps = annotations.ins;
         const modeProp = this.task.ins.mode;
@@ -124,7 +140,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             if (target.name === "lead") {
                 annotations.ins.lead.setValue(sanitizeHtml(text, 
                     {
-                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a' ],
+                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'sup', 'sub' ],
                         allowedAttributes: {
                           'a': [ 'href' ]
                         }

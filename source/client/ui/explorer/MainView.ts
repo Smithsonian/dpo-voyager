@@ -115,6 +115,7 @@ export default class MainView extends CustomElement
                 bgColor: this.getAttribute("bgColor"),
                 bgStyle: this.getAttribute("bgStyle"),
                 controls: this.getAttribute("controls"),
+                prompt: this.getAttribute("prompt"),
                 reader: this.getAttribute("reader"),
                 lang: this.getAttribute("lang")
             };

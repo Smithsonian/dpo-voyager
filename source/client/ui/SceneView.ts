@@ -23,6 +23,7 @@ import SystemView, { customElement } from "@ff/scene/ui/SystemView";
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
 import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
+import CVTape from "client/components/CVTape";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,22 +46,24 @@ export default class SceneView extends SystemView
     protected resizeObserver: ResizeObserver = null;
 
     protected pointerEventsEnabled: boolean = false;
+    protected measuring: boolean = false;
 
     constructor(system?: System)
     {
         super(system);
 
         //this.onResize = this.onResize.bind(this);
+        this.onPointerUpOrCancel = this.onPointerUpOrCancel.bind(this);
 
         this.manipTarget = new ManipTarget();
 
-        this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
+        this.addEventListener("pointerdown", this.onPointerDown);
         this.addEventListener("pointermove", this.manipTarget.onPointerMove);
-        this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-        this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+        this.addEventListener("pointerup", this.onPointerUpOrCancel);
+        this.addEventListener("pointercancel", this.onPointerUpOrCancel);
         this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
-        this.ownerDocument.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
-        this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+        this.ownerDocument.addEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
+        this.ownerDocument.addEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
         this.addEventListener("keydown", this.manipTarget.onKeyDown);
@@ -131,12 +134,14 @@ export default class SceneView extends SystemView
         
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
         this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.on("value", this.onKeyboardNavigation, this);
+        this.system.getComponent(CVTape).ins.enabled.on("value", this.onMeasure, this);
     }
 
     protected disconnected()
     {
         this.resizeObserver.disconnect();
 
+        this.system.getComponent(CVTape).ins.enabled.off("value", this.onMeasure, this);
         this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
 
@@ -147,13 +152,13 @@ export default class SceneView extends SystemView
         const needsEnabled = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.value;
 
         if(needsEnabled && !this.pointerEventsEnabled) {
-            this.addEventListener("pointerdown", this.manipTarget.onPointerDown);
+            this.addEventListener("pointerdown", this.onPointerDown);
             this.addEventListener("pointermove", this.manipTarget.onPointerMove);
-            this.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-            this.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+            this.addEventListener("pointerup", this.onPointerUpOrCancel);
+            this.addEventListener("pointercancel", this.onPointerUpOrCancel);
             this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
-            this.ownerDocument.addEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
-            this.ownerDocument.addEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.ownerDocument.addEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
+            this.ownerDocument.addEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
             this.addEventListener("wheel", this.manipTarget.onWheel);
             this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
             this.addEventListener("keydown", this.manipTarget.onKeyDown);
@@ -165,13 +170,13 @@ export default class SceneView extends SystemView
             this.pointerEventsEnabled = true;
         }
         else if(!needsEnabled && this.pointerEventsEnabled) {
-            this.removeEventListener("pointerdown", this.manipTarget.onPointerDown);
+            this.removeEventListener("pointerdown", this.onPointerDown);
             this.removeEventListener("pointermove", this.manipTarget.onPointerMove);
-            this.removeEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);
-            this.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel);
+            this.removeEventListener("pointerup", this.onPointerUpOrCancel);
+            this.removeEventListener("pointercancel", this.onPointerUpOrCancel);
             this.ownerDocument.removeEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
-            this.ownerDocument.removeEventListener("pointerup", this.manipTarget.onPointerUpOrCancel);     // To catch out of frame drag releases
-            this.ownerDocument.removeEventListener("pointercancel", this.manipTarget.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.ownerDocument.removeEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
+            this.ownerDocument.removeEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
             this.removeEventListener("wheel", this.manipTarget.onWheel);
             this.removeEventListener("contextmenu", this.manipTarget.onContextMenu);
             this.removeEventListener("keydown", this.manipTarget.onKeyDown);
@@ -181,6 +186,21 @@ export default class SceneView extends SystemView
             this.setAttribute("touch-action", "auto");
 
             this.pointerEventsEnabled = false;
+            this.style.cursor = "default";
+        }
+    }
+
+    protected onPointerDown(event: PointerEvent) {
+        if(this.pointerEventsEnabled) {
+            this.style.cursor = this.style.cursor == "default" ? "default" : "grabbing";
+            this.manipTarget.onPointerDown(event);
+        }
+    }
+
+    protected onPointerUpOrCancel(event: PointerEvent) {
+        if(this.pointerEventsEnabled) {
+            this.style.cursor = this.style.cursor == "default" ? "default" : "grab";
+            this.manipTarget.onPointerUpOrCancel(event);
         }
     }
 
@@ -197,6 +217,11 @@ export default class SceneView extends SystemView
                 this.srAnnouncement.textContent = "Offset " + navIns.offset.value[0].toFixed(0) + ", " +
                     navIns.offset.value[1].toFixed(0) + ", " + navIns.offset.value[2].toFixed(0);
         }
+    }
+
+    protected onMeasure() {
+        this.measuring = this.system.getComponent(CVTape).ins.enabled.value;
+        this.style.cursor = this.measuring ? "default" : "grab";
     }
 
     /*protected onResize()

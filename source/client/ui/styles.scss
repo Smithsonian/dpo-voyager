@@ -165,7 +165,7 @@
 
 @keyframes spin { 100% { transform:rotate(360deg); } }
 
-.sv-spinner {
+.sv-prompt, .sv-spinner {
   @include fullsize;
   display: flex;
   justify-content: center;

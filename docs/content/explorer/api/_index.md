@@ -22,6 +22,7 @@ These attributes configure the initial object load of the component.
 | bgColor	   | Valid CSS colors  | Sets the color of the component background. Optional second color for gradient styles. Ex: "red" or "red rgb(0,255,0)" |
 | bgStyle	   | Solid, LinearGradient, RadialGradient | Sets the style of the component background. |
 | controls	   | True, False	   | Enables/Disables user-driven camera controls. Defaults to 'True'. Useful if driving navigation from external code.  |
+| prompt	   | True, False	   | Enables/Disables user interaction prompt. Defaults to 'True'. Always false if 'controls' is false. |
 | reader	   | True, False	   | Enables/Disables visibility of reader UI. Defaults to 'True'. Overrides activation triggers like toggleReader()  |
 | lang 		   | valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code | Sets the active language of the component (where available) |
 | dragdrop	   | | If present, enables dragging and dropping files into Story. Enabled by default in Standalone mode. **Note:** Voyager does *not* handle access control. Enabling this feature increases the importance of securing your server-side I/O. 

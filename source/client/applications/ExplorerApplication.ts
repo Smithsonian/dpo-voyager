@@ -88,6 +88,8 @@ export interface IExplorerApplicationProps
     bgStyle?: string;
     /** Enables/disables pointer-driven camera controls. */
     controls?: string;
+    /** Enables/disables navigation interaction prompt. */
+    prompt?: string;
     /** Enables/disables reader top-level visibility. */
     reader?: string;
     /** ISO 639-1 language code to change active component language */
@@ -285,6 +287,7 @@ Version: ${ENV_VERSION}
         props.bgColor = props.bgColor || parseUrlParameter("bgColor") || parseUrlParameter("bc");
         props.bgStyle = props.bgStyle || parseUrlParameter("bgStyle") || parseUrlParameter("bs");
         props.controls = props.controls || parseUrlParameter("controls") || parseUrlParameter("ct");
+        props.prompt = props.prompt || parseUrlParameter("prompt") || parseUrlParameter("pm");
         props.reader = props.reader || parseUrlParameter("reader") || parseUrlParameter("rdr");
         props.lang = props.lang || parseUrlParameter("lang") || parseUrlParameter("l");
 
@@ -293,10 +296,6 @@ Version: ${ENV_VERSION}
 
         // Config custom UI layout
         if (props.uiMode) {
-            //if (props.uiMode.toLowerCase().indexOf("none") !== -1) {
-            //    this.documentProvider.activeComponent.setup.interface.ins.visibleElements.setValue(0);
-            //}
-
             let elementValues = 0;
             let hasValidParam = false;
             
@@ -380,6 +379,9 @@ Version: ${ENV_VERSION}
         }
         if(props.controls) {
             this.enableNavigation(props.controls);
+        }
+        if(props.prompt) {
+            this.enablePrompt(props.prompt);
         }
         if(props.reader) {
             this.enableReader(props.reader);
@@ -645,14 +647,7 @@ Version: ${ENV_VERSION}
     // enable/disable camera controls
     enableNavigation(enable: string)
     {
-        let controls = undefined;
-        const controlsLower = enable.toLowerCase();
-        if(controlsLower === "true") {
-            controls = true;
-        }
-        else if(controlsLower === "false") {
-            controls = false;
-        }
+        const controls = this.isTrue(enable);
 
         if(controls != undefined) {
             const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
@@ -663,17 +658,24 @@ Version: ${ENV_VERSION}
         }
     }
 
+    // enable/disable navigations prompt
+    enablePrompt(enable: string)
+    {
+        const prompt = this.isTrue(enable);
+
+        if(prompt != undefined) {
+            const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+            orbitNavIns.promptEnabled.setValue(prompt);
+        }
+        else {
+            console.error("Error: enablePrompt param is not valid.");
+        }
+    }
+
     // enable/disable reader visibility
     enableReader(enable: string)
     {
-        let enabled = undefined;
-        const enabledLower = enable.toLowerCase();
-        if(enabledLower === "true") {
-            enabled = true;
-        }
-        else if(enabledLower === "false") {
-            enabled = false;
-        }
+        const enabled = this.isTrue(enable);
 
         if(enabled != undefined) {
             const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
@@ -704,6 +706,20 @@ Version: ${ENV_VERSION}
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
         reader.ins.enabled.setValue(true);
         reader.ins.articleId.setValue(id);
+    }
+
+    // helper function to standardize parsing boolean string params
+    protected isTrue(input: string)
+    {
+        let output = undefined;
+        const outputLower = input.toLowerCase();
+        if(outputLower === "true") {
+            output = true;
+        }
+        else if(outputLower === "false") {
+            output = false;
+        }
+        return output;
     }
 }
 

@@ -88,6 +88,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus-visible {
       border: 2px solid lighten($color-primary, 50%);
     }
+
+    cursor: grab;
   }
 }
 
@@ -1205,4 +1207,13 @@ $tour-entry-indent: 12px;
   .sv-tool-controls {
     flex-wrap: wrap;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OVERLAYS
+
+.sv-action-prompt {
+  height: 30px;
+  width: 30px;
+  fill: #fff;
 }
