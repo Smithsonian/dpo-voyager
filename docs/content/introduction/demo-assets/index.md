@@ -41,7 +41,7 @@ TERMS_OF_USE.txt
 Next, open your web browser (Chrome preferred) and navigate to one of the following URLs. Note that the host and port
 may be different depending on where you installed the Voyager development server.
 
-###### Voyager Exlorer (the viewer)
+###### Voyager Explorer (the viewer)
 ```
 http://localhost:8000/voyager-explorer-dev.html?root=models/tusk/&document=tusk.svx.json
 http://localhost:8000/voyager-explorer-dev.html?root=models/vase/&document=vase.svx.json
