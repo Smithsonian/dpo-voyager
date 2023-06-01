@@ -68,6 +68,7 @@ export default class CVOrbitNavigation extends CObject3D
     protected static readonly ins = {
         enabled: types.Boolean("Settings.Enabled", true),
         pointerEnabled: types.Boolean("Settings.PointerEnabled", true),
+        promptEnabled: types.Boolean("Settings.PromptEnabled", true),
         isInUse: types.Boolean("Camera.IsInUse", false),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
         projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),

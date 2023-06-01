@@ -186,6 +186,7 @@ export default class SceneView extends SystemView
             this.setAttribute("touch-action", "auto");
 
             this.pointerEventsEnabled = false;
+            this.style.cursor = "default";
         }
     }
 

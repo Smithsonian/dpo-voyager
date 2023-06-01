@@ -101,7 +101,7 @@ export default class ContentView extends DocumentView
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
         let tourMenuVisible = false;
-        let isInUse = false;
+        let promptVisible = false;
 
         const reader = this.reader;
         const tours = this.tours;
@@ -132,8 +132,14 @@ export default class ContentView extends DocumentView
             }
         }
         if(navigation) {
-            isInUse = navigation.ins.isInUse.value;
-            navigation.ins.promptActive.setValue(!isLoading && isInitialLoad && !isInUse);
+            const controls = navigation.ins.pointerEnabled.value;
+            const promptEnabled = navigation.ins.promptEnabled.value;
+
+            if(controls && promptEnabled) {
+                const isInUse = navigation.ins.isInUse.value;
+                promptVisible = !isLoading && isInitialLoad && !isInUse;
+                navigation.ins.promptActive.setValue(promptVisible);
+            }
         }
 
         const sceneView = this.sceneView;
@@ -184,7 +190,7 @@ export default class ContentView extends DocumentView
 
         return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
             <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
-            ${!isLoading && isInitialLoad && !isInUse ? html`<sv-action-prompt></sv-action-prompt>` : null}`;
+            ${promptVisible ? html`<sv-action-prompt></sv-action-prompt>` : null}`;
     }
 
     protected onReaderClose()
