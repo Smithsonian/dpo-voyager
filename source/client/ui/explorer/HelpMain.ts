@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2020 Smithsonian Institution
+ * Copyright 2023 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,22 @@ import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { ILanguageOption } from "client/schema/setup";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import { IButtonClickEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-language-menu")
-export default class LanguageMenu extends Popup
+enum EHelpSection { Nav, Menu }
+
+@customElement("sv-main-help")
+export default class HelpMain extends Popup
 {
     protected url: string;
     protected language: CVLanguageManager = null;
+    protected helpView: EHelpSection = EHelpSection.Nav;
 
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
     {
-        const menu = new LanguageMenu(language);
+        const menu = new HelpMain(language);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -61,31 +65,30 @@ export default class LanguageMenu extends Popup
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-language-menu", "sv-option-menu");
-    }
-
-    protected renderEntry(language: ILanguageOption, index: number)
-    {
-        const isSelected = language.name === this.language.nameString();
-        return html`<div class="sv-entry" role="option" tabindex=${isSelected ? "0" : "-1"} @click=${e => this.onClickLanguage(e, index)} @keydown=${e =>this.onKeyDownEntry(e, index)} ?selected=${isSelected}>
-            ${language.name}
-        </div>`;
+        this.classList.add("sv-main-help");
     }
 
     protected render()
     {
         const language = this.language;
+        const section = this.helpView;
+
+        const navContent = html`<div>How to navigate!</div>`;
+
+        const menuContent = html`<div>Main UI functionality!</div>`;
 
         return html`
-        <div role="region" aria-label="Language Menu" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Set Language")}</div>
+                <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Introduction to Voyager")}</div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
-            <div class="ff-flex-row">
-                <div class="ff-scroll-y sv-scroll-offset" role="listbox">
-                    ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
-                </div>
+            <div class="sv-commands">
+                <ff-button text="Navigation" index=${EHelpSection.Nav} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
+                <ff-button text="User Interface" index=${EHelpSection.Menu} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
+            </div>
+            <div>
+                ${section === EHelpSection.Nav ? navContent : menuContent}
             </div>
         </div>
         `;
@@ -94,17 +97,13 @@ export default class LanguageMenu extends Popup
     protected firstUpdated(changedProperties) {
         super.firstUpdated(changedProperties);
 
-        (Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
+        //(Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
     }
 
-    protected onClickLanguage(e: MouseEvent, index: number)
+    protected onClickSection(event: IButtonClickEvent)
     {
-        const language = this.language;
-
-        e.stopPropagation();
-
-        language.ins.language.setValue(language.activeLanguages[index].id);  
-        this.close();  
+        this.helpView = event.target.index;
+        this.requestUpdate();
     }
 
     protected onKeyDownEntry(e: KeyboardEvent, index: number)

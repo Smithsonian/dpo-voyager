@@ -60,6 +60,62 @@ $main-menu-button-size: 38px;
   }
 }
 
+@mixin circle-btn {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  width: $main-menu-button-size;
+  height: $main-menu-button-size;
+  background-color: $menu-color-background-dark;
+  border-radius: 20px;
+  font-size: 17px;
+  transition: all $tx-short;
+  pointer-events: auto;
+
+  .ff-text {
+    color: $color-icon;
+  }
+
+  &:focus {
+    outline: none;
+    background-color: $menu-color-background-dark;
+    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: 0;
+    box-shadow: 0 0;
+  }
+
+  &:focus-visible {
+    outline: none;
+    background-color: $menu-color-background-dark;
+    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+  }
+
+  &:hover {
+    background-color: $menu-color-background-hover;
+    fill: $color-text;
+
+    & > .ff-text {
+      color: $color-text;
+    }
+  }
+
+  &[selected] {
+    background-color: $color-primary;
+    color: $menu-color-text;
+
+    & > .ff-icon {
+      filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
+      fill: $color-text;
+    }
+
+    &:hover, &:focus {
+      background-color: $color-primary-light;
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN VIEW
 
@@ -523,31 +579,17 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     //height: 30px;
     //margin: 9px 9px 0 0;
     overflow: hidden;
+
+    & > .ff-button {
+      margin: 6px 6px 6px 5px;
+      @include circle-btn;
+    }
   }
 
-  .sv-language-display {
-    flex: 1 1 auto;
-    margin: $canvas-border-width 8px;
-    font-family: "Hind Siliguri", sans-serif;;
-    font-weight: normal;
-    font-size: 1.176em;
-    white-space: pre;
-    color: $color-text-light;
-    pointer-events: auto;
-    background: $menu-color-background-dark;
-    border-radius: 4px;
-    padding: 4px 6px;
-    @include noselect;
-
-    &:hover, &:focus {
-      outline: none;
-      background-color: $menu-color-background-hover;
-      fill: $color-text;
-    }
-
-    span {
-      color: transparent;
-    }
+  .sv-text-icon {
+    font-family: "Hind Siliguri", sans-serif;
+    font-weight: bold;
+    line-height: 25px;
   }
 }
 
@@ -573,52 +615,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   overscroll-behavior-y: contain;
 
   & > .ff-button {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    width: $main-menu-button-size;
-    height: $main-menu-button-size;
     margin: 2px 0;
-    background-color: $menu-color-background-dark;
-    border-radius: 20px;
-    font-size: 17px;
-    transition: all $tx-short;
-    pointer-events: auto;
-
-    &:focus {
-      outline: none;
-      background-color: $menu-color-background-dark;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
-    }
-
-    &:focus:not(:focus-visible) {
-      outline: 0;
-      box-shadow: 0 0;
-    }
-
-    &:focus-visible {
-      outline: none;
-      background-color: $menu-color-background-dark;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
-    }
-
-    &:hover {
-      background-color: $menu-color-background-hover;
-      fill: $color-text;
-    }
-
-    &[selected] {
-      background-color: $color-primary;
-      color: $menu-color-text;
-
-      & > .ff-icon {
-        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-        fill: $color-text;
-      }
-
-      &:hover, &:focus {
-        background-color: $color-primary-light;
-      }
-    }
+    @include circle-btn;
   }
 
   .sv-scroll-btn {
@@ -895,6 +893,19 @@ $tour-entry-indent: 12px;
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// HELP SCREEN
+
+.sv-main-help {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  padding: 8px;
+  background: $color-background;
+  pointer-events: auto;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // BLUE BAR
