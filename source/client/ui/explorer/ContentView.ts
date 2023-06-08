@@ -137,7 +137,7 @@ export default class ContentView extends DocumentView
 
             if(controls && promptEnabled) {
                 const isInUse = navigation.ins.isInUse.value;
-                promptVisible = !isLoading && isInitialLoad && !isInUse;
+                promptVisible = !isLoading && isInitialLoad && !isInUse && !readerVisible;
                 navigation.ins.promptActive.setValue(promptVisible);
             }
         }
