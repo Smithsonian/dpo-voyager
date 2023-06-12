@@ -74,7 +74,9 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         //<ff-button text="Edit" icon="pen" ?disabled=${!uri} @click=${this.onClickEdit}></ff-button>
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>              
+            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button title="Move Article Up" icon="up" ?disabled=${!activeArticle} @click=${this.onClickUp}></ff-button>
+            <ff-button title="Move Article Down" icon="down" ?disabled=${!activeArticle} @click=${this.onClickDown}></ff-button>          
             <ff-button text="Delete" icon="trash" ?disabled=${!activeArticle} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
@@ -112,6 +114,16 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         });
     }
 
+    protected onClickUp()
+    {
+        this.task.ins.moveArticleUp.set();
+    }
+
+    protected onClickDown()
+    {
+        this.task.ins.moveArticleDown.set();
+    }
+
     protected onTextEdit(event: ILineEditChangeEvent)
     {
         const task = this.task;
@@ -146,7 +158,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     protected onArticleChange()
     {
         this.onUpdate();
-        this.task.ins.edit.set();
+        //this.task.ins.edit.set();
     }
 }
 
