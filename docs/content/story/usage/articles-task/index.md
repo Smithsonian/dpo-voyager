@@ -39,3 +39,5 @@ Note that this only deletes the article reference in the current scene. The arti
 3. Open an article in the article editor. Select the article from the article list, then click the {{% button Edit %}} button. You can also double click the article to open it in the editor.
 4. Drag and drop an image from the media browser into the article. Drop it at the desired position.
 5. Clicking on a dropped image displays a menu for positioning and resizing the image.
+
+**Note:** Article assets (.html, images, etc.) created by Voyager Story are stored in a ‘./articles’ folder relative to the loaded SVX scene file.
