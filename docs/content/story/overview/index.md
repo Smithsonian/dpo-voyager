@@ -5,6 +5,10 @@ weight: 100
 ---
 
 _Voyager Story_ is the creation and authoring application of the Voyager tool suite. The application can be used to create and author _Voyager SVX Documents_. Documents are files in JSON format containing the description of a Voyager scene or experience.
+
+'Articles' are Voyager objects that present long-form text and imaged about an object to the viewer. Article assets created by _Voyager Story_ are stored in a './articles' folder relative to the loaded SVX scene file.
+
+'Annotations' are small snippets of text that describe a specific point on the surface of a 3D object. _Voyager Story_ offers several different annotation styles to choose from.
  
  _Voyager Story_ can be operated in several different modes. Each mode offers a number of tasks.
  

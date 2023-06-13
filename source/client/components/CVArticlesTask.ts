@@ -51,6 +51,9 @@ export default class CVArticlesTask extends CVTask
         create: types.Event("Articles.Create"),
         edit: types.Event("Articles.Edit"),
         delete: types.Event("Articles.Delete"),
+        version: types.Event("Articles.Version"),
+        moveArticleUp: types.Event("Articles.MoveUp"),
+        moveArticleDown: types.Event("Articles.MoveDown"),
         title: types.String("Article.Title"),
         lead: types.String("Article.Lead"),
         tags: types.String("Article.Tags"),
@@ -142,14 +145,26 @@ export default class CVArticlesTask extends CVTask
             this.reader.outs.count.setValue(meta.articles.length);
             languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
         }
+        else if(activeArticle && ins.version.changed) {
+            this.createEditArticle(activeArticle);
+        }
         else {
             if (activeArticle) {
                 if (ins.uri.changed) {
                     activeArticle.uri = ins.uri.value;
-                    ins.edit.set();
+                    this.reader.ins.refresh.set();
+
+                    if(!this.mediaManager.getAssetByPath(activeArticle.uri)) {
+                        new Notification(`Unable to find article: '${activeArticle.uri}'. Check asset name.`, "error", 4000);
+                        this.mediaManager.open(null);
+                        return false;
+                    }
+                    else {
+                        ins.edit.set();
+                    }
                 }
 
-                const activeAsset = activeArticle ? this.mediaManager.getAssetByPath(activeArticle.uri) : null;
+                const activeAsset = this.mediaManager.getAssetByPath(activeArticle.uri);
 
                 if (ins.edit.changed) {
                     if (activeAsset) {
@@ -158,6 +173,7 @@ export default class CVArticlesTask extends CVTask
                     else {
                         new Notification(`Unable to find article: '${activeArticle.uri}'. Check asset name.`, "error", 4000);
                         this.mediaManager.open(null);
+                        this.reader.ins.refresh.set();
                     }
                 }
                 if (ins.delete.changed) {
@@ -175,6 +191,14 @@ export default class CVArticlesTask extends CVTask
                 if (ins.lead.changed || ins.tags.changed) {
                     activeArticle.lead = ins.lead.value;
                     activeArticle.tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                }
+                if (ins.moveArticleUp.changed) {
+                    this.meta.articles.moveItem(activeArticle, -1);
+                    //return true;
+                }
+                if (ins.moveArticleDown.changed) {
+                    this.meta.articles.moveItem(activeArticle, 1);
+                    //return true;
                 }
             }
             else {
@@ -197,10 +221,15 @@ export default class CVArticlesTask extends CVTask
     protected deleteArticle(article: Article)
     {
         this.meta.articles.removeItem(article);
-        const asset = this.mediaManager.getAssetByPath(article.uri);
-        if (asset) {
-            this.mediaManager.delete(asset);
-        }
+
+        // Make sure we delete all language variation assets
+        Object.values(ELanguageType).filter((v) => !isNaN(Number(v))).forEach( type => {
+            article.language = type as ELanguageType;
+            const asset = this.mediaManager.getAssetByPath(article.uri);
+            if (asset) {
+                this.mediaManager.delete(asset);
+            }
+        })
         
         // check for article ids in annotations
         const views = this.system.getComponents(CVAnnotationView); 
@@ -223,7 +252,7 @@ export default class CVArticlesTask extends CVTask
         .then(() => {
             const asset = this.mediaManager.getAssetByPath(uri);
             if (asset) {
-                this.mediaManager.open(asset);
+                //this.ins.edit.set();
                 this.reader.ins.articleId.setValue(article.id);
             }
         })
@@ -292,6 +321,10 @@ export default class CVArticlesTask extends CVTask
             if(article.uri === undefined) {
                 const defaultFolder = CVMediaManager.articleFolder;
                 article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
+                this.ins.version.set();
+            }
+            else {
+                this.ins.edit.set();
             }
 
             ins.uri.setValue(article.uri, true);
@@ -312,13 +345,7 @@ export default class CVArticlesTask extends CVTask
         const {ins} = this;
 
         this.synchLanguage();
-        //this.onArticleChange();
-        
-        // if we don't have a uri for this language, create one so that it is editable
-        if(article && article.uri === undefined) {
-            const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
-        }
+        this.onArticleChange();
     }
 
     // Make sure this task language matches document

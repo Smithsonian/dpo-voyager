@@ -52,6 +52,7 @@ export default class CVReader extends Component
         enabled: types.Boolean("Reader.Enabled"),
         visible: types.Boolean("Reader.Visible", true), // TODO: Swap enabled and visible
         closed: types.Event("Reader.Closed"),
+        refresh: types.Event("Reader.Refresh"),
         position: types.Enum("Reader.Position", EReaderPosition),
         articleId: types.String("Article.ID"),
         focus: types.Boolean("Reader.Focus"),
@@ -141,6 +142,9 @@ export default class CVReader extends Component
                 this.analytics.sendProperty("Reader.ArticleId", article.defaultTitle);
             }
         }
+        if (ins.refresh.changed) {
+            this.refreshArticle();
+        }
 
         return true;
     }
@@ -201,6 +205,16 @@ export default class CVReader extends Component
         }
     }
 
+    protected refreshArticle()
+    {
+        const entry = this._articles[this.ins.articleId.value] || null;
+        const article = entry && entry.article;
+
+        if(article) {
+            this.readArticle(article);
+        }
+    }
+
     protected updateArticles()
     {
         const metas = this.getGraphComponents(CVMeta);
@@ -224,8 +238,8 @@ export default class CVReader extends Component
             entry.article.language = this.language.outs.language.value;
         });
 
-        // trigger reader active article update
-        ins.articleId.set();
+        // reader active article update
+        this.ins.refresh.set();
     }
 
     fromData(data: IReader)
