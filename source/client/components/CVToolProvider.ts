@@ -69,7 +69,7 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
     {
         tool.activateTool();
 
-        this.analytics.sendProperty("Tools.ActiveTool", tool.text);
+        this.analytics.sendProperty("Tools_ActiveTool", tool.text);
     }
 
     protected deactivateComponent(tool: CVTool)

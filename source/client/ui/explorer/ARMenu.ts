@@ -85,7 +85,7 @@ export default class ARMenu extends DocumentView
         const readerIns = this.activeDocument.setup.reader.ins;
         readerIns.enabled.setValue(!readerIns.enabled.value);
 
-        this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
+        this.analytics.sendProperty("Reader_Enabled", readerIns.enabled.value);
     }
 
     protected onToggleNarration()
@@ -105,7 +105,7 @@ export default class ARMenu extends DocumentView
         }*/
 
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
-        this.analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
+        this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)

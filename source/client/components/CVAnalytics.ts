@@ -59,9 +59,9 @@ export default class CVAnalytics extends Component
         }
 
         // track custom event
-        if (typeof ga === "function" && ENV_PRODUCTION) {
-            const text = value !== undefined ? value.toString() : undefined;
-            ga("send", "event", this._title, property, text);
+        if (typeof gtag === "function" && ENV_PRODUCTION) {
+            const text : string = value !== undefined ? value.toString() : 'undefined';
+            gtag("event", property.toLowerCase(), {"scene_title": this._title, "event_value": text});
         }
     }
 }
