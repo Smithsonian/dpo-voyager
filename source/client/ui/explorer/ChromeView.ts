@@ -94,6 +94,7 @@ export default class ChromeView extends DocumentView
         const logoVisible = setup.interface.ins.logo.value && setup.interface.isShowing(EUIElements.logo);
         const menuVisible = setup.interface.ins.menu.value && setup.interface.isShowing(EUIElements.menu);
         const titleVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.title);
+        const helpVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.help);
 
         const readerVisible = setup.reader.ins.enabled.value;
 
@@ -155,7 +156,7 @@ export default class ChromeView extends DocumentView
                 <div class="sv-bottom-bar">
                     ${languagesVisible ? html`<ff-button id="language" style=${setup.language.codeString().length > 2 ? "font-size:0.9em"
                          : ""} text=${setup.language.codeString()} title=${language.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
-                    ${html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>`}
+                    ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>`;
     }
