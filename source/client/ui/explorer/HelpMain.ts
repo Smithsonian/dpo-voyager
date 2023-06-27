@@ -109,7 +109,7 @@ export default class HelpMain extends Popup
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="comment"></ff-icon>
-                                        <div class="sv-help-text">Show annotations<br>highlighting key points/div>
+                                        <div class="sv-help-text">Show annotations<br>highlighting key points</div>
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="share"></ff-icon>
