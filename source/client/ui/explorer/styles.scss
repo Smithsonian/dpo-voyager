@@ -904,6 +904,48 @@ $tour-entry-indent: 12px;
   padding: 8px;
   background: $color-background;
   pointer-events: auto;
+
+  .sv-help-section {
+    display: flex;
+    text-align: center;
+    width: 33%;
+    min-width: 100px;
+    height: 90%;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .sv-help-row {
+    display: flex;
+    flex-wrap: wrap;
+    height: 90%;
+  }
+
+  .sv-help-text {
+    padding: 5px;
+  }
+
+  .sv-help-region {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ff-icon {
+    height: 2rem;
+  }
+}
+
+.sv-commands {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 2px;
+
+  .ff-button {
+    width: 50%;
+    min-width: 100px;
+  }
 }
 
 

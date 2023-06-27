@@ -73,23 +73,71 @@ export default class HelpMain extends Popup
         const language = this.language;
         const section = this.helpView;
 
-        const navContent = html`<div>How to navigate!</div>`;
+        const navContent = html`<div class="sv-help-row">
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="rotate"></ff-icon>
+                                        <div class="sv-help-text">Left-click and drag<br>or one-finger drag to orbit</div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="move"></ff-icon>
+                                        <div class="sv-help-text">Right-click and drag<br>or two-finger drag to pan</div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="zoom"></ff-icon>
+                                        <div class="sv-help-text">Use a mouse wheel<br>or pinch to zoom</div>
+                                    </div>
+                                </div>`;
 
-        const menuContent = html`<div>Main UI functionality!</div>`;
+        const menuContent = html`<div class="sv-help-row">
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="ar"></ff-icon>
+                                        <div class="sv-help-text">Launch an augmented<br>reality experience</div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="audio"></ff-icon>
+                                        <div class="sv-help-text">Click or tap to<br>hear an audio narration of the scene</div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="globe"></ff-icon>
+                                        <div class="sv-help-text">Walk through a curated guided<br>tour of the scene</div>
+                                    </div>
+                                </div>
+                                <div class="sv-help-row">
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="article"></ff-icon>
+                                        <div class="sv-help-text">Read articles about<br>the scene content</div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="comment"></ff-icon>
+                                        <div class="sv-help-text">Show annotations<br>highlighting key points/div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="share"></ff-icon>
+                                        <div class="sv-help-text">Share the experience<br>with a friend!</div>
+                                    </div>
+                                </div>
+                                <div class="sv-help-row">
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="expand"></ff-icon>
+                                        <div class="sv-help-text">View the experience<br>in fullscreen mode</div>
+                                    </div>
+                                    <div class="sv-help-section">
+                                        <ff-icon class="ff-off" name="tools"></ff-icon>
+                                        <div class="sv-help-text">Open the advanced<br>tool menu</div>
+                                    </div>
+                                </div>`;
 
         return html`
-        <div role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div class="sv-help-region" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
                 <div class="ff-flex-spacer ff-title">${language.getLocalizedString("Introduction to Voyager")}</div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div class="sv-commands">
                 <ff-button text="Navigation" index=${EHelpSection.Nav} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
-                <ff-button text="User Interface" index=${EHelpSection.Menu} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
+                <ff-button text="Main Menu" index=${EHelpSection.Menu} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
             </div>
-            <div>
-                ${section === EHelpSection.Nav ? navContent : menuContent}
-            </div>
+            ${section === EHelpSection.Nav ? navContent : menuContent}
         </div>
         `;
     }
