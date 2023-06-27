@@ -88,18 +88,19 @@ export default class HelpMain extends Popup
                                     </div>
                                 </div>`;
 
-        const menuContent = html`<div class="sv-help-row">
+        const menuContent = html`<div class="sv-help-text">The tools below can be accessed by clicking the corresponding icons on the menu bar to the left of the screen.</div>
+                                <div class="sv-help-row">
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="ar"></ff-icon>
                                         <div class="sv-help-text">Launch an augmented<br>reality experience</div>
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="audio"></ff-icon>
-                                        <div class="sv-help-text">Click or tap to<br>hear an audio narration of the scene</div>
+                                        <div class="sv-help-text">Hear an audio<br>narration of the scene</div>
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="globe"></ff-icon>
-                                        <div class="sv-help-text">Walk through a curated guided<br>tour of the scene</div>
+                                        <div class="sv-help-text">Take a curated guided<br>tour of the scene</div>
                                     </div>
                                 </div>
                                 <div class="sv-help-row">
@@ -135,7 +136,7 @@ export default class HelpMain extends Popup
             </div>
             <div class="sv-commands">
                 <ff-button text="Navigation" index=${EHelpSection.Nav} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
-                <ff-button text="Main Menu" index=${EHelpSection.Menu} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
+                <ff-button text="Menu Icons" index=${EHelpSection.Menu} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
             </div>
             ${section === EHelpSection.Nav ? navContent : menuContent}
         </div>
