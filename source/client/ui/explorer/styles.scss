@@ -935,20 +935,19 @@ $tour-entry-indent: 12px;
   .ff-icon {
     height: 2rem;
   }
-}
 
-.sv-commands {
-  flex: 0 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  padding: 2px;
-
-  .ff-button {
-    width: 50%;
-    min-width: 100px;
+  .sv-commands {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 2px;
+  
+    .ff-button {
+      width: 50%;
+      min-width: 100px;
+    }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // BLUE BAR
