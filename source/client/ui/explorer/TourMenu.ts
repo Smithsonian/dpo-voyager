@@ -53,7 +53,10 @@ export default class TourMenu extends CustomElement
     protected renderEntry(tour: ITour, index: number)
     {
         return html`<div role="option" title="tour entry" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, index)} class="sv-entry" @click=${e => this.onClickTour(e, index)}>
-            <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] : tour.title}</h1>
+            <div class="sv-titlebar">              
+                <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] || "undefined" : tour.title}</h1>
+                <ff-icon class="ff-off" name="triangle-right">
+            </div>
             <p>${Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead}</p>
         </div>`;
     }

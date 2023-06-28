@@ -820,6 +820,15 @@ $tour-entry-indent: 12px;
       background-color: $color-paragraph-hover;
     }
   }
+
+  .sv-titlebar {
+    display: flex;
+  }
+
+  .ff-icon {
+    margin: auto 10px auto auto;
+    height: 1.5em;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
