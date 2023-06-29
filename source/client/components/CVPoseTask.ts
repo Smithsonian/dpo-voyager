@@ -202,13 +202,6 @@ export default class CVPoseTask extends CVTask
             _mat4.identity().setPosition(_axis);
         }
 
-        // Update annotation matrix
-        const annotations = this.activeModel.getComponent(CVAnnotationView);
-        const anno_mat = _mat4.clone();
-        anno_mat.multiply(annotations.object3D.matrix);
-        annotations.object3D.matrix.copy(anno_mat);
-        annotations.object3D.matrixWorldNeedsUpdate = true;
-
         // multiply delta transform with current model pose transform
         _mat4.multiply(this.activeModel.object3D.matrix);
         this.activeModel.setFromMatrix(_mat4);

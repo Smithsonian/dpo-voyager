@@ -351,9 +351,12 @@ export default class CVAnnotationView extends CObject3D
         this.changed = true;
     }
 
-    updateAnnotation(annotation: Annotation)
+    updateAnnotation(annotation: Annotation, forceSprite?: boolean)
     {
-        //this.updateSprite(annotation);
+        if(forceSprite) {
+            this.updateSprite(annotation);
+        }
+        
         this.changed = true;
     }
 
