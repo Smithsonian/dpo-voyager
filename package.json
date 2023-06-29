@@ -1,6 +1,6 @@
 {
     "name": "voyager",
-    "version": "0.27.0",
+    "version": "0.30.0",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
@@ -102,7 +102,7 @@
         "typedoc": "^0.22.11",
         "typescript": "^4.3.5",
         "typescript-json-schema": "^0.50.1",
-        "webpack": "^5.67.0",
+        "webpack": "^5.88.1",
         "webpack-cli": "^4.9.2"
     }
 }
