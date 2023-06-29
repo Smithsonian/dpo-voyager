@@ -165,7 +165,7 @@ export default class MainMenu extends DocumentView
             readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
         }
 
-        this.analytics.sendProperty("Reader.Enabled", readerIns.enabled.value);
+        this.analytics.sendProperty("Reader_Enabled", readerIns.enabled.value);
     }
 
     protected onToggleTours()
@@ -185,7 +185,7 @@ export default class MainMenu extends DocumentView
             tourIns.tourIndex.setValue(-1); // show tour menu
         }
 
-        this.analytics.sendProperty("Tours.Enabled", tourIns.enabled.value);
+        this.analytics.sendProperty("Tours_Enabled", tourIns.enabled.value);
     }
 
     protected onToggleAnnotations()
@@ -198,7 +198,7 @@ export default class MainMenu extends DocumentView
         }
 
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
-        this.analytics.sendProperty("Annotations.Visible", viewerIns.annotationsVisible.value);
+        this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
     }
 
     protected onToggleShare()
@@ -213,14 +213,14 @@ export default class MainMenu extends DocumentView
                 this.setElementFocus("share-btn");
             });
 
-            this.analytics.sendProperty("Menu.Share");
+            this.analytics.sendProperty("Menu_Share");
         }
     }
 
     protected onToggleFullscreen()
     {
         this.fullscreen.toggle();
-        this.analytics.sendProperty("Menu.Fullscreen");
+        this.analytics.sendProperty("Menu_Fullscreen");
     }
 
     protected onToggleTools()
@@ -233,7 +233,7 @@ export default class MainMenu extends DocumentView
         }
 
         toolIns.visible.setValue(!toolIns.visible.value);
-        this.analytics.sendProperty("Tools.Visible", toolIns.visible.value);
+        this.analytics.sendProperty("Tools_Visible", toolIns.visible.value);
     }
 
     protected onEnterAR()

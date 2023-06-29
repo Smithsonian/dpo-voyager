@@ -158,7 +158,7 @@ export default class ContentView extends DocumentView
 
         if(!isLoading && isInitialLoad) { 
             // send load timer event
-            this.analytics.sendProperty("Loading.Time", this.analytics.getTimerTime()/1000);
+            this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
             this.analytics.resetTimer();
 
             this.assetManager.initialLoad = false;
