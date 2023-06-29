@@ -30,6 +30,7 @@ import CVModel2 from "./CVModel2";
 import CVTask from "./CVTask";
 
 import PoseTaskView from "../ui/story/PoseTaskView";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 

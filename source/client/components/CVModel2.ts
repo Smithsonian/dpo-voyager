@@ -45,7 +45,9 @@ import CVSetup from "./CVSetup";
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
 const _quat = new Quaternion();
+const _quat1 = new Quaternion();
 const _box = new Box3();
+const _mat4 = new Matrix4();
 
 export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
@@ -135,6 +137,8 @@ export default class CVModel2 extends CObject3D
     private _visible: boolean = true;
     private _boxFrame: Mesh = null;
     private _localBoundingBox = new Box3();
+    private _prevPosition: Vector3 = new Vector3(0.0,0.0,0.0);
+    private _prevRotation: Vector3 = new Vector3(0.0,0.0,0.0);
 
     constructor(node: Node, id: string)
     {
@@ -360,11 +364,13 @@ export default class CVModel2 extends CObject3D
 
         if (data.translation) {
             ins.position.copyValue(data.translation);
+            this._prevPosition.fromArray(data.translation);
         }
 
         if (data.rotation) {
             _quat.fromArray(data.rotation);
             helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
+            this._prevRotation.fromArray(ins.rotation.value);
             ins.rotation.set();
         }
 
@@ -573,6 +579,33 @@ export default class CVModel2 extends CObject3D
         _vec3b.setScalar(unitScale);
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;
+
+        //TODO: Cleanup & optimize annotation update
+        helpers.degreesToQuaternion([this._prevRotation.x, this._prevRotation.y, this._prevRotation.z], CVModel2.rotationOrder, _quat1);
+        _quat1.invert();
+        _vec3b.setScalar(1);
+        _mat4.compose(_vec3a.fromArray(ins.position.value), _quat, _vec3b);
+
+        const annotations = this.getComponent(CVAnnotationView);
+        annotations.getAnnotations().forEach(anno => {
+            _vec3a.fromArray(anno.data.position);
+            _vec3a.sub(this._prevPosition);
+            _vec3a.applyQuaternion(_quat1);
+            _vec3a.applyMatrix4(_mat4);
+            
+            anno.data.position = _vec3a.toArray();
+
+            _vec3a.fromArray(anno.data.direction);
+            _vec3a.applyQuaternion(_quat1);
+            _vec3a.applyQuaternion(_quat);
+            
+            anno.data.direction = _vec3a.toArray();
+
+            anno.update();
+            annotations.updateAnnotation(anno, true);
+        });
+        this._prevPosition.copy(_vec3a.fromArray(ins.position.value));
+        this._prevRotation.copy(_vec3a.fromArray(ins.rotation.value));
 
         this.outs.updated.set();
     }

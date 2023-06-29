@@ -45,8 +45,11 @@ export default class ReaderView extends DocumentView
     {
         const article = entry.article;
 
-        return html`<div role="option" title="article" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, article.id)} class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>
-            <h1>${article.title}</h1>
+        return html`<div role="option" title="article" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, article.id)} class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>      
+            <div class="sv-titlebar">              
+                <h1>${article.title}</h1>
+                <ff-icon class="ff-off" name="triangle-right">
+            </div>
             <p>${article.lead}</p>
         </div>`;
     }

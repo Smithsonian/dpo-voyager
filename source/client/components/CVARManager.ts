@@ -155,19 +155,19 @@ export default class CVARManager extends Component
             if (isEnabled) {
                 if(IS_WEBXR_AR_CANDIDATE) { 
                     this.launchWebXR();
-                    this.analytics.sendProperty("AR.Enabled", "WebXR");
+                    this.analytics.sendProperty("AR_Enabled", "WebXR");
                 }
                 else if(IS_ANDROID) {
                     this.launchSceneViewer();
-                    this.analytics.sendProperty("AR.Enabled", "SceneViewer");
+                    this.analytics.sendProperty("AR_Enabled", "SceneViewer");
                 }
                 else if(IS_IOS && IS_AR_QUICKLOOK_CANDIDATE) {
                     this.launchQuickLook();
-                    this.analytics.sendProperty("AR.Enabled", "QuickLook");
+                    this.analytics.sendProperty("AR_Enabled", "QuickLook");
                 }
                 else {
                     isEnabled = false;
-                    this.analytics.sendProperty("AR.Enabled", "Unavailable");
+                    this.analytics.sendProperty("AR_Enabled", "Unavailable");
                 }
             }
 

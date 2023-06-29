@@ -819,6 +819,19 @@ $tour-entry-indent: 12px;
     &:hover {
       background-color: $color-paragraph-hover;
     }
+
+    .sv-titlebar {
+      display: flex;
+    }
+  
+    .ff-icon {
+      margin: auto 10px auto auto;
+      height: 1.5em;
+      border-radius: 60px;
+      border-style: solid;
+      box-shadow: 0 0 2px $menu-color-text-dim;
+      padding: 0.6em 0.6em;
+    }
   }
 }
 
