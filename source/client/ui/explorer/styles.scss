@@ -909,21 +909,28 @@ $tour-entry-indent: 12px;
     display: flex;
     text-align: center;
     width: 33%;
-    min-width: 100px;
-    height: 90%;
+    min-width: 180px;
+    max-height: 90%;
     flex-direction: column;
     justify-content: center;
+  }
+
+  .sv-help-short {
+    min-width: 100px;
   }
 
   .sv-help-row {
     display: flex;
     flex-wrap: wrap;
     height: 90%;
+    justify-content: center;
   }
 
   .sv-help-text {
-    padding: 5px;
-    text-align: center;
+    padding: 5px 5px 0px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .sv-help-region {

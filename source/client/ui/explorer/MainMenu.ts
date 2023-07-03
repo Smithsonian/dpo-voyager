@@ -136,19 +136,19 @@ export default class MainMenu extends DocumentView
 
 
         return html`
-            ${arButtonVisible ? html`<ff-button icon="ar" title=${language.getLocalizedString("Enter AR View")}
+            ${arButtonVisible ? html`<ff-button icon="ar" id="ar-btn" title=${language.getLocalizedString("Enter AR View")}
                 @click=${this.onEnterAR}></ff-button>` : null}
-            ${narrationButtonVisible ? html`<ff-button icon="audio" title=${language.getLocalizedString("Play Audio Narration")}
+            ${narrationButtonVisible ? html`<ff-button icon="audio" id="audio-btn" title=${language.getLocalizedString("Play Audio Narration")}
                 ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
             ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
                 ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
             ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
                 ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
-            ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
+            ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} id="anno-btn" icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
                 ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
             <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
                 ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
-            ${fullscreenButtonVisible ? html`<ff-button aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
+            ${fullscreenButtonVisible ? html`<ff-button id="fullscreen-btn" aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
                 ?selected=${fullscreenActive} @click=${this.onToggleFullscreen}></ff-button>` : null}
             ${toolButtonVisible ? html`<ff-button id="tools-btn" icon="tools" title=${language.getLocalizedString("Tools and Settings")}
                 ?selected=${toolsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleTools}></ff-button>` : null}`;
