@@ -257,6 +257,16 @@ export default class ArticleEditor extends SystemView
                         this.closeArticle();
                     }
                 });
+
+                /*editor.on('init', function(args) {
+                    editor = args.target;
+            
+                    editor.on('NodeChange', function(e) {
+                        if (e && e.element.nodeName.toLowerCase() == 'img') {
+                            tinymce.DOM.setAttribs(e.element, {'height': "100%", 'max-width': "100%"});
+                        }
+                    });
+                });*/
             },
         });       
     }
