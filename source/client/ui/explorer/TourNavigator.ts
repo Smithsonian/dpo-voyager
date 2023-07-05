@@ -37,6 +37,7 @@ export default class TourNavigator extends DocumentView
     protected needsFocus: boolean = false;
     protected firstRender: boolean = true;
     protected stepTitle: string = "";
+    protected titleDiv: HTMLElement;
 
     protected firstConnected()
     {
@@ -74,7 +75,7 @@ export default class TourNavigator extends DocumentView
 
         return html`<div class="sv-blue-bar" role=region title="Tour Navigation" @keydown=${e =>this.onKeyDown(e)}><div class="sv-section">
             ${exitButton}
-            <div class="ff-ellipsis sv-content" aria-live="polite" aria-atomic="true" aria-relevant="additions text">
+            <div class="ff-ellipsis sv-content" id="title-text" aria-live="polite" aria-atomic="true" aria-relevant="additions text" @click=${this.onClickTitle}>
                 <div class="ff-ellipsis sv-title">${title}</div>
                 <div class="ff-ellipsis sv-text">${info}</div>
             </div>
@@ -99,7 +100,7 @@ export default class TourNavigator extends DocumentView
         {
             titleDiv.innerHTML = this.stepTitle;
             if(this.firstRender) {  
-                setTimeout(() => {titleDiv.innerHTML = `<div>${this.stepTitle}</div>`;}, 100);
+                setTimeout(() => {titleDiv.innerHTML = `<div class="ff-ellipsis sv-title">${this.stepTitle}</div>`;}, 100);
                 this.firstRender = false;
             }
         }
@@ -122,12 +123,25 @@ export default class TourNavigator extends DocumentView
     {
         // go to previous tour step
         this.tours.ins.previous.set();
+
+        // reset direction of title text
+        this.textDirHelper(true);
     }
 
     protected onClickNext()
     {
         // go to next tour step
         this.tours.ins.next.set();
+
+        // reset direction of title text
+        this.textDirHelper(true);
+    }
+
+    protected onClickTitle()
+    {
+        // change direction of title text
+        const titleDiv = this.querySelector("#title-text") as HTMLElement;
+        this.textDirHelper(titleDiv.style.direction === "rtl");
     }
 
     /*protected focusActive()
@@ -165,5 +179,10 @@ export default class TourNavigator extends DocumentView
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this) as HTMLElement[], e);
         }
+    }
+
+    protected textDirHelper(lToR: boolean) {
+        const titleDiv = this.querySelector("#title-text") as HTMLElement;
+        titleDiv.style.direction = lToR ? "ltr" : "rtl";
     }
 }
