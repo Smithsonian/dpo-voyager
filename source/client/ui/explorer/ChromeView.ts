@@ -29,6 +29,7 @@ import "./TourNavigator";
 import "./TourMenu";
 import "./LanguageMenu";
 import "./TagCloud";
+import HelpMain from "./HelpMain";
 import { ITourMenuSelectEvent } from "./TourMenu";
 
 import DocumentView, { customElement, html } from "./DocumentView";
@@ -93,6 +94,7 @@ export default class ChromeView extends DocumentView
         const logoVisible = setup.interface.ins.logo.value && setup.interface.isShowing(EUIElements.logo);
         const menuVisible = setup.interface.ins.menu.value && setup.interface.isShowing(EUIElements.menu);
         const titleVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.title);
+        const helpVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.help);
 
         const readerVisible = setup.reader.ins.enabled.value;
 
@@ -152,7 +154,9 @@ export default class ChromeView extends DocumentView
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
-                    ${languagesVisible ? html`<ff-button id="language" text=${setup.language.toString()} title=${language.getLocalizedString("Set Language")} class="ff-ellipsis sv-language-display" @click=${this.openLanguageMenu}></ff-button>` : null}
+                    ${languagesVisible ? html`<ff-button id="language" style=${setup.language.codeString().length > 2 ? "font-size:0.9em"
+                         : ""} text=${setup.language.codeString()} title=${language.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
+                    ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>`;
     }
@@ -178,9 +182,17 @@ export default class ChromeView extends DocumentView
 
             LanguageMenu.show(this, this.activeDocument.setup.language).then(() => {
                 language.ins.enabled.setValue(false);
-                (this.getElementsByClassName("sv-language-display")[0] as HTMLElement).focus();
+                (this.querySelector("#language") as HTMLElement).focus();
             });
         }
+    }
+
+    protected openHelp() {
+        const language = this.activeDocument.setup.language;
+
+        HelpMain.show(this, this.activeDocument.setup.language).then(() => {
+            (this.querySelector("#main-help") as HTMLElement).focus();
+        });
     }
 
     protected closeTools()
