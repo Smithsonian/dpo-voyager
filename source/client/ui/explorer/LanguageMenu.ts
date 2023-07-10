@@ -66,7 +66,7 @@ export default class LanguageMenu extends Popup
 
     protected renderEntry(language: ILanguageOption, index: number)
     {
-        const isSelected = language.name === this.language.toString();
+        const isSelected = language.name === this.language.nameString();
         return html`<div class="sv-entry" role="option" tabindex=${isSelected ? "0" : "-1"} @click=${e => this.onClickLanguage(e, index)} @keydown=${e =>this.onKeyDownEntry(e, index)} ?selected=${isSelected}>
             ${language.name}
         </div>`;

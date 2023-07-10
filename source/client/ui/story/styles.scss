@@ -467,7 +467,7 @@ $color-component-meta-light: #d9d998;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// QUILL RICH TEXT EDITOR
+// ARTICLE EDITOR
 
 .sv-article-editor {
   @include fullsize;
@@ -489,53 +489,10 @@ $color-component-meta-light: #d9d998;
     }
   }
 
-  .ql-toolbar, .ql-container, .ql-editor {
-    @include font-ui-normal;
-    border: none;
-    font-size: 1em;
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-  .ql-editor {
-    &:before {
-      color: $color-text-dark;
-      text-align: center;
-      font-size: 1.2em;
-    }
-  }
-
-  .ql-toolbar {
-    background: $color-background;
-
-    .ql-picker-label {
-      color: $color-icon;
-    }
-    .ql-stroke {
-      stroke: $color-icon;
-    }
-    .ql-fill {
-      fill: $color-icon;
-    }
-
-    .ql-active, *:hover {
-      color: $color-text !important;
-
-      .ql-stroke {
-        stroke: $color-text !important;
-      }
-      .ql-fill {
-        fill: $color-text !important;
-      }
-    }
-  }
-
   .sv-overlay {
     @include fullsize;
     background-color: transparentize($color-background-dark, 0.5);
-    z-index: 2;
+    z-index: 0;
   }
 }
 

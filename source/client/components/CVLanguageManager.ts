@@ -69,9 +69,14 @@ export default class CVLanguageManager extends Component
         return this._activeLanguages;
     }
 
-    toString()
+    nameString()
     {
         return ELanguageStringType[ELanguageType[this.ins.language.value]];
+    }
+
+    codeString()
+    {
+        return ELanguageType[this.ins.language.value] as TLanguageType;
     }
 
     create()
