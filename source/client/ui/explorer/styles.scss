@@ -926,6 +926,8 @@ $tour-entry-indent: 12px;
     max-height: 90%;
     flex-direction: column;
     justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
   }
 
   .sv-help-short {
@@ -937,6 +939,7 @@ $tour-entry-indent: 12px;
     flex-wrap: wrap;
     height: 90%;
     justify-content: center;
+    overflow: auto;
   }
 
   .sv-help-text {

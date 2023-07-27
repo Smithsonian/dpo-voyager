@@ -82,6 +82,11 @@
   img {
     max-width: 100%;
   }
+
+  figure {
+    display: table;
+    margin: 1rem auto;
+  }
   
   figure.align-left {
     float: left;
