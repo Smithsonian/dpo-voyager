@@ -81,6 +81,8 @@ export default class CVModel2 extends CObject3D
         quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
         tags: types.String("Model.Tags"),
         renderOrder: types.Number("Model.RenderOrder", 0),
+        castShadow: types.Boolean("Model.CastShadow", true),
+        receiveShadow: types.Boolean("Model.ReceiveShadow",false),
         shadowSide: types.Enum("Model.ShadowSide", ESideType, ESideType.Back),
         activeTags: types.String("Model.ActiveTags"),
         autoLoad: types.Boolean("Model.AutoLoad", true),
@@ -118,6 +120,8 @@ export default class CVModel2 extends CObject3D
             this.ins.localUnits,
             this.ins.tags,
             this.ins.renderOrder,
+            this.ins.castShadow,
+            this.ins.receiveShadow,
             this.ins.shadowSide,
             this.ins.shader,
             this.ins.overlayMap,
@@ -238,6 +242,7 @@ export default class CVModel2 extends CObject3D
                 if (overrideActive) {
                     this.updateMaterial();
                 }
+                this.updateShadows();
             }
             else if (ins.visible.value && overrideActive && this.ins.hiddenOpacity.value > 0) {
                 this.object3D.visible = true;
@@ -285,6 +290,9 @@ export default class CVModel2 extends CObject3D
         if (ins.shadowSide.changed) {
             this.updateShadowSide();
         }
+        if(ins.castShadow.changed || ins.receiveShadow.changed){
+            this.updateShadows();
+        }
 
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
             ins.color.changed || ins.opacity.changed || ins.doubleSided.changed ||
@@ -307,6 +315,8 @@ export default class CVModel2 extends CObject3D
                 }
             });
         }
+
+
 
         if (ins.center.changed) {
             this.center();
@@ -380,8 +390,11 @@ export default class CVModel2 extends CObject3D
         ins.tags.setValue(data.tags || "");
         ins.renderOrder.setValue(data.renderOrder !== undefined ? data.renderOrder : 0);
 
-        const side = ESideType[data.shadowSide || "Back"];
-        ins.shadowSide.setValue(isFinite(side) ? side : ESideType.Back);
+
+        ins.castShadow.setValue(data.castShadow ?? true);
+        ins.receiveShadow.setValue(data.receiveShadow ?? false);
+        const side = ESideType[data.shadowSide || "Default"];
+        ins.shadowSide.setValue(isFinite(side) ? side : ESideType.Default);
 
         ins.position.reset();
         ins.rotation.reset();
@@ -466,7 +479,13 @@ export default class CVModel2 extends CObject3D
         if (ins.renderOrder.value !== 0) {
             data.renderOrder = ins.renderOrder.value;
         }
-        if(ins.shadowSide.value != ESideType.Back) {
+        if(ins.castShadow.value !== true){
+            data.castShadow = ins.castShadow.value;
+        }
+        if(ins.receiveShadow.value !== false){
+            data.receiveShadow = ins.receiveShadow.value;
+        }
+        if(ins.shadowSide.value != ESideType.Default) {
             data.shadowSide = ESideType[this.ins.shadowSide.getValidatedValue()] as TSideType;
         }
 
@@ -530,12 +549,12 @@ export default class CVModel2 extends CObject3D
         this.object3D.traverse(object => {
             const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
             if (material && material.isUberPBRMaterial) {
-                if(this.ins.shadowSide.value == ESideType.Front) {
-                    material.shadowSide = FrontSide;
-                }
-                else {
-                    material.shadowSide = BackSide;
-                }
+
+                material.shadowSide = {
+                    [ESideType.Front]: FrontSide,
+                    [ESideType.Back]: BackSide,
+                    [ESideType.Double]: DoubleSide,
+                }[this.ins.shadowSide.value] ?? null;
                 material.needsUpdate = true;
             }
         });
@@ -592,6 +611,17 @@ export default class CVModel2 extends CObject3D
                 material.side = ins.doubleSided.value ? DoubleSide : FrontSide;
                 material.needsUpdate = true;
             }
+        });
+    }
+
+
+
+    protected updateShadows()
+    {
+        this.object3D.traverse(object => {
+            if(object.type != "Mesh") return;
+            object.castShadow = this.ins.castShadow.value;
+            object.receiveShadow = this.ins.receiveShadow.value;
         });
     }
 
@@ -760,7 +790,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 // update shadow render side
-                if(this.ins.shadowSide.value != ESideType.Back) {
+                if(this.ins.shadowSide.value != ESideType.Default) {
                     this.updateShadowSide();
                 }
 

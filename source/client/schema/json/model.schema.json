@@ -248,6 +248,12 @@
         "overlayMap": {
             "type": "number"
         },
+        "castShadow": {
+            "type":"boolean"
+        },
+        "receiveShadow": {
+            "type": "boolean"
+        },
         "shadowSide": {
             "type": "string",
             "enum": [
