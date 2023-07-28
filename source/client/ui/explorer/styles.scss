@@ -1064,10 +1064,16 @@ $tour-entry-indent: 12px;
   }
   .sv-title {
     font-size: 1.1em;
+    @keyframes ticker { 100% { transform:translateX(var(--x-offset)); } }
   }
   .sv-text {
     font-size: 0.9em;
   }
+}
+
+.sv-text-scroll {
+  animation:ticker 1s linear 1;
+  text-overflow: clip;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
