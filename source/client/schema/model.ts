@@ -36,8 +36,8 @@ export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" |
 export enum EMapType { Color, Emissive, Occlusion, Normal, MetallicRoughness, Zone }
 export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "MetallicRoughness" | "Zone";
 
-export enum ESideType { Front, Back, Double }
-export type TSideType = "Front" | "Back" | "Double";
+export enum ESideType { Front, Back, Double, Default }
+export type TSideType = "Front" | "Back" | "Double"| "Default";
 
 
 export interface IModel
@@ -49,6 +49,8 @@ export interface IModel
     visible?: boolean;
     renderOrder?: number;
     overlayMap?: number;
+    castShadow?: boolean;
+    receiveShadow?: boolean;
     shadowSide?: TSideType;
     translation?: Vector3;
     rotation?: Vector4;

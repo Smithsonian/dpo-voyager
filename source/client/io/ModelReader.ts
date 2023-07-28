@@ -106,7 +106,6 @@ export default class ModelReader
         scene.traverse((object: any) => {
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
-                mesh.castShadow = true;
                 const material = mesh.material as MeshStandardMaterial;
 
                 if (material.map) {
