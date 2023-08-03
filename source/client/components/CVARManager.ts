@@ -70,7 +70,8 @@ export default class CVARManager extends Component
     private _shadowRoot = null;
 
     protected static readonly ins = {
-        enabled: types.Boolean("State.Enabled")
+        enabled: types.Boolean("State.Enabled"),
+        wallMount: types.Boolean("AR.wallMount", false)
     };
 
     protected static readonly outs = {
@@ -82,6 +83,12 @@ export default class CVARManager extends Component
     
     ins = this.addInputs(CVARManager.ins);
     outs = this.addOutputs(CVARManager.outs);
+
+    get settingProperties() {
+        return [
+            this.ins.wallMount
+        ];
+    }
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -144,6 +151,7 @@ export default class CVARManager extends Component
     protected lightsToReset: CVDirectionalLight[] = [];
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
     protected annotationsAtLaunch: boolean = false;
+    protected scaleDisplay: HTMLElement = null;
 
     update()
     {
@@ -236,9 +244,11 @@ export default class CVARManager extends Component
 
         // Do an initial hit test (model-viewer suggested 20 deg down)
         const radians = 20 * Math.PI / 180; 
-        const ray = new XRRay(
-            new DOMPoint(0, 0, 0),
-            {x: 0, y: -Math.sin(radians), z: -Math.cos(radians)});
+        const ray = this.ins.wallMount.value === true ?
+            undefined :
+            new XRRay(
+                new DOMPoint(0, 0, 0),
+                {x: 0, y: -Math.sin(radians), z: -Math.cos(radians)});
         session.requestHitTestSource({space: viewerRefSpace!, offsetRay: ray})
             .then(hitTestSource => {
                 this.initialHitTestSource = hitTestSource;
@@ -328,6 +338,12 @@ export default class CVARManager extends Component
         const lightNode = scene.graph.findNodeByName("Lights");
         const lightTransform = this.lightTransform = lightNode.getComponent(CTransform, true);
         lightTransform.ins.rotation.reset();
+
+        // Create scale display
+        const scaleDisplay = this.scaleDisplay = document.createElement("div");
+        scaleDisplay.classList.add("sv-scale-annotation");
+        scaleDisplay.innerText = "TEST TEXT";
+        this.shadowRoot.querySelector('ff-viewport-overlay').appendChild(scaleDisplay);
 
         // Cache extended feature values
         featuresToReset.push(setup.floor.ins.visible.value ? 1 : 0);
@@ -450,6 +466,14 @@ export default class CVARManager extends Component
         });
         
         // Clean up
+        const selectionRing = this.selectionRing;
+        if (selectionRing != null) {
+            scene.remove(selectionRing);
+            selectionRing!.geometry.dispose();
+            (selectionRing!.material as Material).dispose();
+            this.selectionRing = null;
+        }
+
         const hitPlane = this.hitPlane;
         if (hitPlane != null) {
             scene.remove(hitPlane);
@@ -458,13 +482,7 @@ export default class CVARManager extends Component
             this.hitPlane = null;
         }
 
-        const selectionRing = this.selectionRing;
-        if (selectionRing != null) {
-            scene.remove(selectionRing);
-            selectionRing!.geometry.dispose();
-            (selectionRing!.material as Material).dispose();
-            this.selectionRing = null;
-        }
+        this.scaleDisplay.remove();
      
         const shadow = this.shadow;
         if (shadow != null) {
@@ -548,6 +566,29 @@ export default class CVARManager extends Component
             renderer.shadowMap.needsUpdate = true;
             shadow.needsUpdate = false;
         }
+
+        // Update scale display if needed
+        if(this.isScaling) {
+            const scene = vScene.scene;
+            const scaleTag = this.scaleDisplay;
+            _vector3.copy(scene.position);
+            const width = this.renderer.views[0].viewports[0].width;
+            const height = this.renderer.views[0].viewports[0].height;
+            const widthHalf = width / 2;
+            const heightHalf = height / 2;
+            const xBound = width - scaleTag.clientWidth;
+            const yBound = height - scaleTag.clientHeight;
+
+            camera.updateMatrixWorld();
+            camera.updateProjectionMatrix();
+            _vector3.project(xrCamera);
+
+            _vector3.x = Math.min(Math.max(( _vector3.x * widthHalf ) + widthHalf, 0), xBound);
+            _vector3.y = Math.min(Math.max(-( _vector3.y * heightHalf ) + heightHalf, 0), yBound);
+
+            scaleTag.style.left = _vector3.x.toString() + "px";
+            scaleTag.style.top = _vector3.y.toString() + "px";
+        }
         
         renderer.render( vScene.scene, camera );
     }
@@ -584,7 +625,7 @@ export default class CVARManager extends Component
             });
 
         this.shadow.updateMatrices();
-        this.shadow.setIntensity(0.3);
+        this.shadow.setIntensity(this.ins.wallMount.value === true ? 0.0 : 0.3);
         this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
     }
 
@@ -595,9 +636,17 @@ export default class CVARManager extends Component
         }
 
         const hitMatrix = _matrix4.fromArray(pose.transform.matrix);
+
+        if (this.ins.wallMount.value === true) {
+            // Align object with wall normal
+            const scene = this.vScene.scene;
+            scene.rotation.y = Math.atan2(hitMatrix.elements[4], hitMatrix.elements[6]);
+            scene.updateMatrix();
+          }
+
         // Check that the y-coordinate of the normal is large enough that the normal
         // is pointing up.
-        return hitMatrix.elements[5] > 0.75 ?
+        return hitMatrix.elements[5] > 0.75 !== this.ins.wallMount.value ?
             _hitPosition.setFromMatrixPosition(hitMatrix) :
             null;
     }
@@ -631,7 +680,7 @@ export default class CVARManager extends Component
                 this.isTranslating = true;
                 this.lastHitPosition.copy(intersections[0].point); 
             } 
-            else {
+            else if (this.ins.wallMount.value === false) {
                 this.isRotating = true;
             }
 
@@ -655,6 +704,7 @@ export default class CVARManager extends Component
         this.isTranslating = false;
         this.isRotating = false;
         this.isScaling = false;
+        this.scaleDisplay.classList.remove("sv-show");
 
         this.inputSource = null;
     }
@@ -678,19 +728,27 @@ export default class CVARManager extends Component
                 // If we lose the second finger, stop scaling (in fact, stop processing
                 // input altogether until a new gesture starts).
                 this.isScaling = false;
+                this.scaleDisplay.classList.remove("sv-show");
             } 
             else {
                 // calculate and update scale
                 const separation = this.getFingerSeparation(fingers);
-                const scale = separation / this.lastScale;
-                scene.scale.setScalar(scale); 
-                scene.position.y = this.lastHitPosition.y - this.modelFloorOffset * scene.scale.y; // set back on floor
+                let scale = separation / this.lastScale;
+                scale = scale > 0.9 && scale < 1.1 ? 1.0 : scale;  // snap to 100%
+                scene.scale.setScalar(scale);
+                if(this.ins.wallMount.value === false) {
+                    scene.position.y = this.lastHitPosition.y - this.modelFloorOffset * scene.scale.y; // set back on floor
+                }
                 scene.updateMatrix();
                 scene.updateMatrixWorld();
 
                 this.shadow.setScaleAndOffset(scale, 0);
 
                 this.updateBoundingBox();
+
+                // update display
+                this.scaleDisplay.innerText = Math.round(scale * 100).toString() + "%";
+                this.scaleDisplay.classList.add("sv-show");
             }
             return;
         } 
@@ -761,13 +819,16 @@ export default class CVARManager extends Component
     }
 
     protected placeModel( hit: Vector3 ) {
-        const scene = this.vScene.scene!; 
+        const scene = this.vScene.scene!;
+        const isWall = this.ins.wallMount.value === true;
         const {min, max} = _boundingBox;
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
         const width = Math.max((max.x-min.x)*1.25, 0.15);
-        const height = Math.max((max.z-min.z)*1.25, 0.15);
+        const height = isWall ? Math.max((max.y-min.y)*1.25, 0.15) : Math.max((max.z-min.z)*1.25, 0.15);
         const centerOffsetX = (min.x+max.x)/2.0;
         const centerOffsetZ = (min.z+max.z)/2.0;
+        const centerOffsetY = (min.y+max.y)/2.0;
+        const rotOffset = isWall ? 0 : -Math.PI / 2.0;
 
         this.lastHitPosition.copy(hit);
 
@@ -776,8 +837,8 @@ export default class CVARManager extends Component
             new PlaneGeometry(width, height),
             new MeshBasicMaterial()   
         );
-        hitPlane.position.set(centerOffsetX, min.y, centerOffsetZ);
-        hitPlane.rotation.set(-Math.PI / 2.0, 0, 0);
+        hitPlane.position.set(centerOffsetX, isWall ? centerOffsetY : min.y, isWall ? min.z : centerOffsetZ);
+        hitPlane.rotation.set(rotOffset, 0, 0);
         hitPlane.visible = false;
         scene.add(hitPlane);
 
@@ -790,17 +851,18 @@ export default class CVARManager extends Component
         roundedRectShape.holes.push(cutOut);
         let geometry = new ShapeGeometry(roundedRectShape);
         const selectionRing = this.selectionRing = new Mesh( geometry, new MeshBasicMaterial({ side: DoubleSide, opacity: 0.0 }) );
-        selectionRing.position.set(centerOffsetX, min.y, centerOffsetZ);
-        selectionRing.rotation.set(-Math.PI / 2.0, 0, 0);
+        selectionRing.position.set(centerOffsetX, isWall ? centerOffsetY : min.y, isWall ? min.z : centerOffsetZ);
+        selectionRing.rotation.set(rotOffset, 0, 0);
         (selectionRing.material as Material).transparent = true;
         selectionRing.visible = false;
         scene.add(selectionRing);
+        //hitPlane.add(selectionRing);
 
         this.modelFloorOffset = min.y;
 
         //console.log("Placing in AR: " + hit.x + " " + (hit.y-min.y) + " " + hit.z);
 
-        scene.position.set(hit.x, hit.y-min.y, hit.z);
+        scene.position.set(hit.x, isWall ? hit.y : hit.y-min.y, hit.z);
         scene.updateMatrix();
         scene.updateMatrixWorld(true);
         this.updateBoundingBox();

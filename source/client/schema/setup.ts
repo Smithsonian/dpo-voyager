@@ -65,6 +65,7 @@ export interface IViewer
     exposure: number;
     toneMapping: boolean;
     gamma: number;
+    isWallMountAR: boolean;
     annotationsVisible?: boolean;
     activeTags?: string;
     sortedTags?: string;

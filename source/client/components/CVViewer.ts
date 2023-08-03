@@ -27,6 +27,7 @@ import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
+import CVARManager from "./CVARManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +51,7 @@ export default class CVViewer extends Component
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 2),
         quality: types.Enum("Models.Quality", EDerivativeQuality, EDerivativeQuality.High),
+        isWallMountAR: types.Boolean("AR.IsWallMount", false)
     };
 
     protected static readonly outs = {
@@ -69,6 +71,7 @@ export default class CVViewer extends Component
             this.ins.toneMapping,
             this.ins.exposure,
             this.ins.gamma,
+            this.ins.isWallMountAR,
         ];
     }
 
@@ -88,6 +91,9 @@ export default class CVViewer extends Component
     protected get renderer() {
         return this.getMainComponent(CRenderer);
     }
+    protected get ar() {
+        return this.getMainComponent(CVARManager);
+    }
 
     get rootElement() {
         return this._rootElement;
@@ -102,6 +108,8 @@ export default class CVViewer extends Component
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
+
+        this.ar.ins.wallMount.linkFrom(this.ins.isWallMountAR);
     }
 
     dispose()
@@ -184,6 +192,7 @@ export default class CVViewer extends Component
             exposure: data.exposure !== undefined ? data.exposure : ins.exposure.schema.preset,
             toneMapping: data.toneMapping || false,
             gamma: data.gamma !== undefined ? data.gamma : ins.gamma.schema.preset,
+            isWallMountAR: data.isWallMountAR || false,
             annotationsVisible: !!data.annotationsVisible,
             activeTags: data.activeTags || "",
             sortedTags: data.sortedTags || "",
@@ -200,6 +209,7 @@ export default class CVViewer extends Component
             exposure: ins.exposure.value,
             toneMapping: ins.toneMapping.value,
             gamma: ins.gamma.value,
+            isWallMountAR: ins.isWallMountAR.value,
         };
 
         if (ins.annotationsVisible.value) {
