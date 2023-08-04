@@ -41,11 +41,12 @@ export default class ARPrompt extends DocumentView
     {
         const arManager = this.arManager;
         const outs = arManager.outs;
+        const location = arManager.ins.wallMount.value === true ? "a wall" : "the floor";
 
         return !outs.isPlaced.value && outs.isPresenting.value ? html`<div class="sv-ar-prompt">
                 <div class="sv-content">
                     <div><ff-icon class="ff-off ff-icon sv-ar-icon" name="device-move"}></ff-icon></div>
-                    Move the device to place your Smithsonian object!<br><br>**BETA**
+                    Point your device at ${location} and move it around to place your Smithsonian object!<br><br>**BETA**
                 </div>
             </div>` : null;
     }

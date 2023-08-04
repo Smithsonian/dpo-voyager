@@ -71,7 +71,8 @@ export default class CVARManager extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("State.Enabled"),
-        wallMount: types.Boolean("AR.wallMount", false)
+        wallMount: types.Boolean("AR.wallMount", false),
+        arScale: types.Number("AR.Scale", 1.0),
     };
 
     protected static readonly outs = {
@@ -83,12 +84,6 @@ export default class CVARManager extends Component
     
     ins = this.addInputs(CVARManager.ins);
     outs = this.addOutputs(CVARManager.outs);
-
-    get settingProperties() {
-        return [
-            this.ins.wallMount
-        ];
-    }
 
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -152,6 +147,7 @@ export default class CVARManager extends Component
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
     protected annotationsAtLaunch: boolean = false;
     protected scaleDisplay: HTMLElement = null;
+    protected updateScale: boolean = false;
 
     update()
     {
@@ -342,7 +338,6 @@ export default class CVARManager extends Component
         // Create scale display
         const scaleDisplay = this.scaleDisplay = document.createElement("div");
         scaleDisplay.classList.add("sv-scale-annotation");
-        scaleDisplay.innerText = "TEST TEXT";
         this.shadowRoot.querySelector('ff-viewport-overlay').appendChild(scaleDisplay);
 
         // Cache extended feature values
@@ -527,16 +522,13 @@ export default class CVARManager extends Component
 
             xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
 
-            const pose : XRViewerPose = frame.getViewerPose(refSpace!);
-            const e = pose.views[0].transform.matrix;
-			position.set(-e[ 8 ], -e[ 9 ], -e[ 10 ]).normalize(); 
-            position.multiplyScalar(radius);
-            
-            const xrPos = pose.views[0].transform.position;
-            _vector3.set(xrPos.x, xrPos.y, xrPos.z);
-            position.add(_vector3);
-            _boundingBox.getCenter(_vector3);
-            position.add(_vector3.negate());
+            const cameraDirection = camera.getWorldDirection(_vector3);
+            scene.rotation.y = Math.atan2(-cameraDirection.x, -cameraDirection.z);
+        
+            position.copy(camera.position)
+                .add(cameraDirection.multiplyScalar(radius));
+
+            this.sceneRotateHelper();
 
             scene.updateMatrix();
             scene.updateMatrixWorld();
@@ -568,7 +560,7 @@ export default class CVARManager extends Component
         }
 
         // Update scale display if needed
-        if(this.isScaling) {
+        if(this.updateScale) {
             const scene = vScene.scene;
             const scaleTag = this.scaleDisplay;
             _vector3.copy(scene.position);
@@ -588,6 +580,9 @@ export default class CVARManager extends Component
 
             scaleTag.style.left = _vector3.x.toString() + "px";
             scaleTag.style.top = _vector3.y.toString() + "px";
+
+            // update display
+            scaleTag.innerText = Math.round(scene.scale.x * 100).toString() + "%";
         }
         
         renderer.render( vScene.scene, camera );
@@ -637,16 +632,18 @@ export default class CVARManager extends Component
 
         const hitMatrix = _matrix4.fromArray(pose.transform.matrix);
 
-        if (this.ins.wallMount.value === true) {
+        // Check that the y-coordinate of the normal is large enough that the normal
+        // is pointing up.
+        const normalUp = hitMatrix.elements[5] > 0.75;
+
+        if (this.ins.wallMount.value === true && !normalUp) {
             // Align object with wall normal
             const scene = this.vScene.scene;
             scene.rotation.y = Math.atan2(hitMatrix.elements[4], hitMatrix.elements[6]);
             scene.updateMatrix();
-          }
+        }
 
-        // Check that the y-coordinate of the normal is large enough that the normal
-        // is pointing up.
-        return hitMatrix.elements[5] > 0.75 !== this.ins.wallMount.value ?
+        return normalUp !== this.ins.wallMount.value ?
             _hitPosition.setFromMatrixPosition(hitMatrix) :
             null;
     }
@@ -729,6 +726,7 @@ export default class CVARManager extends Component
                 // input altogether until a new gesture starts).
                 this.isScaling = false;
                 this.scaleDisplay.classList.remove("sv-show");
+                this.scaleDisplay.addEventListener("transitionend", () => {this.updateScale = false;}, { once: true });
             } 
             else {
                 // calculate and update scale
@@ -746,9 +744,9 @@ export default class CVARManager extends Component
 
                 this.updateBoundingBox();
 
-                // update display
-                this.scaleDisplay.innerText = Math.round(scale * 100).toString() + "%";
+                // Show display
                 this.scaleDisplay.classList.add("sv-show");
+                this.updateScale = true;
             }
             return;
         } 
@@ -767,13 +765,7 @@ export default class CVARManager extends Component
             scene.rotation.y += (currentDragX - this.lastDragValueX) * ROTATION_RATE;
             scene.updateMatrix();
 
-            // undo rotation on lights
-            _quat.copy(scene.quaternion);
-            _quat.invert();
-            this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
-            this.lightTransform.object3D.updateMatrix();
-
-            this.shadow.setRotation(scene.rotation.y);
+            this.sceneRotateHelper();
 
             this.lastDragValueX = currentDragX;
         } 
@@ -863,6 +855,7 @@ export default class CVARManager extends Component
         //console.log("Placing in AR: " + hit.x + " " + (hit.y-min.y) + " " + hit.z);
 
         scene.position.set(hit.x, isWall ? hit.y : hit.y-min.y, hit.z);
+        scene.scale.setScalar(this.ins.arScale.value);
         scene.updateMatrix();
         scene.updateMatrixWorld(true);
         this.updateBoundingBox();
@@ -894,7 +887,16 @@ export default class CVARManager extends Component
         } 
     
         this.updateBoundingBox();
-        this.outs.isPlaced.setValue(true); 
+        this.outs.isPlaced.setValue(true);
+
+        if(scene.scale.x !== 1.0) {
+            this.updateScale = true;
+            this.scaleDisplay.classList.add("sv-show");
+            setTimeout(() => {
+                this.scaleDisplay.classList.remove("sv-show");
+                this.scaleDisplay.addEventListener("transitionend", () => {this.updateScale = false;}, { once: true });        
+            }, 1500);
+        }
     }
 
     protected launchSceneViewer() {
@@ -965,6 +967,20 @@ export default class CVARManager extends Component
         ctx.quadraticCurveTo( x + width, y, x + width - radius, y );
         ctx.lineTo( x + radius, y );
         ctx.quadraticCurveTo( x, y, x, y + radius );
+    }
 
+    // Helper function to be called after rotating scene.
+    // Makes sure lights and shadow are in sync
+    protected sceneRotateHelper() {
+        const scene = this.vScene.scene;
+
+        // undo rotation on lights
+        _quat.copy(scene.quaternion);
+        _quat.invert();
+        this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
+        this.lightTransform.object3D.updateMatrix();
+
+        // set shadow rotation
+        this.shadow.setRotation(scene.rotation.y);
     }
 }
