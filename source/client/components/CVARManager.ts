@@ -30,7 +30,7 @@ import CPulse from "@ff/graph/components/CPulse";
 import Notification from "@ff/ui/Notification";
 
 import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneGeometry, MeshBasicMaterial, ArrayCamera, Material, Camera,
-    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
+    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion, Scene} from 'three';
 
 //import * as WebXR from "../types/WebXR";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
@@ -239,10 +239,12 @@ export default class CVARManager extends Component
         renderer.xr.setReferenceSpaceType( 'local' );
         renderer.xr.setSession( session ); 
     
-        session.addEventListener( 'end', this.onSessionEnded ); 
+        await session.addEventListener( 'end', this.onSessionEnded ); 
 
         this.refSpace = await session.requestReferenceSpace('local');
         const viewerRefSpace = await session.requestReferenceSpace('viewer');
+
+        renderer.xr.cameraAutoUpdate = false;
 
         // Do an initial hit test (model-viewer suggested 20 deg down)
         const radians = 20 * Math.PI / 180; 
@@ -543,7 +545,7 @@ export default class CVARManager extends Component
         }
 
         this.setInitialPosition(frame);
-
+        
         this.handleInput(frame);
 
         if(this.outs.isPlaced.value) {
@@ -552,7 +554,7 @@ export default class CVARManager extends Component
             this.updateOpacity(deltaT, this.targetOpacity);
             this.lastFrameTime = timestamp;
         }
-
+        
         // TODO: Temporary fix for Chrome depth bug
         // https://bugs.chromium.org/p/chromium/issues/detail?id=1184085
         const gl = renderer.getContext();
@@ -577,8 +579,6 @@ export default class CVARManager extends Component
             const xBound = width - scaleTag.clientWidth;
             const yBound = height - scaleTag.clientHeight;
 
-            camera.updateMatrixWorld();
-            camera.updateProjectionMatrix();
             _vector3.project(xrCamera);
 
             _vector3.x = Math.min(Math.max(( _vector3.x * widthHalf ) + widthHalf, 0), xBound);
@@ -624,10 +624,6 @@ export default class CVARManager extends Component
             .then(hitTestSource => {
                 this.transientHitTestSource = hitTestSource; 
             });
-
-        this.shadow.updateMatrices();
-        this.shadow.setIntensity(this.ins.wallMount.value === true ? 0.0 : 0.3);
-        this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
     }
 
     protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
@@ -739,16 +735,7 @@ export default class CVARManager extends Component
                 const separation = this.getFingerSeparation(fingers);
                 let scale = separation / this.lastScale;
                 scale = scale > 0.9 && scale < 1.1 ? 1.0 : scale;  // snap to 100%
-                scene.scale.setScalar(scale);
-                if(this.ins.wallMount.value === false) {
-                    scene.position.y = this.lastHitPosition.y - this.modelFloorOffset * scene.scale.y; // set back on floor
-                }
-                scene.updateMatrix();
-                scene.updateMatrixWorld();
-
-                this.shadow.setScaleAndOffset(scale, 0);
-
-                this.updateBoundingBox();
+                this.scaleScene(scene, scale);
 
                 // Show display
                 this.scaleDisplay.classList.add("sv-show");
@@ -859,22 +846,29 @@ export default class CVARManager extends Component
         this.modelFloorOffset = min.y;
 
         //console.log("Placing in AR: " + hit.x + " " + (hit.y-min.y) + " " + hit.z);
-
         scene.position.set(hit.x, isWall ? hit.y : hit.y-min.y, hit.z);
-        scene.scale.setScalar(this.ins.arScale.value);
         scene.updateMatrix();
-        scene.updateMatrixWorld(true);
+        scene.updateMatrixWorld(true);       
         this.updateBoundingBox();
         this.pulse.pulse(Date.now());
+
+        // Update shadow. If scaling and showing a shadow, push a pre-render
+        this.shadow.updateMatrices();
+        this.shadow.setIntensity(this.ins.wallMount.value === true ? 0.0 : 0.3);
+        this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
+        if(this.ins.arScale.value !== 1.0 && !isWall) {
+            this.renderer.views[0].renderer.render( scene, this.shadow.shadow.camera );
+        }
+        this.scaleScene(this.vScene.scene, this.ins.arScale.value);
            
         // if we are not far enough away from the model, shift
         // edge of bounding box to hitpoint so it is in view
         const origin = this.camera.position.clone();
         const placementVector = hit.clone().sub(origin);
-        if(placementVector.length() < boundingRadius) {
+        if(placementVector.length() < boundingRadius * scene.scale.x) {
             const direction = placementVector.normalize();
             // Pull camera back enough to be outside of large models.
-            origin.sub(direction.multiplyScalar(boundingRadius * 1.5));
+            origin.sub(direction.multiplyScalar(boundingRadius * scene.scale.x * 1.5));
             const ray = new Ray(origin, direction.normalize());
             const modelPosition = new Vector3();
         
@@ -988,5 +982,18 @@ export default class CVARManager extends Component
 
         // set shadow rotation
         this.shadow.setRotation(scene.rotation.y);
+    }
+
+    protected scaleScene(scene: Scene, scale: number) {
+        scene.scale.setScalar(scale);
+        if(this.ins.wallMount.value === false) {
+            scene.position.y = this.lastHitPosition.y - this.modelFloorOffset * scene.scale.y; // set back on floor
+        }
+        scene.updateMatrix();
+        scene.updateMatrixWorld();
+
+        this.shadow.setScaleAndOffset(scale, 0);
+
+        this.updateBoundingBox();
     }
 }
