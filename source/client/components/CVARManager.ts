@@ -148,6 +148,7 @@ export default class CVARManager extends Component
     protected annotationsAtLaunch: boolean = false;
     protected scaleDisplay: HTMLElement = null;
     protected updateScale: boolean = false;
+    protected placementRotation: Quaternion = new Quaternion();
 
     update()
     {
@@ -536,7 +537,7 @@ export default class CVARManager extends Component
             position.copy(camera.position)
                 .add(cameraDirection.multiplyScalar(radius));
 
-            this.sceneRotateHelper();
+            this.shadow.setRotation(scene.rotation.y);
 
             scene.updateMatrix();
             scene.updateMatrixWorld();
@@ -827,6 +828,8 @@ export default class CVARManager extends Component
         hitPlane.visible = false;
         scene.add(hitPlane);
 
+        this.placementRotation.copy(scene.quaternion);
+
         // add selection visualization
         const roundedRectShape = new Shape();
         const cutOut = new Shape();
@@ -977,6 +980,10 @@ export default class CVARManager extends Component
         // undo rotation on lights
         _quat.copy(scene.quaternion);
         _quat.invert();
+
+        // account for initial light placement orientation
+        _quat.multiply(this.placementRotation);
+
         this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
         this.lightTransform.object3D.updateMatrix();
 

@@ -22,6 +22,8 @@ import CVDocument from "../../components/CVDocument";
 import CVARManager from "../../components/CVARManager";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import CVAnnotationView from "client/components/CVAnnotationView";
+import CVScene from "client/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,6 +38,9 @@ export default class ARMenu extends DocumentView
     }
     protected get arManager() {
         return this.system.getMainComponent(CVARManager);
+    }
+    protected get sceneNode() {
+        return this.system.getComponent(CVScene);
     }
 
     protected firstConnected()
@@ -65,8 +70,10 @@ export default class ARMenu extends DocumentView
         const outs = arManager.outs;
 
         const setup = document.setup;
+        const scene = this.sceneNode;
 
-        const annotationsButtonVisible = true;
+        const views = scene.getGraphComponents(CVAnnotationView);
+        const annotationsButtonVisible = views.some(view => {return view.hasAnnotations;});
         const annotationsActive = setup.viewer.ins.annotationsVisible.value;
 
         const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
