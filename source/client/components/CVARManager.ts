@@ -30,7 +30,7 @@ import CPulse from "@ff/graph/components/CPulse";
 import Notification from "@ff/ui/Notification";
 
 import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneGeometry, MeshBasicMaterial, ArrayCamera, Material, Camera,
-    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion} from 'three';
+    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion, Scene} from 'three';
 
 //import * as WebXR from "../types/WebXR";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
@@ -70,7 +70,9 @@ export default class CVARManager extends Component
     private _shadowRoot = null;
 
     protected static readonly ins = {
-        enabled: types.Boolean("State.Enabled")
+        enabled: types.Boolean("State.Enabled"),
+        wallMount: types.Boolean("AR.wallMount", false),
+        arScale: types.Number("AR.Scale", 1.0),
     };
 
     protected static readonly outs = {
@@ -144,6 +146,9 @@ export default class CVARManager extends Component
     protected lightsToReset: CVDirectionalLight[] = [];
     protected featuresToReset: number[] = [];  // in order: floor/grid/tape/slicer/material
     protected annotationsAtLaunch: boolean = false;
+    protected scaleDisplay: HTMLElement = null;
+    protected updateScale: boolean = false;
+    protected placementRotation: Quaternion = new Quaternion();
 
     update()
     {
@@ -189,7 +194,13 @@ export default class CVARManager extends Component
         }
 
         const models = this.sceneNode?.getGraphComponents(CVModel2);
-        const derivative = models[0] ?  models[0].derivatives.get(EDerivativeUsage.Web3D, EDerivativeQuality.AR) : null;
+        let derivative = null;
+        for (const model of models) {
+            derivative = model.derivatives.get(EDerivativeUsage.Web3D, EDerivativeQuality.AR);
+            if (derivative != null) {
+                break;
+            }
+        }
 
         if(derivative) {
             this.setup.navigation.setChanged(true);  // set changed var to disable autoZoom for bounds changes
@@ -229,16 +240,20 @@ export default class CVARManager extends Component
         renderer.xr.setReferenceSpaceType( 'local' );
         renderer.xr.setSession( session ); 
     
-        session.addEventListener( 'end', this.onSessionEnded ); 
+        await session.addEventListener( 'end', this.onSessionEnded ); 
 
         this.refSpace = await session.requestReferenceSpace('local');
         const viewerRefSpace = await session.requestReferenceSpace('viewer');
 
+        renderer.xr.cameraAutoUpdate = false;
+
         // Do an initial hit test (model-viewer suggested 20 deg down)
         const radians = 20 * Math.PI / 180; 
-        const ray = new XRRay(
-            new DOMPoint(0, 0, 0),
-            {x: 0, y: -Math.sin(radians), z: -Math.cos(radians)});
+        const ray = this.ins.wallMount.value === true ?
+            undefined :
+            new XRRay(
+                new DOMPoint(0, 0, 0),
+                {x: 0, y: -Math.sin(radians), z: -Math.cos(radians)});
         session.requestHitTestSource({space: viewerRefSpace!, offsetRay: ray})
             .then(hitTestSource => {
                 this.initialHitTestSource = hitTestSource;
@@ -328,6 +343,11 @@ export default class CVARManager extends Component
         const lightNode = scene.graph.findNodeByName("Lights");
         const lightTransform = this.lightTransform = lightNode.getComponent(CTransform, true);
         lightTransform.ins.rotation.reset();
+
+        // Create scale display
+        const scaleDisplay = this.scaleDisplay = document.createElement("div");
+        scaleDisplay.classList.add("sv-scale-annotation");
+        this.shadowRoot.querySelector('ff-viewport-overlay').appendChild(scaleDisplay);
 
         // Cache extended feature values
         featuresToReset.push(setup.floor.ins.visible.value ? 1 : 0);
@@ -450,6 +470,14 @@ export default class CVARManager extends Component
         });
         
         // Clean up
+        const selectionRing = this.selectionRing;
+        if (selectionRing != null) {
+            scene.remove(selectionRing);
+            selectionRing!.geometry.dispose();
+            (selectionRing!.material as Material).dispose();
+            this.selectionRing = null;
+        }
+
         const hitPlane = this.hitPlane;
         if (hitPlane != null) {
             scene.remove(hitPlane);
@@ -458,13 +486,7 @@ export default class CVARManager extends Component
             this.hitPlane = null;
         }
 
-        const selectionRing = this.selectionRing;
-        if (selectionRing != null) {
-            scene.remove(selectionRing);
-            selectionRing!.geometry.dispose();
-            (selectionRing!.material as Material).dispose();
-            this.selectionRing = null;
-        }
+        this.scaleDisplay.remove();
      
         const shadow = this.shadow;
         if (shadow != null) {
@@ -509,16 +531,13 @@ export default class CVARManager extends Component
 
             xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
 
-            const pose : XRViewerPose = frame.getViewerPose(refSpace!);
-            const e = pose.views[0].transform.matrix;
-			position.set(-e[ 8 ], -e[ 9 ], -e[ 10 ]).normalize(); 
-            position.multiplyScalar(radius);
-            
-            const xrPos = pose.views[0].transform.position;
-            _vector3.set(xrPos.x, xrPos.y, xrPos.z);
-            position.add(_vector3);
-            _boundingBox.getCenter(_vector3);
-            position.add(_vector3.negate());
+            const cameraDirection = camera.getWorldDirection(_vector3);
+            scene.rotation.y = Math.atan2(-cameraDirection.x, -cameraDirection.z);
+        
+            position.copy(camera.position)
+                .add(cameraDirection.multiplyScalar(radius));
+
+            this.shadow.setRotation(scene.rotation.y);
 
             scene.updateMatrix();
             scene.updateMatrixWorld();
@@ -527,7 +546,7 @@ export default class CVARManager extends Component
         }
 
         this.setInitialPosition(frame);
-
+        
         this.handleInput(frame);
 
         if(this.outs.isPlaced.value) {
@@ -536,7 +555,7 @@ export default class CVARManager extends Component
             this.updateOpacity(deltaT, this.targetOpacity);
             this.lastFrameTime = timestamp;
         }
-
+        
         // TODO: Temporary fix for Chrome depth bug
         // https://bugs.chromium.org/p/chromium/issues/detail?id=1184085
         const gl = renderer.getContext();
@@ -547,6 +566,30 @@ export default class CVARManager extends Component
         if(shadow.needsUpdate) {
             renderer.shadowMap.needsUpdate = true;
             shadow.needsUpdate = false;
+        }
+
+        // Update scale display if needed
+        if(this.updateScale) {
+            const scene = vScene.scene;
+            const scaleTag = this.scaleDisplay;
+            _vector3.copy(scene.position);
+            const width = this.renderer.views[0].viewports[0].width;
+            const height = this.renderer.views[0].viewports[0].height;
+            const widthHalf = width / 2;
+            const heightHalf = height / 2;
+            const xBound = width - scaleTag.clientWidth;
+            const yBound = height - scaleTag.clientHeight;
+
+            _vector3.project(xrCamera);
+
+            _vector3.x = Math.min(Math.max(( _vector3.x * widthHalf ) + widthHalf, 0), xBound);
+            _vector3.y = Math.min(Math.max(-( _vector3.y * heightHalf ) + heightHalf, 0), yBound);
+
+            scaleTag.style.left = _vector3.x.toString() + "px";
+            scaleTag.style.top = _vector3.y.toString() + "px";
+
+            // update display
+            scaleTag.innerText = Math.round(scene.scale.x * 100).toString() + "%";
         }
         
         renderer.render( vScene.scene, camera );
@@ -582,10 +625,6 @@ export default class CVARManager extends Component
             .then(hitTestSource => {
                 this.transientHitTestSource = hitTestSource; 
             });
-
-        this.shadow.updateMatrices();
-        this.shadow.setIntensity(0.3);
-        this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
     }
 
     protected getHitPoint( hitResult: XRHitTestResult): Vector3|null {
@@ -595,9 +634,19 @@ export default class CVARManager extends Component
         }
 
         const hitMatrix = _matrix4.fromArray(pose.transform.matrix);
+
         // Check that the y-coordinate of the normal is large enough that the normal
         // is pointing up.
-        return hitMatrix.elements[5] > 0.75 ?
+        const normalUp = hitMatrix.elements[5] > 0.75;
+
+        if (this.ins.wallMount.value === true && !normalUp) {
+            // Align object with wall normal
+            const scene = this.vScene.scene;
+            scene.rotation.y = Math.atan2(hitMatrix.elements[4], hitMatrix.elements[6]);
+            scene.updateMatrix();
+        }
+
+        return normalUp !== this.ins.wallMount.value ?
             _hitPosition.setFromMatrixPosition(hitMatrix) :
             null;
     }
@@ -631,7 +680,7 @@ export default class CVARManager extends Component
                 this.isTranslating = true;
                 this.lastHitPosition.copy(intersections[0].point); 
             } 
-            else {
+            else if (this.ins.wallMount.value === false) {
                 this.isRotating = true;
             }
 
@@ -655,6 +704,7 @@ export default class CVARManager extends Component
         this.isTranslating = false;
         this.isRotating = false;
         this.isScaling = false;
+        this.scaleDisplay.classList.remove("sv-show");
 
         this.inputSource = null;
     }
@@ -678,19 +728,19 @@ export default class CVARManager extends Component
                 // If we lose the second finger, stop scaling (in fact, stop processing
                 // input altogether until a new gesture starts).
                 this.isScaling = false;
+                this.scaleDisplay.classList.remove("sv-show");
+                this.scaleDisplay.addEventListener("transitionend", () => {this.updateScale = false;}, { once: true });
             } 
             else {
                 // calculate and update scale
                 const separation = this.getFingerSeparation(fingers);
-                const scale = separation / this.lastScale;
-                scene.scale.setScalar(scale); 
-                scene.position.y = this.lastHitPosition.y - this.modelFloorOffset * scene.scale.y; // set back on floor
-                scene.updateMatrix();
-                scene.updateMatrixWorld();
+                let scale = separation / this.lastScale;
+                scale = scale > 0.9 && scale < 1.1 ? 1.0 : scale;  // snap to 100%
+                this.scaleScene(scene, scale);
 
-                this.shadow.setScaleAndOffset(scale, 0);
-
-                this.updateBoundingBox();
+                // Show display
+                this.scaleDisplay.classList.add("sv-show");
+                this.updateScale = true;
             }
             return;
         } 
@@ -709,13 +759,7 @@ export default class CVARManager extends Component
             scene.rotation.y += (currentDragX - this.lastDragValueX) * ROTATION_RATE;
             scene.updateMatrix();
 
-            // undo rotation on lights
-            _quat.copy(scene.quaternion);
-            _quat.invert();
-            this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
-            this.lightTransform.object3D.updateMatrix();
-
-            this.shadow.setRotation(scene.rotation.y);
+            this.sceneRotateHelper();
 
             this.lastDragValueX = currentDragX;
         } 
@@ -761,13 +805,16 @@ export default class CVARManager extends Component
     }
 
     protected placeModel( hit: Vector3 ) {
-        const scene = this.vScene.scene!; 
+        const scene = this.vScene.scene!;
+        const isWall = this.ins.wallMount.value === true;
         const {min, max} = _boundingBox;
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
         const width = Math.max((max.x-min.x)*1.25, 0.15);
-        const height = Math.max((max.z-min.z)*1.25, 0.15);
+        const height = isWall ? Math.max((max.y-min.y)*1.25, 0.15) : Math.max((max.z-min.z)*1.25, 0.15);
         const centerOffsetX = (min.x+max.x)/2.0;
         const centerOffsetZ = (min.z+max.z)/2.0;
+        const centerOffsetY = (min.y+max.y)/2.0;
+        const rotOffset = isWall ? 0 : -Math.PI / 2.0;
 
         this.lastHitPosition.copy(hit);
 
@@ -776,10 +823,12 @@ export default class CVARManager extends Component
             new PlaneGeometry(width, height),
             new MeshBasicMaterial()   
         );
-        hitPlane.position.set(centerOffsetX, min.y, centerOffsetZ);
-        hitPlane.rotation.set(-Math.PI / 2.0, 0, 0);
+        hitPlane.position.set(centerOffsetX, isWall ? centerOffsetY : min.y, isWall ? min.z : centerOffsetZ);
+        hitPlane.rotation.set(rotOffset, 0, 0);
         hitPlane.visible = false;
         scene.add(hitPlane);
+
+        this.placementRotation.copy(scene.quaternion);
 
         // add selection visualization
         const roundedRectShape = new Shape();
@@ -790,30 +839,39 @@ export default class CVARManager extends Component
         roundedRectShape.holes.push(cutOut);
         let geometry = new ShapeGeometry(roundedRectShape);
         const selectionRing = this.selectionRing = new Mesh( geometry, new MeshBasicMaterial({ side: DoubleSide, opacity: 0.0 }) );
-        selectionRing.position.set(centerOffsetX, min.y, centerOffsetZ);
-        selectionRing.rotation.set(-Math.PI / 2.0, 0, 0);
+        selectionRing.position.set(centerOffsetX, isWall ? centerOffsetY : min.y, isWall ? min.z : centerOffsetZ);
+        selectionRing.rotation.set(rotOffset, 0, 0);
         (selectionRing.material as Material).transparent = true;
         selectionRing.visible = false;
         scene.add(selectionRing);
+        //hitPlane.add(selectionRing);
 
         this.modelFloorOffset = min.y;
 
         //console.log("Placing in AR: " + hit.x + " " + (hit.y-min.y) + " " + hit.z);
-
-        scene.position.set(hit.x, hit.y-min.y, hit.z);
+        scene.position.set(hit.x, isWall ? hit.y : hit.y-min.y, hit.z);
         scene.updateMatrix();
-        scene.updateMatrixWorld(true);
+        scene.updateMatrixWorld(true);       
         this.updateBoundingBox();
         this.pulse.pulse(Date.now());
+
+        // Update shadow. If scaling and showing a shadow, push a pre-render
+        this.shadow.updateMatrices();
+        this.shadow.setIntensity(this.ins.wallMount.value === true ? 0.0 : 0.3);
+        this.setup.viewer.ins.annotationsVisible.setValue(this.annotationsAtLaunch);
+        if(this.ins.arScale.value !== 1.0 && !isWall) {
+            this.renderer.views[0].renderer.render( scene, this.shadow.shadow.camera );
+        }
+        this.scaleScene(this.vScene.scene, this.ins.arScale.value);
            
         // if we are not far enough away from the model, shift
         // edge of bounding box to hitpoint so it is in view
         const origin = this.camera.position.clone();
         const placementVector = hit.clone().sub(origin);
-        if(placementVector.length() < boundingRadius) {
+        if(placementVector.length() < boundingRadius * scene.scale.x) {
             const direction = placementVector.normalize();
             // Pull camera back enough to be outside of large models.
-            origin.sub(direction.multiplyScalar(boundingRadius * 1.5));
+            origin.sub(direction.multiplyScalar(boundingRadius * scene.scale.x * 1.5));
             const ray = new Ray(origin, direction.normalize());
             const modelPosition = new Vector3();
         
@@ -832,7 +890,16 @@ export default class CVARManager extends Component
         } 
     
         this.updateBoundingBox();
-        this.outs.isPlaced.setValue(true); 
+        this.outs.isPlaced.setValue(true);
+
+        if(scene.scale.x !== 1.0) {
+            this.updateScale = true;
+            this.scaleDisplay.classList.add("sv-show");
+            setTimeout(() => {
+                this.scaleDisplay.classList.remove("sv-show");
+                this.scaleDisplay.addEventListener("transitionend", () => {this.updateScale = false;}, { once: true });        
+            }, 1500);
+        }
     }
 
     protected launchSceneViewer() {
@@ -903,6 +970,37 @@ export default class CVARManager extends Component
         ctx.quadraticCurveTo( x + width, y, x + width - radius, y );
         ctx.lineTo( x + radius, y );
         ctx.quadraticCurveTo( x, y, x, y + radius );
+    }
 
+    // Helper function to be called after rotating scene.
+    // Makes sure lights and shadow are in sync
+    protected sceneRotateHelper() {
+        const scene = this.vScene.scene;
+
+        // undo rotation on lights
+        _quat.copy(scene.quaternion);
+        _quat.invert();
+
+        // account for initial light placement orientation
+        _quat.multiply(this.placementRotation);
+
+        this.lightTransform.object3D.rotation.setFromQuaternion(_quat); 
+        this.lightTransform.object3D.updateMatrix();
+
+        // set shadow rotation
+        this.shadow.setRotation(scene.rotation.y);
+    }
+
+    protected scaleScene(scene: Scene, scale: number) {
+        scene.scale.setScalar(scale);
+        if(this.ins.wallMount.value === false) {
+            scene.position.y = this.lastHitPosition.y - this.modelFloorOffset * scene.scale.y; // set back on floor
+        }
+        scene.updateMatrix();
+        scene.updateMatrixWorld();
+
+        this.shadow.setScaleAndOffset(scale, 0);
+
+        this.updateBoundingBox();
     }
 }
