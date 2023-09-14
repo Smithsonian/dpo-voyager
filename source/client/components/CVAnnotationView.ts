@@ -44,6 +44,8 @@ import CVARManager from "./CVARManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
+import CVAudioManager from "./CVAudioManager";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +76,7 @@ export default class CVAnnotationView extends CObject3D
         offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
         article: types.Option("Annotation.Article", []),
         image: types.String("Annotation.Image"),
+        audioId: types.String("Annotation.AudioID"),
         tilt: types.Number("Annotation.Tilt"),
         azimuth: types.Number("Annotation.Azimuth"),
         color: types.ColorRGB("Annotation.Color"),
@@ -99,12 +102,18 @@ export default class CVAnnotationView extends CObject3D
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
     }
+    protected get audio() {
+        return this.getGraphComponent(CVAudioManager, true);
+    }
     protected get articles() {
         const meta = this.meta;
         return meta ? meta.articles : null;
     }
     protected get arManager() {
         return this.system.getMainComponent(CVARManager);
+    }
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -157,6 +166,7 @@ export default class CVAnnotationView extends CObject3D
                 ins.article.setValue(0);
             }
 
+            ins.audioId.setValue(annotation ? annotation.data.audioId : null, true);
             ins.image.setValue(annotation ? annotation.data.imageUri : "", true);
 
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
@@ -261,6 +271,9 @@ export default class CVAnnotationView extends CObject3D
                 const articles = this.articles;
                 const article = articles && articles.getAt(ins.article.getValidatedValue() - 1);
                 annotation.set("articleId", article ? article.id : "");
+            }
+            if (ins.audioId.changed) {
+                annotation.set("audioId", ins.audioId.value);
             }
 
             this.updateSprite(annotation);
@@ -480,6 +493,9 @@ export default class CVAnnotationView extends CObject3D
 
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);
+
+        sprite.assetManager = this.assetManager;
+        sprite.audioManager = this.audio;
 
         this._sprites[annotation.id] = sprite;
         this.object3D.add(sprite);

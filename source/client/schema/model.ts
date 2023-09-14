@@ -74,6 +74,7 @@ export interface IAnnotation
     taglist?: Dictionary<string[]>;
     articleId?: string;
     imageUri?: string;
+    audioId?: string;
 
     style?: string;
     visible?: boolean;

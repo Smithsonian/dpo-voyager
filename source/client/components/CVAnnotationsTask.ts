@@ -57,6 +57,8 @@ export default class CVAnnotationsTask extends CVTask
     protected static readonly ins = {
         mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
         language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+        audio: types.Option("Annotation.Audio", ["None"], 0),
+        selection: types.Event("Annotation.Selection")
     };
 
     protected static readonly outs = {
@@ -80,6 +82,18 @@ export default class CVAnnotationsTask extends CVTask
         configuration.bracketsVisible = false;
     }
 
+    create()
+    {
+        super.create();
+        this.startObserving();
+    }
+
+    dispose()
+    {
+        this.stopObserving();
+        super.dispose();
+    }
+
     get activeAnnotations() {
         return this._activeAnnotations;
     }
@@ -97,7 +111,6 @@ export default class CVAnnotationsTask extends CVTask
 
     activateTask()
     {
-        this.startObserving();
         super.activateTask();
         this.synchLanguage();
 
@@ -110,7 +123,6 @@ export default class CVAnnotationsTask extends CVTask
         //this.selection.selectedComponents.off(CVAnnotationView, this.onSelectAnnotations, this);
         //this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
-        this.stopObserving();
         super.deactivateTask();
     }
 
@@ -134,6 +146,16 @@ export default class CVAnnotationsTask extends CVTask
             languageManager.ins.language.setValue(newLanguage);
             outs.language.setValue(newLanguage);
             return true;
+        }
+
+        if(ins.audio.changed) {
+            const audioManager = this.activeDocument.setup.audio;
+            const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
+            this._activeAnnotations.ins.audioId.setValue(id);
+        }
+
+        if(ins.selection.changed) {
+            this.setAudio();
         }
 
         this.synchLanguage();
@@ -254,6 +276,7 @@ export default class CVAnnotationsTask extends CVTask
         super.onActiveDocument(previous, next);
 
         if(previous) {
+            previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
             previous.setup.language.outs.language.off("value", this.update, this);
         }
         if (next) {
@@ -261,6 +284,7 @@ export default class CVAnnotationsTask extends CVTask
             this._defaultScale = scene.outs.boundingRadius.value * 0.05;
 
             next.setup.language.outs.language.on("value", this.update, this);
+            next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
         }
     }
 
@@ -315,6 +339,24 @@ export default class CVAnnotationsTask extends CVTask
         if(ins.language.value !== languageManager.outs.language.value)
         {
             ins.language.setValue(languageManager.outs.language.value, true);
+        }
+    }
+
+    // Update audio options
+    protected synchAudioOptions() {
+        const audioManager = this.activeDocument.setup.audio;
+        const options = ["None"];
+        options.push(...audioManager.getAudioList().map(clip => clip.name));
+        this.ins.audio.setOptions(options);
+    }
+
+    // Update audio value
+    protected setAudio() {
+        const annotations = this._activeAnnotations;
+        if(annotations) {
+            const audioManager = this.activeDocument.setup.audio;
+            const audio = audioManager.getAudioClip(annotations.ins.audioId.value);
+            this.ins.audio.setValue(audio ? audioManager.getAudioList().indexOf(audio)+1 : 0);
         }
     }
 }

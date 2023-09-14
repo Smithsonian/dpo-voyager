@@ -335,7 +335,9 @@ class CircleAnnotation extends AnnotationElement
         const annotationData = annotation.data;
 
         return html`<div class="sv-title">${annotation.title}</div>
+            ${annotationData.imageUri ? html`<div><img src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}"></div>` : null}
             <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
+            ${annotationData.audioId ? html`<div><audio controls src="${this.sprite.assetManager.getAssetUrl(this.sprite.audioManager.getAudioClipUri(annotationData.audioId))}"></div>` : null}
             ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
     }
 

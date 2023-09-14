@@ -247,6 +247,15 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   a:link, a:visited, a:hover, a:active {
     color: $color-primary;
   }
+
+  audio {
+    max-width: 100%;
+    max-height: 30px;
+  }
+
+  img {
+    max-height: 120px;
+  }
   
   @include noselect;
 }

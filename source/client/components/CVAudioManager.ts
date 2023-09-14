@@ -52,6 +52,7 @@ export default class CVAudioManager extends Component
     protected static readonly outs = {
         narrationEnabled: types.Boolean("Audio.NarrationEnabled", false),
         narrationPlaying: types.Boolean("Audio.NarrationPlaying", false),
+        updated: types.Event("Audio.Updated")
     };
 
     ins = this.addInputs(CVAudioManager.ins);
@@ -111,9 +112,15 @@ export default class CVAudioManager extends Component
         return this.audioClips[id];
     }
 
+    getAudioClipUri(id: string) {
+        const clip = this.audioClips[id];
+        return clip ? clip.uris[ELanguageType[this.language.outs.language.value]] : null;
+    }
+
     addAudioClip(clip: IAudioClip)
     {
         this.audioClips[clip.id] = clip;
+        this.outs.updated.set();
     }
 
     removeAudioClip(id: string)
@@ -127,6 +134,11 @@ export default class CVAudioManager extends Component
         delete this.audioClips[id];
     }
 
+    updateAudioClip(id: string)
+    {
+        this.outs.updated.set();
+    }
+
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
     {
         const meta = event.object;
@@ -135,6 +147,7 @@ export default class CVAudioManager extends Component
             this.audioClips = meta.audio.dictionary;  // needed to support initially empty meta nodes
             meta.once("load", () => {
                 this.audioClips = meta.audio.dictionary;
+                this.outs.updated.set();
             });
         }
     }

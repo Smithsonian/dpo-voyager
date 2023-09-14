@@ -162,7 +162,10 @@ class ExtendedAnnotation extends AnnotationElement
         this.titleElement.innerText = this.sprite.annotation.title;
 
         // update content
-        const contentTemplate = html`<p>${unsafeHTML(this.sprite.annotation.lead)}</p>
+        const contentTemplate = html`
+            ${annotation.imageUri ? html`<div><img src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}"></div>` : null}
+            <p>${unsafeHTML(this.sprite.annotation.lead)}</p>
+            ${annotation.audioId ? html`<div><audio controls src="${this.sprite.assetManager.getAssetUrl(this.sprite.audioManager.getAudioClipUri(annotation.audioId))}"></div>` : null}
             ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
 
         render(contentTemplate, this.contentElement);

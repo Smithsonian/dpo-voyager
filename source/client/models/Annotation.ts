@@ -28,11 +28,11 @@ export type Vector3 = number[];
 export type IAnnotationUpdateEvent = IDocumentUpdateEvent<Annotation>;
 export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 
-
 export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
     static readonly defaultColor = [ 0, 0.61, 0.87 ];
     private _language : ELanguageType = ELanguageType.EN;
+    private _leadChanged : boolean = false;
 
     get title() {
         // TODO: Temporary - remove when single string properties are phased out
@@ -79,6 +79,14 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         this._language = newLanguage;
     }
 
+    // Supports backwards compatibility for annotations pre-length limit
+    get leadChanged() {
+        return this._leadChanged;
+    }
+    set leadChanged(value: boolean) {
+        this._leadChanged = value;
+    }
+
     static fromJSON(json: IAnnotation)
     {
         return new Annotation(json);
@@ -97,6 +105,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             taglist: {},
             articleId: "",
             imageUri: "",
+            audioId: "",
 
             style: AnnotationFactory.defaultTypeName,
             visible: true,
@@ -155,6 +164,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.imageUri) {
             json.imageUri = data.imageUri;
         }
+        if (data.audioId) {
+            json.audioId = data.audioId;
+        }
         if (data.style !== AnnotationFactory.defaultTypeName) {
             json.style = data.style;
         }
@@ -206,6 +218,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
 
         data.articleId = json.articleId || "";
         data.imageUri = json.imageUri || "";
+        data.audioId = json.audioId || "";
 
         data.style = json.style || AnnotationFactory.defaultTypeName;
         data.visible = json.visible !== undefined ? json.visible : true;

@@ -24,6 +24,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import "@ff/ui/TextEdit";
 import "@ff/ui/Splitter";
+import Notification from "@ff/ui/Notification";
 
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
@@ -34,12 +35,18 @@ import { TaskView } from "../../components/CVTask";
 import { ELanguageStringType, ELanguageType, TLanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 import sanitizeHtml from 'sanitize-html';
+import CVMediaManager from "client/components/CVMediaManager";
 
 ////////////////////////////////////////////////////////////////////////////////
+export const MAX_LEAD_CHARS = 300;
 
 @customElement("sv-annotations-task-view")
 export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 {
+    private _dragCounter = 0;
+    private _leadLimit = MAX_LEAD_CHARS;
+    private _leadCharCount = 0;
+
     protected sceneview : HTMLElement = null;
     
     protected connected()
@@ -80,10 +87,16 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         this.sceneview.style.cursor = this.task.ins.mode.value > 0 ? "default" : "grab";
 
         const inProps = annotations.ins;
+        const audioProp = this.task.ins.audio;
         const modeProp = this.task.ins.mode;
         const annotationList = annotations.getAnnotations();
 
         const annotation = annotations.activeAnnotation;
+
+        this._leadLimit = this._leadLimit == 0 ? 0 : (MAX_LEAD_CHARS - (inProps.image.value ? 100 : 0) - (inProps.audioId.value ? 50 : 0));
+        this._leadCharCount = inProps.lead.value.length;
+        const limitText = this._leadLimit == 0 ? "infinite" : this._leadLimit;
+        const overLimit = this._leadCharCount > this._leadLimit && this._leadLimit != 0;
 
         // <div class="sv-label">Title</div>
         // <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
@@ -95,15 +108,16 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
             <sv-property-view .property=${inProps.color}></sv-property-view>
-            <sv-property-view .property=${inProps.image}></sv-property-view>
+            <sv-property-view id="image" .property=${inProps.image} @change=${this.onHeightChange} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+            <sv-property-view .property=${audioProp}></sv-property-view>
             <sv-property-view .property=${inProps.marker}></sv-property-view>
             <sv-property-view .property=${this.task.ins.language}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view .property=${inProps.article}></sv-property-view>
                 <sv-property-view .property=${inProps.tags}></sv-property-view>
                 <sv-property-view .property=${inProps.title}></sv-property-view>
-                <div class="sv-label">Lead</div>
-                <ff-text-edit name="lead" text=${inProps.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+                <div class="sv-label" style="${overLimit ? "color: red" : ""}">Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
+                <ff-text-edit name="lead" text=${inProps.lead.value} maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
             </div>
         </div>` : null;
 
@@ -146,6 +160,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                         }
                     }
                 ));
+
+                annotations.activeAnnotation.leadChanged = true;
             }
         }
     }
@@ -173,6 +189,83 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         if (this.task.activeAnnotations) {
             this.task.activeAnnotations.activeAnnotation = event.detail.annotation;
+            this.task.ins.selection.set();
+            
+            const ins = this.task.activeAnnotations.ins;
+            this._leadCharCount = ins.lead.value.length;
+            this._leadLimit = MAX_LEAD_CHARS - (ins.image.value ? 100 : 0) - (ins.audioId.value ? 50 : 0);
+            if(this._leadCharCount > MAX_LEAD_CHARS && !event.detail.annotation.leadChanged) {
+                this._leadLimit = 0;
+            }
         }
+    }
+
+    /** Handle image file dropping **TODO: Merge with audio drop handler*/
+    protected onDropFile(event: DragEvent)
+    {
+        event.preventDefault();
+        let filename = "";
+        let newFile : File = null;
+        const imageProp = this.task.activeAnnotations.ins.image;
+
+        if(event.dataTransfer.files.length === 1) {
+            newFile = event.dataTransfer.files.item(0);
+            filename = newFile.name;
+        }
+        else {
+            const filepath = event.dataTransfer.getData("text/plain");
+            if(filepath.length > 0) {
+                filename = filepath;
+            }
+        }
+
+        if(filename.toLowerCase().endsWith(".jpg") || filename.toLowerCase().endsWith(".png")) {
+            if(newFile !== null) {
+                const mediaManager = this.system.getMainComponent(CVMediaManager);
+                mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => imageProp.setValue(filename)).catch(e => {
+                    Notification.show(`Image file upload failed.`, "warning");
+                    imageProp.setValue("");
+                });
+            }
+            else {
+                this.task.activeAnnotations.ins.image.setValue(filename);
+            }
+        }
+        else {
+            Notification.show(`Unable to load - Only .jpg and .png files are currently supported.`, "warning");
+        }
+
+        const element = document.getElementById("image");
+        element.classList.remove("sv-drop-zone");
+        this._dragCounter = 0;
+    }
+
+    protected onDragEnter(event: DragEvent)
+    {
+        const element = document.getElementById("image");
+        element.classList.add("sv-drop-zone");
+
+        event.preventDefault();
+        this._dragCounter++;
+    }
+
+    protected onDragOver(event: DragEvent)
+    {
+        event.preventDefault();
+    }
+
+    protected onDragLeave(event: DragEvent)
+    {
+        this._dragCounter--;
+
+        const element = document.getElementById("image");
+        if(this._dragCounter === 0) {
+            element.classList.remove("sv-drop-zone");
+        }
+    }
+
+    // Update limits based on content height change
+    protected onHeightChange() {
+        console.log("CHANGE");
     }
 }

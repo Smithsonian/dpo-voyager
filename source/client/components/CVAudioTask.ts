@@ -47,7 +47,6 @@ export default class CVAudioTask extends CVTask
     };
 
     protected static readonly outs = {
-        //ready: types.Boolean("Picture.Ready"),
     };
 
     ins = this.addInputs<CVTask, typeof CVAudioTask.ins>(CVAudioTask.ins);
@@ -60,6 +59,18 @@ export default class CVAudioTask extends CVTask
         super(node, id);
     }
 
+    create()
+    {
+        super.create();
+        this.startObserving();
+    }
+
+    dispose()
+    {
+        this.stopObserving();
+        super.dispose();
+    }
+
     createView()
     {
         return new AudioTaskView(this);
@@ -70,7 +81,6 @@ export default class CVAudioTask extends CVTask
         // automatically select scene node
         //this.nodeProvider.activeNode = this.nodeProvider.scopedNodes[0];
         
-        this.startObserving();
         super.activateTask();
 
         this.synchLanguage();
@@ -78,13 +88,12 @@ export default class CVAudioTask extends CVTask
 
     deactivateTask()
     {
-        this.stopObserving();
         super.deactivateTask();
     }
 
     update()
     {
-        const ins = this.ins;
+        const { ins } = this;
         const audioManager = this.audioManager;
 
         if(!audioManager) {
@@ -122,9 +131,10 @@ export default class CVAudioTask extends CVTask
             return true;
         }
 
-        if (ins.title.changed || ins.filepath.changed) {
+        if (clip && (ins.title.changed || ins.filepath.changed)) {
             clip.name = ins.title.value;
             clip.uris[ELanguageType[ins.language.value]] = ins.filepath.value;
+            audioManager.updateAudioClip(clip.id);
         }
         if (ins.isNarration.changed) {
             audioManager.narrationId = ins.isNarration.value ? clip.id : "";
@@ -164,8 +174,8 @@ export default class CVAudioTask extends CVTask
 
     protected onDocumentLanguageChange()
     {
-        this.onAudioChange();
         this.synchLanguage();
+        this.onAudioChange();
     }
 
     // Make sure this task language matches document
