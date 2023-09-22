@@ -24,6 +24,7 @@ import CVAssetManager from "./CVAssetManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
+import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,15 +44,18 @@ export default class CVAudioManager extends Component
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
+    protected audioView: AudioView = null;
     protected isPlaying: Boolean = false;
 
     protected static readonly ins = {
         playNarration: types.Event("Audio.PlayNarration"),
+        activeCaption: types.String("Audio.ActiveCaption")
     };
 
     protected static readonly outs = {
         narrationEnabled: types.Boolean("Audio.NarrationEnabled", false),
         narrationPlaying: types.Boolean("Audio.NarrationPlaying", false),
+        isPlaying: types.Boolean("Audio.IsPlaying", false),
         updated: types.Event("Audio.Updated")
     };
 
@@ -77,6 +81,9 @@ export default class CVAudioManager extends Component
     {
         super.create();
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
+
+        this.audioView = new AudioView;
+        this.audioView.audio = this;
     }
 
     dispose()
@@ -103,6 +110,12 @@ export default class CVAudioManager extends Component
         return true;
     }
 
+    getPlayerById(id: string) {
+        this.audioView.audioId = id;
+        this.audioView.requestUpdate();
+        return this.audioView;
+    }
+
     getAudioList()
     {
         return Object.keys(this.audioClips).map(key => this.audioClips[key]);
@@ -115,6 +128,52 @@ export default class CVAudioManager extends Component
     getAudioClipUri(id: string) {
         const clip = this.audioClips[id];
         return clip ? clip.uris[ELanguageType[this.language.outs.language.value]] : null;
+    }
+
+    getClipCaptionUri(id: string) {
+        const clip = this.audioClips[id];
+        return clip ? clip.captionUris[ELanguageType[this.language.outs.language.value]] : null;
+    }
+
+    getDuration(id: string) {
+        const clip = this.audioClips[id];
+        const language = ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType;
+        const cachedDuration = clip.durations[language];
+        if(cachedDuration) {
+            return cachedDuration;
+        }
+        else {
+            const clip = this.audioClips[id];
+            const uri = clip.uris[language];
+            const absUri = this.assetManager.getAssetUrl(uri);
+            clip.durations[language] = "pending";
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const request = new XMLHttpRequest();
+            request.open('GET', absUri, true);
+            request.responseType = 'arraybuffer';
+            request.onload = () => {
+                audioContext.decodeAudioData(request.response,
+                    (buffer) => {
+                        let duration = buffer.duration;
+                        clip.durations[language] = duration.toString();
+                        this.audioView.requestUpdate();
+                    }
+                )
+            }
+            request.send();
+
+            return "pending";
+        }
+    }
+
+    getTimeElapsed() {
+        if(this.audioPlayer) {
+            return Math.floor(this.audioPlayer.currentTime);
+        }
+        else {
+            return 0;
+        }
     }
 
     addAudioClip(clip: IAudioClip)
@@ -136,6 +195,7 @@ export default class CVAudioManager extends Component
 
     updateAudioClip(id: string)
     {
+        this.getDuration(id);
         this.outs.updated.set();
     }
 
@@ -188,10 +248,19 @@ export default class CVAudioManager extends Component
         }
 
         const { outs } = this;
+        outs.isPlaying.setValue(true);
+
         const clip = this.audioClips[id];
         const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+        const absUri = this.assetManager.getAssetUrl(uri);
+        if(this.audioPlayer.src != absUri) {
+            this.audioPlayer.setAttribute("src", absUri);
+
+            // Set caption track source
+            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+            this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+        }
         
-        this.audioPlayer.setAttribute("src", this.assetManager.getAssetUrl(uri));
         this.audioPlayer.play()
         .then(() => {
             this.isPlaying = true;
@@ -201,9 +270,21 @@ export default class CVAudioManager extends Component
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));  
     }
 
-    stop()
-    {      
+    pause()
+    {
+        if(!this.audioPlayer) {
+            return;
+        } 
+        this.outs.isPlaying.setValue(false);
         this.audioPlayer.pause();
+    }
+
+    stop()
+    {  
+        if(!this.audioPlayer) {//Notification.show(`PLAYINGA`, "warning");
+            return;
+        }    
+        this.pause();
         this.audioPlayer.currentTime = 0;
         this.onEnd();
     }
@@ -213,17 +294,100 @@ export default class CVAudioManager extends Component
 
         this.isPlaying = false;
         outs.narrationPlaying.setValue(false);
+        this.audioView.requestUpdate();
+    }
+
+    // Initialize player for a specific audio clip
+    protected initializeClip(id: string) {
+        if(this.audioPlayer === null) {
+            return;
+        }
+
+        const clip = this.audioClips[id];
+        const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+        const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+        
+        this.audioPlayer.setAttribute("src", this.assetManager.getAssetUrl(uri));
+
+        // Set caption track source
+        this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
     }
 
     // setup function required for Safari compatibility so audio element is setup immediately on user interaction.
     setupAudio()
     {
         if(this.audioPlayer === null) {
-            this.audioPlayer = document.createElement('audio');
-            this.audioPlayer.onended = this.onEnd;
-            //this.audioPlayer.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+            const audio = this.audioPlayer = document.createElement('audio');
+            audio.onended = this.onEnd;
+            audio.setAttribute("controls", "");
+            audio.setAttribute("preload", "auto");
+            audio.addEventListener("timeupdate", this.onTimeChange)
 
-            //this.ins.playNarration.set();
+            // add empty caption track
+            const track = document.createElement('track');
+            //track.setAttribute("mode", "showing");
+            track.setAttribute("default", "");
+            this.audioPlayer.append(track);
+            track.addEventListener("cuechange", this.onCueChange);
         }
+    }
+
+    // Handle caption cue changes
+    protected onCueChange = (event: Event) =>
+    {
+        const activeCues = (event.target as HTMLTrackElement).track.activeCues;
+        const activeText = activeCues.length > 0 ? (activeCues[0] as VTTCue).text : "";
+        this.ins.activeCaption.setValue(activeText);
+    }
+
+    // Handle audio time elapsed updates
+    protected onTimeChange = (event: Event) =>
+    {
+        this.audioView.requestUpdate();
+    }
+}
+
+
+@customElement("sv-audio-view")
+export class AudioView extends CustomElement
+{
+    @property({ attribute: false })
+    audio: CVAudioManager = null;
+
+    @property({ attribute: false })
+    audioId: string = "";
+
+    protected firstConnected()
+    {
+        this.classList.add("sv-audio-view");
+    }
+
+    protected render()
+    {
+        const elapsed = this.formatSeconds(this.audio.getTimeElapsed());
+        const duration = this.formatSeconds(parseInt(this.audio.getDuration(this.audioId)));
+        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" id="ar-btn" @click=${(e) => this.playAudio(e, this.audioId)}></ff-button><div>${elapsed}</div>/<div>${duration}</div>`;
+    }
+
+    protected playAudio(event: MouseEvent, id: string) {
+        const audio = this.audio;
+
+        if(!audio.outs.isPlaying.value) {
+            audio.setupAudio();
+            audio.play(id);
+        }
+        else {
+            audio.pause();
+        }
+
+        this.requestUpdate();
+    }
+
+    // Format seconds in friendlier datetime-like string
+    protected formatSeconds(seconds: number) {
+        var date = new Date(0);
+        date.setSeconds(seconds);
+        var formatString = date.toISOString().substring(14, 19);
+        return formatString;
     }
 }

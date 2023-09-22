@@ -52,6 +52,14 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "imageCredit": {
+                    "description": "Credit line image in this annotation with language key.",
+                    "type": "object"
+                },
+                "imageAltText": {
+                    "description": "Alt text for image in this annotation with language key",
+                    "type": "object"
+                },
                 "audioId": {
                     "description": "Id of an audio resource for this annotation.",
                     "type": "string",

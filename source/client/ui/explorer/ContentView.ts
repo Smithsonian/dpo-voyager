@@ -27,6 +27,7 @@ import SceneView from "../SceneView";
 import "../Spinner";
 import "./ActionPrompt"
 import "./ReaderView";
+import "./CaptionView"
 
 import DocumentView, { customElement, html } from "./DocumentView";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
@@ -35,6 +36,7 @@ import ARPrompt from "./ARPrompt";
 import ARMenu from "./ARMenu";
 import CVARManager from "client/components/CVARManager";
 import CVAssetReader from "client/components/CVAssetReader";
+import CaptionView from "./CaptionView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +44,7 @@ import CVAssetReader from "client/components/CVAssetReader";
 export default class ContentView extends DocumentView
 {
     protected sceneView: SceneView = null;
+    protected captionView: CaptionView = null;
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected isMobile: boolean = null;
     protected assetPath: string = "";
@@ -75,6 +78,8 @@ export default class ContentView extends DocumentView
     {
         this.classList.add("sv-content-view");
         this.sceneView = new SceneView(this.system);
+
+        this.captionView = new CaptionView(this.system);
 
         this.isMobile = this.mobileCheck();
     }
@@ -143,6 +148,7 @@ export default class ContentView extends DocumentView
         }
 
         const sceneView = this.sceneView;
+        const captionView = this.captionView;
 
         const blurContent =
             (readerVisible && readerPosition === EReaderPosition.Overlay) || tourMenuVisible;
@@ -177,19 +183,23 @@ export default class ContentView extends DocumentView
                             </div>
                         </div>
                     </div>
-                    <sv-spinner ?visible=${isLoading}></sv-spinner>`;
+                    <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+                    ${captionView}`;
             }
             if (readerPosition === EReaderPosition.Overlay) {
                 return html`<div class="ff-fullsize sv-content-stack">${sceneView}
                     <div class="sv-reader-container">
                         <sv-reader-view .system=${system} @close=${this.onReaderClose}></sv-reader-view>
                     </div>
-                    <sv-spinner ?visible=${isLoading}></sv-spinner></div>`;
+                    <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+                    ${captionView}
+                    </div>`;
             }
         }
 
         return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
             <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+            ${captionView}
             ${promptVisible ? html`<sv-action-prompt></sv-action-prompt>` : null}`;
     }
 

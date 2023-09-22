@@ -76,6 +76,8 @@ export default class CVAnnotationView extends CObject3D
         offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
         article: types.Option("Annotation.Article", []),
         image: types.String("Annotation.Image"),
+        imageCredit: types.String("Image.Credit"),
+        imageAltText: types.String("Image.AltText"),
         audioId: types.String("Annotation.AudioID"),
         tilt: types.Number("Annotation.Tilt"),
         azimuth: types.Number("Annotation.Azimuth"),
@@ -168,6 +170,8 @@ export default class CVAnnotationView extends CObject3D
 
             ins.audioId.setValue(annotation ? annotation.data.audioId : null, true);
             ins.image.setValue(annotation ? annotation.data.imageUri : "", true);
+            ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
+            ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
 
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
@@ -266,6 +270,12 @@ export default class CVAnnotationView extends CObject3D
             }
             if (ins.image.changed) {
                 annotation.set("imageUri", ins.image.value);
+            }
+            if (ins.imageCredit.changed) {
+                annotation.imageCredit =  ins.imageCredit.value;
+            }
+            if (ins.imageAltText.changed) {
+                annotation.imageAltText =  ins.imageAltText.value;
             }
             if (ins.article.changed) {
                 const articles = this.articles;
@@ -554,5 +564,7 @@ export default class CVAnnotationView extends CObject3D
         ins.title.setValue(annotation ? annotation.title : "", true);
         ins.lead.setValue(annotation ? annotation.lead : "", true);
         ins.tags.setValue(annotation ? annotation.tags.join(", ") : "");
+        ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
+        ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
     }
 }

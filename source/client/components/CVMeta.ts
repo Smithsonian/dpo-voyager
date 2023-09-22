@@ -82,7 +82,11 @@ export default class CVMeta extends Component
         }
         if (data.audio) {
             const audioDict = {};
-            data.audio.forEach(clip => audioDict[clip.id] = clip);
+            data.audio.forEach(clip => {
+                clip.captionUris = clip.captionUris || {};
+                clip.durations = clip.durations || {};
+                audioDict[clip.id] = clip;
+            });
             this.audio.dictionary = audioDict;
         }
 

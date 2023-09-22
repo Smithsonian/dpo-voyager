@@ -78,6 +78,20 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
     set language(newLanguage: ELanguageType) {
         this._language = newLanguage;
     }
+    get imageCredit() {
+        return this.data.imageCredit[ELanguageType[this.language]] || "";
+    }
+    set imageCredit(inCredit: string) {
+        this.data.imageCredit[ELanguageType[this.language]] = inCredit;
+        this.update();
+    }
+    get imageAltText() {
+        return this.data.imageAltText[ELanguageType[this.language]] || "";
+    }
+    set imageAltText(inAlt: string) {
+        this.data.imageAltText[ELanguageType[this.language]] = inAlt;
+        this.update();
+    }
 
     // Supports backwards compatibility for annotations pre-length limit
     get leadChanged() {
@@ -105,6 +119,8 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             taglist: {},
             articleId: "",
             imageUri: "",
+            imageCredit: {},
+            imageAltText: {},
             audioId: "",
 
             style: AnnotationFactory.defaultTypeName,
@@ -164,6 +180,21 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.imageUri) {
             json.imageUri = data.imageUri;
         }
+        if (data.imageUri) {
+            json.imageUri = data.imageUri;
+        }
+        if (Object.keys(this.data.imageCredit).length > 0) {
+            json.imageCredit = {};
+            Object.keys(this.data.imageCredit).forEach( key => {
+                json.imageCredit[key] = data.imageCredit[key];
+            })
+        }
+        if (Object.keys(this.data.imageAltText).length > 0) {
+            json.imageAltText = {};
+            Object.keys(this.data.imageAltText).forEach( key => {
+                json.imageAltText[key] = data.imageAltText[key];
+            })
+        }
         if (data.audioId) {
             json.audioId = data.audioId;
         }
@@ -218,6 +249,8 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
 
         data.articleId = json.articleId || "";
         data.imageUri = json.imageUri || "";
+        data.imageCredit = json.imageCredit || {};
+        data.imageAltText = json.imageAltText || {};
         data.audioId = json.audioId || "";
 
         data.style = json.style || AnnotationFactory.defaultTypeName;

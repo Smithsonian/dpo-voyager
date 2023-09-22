@@ -73,6 +73,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
             <sv-property-view .property=${ins.language}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view id="filename" .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+                <sv-property-view id="captionfile" .property=${ins.captionPath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
                 <div class="sv-commands">
                     <sv-property-boolean .property=${ins.isNarration} .text=${this.optionText} .customLabelStyle=${narrationFlagClass} ?disabled=${narrationEnabled}></sv-property-boolean>
                 </div>
@@ -136,6 +137,12 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         let filename = "";
         let newFile : File = null;
 
+        const element = event.target as HTMLElement;
+        if(element.tagName != "FF-PROPERTY-FIELD") {
+            return;
+        }
+
+
         if(event.dataTransfer.files.length === 1) {
             newFile = event.dataTransfer.files.item(0);
             filename = newFile.name;
@@ -147,34 +154,40 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
             }
         }
 
-        if(filename.toLowerCase().endsWith(".mp3")) {
+        const id = element.parentElement.parentElement.parentElement.id; console.log(id);
+        const fileProp = id == "filename" ? this.task.ins.filepath : this.task.ins.captionPath;
+        const extText = id == "filename" ? ".mp3" : ".vtt";
+
+        if(filename.toLowerCase().endsWith(extText)) {
             if(newFile !== null) {
                 const mediaManager = this.system.getMainComponent(CVMediaManager);
-                mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => this.task.ins.filepath.setValue(filename)).catch(e => {
+                mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => fileProp.setValue(filename)).catch(e => {
                     Notification.show(`Audio file upload failed.`, "warning");
-                    this.task.ins.filepath.setValue("");
+                    fileProp.setValue("");
                 });
             }
             else {
-                this.task.ins.filepath.setValue(filename);
+                fileProp.setValue(filename);
             }
         }
         else {
-            Notification.show(`Unable to load - Only .mp3 audio files are currently supported.`, "warning");
+            Notification.show(`Unable to load - Only ${extText} files are currently supported.`, "warning");
         }
 
-        const element = document.getElementById("filename");
         element.classList.remove("sv-drop-zone");
         this._dragCounter = 0;
     }
 
     protected onDragEnter(event: DragEvent)
     {
-        const element = document.getElementById("filename");
-        element.classList.add("sv-drop-zone");
+        const element = event.target as HTMLElement;
 
-        event.preventDefault();
-        this._dragCounter++;
+        if(element.tagName == "FF-PROPERTY-FIELD") {
+            element.classList.add("sv-drop-zone");
+
+            event.preventDefault();
+            this._dragCounter++;
+        }
     }
 
     protected onDragOver(event: DragEvent)
@@ -184,11 +197,13 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
 
     protected onDragLeave(event: DragEvent)
     {
-        this._dragCounter--;
-
-        const element = document.getElementById("filename");
-        if(this._dragCounter === 0) {
-            element.classList.remove("sv-drop-zone");
+        const element = event.target as HTMLElement;
+        
+        if(element.tagName == "FF-PROPERTY-FIELD") {
+            this._dragCounter--;
+            if(this._dragCounter === 0) {
+                element.classList.remove("sv-drop-zone");
+            }
         }
     }
 }

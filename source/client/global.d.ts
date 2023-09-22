@@ -17,3 +17,8 @@ declare const ENV_LOCAL: boolean;
 
 // Google Analytics global variable
 declare const gtag: any;
+
+
+declare interface Window {
+    webkitAudioContext: typeof AudioContext
+}

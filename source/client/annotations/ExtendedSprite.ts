@@ -131,6 +131,7 @@ class ExtendedAnnotation extends AnnotationElement
 
         this.onClickTitle = this.onClickTitle.bind(this);
         this.onClickArticle = this.onClickArticle.bind(this);
+        this.onClickAudio = this.onClickAudio.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
 
         this.titleElement = this.appendElement("div");
@@ -156,17 +157,17 @@ class ExtendedAnnotation extends AnnotationElement
     {
         super.update(changedProperties);
 
+        const annotationObj = this.sprite.annotation;
         const annotation = this.sprite.annotation.data;
 
         // update title
         this.titleElement.innerText = this.sprite.annotation.title;
 
-        // update content
         const contentTemplate = html`
-            ${annotation.imageUri ? html`<div><img src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}"></div>` : null}
-            <p>${unsafeHTML(this.sprite.annotation.lead)}</p>
-            ${annotation.audioId ? html`<div><audio controls src="${this.sprite.assetManager.getAssetUrl(this.sprite.audioManager.getAudioClipUri(annotation.audioId))}"></div>` : null}
-            ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+        ${annotation.imageUri ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
+        <p>${unsafeHTML(annotationObj.lead)}</p>
+        ${annotation.audioId ? html`<div id="audio_container" @click=${this.onClickAudio}>${this.sprite.audioManager.getPlayerById(annotation.audioId)}</div>` : null}
+        ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
 
@@ -190,12 +191,15 @@ class ExtendedAnnotation extends AnnotationElement
                 this.style.minWidth = this.sprite.annotation.lead.length < 40 ? "0" : "";
                 this.contentElement.style.display = "inherit";
                 this.contentElement.style.height = this.contentElement.scrollHeight + "px";
-
             }
             else {
                 this.classList.remove("sv-expanded");
                 this.contentElement.style.height = "0";
                 this.handler = window.setTimeout(() => this.contentElement.style.display = "none", 300);
+
+                if(annotation.audioId) {
+                    this.sprite.audioManager.stop();
+                }
             }
         }
     }
@@ -210,6 +214,12 @@ class ExtendedAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
+    }
+
+    protected onClickAudio(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitClickEvent();
     }
 
     protected onKeyDown(event: KeyboardEvent)

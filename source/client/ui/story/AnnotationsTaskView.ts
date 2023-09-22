@@ -98,6 +98,12 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const limitText = this._leadLimit == 0 ? "infinite" : this._leadLimit;
         const overLimit = this._leadCharCount > this._leadLimit && this._leadLimit != 0;
 
+        const imagePropView = inProps.image.value.length > 0 ? html`
+            <div class="sv-indent">
+                <sv-property-view .property=${inProps.imageCredit}></sv-property-view>
+                <sv-property-view .property=${inProps.imageAltText}></sv-property-view>
+            </div>` : null;
+
         // <div class="sv-label">Title</div>
         // <ff-line-edit name="title" text=${inProps.title.value} @change=${this.onTextEdit}></ff-line-edit>
         // <div class="sv-label">Tags</div>
@@ -108,7 +114,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${inProps.scale}></sv-property-view>
             <sv-property-view .property=${inProps.offset}></sv-property-view>
             <sv-property-view .property=${inProps.color}></sv-property-view>
-            <sv-property-view id="image" .property=${inProps.image} @change=${this.onHeightChange} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+            <sv-property-view id="image" .property=${inProps.image} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+            ${imagePropView}
             <sv-property-view .property=${audioProp}></sv-property-view>
             <sv-property-view .property=${inProps.marker}></sv-property-view>
             <sv-property-view .property=${this.task.ins.language}></sv-property-view>
@@ -262,10 +269,5 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         if(this._dragCounter === 0) {
             element.classList.remove("sv-drop-zone");
         }
-    }
-
-    // Update limits based on content height change
-    protected onHeightChange() {
-        console.log("CHANGE");
     }
 }

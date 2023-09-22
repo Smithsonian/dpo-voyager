@@ -82,4 +82,6 @@ export interface IAudioClip
     id: string;
     name: string;
     uris: Dictionary<string>;
+    captionUris: Dictionary<string>;
+    durations: Dictionary<string>;
 }

@@ -163,7 +163,7 @@ export class AnnotationElement extends SpriteElement
     }
 
     protected discardEvent(event: Event)
-    {
+    {console.log("CANCELLING: "+event.type);
         event.stopPropagation();
     }
 }
