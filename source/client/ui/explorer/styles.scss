@@ -1328,21 +1328,49 @@ $tour-entry-indent: 12px;
 
 .sv-audio-view {
   display: flex;
+  align-items: center;
   flex: 1 1 auto;
   max-width: 100%;
-  max-height: 30px;
+  height: 30px;
   background-color: $menu-color-text;
   border-radius: 15px;
+  color: black;
 
   & > .ff-button {
-    width: 25px;
-    height: 25px;
-    border-radius: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
     flex: 0 1 auto;
     padding: 0px;
+    margin-right: 3px;
 
     .ff-icon {
-      height: 1em;
+      height: 1.5em;
+      margin: 5px;
+      fill: black;
     }
+
+    &:focus {
+      background-color: $menu-color-text;
+    }
+
+    &:hover {
+      background-color: darken($menu-color-text, 30%);
+
+      & > .ff-icon {
+        fill: black;
+      }
+    }
+  }
+
+  .sv-timer {
+    font-size: small;
+    display: flex;
+  }
+
+  input {
+    width: 100%;
+    margin-left: 3px;
+    margin-right: 3px;
   }
 }

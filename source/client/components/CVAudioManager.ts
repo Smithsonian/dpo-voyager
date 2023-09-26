@@ -84,10 +84,13 @@ export default class CVAudioManager extends Component
 
         this.audioView = new AudioView;
         this.audioView.audio = this;
+
+        this.language.outs.language.on("value", this.onLanguageChange, this);
     }
 
     dispose()
     {
+        this.language.outs.language.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
@@ -176,6 +179,14 @@ export default class CVAudioManager extends Component
         }
     }
 
+    setTimeElapsed(time: number) {
+        if(this.audioPlayer) { console.log(this.audioPlayer.seekable.start(0)+" "+this.audioPlayer.seekable.end(0));
+            this.audioPlayer.currentTime = time;
+            this.audioView.elapsed = time;
+            this.audioView.requestUpdate();
+        }
+    }
+
     addAudioClip(clip: IAudioClip)
     {
         this.audioClips[clip.id] = clip;
@@ -250,24 +261,16 @@ export default class CVAudioManager extends Component
         const { outs } = this;
         outs.isPlaying.setValue(true);
 
-        const clip = this.audioClips[id];
-        const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-        const absUri = this.assetManager.getAssetUrl(uri);
-        if(this.audioPlayer.src != absUri) {
-            this.audioPlayer.setAttribute("src", absUri);
-
-            // Set caption track source
-            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-            this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
-        }
+        this.initializeClip(id);
         
         this.audioPlayer.play()
         .then(() => {
             this.isPlaying = true;
             //outs.narrationPlaying.setValue(id === this._narrationId);
             outs.narrationPlaying.setValue(true);
+            this.audioView.requestUpdate();
         })
-        .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));  
+        .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
     }
 
     pause()
@@ -285,32 +288,37 @@ export default class CVAudioManager extends Component
             return;
         }    
         this.pause();
-        this.audioPlayer.currentTime = 0;
+        this.setTimeElapsed(0);
         this.onEnd();
     }
 
     protected onEnd = () => {
         const { outs } = this;
-
+        
         this.isPlaying = false;
         outs.narrationPlaying.setValue(false);
         this.audioView.requestUpdate();
     }
 
     // Initialize player for a specific audio clip
-    protected initializeClip(id: string) {
+    initializeClip(id: string) {
         if(this.audioPlayer === null) {
-            return;
+            //return;
+            this.setupAudio();
         }
 
         const clip = this.audioClips[id];
         const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-        const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-        
-        this.audioPlayer.setAttribute("src", this.assetManager.getAssetUrl(uri));
-
-        // Set caption track source
-        this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+        const absUri = this.assetManager.getAssetUrl(uri);
+        if(this.audioPlayer.src != absUri) {
+            this.audioPlayer.setAttribute("src", absUri);
+            //this.audioPlayer.src = absUri;
+            this.audioPlayer.load();
+            
+            // Set caption track source
+            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+            this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+        }
     }
 
     // setup function required for Safari compatibility so audio element is setup immediately on user interaction.
@@ -322,6 +330,35 @@ export default class CVAudioManager extends Component
             audio.setAttribute("controls", "");
             audio.setAttribute("preload", "auto");
             audio.addEventListener("timeupdate", this.onTimeChange)
+
+            audio.onerror = () => {
+                console.error(
+                  `Error ${audio.error.code}; details: ${audio.error.message}`,
+                );
+            };
+
+            /*  audio.onstalled = () => {
+                console.error(
+                  `Stall`,
+                );
+              };
+
+              audio.onsuspend = () => {
+                console.error(
+                  `Suspend`,
+                );
+              };
+
+              audio.onwaiting = () => {
+                console.error(
+                  `Wait`,
+                );
+              };
+
+              audio.oncanplaythrough = () => {
+                console.log("CAN PLAY");
+                console.log(this.audioPlayer.seekable.start(0)+" "+this.audioPlayer.seekable.end(0));
+              };*/
 
             // add empty caption track
             const track = document.createElement('track');
@@ -343,7 +380,13 @@ export default class CVAudioManager extends Component
     // Handle audio time elapsed updates
     protected onTimeChange = (event: Event) =>
     {
+        this.audioView.elapsed = this.getTimeElapsed();
         this.audioView.requestUpdate();
+    }
+
+    protected onLanguageChange() {
+        this.setTimeElapsed(0);
+        this.initializeClip(this.audioView.audioId);
     }
 }
 
@@ -357,16 +400,37 @@ export class AudioView extends CustomElement
     @property({ attribute: false })
     audioId: string = "";
 
+    @property({ attribute: false })
+    elapsed: number = 0;
+
+    constructor()
+    {
+        super();
+
+        this.onDrag = this.onDrag.bind(this);
+    }
+
     protected firstConnected()
     {
         this.classList.add("sv-audio-view");
     }
 
+    protected update(changedProperties: PropertyValues): void 
+    {
+        if (changedProperties.has("elapsed")) {
+            (this.querySelector("#time-slider") as HTMLInputElement).value = this.elapsed.toString();
+        }
+
+        super.update(changedProperties);
+    }
+
     protected render()
     {
-        const elapsed = this.formatSeconds(this.audio.getTimeElapsed());
-        const duration = this.formatSeconds(parseInt(this.audio.getDuration(this.audioId)));
-        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" id="ar-btn" @click=${(e) => this.playAudio(e, this.audioId)}></ff-button><div>${elapsed}</div>/<div>${duration}</div>`;
+        //const elapsed = this.audio.getTimeElapsed();
+        const duration = parseInt(this.audio.getDuration(this.audioId));
+        const elapsedStr = this.formatSeconds(this.elapsed);
+        const durationStr = this.formatSeconds(duration);
+        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" @click=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
@@ -379,15 +443,25 @@ export class AudioView extends CustomElement
         else {
             audio.pause();
         }
+    }
 
-        this.requestUpdate();
+    protected onDrag(event: MouseEvent) {
+        event.stopPropagation();
+    }
+
+    protected onTimeChange() {
+        //this.audio.setupAudio();
+        this.audio.initializeClip(this.audioId);
+        //console.log((this.querySelector("#time-slider") as HTMLInputElement).value);
+        //console.log(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value));
+        this.audio.setTimeElapsed(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value) | 0);
     }
 
     // Format seconds in friendlier datetime-like string
     protected formatSeconds(seconds: number) {
         var date = new Date(0);
         date.setSeconds(seconds);
-        var formatString = date.toISOString().substring(14, 19);
+        var formatString = date.toISOString().substring(15, 19);
         return formatString;
     }
 }
