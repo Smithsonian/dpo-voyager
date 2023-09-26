@@ -308,16 +308,18 @@ export default class CVAudioManager extends Component
         }
 
         const clip = this.audioClips[id];
-        const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-        const absUri = this.assetManager.getAssetUrl(uri);
-        if(this.audioPlayer.src != absUri) {
-            this.audioPlayer.setAttribute("src", absUri);
-            //this.audioPlayer.src = absUri;
-            this.audioPlayer.load();
-            
-            // Set caption track source
-            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-            this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+        if(clip) {
+            const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+            const absUri = this.assetManager.getAssetUrl(uri);
+            if(this.audioPlayer.src != absUri) {
+                this.audioPlayer.setAttribute("src", absUri);
+                //this.audioPlayer.src = absUri;
+                this.audioPlayer.load();
+                
+                // Set caption track source
+                const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+                this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+            }
         }
     }
 
@@ -385,8 +387,8 @@ export default class CVAudioManager extends Component
     }
 
     protected onLanguageChange() {
-        this.setTimeElapsed(0);
         this.initializeClip(this.audioView.audioId);
+        //this.setTimeElapsed(0);
     }
 }
 
