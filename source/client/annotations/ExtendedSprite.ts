@@ -166,7 +166,7 @@ class ExtendedAnnotation extends AnnotationElement
         const contentTemplate = html`
         ${annotation.imageUri ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
         <p>${unsafeHTML(annotationObj.lead)}</p>
-        ${annotation.audioId ? html`<div id="audio_container" @click=${this.onClickAudio}>${this.sprite.audioManager.getPlayerById(annotation.audioId)}</div>` : null}
+        ${annotation.audioId ? html`<div id="audio_container" @click=${this.onClickAudio}></div>` : null}
         ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
@@ -187,6 +187,10 @@ class ExtendedAnnotation extends AnnotationElement
             window.clearTimeout(this.handler);
 
             if (this.isExpanded) {
+                if(annotation.audioId) {
+                    this.querySelector("#audio_container").append(this.sprite.audioManager.getPlayerById(annotation.audioId));
+                }
+
                 this.classList.add("sv-expanded");
                 this.style.minWidth = this.sprite.annotation.lead.length < 40 ? "0" : "";
                 this.contentElement.style.display = "inherit";

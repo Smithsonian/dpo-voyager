@@ -79,7 +79,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
                 </div>
                 <div class="sv-commands">
                     <ff-button text="Play" @click=${this.onClickPlay}></ff-button>
-                    <ff-button text="Stop" ?disabled=${!this.task.audioManager.outs.narrationPlaying.value} @click=${this.onClickStop}></ff-button>
+                    <ff-button text="Stop" ?disabled=${!this.task.audioManager.outs.isPlaying.value} @click=${this.onClickStop}></ff-button>
                 </div>
             </div>
         </div>` : null;
@@ -154,7 +154,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
             }
         }
 
-        const id = element.parentElement.parentElement.parentElement.id; console.log(id);
+        const id = element.parentElement.parentElement.parentElement.id;
         const fileProp = id == "filename" ? this.task.ins.filepath : this.task.ins.captionPath;
         const extText = id == "filename" ? ".mp3" : ".vtt";
 

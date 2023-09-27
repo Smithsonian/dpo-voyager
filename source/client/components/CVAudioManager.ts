@@ -152,26 +152,28 @@ export default class CVAudioManager extends Component
         else {
             const clip = this.audioClips[id];
             const uri = clip.uris[language];
-            const absUri = this.assetManager.getAssetUrl(uri);
-            clip.durations[language] = "pending";
+            if(uri) {
+                const absUri = this.assetManager.getAssetUrl(uri);
+                clip.durations[language] = "pending";
 
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const request = new XMLHttpRequest();
-            request.open('GET', absUri, true);
-            request.responseType = 'arraybuffer';
-            request.onload = () => {
-                const blob = new Blob([request.response], { type: "audio/mpeg" });
-                const url = window.URL.createObjectURL(blob);
-                this._audioMap[uri] = url;
-                audioContext.decodeAudioData(request.response,
-                    (buffer) => {
-                        let duration = buffer.duration;
-                        clip.durations[language] = duration.toString();
-                        this.audioView.requestUpdate();                      
-                    }
-                )
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const request = new XMLHttpRequest();
+                request.open('GET', absUri, true);
+                request.responseType = 'arraybuffer';
+                request.onload = () => {
+                    const blob = new Blob([request.response], { type: "audio/mpeg" });
+                    const url = window.URL.createObjectURL(blob);
+                    this._audioMap[uri] = url;
+                    audioContext.decodeAudioData(request.response,
+                        (buffer) => {
+                            let duration = buffer.duration;
+                            clip.durations[language] = duration.toString();
+                            this.audioView.requestUpdate();                      
+                        }
+                    )
+                }
+                request.send();
             }
-            request.send();
 
             return "pending";
         }
@@ -232,6 +234,9 @@ export default class CVAudioManager extends Component
             meta.once("load", () => {
                 this.audioClips = meta.audio.dictionary;
                 this.outs.updated.set();
+                Object.keys(this.audioClips).forEach(key => {
+                    this.updateAudioClip(this.audioClips[key].id);
+                });
             });
         }
     }
@@ -323,7 +328,9 @@ export default class CVAudioManager extends Component
                 
                 // Set caption track source
                 const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-                this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+                if(captionUri) {
+                    this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+                }
             }
         }
     }
