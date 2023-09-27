@@ -82,18 +82,6 @@ export default class CVAnnotationsTask extends CVTask
         configuration.bracketsVisible = false;
     }
 
-    create()
-    {
-        super.create();
-        this.startObserving();
-    }
-
-    dispose()
-    {
-        this.stopObserving();
-        super.dispose();
-    }
-
     get activeAnnotations() {
         return this._activeAnnotations;
     }
@@ -111,8 +99,10 @@ export default class CVAnnotationsTask extends CVTask
 
     activateTask()
     {
+        this.startObserving();
         super.activateTask();
         this.synchLanguage();
+        this.synchAudioOptions();
 
         //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
         //this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -120,6 +110,7 @@ export default class CVAnnotationsTask extends CVTask
 
     deactivateTask()
     {
+        this.stopObserving();
         //this.selection.selectedComponents.off(CVAnnotationView, this.onSelectAnnotations, this);
         //this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
@@ -245,6 +236,8 @@ export default class CVAnnotationsTask extends CVTask
         data.direction = direction;
 
         if (!template) {
+            const scene = this.getSystemComponent(CVScene);
+            this._defaultScale = scene.outs.boundingRadius.value * 0.05;
             data.scale = this._defaultScale * (1 / model.outs.unitScale.value);
         }
 
@@ -279,10 +272,7 @@ export default class CVAnnotationsTask extends CVTask
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
             previous.setup.language.outs.language.off("value", this.update, this);
         }
-        if (next) {
-            const scene = next.getInnerComponent(CVScene);
-            this._defaultScale = scene.outs.boundingRadius.value * 0.05;
-
+        if (next) {          
             next.setup.language.outs.language.on("value", this.update, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
         }

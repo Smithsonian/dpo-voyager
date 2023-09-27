@@ -329,6 +329,7 @@ export default class CVAudioManager extends Component
                 // Set caption track source
                 const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
                 if(captionUri) {
+                    this.audioPlayer.children[0].setAttribute("src", "");
                     this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
                 }
             }
