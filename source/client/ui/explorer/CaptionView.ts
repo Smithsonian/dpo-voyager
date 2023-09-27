@@ -37,18 +37,21 @@ export default class CaptionView extends DocumentView
     {
         const audio = this.audioManager;
         const text = audio.ins.activeCaption.value;
+        const isShowing = audio.ins.captionsEnabled.value;
 
-        return text.length > 0 ? html`<div class="sv-caption-box" >${text}</div>` : null;
+        return (text.length > 0) && isShowing ? html`<div class="sv-caption-box" >${text}</div>` : null;
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
             previous.setup.audio.ins.activeCaption.off("value", this.onUpdate, this);
+            previous.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
             this.audioManager = null;
         }
         if (next) {
             this.audioManager = next.setup.audio;
+            next.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
             next.setup.audio.ins.activeCaption.on("value", this.onUpdate, this);
         }
 

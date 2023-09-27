@@ -41,6 +41,7 @@ export default class CVAudioManager extends Component
     static readonly isSystemSingleton = true;
 
     private _narrationId: string = null;
+    private _audioMap: Dictionary<string> = {};
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
@@ -49,7 +50,8 @@ export default class CVAudioManager extends Component
 
     protected static readonly ins = {
         playNarration: types.Event("Audio.PlayNarration"),
-        activeCaption: types.String("Audio.ActiveCaption")
+        activeCaption: types.String("Audio.ActiveCaption"),
+        captionsEnabled: types.Boolean("Audio.CaptionsEnabled", true),
     };
 
     protected static readonly outs = {
@@ -90,6 +92,9 @@ export default class CVAudioManager extends Component
 
     dispose()
     {
+        // Clean up cached audio files
+        Object.keys(this._audioMap).forEach(( key ) => URL.revokeObjectURL( this._audioMap[key] ));
+
         this.language.outs.language.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
@@ -109,7 +114,6 @@ export default class CVAudioManager extends Component
                 }
             }
         }
-    
         return true;
     }
 
@@ -156,11 +160,14 @@ export default class CVAudioManager extends Component
             request.open('GET', absUri, true);
             request.responseType = 'arraybuffer';
             request.onload = () => {
+                const blob = new Blob([request.response], { type: "audio/mpeg" });
+                const url = window.URL.createObjectURL(blob);
+                this._audioMap[uri] = url;
                 audioContext.decodeAudioData(request.response,
                     (buffer) => {
                         let duration = buffer.duration;
                         clip.durations[language] = duration.toString();
-                        this.audioView.requestUpdate();
+                        this.audioView.requestUpdate();                      
                     }
                 )
             }
@@ -180,10 +187,16 @@ export default class CVAudioManager extends Component
     }
 
     setTimeElapsed(time: number) {
-        if(this.audioPlayer) { console.log(this.audioPlayer.seekable.start(0)+" "+this.audioPlayer.seekable.end(0));
-            this.audioPlayer.currentTime = time;
-            this.audioView.elapsed = time;
-            this.audioView.requestUpdate();
+        if(this.audioPlayer) { 
+            if(this.audioPlayer.seekable.length === 0) {
+                this.audioPlayer.addEventListener("canplay",() => this.setTimeElapsed(time), {once: true});
+            }      
+            else {
+                //console.log(this.audioPlayer.seekable.start(0)+" "+this.audioPlayer.seekable.end(0));
+                this.audioPlayer.currentTime = time;
+                this.audioView.elapsed = time;
+                this.audioView.requestUpdate();
+            }
         }
     }
 
@@ -252,12 +265,6 @@ export default class CVAudioManager extends Component
 
     play(id: string)
     {
-        if(!this.audioPlayer) {
-            // Audio player not initialized. Need to call setupAudio() from a click handler to support all browsers.
-            Notification.show(`Error - Audio Player not initialized.`, "error");
-            return;
-        }
-
         const { outs } = this;
         outs.isPlaying.setValue(true);
 
@@ -266,8 +273,7 @@ export default class CVAudioManager extends Component
         this.audioPlayer.play()
         .then(() => {
             this.isPlaying = true;
-            //outs.narrationPlaying.setValue(id === this._narrationId);
-            outs.narrationPlaying.setValue(true);
+            outs.narrationPlaying.setValue(id === this._narrationId);
             this.audioView.requestUpdate();
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
@@ -280,6 +286,7 @@ export default class CVAudioManager extends Component
         } 
         this.outs.isPlaying.setValue(false);
         this.audioPlayer.pause();
+        this.audioView.requestUpdate();
     }
 
     stop()
@@ -303,7 +310,6 @@ export default class CVAudioManager extends Component
     // Initialize player for a specific audio clip
     initializeClip(id: string) {
         if(this.audioPlayer === null) {
-            //return;
             this.setupAudio();
         }
 
@@ -311,9 +317,8 @@ export default class CVAudioManager extends Component
         if(clip) {
             const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
             const absUri = this.assetManager.getAssetUrl(uri);
-            if(this.audioPlayer.src != absUri) {
-                this.audioPlayer.setAttribute("src", absUri);
-                //this.audioPlayer.src = absUri;
+            if(this.audioPlayer.src != this._audioMap[uri]) {
+                this.audioPlayer.setAttribute("src", this._audioMap[uri]);
                 this.audioPlayer.load();
                 
                 // Set caption track source
@@ -339,32 +344,8 @@ export default class CVAudioManager extends Component
                 );
             };
 
-            /*  audio.onstalled = () => {
-                console.error(
-                  `Stall`,
-                );
-              };
-
-              audio.onsuspend = () => {
-                console.error(
-                  `Suspend`,
-                );
-              };
-
-              audio.onwaiting = () => {
-                console.error(
-                  `Wait`,
-                );
-              };
-
-              audio.oncanplaythrough = () => {
-                console.log("CAN PLAY");
-                console.log(this.audioPlayer.seekable.start(0)+" "+this.audioPlayer.seekable.end(0));
-              };*/
-
             // add empty caption track
             const track = document.createElement('track');
-            //track.setAttribute("mode", "showing");
             track.setAttribute("default", "");
             this.audioPlayer.append(track);
             track.addEventListener("cuechange", this.onCueChange);
@@ -387,8 +368,7 @@ export default class CVAudioManager extends Component
     }
 
     protected onLanguageChange() {
-        this.initializeClip(this.audioView.audioId);
-        //this.setTimeElapsed(0);
+        this.stop();
     }
 }
 
@@ -420,7 +400,10 @@ export class AudioView extends CustomElement
     protected update(changedProperties: PropertyValues): void 
     {
         if (changedProperties.has("elapsed")) {
-            (this.querySelector("#time-slider") as HTMLInputElement).value = this.elapsed.toString();
+            const slider = this.querySelector("#time-slider") as HTMLInputElement;
+            if(slider) {
+                slider.value = this.elapsed.toString();
+            }
         }
 
         super.update(changedProperties);
@@ -429,9 +412,9 @@ export class AudioView extends CustomElement
     protected render()
     {
         //const elapsed = this.audio.getTimeElapsed();
-        const duration = parseInt(this.audio.getDuration(this.audioId));
+        const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
-        const durationStr = this.formatSeconds(duration);
+        const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
         return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" @click=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
@@ -439,7 +422,6 @@ export class AudioView extends CustomElement
         const audio = this.audio;
 
         if(!audio.outs.isPlaying.value) {
-            audio.setupAudio();
             audio.play(id);
         }
         else {
@@ -452,10 +434,7 @@ export class AudioView extends CustomElement
     }
 
     protected onTimeChange() {
-        //this.audio.setupAudio();
         this.audio.initializeClip(this.audioId);
-        //console.log((this.querySelector("#time-slider") as HTMLInputElement).value);
-        //console.log(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value));
         this.audio.setTimeElapsed(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value) | 0);
     }
 
