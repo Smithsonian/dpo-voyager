@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -184,7 +184,7 @@ export default class CVTape extends CObject3D
             startPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
             startPin.updateMatrix();
 
-            const positions = lineGeometry.attributes.position.array as Array<number>;
+            const positions = (lineGeometry.attributes.position as BufferAttribute).array as Float64Array;//Array<number>;
             positions[0] = startPin.position.x;
             positions[1] = startPin.position.y;
             positions[2] = startPin.position.z;
@@ -198,7 +198,7 @@ export default class CVTape extends CObject3D
             endPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
             endPin.updateMatrix();
 
-            const positions = lineGeometry.attributes.position.array as Array<number>;
+            const positions = (lineGeometry.attributes.position as BufferAttribute).array as Float64Array;//Array<number>;
             positions[3] = endPin.position.x;
             positions[4] = endPin.position.y;
             positions[5] = endPin.position.z;
