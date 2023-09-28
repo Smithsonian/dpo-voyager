@@ -423,7 +423,7 @@ export class AudioView extends CustomElement
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" @click=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {

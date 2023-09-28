@@ -1343,6 +1343,7 @@ $tour-entry-indent: 12px;
     flex: 0 1 auto;
     padding: 0px;
     margin-right: 3px;
+    -webkit-tap-highlight-color: transparent;
 
     .ff-icon {
       height: 1.5em;

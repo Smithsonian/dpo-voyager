@@ -166,7 +166,7 @@ class ExtendedAnnotation extends AnnotationElement
         const contentTemplate = html`
         ${annotation.imageUri ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
         <p>${unsafeHTML(annotationObj.lead)}</p>
-        ${annotation.audioId ? html`<div id="audio_container" @click=${this.onClickAudio}></div>` : null}
+        ${annotation.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
         ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
