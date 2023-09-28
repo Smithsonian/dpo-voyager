@@ -30,7 +30,7 @@ import CPulse from "@ff/graph/components/CPulse";
 import Notification from "@ff/ui/Notification";
 
 import {Matrix4, Vector3, Ray, Raycaster, Mesh, Object3D, PlaneGeometry, MeshBasicMaterial, ArrayCamera, Material, Camera,
-    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion, Scene} from 'three';
+    PerspectiveCamera, Shape, ShapeGeometry, DoubleSide, WebGLRenderer, Box3, Quaternion, Scene, Vector2} from 'three';
 
 //import * as WebXR from "../types/WebXR";
 import {IS_ANDROID, IS_AR_QUICKLOOK_CANDIDATE, IS_IOS, /*IS_IOS_CHROME, IS_IOS_SAFARI,*/ IS_WEBXR_AR_CANDIDATE, IS_MOBILE} from '../constants';
@@ -51,6 +51,7 @@ import CVAnalytics from "./CVAnalytics";
 
 const _matrix4 = new Matrix4();
 const _vector3 = new Vector3();
+const _vector2 = new Vector2();
 //const _vector3b = new Vector3();
 const _hitPosition = new Vector3();
 const _boundingBox = new Box3();
@@ -673,7 +674,8 @@ export default class CVARManager extends Component
             const {axes} = this.inputSource!.gamepad;
 
             const raycaster = this.raycaster;
-            raycaster.setFromCamera({x: axes[0], y: -axes[1]}, this.xrCamera);
+            _vector2.set(axes[0], -axes[1]);
+            raycaster.setFromCamera(_vector2, this.xrCamera);
             const intersections = raycaster.intersectObject(this.hitPlane);
     
             if (intersections.length > 0) { 

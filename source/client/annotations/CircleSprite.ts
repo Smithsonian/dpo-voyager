@@ -335,13 +335,39 @@ class CircleAnnotation extends AnnotationElement
         const annotationData = annotation.data;
 
         return html`<div class="sv-title">${annotation.title}</div>
+            ${annotationData.imageUri ? html`<div><img src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}"></div>` : null}
             <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
+            ${annotationData.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
             ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+    }
+
+    protected updated(changedProperties): void {
+        super.updated(changedProperties);
+
+        const annotation = this.sprite.annotation;
+        const annotationData = annotation.data;
+
+        const audioView = this.querySelector(".sv-audio-view");
+        if(annotationData.audioId) {
+            if(annotationData.expanded && !audioView) {
+                const audioContainer = this.querySelector("#audio_container");
+                audioContainer.append(this.sprite.audioManager.getPlayerById(annotationData.audioId));
+            }
+            else if(!annotationData.expanded && audioView) {
+                this.sprite.audioManager.stop();
+            }
+        }
     }
 
     protected onClickArticle(event: MouseEvent)
     {
         event.stopPropagation();
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
+    }
+
+    protected onClickAudio(event: MouseEvent)
+    {
+        event.stopPropagation();
+        this.sprite.emitClickEvent();
     }
 }

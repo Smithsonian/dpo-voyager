@@ -44,6 +44,8 @@ import CVARManager from "./CVARManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
+import CVAudioManager from "./CVAudioManager";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +76,9 @@ export default class CVAnnotationView extends CObject3D
         offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
         article: types.Option("Annotation.Article", []),
         image: types.String("Annotation.Image"),
+        imageCredit: types.String("Image.Credit"),
+        imageAltText: types.String("Image.AltText"),
+        audioId: types.String("Annotation.AudioID"),
         tilt: types.Number("Annotation.Tilt"),
         azimuth: types.Number("Annotation.Azimuth"),
         color: types.ColorRGB("Annotation.Color"),
@@ -99,12 +104,18 @@ export default class CVAnnotationView extends CObject3D
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
     }
+    protected get audio() {
+        return this.getGraphComponent(CVAudioManager, true);
+    }
     protected get articles() {
         const meta = this.meta;
         return meta ? meta.articles : null;
     }
     protected get arManager() {
         return this.system.getMainComponent(CVARManager);
+    }
+    protected get assetManager() {
+        return this.system.getMainComponent(CVAssetManager);
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -157,7 +168,10 @@ export default class CVAnnotationView extends CObject3D
                 ins.article.setValue(0);
             }
 
+            ins.audioId.setValue(annotation ? annotation.data.audioId : null, true);
             ins.image.setValue(annotation ? annotation.data.imageUri : "", true);
+            ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
+            ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
 
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
@@ -257,10 +271,19 @@ export default class CVAnnotationView extends CObject3D
             if (ins.image.changed) {
                 annotation.set("imageUri", ins.image.value);
             }
+            if (ins.imageCredit.changed) {
+                annotation.imageCredit =  ins.imageCredit.value;
+            }
+            if (ins.imageAltText.changed) {
+                annotation.imageAltText =  ins.imageAltText.value;
+            }
             if (ins.article.changed) {
                 const articles = this.articles;
                 const article = articles && articles.getAt(ins.article.getValidatedValue() - 1);
                 annotation.set("articleId", article ? article.id : "");
+            }
+            if (ins.audioId.changed) {
+                annotation.set("audioId", ins.audioId.value);
             }
 
             this.updateSprite(annotation);
@@ -481,6 +504,9 @@ export default class CVAnnotationView extends CObject3D
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);
 
+        sprite.assetManager = this.assetManager;
+        sprite.audioManager = this.audio;
+
         this._sprites[annotation.id] = sprite;
         this.object3D.add(sprite);
         this.registerPickableObject3D(sprite, true);
@@ -538,5 +564,7 @@ export default class CVAnnotationView extends CObject3D
         ins.title.setValue(annotation ? annotation.title : "", true);
         ins.lead.setValue(annotation ? annotation.lead : "", true);
         ins.tags.setValue(annotation ? annotation.tags.join(", ") : "");
+        ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
+        ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
     }
 }

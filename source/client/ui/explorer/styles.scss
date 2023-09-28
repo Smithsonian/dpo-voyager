@@ -247,6 +247,14 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   a:link, a:visited, a:hover, a:active {
     color: $color-primary;
   }
+
+  img {
+    max-height: 120px;
+  }
+
+  .sv-img-credit {
+    font-size: x-small;
+  }
   
   @include noselect;
 }
@@ -1314,4 +1322,72 @@ $tour-entry-indent: 12px;
   height: 30px;
   width: 30px;
   fill: #fff;
+}
+
+.sv-caption-view {
+  position: absolute;
+  bottom: 10%;
+  z-index: 2;
+  font-size: 1.5rem;
+  justify-content: center;
+  display: flex;
+  width: 100%;
+  
+}
+
+.sv-caption-box {
+  position: relative;
+  text-align: center;
+  background-color: rgba(0,0,0,0.85);
+  max-width: 85%;
+}
+
+.sv-audio-view {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  max-width: 100%;
+  height: 30px;
+  background-color: $menu-color-text;
+  border-radius: 15px;
+  color: black;
+
+  & > .ff-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    flex: 0 1 auto;
+    padding: 0px;
+    margin-right: 3px;
+    -webkit-tap-highlight-color: transparent;
+
+    .ff-icon {
+      height: 1.5em;
+      margin: 5px;
+      fill: black;
+    }
+
+    &:focus {
+      background-color: $menu-color-text;
+    }
+
+    &:hover {
+      background-color: darken($menu-color-text, 30%);
+
+      & > .ff-icon {
+        fill: black;
+      }
+    }
+  }
+
+  .sv-timer {
+    font-size: small;
+    display: flex;
+  }
+
+  input {
+    width: 100%;
+    margin-left: 3px;
+    margin-right: 3px;
+  }
 }
