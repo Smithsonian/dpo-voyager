@@ -192,7 +192,7 @@ class ExtendedAnnotation extends AnnotationElement
                 }
 
                 this.classList.add("sv-expanded");
-                this.style.minWidth = this.sprite.annotation.lead.length < 40 ? "0" : "";
+                this.style.minWidth = this.sprite.annotation.lead.length < 40 && (!annotation.audioId || annotation.audioId.length == 0) ? "0" : "";
                 this.contentElement.style.display = "inherit";
                 this.contentElement.style.height = this.contentElement.scrollHeight + "px";
             }
