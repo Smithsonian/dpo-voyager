@@ -38,7 +38,7 @@ import sanitizeHtml from 'sanitize-html';
 import CVMediaManager from "client/components/CVMediaManager";
 
 ////////////////////////////////////////////////////////////////////////////////
-export const MAX_LEAD_CHARS = 300;
+export const MAX_LEAD_CHARS = 200;
 
 @customElement("sv-annotations-task-view")
 export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
@@ -93,7 +93,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 
         const annotation = annotations.activeAnnotation;
 
-        this._leadLimit = this._leadLimit == 0 ? 0 : (MAX_LEAD_CHARS - (inProps.image.value ? 100 : 0) - (inProps.audioId.value ? 50 : 0));
+        this._leadLimit = this._leadLimit == 0 ? 0 : (MAX_LEAD_CHARS - (inProps.image.value || inProps.audioId.value ? 50 : 0));
         this._leadCharCount = inProps.lead.value.length;
         const limitText = this._leadLimit == 0 ? "infinite" : this._leadLimit;
         const overLimit = this._leadCharCount > this._leadLimit && this._leadLimit != 0;
@@ -200,7 +200,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             
             const ins = this.task.activeAnnotations.ins;
             this._leadCharCount = ins.lead.value.length;
-            this._leadLimit = MAX_LEAD_CHARS - (ins.image.value ? 100 : 0) - (ins.audioId.value ? 50 : 0);
+            this._leadLimit = MAX_LEAD_CHARS - (ins.image.value ? 100 : 0) - (ins.image.value || ins.audioId.value ? 50 : 0);
             if(this._leadCharCount > MAX_LEAD_CHARS && !event.detail.annotation.leadChanged) {
                 this._leadLimit = 0;
             }
