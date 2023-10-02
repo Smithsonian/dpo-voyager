@@ -67,6 +67,8 @@ export default class ChromeView extends DocumentView
         super.connected();
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
         this.assetPath = this.assetReader.getSystemAssetUrl("");
@@ -74,6 +76,8 @@ export default class ChromeView extends DocumentView
 
     protected disconnected()
     {
+        this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.isPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         super.disconnected();
@@ -106,6 +110,9 @@ export default class ChromeView extends DocumentView
         const languages = language.activeLanguages;
         const activeLanguage = language.outs.language.value;
         const languagesVisible = languages.length > 1 && setup.interface.isShowing(EUIElements.language);
+
+        const captionsVisible = setup.audio.outs.isPlaying.value;
+        const captionsEnabled = setup.audio.ins.captionsEnabled.value;
 
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
@@ -154,6 +161,7 @@ export default class ChromeView extends DocumentView
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
+                    ${captionsVisible ? html`<ff-button icon="caption" id="main-caption" title=${language.getLocalizedString("Captions")} ?selected=${captionsEnabled} @click=${this.updateCaptions} class="sv-text-icon"></ff-button>` : ""}
                     ${languagesVisible ? html`<ff-button id="language" style=${setup.language.codeString().length > 2 ? "font-size:0.9em"
                          : ""} text=${setup.language.codeString()} title=${language.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
@@ -172,6 +180,12 @@ export default class ChromeView extends DocumentView
         const tours = this.activeDocument.setup.tours;
         tours.ins.enabled.setValue(false);
         tours.ins.closed.set();
+    }
+
+    protected updateCaptions()
+    {
+        const captionIns = this.activeDocument.setup.audio.ins;
+        captionIns.captionsEnabled.setValue(!captionIns.captionsEnabled.value);
     }
 
     protected openLanguageMenu() {
