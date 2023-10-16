@@ -16,7 +16,7 @@
  */
 
 //import resolvePathname from "resolve-pathname";
-import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, sRGBEncoding } from "three";
+import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, sRGBEncoding, SRGBColorSpace } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -110,7 +110,7 @@ export default class ModelReader
                 const material = mesh.material as MeshStandardMaterial;
 
                 if (material.map) {
-                   material.map.encoding = sRGBEncoding;
+                   material.map.colorSpace = SRGBColorSpace;
                 }
 
                 mesh.geometry.computeBoundingBox();
