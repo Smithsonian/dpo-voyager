@@ -330,14 +330,14 @@ Version: ${ENV_VERSION}
 
         if (props.document) {
             // first loading priority: document
-            props.document = props.root ? props.document : manager.getAssetName(props.document);
+            props.document = manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality)
             .then(() => this.postLoadHandler(props))
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
         }
         else if (props.model) {
             // second loading priority: model
-            props.model = props.root ? props.model : manager.getAssetName(props.model);
+            props.model = manager.getAssetName(props.model);
 
             this.assetReader.getText(props.model)       // make sure we have a valid model path
             .then(() => {
@@ -348,10 +348,10 @@ Version: ${ENV_VERSION}
         }
         else if (props.geometry) {
             // third loading priority: geometry (plus optional color texture)
-            props.geometry = props.root ? props.geometry : manager.getAssetName(props.geometry);
-            props.texture = props.root ? props.texture : manager.getAssetName(props.texture);
-            props.occlusion = props.root ? props.occlusion : manager.getAssetName(props.occlusion);
-            props.normals = props.root ? props.normals : manager.getAssetName(props.normals);
+            props.geometry = manager.getAssetName(props.geometry);
+            props.texture = manager.getAssetName(props.texture);
+            props.occlusion = manager.getAssetName(props.occlusion);
+            props.normals = manager.getAssetName(props.normals);
 
             this.assetReader.getText(props.geometry)    // make sure we have a valid geometry path   
             .then(() => {

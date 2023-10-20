@@ -240,7 +240,7 @@ export default class CVScene extends CVNode
 
     protected updateCameras()
     {
-        if(this.renderer.views[0].renderer.xr.isPresenting) {
+        if(this.renderer.views[0] && this.renderer.views[0].renderer.xr.isPresenting) {
             return;
         }
 

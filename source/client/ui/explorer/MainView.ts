@@ -174,9 +174,12 @@ export default class MainView extends CustomElement
         super.attributeChangedCallback(name, old, value);
 
         if(app && name === "root") {
-            app.props.root = this.getAttribute("root");
-            app.reloadDocument();
-            this.connected();
+            const newRoot = this.getAttribute("root");
+            if(newRoot.length > 0) {
+                app.props.root = newRoot
+                app.reloadDocument();
+                this.connected();
+            }
         }
         else if(app && name === "document") {
             app.props.document = this.getAttribute("document");
