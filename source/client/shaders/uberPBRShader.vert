@@ -7,12 +7,11 @@ varying vec3 vViewPosition;
 
 #include <common>
 
-//#include <uv_pars_vertex>
-//#include <uv2_pars_vertex>
-// REPLACED WITH
-#if defined(USE_MAP) || defined(USE_BUMPMAP) || defined(USE_NORMALMAP) || defined(USE_SPECULARMAP) || defined(USE_ALPHAMAP) || defined(USE_EMISSIVEMAP) || defined(USE_ROUGHNESSMAP) || defined(USE_METALNESSMAP) || defined(USE_LIGHTMAP) || defined(USE_AOMAP)
-	varying vec2 vUv;
-	uniform mat3 uvTransform;
+#include <uv_pars_vertex>
+
+// Zone map support
+#if defined(USE_ZONEMAP)	
+	varying vec2 vZoneUv;
 #endif
 
 #include <displacementmap_pars_vertex>
@@ -34,11 +33,15 @@ varying vec3 vViewPosition;
 
 void main() {
 
-//	#include <uv_vertex>
-//	#include <uv2_vertex>
-//  REPLACED WITH
-#if defined(USE_MAP) || defined(USE_BUMPMAP) || defined(USE_NORMALMAP) || defined(USE_SPECULARMAP) || defined(USE_ALPHAMAP) || defined(USE_EMISSIVEMAP) || defined(USE_ROUGHNESSMAP) || defined(USE_METALNESSMAP) || defined(USE_LIGHTMAP) || defined(USE_AOMAP)
-	vUv = (uvTransform * vec3(uv, 1)).xy;
+	#include <uv_vertex>
+
+// Zone map support
+#if defined(USE_ZONEMAP)
+	#if defined(USE_MAP)
+		vZoneUv = (mapTransform * vec3(vMapUv, 1)).xy;
+	#else
+		vZoneUv = uv;
+	#endif
 #endif
 
 	#include <color_vertex>

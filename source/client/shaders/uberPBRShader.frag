@@ -43,11 +43,11 @@ varying vec3 vViewPosition;
 #include <dithering_pars_fragment>
 #include <color_pars_fragment>
 
-//#include <uv_pars_fragment>
-//#include <uv2_pars_fragment>
-// REPLACED WITH
-#if defined(USE_MAP) || defined(USE_BUMPMAP) || defined(USE_NORMALMAP) || defined(USE_SPECULARMAP) || defined(USE_ALPHAMAP) || defined(USE_EMISSIVEMAP) || defined(USE_ROUGHNESSMAP) || defined(USE_METALNESSMAP) || defined(USE_LIGHTMAP) || defined(USE_AOMAP)
-	varying vec2 vUv;
+#include <uv_pars_fragment>
+
+// Zone map support
+#if defined(USE_ZONEMAP)
+	varying vec2 vZoneUv;
 #endif
 
 #include <map_pars_fragment>
@@ -125,12 +125,6 @@ void main() {
     #include <clearcoat_normal_fragment_begin>
     #include <clearcoat_normal_fragment_maps>
     #include <emissivemap_fragment>
-
-	// accumulation
-    #if defined(USE_LIGHTMAP) || defined(USE_AOMAP)
-        vec2 vUv2 = vUv;
-    #endif
-
 	#include <lights_physical_fragment>
 	#include <lights_fragment_begin>
 	#include <lights_fragment_maps>
@@ -146,7 +140,7 @@ void main() {
 	    #endif
 
     	// reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
-    	vec3 aoSample = texture2D(aoMap, vUv).rgb;
+    	vec3 aoSample = texture2D(aoMap, vAoMapUv).rgb;
     	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
     	float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;
     	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
@@ -180,12 +174,12 @@ void main() {
 	gl_FragColor = vec4(outgoingLight, diffuseColor.a);
 
 	#ifdef USE_ZONEMAP
-		vec4 zoneColor = texture2D(zoneMap, vUv);
+		vec4 zoneColor = texture2D(zoneMap, vZoneUv);
 		gl_FragColor += vec4(zoneColor.rgb, 1.0);
 	#endif
 
 	#include <tonemapping_fragment>
-	#include <encodings_fragment>
+	#include <colorspace_fragment>
 	#include <fog_fragment>
 	#include <premultiplied_alpha_fragment>
 	#include <dithering_fragment>
