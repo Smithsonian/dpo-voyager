@@ -48,9 +48,9 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     vertexShader: string;
     fragmentShader: string;
 
-    private _clayColor = new Color("#a67a6c");
-    private _wireColor = new Color("#004966");
-    private _wireEmissiveColor = new Color("#004966");
+    private _clayColor = new Color("#a67a6c").convertLinearToSRGB();
+    private _wireColor = new Color("#004966").convertLinearToSRGB();
+    private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _objectSpaceNormalMap = false;
     private _paramCopy: any = {};
     private _sideCopy: Side = FrontSide;
