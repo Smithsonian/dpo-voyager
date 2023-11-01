@@ -19,6 +19,7 @@ import CVDocument from "../../components/CVDocument";
 import CVAudioManager from "../../components/CVAudioManager";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import Subscriber from "@ff/core/Subscriber";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,6 +27,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 export default class CaptionView extends DocumentView
 {
     protected audioManager: CVAudioManager = null;
+    protected documentProps = new Subscriber("value", this.onUpdate, this);
 
     protected firstConnected()
     {
@@ -45,14 +47,17 @@ export default class CaptionView extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.setup.audio.ins.activeCaption.off("value", this.onUpdate, this);
-            previous.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
+            this.documentProps.off();
             this.audioManager = null;
         }
         if (next) {
+            const setup = next.setup;
             this.audioManager = next.setup.audio;
-            next.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
-            next.setup.audio.ins.activeCaption.on("value", this.onUpdate, this);
+
+            this.documentProps.on(
+                setup.audio.ins.captionsEnabled,
+                setup.audio.ins.activeCaption,
+            );
         }
 
         this.requestUpdate();

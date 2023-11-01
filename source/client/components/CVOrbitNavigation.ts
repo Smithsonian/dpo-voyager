@@ -29,6 +29,7 @@ import { INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
 import CVAssetManager from "./CVAssetManager";
+import CVARManager from "./CVARManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -132,6 +133,9 @@ export default class CVOrbitNavigation extends CObject3D
     }
     protected get sceneNode() {
         return this.getSystemComponent(CVScene);
+    }
+    protected get arManager() {  // HACK - need a centralized place to reference shadowRoot of this instance
+        return this.getSystemComponent(CVARManager);
     }
 
     create()
@@ -269,7 +273,7 @@ export default class CVOrbitNavigation extends CObject3D
                 this._autoRotationStartTime = now;
             }
             else {
-                const prompt = document.getElementsByTagName("voyager-explorer")[0].shadowRoot.getElementById("prompt") as HTMLElement;
+                const prompt = this.arManager.shadowRoot.getElementById("prompt") as HTMLElement;
 
                 // prompt rotation function
                 const pause = 2.0;

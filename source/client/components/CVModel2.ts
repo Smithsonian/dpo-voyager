@@ -660,7 +660,8 @@ export default class CVModel2 extends CObject3D
 
         return derivative.load(this.assetReader)
             .then(() => {
-                if (!derivative.model) {
+                if (!derivative.model || !this.node) {
+                    derivative.unload();
                     return;
                 }
 
