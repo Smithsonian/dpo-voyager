@@ -16,7 +16,8 @@
  */
 
 //import resolvePathname from "resolve-pathname";
-import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, sRGBEncoding, SRGBColorSpace } from "three";
+import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
+import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, sRGBEncoding, SRGBColorSpace, MeshPhysicalMaterial } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -115,10 +116,10 @@ export default class ModelReader
 
                 mesh.geometry.computeBoundingBox();
 
-                const uberMat = new UberPBRMaterial();
+                const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
 
                 // copy properties from previous material
-                if (material.type === "MeshStandardMaterial") {
+                if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial") {
                     uberMat.copy(material);
                 }
 
