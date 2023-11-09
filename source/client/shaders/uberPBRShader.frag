@@ -115,7 +115,9 @@ varying vec3 vViewPosition;
 #endif
 
 #ifdef CUT_PLANE
-    //varying vec3 vWorldPosition;
+	#if !defined(PHYSICAL)
+    	varying vec3 vWorldPosition;
+	#endif
     uniform vec4 cutPlaneDirection;
     uniform vec3 cutPlaneColor;
 #endif
@@ -163,9 +165,9 @@ void main() {
 	#include <lights_fragment_end>
 
 	// modulation
-	#include <aomap_fragment>
+	//#include <aomap_fragment>
 	// REPLACED WITH
-	/*#ifdef USE_AOMAP
+	#ifdef USE_AOMAP
 	    // if cut plane is enabled, disable ambient occlusion on back facing fragments
 	    #ifdef CUT_PLANE
             if (gl_FrontFacing) {
@@ -175,20 +177,31 @@ void main() {
     	vec3 aoSample = texture2D(aoMap, vAoMapUv).rgb;
     	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
     	float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;
-    	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
-    	reflectedLight.directDiffuse *= ambientOcclusion2;
-    	reflectedLight.directSpecular *= ambientOcclusion;
-    	//reflectedLight.indirectDiffuse *= ambientOcclusion;
+    	//float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
+    	//reflectedLight.directDiffuse *= ambientOcclusion2;
+    	//reflectedLight.directSpecular *= ambientOcclusion;
+    	reflectedLight.indirectDiffuse *= ambientOcclusion;
 
-    	#if defined(USE_ENVMAP) && defined(PHYSICAL)
-    		float dotNV = saturate(dot(geometry.normal, geometry.viewDir));
-    		reflectedLight.indirectSpecular *= computeSpecularOcclusion(dotNV, ambientOcclusion, material.specularRoughness);
-    	#endif
+    	#if defined( USE_CLEARCOAT ) 
+			clearcoatSpecularIndirect *= ambientOcclusion;
+		#endif
+
+		#if defined( USE_SHEEN ) 
+			sheenSpecularIndirect *= ambientOcclusion;
+		#endif
+
+		#if defined( USE_ENVMAP ) && defined( STANDARD )
+
+			float dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );
+
+			reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
+
+		#endif
 
     	#ifdef CUT_PLANE
     	    }
     	#endif
-    #endif*/
+    #endif
 
 	vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
 	vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
