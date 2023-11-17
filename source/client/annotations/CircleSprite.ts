@@ -17,7 +17,7 @@
 
 import { Camera, ArrayCamera, PerspectiveCamera, Vector3, Quaternion, Matrix4, Group, 
     Mesh, RingGeometry, MeshBasicMaterial, BufferGeometry, RawShaderMaterial, 
-    GreaterDepth, CircleGeometry, MathUtils } from "three";
+    GreaterDepth, CircleGeometry, MathUtils, GLSL3 } from "three";
 import * as createTextGeometry from "three-bmfont-text";
 import * as createTextShader from "three-bmfont-text/shaders/msdf";
 
@@ -124,7 +124,8 @@ export default class CircleSprite extends AnnotationSprite
                 map: font.texture,
                 transparent: true,
                 color: 0xffffff,
-                isWebGL2: this.isWebGL2
+                isWebGL2: this.isWebGL2,
+                glslVersion: GLSL3,
             }));
 
             this.markerMaterialB = new RawShaderMaterial(createTextShader.default({
@@ -134,7 +135,8 @@ export default class CircleSprite extends AnnotationSprite
                 color: 0xffffff,
                 depthFunc: GreaterDepth,
                 depthWrite: false,
-                isWebGL2: this.isWebGL2
+                isWebGL2: this.isWebGL2,
+                glslVersion: GLSL3,
             }));
 
             this.markerGeometry = createTextGeometry.default({ font: font.descriptor });
