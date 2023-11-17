@@ -163,7 +163,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                     {
                         allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'sup', 'sub' ],
                         allowedAttributes: {
-                          'a': [ 'href' ]
+                          'a': [ 'href', 'target' ]
                         }
                     }
                 ));
