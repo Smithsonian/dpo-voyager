@@ -177,9 +177,9 @@ void main() {
     	vec3 aoSample = texture2D(aoMap, vAoMapUv).rgb;
     	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
     	float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;
-    	//float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
-    	//reflectedLight.directDiffuse *= ambientOcclusion2;
-    	//reflectedLight.directSpecular *= ambientOcclusion;
+    	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
+    	reflectedLight.directDiffuse *= ambientOcclusion2;
+    	reflectedLight.directSpecular *= ambientOcclusion;
     	reflectedLight.indirectDiffuse *= ambientOcclusion;
 
     	#if defined( USE_CLEARCOAT ) 
