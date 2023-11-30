@@ -50,6 +50,7 @@ export default class StandardSprite extends AnnotationSprite
 
         const geometry = new BufferGeometry().setFromPoints(points);
         const material = new LineBasicMaterial({ color: "#009cde", transparent: true });
+        material.toneMapped = false;
 
         this.stemLine = new Line(geometry, material);
         this.stemLine.frustumCulled = false;
