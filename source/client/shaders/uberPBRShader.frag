@@ -180,7 +180,7 @@ void main() {
     	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
     	reflectedLight.directDiffuse *= ambientOcclusion2;
     	reflectedLight.directSpecular *= ambientOcclusion;
-    	reflectedLight.indirectDiffuse *= ambientOcclusion;
+    	//reflectedLight.indirectDiffuse *= ambientOcclusion;
 
     	#if defined( USE_CLEARCOAT ) 
 			clearcoatSpecularIndirect *= ambientOcclusion;
