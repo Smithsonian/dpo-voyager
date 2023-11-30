@@ -98,6 +98,9 @@ export default class CircleSprite extends AnnotationSprite
             this.ringMaterialB,
         );
 
+        this.ringMaterialA.toneMapped = false;
+        this.ringMaterialB.toneMapped = false;
+
         const innerCircle = new Mesh(
             new CircleGeometry(0.45, 32),
             new MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
