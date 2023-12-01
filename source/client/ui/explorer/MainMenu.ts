@@ -29,6 +29,7 @@ import { EDerivativeQuality } from "../../schema/model";
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
 import CVAnnotationView from "client/components/CVAnnotationView";
+import ARCode from "./ARCode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -136,7 +137,7 @@ export default class MainMenu extends DocumentView
         models.forEach(model => {
             hasARderivatives = model.derivatives.getByQuality(EDerivativeQuality.AR).length > 0 ? true : hasARderivatives;
         });
-        const arButtonVisible = this.arManager.outs.available.value && hasARderivatives && models.length >= 1;
+        const arButtonVisible = /*this.arManager.outs.available.value &&*/ hasARderivatives && models.length >= 1;
 
 
         return html`
@@ -243,7 +244,17 @@ export default class MainMenu extends DocumentView
     protected onEnterAR()
     {
         const arIns = this.arManager.ins;
-        arIns.enabled.setValue(true);
+
+        if(this.arManager.outs.available.value) {
+            arIns.enabled.setValue(true);
+        }
+        else {
+            ARCode.show(this, this.activeDocument.setup.language).then(() => {
+                //this.shareButtonSelected = false;
+                //this.requestUpdate();
+                this.setElementFocus("ar-btn");
+            });
+        }
     }
 
     protected onToggleNarration()

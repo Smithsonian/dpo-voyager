@@ -488,6 +488,20 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 }
 
+.sv-ar-code {
+  position: relative;
+  width: 450px;
+  max-width: 85%;
+  padding: 8px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+
+  .ff-title {
+    margin: 0.5em 0 1em 0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME VIEW
 
