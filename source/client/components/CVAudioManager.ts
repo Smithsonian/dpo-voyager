@@ -296,7 +296,7 @@ export default class CVAudioManager extends Component
 
     stop()
     {  
-        if(!this.audioPlayer) {//Notification.show(`PLAYINGA`, "warning");
+        if(!this.audioPlayer) {
             return;
         }    
         this.pause();
@@ -357,6 +357,7 @@ export default class CVAudioManager extends Component
             track.setAttribute("default", "");
             this.audioPlayer.append(track);
             track.addEventListener("cuechange", this.onCueChange);
+            track.addEventListener("load", this.onLoadTrack);
         }
     }
 
@@ -366,6 +367,16 @@ export default class CVAudioManager extends Component
         const activeCues = (event.target as HTMLTrackElement).track.activeCues;
         const activeText = activeCues.length > 0 ? (activeCues[0] as VTTCue).text : "";
         this.ins.activeCaption.setValue(activeText);
+    }
+
+    // One-time setup after data is loaded
+    protected onLoadTrack = (event: Event) =>
+    {
+        // Cues starting at zero cause issues, so add a small offset
+        const cues = (this.audioPlayer.children[0] as HTMLTrackElement).track.cues;
+        if(cues[0].startTime === 0) {
+            cues[0].startTime = 0.01;
+        }
     }
 
     // Handle audio time elapsed updates
