@@ -37,6 +37,7 @@ import ARMenu from "./ARMenu";
 import CVARManager from "client/components/CVARManager";
 import CVAssetReader from "client/components/CVAssetReader";
 import CaptionView from "./CaptionView";
+import { EQuadViewLayout } from "client/../../libs/ff-scene/source/RenderQuadView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -88,11 +89,13 @@ export default class ContentView extends DocumentView
     {
         super.connected();
         this.assetManager.outs.busy.on("value", this.onUpdate, this);
+        this.sceneView.on("layout", () => this.onUpdate());     
         this.assetPath = this.assetReader.getSystemAssetUrl("");
     }
 
     protected disconnected()
     {
+        this.sceneView.off("layout", () => this.onUpdate());
         this.assetManager.outs.busy.off("value", this.onUpdate, this);
         super.disconnected();
     }
@@ -151,7 +154,7 @@ export default class ContentView extends DocumentView
         const captionView = this.captionView;
 
         const blurContent =
-            (readerVisible && readerPosition === EReaderPosition.Overlay) || tourMenuVisible;
+            ((readerVisible && readerPosition === EReaderPosition.Overlay) || tourMenuVisible) && this.sceneView.getView().layout == EQuadViewLayout.Single;
 
         if (!blurContent) {
             sceneView.classList.remove("sv-blur");
