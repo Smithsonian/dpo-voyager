@@ -115,7 +115,7 @@ varying vec3 vViewPosition;
 #endif
 
 #ifdef CUT_PLANE
-	#if !defined(PHYSICAL)
+	#if !defined(USE_TRANSMISSION)
     	varying vec3 vWorldPosition;
 	#endif
     uniform vec4 cutPlaneDirection;
