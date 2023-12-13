@@ -16,7 +16,7 @@
  */
 
 import { MeshStandardMaterialParameters, MeshStandardMaterial, Vector3, Vector4, Color, 
-    Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending, FrontSide, Texture } from "three";
+    Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending, FrontSide, Texture, ObjectSpaceNormalMap } from "three";
 
 const fragmentShader = require("./uberPBRShader.frag").default;
 const vertexShader = require("./uberPBRShader.vert").default;
@@ -245,7 +245,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         }
 
         if (this.normalMap) {
-            this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
+            this.normalMapType = ObjectSpaceNormalMap;
             this.needsUpdate = true;
         }
     }

@@ -250,6 +250,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   img {
     max-height: 120px;
+    max-width: 100%;
   }
 
   .sv-img-credit {

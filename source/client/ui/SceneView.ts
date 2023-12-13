@@ -48,6 +48,11 @@ export default class SceneView extends SystemView
     protected pointerEventsEnabled: boolean = false;
     protected measuring: boolean = false;
 
+    getView() : RenderQuadView
+    {
+        return this.view;
+    }
+
     constructor(system?: System)
     {
         super(system);
@@ -114,7 +119,7 @@ export default class SceneView extends SystemView
         };
 
         this.view = new RenderQuadView(this.system, this.canvas, this.overlay);
-        this.view.on<ILayoutChange>("layout", event => this.splitter.layout = event.layout);
+        this.view.on<ILayoutChange>("layout", event => {this.splitter.layout = event.layout; this.dispatchEvent(new CustomEvent("layout"))});
 
         this.view.layout = EQuadViewLayout.Single;
         this.splitter.layout = EQuadViewLayout.Single;

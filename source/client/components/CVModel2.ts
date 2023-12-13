@@ -280,6 +280,10 @@ export default class CVModel2 extends CObject3D
             this.updateOverlayMap();
         }
 
+        if (ins.shadowSide.changed) {
+            this.updateShadowSide();
+        }
+
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
             ins.color.changed || ins.opacity.changed || ins.doubleSided.changed ||
                 ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
@@ -503,6 +507,21 @@ export default class CVModel2 extends CObject3D
         });
     }
 
+    protected updateShadowSide() {
+        this.object3D.traverse(object => {
+            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
+            if (material && material.isUberPBRMaterial) {
+                if(this.ins.shadowSide.value == ESideType.Front) {
+                    material.shadowSide = FrontSide;
+                }
+                else {
+                    material.shadowSide = BackSide;
+                }
+                material.needsUpdate = true;
+            }
+        });
+    }
+
     updateOverlayMap() {
         // only update if we are not currently tweening
         const setup = this.getGraphComponent(CVSetup, true);
@@ -707,18 +726,7 @@ export default class CVModel2 extends CObject3D
 
                 // update shadow render side
                 if(this.ins.shadowSide.value != ESideType.Back) {
-                    this.object3D.traverse(object => {
-                        const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-                        if (material && material.isUberPBRMaterial) {
-                            if(this.ins.shadowSide.value == ESideType.Front) {
-                                material.shadowSide = FrontSide;
-                            }
-                            else {
-                                material.shadowSide = BackSide;
-                            }
-                            material.needsUpdate = true;
-                        }
-                    });
+                    this.updateShadowSide();
                 }
 
                 // flag environment map to update if needed
