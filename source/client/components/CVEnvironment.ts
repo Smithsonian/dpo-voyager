@@ -90,7 +90,7 @@ export default class CVEnvironment extends Component
                 this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
                     this._texture = texture; 
                     this._texture.mapping = EquirectangularReflectionMapping;
-                    this._texture.colorSpace = SRGBColorSpace;
+                    //this._texture.colorSpace = SRGBColorSpace;
                     this.sceneNode.scene.environment = this._texture;
                 });
                 this._currentIdx = ins.imageIndex.value;
