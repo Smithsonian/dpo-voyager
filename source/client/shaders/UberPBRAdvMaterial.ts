@@ -16,7 +16,7 @@
  */
 
 import { Vector3, Vector4, Color, Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, 
-    AdditiveBlending, FrontSide, Texture, MeshPhysicalMaterial, MeshPhysicalMaterialParameters } from "three";
+    AdditiveBlending, FrontSide, Texture, MeshPhysicalMaterial, MeshPhysicalMaterialParameters, ObjectSpaceNormalMap } from "three";
 
 const fragmentShader = require("./uberPBRShader.frag").default;
 const vertexShader = require("./uberPBRShader.vert").default;
@@ -64,7 +64,7 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
     {
         super();
 
-        this.type = "UberPBRMaterial";
+        this.type = "UberPBRAdvMaterial";
 
         this.isUberPBRMaterial = true;
         this.isMeshStandardMaterial = true;
@@ -162,9 +162,13 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
                     blending: this.blending,
                     transparent: this.transparent,
                     depthWrite: this.depthWrite,
+                    envMap: this.envMap,
+                    transmission: this.transmission
                 };
                 this.color = this._clayColor;
                 this.map = null;
+                this.envMap = null;
+                this.transmission = 0;
                 this.roughness = 1;
                 this.metalness = 0;
                 this.aoMapIntensity *= 1;
@@ -245,7 +249,7 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
         }
 
         if (this.normalMap) {
-            this.defines["OBJECTSPACE_NORMALMAP"] = useObjectSpace;
+            this.normalMapType = ObjectSpaceNormalMap;
             this.needsUpdate = true;
         }
     }

@@ -30,7 +30,6 @@ import CVModel2 from "./CVModel2";
 import CVTask from "./CVTask";
 
 import PoseTaskView from "../ui/story/PoseTaskView";
-import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +70,8 @@ export default class CVPoseTask extends CVTask
     private _viewport: Viewport = null;
     private _deltaX = 0;
     private _deltaY = 0;
+    private _90degLock = false;
+    private _accumulatedAngle = 0;
 
     protected activeModel: CVModel2 = null;
 
@@ -188,7 +189,21 @@ export default class CVPoseTask extends CVTask
 
         if (mode === EPoseManipMode.Rotate) {
             // convert accumulated pointer movement to rotation angle
-            const angle = (deltaX - deltaY) * 0.002;
+            let angle = (deltaX - deltaY) * 0.002;
+
+            if(this._90degLock) {
+                this._accumulatedAngle += angle*2;
+                let result = Math.abs(this._accumulatedAngle) + (Math.PI/4.0);
+                result -= result % (Math.PI/2.0);
+
+                if(result != 0) {
+                    angle = this._accumulatedAngle > 0 ? result : -result;
+                    this._accumulatedAngle = 0;
+                }
+                else {
+                    return;
+                }
+            }
 
             // generate rotation matrix
             _axis.set(0, 0, -1).applyQuaternion(_quat0);
@@ -237,6 +252,8 @@ export default class CVPoseTask extends CVTask
             if (event.type === "pointer-move") {
                 // modify speed multiplier according to modifier keys pressed (ctrl = 0.1, shift = 10)
                 const speed = event.ctrlKey ? 0.1 : (event.shiftKey ? 10 : 1);
+
+                this._90degLock = event.altKey ? true : false;
 
                 // accumulate motion in deltaX/deltaY
                 this._deltaX += event.movementX * speed;

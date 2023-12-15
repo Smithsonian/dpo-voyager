@@ -25,6 +25,7 @@ import CVLanguageManager from "./CVLanguageManager";
 import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +70,9 @@ export default class CVAudioManager extends Component
     }
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
+    }
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
     }
 
     get narrationId() {
@@ -280,6 +284,7 @@ export default class CVAudioManager extends Component
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id === this._narrationId);
             this.audioView.requestUpdate();
+            this.analytics.sendProperty("Audio_Play", this.getAudioClipUri(id));
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
     }
