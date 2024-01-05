@@ -30,7 +30,6 @@
 
 require('dotenv').config();
 
-const fs = require("fs-extra");
 const path = require("path");
 const childProcess = require("child_process");
 const webpack = require("webpack");
@@ -39,7 +38,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CSSMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
-
+const CopyPlugin = require("copy-webpack-plugin");
 ////////////////////////////////////////////////////////////////////////////////
 
 const project = path.resolve(__dirname, "../..");
@@ -91,50 +90,42 @@ module.exports = function(env, argv)
     const isDevMode = argv.mode !== undefined ? argv.mode !== "production" : process.env["NODE_ENV"] !== "production";
     const isOffline = argv.offline !== undefined ? true : process.env["VOYAGER_OFFLINE"] === "true";
 
-    // copy static assets and license files
-    fs.copy(dirs.assets, dirs.output, { overwrite: true });
-    fs.copy(path.resolve(dirs.project, "LICENSE.md"), path.resolve(dirs.output, "LICENSE.md"), { overwrite: true });
-    fs.copy(path.resolve(dirs.project, "3RD_PARTY_LICENSES.txt"), path.resolve(dirs.output, "3RD_PARTY_LICENSES.txt"), { overwrite: true });
 
-    if (appKey === "all") {
-        return [
-            createAppConfig(apps.explorer, isDevMode, isOffline),
-            createAppConfig(apps.mini, isDevMode, isOffline),
-            createAppConfig(apps.launcher, isDevMode, isOffline),
-            createAppConfig(apps.story, isDevMode, isOffline),
-        ];
-    }
-    else if (apps[appKey]) {
-        return createAppConfig(apps[appKey], isDevMode, isOffline);
-    }
-    else {
-        throw new Error(`can't build, app '${appKey}' not found.`);
-    }
-};
-
-function createAppConfig(app, isDevMode, isOffline)
-{
     const devMode = isDevMode ? "development" : "production";
     const localTag = isOffline ? "-offline" : "";
-    const appName = app.name;
-    const appTitle = `${app.title} ${version} ${isDevMode ? " DEV" : " PROD"}`;
 
-    console.log("\nVOYAGER - WEBPACK BUILD SCRIPT");
-    console.log("  application = %s", appName);
-    console.log("  mode = %s", devMode);
-    console.log("  offline = %s", isOffline);
-    console.log("  version = %s", version);
-    console.log("  source directory = %s", dirs.source);
-    console.log("  output directory = %s", dirs.output);
+    const build_apps = (appKey === "all" ? Object.values(apps):[apps[appKey]]);
+    if(!build_apps[0]){
+        throw new Error(`can't build, app '${appKey}' not found.`);
+    }
+    const entries = build_apps.reduce((entries, app) =>({
+        ...entries,
+        [app.name]: path.resolve(dirs.source, app.entryPoint)
+    }),{});
+
+    const plugins =build_apps.map((app) =>{
+        return new HTMLWebpackPlugin({
+            filename: isDevMode ? `${app.name}-dev${localTag}.html` : `${app.name}${localTag}.html`,
+            template: app.template,
+            title: `${app.title} ${version} ${isDevMode ? " DEV" : " PROD"}`,
+            version: version,
+            isDevelopment: isDevMode,
+            isOffline: isOffline,
+            analyticsId: analyticsId,
+            element: `<${app.name}></${app.name}>`,
+            chunks: [ app.name ],
+        })
+    });
 
     const config = {
         mode: devMode,
 
-        entry: { [appName]: path.resolve(dirs.source, app.entryPoint) },
+        entry: entries,
 
         output: {
             path: dirs.output,
-            filename: isDevMode ? "js/[name].dev.js" : "js/[name].min.js"
+            filename: isDevMode ? "js/[name].dev.js" : "js/[name].min.js",
+            clean: true,
         },
 
         resolve: {
@@ -179,23 +170,26 @@ function createAppConfig(app, isDevMode, isOffline)
                 ENV_PRODUCTION: JSON.stringify(!isDevMode),
                 ENV_DEVELOPMENT: JSON.stringify(isDevMode),
                 ENV_OFFLINE: JSON.stringify(isOffline),
-                ENV_VERSION: JSON.stringify(appTitle),
+                ENV_VERSION: JSON.stringify(`Voyager ${version} ${isDevMode ? " DEV" : " PROD"}`),
             }),
             new MiniCssExtractPlugin({
                 filename: isDevMode ? "css/[name].dev.css" : "css/[name].min.css",
                 //allChunks: true
             }),
-            new HTMLWebpackPlugin({
-                filename: isDevMode ? `${appName}-dev${localTag}.html` : `${appName}${localTag}.html`,
-                template: app.template,
-                title: appTitle,
-                version: version,
-                isDevelopment: isDevMode,
-                isOffline: isOffline,
-                analyticsId: analyticsId,
-                element: `<${appName}></${appName}>`,
-                chunks: [ appName ],
-            })
+
+            new CopyPlugin({
+                patterns: [
+                    {
+                        from: "**/*",
+                        context: dirs.assets,
+                    },
+                    {
+                        from: "{LICENSE.md,3RD_PARTY_LICENSES.txt}",
+                        context: dirs.project,
+                    }
+                ],
+            }),
+            ...plugins
         ],
 
         // loaders execute transforms on a per-file basis
@@ -268,6 +262,7 @@ function createAppConfig(app, isDevMode, isOffline)
         },
 
         stats: {chunkModules: true, excludeModules: false }
+
     };
 
     if (isDevMode) {
@@ -275,4 +270,4 @@ function createAppConfig(app, isDevMode, isOffline)
     }
 
     return config;
-}
+};
