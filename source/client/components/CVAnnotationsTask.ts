@@ -77,7 +77,6 @@ export default class CVAnnotationsTask extends CVTask
     constructor(node: Node, id: string)
     {
         super(node, id);
-
         const configuration = this.configuration;
         configuration.annotationsVisible = true;
         configuration.gridVisible = false;
@@ -269,6 +268,8 @@ export default class CVAnnotationsTask extends CVTask
 
     protected createAnnotation(position: number[], direction: number[])
     {
+        const languageManager = this.activeDocument.setup.language;
+        const language = this.ins.language.value;
         const annotations = this.activeAnnotations;
         if (!annotations) {
             return;
@@ -285,6 +286,8 @@ export default class CVAnnotationsTask extends CVTask
         const model = annotations.getComponent(CVModel2);
         const annotation = new Annotation(template);
 
+        annotation.language = language;
+        annotation.title = languageManager.getLocalizedString("New Annotation");
         const data = annotation.data;
         data.position = position;
         data.direction = direction;
@@ -298,7 +301,6 @@ export default class CVAnnotationsTask extends CVTask
         annotations.addAnnotation(annotation);
         annotations.activeAnnotation = annotation;
 
-        this.activeDocument.setup.language.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
     }
 
     protected moveAnnotation(position: number[], direction: number[])
