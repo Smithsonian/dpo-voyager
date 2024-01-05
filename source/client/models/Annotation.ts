@@ -111,7 +111,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         return {
             id: Document.generateId(),
             title: "New Annotation",
-            titles: {},
+            titles: {
+                [DEFAULT_LANGUAGE]: "New Annotation"
+            },
             lead: "",
             leads: {},
             marker: "",
