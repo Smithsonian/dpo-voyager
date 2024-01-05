@@ -375,12 +375,6 @@ export default class CVARManager extends Component
             this.sceneNode.ins.units.setValue(EUnitType.m);
         }
 
-        // Temporary until annotation scale implementation is resolved
-        const views = scene.getGraphComponents(CVAnnotationView);
-        views.forEach(component => {
-            component.setXRScale(ANNOTATION_SCALE);
-        });
-
         // Disable any shadow casting lights
         const lights = scene.getGraphComponents(CVDirectionalLight);
         lights.forEach(light => {
@@ -449,12 +443,6 @@ export default class CVARManager extends Component
         if(cachedShader !== EShaderMode.Default) {
             setup.viewer.ins.shader.setValue(cachedShader);
         }
-
-        // Temporary until annotation scale implementation is resolved
-        const views = this.sceneNode.getGraphComponents(CVAnnotationView);
-        views.forEach(component => {
-            component.setXRScale(1.0);
-        });
 
         // Reset shadowing lights
         this.lightsToReset.forEach(light => {
