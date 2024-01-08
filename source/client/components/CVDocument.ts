@@ -58,6 +58,7 @@ export default class CVDocument extends CRenderGraph
 
     protected titles: Dictionary<string> = {};
     protected meta: CVMeta = null;
+    protected ref_id :number = -1;
 
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
@@ -215,6 +216,7 @@ export default class CVDocument extends CRenderGraph
             this.outs.assetPath.setValue(assetPath);
             this.name = this.getMainComponent(CVAssetManager).getAssetName(assetPath);
         }
+        this.ref_id = documentData.asset.id;
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene) : CVModel2
@@ -266,7 +268,9 @@ export default class CVDocument extends CRenderGraph
                 type: CVDocument.mimeType,
                 version: CVDocument.version,
                 generator: "Voyager",
-                copyright: "(c) Smithsonian Institution. All rights reserved."
+                copyright: "(c) Smithsonian Institution. All rights reserved.",
+                id: this.ref_id,
+
             },
             scene: 0,
             scenes: [],
