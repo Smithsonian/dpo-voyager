@@ -136,7 +136,7 @@ export default class NVNode extends Node
 
         document.nodes = document.nodes || [];
         const nodeIndex = document.nodes.length;
-        const node = this.transform.toData();
+        const node = ((this.camera)? {} : this.transform.toData());
         document.nodes.push(node);
 
         pathMap.set(this.transform, `node/${nodeIndex}`);
