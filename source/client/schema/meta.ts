@@ -30,6 +30,7 @@ export interface IMeta
     images?: IImage[];
     articles?: IArticle[];
     audio?: IAudioClip[];
+    actions?: IAction[];
     leadArticle?: Index;
 }
 
@@ -85,3 +86,13 @@ export interface IAudioClip
     captionUris: Dictionary<string>;
     durations: Dictionary<string>;
 }
+
+/**
+ * Triggered actions (animation, audio, etc. on click, proximity, etc.)
+ */
+ export interface IAction
+ {
+     id: string;
+     type: string;
+     trigger: string;
+ }

@@ -1,0 +1,172 @@
+/**
+ * 3D Foundation Project
+ * Copyright 2024 Smithsonian Institution
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import "@ff/ui/Splitter";
+import "@ff/ui/Button";
+
+import "./PropertyView";
+
+import CVActionsTask from "../../components/CVActionsTask";
+import { TaskView, customElement, html, property } from "../../components/CVTask";
+import List from "client/../../libs/ff-ui/source/List";
+import { IAudioClip } from "client/schema/meta";
+import Notification from "@ff/ui/Notification";
+import CVMediaManager from "client/components/CVMediaManager";
+
+////////////////////////////////////////////////////////////////////////////////
+
+@customElement("sv-actions-task-view")
+export default class ActionsTaskView extends TaskView<CVActionsTask>
+{
+    protected connected()
+    {
+        super.connected();
+        this.task.on("update", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.narrationPlaying.on("value", this.onUpdate, this);
+    }
+
+    protected disconnected()
+    {
+        this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
+        this.task.off("update", this.onUpdate, this);
+        super.disconnected();
+    }
+
+    protected render()
+    {
+        if(!this.task.actionManager) {
+            return;
+        }
+        
+        const ins = this.task.ins;
+
+        //const narrationFlagClass = "sv-task-option-base-align";
+        const actionList = this.task.actionManager.getActionList();
+        const actionElement = actionList[this.selectedIndex];
+        //const narrationEnabled = !ins.isNarration.value && audioList.some(clip => clip.id === this.task.audioManager.narrationId);
+
+        const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <sv-property-view .property=${ins.title}></sv-property-view>
+            <sv-property-view .property=${ins.language}></sv-property-view>
+            <div class="sv-indent">
+                <sv-property-view id="filename" .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+                <sv-property-view id="captionfile" .property=${ins.captionPath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
+                <div class="sv-commands">
+                    <sv-property-boolean .property=${ins.isNarration} .text=${this.optionText} .customLabelStyle=${narrationFlagClass} ?disabled=${narrationEnabled}></sv-property-boolean>
+                </div>
+                <div class="sv-commands">
+                    <ff-button text="Play" @click=${this.onClickPlay}></ff-button>
+                    <ff-button text="Stop" ?disabled=${!this.task.audioManager.outs.isPlaying.value} @click=${this.onClickStop}></ff-button>
+                </div>
+            </div>
+        </div>` : null;
+
+        return html`<div class="sv-commands">
+            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
+            <ff-button text="Delete" icon="trash" ?disabled=${!actionElement} @click=${this.onClickDelete}></ff-button>  
+        </div>
+        <div class="ff-flex-item-stretch">
+            <div class="ff-flex-column ff-fullsize">
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item sv-task-item-full">Audio Elements</div></div>
+                <div class="ff-splitter-section" style="flex-basis: 30%">
+                    <div class="ff-scroll-y ff-flex-column">
+                        <sv-audio-list .data=${audioList} .selectedItem=${audioElement} @select=${this.onSelectAudio}></sv-annotation-list>
+                    </div>
+                </div>
+                <ff-splitter direction="vertical"></ff-splitter>
+                <div class="ff-splitter-section" style="flex-basis: 70%">
+                    ${detailView}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    protected onClickCreate()
+    {
+        this.task.ins.create.set();
+    }
+
+    protected onClickDelete()
+    {
+        this.task.ins.delete.set();
+    }
+
+    protected onClickPlay()
+    {
+        this.activeDocument.setup.audio.setupAudio();
+        this.task.ins.play.set();
+    }
+
+    protected onClickStop()
+    {
+        this.task.ins.stop.set();
+    }
+
+    protected onSelectAudio(event: ISelectAudioEvent)
+    {
+        this.selectedIndex = event.detail.index;
+        this.task.ins.activeId.setValue(event.detail.clip ? event.detail.clip.id : "");
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+interface ISelectAudioEvent extends CustomEvent
+{
+    target: AudioList;
+    detail: {
+        clip: IAudioClip;
+        index: number;
+    }
+}
+
+@customElement("sv-audio-list")
+export class AudioList extends List<IAudioClip>
+{
+    @property({ attribute: false })
+    selectedItem: IAudioClip = null;
+
+    protected firstConnected()
+    {
+        super.firstConnected();
+        this.classList.add("sv-audio-list");
+    }
+
+    protected renderItem(item: IAudioClip)
+    {
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.name}</div></div>`;
+    }
+
+    protected isItemSelected(item: IAudioClip)
+    {
+        return item === this.selectedItem;
+    }
+
+    protected onClickItem(event: MouseEvent, item: IAudioClip, index: number)
+    {
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: { clip: item, index }
+        }));
+    }
+
+    protected onClickEmpty(event: MouseEvent)
+    {
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: { clip: null, index: -1 }
+        }));
+    }
+}
