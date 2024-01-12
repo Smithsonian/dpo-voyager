@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Group, Mesh, MeshBasicMaterial, BufferGeometry } from "three";
+import { Group, Mesh, MeshBasicMaterial, BufferGeometry, Vector3 } from "three";
 
 import { customElement, html, render } from "@ff/ui/CustomElement";
 import math from "@ff/core/math";
@@ -31,6 +31,11 @@ import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 ////////////////////////////////////////////////////////////////////////////////
 
 const _color = new FFColor();
+const _offset = new Vector3(0, 0, 0);
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _vec3c = new Vector3();
+const _vec3d = new Vector3();
 
 export default class CircleSprite extends AnnotationSprite
 {
@@ -53,6 +58,7 @@ export default class CircleSprite extends AnnotationSprite
             new MeshBasicMaterial()
         );
         this.anchorMesh.frustumCulled = false;
+        this.anchorMesh.matrixAutoUpdate = false;
 
         this.offset.add(this.anchorMesh);
 
@@ -67,10 +73,35 @@ export default class CircleSprite extends AnnotationSprite
         super.dispose();
     }
 
+    update()
+    {
+        const annotation = this.annotation.data;
+
+        this.anchorMesh.scale.setScalar(annotation.scale);
+        this.anchorMesh.position.y = annotation.offset;
+        this.anchorMesh.updateMatrix();
+
+        super.update();
+    }
+
     renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
     {
-        super.renderHTMLElement(element, container, camera, this.anchorMesh);
+        super.renderHTMLElement(element, container, camera, this.anchorMesh, _offset);
 
+        // Override viewAngle calculation using temporary offset
+        const anchor = this.anchorMesh;
+        _vec3a.set(0, 0, 0);
+        _vec3a.applyMatrix4(anchor.modelViewMatrix);
+
+        _vec3b.set(0, 1, 0);
+        _vec3b.applyMatrix4(anchor.modelViewMatrix);
+
+        _vec3c.copy(_vec3b).sub(_vec3a).normalize();
+        _vec3d.set(0, 0, 1);
+
+        this.viewAngle = _vec3c.angleTo(_vec3d);
+
+        // Set opacity based on viewAngle
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
@@ -80,9 +111,6 @@ export default class CircleSprite extends AnnotationSprite
         const isShowing = annotation.visible;
 
         this.offset.visible = isShowing;
-        this.offset.position.set(0, (annotation.offset + 1) * 0.5, 0);
-
-        this.offset.updateMatrix();
 
         // don't show if behind the camera
         this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing); 
