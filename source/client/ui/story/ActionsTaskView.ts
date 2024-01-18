@@ -23,15 +23,17 @@ import "./PropertyView";
 import CVActionsTask from "../../components/CVActionsTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
 import List from "client/../../libs/ff-ui/source/List";
-import { IAudioClip } from "client/schema/meta";
+import { EActionType, IAction, IAudioClip, TActionType } from "client/schema/meta";
 import Notification from "@ff/ui/Notification";
-import CVMediaManager from "client/components/CVMediaManager";
+import CVAnnotationView from "client/components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-actions-task-view")
 export default class ActionsTaskView extends TaskView<CVActionsTask>
 {
+    protected selectedIndex = -1;
+
     protected connected()
     {
         super.connected();
@@ -54,25 +56,27 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         
         const ins = this.task.ins;
 
-        //const narrationFlagClass = "sv-task-option-base-align";
-        const actionList = this.task.actionManager.getActionList();
+        const node = this.activeNode;
+        const actionList = node && node.hasComponent(CVAnnotationView) && this.task.actions;
+
+        if (!actionList) {
+            return html`<div class="sv-placeholder">Please select a model node to edit its actions.</div>`;
+        }
+
         const actionElement = actionList[this.selectedIndex];
-        //const narrationEnabled = !ins.isNarration.value && audioList.some(clip => clip.id === this.task.audioManager.narrationId);
+
+        const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
+            <sv-property-view .property=${ins.audio}></sv-property-view>
+        ` : null;
+        const animActionView = ins.type.value === EActionType.PlayAnimation ? html`
+            <sv-property-view .property=${ins.animation}></sv-property-view>
+        ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${ins.title}></sv-property-view>
-            <sv-property-view .property=${ins.language}></sv-property-view>
-            <div class="sv-indent">
-                <sv-property-view id="filename" .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
-                <sv-property-view id="captionfile" .property=${ins.captionPath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
-                <div class="sv-commands">
-                    <sv-property-boolean .property=${ins.isNarration} .text=${this.optionText} .customLabelStyle=${narrationFlagClass} ?disabled=${narrationEnabled}></sv-property-boolean>
-                </div>
-                <div class="sv-commands">
-                    <ff-button text="Play" @click=${this.onClickPlay}></ff-button>
-                    <ff-button text="Stop" ?disabled=${!this.task.audioManager.outs.isPlaying.value} @click=${this.onClickStop}></ff-button>
-                </div>
-            </div>
+            <sv-property-view .property=${ins.trigger}></sv-property-view>
+            <sv-property-view .property=${ins.type}></sv-property-view>
+            ${audioActionView}
+            ${animActionView}
         </div>` : null;
 
         return html`<div class="sv-commands">
@@ -81,10 +85,10 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item sv-task-item-full">Audio Elements</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">Type</div><div class="sv-panel-header sv-task-item sv-item-border-l">Trigger</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-audio-list .data=${audioList} .selectedItem=${audioElement} @select=${this.onSelectAudio}></sv-annotation-list>
+                        <sv-action-list .data=${actionList} .selectedItem=${actionElement} @select=${this.onSelectAction}></sv-action-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -105,68 +109,58 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         this.task.ins.delete.set();
     }
 
-    protected onClickPlay()
-    {
-        this.activeDocument.setup.audio.setupAudio();
-        this.task.ins.play.set();
-    }
-
-    protected onClickStop()
-    {
-        this.task.ins.stop.set();
-    }
-
-    protected onSelectAudio(event: ISelectAudioEvent)
+    protected onSelectAction(event: ISelectActionEvent)
     {
         this.selectedIndex = event.detail.index;
-        this.task.ins.activeId.setValue(event.detail.clip ? event.detail.clip.id : "");
+        this.task.ins.activeId.setValue(event.detail.action ? event.detail.action.id : "");
+        this.onUpdate();
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface ISelectAudioEvent extends CustomEvent
+interface ISelectActionEvent extends CustomEvent
 {
-    target: AudioList;
+    target: ActionList;
     detail: {
-        clip: IAudioClip;
+        action: IAction;
         index: number;
     }
 }
 
-@customElement("sv-audio-list")
-export class AudioList extends List<IAudioClip>
+@customElement("sv-action-list")
+export class ActionList extends List<IAction>
 {
     @property({ attribute: false })
-    selectedItem: IAudioClip = null;
+    selectedItem: IAction = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-audio-list");
+        this.classList.add("sv-action-list");
     }
 
-    protected renderItem(item: IAudioClip)
+    protected renderItem(item: IAction)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.name}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.type}</div><div class="sv-task-item sv-item-border-l">${item.trigger}</div></div>`;
     }
 
-    protected isItemSelected(item: IAudioClip)
+    protected isItemSelected(item: IAction)
     {
         return item === this.selectedItem;
     }
 
-    protected onClickItem(event: MouseEvent, item: IAudioClip, index: number)
+    protected onClickItem(event: MouseEvent, item: IAction, index: number)
     {
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { clip: item, index }
+            detail: { action: item, index }
         }));
     }
 
     protected onClickEmpty(event: MouseEvent)
     {
         this.dispatchEvent(new CustomEvent("select", {
-            detail: { clip: null, index: -1 }
+            detail: { action: null, index: -1 }
         }));
     }
 }

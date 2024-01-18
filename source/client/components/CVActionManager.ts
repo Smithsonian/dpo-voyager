@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
-import Component, { types, IComponentEvent } from "@ff/graph/Component";
+import Component, { types, IComponentEvent, IUpdateContext } from "@ff/graph/Component";
 import { IAudio } from "client/schema/setup";
 import CVMeta from "./CVMeta";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
-import { IAudioClip } from "client/schema/meta";
+import { EActionTrigger, TActionTrigger, EActionType, TActionType } from "client/schema/meta";
 import CVAssetManager from "./CVAssetManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import CVAnalytics from "./CVAnalytics";
+import CVNodeObserver from "./CVNodeObserver";
+import NVNode from "client/nodes/NVNode";
+import CVModel2 from "./CVModel2";
+import { IPointerEvent } from "@ff/scene/RenderView";
+import CVAudioManager from "./CVAudioManager";
+import { AnimationAction, AnimationClip, AnimationMixer, Clock, LoopOnce } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +47,9 @@ export default class CVActionManager extends Component
 
     static readonly isSystemSingleton = true;
 
+    private _clock: Clock = new Clock();
+    private _mixer: AnimationMixer = null;
+    private _activeClip: AnimationAction = null;
 
     protected static readonly ins = {
         //playNarration: types.Event("Audio.PlayNarration"),
@@ -67,23 +76,26 @@ export default class CVActionManager extends Component
     protected get analytics() {
         return this.system.getMainComponent(CVAnalytics);
     }
+    protected get audio() {
+        return this.getGraphComponent(CVAudioManager);
+    }
 
     create()
     {
         super.create();
-        //this.graph.components.on(CVMeta, this.onMetaComponent, this);
 
-        //this.audioView = new AudioView;
-        //.audioView.audio = this;
+        this._mixer = new AnimationMixer(null);
+        this._mixer.addEventListener( 'finished', function(e) {
+            e.action.stop();
+        });
 
-        //this.language.outs.language.on("value", this.onLanguageChange, this);
+        this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     dispose()
     {
+        this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
-        //this.language.outs.language.off("value", this.onLanguageChange, this);
-        //this.graph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
 
@@ -93,6 +105,46 @@ export default class CVActionManager extends Component
 
         
         return true;
+    }
+
+    protected onPointerUp(event: IPointerEvent)
+    {
+        if (!event.isPrimary || event.isDragging) {
+            return;
+        }
+
+        if (event.component && event.component.is(CVModel2)) {
+            const meta = event.component.node.getComponent(CVMeta);
+            if(meta) { 
+                const clickActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger);
+                if(clickActions.length > 0) {
+                    clickActions.forEach((action) => {
+                        if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                            this.audio.play(action.audioId);
+                        }
+                        else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {console.log(this._mixer.time);
+                            const mesh = (event.component as CVModel2).object3D.children[0].children[0];
+                            console.log((event.component as CVModel2).object3D.parent);
+                            const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), (event.component as CVModel2).object3D.parent);
+                            clip.setLoop(LoopOnce, 1);
+                            clip.play();
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    tick() : boolean
+    {   
+        const delta = this._clock.getDelta();
+
+        if(this._activeClip && this._activeClip.isRunning()) {
+            this._mixer.update(delta);
+            return true;
+        }
+
+        return false;
     }
 
     /*protected onMetaComponent(event: IComponentEvent<CVMeta>)

@@ -23,7 +23,12 @@ import ActionsTaskView from "../ui/story/ActionsTaskView";
 import { Node } from "@ff/graph/Component";
 import CVDocument from "./CVDocument";
 import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { IAction } from "client/schema/meta";
 import CVActionManager from "./CVActionManager";
+import { EActionTrigger, EActionType, TActionTrigger, TActionType } from "client/schema/meta";
+import CVMeta from "./CVMeta";
+import NVNode from "client/nodes/NVNode";
+import CVModel2 from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -31,19 +36,17 @@ export default class CVActionsTask extends CVTask
 {
     static readonly typeName: string = "CVActionsTask";
 
-    static readonly text: string = "Audio";
-    static readonly icon: string = "audio";
+    static readonly text: string = "Action";
+    static readonly icon: string = "video";
 
     protected static readonly ins = {
-        /*create: types.Event("Audio.Create"),
-        delete: types.Event("Audio.Delete"),
-        play: types.Event("Audio.Play"),
-        stop: types.Event("Audio.Stop"),
-        activeId: types.String("Audio.ActiveId", ""),
-        title: types.String("Audio.Title", ""),
-        filepath: types.String("Audio.Filepath", null),
-        captionPath: types.String("Audio.CaptionPath", null),
-        isNarration: types.Boolean("Audio.IsNarration", false),*/
+        create: types.Event("Action.Create"),
+        delete: types.Event("Action.Delete"),
+        activeId: types.String("Action.ActiveId", ""),
+        type: types.Enum("Action.Type", EActionType, EActionType.PlayAnimation),
+        trigger: types.Enum("Action.Trigger", EActionTrigger, EActionTrigger.OnClick),
+        audio: types.Option("Action.Audio", ["None"], 0),
+        animation: types.Option("Action.Animation", ["None"], 0),
     };
 
     protected static readonly outs = {
@@ -53,6 +56,11 @@ export default class CVActionsTask extends CVTask
     outs = this.addOutputs<CVTask, typeof CVActionsTask.outs>(CVActionsTask.outs);
 
     actionManager: CVActionManager = null;
+    meta: CVMeta = null;
+
+    get actions() {
+        return this.meta && this.meta.actions.items;
+    }
 
     constructor(node: Node, id: string)
     {
@@ -89,56 +97,79 @@ export default class CVActionsTask extends CVTask
     update()
     {
         const { ins } = this;
-       
 
-        /*if(!audioManager) {
-            return false;
-        }
+        const meta = this.meta;
 
-        const clip = audioManager.getAudioClip(ins.activeId.value);
-        const languageManager = this.activeDocument.setup.language;
+        if(meta) {
+            if (ins.create.changed) {
+                const action = { 
+                    id: Document.generateId(), 
+                    type: EActionType[EActionType.PlayAnimation] as TActionType,
+                    trigger: EActionTrigger[EActionTrigger.OnClick] as TActionTrigger,
+                    audioId: "",
+                    animation: ""
+                };
+                meta.actions.items = [action];
+                return true;
+            }
+            if (ins.delete.changed) {
+                meta.actions.remove(ins.activeId.value);
+                return true;
+            }
 
-        if(ins.language.changed) {   
-            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
-
-            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
-            languageManager.ins.language.setValue(newLanguage);
+            const action = meta.actions.get(ins.activeId.value);
+            if (action && (ins.type.changed || ins.trigger.changed || ins.audio.changed || ins.animation.changed)) {
+                action.type = EActionType[ins.type.value] as TActionType;
+                action.trigger = EActionTrigger[ins.trigger.value] as TActionTrigger;
+                //action.audioId = ins.audio.getOptionText();
+                action.animation = ins.animation.getOptionText();
+            }
+            if(ins.audio.changed) {
+                const audioManager = this.activeDocument.setup.audio;
+                const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
+                action.audioId = id;
+            }
         }
-
-        if (ins.create.changed) {
-            audioManager.addAudioClip({
-                id: Document.generateId(),
-                name: "New Audio Element",
-                uris: {},
-                captionUris: {},
-                durations: {}
-            });
-            return true;
-        }
-        if (ins.delete.changed) {
-            audioManager.removeAudioClip(ins.activeId.value);
-            return true;
-        }
-        if (ins.play.changed) {
-            audioManager.play(ins.activeId.value);
-            return true;
-        }
-        if (ins.stop.changed) {
-            audioManager.stop();
-            return true;
-        }
-
-        if (clip && (ins.title.changed || ins.filepath.changed || ins.captionPath.changed)) {
-            clip.name = ins.title.value;
-            clip.uris[ELanguageType[ins.language.value]] = ins.filepath.value;
-            clip.captionUris[ELanguageType[ins.language.value]] = ins.captionPath.value;
-            audioManager.updateAudioClip(clip.id);
-        }
-        if (ins.isNarration.changed) {
-            audioManager.narrationId = ins.isNarration.value ? clip.id : "";
-        }*/
 
         return true;
+    }
+
+    protected onActionChange()
+    {
+        const ins = this.ins;
+        const action = this.meta.actions.get(ins.activeId.value);
+
+        if(action) {
+            ins.type.setValue(EActionType[action.type], true);
+            ins.trigger.setValue(EActionTrigger[action.trigger], true);
+            //ins.animation.setValue(action.animation);
+        }
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+        if (previous) {
+            this.meta = null;
+        }
+        if (next) {
+            if (!next.meta) {
+                next.createComponent(CVMeta);
+            }
+
+            // Load animation options
+            const model = next.getComponent(CVModel2);
+            const animOptions = ["None"];
+            model.object3D.traverse(object => {
+                if (object.animations.length > 0) {
+                    object.animations.forEach((anim) => {
+                        animOptions.push(anim.name);
+                    })
+                }
+            });
+            this.ins.animation.setOptions(animOptions);
+
+            this.meta = next.meta;
+        }
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
@@ -146,10 +177,22 @@ export default class CVActionsTask extends CVTask
         super.onActiveDocument(previous, next);
 
         if (previous) {
+            previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
+            this.ins.activeId.off("value", this.onActionChange, this);
             this.actionManager = null;
         }
         if (next) {
             this.actionManager = next.setup.actions;
+            this.ins.activeId.on("value", this.onActionChange, this);
+            next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
         }
+    }
+
+    // Update audio options
+    protected synchAudioOptions() {
+        const audioManager = this.activeDocument.setup.audio;
+        const options = ["None"];
+        options.push(...audioManager.getAudioList().map(clip => clip.name));
+        this.ins.audio.setOptions(options);
     }
 }

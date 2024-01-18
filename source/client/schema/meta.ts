@@ -93,6 +93,14 @@ export interface IAudioClip
  export interface IAction
  {
      id: string;
-     type: string;
-     trigger: string;
+     type: TActionType;
+     trigger: TActionTrigger;
+     audioId: string;
+     animation: string;
  }
+
+ export type TActionType = "PlayAnimation" | "PlayAudio";
+ export enum EActionType { PlayAnimation, PlayAudio };
+
+ export type TActionTrigger = "OnClick";
+ export enum EActionTrigger { OnClick };

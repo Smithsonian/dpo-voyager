@@ -68,6 +68,8 @@ import CVSnapshots from "../components/CVSnapshots";
 import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
 import CVLanguageManager from "../components/CVLanguageManager";
+import CVAudioManager from "client/components/CVAudioManager";
+import CVActionManager from "client/components/CVActionManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -75,7 +77,6 @@ import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
-import CVAudioManager from "client/components/CVAudioManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +126,7 @@ const types = [
     CVEnvironment,
     CVLanguageManager,
     CVAudioManager,
+    CVActionManager,
 
     NVEngine,
     NVDocuments,

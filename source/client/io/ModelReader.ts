@@ -108,6 +108,7 @@ export default class ModelReader
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
+                mesh.animations = gltf.animations;
                 const material = mesh.material as MeshStandardMaterial;
 
                 if (material.map) {
