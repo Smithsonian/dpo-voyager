@@ -31,7 +31,7 @@ import NVNode from "client/nodes/NVNode";
 import CVModel2 from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CVAudioManager from "./CVAudioManager";
-import { AnimationAction, AnimationClip, AnimationMixer, Clock, LoopOnce } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -122,10 +122,16 @@ export default class CVActionManager extends Component
                         if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
                             this.audio.play(action.audioId);
                         }
-                        else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {console.log(this._mixer.time);
+                        else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
                             const mesh = (event.component as CVModel2).object3D.children[0].children[0];
-                            console.log((event.component as CVModel2).object3D.parent);
-                            const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), (event.component as CVModel2).object3D.parent);
+                            const meshParent = (event.component as CVModel2).object3D.parent;
+
+                            // move animation target to parent so annotations are also affected
+                            meshParent.name = mesh.name;
+                            mesh.matrixAutoUpdate = false;
+                            meshParent.matrixAutoUpdate = true;
+                            const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), meshParent);
+                            
                             clip.setLoop(LoopOnce, 1);
                             clip.play();
                         }
