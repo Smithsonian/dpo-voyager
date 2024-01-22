@@ -48,7 +48,6 @@ export default class CaptionView extends DocumentView
     {
         if (previous) {
             this.documentProps.off();
-            this.audioManager = null;
         }
         if (next) {
             const setup = next.setup;
