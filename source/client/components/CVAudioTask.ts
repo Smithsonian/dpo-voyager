@@ -112,13 +112,15 @@ export default class CVAudioTask extends CVTask
         }
 
         if (ins.create.changed) {
+            const newId = Document.generateId();
             audioManager.addAudioClip({
-                id: Document.generateId(),
+                id: newId,
                 name: "New Audio Element",
                 uris: {},
                 captionUris: {},
                 durations: {}
             });
+            ins.activeId.setValue(newId);
             return true;
         }
         if (ins.delete.changed) {
