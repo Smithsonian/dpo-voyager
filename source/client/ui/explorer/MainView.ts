@@ -162,10 +162,13 @@ export default class MainView extends CustomElement
 
     protected disconnected()
     {
+        super.disconnected();
         this.fullscreen.fullscreenElement = null;
         this.viewer.rootElement = null;
-        this.application.dispose();
-        this.application = null;
+        if(!window["VoyagerStory"]) {
+            this.application.dispose();
+            this.application = null;
+        }
     }
 
     attributeChangedCallback(name: string, old: string | null, value: string | null)
