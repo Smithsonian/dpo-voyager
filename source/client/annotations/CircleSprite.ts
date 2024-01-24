@@ -15,148 +15,52 @@
  * limitations under the License.
  */
 
-import { Camera, ArrayCamera, PerspectiveCamera, Vector3, Quaternion, Matrix4, Group, 
-    Mesh, RingGeometry, MeshBasicMaterial, BufferGeometry, RawShaderMaterial, 
-    GreaterDepth, CircleGeometry, MathUtils, GLSL3 } from "three";
-import * as createTextGeometry from "three-bmfont-text";
-import * as createTextShader from "three-bmfont-text/shaders/msdf";
+import { Group, Mesh, MeshBasicMaterial, BufferGeometry, Vector3 } from "three";
 
-import { customElement, html } from "@ff/ui/CustomElement";
+import { customElement, html, render } from "@ff/ui/CustomElement";
+import math from "@ff/core/math";
+import FFColor from "@ff/core/Color";
 import "@ff/ui/Button";
-
-import GPUPicker from "@ff/three/GPUPicker";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import UniversalCamera from "@ff/three/UniversalCamera";
 import AnnotationFactory from "./AnnotationFactory";
-import CVAssetReader from "client/components/CVAssetReader";
 
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _color = new FFColor();
+const _offset = new Vector3(0, 0, 0);
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
-const _quat1 = new Quaternion();
-const _mat4 = new Matrix4();
+const _vec3c = new Vector3();
+const _vec3d = new Vector3();
 
 export default class CircleSprite extends AnnotationSprite
 {
     static readonly typeName: string = "Circle";
 
-    private _isExpanded = false;
-
-    protected static readonly behindOpacity = 0.2;
-
     protected offset: Group;
     protected anchorMesh: Mesh;
 
-    protected ringMesh: Mesh;
-    protected ringGeometry: RingGeometry;
-    protected ringMaterialA: MeshBasicMaterial;
-    protected ringMaterialB: MeshBasicMaterial;
-
-    protected markerGeometry: BufferGeometry;
-    protected markerMaterialA: RawShaderMaterial;
-    protected markerMaterialB: RawShaderMaterial;
-    protected markerA: Mesh;
-    protected markerB: Mesh;
-
-    // Temporary until annotation scale implementation is resolved
-    xrScale: number = 1.0;
-
-    isWebGL2: boolean = false;
-
-    constructor(annotation: Annotation, assetReader: CVAssetReader)
+    constructor(annotation: Annotation)
     {
         super(annotation);
-
-        this._isExpanded = annotation.data.expanded;
 
         this.offset = new Group();
         this.offset.matrixAutoUpdate = false;
 
         this.add(this.offset);
 
-        this.ringGeometry = new RingGeometry(0.45, 0.5, 32);
-
-        this.ringMaterialA = new MeshBasicMaterial();
-        this.ringMaterialB = new MeshBasicMaterial({
-            depthFunc: GreaterDepth,
-            depthWrite: false,
-            opacity: CircleSprite.behindOpacity,
-            transparent: true
-        });
-
-        this.ringMesh = new Mesh(
-            this.ringGeometry,
-            this.ringMaterialA,
-        );
-
-        const ringMeshB = new Mesh(
-            this.ringGeometry,
-            this.ringMaterialB,
-        );
-
-        this.ringMaterialA.toneMapped = false;
-        this.ringMaterialB.toneMapped = false;
-
-        const innerCircle = new Mesh(
-            new CircleGeometry(0.45, 32),
-            new MeshBasicMaterial({ color: 0, opacity: 0.65, transparent: true }),
-        );
-
-        innerCircle.matrixAutoUpdate = false;
-        innerCircle.position.set(0, 0, 0.005);
-        innerCircle.updateMatrix();
-
         this.anchorMesh = new Mesh(
             new BufferGeometry(),
             new MeshBasicMaterial()
         );
         this.anchorMesh.frustumCulled = false;
+        this.anchorMesh.matrixAutoUpdate = false;
 
-        this.offset.add(this.anchorMesh, this.ringMesh, ringMeshB, innerCircle);
-
-        this.markerGeometry = null;
-        this.markerA = null;
-        this.markerB = null;
-
-        assetReader.fontReader.load("fonts/Roboto-Bold").then(font => {
-            this.markerMaterialA = new RawShaderMaterial(createTextShader.default({
-                map: font.texture,
-                transparent: true,
-                color: 0xffffff,
-                isWebGL2: this.isWebGL2,
-                glslVersion: GLSL3,
-            }));
-
-            this.markerMaterialB = new RawShaderMaterial(createTextShader.default({
-                map: font.texture,
-                transparent: true,
-                opacity: CircleSprite.behindOpacity,
-                color: 0xffffff,
-                depthFunc: GreaterDepth,
-                depthWrite: false,
-                isWebGL2: this.isWebGL2,
-                glslVersion: GLSL3,
-            }));
-
-            this.markerGeometry = createTextGeometry.default({ font: font.descriptor });
-
-            this.markerA = new Mesh(this.markerGeometry, this.markerMaterialA);
-            this.markerA.matrixAutoUpdate = false;
-
-            this.markerB = new Mesh(this.markerGeometry, this.markerMaterialB);
-            this.markerB.matrixAutoUpdate = false;
-
-            // we're async here, register marker for picking manually
-            GPUPicker.add(this.markerA, false);
-            GPUPicker.add(this.markerB, false);
-            this.offset.add(this.markerA, this.markerB);
-
-            this.update();
-        });
+        this.offset.add(this.anchorMesh);
 
         this.update();
     }
@@ -165,15 +69,6 @@ export default class CircleSprite extends AnnotationSprite
     {
         this.offset = null;
         this.anchorMesh = null;
-        this.ringMesh = null;
-        this.ringGeometry = null;
-        this.ringMaterialA = null;
-        this.ringMaterialB = null;
-        this.markerGeometry = null;
-        this.markerMaterialA = null;
-        this.markerMaterialB = null;
-        this.markerA = null;
-        this.markerB = null;
 
         super.dispose();
     }
@@ -182,78 +77,40 @@ export default class CircleSprite extends AnnotationSprite
     {
         const annotation = this.annotation.data;
 
-        const c = annotation.color;
-        this.ringMaterialA.color.setRGB(c[0], c[1], c[2]);
-        this.ringMaterialB.color.setRGB(c[0], c[1], c[2]);
-
-        //this.anchorMesh.position.set(0, 0, annotation.scale * 0.1);
-
-        if (this.markerA) {
-            const length = annotation.marker.length;
-            const scale = length > 1 ? 0.013 : 0.016;
-
-            const geometry = this.markerGeometry;
-            (geometry as any).update(annotation.marker);
-            geometry.computeBoundingBox();
-            geometry.boundingBox.getCenter(_vec3a);
-
-            this.markerA.position.set(-scale * (_vec3a.x + 1), scale * _vec3a.y, 0.01);
-            this.markerA.scale.set(scale, -scale, -1);
-            this.markerA.updateMatrix();
-
-            this.markerB.position.set(-scale * (_vec3a.x + 1), scale * _vec3a.y, 0.01);
-            this.markerB.scale.set(scale, -scale, -1);
-            this.markerB.updateMatrix();
-        }
+        this.anchorMesh.scale.setScalar(annotation.scale);
+        this.anchorMesh.position.y = annotation.offset;
+        this.anchorMesh.updateMatrix();
 
         super.update();
     }
 
     renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
     {
+        super.renderHTMLElement(element, container, camera, this.anchorMesh, _offset);
+
+        // Override viewAngle calculation using temporary offset
+        const anchor = this.anchorMesh;
+        _vec3a.set(0, 0, 0);
+        _vec3a.applyMatrix4(anchor.modelViewMatrix);
+
+        _vec3b.set(0, 1, 0);
+        _vec3b.applyMatrix4(anchor.modelViewMatrix);
+
+        _vec3c.copy(_vec3b).sub(_vec3a).normalize();
+        _vec3d.set(0, 0, 1);
+
+        this.viewAngle = _vec3c.angleTo(_vec3d);
+
+        // Set opacity based on viewAngle
+        const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
+        const opacity = this.annotation.data.visible ? angleOpacity : 0;
+
+        element.setOpacity(opacity);
+
         const annotation = this.annotation.data;
-        let matrixCamera : PerspectiveCamera = null;
-        const isShowing = this.annotation.data.visible;
+        const isShowing = annotation.visible;
 
         this.offset.visible = isShowing;
-
-        if(camera instanceof ArrayCamera) {
-            matrixCamera = ((camera as Camera) as ArrayCamera).cameras[0];
-        }
-
-        // billboard rotation
-        if(matrixCamera) {
-            _mat4.copy(matrixCamera.matrixWorldInverse);
-        }
-        else {
-            _mat4.copy(camera.matrixWorldInverse);
-        }
-        _mat4.multiply(this.matrixWorld);
-        _mat4.decompose(_vec3a, _quat1, _vec3b);
-        this.offset.quaternion.copy(_quat1.invert());
-
-        // get inverse world scale relative to user scale
-        this.offset.parent.matrixWorld.decompose(_vec3a, _quat1, _vec3b);
-        const invWorldScale = 1.0/_vec3b.x * (1.0/annotation.scale) * this.xrScale;
-
-        // scale annotation with respect to camera distance
-        const vpHeight = container.offsetHeight + 250;
-        const vpScale = annotation.scale * 55 / vpHeight * invWorldScale;
-        let scaleFactor = 1;
-
-        if (camera.isPerspectiveCamera) {
-            const distZ = -_vec3a.set(0, 0, 0).applyMatrix4(_mat4).z;
-            const theta = camera.fov * MathUtils.DEG2RAD * 0.5;
-            scaleFactor = Math.tan(theta) * distZ * vpScale;
-        }
-        else {
-            scaleFactor = camera.size * 0.5 * vpScale;
-        }
-
-        this.offset.scale.setScalar(scaleFactor);
-        this.offset.position.set(0, (annotation.offset + 1) * scaleFactor * 0.5, 0);
-
-        this.offset.updateMatrix();
 
         // don't show if behind the camera
         this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing); 
@@ -261,52 +118,35 @@ export default class CircleSprite extends AnnotationSprite
             element.setVisible(this.getVisible());
         }
 
+        // check if annotation is out of bounds and update if needed
         if (annotation.expanded) {
-            // calculate screen position of HTML sprite element
-            _vec3a.set(0, 0, 0).applyMatrix4(this.anchorMesh.modelViewMatrix).applyMatrix4(camera.projectionMatrix);
-            _vec3b.set(0.6, 0.5, 0).applyMatrix4(this.anchorMesh.modelViewMatrix).applyMatrix4(camera.projectionMatrix);
-            const centerX = (_vec3a.x + 1) * 0.5 * container.clientWidth;
-            const centerY = (1 - _vec3a.y) * 0.5 * container.clientHeight;
-            const offsetX = (_vec3b.x + 1) * 0.5 * container.clientWidth - centerX;
-            const offsetY = (1 - _vec3b.y) * 0.5 * container.clientHeight - centerY;
+            element.classList.add("sv-expanded");
 
-            let x = centerX + offsetX;
-            let y = centerY + offsetY;
-            element.classList.remove("sv-align-right", "sv-align-bottom");
+            let x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+            let y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
 
-            if (x + element.offsetWidth >= container.offsetWidth) {
-                x = centerX - offsetX;
+            if (x + element.offsetWidth >= container.offsetWidth && !element.classList.contains("sv-align-right")) {
                 element.classList.add("sv-align-right");
+                element.requestUpdate();
             }
-            if (y + element.offsetHeight >= container.offsetHeight) {
-                y = centerY - offsetY;
+            else if (x + element.offsetWidth < container.offsetWidth && element.classList.contains("sv-align-right")){
+                element.classList.remove("sv-align-right");
+                element.requestUpdate();
+            }
+            if (y + element.offsetHeight >= container.offsetHeight && !element.classList.contains("sv-align-bottom")) {
                 element.classList.add("sv-align-bottom");
+                element.requestUpdate();
             }
-
-            element.setPosition(x, y);
-        }
-
-        if(this._isExpanded !== annotation.expanded) {
-            element.style.visibility = "";
-            this._isExpanded = annotation.expanded
+            else if (y + element.offsetHeight < container.offsetHeight && element.classList.contains("sv-align-bottom")) {
+                element.classList.remove("sv-align-bottom");
+                element.requestUpdate();
+            }
         }
     }
 
     protected createHTMLElement()
     {
         return new CircleAnnotation(this);
-    }
-
-    protected updateHTMLElement(element: AnnotationElement)
-    {
-        element.setVisible(this.getVisible());
-
-        // Stops annotation box from occasionally showing before it has been positioned
-        if(this.annotation.data.expanded && this._isExpanded !== this.annotation.data.expanded) {
-            element.style.visibility = "hidden";
-        }
-        
-        element.requestUpdate();
     }
 }
 
@@ -317,15 +157,33 @@ AnnotationFactory.registerType(CircleSprite);
 @customElement("sv-circle-annotation")
 class CircleAnnotation extends AnnotationElement
 {
+    protected markerElement: HTMLDivElement;
+    protected contentElement: HTMLDivElement;
+    protected isExpanded = undefined;
+
     constructor(sprite: CircleSprite)
     {
         super(sprite);
+        
+        this.onClickMarker = this.onClickMarker.bind(this);
+        this.onClickArticle = this.onClickArticle.bind(this);
+        this.onClickAudio = this.onClickAudio.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+
+        this.markerElement = this.appendElement("div");
+        this.markerElement.classList.add("sv-marker");
+        this.markerElement.addEventListener("click", this.onClickMarker);
+        //this.markerElement.addEventListener("keydown", this.onKeyDown);
+        //this.markerElement.setAttribute("tabindex", "0");
+
+        this.contentElement = this.appendElement("div");
+        this.contentElement.classList.add("sv-annotation-body");
+        this.contentElement.style.display = "none";
     }
 
     setVisible(visible: boolean)
     {
-        // element is visible only if the annotation is in expanded state
-        super.setVisible(visible && this.sprite.annotation.data.expanded);
+        this.style.display = visible ? "flex" : "none";
     }
 
     protected firstConnected()
@@ -334,23 +192,68 @@ class CircleAnnotation extends AnnotationElement
         this.classList.add("sv-circle-annotation");
     }
 
-    protected render()
-    {
-        const annotation = this.sprite.annotation;
-        const annotationData = annotation.data;
-
-        return html`<div class="sv-title">${annotation.title}</div>
-            ${annotationData.imageUri ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
-            <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
-            ${annotationData.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
-    }
-
     protected updated(changedProperties): void {
         super.updated(changedProperties);
 
         const annotation = this.sprite.annotation;
         const annotationData = annotation.data;
+
+        // update title
+        this.markerElement.innerText = annotationData.marker;
+
+        const contentTemplate = html`
+        <div class="sv-title">${annotation.title}</div>
+            ${annotationData.imageUri ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
+            <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
+            ${annotationData.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
+            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
+
+        render(contentTemplate, this.contentElement);
+
+        // update color
+        _color.fromArray(annotationData.color);
+        this.markerElement.style.borderColor = _color.toString();
+
+        // update expanded height in case annotation changed
+        if (this.isExpanded) {
+            this.contentElement.style.height = "auto";
+        }
+
+        // update expanded/collapsed
+        if (this.isExpanded !== annotationData.expanded) {
+
+            this.isExpanded = annotationData.expanded;
+
+            if (this.isExpanded) {
+                if(annotationData.audioId) {
+                    this.querySelector("#audio_container").append(this.sprite.audioManager.getPlayerById(annotationData.audioId));
+                }
+
+                this.classList.add("sv-expanded");
+                //this.style.minWidth = annotationData.lead.length < 40 && (!annotationData.audioId || annotationData.audioId.length == 0) ? "0" : "";
+                this.contentElement.style.display = "block";
+                this.contentElement.style.height = this.contentElement.scrollHeight + "px";
+            }
+            else {
+                this.classList.remove("sv-expanded");
+                this.contentElement.style.display = "none";
+
+                if(annotationData.audioId) {
+                    this.sprite.audioManager.stop();
+                }
+            }
+        }
+
+        // Handle shifting annotation body when out-of-bounds
+        if (this.isExpanded) {
+            this.contentElement.style.removeProperty("transform");
+            if (this.classList.contains("sv-align-right")) {
+                this.contentElement.style.transform = `translateX(-${this.offsetWidth}px)`;
+            }
+            if (this.classList.contains("sv-align-bottom")) {
+                this.contentElement.style.transform = `translateY(-${this.offsetHeight-this.markerElement.offsetHeight}px)`;
+            }
+        }
 
         const audioView = this.querySelector(".sv-audio-view");
         if(annotationData.audioId) {
@@ -364,6 +267,13 @@ class CircleAnnotation extends AnnotationElement
         }
     }
 
+    protected onClickMarker(event: MouseEvent)
+    {
+        this.contentElement.style.display = "block";    // makes sure we have a valid height when doing out-of-bounds check
+        event.stopPropagation();
+        this.sprite.emitClickEvent();
+    }
+
     protected onClickArticle(event: MouseEvent)
     {
         event.stopPropagation();
@@ -374,5 +284,13 @@ class CircleAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitClickEvent();
+    }
+
+    protected onKeyDown(event: KeyboardEvent)
+    {
+        if (event.code === "Space" || event.code === "Enter") {
+            event.stopPropagation();
+            this.sprite.emitClickEvent();
+        }
     }
 }

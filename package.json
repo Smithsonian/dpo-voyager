@@ -71,7 +71,6 @@
         "stream-browserify": "^3.0.0",
         "style-loader": "^3.3.1",
         "three": "^0.158.0",
-        "three-bmfont-text": "git+https://github.com/Smithsonian/three-bmfont-text.git#50da80d887",
         "tinymce": "^6.3.1",
         "toposort": "^2.0.2",
         "webdav": "^5.3.0",
