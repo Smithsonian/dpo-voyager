@@ -39,7 +39,6 @@ import AnnotationFactory from "../annotations/AnnotationFactory";
 import "../annotations/StandardSprite";
 import "../annotations/ExtendedSprite";
 import "../annotations/CircleSprite";
-import CircleSprite from "../annotations/CircleSprite";
 import CVARManager from "./CVARManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { ELanguageType, EUnitType } from "client/schema/common";
@@ -482,10 +481,9 @@ export default class CVAnnotationView extends CObject3D
     protected createSprite(annotation: Annotation)
     {
         this.removeSprite(annotation);
-        const isCircle = annotation.data.style === "Circle";
 
         // TODO: Combine when font loading is centralized
-        const sprite = isCircle ? AnnotationFactory.createInstance(annotation, "Circle", this.assetReader) : AnnotationFactory.createInstance(annotation);
+        const sprite = AnnotationFactory.createInstance(annotation);
 
         sprite.addEventListener("click", this.onSpriteClick);
         sprite.addEventListener("link", this.onSpriteLink);

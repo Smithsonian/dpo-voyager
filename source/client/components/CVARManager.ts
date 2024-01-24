@@ -40,7 +40,6 @@ import { EUnitType } from "client/schema/common";
 import { EDerivativeUsage, EDerivativeQuality, EAssetType } from "client/models/Derivative";
 import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
-import CVAnnotationView from "./CVAnnotationView";
 
 import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
@@ -57,7 +56,6 @@ const _hitPosition = new Vector3();
 const _boundingBox = new Box3();
 const _quat = new Quaternion();
 const ROTATION_RATE = 1.5;
-const ANNOTATION_SCALE = 2.0;
 
 export default class CVARManager extends Component
 {
