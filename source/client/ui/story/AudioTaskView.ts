@@ -64,8 +64,9 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         const ins = this.task.ins;
 
         const narrationFlagClass = "sv-task-option-base-align";
-        const audioList = this.task.audioManager.getAudioList();
-        const audioElement = audioList[this.selectedIndex];
+        const audio = this.task.audioManager;
+        const audioList = audio.getAudioList();
+        const audioElement = audio.getAudioClip(ins.activeId.value);
         const narrationEnabled = !ins.isNarration.value && audioList.some(clip => clip.id === this.task.audioManager.narrationId);
 
         const detailView = audioElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">

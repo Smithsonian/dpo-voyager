@@ -1,6 +1,6 @@
 {
     "name": "voyager",
-    "version": "0.35.0",
+    "version": "0.37.0",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
@@ -70,8 +70,7 @@
         "simple-dropzone": "^0.8.3",
         "stream-browserify": "^3.0.0",
         "style-loader": "^3.3.1",
-        "three": "^0.157.0",
-        "three-bmfont-text": "git+https://github.com/Smithsonian/three-bmfont-text.git#50da80d887",
+        "three": "^0.158.0",
         "tinymce": "^6.3.1",
         "toposort": "^2.0.2",
         "webdav": "^5.3.0",

@@ -15,11 +15,20 @@
                 "exposure": {
                     "type": "number"
                 },
+                "toneMapping": {
+                    "type": "boolean"
+                },
                 "gamma": {
                     "type": "number"
                 },
                 "annotationsVisible": {
                     "type": "boolean"
+                },
+                "isWallMountAR": {
+                    "type": "boolean"
+                },
+                "arScale": {
+                    "type": "number"
                 },
                 "activeTags": {
                     "type": "string"
@@ -83,6 +92,12 @@
                     "type": "boolean"
                 },
                 "autoZoom": {
+                    "type": "boolean"
+                },
+                "autoRotation": {
+                    "type": "boolean"
+                },
+                "lightsFollowCamera": {
                     "type": "boolean"
                 },
                 "orbit": {
@@ -188,6 +203,28 @@
                 },
                 "position": {
                     "type": "number"
+                },
+                "color": {
+                    "$ref": "./common.schema.json#/definitions/vector3"
+                }
+            }
+        },
+        "audio": {
+            "type": "object",
+            "properties": {
+                "narrationId": {
+                    "type": "string"
+                }
+            }
+        },
+        "language": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string",
+                    "enum": [
+                        "EN", "ES", "DE", "NL", "JA", "FR", "HAW"
+                    ]
                 }
             }
         },
@@ -303,6 +340,12 @@
         },
         "tours": {
             "$ref": "#/definitions/tours"
+        },
+        "language": {
+            "$ref": "#/definitions/language"
+        },
+        "audio": {
+            "$ref": "#/definitions/audio"
         }
     }
 }
