@@ -33,6 +33,7 @@ import { ETaskMode } from "../applications/taskSets";
 import CVMediaManager from "./CVMediaManager";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
+import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -114,7 +115,12 @@ export default class CVStoryApplication extends Component
 
                 if(storyMode !== ETaskMode.Standalone) {
                     this.assetWriter.putJSON(json, cvDocument.assetPath)
-                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
+                    .then(async () =>{
+                        let data = await this.getMainComponent(CVAssetReader).getJSON(cvDocument.assetPath)
+                        this.documentProvider.amendDocument(data, cvDocument.assetPath, false);
+
+                        new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000)
+                    })
                     .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
                 }
                 else {

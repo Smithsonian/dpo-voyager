@@ -696,12 +696,19 @@ export default class CVModel2 extends CObject3D
     {
         const sequence : Derivative[] = [];
 
+        const targetQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, quality);
+        if(targetQualityDerivative && targetQualityDerivative.isCached()){
+            return (()=> this.loadDerivative(targetQualityDerivative))();
+        }
+
         const lowestQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.Thumb);
-        if (lowestQualityDerivative) {
+        const firstCachedDerivative = this.derivatives.getByUsage(EDerivativeUsage.Web3D).find(derivative => derivative.isCached());
+        if (firstCachedDerivative) {
+            sequence.push(firstCachedDerivative);
+        }else if (lowestQualityDerivative) {
             sequence.push(lowestQualityDerivative);
         }
 
-        const targetQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, quality);
         if (targetQualityDerivative && targetQualityDerivative !== lowestQualityDerivative) {
             sequence.push(targetQualityDerivative);
         }

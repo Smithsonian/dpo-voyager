@@ -49,8 +49,76 @@ export interface IDerivative extends IDerivativeJSON
     assets: Asset[];
 }
 
+interface Cached<T>{
+    ref: number;
+    asset: Promise<T>;
+}
+
+class ObjectCache<T extends object>{
+    #rlookup = new WeakMap<T, string>();
+    #refs = new Map<string,Cached<T>>();
+
+    #gc(id :string, destructor :(asset :T)=>void) :boolean{
+        const cached = this.#refs.get(id);
+        if(!cached) return false;
+        if(cached.ref == 0){
+            cached.asset.then((a)=>{
+                console.debug("Dispose of ", id)
+                destructor(a);
+            });
+            this.#refs.delete(id);
+            return true;
+        }else{
+            console.debug("Abort GC for %s", id);
+        }
+        return false;
+    }
+
+    ref(id :string, getter:()=>Promise<T>) :Promise<T> {
+        let cached = this.#refs.get(id);
+        if(cached) {
+            cached.ref++;
+            console.debug("referencing cached asset %s : %d ", id, cached.ref);
+            return cached.asset;
+        }
+        console.debug("Fetch object %s", id);
+        const asset = getter().then((a)=>{
+            this.#rlookup.set(a, id);
+            return a;
+        });
+        this.#refs.set(id, {ref: 1, asset});
+        return asset;
+    }
+
+    unref(asset :T, destructor:(asset :T)=>void) :void{
+
+        const id = this.#rlookup.get(asset);
+        if(!id) return console.warn("Failed to unref unknown asset");
+
+        const cached = this.#refs.get(id);
+        if(!cached) return console.warn("Can't unref asset id %s", id);
+        //Ensure actual unref is delayed until the next tick
+        if( --cached.ref == 0){
+            //GC is delayed because we don't want to race for some asset being removed from the scene then added just after
+            //Like what  `CVDocument.openDocument()` do.
+            requestIdleCallback(()=>{
+                if(this.#gc(id, destructor)){
+                    this.#rlookup.delete(asset);
+                }
+            });
+        }else{
+            console.debug("Ref count for %s : %d ", id, cached.ref);
+        }
+    }
+
+    cached(id :string) :boolean{
+        return this.#refs.has(id);
+    }
+}
+
 export default class Derivative extends Document<IDerivative, IDerivativeJSON>
 {
+    static _cache = new ObjectCache<Object3D>();
     static fromJSON(json: IDerivativeJSON)
     {
         return new Derivative(json);
@@ -73,10 +141,10 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return assetReader.getModel(modelAsset.data.uri)
+            return Derivative._cache.ref(modelAsset.data.uri, ()=>assetReader.getModel(modelAsset.data.uri))
             .then(object => {
                 if (this.model) {
-                    disposeObject(this.model);
+                    Derivative._cache.unref(this.model, (model)=>disposeObject(model));
                 }
                 this.model = object;
                 return object;
@@ -115,9 +183,14 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
     unload()
     {
         if (this.model) {
-            disposeObject(this.model);
+            Derivative._cache.unref(this.model, (model)=>disposeObject(model));
             this.model = null;
         }
+    }
+
+    isCached() :boolean{
+        const modelAsset = this.findAsset(EAssetType.Model);
+        return modelAsset ? Derivative._cache.cached(modelAsset.data.uri) : false;
     }
 
     createAsset(type: EAssetType, uri: string)
