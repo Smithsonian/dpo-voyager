@@ -81,6 +81,7 @@ export default class NVNode extends Node
     fromDocument(document: IDocument, nodeIndex: number,  pathMap: Map<string, Component>)
     {
         const node = document.nodes[nodeIndex];
+        this.createComponent(CVNode);
         this.transform.fromData(node);
 
         pathMap.set(`node/${nodeIndex}`, this.transform);
@@ -117,9 +118,10 @@ export default class NVNode extends Node
         const childIndices = node.children;
         if (childIndices) {
             childIndices.forEach(childIndex => {
-                const childNode = this.graph.createCustomNode(NVNode);
-                this.transform.addChild(childNode.transform);
+                const nodeData = document.nodes[childIndex];
+                const childNode = this.graph.createCustomNode(NVNode, nodeData.name, nodeData.id);
                 childNode.fromDocument(document, childIndex, pathMap);
+                this.transform.addChild(childNode.transform);
             });
         }
     }
@@ -140,6 +142,7 @@ export default class NVNode extends Node
         document.nodes.push(node);
 
         pathMap.set(this.transform, `node/${nodeIndex}`);
+        node.id = this.id;
 
         if (this.name) {
             node.name = this.name;

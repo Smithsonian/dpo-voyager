@@ -24,6 +24,7 @@ import CVDocument from "./CVDocument";
 import CVTours from "./CVTours";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import Document from "@ff/core/Document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -202,6 +203,7 @@ export default class CVToursTask extends CVTask
 
         if (ins.createTour.changed) {
             tourList.splice(tourIndex + 1, 0, {
+                id: Document.generateId(),
                 title: "",
                 titles: {},
                 lead: "",

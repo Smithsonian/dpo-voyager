@@ -183,6 +183,7 @@ export interface ISnapshots
 
 export interface ITour
 {
+    id?: string;
     title: string;
     titles?: Dictionary<string>;
     steps: ITourStep[];

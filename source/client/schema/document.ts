@@ -72,6 +72,7 @@ export interface IScene
  */
 export interface INode
 {
+    id?: string;
     name?: string;
     children?: Index[];
 

@@ -263,6 +263,7 @@ export default class CVTours extends Component
     fromData(data: ITours)
     {
         this._tours = data.map(tour => ({
+            id: tour.id,
             title: tour.title,
             titles: tour.titles || {},
             steps: tour.steps.map(step => ({
@@ -302,6 +303,7 @@ export default class CVTours extends Component
 
         return  this._tours.map(tour => {
             const data: Partial<ITour> = {
+                id: tour.id,
                 steps: tour.steps.map(step => {
                     const tourstep: Partial<ITourStep> = {};
                     tourstep.id = step.id;

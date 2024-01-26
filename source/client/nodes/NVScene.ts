@@ -64,9 +64,10 @@ export default class NVScene extends NVNode
         const nodeIndices = scene.nodes;
         if (nodeIndices) {
             nodeIndices.forEach(nodeIndex => {
-                const childNode = this.graph.createCustomNode(NVNode);
-                this.transform.addChild(childNode.transform);
+                const nodeData = document.nodes[nodeIndex];
+                const childNode = this.graph.createCustomNode(NVNode, nodeData.name, nodeData.id);
                 childNode.fromDocument(document, nodeIndex, pathMap);
+                this.transform.addChild(childNode.transform);
             });
         }
         
