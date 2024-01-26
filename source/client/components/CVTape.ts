@@ -27,6 +27,8 @@ import CVScene from "client/components/CVScene";
 import { EUnitType } from "client/schema/common";
 import unitScaleFactor from "client/utils/unitScaleFactor";
 import { getMeshTransform } from "client/utils/Helpers";
+import Annotation from "../models/Annotation";
+import CVStaticAnnotationView from "./CVStaticAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -83,6 +85,8 @@ export default class CVTape extends CObject3D
     protected startPin: Pin = null;
     protected endPin: Pin = null;
     protected line: Line = null;
+    protected annotationView: CVStaticAnnotationView = null;
+    protected label: Annotation = null;
 
     constructor(node: Node, id: string)
     {
@@ -108,6 +112,14 @@ export default class CVTape extends CObject3D
         lineMaterial.transparent = true;
         this.line = new Line(lineGeometry, lineMaterial);
         this.line.visible = false;
+
+        this.annotationView = this.node.createComponent(CVStaticAnnotationView);
+        const annotation = this.label = new Annotation(undefined);
+        annotation.data.style = "Standard";
+        annotation.data.position = [0,0,0];
+        annotation.data.direction = [0,0,0]
+        this.annotationView.ins.visible.setValue(false);
+        this.annotationView.addAnnotation(annotation);
 
         this.object3D.add(this.startPin, this.endPin, this.line);
     }
@@ -157,9 +169,11 @@ export default class CVTape extends CObject3D
         if (ins.enabled.changed) {
             if (ins.enabled.value) {
                 this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+                this.annotationView.ins.visible.setValue(this.outs.distance.value > 0);
             }
             else {
                 this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+                this.annotationView.ins.visible.setValue(false);
             }
         }
 
@@ -189,6 +203,7 @@ export default class CVTape extends CObject3D
             positions[1] = startPin.position.y;
             positions[2] = startPin.position.z;
             lineGeometry.attributes.position.needsUpdate = true;
+            this.annotationView.ins.visible.setValue(false);
         }
 
         // update tape end point
@@ -203,12 +218,23 @@ export default class CVTape extends CObject3D
             positions[4] = endPin.position.y;
             positions[5] = endPin.position.z;
             lineGeometry.attributes.position.needsUpdate = true;
-        }
 
-        // update distance between measured points
-        _vec3a.fromArray(ins.startPosition.value);
-        _vec3b.fromArray(ins.endPosition.value);
-        this.outs.distance.setValue(_vec3a.distanceTo(_vec3b));
+            // update distance between measured points
+            _vec3a.fromArray(ins.startPosition.value);
+            _vec3b.fromArray(ins.endPosition.value);
+            const tapeLength = _vec3a.distanceTo(_vec3b);
+            this.outs.distance.setValue(tapeLength);
+
+            // update distance label
+            const data = this.label.data;
+            data.position = [(positions[0]+positions[3])/2.0,(positions[1]+positions[4])/2.0,(positions[2]+positions[5])/2.0];
+            const units = this.ins.globalUnits.getOptionText();
+            this.label.title = tapeLength.toFixed(2) + " " + units;
+            this.annotationView.updateAnnotation(this.label, true);
+            if(tapeLength > 0) {console.log("SHOW TAPE TAG");
+                this.annotationView.ins.visible.setValue(true);
+            }
+        }
 
         return true;
     }

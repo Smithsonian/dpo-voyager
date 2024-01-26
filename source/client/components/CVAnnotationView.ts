@@ -521,6 +521,11 @@ export default class CVAnnotationView extends CObject3D
 
     protected updateLanguage()
     {
+        // only update language for model annotations
+        if(!this.getComponent(CVModel2, true)) {
+            return;
+        }
+
         const ins = this.ins;
         const annotation = this._activeAnnotation;
         const language = this.language;
