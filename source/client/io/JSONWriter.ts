@@ -52,7 +52,9 @@ export default class JSONWriter
                 throw new Error(message);
             }
 
-            this._loadingManager.itemEnd(url);
+        }).then(()=>this._loadingManager.itemEnd(url), (e)=>{
+            this._loadingManager.itemError(url);
+            throw e;
         });
     }
 }
