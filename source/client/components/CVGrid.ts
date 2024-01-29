@@ -27,6 +27,7 @@ import { IGrid } from "client/schema/setup";
 import { EUnitType } from "client/schema/common";
 
 import CVScene from "./CVScene";
+import CVStaticAnnotationView, { Annotation } from "./CVStaticAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +44,9 @@ export default class CVGrid extends CObject3D
 
     static readonly text: string = "Grid";
     static readonly icon: string = "";
+
+    protected annotationView: CVStaticAnnotationView = null;
+    protected label: Annotation = null;
 
     protected static readonly gridIns = {
         color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
@@ -89,6 +93,15 @@ export default class CVGrid extends CObject3D
     {
         this.ins.pickable.setValue(false);
         this.ins.visible.setValue(false);
+
+        // add units label
+        this.annotationView = this.node.createComponent(CVStaticAnnotationView);
+        const annotation = this.label = new Annotation(undefined);
+        annotation.data.style = "Standard";
+        annotation.data.position = [0,0,0];
+        annotation.data.direction = [0,0,0]
+        this.annotationView.ins.visible.setValue(false);
+        this.annotationView.addAnnotation(annotation);
 
         super.create();
     }
@@ -142,6 +155,12 @@ export default class CVGrid extends CObject3D
                 props.subDivisions = 10;
 
                 _vec3b.set(0, box.min.y, 0);
+
+                // update distance label
+                const data = this.label.data;
+                data.position = [-size/2, box.min.y, 0];
+                this.label.title = props.size.toFixed(2) + " " + EUnitType[units];
+                this.annotationView.updateAnnotation(this.label, true);
             }
 
             if (!this.object3D) {
@@ -159,6 +178,9 @@ export default class CVGrid extends CObject3D
 
         if (ins.visible.changed) {
             this.grid.visible = ins.visible.value;
+
+            // update label
+            this.annotationView.ins.visible.setValue(this.grid.visible);
         }
         if (ins.opacity.changed) {
             this.grid.opacity = ins.opacity.value;

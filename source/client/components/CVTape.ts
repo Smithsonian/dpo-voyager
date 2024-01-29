@@ -113,6 +113,7 @@ export default class CVTape extends CObject3D
         this.line = new Line(lineGeometry, lineMaterial);
         this.line.visible = false;
 
+        // add distance label
         this.annotationView = this.node.createComponent(CVStaticAnnotationView);
         const annotation = this.label = new Annotation(undefined);
         annotation.data.style = "Standard";
@@ -231,7 +232,7 @@ export default class CVTape extends CObject3D
             const units = this.ins.globalUnits.getOptionText();
             this.label.title = tapeLength.toFixed(2) + " " + units;
             this.annotationView.updateAnnotation(this.label, true);
-            if(tapeLength > 0) {console.log("SHOW TAPE TAG");
+            if(tapeLength > 0) {
                 this.annotationView.ins.visible.setValue(true);
             }
         }
