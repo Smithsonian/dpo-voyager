@@ -29,6 +29,7 @@ import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSi
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
+import UberPBRAdvMaterial from "../shaders/UberPBRAdvMaterial";
 import Derivative from "../models/Derivative";
 import DerivativeList from "../models/DerivativeList";
 
@@ -279,6 +280,10 @@ export default class CVModel2 extends CObject3D
             this.updateOverlayMap();
         }
 
+        if (ins.shadowSide.changed) {
+            this.updateShadowSide();
+        }
+
         if (ins.override.value && ins.shader.value === EShaderMode.Default && (ins.override.changed ||
             ins.color.changed || ins.opacity.changed || ins.doubleSided.changed ||
                 ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
@@ -495,9 +500,24 @@ export default class CVModel2 extends CObject3D
     {
         const shader = this.ins.shader.getValidatedValue();
         this.object3D.traverse(object => {
-            const material = object["material"] as UberPBRMaterial;
+            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
             if (material && material.isUberPBRMaterial) {
                 material.setShaderMode(shader);
+            }
+        });
+    }
+
+    protected updateShadowSide() {
+        this.object3D.traverse(object => {
+            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
+            if (material && material.isUberPBRMaterial) {
+                if(this.ins.shadowSide.value == ESideType.Front) {
+                    material.shadowSide = FrontSide;
+                }
+                else {
+                    material.shadowSide = BackSide;
+                }
+                material.needsUpdate = true;
             }
         });
     }
@@ -541,7 +561,7 @@ export default class CVModel2 extends CObject3D
         const ins = this.ins;
 
         this.object3D.traverse(object => {
-            const material = object["material"] as UberPBRMaterial;
+            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
             if (material && material.isUberPBRMaterial) {
                 material.aoMapMix.setScalar(ins.occlusion.value);
                 material.color.fromArray(ins.color.value);
@@ -551,6 +571,7 @@ export default class CVModel2 extends CObject3D
                 material.roughness = ins.roughness.value;
                 material.metalness = ins.metalness.value;
                 material.side = ins.doubleSided.value ? DoubleSide : FrontSide;
+                material.needsUpdate = true;
             }
         });
     }
@@ -705,17 +726,7 @@ export default class CVModel2 extends CObject3D
 
                 // update shadow render side
                 if(this.ins.shadowSide.value != ESideType.Back) {
-                    this.object3D.traverse(object => {
-                        const material = object["material"] as UberPBRMaterial;
-                        if (material && material.isUberPBRMaterial) {
-                            if(this.ins.shadowSide.value == ESideType.Front) {
-                                material.shadowSide = FrontSide;
-                            }
-                            else {
-                                material.shadowSide = BackSide;
-                            }
-                        }
-                    });
+                    this.updateShadowSide();
                 }
 
                 // flag environment map to update if needed

@@ -113,6 +113,14 @@
                 "uris": {
                     "description": "Location of the audio resource, absolute URL or path relative to this document with language key",
                     "type": "object"
+                },
+                "captionUris": {
+                    "description": "Location of the caption resource, absolute URL or path relative to this document with language key",
+                    "type": "object"
+                },
+                "durations": {
+                    "description": "Length of the audio resource with language key",
+                    "type": "object"
                 }
             },
             "required": [

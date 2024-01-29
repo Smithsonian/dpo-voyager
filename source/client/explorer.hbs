@@ -8,15 +8,6 @@
 
     {{#unless htmlWebpackPlugin.options.isDevelopment}}
     <!-- Google Analytics -->
-    <!--script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-        ga('create', '{{htmlWebpackPlugin.options.analyticsId}}', 'auto');
-        ga("send", "pageview");
-    </script-->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{htmlWebpackPlugin.options.analyticsId}}"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -39,19 +30,6 @@
     <style>
         body { background: #303030; }
     </style>
-
-    {{#if htmlWebpackPlugin.options.isDevelopment}}
-        {{#if htmlWebpackPlugin.options.isOffline}}
-            <!--script src="/libs/pep.js"></script-->
-            <script src="/libs/three.js"></script>
-        {{/if}}
-    {{else}}
-        {{#if htmlWebpackPlugin.options.isOffline}}
-            <!--script src="/libs/pep.min.js"></script-->
-            <script src="/libs/three.min.js"></script>
-        {{/if}}
-    {{/if}}
-
 </head>
 <body>
 {{{htmlWebpackPlugin.options.element}}}

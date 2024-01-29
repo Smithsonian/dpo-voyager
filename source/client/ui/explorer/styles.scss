@@ -250,6 +250,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   img {
     max-height: 120px;
+    max-width: 100%;
   }
 
   .sv-img-credit {
@@ -264,46 +265,69 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-circle-annotation {
-  width: 16%;
-  min-width: 160px;
-  max-width: 260px;
-  padding: 4px 8px;
-  background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 4px;
+  display: flex;
 
-  &.sv-align-right {
-    transform: translateX(-100%);
-  }
-  &.sv-align-bottom {
-    transform: translateY(-100%);
+  &.sv-expanded {
+    z-index: 2;
+    width: 16%;
+    min-width: 180px;
+    max-width: 280px;
   }
 
-  .sv-title {
-    padding: 0 0 2px 0;
-    font-weight: bold;
+  .sv-marker {
+    background-color: rgba(0, 0, 0, 0.65); 
+    border-radius: 50%;  
+    text-align: center; 
+    height: 18px;
+    aspect-ratio: 1/1;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #fff;
+    -webkit-tap-highlight-color: transparent;
   }
-  p {
-    @include font-ui-normal;
-    font-size: 0.88em;
-    line-height: 1.35;
-    color: $color-text;
-    margin: 0.5em 0;
-  }
-  .ff-button {
-    background: rgba(0, 0, 0, 0.01); // hack to get click events
 
-    .ff-icon {
-      fill: $color-icon;
+  .sv-annotation-body {
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    margin: 0px 1px;
+    width: 100%;
+
+    .sv-title {
+      padding: 0 0 2px 0;
+      font-weight: bold;
+    }
+    p {
+      @include font-ui-normal;
+      font-size: 0.88em;
+      line-height: 1.35;
+      color: $color-text;
+      margin: 0.5em 0;
+    }
+    .ff-button {
+      background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+      .ff-icon {
+        fill: $color-icon;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
 
-    &:hover {
-      text-decoration: underline;
+    .sv-audio-view {
+      .ff-icon {
+        fill: black;
+      }
     }
-  }
 
-  .sv-content {
-    overflow: hidden;
-    overflow-wrap: break-word;
+    .sv-content {
+      overflow: hidden;
+      overflow-wrap: break-word;
+    }
   }
 }
 

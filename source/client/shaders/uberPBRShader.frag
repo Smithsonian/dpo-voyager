@@ -115,7 +115,7 @@ varying vec3 vViewPosition;
 #endif
 
 #ifdef CUT_PLANE
-	#if !defined(PHYSICAL)
+	#if !defined(USE_TRANSMISSION)
     	varying vec3 vWorldPosition;
 	#endif
     uniform vec4 cutPlaneDirection;
@@ -192,7 +192,7 @@ void main() {
 
 		#if defined( USE_ENVMAP ) && defined( STANDARD )
 
-			float dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );
+			float dotNV = saturate( dot( geometryNormal, geometryViewDir ) );
 
 			reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
 

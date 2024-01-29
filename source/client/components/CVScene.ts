@@ -18,6 +18,7 @@
 import { Vector3, Box3, Plane } from "three";
 
 import { IComponentEvent, types } from "@ff/graph/Component";
+import Notification from "@ff/ui/Notification";
 
 import { EUnitType, TUnitType } from "client/schema/common";
 import { IDocument, IScene } from "client/schema/document";
@@ -153,7 +154,7 @@ export default class CVScene extends CVNode
             this.ins.modelUpdated.linkFrom(model.outs.updated);
         }
 
-        this.updateModelBoundingBox();
+        //this.updateModelBoundingBox();
     }
 
     protected updateModelBoundingBox()
@@ -167,13 +168,18 @@ export default class CVScene extends CVNode
 
         this.models.forEach(model => {
             if(model.object3D.visible){
-                box.expandByObject(model.object3D)
+                box.expandByObject(model.object3D);
             }
         });
         box.getSize(_vec3);
 
-        this.outs.boundingBox.set();
-        this.outs.boundingRadius.setValue(_vec3.length() * 0.5);
+        if(_vec3.length() > 0) {
+            this.outs.boundingBox.set();
+            this.outs.boundingRadius.setValue(_vec3.length() * 0.5);
+        }
+        else {
+            this.outs.boundingRadius.setValue(10.0);
+        }
     }
 
     protected updateTransformHierarchy()

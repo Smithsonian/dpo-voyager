@@ -25,6 +25,7 @@ import CVLanguageManager from "./CVLanguageManager";
 import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
+import CVAnalytics from "./CVAnalytics";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +70,9 @@ export default class CVAudioManager extends Component
     }
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
+    }
+    protected get analytics() {
+        return this.system.getMainComponent(CVAnalytics);
     }
 
     get narrationId() {
@@ -280,6 +284,7 @@ export default class CVAudioManager extends Component
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id === this._narrationId);
             this.audioView.requestUpdate();
+            this.analytics.sendProperty("Audio_Play", this.getAudioClipUri(id));
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
     }
@@ -296,7 +301,7 @@ export default class CVAudioManager extends Component
 
     stop()
     {  
-        if(!this.audioPlayer) {//Notification.show(`PLAYINGA`, "warning");
+        if(!this.audioPlayer) {
             return;
         }    
         this.pause();
@@ -357,6 +362,7 @@ export default class CVAudioManager extends Component
             track.setAttribute("default", "");
             this.audioPlayer.append(track);
             track.addEventListener("cuechange", this.onCueChange);
+            track.addEventListener("load", this.onLoadTrack);
         }
     }
 
@@ -366,6 +372,16 @@ export default class CVAudioManager extends Component
         const activeCues = (event.target as HTMLTrackElement).track.activeCues;
         const activeText = activeCues.length > 0 ? (activeCues[0] as VTTCue).text : "";
         this.ins.activeCaption.setValue(activeText);
+    }
+
+    // One-time setup after data is loaded
+    protected onLoadTrack = (event: Event) =>
+    {
+        // Cues starting at zero cause issues, so add a small offset
+        const cues = (this.audioPlayer.children[0] as HTMLTrackElement).track.cues;
+        if(cues[0].startTime === 0) {
+            cues[0].startTime = 0.01;
+        }
     }
 
     // Handle audio time elapsed updates
