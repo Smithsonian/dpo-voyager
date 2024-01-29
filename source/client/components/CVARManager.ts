@@ -158,12 +158,12 @@ export default class CVARManager extends Component
     create()
     {
         super.create();
-        this.graph.components.on(CVMeta, this.onMetaComponent, this);
+        this.system.components.on(CVMeta, this.onMetaComponent, this);
     }
 
     dispose()
     {
-        this.graph.components.off(CVMeta, this.onMetaComponent, this);
+        this.system.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
 

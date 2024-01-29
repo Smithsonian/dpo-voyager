@@ -137,7 +137,7 @@ export default class MainMenu extends DocumentView
         models.forEach(model => {
             hasARderivatives = model.derivatives.getByQuality(EDerivativeQuality.AR).length > 0 ? true : hasARderivatives;
         });
-        const arButtonVisible = /*this.arManager.outs.available.value &&*/ hasARderivatives && models.length >= 1;
+        const arButtonVisible = (this.arManager.outs.available.value || this.arManager.arCodeImage ) && hasARderivatives && models.length >= 1;
 
 
         return html`
