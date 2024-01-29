@@ -40,9 +40,11 @@ export interface IImage
     byteSize: number;
     width: number;
     height: number;
+    usage?: TImageUsage;
 }
 
 export type TImageQuality = "Thumb" | "Low" | "Medium" | "High";
+export type TImageUsage = "Render" | "ARCode";
 
 /**
  * Refers to an external document or a media file (audio, video, image).
