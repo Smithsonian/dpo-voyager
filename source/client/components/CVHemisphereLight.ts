@@ -15,33 +15,27 @@
  * limitations under the License.
  */
 
-import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
-import { Node } from "@ff/graph/Component";
+import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
 
 import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
-import { EShadowMapResolution } from "@ff/scene/components/CLight";
-import CVNode from "./CVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVDirectionalLight extends CDirectionalLight implements ICVLight
+export default class CVHemisphereLight extends CHemisphereLight implements ICVLight
 {
-    static readonly typeName: string = "CVDirectionalLight";
-    static readonly type: TLightType = "directional";
+    static readonly typeName: string = "CVHemisphereLight";
+    static readonly type: TLightType = "hemisphere";
 
-    static readonly text: string = "Directional Light";
+    static readonly text: string = "Hemisphere Light";
     static readonly icon: string = "bulb";
 
     get settingProperties() {
         return [
             this.ins.color,
             this.ins.intensity,
-            this.ins.shadowEnabled,
-            this.ins.shadowSize,
-            this.ins.shadowResolution,
-            this.ins.shadowBlur,
+            this.ins.ground,
         ];
     }
 
@@ -49,14 +43,11 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         return [
             this.ins.color,
             this.ins.intensity,
+            this.ins.ground,
         ];
     }
 
     dispose(): void {
-        if(this.ins.shadowEnabled.value && this.light.shadow.map) {
-            this.light.shadow.map.dispose();
-        }
-
         super.dispose()
     }
 
@@ -69,21 +60,16 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "directional") {
-            throw new Error("light type mismatch: not a directional light");
+        if (data.type !== CVHemisphereLight.type) {
+            throw new Error("light type mismatch: not an hemisphere light");
         }
+
+        data.point = data.point || {} as any;
 
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-
-            position: ins.position.schema.preset,
-            target: ins.target.schema.preset,
-
-            shadowEnabled: data.shadowEnabled || false,
-            shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
+            ground: data.hemisphere?.ground ?? ins.ground.schema.preset,
         });
 
         return node.light;
@@ -95,24 +81,13 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
-            intensity: ins.intensity.value
+            intensity: ins.intensity.value,
+            hemisphere:{
+              ground: ins.ground.cloneValue() as ColorRGB,
+            }
         } as ILight;
 
-        data.type = CVDirectionalLight.type;
-
-        if (ins.shadowEnabled.value) {
-            data.shadowEnabled = true;
-
-            if (!ins.shadowSize.isDefault()) {
-                data.shadowSize = ins.shadowSize.value;
-            }
-            if (!ins.shadowBlur.isDefault()) {
-                data.shadowBlur = ins.shadowBlur.value;
-            }
-            if (!ins.shadowResolution.isDefault()) {
-                data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
-            }
-        }
+        data.type = CVHemisphereLight.type;
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

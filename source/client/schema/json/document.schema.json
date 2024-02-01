@@ -210,7 +210,8 @@
                         "directional",
                         "point",
                         "spot",
-                        "hemisphere"
+                        "hemisphere",
+                        "rect"
                     ]
                 },
                 "color": {
