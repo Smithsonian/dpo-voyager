@@ -243,13 +243,14 @@ export default class MainMenu extends DocumentView
 
     protected onEnterAR()
     {
-        const arIns = this.arManager.ins;
+        const ar = this.arManager;
+        const arIns = ar.ins;
 
-        if(this.arManager.outs.available.value) {
+        if(ar.outs.available.value) {
             arIns.enabled.setValue(true);
         }
         else {
-            ARCode.show(this, this.activeDocument.setup.language).then(() => {
+            ARCode.show(this, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
                 //this.shareButtonSelected = false;
                 //this.requestUpdate();
                 this.setElementFocus("ar-btn");

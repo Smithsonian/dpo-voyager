@@ -46,7 +46,6 @@ import CVDirectionalLight from "./CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
 import CVAnalytics from "./CVAnalytics";
 import CVMeta from "./CVMeta";
-import { TImageUsage } from "client/schema/meta";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1020,7 +1019,7 @@ export default class CVARManager extends Component
                 Object.keys(images).forEach(key => {
                     const image =  images[key];
                     if(image.usage && image.usage === "ARCode") {
-                        this._arCodeImage = image.uri;
+                        this._arCodeImage = this.assetManager.getAssetUrl(image.uri);
                     }
                 });
             });

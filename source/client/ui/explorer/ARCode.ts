@@ -29,11 +29,12 @@ export default class ARCode extends Popup
 {
     protected url: string;
     protected language: CVLanguageManager = null;
+    protected imageUri: string = null;
     protected needsFocus: boolean = false;
 
-    static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
+    static show(parent: HTMLElement, language: CVLanguageManager, imageUri: string): Promise<void>
     {
-        const menu = new ARCode(language);
+        const menu = new ARCode(language, imageUri);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -41,11 +42,12 @@ export default class ARCode extends Popup
         });
     }
 
-    constructor( language: CVLanguageManager )
+    constructor( language: CVLanguageManager, imageUri: string )
     {
         super();
 
         this.language = language;
+        this.imageUri = imageUri;
         this.position = "center";
         this.modal = true;
 
@@ -69,7 +71,7 @@ export default class ARCode extends Popup
     {
         const language = this.language;
 
-        const windowName = language.getLocalizedString("AR Experience");
+        const windowName = language.getLocalizedString("AR Experience"); 
 
         return html`
         <div role="region" aria-label=${windowName} @keydown=${e =>this.onKeyDown(e)}>
@@ -79,7 +81,7 @@ export default class ARCode extends Popup
             </div>
             <div class="ff-title" id="embedTitle">${language.getLocalizedString("Scan with your mobile device to return here for an AR experience!")}</div>
             <div class="ff-flex-row">
-                <img src="https://www.si.edu/sites/all/themes/si_baseline/images/logos/logo.svg"></img>
+                <img src=${this.imageUri}></img>
             </div>
         </div>
         `;
