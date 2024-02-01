@@ -79,10 +79,11 @@ export default class ARCode extends Popup
                 <div id="arCodeTitle" class="ff-flex-spacer ff-title">${windowName}</div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
-            <div class="ff-title" id="embedTitle">${language.getLocalizedString("Scan with your mobile device to return here for an AR experience!")}</div>
+            <div class="ff-title" id="embedTitle">${language.getLocalizedString("1. Scan the code with your mobile device to return here.")}</div>
             <div class="ff-flex-row">
                 <img src=${this.imageUri}></img>
             </div>
+            <div class="ff-title">${language.getLocalizedString("2. Tap ")}<ff-icon name="ar"></ff-icon>${language.getLocalizedString(" to launch an AR experience! ")}</div>
         </div>
         `;
     }
