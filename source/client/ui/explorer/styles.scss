@@ -514,7 +514,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-ar-code {
   position: relative;
-  width: 450px;
+  width: 420px;
   max-width: 85%;
   padding: 8px;
   background: $color-background;
@@ -523,6 +523,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   .ff-title {
     margin: 0.5em 0 1em 0;
+  }
+
+  img {
+    height: 250px;
+    margin: auto;
   }
 }
 

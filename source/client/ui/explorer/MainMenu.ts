@@ -250,7 +250,7 @@ export default class MainMenu extends DocumentView
             arIns.enabled.setValue(true);
         }
         else {
-            ARCode.show(this, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
+            ARCode.show(this.parentElement.parentElement.parentElement, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
                 //this.shareButtonSelected = false;
                 //this.requestUpdate();
                 this.setElementFocus("ar-btn");

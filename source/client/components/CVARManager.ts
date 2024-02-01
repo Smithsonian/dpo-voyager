@@ -109,6 +109,14 @@ export default class CVARManager extends Component
         this._shadowRoot = root;
     }
     get arCodeImage() {
+
+        // SI-specific to return QR codes for legacy content
+        const docUri = document.documentURI;
+        if(this._arCodeImage == null && docUri.includes("3d-api.si.edu")) {
+            const uuid = docUri.split("/").pop().split(":").pop(); console.log(uuid);
+            this._arCodeImage = "https://3d-api.si.edu/voyager/" + uuid + "/qrcode"; console.log(this._arCodeImage);
+        }
+
         return this._arCodeImage;
     }
 
