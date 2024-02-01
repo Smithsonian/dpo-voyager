@@ -17,7 +17,7 @@
 
 import CPointLight from "@ff/scene/components/CPointLight";
 
-import { IDocument, INode, ILight, ColorRGB } from "client/schema/document";
+import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
@@ -27,6 +27,7 @@ import { EShadowMapResolution } from "@ff/scene/components/CLight";
 export default class CVPointLight extends CPointLight implements ICVLight
 {
     static readonly typeName: string = "CVPointLight";
+    static readonly type: TLightType = "point";
 
     static readonly text: string = "Point Light";
     static readonly icon: string = "bulb";
@@ -67,7 +68,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "point") {
+        if (data.type !== CVPointLight.type) {
             throw new Error("light type mismatch: not a point light");
         }
 
@@ -103,7 +104,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
             },
         } as ILight;
 
-        data.type = "point";
+        data.type = CVPointLight.type;
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;

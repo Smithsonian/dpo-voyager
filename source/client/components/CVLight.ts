@@ -23,6 +23,15 @@ import { IDocument, INode } from "client/schema/document";
 
 export { CLight };
 
+export enum ELightType {
+    directional,
+    point,
+    spot,
+    ambient,
+    hemisphere,
+    rect,
+}
+
 export interface ICVLight extends CLight
 {
     fromDocument(document: IDocument, node: INode): void;

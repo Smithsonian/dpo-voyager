@@ -17,7 +17,7 @@
 
 import CSpotLight from "@ff/scene/components/CSpotLight";
 
-import { IDocument, INode, ILight, ColorRGB } from "client/schema/document";
+import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
@@ -27,6 +27,7 @@ import { EShadowMapResolution } from "@ff/scene/components/CLight";
 export default class CVSpotLight extends CSpotLight implements ICVLight
 {
     static readonly typeName: string = "CVSpotLight";
+    static readonly type: TLightType = "spot";
 
     static readonly text: string = "Spot Light";
     static readonly icon: string = "bulb";
@@ -69,7 +70,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "spot") {
+        if (data.type !== CVSpotLight.type) {
             throw new Error("light type mismatch: not a spot light");
         }
 
@@ -110,7 +111,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             },
         } as ILight;
 
-        data.type = "spot";
+        data.type = CVSpotLight.type;
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;
