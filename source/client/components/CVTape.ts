@@ -178,13 +178,19 @@ export default class CVTape extends CObject3D
             }
         }
 
-        if(ins.visible.changed && ins.visible.value) {
-            const startPos = ins.startPosition.value;
-            const endPos = ins.endPosition.value;
-            if(startPos[0] != endPos[0] && startPos[1] != endPos[1] && startPos[2] != endPos[2]) {
-                startPin.visible = true;
-                endPin.visible = true;
-                line.visible = true;
+        if(ins.visible.changed) {
+            if(ins.visible.value) {
+                const startPos = ins.startPosition.value;
+                const endPos = ins.endPosition.value;
+                if(startPos[0] != endPos[0] || startPos[1] != endPos[1] || startPos[2] != endPos[2]) {
+                    startPin.visible = true;
+                    endPin.visible = true;
+                    line.visible = true;
+                    this.annotationView.ins.visible.setValue(true);
+                }
+            }
+            else {
+                this.annotationView.ins.visible.setValue(false);
             }
         }
 
@@ -232,7 +238,7 @@ export default class CVTape extends CObject3D
             const units = this.ins.globalUnits.getOptionText();
             this.label.title = tapeLength.toFixed(2) + " " + units;
             this.annotationView.updateAnnotation(this.label, true);
-            if(tapeLength > 0) {
+            if(tapeLength > 0 && this.ins.visible.value) {
                 this.annotationView.ins.visible.setValue(true);
             }
         }

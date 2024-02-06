@@ -28,6 +28,7 @@ import { EUnitType } from "client/schema/common";
 
 import CVScene from "./CVScene";
 import CVStaticAnnotationView, { Annotation } from "./CVStaticAnnotationView";
+import CVTape from "./CVTape";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +48,7 @@ export default class CVGrid extends CObject3D
 
     protected annotationView: CVStaticAnnotationView = null;
     protected label: Annotation = null;
+    protected tape: CVTape = null;
 
     protected static readonly gridIns = {
         color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
@@ -95,13 +97,18 @@ export default class CVGrid extends CObject3D
         this.ins.visible.setValue(false);
 
         // add units label
-        this.annotationView = this.node.createComponent(CVStaticAnnotationView);
+        /*this.annotationView = this.node.createComponent(CVStaticAnnotationView);
         const annotation = this.label = new Annotation(undefined);
         annotation.data.style = "Standard";
         annotation.data.position = [0,0,0];
         annotation.data.direction = [0,0,0]
         this.annotationView.ins.visible.setValue(false);
-        this.annotationView.addAnnotation(annotation);
+        this.annotationView.addAnnotation(annotation);*/
+
+        this.tape = this.node.createComponent(CVTape);
+        this.tape.ins.startPosition.setValue([0,0,0]);
+        this.tape.ins.endPosition.setValue([0,0,0]);
+        this.tape.ins.visible.setValue(false);
 
         super.create();
     }
@@ -157,10 +164,13 @@ export default class CVGrid extends CObject3D
                 _vec3b.set(0, box.min.y, 0);
 
                 // update distance label
-                const data = this.label.data;
+                /*const data = this.label.data;
                 data.position = [-size/2, box.min.y, 0];
                 this.label.title = props.size.toFixed(2) + " " + EUnitType[units];
-                this.annotationView.updateAnnotation(this.label, true);
+                this.annotationView.updateAnnotation(this.label, true);*/
+
+                this.tape.ins.startPosition.setValue([-size/2, box.min.y+(size/100), -size/2]);
+                this.tape.ins.endPosition.setValue([(-size/2)+(size/props.mainDivisions), box.min.y+(size/100), -size/2]);
             }
 
             if (!this.object3D) {
@@ -180,7 +190,8 @@ export default class CVGrid extends CObject3D
             this.grid.visible = ins.visible.value;
 
             // update label
-            this.annotationView.ins.visible.setValue(this.grid.visible);
+            //this.annotationView.ins.visible.setValue(this.grid.visible);
+            this.tape.ins.visible.setValue(this.grid.visible);
         }
         if (ins.opacity.changed) {
             this.grid.opacity = ins.opacity.value;
