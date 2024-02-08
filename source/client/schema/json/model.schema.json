@@ -65,6 +65,11 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "viewId": {
+                    "description": "Id of a snapshot resource with camera view information for this annotation.",
+                    "type": "string",
+                    "minLength": 1
+                },
                 "style": {
                     "type": "string"
                 },

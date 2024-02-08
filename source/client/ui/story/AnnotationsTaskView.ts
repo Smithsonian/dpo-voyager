@@ -126,6 +126,12 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                 <div class="sv-label" style="${overLimit ? "color: red" : ""}">Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
                 <ff-text-edit name="lead" text=${inProps.lead.value} maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
             </div>
+            <div class="sv-label">View Point</div>
+            <div class="sv-commands">
+                <ff-button text="Save" icon="camera" @click=${this.onSaveView}></ff-button>
+                <ff-button text="Restore" ?disabled=${!annotation.data.viewId.length} icon="document" @click=${this.onRestoreView}></ff-button>
+                <ff-button text="Delete" ?disabled=${!annotation.data.viewId.length} icon="trash" @click=${this.onDeleteView}></ff-button>
+            </div>
         </div>` : null;
 
         return html`<div class="sv-commands">
@@ -188,6 +194,32 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         this.task.removeAnnotation();
     }
+
+    /**
+     * User clicked the save view button.
+     */
+     protected onSaveView()
+     {
+         this.task.saveAnnotationView();
+         this.requestUpdate();
+     }
+
+     /**
+     * User clicked the restore view button.
+     */
+      protected onRestoreView()
+      {
+          this.task.restoreAnnotationView();
+      }
+
+      /**
+     * User clicked the delete view button.
+     */
+     protected onDeleteView()
+     {
+         this.task.deleteAnnotationView();
+         this.requestUpdate();
+     }
 
     /**
      * User clicked an entry in the annotation list.
