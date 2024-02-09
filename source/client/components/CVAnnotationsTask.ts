@@ -20,8 +20,8 @@ import { Vector3, Quaternion, Matrix4, Matrix3, Object3D } from "three";
 import * as helpers from "@ff/three/helpers";
 
 import { Node, types } from "@ff/graph/Component";
-
 import { IPointerEvent } from "@ff/scene/RenderView";
+import Notification from "@ff/ui/Notification";
 
 import Annotation from "../models/Annotation";
 
@@ -142,7 +142,13 @@ export default class CVAnnotationsTask extends CVTask
         if(ins.audio.changed) {
             const audioManager = this.activeDocument.setup.audio;
             const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
-            this._activeAnnotations.ins.audioId.setValue(id);
+            if(id != audioManager.narrationId) {
+                this._activeAnnotations.ins.audioId.setValue(id);
+            }
+            else {
+                ins.audio.setValue(0);  // set to none
+                Notification.show("Narration audio cannot be used in an annotation.", "warning");
+            }
         }
 
         if(ins.selection.changed) {

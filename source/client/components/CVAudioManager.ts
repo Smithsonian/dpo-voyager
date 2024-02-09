@@ -42,11 +42,13 @@ export default class CVAudioManager extends Component
     static readonly isSystemSingleton = true;
 
     private _narrationId: string = null;
+    private _activeId: string = null;
     private _audioMap: Dictionary<string> = {};
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
     protected audioView: AudioView = null;
+    protected audioViews: Dictionary<AudioView> = {};
     protected isPlaying: Boolean = false;
 
     protected static readonly ins = {
@@ -82,14 +84,17 @@ export default class CVAudioManager extends Component
         this._narrationId = id;
         this.outs.narrationEnabled.setValue(id.length > 0);
     }
+    get activeId() {
+        return this._activeId || "";
+    }
+    set activeId( id: string ) {
+        this._activeId = id;
+    }
 
     create()
     {
         super.create();
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
-
-        this.audioView = new AudioView;
-        this.audioView.audio = this;
 
         this.language.outs.language.on("value", this.onLanguageChange, this);
     }
@@ -115,6 +120,7 @@ export default class CVAudioManager extends Component
                 }
                 else {
                     this.stop();
+                    Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
                 }
             }
         }
@@ -122,9 +128,14 @@ export default class CVAudioManager extends Component
     }
 
     getPlayerById(id: string) {
-        this.audioView.audioId = id;
-        this.audioView.requestUpdate();
-        return this.audioView;
+        if(!this.audioViews.hasOwnProperty(id)) {
+            const view = this.audioViews[id] = new AudioView;
+            view.audio = this;
+            view.audioId = id;
+            view.requestUpdate();
+        }
+
+        return this.audioViews[id];
     }
 
     getAudioList()
@@ -172,7 +183,7 @@ export default class CVAudioManager extends Component
                         (buffer) => {
                             let duration = buffer.duration;
                             clip.durations[language] = duration.toString();
-                            this.audioView.requestUpdate();                      
+                            this.getPlayerById(id).requestUpdate();                      
                         }
                     )
                 }
@@ -276,14 +287,16 @@ export default class CVAudioManager extends Component
     {
         const { outs } = this;
         outs.isPlaying.setValue(true);
+        this.audioView = this.audioViews[id];
 
         this.initializeClip(id);
         
         this.audioPlayer.play()
         .then(() => {
+            this.activeId = id;
             this.isPlaying = true;
             outs.narrationPlaying.setValue(id === this._narrationId);
-            this.audioView.requestUpdate();
+            Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", this.getAudioClipUri(id));
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
@@ -313,6 +326,7 @@ export default class CVAudioManager extends Component
         const { outs } = this;
         
         this.isPlaying = false;
+        outs.isPlaying.setValue(false);
         outs.narrationPlaying.setValue(false);
         this.audioView.requestUpdate();
     }
@@ -429,17 +443,17 @@ export class AudioView extends CustomElement
                 slider.value = this.elapsed.toString();
             }
         }
-
         super.update(changedProperties);
     }
 
     protected render()
     {
-        //const elapsed = this.audio.getTimeElapsed();
+        const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
+        const disabled = this.audio.outs.narrationPlaying.value && this.audioId != this.audio.narrationId;
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button ?disabled=${disabled} icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" ?disabled=${disabled} @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
