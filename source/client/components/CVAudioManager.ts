@@ -449,7 +449,7 @@ export class AudioView extends CustomElement
     protected render()
     {
         const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
-        const disabled = this.audio.outs.narrationPlaying.value && this.audioId != this.audio.narrationId;
+        const disabled = this.audio.outs.isPlaying.value && this.audioId != this.audio.activeId;
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
