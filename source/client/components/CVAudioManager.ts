@@ -115,13 +115,13 @@ export default class CVAudioManager extends Component
 
         if (ins.playNarration.changed) {
             if(this.audioPlayer && this._narrationId) {
-                if(!this.isPlaying) {
+                if(this.outs.isPlaying.value && this.activeId == this._narrationId) {
+                    this.stop();
+                }
+                else if(!outs.narrationPlaying.value){
                     this.play(this._narrationId);
                 }
-                else {
-                    this.stop();
-                    Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
-                }
+                outs.narrationPlaying.setValue(!outs.narrationPlaying.value);
             }
         }
         return true;
@@ -286,6 +286,13 @@ export default class CVAudioManager extends Component
     play(id: string)
     {
         const { outs } = this;
+
+        // handle currently playing track
+        if(outs.isPlaying.value) {
+            this.audioPlayer.pause();
+        }
+        this.setTimeElapsed(0);
+
         outs.isPlaying.setValue(true);
         this.audioView = this.audioViews[id];
 
@@ -295,7 +302,6 @@ export default class CVAudioManager extends Component
         .then(() => {
             this.activeId = id;
             this.isPlaying = true;
-            outs.narrationPlaying.setValue(id === this._narrationId);
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", this.getAudioClipUri(id));
         })
@@ -327,7 +333,6 @@ export default class CVAudioManager extends Component
         
         this.isPlaying = false;
         outs.isPlaying.setValue(false);
-        outs.narrationPlaying.setValue(false);
         this.audioView.requestUpdate();
     }
 
@@ -449,17 +454,17 @@ export class AudioView extends CustomElement
     protected render()
     {
         const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
-        const disabled = this.audio.outs.isPlaying.value && this.audioId != this.audio.activeId;
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button ?disabled=${disabled} icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" ?disabled=${disabled} @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
         const audio = this.audio;
+        const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
 
-        if(!audio.outs.isPlaying.value) {
+        if(!isPlaying) {
             audio.play(id);
         }
         else {
