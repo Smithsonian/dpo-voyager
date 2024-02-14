@@ -225,10 +225,11 @@ export default class CVAudioManager extends Component
 
     removeAudioClip(id: string)
     {
+        if(this.isPlaying && id == this.activeId) {
+            this.stop();
+        }
+
         if(id == this._narrationId) {
-            if(this.isPlaying) {
-                this.stop();
-            }
             this.narrationId = "";
         }
         delete this.audioClips[id];
