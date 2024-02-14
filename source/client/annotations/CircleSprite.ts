@@ -43,6 +43,8 @@ export default class CircleSprite extends AnnotationSprite
 
     protected offset: Group;
     protected anchorMesh: Mesh;
+    protected originalHeight;
+    protected originalWidth;
 
     constructor(annotation: Annotation)
     {
@@ -122,24 +124,39 @@ export default class CircleSprite extends AnnotationSprite
         if (annotation.expanded) {
             element.classList.add("sv-expanded");
 
+            if(!element.truncated) {
+                this.originalHeight = element.offsetHeight;
+                this.originalWidth = element.offsetWidth;
+            }
+
             let x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
             let y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
 
-            if (x + element.offsetWidth >= container.offsetWidth && !element.classList.contains("sv-align-right")) {
-                element.classList.add("sv-align-right");
+            const shouldTruncate = y + this.originalHeight >= container.offsetHeight;
+            if(shouldTruncate !== element.truncated) {
+                element.truncated = shouldTruncate;
                 element.requestUpdate();
+
+                x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+                y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
             }
-            else if (x + element.offsetWidth < container.offsetWidth && element.classList.contains("sv-align-right")){
-                element.classList.remove("sv-align-right");
-                element.requestUpdate();
-            }
-            if (y + element.offsetHeight >= container.offsetHeight && !element.classList.contains("sv-align-bottom")) {
-                element.classList.add("sv-align-bottom");
-                element.requestUpdate();
-            }
-            else if (y + element.offsetHeight < container.offsetHeight && element.classList.contains("sv-align-bottom")) {
-                element.classList.remove("sv-align-bottom");
-                element.requestUpdate();
+            else {
+                if (x + element.offsetWidth >= container.offsetWidth && !element.classList.contains("sv-align-right")) {
+                    element.classList.add("sv-align-right");
+                    element.requestUpdate();
+                }
+                else if (x + element.offsetWidth < container.offsetWidth && element.classList.contains("sv-align-right")){
+                    element.classList.remove("sv-align-right");
+                    element.requestUpdate();
+                }
+                if (y + element.offsetHeight >= container.offsetHeight && !element.classList.contains("sv-align-bottom")) {
+                    element.classList.add("sv-align-bottom");
+                    element.requestUpdate();
+                }
+                else if (y + element.offsetHeight < container.offsetHeight && element.classList.contains("sv-align-bottom")) {
+                    element.classList.remove("sv-align-bottom");
+                    element.requestUpdate();
+                }
             }
         }
     }
@@ -169,6 +186,7 @@ class CircleAnnotation extends AnnotationElement
         this.onClickArticle = this.onClickArticle.bind(this);
         this.onClickAudio = this.onClickAudio.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
+        this.onClickOverlay = this.onClickOverlay.bind(this);
 
         this.markerElement = this.appendElement("div");
         this.markerElement.classList.add("sv-marker");
@@ -201,12 +219,18 @@ class CircleAnnotation extends AnnotationElement
         // update title
         this.markerElement.innerText = annotationData.marker;
 
-        const contentTemplate = html`
-        <div class="sv-title">${annotation.title}</div>
+        const fullContent = html`
             ${annotationData.imageUri ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
             <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
             ${annotationData.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
+            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;
+
+        const shortContent = html`<ff-button inline text="+more info" @click=${this.onClickOverlay}></ff-button>`;
+
+        const contentTemplate = html`
+            <div class="sv-title">${annotation.title}</div>
+            <div id="short_content" style="${!this.truncated ? "display:none" : null}">${shortContent}</div>
+            <div id="full_content" style="${this.truncated ? "display:none" : null}">${fullContent}</div>`;    
 
         render(contentTemplate, this.contentElement);
 
@@ -220,7 +244,7 @@ class CircleAnnotation extends AnnotationElement
         }
 
         // update expanded/collapsed
-        if (this.isExpanded !== annotationData.expanded) {
+        if (this.isExpanded !== annotationData.expanded && !this.overlayed) {
 
             this.isExpanded = annotationData.expanded;
 
@@ -278,6 +302,17 @@ class CircleAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
+    }
+
+    protected onClickOverlay(event: MouseEvent)
+    {
+        event.stopPropagation();
+        const content = this.contentElement;
+        this.overlayed = true;
+        this.contentElement.style.display = "block";
+        (content.querySelector("#short_content") as HTMLElement).setAttribute("style","display:none");
+        (content.querySelector("#full_content") as HTMLElement).setAttribute("style","");
+        this.showOverlay(content);
     }
 
     protected onClickAudio(event: MouseEvent)
