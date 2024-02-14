@@ -129,7 +129,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <div class="sv-label">View Point</div>
             <div class="sv-commands">
                 <ff-button text="Save" icon="camera" @click=${this.onSaveView}></ff-button>
-                <ff-button text="Restore" ?disabled=${!annotation.data.viewId.length} icon="document" @click=${this.onRestoreView}></ff-button>
+                <ff-button text="View" ?disabled=${!annotation.data.viewId.length} icon="document" @click=${this.onRestoreView}></ff-button>
                 <ff-button text="Delete" ?disabled=${!annotation.data.viewId.length} icon="trash" @click=${this.onDeleteView}></ff-button>
             </div>
         </div>` : null;
