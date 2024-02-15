@@ -115,7 +115,7 @@ export default class CVAudioManager extends Component
 
         if (ins.playNarration.changed) {
             if(this.audioPlayer && this._narrationId) {
-                if(this.outs.isPlaying.value && this.activeId == this._narrationId) {
+                if(outs.narrationPlaying.value && this.activeId == this._narrationId) {
                     this.stop();
                 }
                 else if(!outs.narrationPlaying.value){
@@ -292,7 +292,10 @@ export default class CVAudioManager extends Component
         if(outs.isPlaying.value) {
             this.audioPlayer.pause();
         }
-        this.setTimeElapsed(0);
+
+        if(this.activeId !== id) {
+            this.setTimeElapsed(0);
+        }
 
         outs.isPlaying.setValue(true);
         this.audioView = this.audioViews[id];
