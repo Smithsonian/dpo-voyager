@@ -187,10 +187,10 @@ export default class StoryApplication
         }     
 
         // if dragging/dropping have to assume that a non-loading url is still valid
+        this.mediaManager.rootUrl = this.assetManager.baseUrl;
         if(props.dragdrop === true) {
             this.assetManager.ins.baseUrlValid.setValue(true);
         }
-        this.mediaManager.rootUrl = this.assetManager.baseUrl;
 
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);
