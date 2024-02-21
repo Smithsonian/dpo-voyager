@@ -215,6 +215,7 @@ class CircleAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation;
         const annotationData = annotation.data;
+        const isTruncated = !this.overlayed && this.truncated;
 
         // update title
         this.markerElement.innerText = annotationData.marker;
@@ -228,9 +229,9 @@ class CircleAnnotation extends AnnotationElement
         const shortContent = html`<ff-button inline text="+more info" @click=${this.onClickOverlay}></ff-button>`;
 
         const contentTemplate = html`
-            <div class="sv-title">${annotation.title}</div>
-            <div id="short_content" style="${!this.truncated ? "display:none" : null}">${shortContent}</div>
-            <div id="full_content" style="${this.truncated ? "display:none" : null}">${fullContent}</div>`;    
+            ${!this.isOverlayed ? html`<div class="sv-title">${annotation.title}</div>` : null}
+            <div id="short_content" style="${!isTruncated ? "display:none" : null}">${shortContent}</div>
+            <div id="full_content" style="${isTruncated ? "display:none" : null}">${fullContent}</div>`;    
 
         render(contentTemplate, this.contentElement);
 
@@ -309,9 +310,6 @@ class CircleAnnotation extends AnnotationElement
         event.stopPropagation();
         const content = this.contentElement;
         this.overlayed = true;
-        this.contentElement.style.display = "block";
-        (content.querySelector("#short_content") as HTMLElement).setAttribute("style","display:none");
-        (content.querySelector("#full_content") as HTMLElement).setAttribute("style","");
         this.showOverlay(content);
     }
 

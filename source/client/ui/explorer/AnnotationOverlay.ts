@@ -28,9 +28,9 @@ export default class AnnotationOverlay extends Popup
 {
     protected content: HTMLElement = null;
 
-    static show(parent: HTMLElement, content: HTMLElement): Promise<void>
+    static show(parent: HTMLElement, content: HTMLElement, title: string): Promise<void>
     {
-        const popup = new AnnotationOverlay(content);
+        const popup = new AnnotationOverlay(content, title);
         parent.appendChild(popup);
 
         return new Promise((resolve, reject) => {
@@ -38,11 +38,12 @@ export default class AnnotationOverlay extends Popup
         });
     }
 
-    constructor( content: HTMLElement )
+    constructor( content: HTMLElement, title: string )
     {
         super();
 
         this.content = content;
+        this.title = title;
         this.position = "center";
         this.modal = true;
     }
@@ -56,7 +57,7 @@ export default class AnnotationOverlay extends Popup
     protected firstConnected()
     {
         super.firstConnected();
-        //this.classList.add("sv-main-help");
+        this.classList.add("sv-annotation-overlay");
     }
 
     protected render()
@@ -64,7 +65,7 @@ export default class AnnotationOverlay extends Popup
         return html`
         <div class="sv-help-region" id="anno_container" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title"><b>${"Title"}</b></div>
+                <div class="ff-flex-spacer ff-title"><b>${this.title}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title="Close" @click=${this.close}></ff-button>
             </div>
         </div>

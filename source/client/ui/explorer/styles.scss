@@ -441,6 +441,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   pointer-events: none;
 }
 
+.sv-annotation-overlay {
+  padding: 7px;
+  background-color: $menu-color-background;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AR MODE
 
