@@ -221,7 +221,7 @@ export default class ArticleEditor extends SystemView
             //link_target_list: false,
 
             images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
-                const filename = file.filename();
+                const filename = this.mediaManager.getUniqueName(CVMediaManager.articleFolder + "/" + file.filename());
                 this.mediaManager.uploadFile(filename, file.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
                     then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename))});
             }),
@@ -231,7 +231,7 @@ export default class ArticleEditor extends SystemView
                     const blobInfo = editor.editorUpload.blobCache.getByUri(img.src);
                     if(blobInfo) {
                         if(this.standaloneFileManager) {
-                            const filename = blobInfo.filename();
+                            const filename = this.mediaManager.getUniqueName(CVMediaManager.articleFolder + "/" + blobInfo.filename());
                             this.mediaManager.uploadFile(filename, blobInfo.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/"))
                             img.src = this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename);
                         }
