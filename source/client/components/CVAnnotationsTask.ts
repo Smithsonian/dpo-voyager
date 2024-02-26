@@ -292,6 +292,7 @@ export default class CVAnnotationsTask extends CVTask
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
             prevAnnotations.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
+            prevAnnotations.activeAnnotation = null;
         }
         if (nextAnnotations) {
             nextAnnotations.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
