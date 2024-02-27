@@ -15,33 +15,26 @@
  * limitations under the License.
  */
 
-import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
-import { Node } from "@ff/graph/Component";
+import CRectLight from "@ff/scene/components/CRectLight";
 
 import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
-import { EShadowMapResolution } from "@ff/scene/components/CLight";
-import CVNode from "./CVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVDirectionalLight extends CDirectionalLight implements ICVLight
+export default class CVRectLight extends CRectLight implements ICVLight
 {
-    static readonly typeName: string = "CVDirectionalLight";
-    static readonly type: TLightType = "directional";
+    static readonly typeName: string = "CVRectLight";
+    static readonly type: TLightType = "rect";
 
-    static readonly text: string = "Directional Light";
+    static readonly text: string = "Rectangular Light";
     static readonly icon: string = "bulb";
 
     get settingProperties() {
         return [
             this.ins.color,
             this.ins.intensity,
-            this.ins.shadowEnabled,
-            this.ins.shadowSize,
-            this.ins.shadowResolution,
-            this.ins.shadowBlur,
         ];
     }
 
@@ -53,10 +46,6 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
     }
 
     dispose(): void {
-        if(this.ins.shadowEnabled.value && this.light.shadow.map) {
-            this.light.shadow.map.dispose();
-        }
-
         super.dispose()
     }
 
@@ -69,8 +58,8 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "directional") {
-            throw new Error("light type mismatch: not a directional light");
+        if (data.type !== CVRectLight.type) {
+            throw new Error(`light type mismatch: not a directional light (${data.type})`);
         }
 
         ins.copyValues({
@@ -79,11 +68,6 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
-
-            shadowEnabled: data.shadowEnabled || false,
-            shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
-            shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
         });
 
         return node.light;
@@ -98,21 +82,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             intensity: ins.intensity.value
         } as ILight;
 
-        data.type = CVDirectionalLight.type;
-
-        if (ins.shadowEnabled.value) {
-            data.shadowEnabled = true;
-
-            if (!ins.shadowSize.isDefault()) {
-                data.shadowSize = ins.shadowSize.value;
-            }
-            if (!ins.shadowBlur.isDefault()) {
-                data.shadowBlur = ins.shadowBlur.value;
-            }
-            if (!ins.shadowResolution.isDefault()) {
-                data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
-            }
-        }
+        data.type = CVRectLight.type;
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;
