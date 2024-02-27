@@ -49,6 +49,7 @@ import CVMeta from "../components/CVMeta";
 import CVModel2 from "../components/CVModel2";
 import CVAnnotations from "../components/CVAnnotations";
 import CVAnnotationView from "../components/CVAnnotationView";
+import CVStaticAnnotationView from "client/components/CVStaticAnnotationView";
 import CVCamera from "../components/CVCamera";
 import CVDirectionalLight from "../components/CVDirectionalLight";
 import CVPointLight from "../components/CVPointLight";
@@ -68,6 +69,7 @@ import CVSnapshots from "../components/CVSnapshots";
 import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
 import CVLanguageManager from "../components/CVLanguageManager";
+import CVAudioManager from "client/components/CVAudioManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -75,7 +77,6 @@ import NVEngine from "../nodes/NVEngine";
 import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
-import CVAudioManager from "client/components/CVAudioManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -106,6 +107,7 @@ const types = [
     CVModel2,
     CVAnnotations,
     CVAnnotationView,
+    CVStaticAnnotationView,
     CVCamera,
     CVDirectionalLight,
     CVPointLight,
