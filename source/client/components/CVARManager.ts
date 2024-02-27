@@ -40,7 +40,6 @@ import { EUnitType } from "client/schema/common";
 import { EDerivativeUsage, EDerivativeQuality, EAssetType } from "client/models/Derivative";
 import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
-import CVAnnotationView from "./CVAnnotationView";
 
 import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
@@ -57,7 +56,6 @@ const _hitPosition = new Vector3();
 const _boundingBox = new Box3();
 const _quat = new Quaternion();
 const ROTATION_RATE = 1.5;
-const ANNOTATION_SCALE = 2.0;
 
 export default class CVARManager extends Component
 {
@@ -375,12 +373,6 @@ export default class CVARManager extends Component
             this.sceneNode.ins.units.setValue(EUnitType.m);
         }
 
-        // Temporary until annotation scale implementation is resolved
-        const views = scene.getGraphComponents(CVAnnotationView);
-        views.forEach(component => {
-            component.setXRScale(ANNOTATION_SCALE);
-        });
-
         // Disable any shadow casting lights
         const lights = scene.getGraphComponents(CVDirectionalLight);
         lights.forEach(light => {
@@ -449,12 +441,6 @@ export default class CVARManager extends Component
         if(cachedShader !== EShaderMode.Default) {
             setup.viewer.ins.shader.setValue(cachedShader);
         }
-
-        // Temporary until annotation scale implementation is resolved
-        const views = this.sceneNode.getGraphComponents(CVAnnotationView);
-        views.forEach(component => {
-            component.setXRScale(1.0);
-        });
 
         // Reset shadowing lights
         this.lightsToReset.forEach(light => {

@@ -49,6 +49,7 @@ export interface ISetup
     slicer?: ISlicer;
     tours?: ITours;
     snapshots?: ISnapshots;
+    audio?: IAudio;
 }
 
 export interface IInterface
