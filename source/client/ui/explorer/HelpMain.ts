@@ -181,31 +181,6 @@ export default class HelpMain extends Popup
         this.requestUpdate();
     }
 
-    protected onKeyDownEntry(e: KeyboardEvent, index: number)
-    {
-        const language = this.language;
-        if (e.code === "Space" || e.code === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-            language.ins.language.setValue(language.activeLanguages[index].id);
-            this.close();
-        }
-        else if(e.code === "ArrowUp" || e.code === "ArrowDown") {
-            const currentActive = e.target instanceof Element ? e.target as Element : null;
-            if(currentActive) {
-                const newActive = e.code === "ArrowUp" ? currentActive.previousElementSibling : currentActive.nextElementSibling;
-                if(newActive) {
-                    currentActive.setAttribute("tabIndex", "-1");
-                    newActive.setAttribute("tabIndex", "0");
-                    (newActive as HTMLElement).focus();
-                }
-            }
-        }
-        else if(e.code === "Tab") {
-            this.addEventListener('blur', this.tabReset, { once: true, capture: true });
-        }
-    }
-
     protected onKeyDownMain(e: KeyboardEvent)
     {
         if (e.code === "Escape") {

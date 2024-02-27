@@ -158,13 +158,13 @@ export default class CVAnnotationView extends CObject3D
             ins.azimuth.setValue(annotation ? annotation.data.azimuth : 0, true);
             ins.color.setValue(annotation ? annotation.data.color.slice() : [ 1, 1, 1 ], true);
 
-            const articles = this.articles;
-            if (articles) {
-                const names = articles.items.map(article => article.title);
+            const articles = this.reader.articles;
+            if (articles.length) {
+                const names = articles.map(entry => entry.article.title);
                 names.unshift("(none)");
                 ins.article.setOptions(names);
-                const article = annotation ? articles.getById(annotation.data.articleId) : null;
-                ins.article.setValue(article ? articles.getIndexOf(article) + 1 : 0, true);
+                const article = annotation ? articles.find((entry) => entry.article.id === annotation.data.articleId) : null;
+                ins.article.setValue(article ? articles.indexOf(article) + 1 : 0, true);
             }
             else {
                 ins.article.setOptions([ "(none)" ]);
@@ -287,9 +287,9 @@ export default class CVAnnotationView extends CObject3D
                 annotation.imageAltText =  ins.imageAltText.value;
             }
             if (ins.article.changed) {
-                const articles = this.articles;
-                const article = articles && articles.getAt(ins.article.getValidatedValue() - 1);
-                annotation.set("articleId", article ? article.id : "");
+                const articles = this.reader.articles;
+                const entry = articles && articles[ins.article.getValidatedValue() - 1];
+                annotation.set("articleId", entry ? entry.article.id : "");
             }
             if (ins.audioId.changed) {
                 annotation.set("audioId", ins.audioId.value);

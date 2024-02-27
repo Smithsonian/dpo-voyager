@@ -60,7 +60,7 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
         return html`<div class="sv-label">Scene State</div>
             <div class="sv-commands">
                 <ff-button text="Capture" icon="camera" @click=${this.onClickTake}></ff-button>
-                <ff-button text="Restore" icon="document" @click=${this.onClickRestore}></ff-button>
+                <ff-button text="View" icon="document" @click=${this.onClickRestore}></ff-button>
             </div>
             <div class="sv-label">Thumbnail Images</div>
             <div class="sv-commands">

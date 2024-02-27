@@ -59,6 +59,7 @@ export default class CVSnapshots extends CTweenMachine
         Object.keys(features).forEach(key => features[key] = false);
         features["navigation"] = true;
         features["reader"] = true;
+        features["viewer"] = true;
 
         this.updateTargets();
     }
