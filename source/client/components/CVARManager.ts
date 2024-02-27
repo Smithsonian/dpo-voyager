@@ -20,7 +20,7 @@
  * https://github.com/google/model-viewer/blob/master/packages/model-viewer/src/three-components/ARRenderer.ts
  */
 
-import Component, { types } from "@ff/graph/Component";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CTransform from "@ff/scene/components/CTransform";
 import CScene from "@ff/scene/components/CScene";
@@ -45,6 +45,7 @@ import { Shadow } from "../xr/XRShadow"
 import CVDirectionalLight from "./CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
 import CVAnalytics from "./CVAnalytics";
+import CVMeta from "./CVMeta";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,6 +68,7 @@ export default class CVARManager extends Component
     static readonly isSystemSingleton = true;
 
     private _shadowRoot = null;
+    private _arCodeImage = null;
 
     protected static readonly ins = {
         enabled: types.Boolean("State.Enabled"),
@@ -105,6 +107,17 @@ export default class CVARManager extends Component
     }
     set shadowRoot(root: ShadowRoot) {
         this._shadowRoot = root;
+    }
+    get arCodeImage() {
+
+        // SI-specific to return QR codes for legacy content
+        const docUri = document.documentURI;
+        if(this._arCodeImage == null && docUri.includes("3d-api.si.edu")) {
+            const uuid = docUri.split("/").pop().split(":").pop(); console.log(uuid);
+            this._arCodeImage = "https://3d-api.si.edu/voyager/" + uuid + "/qrcode"; console.log(this._arCodeImage);
+        }
+
+        return this._arCodeImage;
     }
 
     protected arLink = document.createElement('a');
@@ -148,6 +161,18 @@ export default class CVARManager extends Component
     protected scaleDisplay: HTMLElement = null;
     protected updateScale: boolean = false;
     protected placementRotation: Quaternion = new Quaternion();
+
+    create()
+    {
+        super.create();
+        this.system.components.on(CVMeta, this.onMetaComponent, this);
+    }
+
+    dispose()
+    {
+        this.system.components.off(CVMeta, this.onMetaComponent, this);
+        super.dispose();
+    }
 
     update()
     {
@@ -990,5 +1015,22 @@ export default class CVARManager extends Component
         this.shadow.setScaleAndOffset(scale, 0);
 
         this.updateBoundingBox();
+    }
+
+    protected onMetaComponent(event: IComponentEvent<CVMeta>)
+    {
+        const meta = event.object;
+
+        if (event.add) {
+            meta.once("load", () => {
+                const images = meta.images.dictionary;
+                Object.keys(images).forEach(key => {
+                    const image =  images[key];
+                    if(image.usage && image.usage === "ARCode") {
+                        this._arCodeImage = this.assetManager.getAssetUrl(image.uri);
+                    }
+                });
+            });
+        }
     }
 }

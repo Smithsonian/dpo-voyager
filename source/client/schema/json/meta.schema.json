@@ -31,6 +31,10 @@
                 "height": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "usage": {
+                    "type": "string",
+                    "enum": [ "Render", "ARCode" ]
                 }
             },
             "required": [

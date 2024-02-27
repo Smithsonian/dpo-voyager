@@ -502,6 +502,34 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 }
 
+.sv-ar-code {
+  position: relative;
+  width: 420px;
+  max-width: 85%;
+  max-height: 90%;
+  padding: 8px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+
+  .ff-title {
+    margin: 0.5em 0 1em 0;
+
+    .ff-icon {
+        height: 2em;
+        width: 2em;
+        padding: 2px;
+        border-radius: 20px;
+        background-color: $menu-color-background-hover;
+      }
+  }
+
+  img {
+    height: 250px;
+    margin: auto;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CHROME VIEW
 
