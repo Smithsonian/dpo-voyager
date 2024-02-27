@@ -126,7 +126,6 @@ export default class MainMenu extends DocumentView
 
         const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
         const narrationActive = setup.audio.outs.narrationPlaying.value;
-        const narrationDisabled = setup.audio.outs.isPlaying.value && !setup.audio.outs.narrationPlaying.value;
 
         const language = setup.language;
 
@@ -143,7 +142,7 @@ export default class MainMenu extends DocumentView
             ${arButtonVisible ? html`<ff-button icon="ar" id="ar-btn" title=${language.getLocalizedString("Enter AR View")}
                 @click=${this.onEnterAR}></ff-button>` : null}
             ${narrationButtonVisible ? html`<ff-button icon="audio" id="audio-btn" title=${language.getLocalizedString("Play Audio Narration")}
-                ?selected=${narrationActive} ?disabled=${narrationDisabled} @click=${this.onToggleNarration}></ff-button>` : null}
+                ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
             ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
                 ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
             ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}

@@ -42,11 +42,13 @@ export default class CVAudioManager extends Component
     static readonly isSystemSingleton = true;
 
     private _narrationId: string = null;
+    private _activeId: string = null;
     private _audioMap: Dictionary<string> = {};
 
     protected audioClips: Dictionary<IAudioClip> = {};
     protected audioPlayer: HTMLAudioElement = null;
     protected audioView: AudioView = null;
+    protected audioViews: Dictionary<AudioView> = {};
     protected isPlaying: Boolean = false;
 
     protected static readonly ins = {
@@ -82,14 +84,17 @@ export default class CVAudioManager extends Component
         this._narrationId = id;
         this.outs.narrationEnabled.setValue(id.length > 0);
     }
+    get activeId() {
+        return this._activeId || "";
+    }
+    set activeId( id: string ) {
+        this._activeId = id;
+    }
 
     create()
     {
         super.create();
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
-
-        this.audioView = new AudioView;
-        this.audioView.audio = this;
 
         this.language.outs.language.on("value", this.onLanguageChange, this);
     }
@@ -110,21 +115,27 @@ export default class CVAudioManager extends Component
 
         if (ins.playNarration.changed) {
             if(this.audioPlayer && this._narrationId) {
-                if(!this.isPlaying) {
-                    this.play(this._narrationId);
-                }
-                else {
+                if(outs.narrationPlaying.value && this.activeId == this._narrationId) {
                     this.stop();
                 }
+                else if(!outs.narrationPlaying.value){
+                    this.play(this._narrationId);
+                }
+                outs.narrationPlaying.setValue(!outs.narrationPlaying.value);
             }
         }
         return true;
     }
 
     getPlayerById(id: string) {
-        this.audioView.audioId = id;
-        this.audioView.requestUpdate();
-        return this.audioView;
+        if(!this.audioViews.hasOwnProperty(id)) {
+            const view = this.audioViews[id] = new AudioView;
+            view.audio = this;
+            view.audioId = id;
+            view.requestUpdate();
+        }
+
+        return this.audioViews[id];
     }
 
     getAudioList()
@@ -172,7 +183,7 @@ export default class CVAudioManager extends Component
                         (buffer) => {
                             let duration = buffer.duration;
                             clip.durations[language] = duration.toString();
-                            this.audioView.requestUpdate();                      
+                            this.getPlayerById(id).requestUpdate();                      
                         }
                     )
                 }
@@ -214,10 +225,11 @@ export default class CVAudioManager extends Component
 
     removeAudioClip(id: string)
     {
+        if(this.isPlaying && id == this.activeId) {
+            this.stop();
+        }
+
         if(id == this._narrationId) {
-            if(this.isPlaying) {
-                this.stop();
-            }
             this.narrationId = "";
         }
         delete this.audioClips[id];
@@ -275,15 +287,26 @@ export default class CVAudioManager extends Component
     play(id: string)
     {
         const { outs } = this;
+
+        // handle currently playing track
+        if(outs.isPlaying.value) {
+            this.audioPlayer.pause();
+        }
+
+        if(this.activeId !== id) {
+            this.setTimeElapsed(0);
+        }
+
         outs.isPlaying.setValue(true);
+        this.audioView = this.audioViews[id];
 
         this.initializeClip(id);
         
         this.audioPlayer.play()
         .then(() => {
+            this.activeId = id;
             this.isPlaying = true;
-            outs.narrationPlaying.setValue(id === this._narrationId);
-            this.audioView.requestUpdate();
+            Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", this.getAudioClipUri(id));
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
@@ -313,7 +336,7 @@ export default class CVAudioManager extends Component
         const { outs } = this;
         
         this.isPlaying = false;
-        outs.narrationPlaying.setValue(false);
+        outs.isPlaying.setValue(false);
         this.audioView.requestUpdate();
     }
 
@@ -429,23 +452,23 @@ export class AudioView extends CustomElement
                 slider.value = this.elapsed.toString();
             }
         }
-
         super.update(changedProperties);
     }
 
     protected render()
     {
-        //const elapsed = this.audio.getTimeElapsed();
+        const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button icon="${this.audio.outs.isPlaying.value ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
         const audio = this.audio;
+        const isPlaying = this.audio.outs.isPlaying.value && this.audioId == this.audio.activeId;
 
-        if(!audio.outs.isPlaying.value) {
+        if(!isPlaying) {
             audio.play(id);
         }
         else {
