@@ -36,6 +36,7 @@ import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import { getMeshTransform } from "client/utils/Helpers";
+import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,6 +71,8 @@ export default class CVAnnotationsTask extends CVTask
 
     private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
+    private _machine: CVSnapshots = null;
+    private _state: string = null;
 
     constructor(node: Node, id: string)
     {
@@ -164,6 +167,46 @@ export default class CVAnnotationsTask extends CVTask
                 annotations.removeAnnotation(annotation);
             }
         }
+    }
+
+    saveAnnotationView()
+    {
+        const machine = this._machine;
+        const props = machine.getTargetProperties();
+        const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+        const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+        // set non camera properties to null to skip them
+        const values = machine.getCurrentValues();
+        values.forEach((v, idx) => {
+            if(idx != orbitIdx && idx != offsetIdx) {
+                values[idx] = null;
+            }
+        });
+
+        const id = machine.setState({
+            values: values,
+            curve: EEasingCurve.EaseOutQuad,
+            duration: 1.0,
+            threshold: 0.5,
+        });
+
+        this._state = id;
+        this._activeAnnotations.activeAnnotation.set("viewId", id);
+    }
+
+    restoreAnnotationView()
+    {
+        const machine = this._machine;
+        machine.ins.id.setValue(this._state);
+        machine.ins.tween.set();
+    }
+
+    deleteAnnotationView()
+    {
+        const machine = this._machine;
+        machine.deleteState(this._state);
+        this._activeAnnotations.activeAnnotation.set("viewId", "");
     }
 
     protected onPointerUp(event: IPointerEvent)
@@ -271,10 +314,14 @@ export default class CVAnnotationsTask extends CVTask
         if(previous) {
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
             previous.setup.language.outs.language.off("value", this.update, this);
+
+            this._machine = null;
         }
         if (next) {          
             next.setup.language.outs.language.on("value", this.update, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
+
+            this._machine = next.setup.snapshots;
         }
     }
 

@@ -45,6 +45,7 @@ import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
 import CVAudioManager from "./CVAudioManager";
 import CVAssetManager from "./CVAssetManager";
+import CVSnapshots from "./CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -105,6 +106,9 @@ export default class CVAnnotationView extends CObject3D
     }
     protected get audio() {
         return this.getGraphComponent(CVAudioManager, true);
+    }
+    protected get snapshots() {
+        return this.getGraphComponent(CVSnapshots, true);
     }
     protected get articles() {
         const meta = this.meta;
@@ -171,6 +175,12 @@ export default class CVAnnotationView extends CObject3D
             ins.image.setValue(annotation ? annotation.data.imageUri : "", true);
             ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
             ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
+
+            if(annotation && annotation.data.viewId.length) {
+                this.normalizeViewOrbit(annotation.data.viewId);
+                this.snapshots.ins.id.setValue(annotation.data.viewId);
+                this.snapshots.ins.tween.set();
+            }
 
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
@@ -545,5 +555,16 @@ export default class CVAnnotationView extends CObject3D
         ins.tags.setValue(annotation ? annotation.tags.join(", ") : "");
         ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
         ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
+    }
+
+    // helper function to bring saved state orbit into alignment with current view orbit
+    protected normalizeViewOrbit(viewId: string) {
+        const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
+        const viewState = this.snapshots.getState(viewId);
+        const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
+        currentOrbit.forEach((n, i) => {
+            const mult = Math.round((n-viewState.values[orbitIdx][i])/360);
+            viewState.values[orbitIdx][i] += 360*mult; 
+        });
     }
 }
