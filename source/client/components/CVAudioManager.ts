@@ -372,7 +372,8 @@ export default class CVAudioManager extends Component
             audio.onended = this.onEnd;
             audio.setAttribute("controls", "");
             audio.setAttribute("preload", "auto");
-            audio.addEventListener("timeupdate", this.onTimeChange)
+            audio.addEventListener("timeupdate", this.onTimeChange);
+            audio.crossOrigin = "anonymous";
 
             audio.onerror = () => {
                 console.error(
