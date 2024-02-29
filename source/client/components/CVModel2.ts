@@ -25,7 +25,7 @@ import CObject3D from "@ff/scene/components/CObject3D";
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "client/schema/document";
-import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType, EAssetType, EMapType } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType, EAssetType, EMapType, IPBRMaterialSettings } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
 import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
@@ -40,6 +40,7 @@ import { Vector3 as LocalVector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
 import CVSetup from "./CVSetup";
+import { Dictionary } from "client/../../libs/ff-core/source/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -140,6 +141,7 @@ export default class CVModel2 extends CObject3D
     private _localBoundingBox = new Box3();
     private _prevPosition: Vector3 = new Vector3(0.0,0.0,0.0);
     private _prevRotation: Vector3 = new Vector3(0.0,0.0,0.0);
+    private _materialCache: Dictionary<IPBRMaterialSettings> = {};
 
     constructor(node: Node, id: string)
     {
@@ -289,6 +291,23 @@ export default class CVModel2 extends CObject3D
                 ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
             this.updateMaterial();
         }
+        else if(ins.override.changed && !ins.override.value && ins.shader.value === EShaderMode.Default) {
+            this.object3D.traverse(object => {
+                const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
+                if (material && material.isUberPBRMaterial) {
+                    const cachedMat = this._materialCache[material.uuid];
+                    material.aoMapMix.setScalar(cachedMat.occlusion);
+                    material.color.fromArray(cachedMat.color);
+                    material.opacity = cachedMat.opacity;
+                    material.transparent = material.opacity < 1 || !!material.alphaMap;
+                    material.roughness = cachedMat.roughness;
+                    material.metalness = cachedMat.metalness;
+                    material.side = cachedMat.doubleSided ? DoubleSide : FrontSide;
+                    material.needsUpdate = true;
+                }
+            });
+        }
+
         if (ins.center.changed) {
             this.center();
         }
@@ -719,6 +738,22 @@ export default class CVModel2 extends CObject3D
 
                 // update loaded quality property
                 this.outs.quality.setValue(derivative.data.quality);
+
+                // cache original material properties
+                this.object3D.traverse(object => {
+                    const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
+                    if (material && material.isUberPBRMaterial) {
+                        this._materialCache[material.uuid] = {
+                            color: material.color.toArray(),
+                            opacity: material.opacity,
+                            hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
+                            roughness: material.roughness,
+                            metalness: material.metalness,
+                            occlusion: material.aoMapMix.x,
+                            doubleSided: material.side == DoubleSide
+                        }
+                    }
+                });
 
                 if (this.ins.override.value) {
                     this.updateMaterial();

@@ -77,6 +77,7 @@ export interface IAnnotation
     imageCredit?: Dictionary<string>;
     imageAltText?: Dictionary<string>;
     audioId?: string;
+    viewId?: string;
 
     style?: string;
     visible?: boolean;

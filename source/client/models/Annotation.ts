@@ -122,6 +122,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             imageCredit: {},
             imageAltText: {},
             audioId: "",
+            viewId: "",
 
             style: AnnotationFactory.defaultTypeName,
             visible: true,
@@ -198,6 +199,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if (data.audioId) {
             json.audioId = data.audioId;
         }
+        if (data.viewId) {
+            json.viewId = data.viewId;
+        }
         if (data.style !== AnnotationFactory.defaultTypeName) {
             json.style = data.style;
         }
@@ -252,6 +256,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         data.imageCredit = json.imageCredit || {};
         data.imageAltText = json.imageAltText || {};
         data.audioId = json.audioId || "";
+        data.viewId = json.viewId || "";
 
         data.style = json.style || AnnotationFactory.defaultTypeName;
         data.visible = json.visible !== undefined ? json.visible : true;

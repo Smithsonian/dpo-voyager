@@ -20,8 +20,8 @@ import { Vector3, Quaternion, Matrix4, Matrix3, Object3D } from "three";
 import * as helpers from "@ff/three/helpers";
 
 import { Node, types } from "@ff/graph/Component";
-
 import { IPointerEvent } from "@ff/scene/RenderView";
+import Notification from "@ff/ui/Notification";
 
 import Annotation from "../models/Annotation";
 
@@ -36,6 +36,7 @@ import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
 import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import { getMeshTransform } from "client/utils/Helpers";
+import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,6 +71,8 @@ export default class CVAnnotationsTask extends CVTask
 
     private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
+    private _machine: CVSnapshots = null;
+    private _state: string = null;
 
     constructor(node: Node, id: string)
     {
@@ -142,7 +145,13 @@ export default class CVAnnotationsTask extends CVTask
         if(ins.audio.changed) {
             const audioManager = this.activeDocument.setup.audio;
             const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
-            this._activeAnnotations.ins.audioId.setValue(id);
+            if(id != audioManager.narrationId) {
+                this._activeAnnotations.ins.audioId.setValue(id);
+            }
+            else {
+                ins.audio.setValue(0);  // set to none
+                Notification.show("Narration audio cannot be used in an annotation.", "warning");
+            }
         }
 
         if(ins.selection.changed) {
@@ -164,6 +173,51 @@ export default class CVAnnotationsTask extends CVTask
                 annotations.removeAnnotation(annotation);
             }
         }
+    }
+
+    saveAnnotationView()
+    {
+        const machine = this._machine;
+        const props = machine.getTargetProperties();
+        const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+        const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+        // set non camera properties to null to skip them
+        const values = machine.getCurrentValues();
+        values.forEach((v, idx) => {
+            if(idx != orbitIdx && idx != offsetIdx) {
+                values[idx] = null;
+            }
+        });
+
+        const id = machine.setState({
+            values: values,
+            curve: EEasingCurve.EaseOutQuad,
+            duration: 1.0,
+            threshold: 0.5,
+        });
+
+        this._state = id;
+        const annotation = this._activeAnnotations.activeAnnotation;
+        annotation.set("viewId", id);
+        this._activeAnnotations.updateAnnotation(annotation, true);
+
+    }
+
+    restoreAnnotationView()
+    {
+        const machine = this._machine;
+        machine.ins.id.setValue(this._state);
+        machine.ins.tween.set();
+    }
+
+    deleteAnnotationView()
+    {
+        const machine = this._machine;
+        machine.deleteState(this._state);
+        const annotation = this._activeAnnotations.activeAnnotation;
+        annotation.set("viewId", "");
+        this._activeAnnotations.updateAnnotation(annotation, true);
     }
 
     protected onPointerUp(event: IPointerEvent)
@@ -271,10 +325,14 @@ export default class CVAnnotationsTask extends CVTask
         if(previous) {
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
             previous.setup.language.outs.language.off("value", this.update, this);
+
+            this._machine = null;
         }
         if (next) {          
             next.setup.language.outs.language.on("value", this.update, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
+
+            this._machine = next.setup.snapshots;
         }
     }
 
@@ -286,6 +344,7 @@ export default class CVAnnotationsTask extends CVTask
         if (prevAnnotations) {
             prevAnnotations.off<IAnnotationsUpdateEvent>("annotation-update", this.emitUpdateEvent, this);
             prevAnnotations.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
+            prevAnnotations.activeAnnotation = null;
         }
         if (nextAnnotations) {
             nextAnnotations.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);

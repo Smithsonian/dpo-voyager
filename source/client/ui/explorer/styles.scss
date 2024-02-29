@@ -309,18 +309,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     .ff-button {
       background: rgba(0, 0, 0, 0.01); // hack to get click events
 
-      .ff-icon {
-        fill: $color-icon;
-      }
-
       &:hover {
         text-decoration: underline;
-      }
-    }
-
-    .sv-audio-view {
-      .ff-icon {
-        fill: black;
       }
     }
 
@@ -439,6 +429,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-standard-annotation {
   pointer-events: none;
+
+  &.sv-enable-events {
+    pointer-events: auto;
+    cursor: pointer;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,6 +504,34 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
         background-color: $color-primary-light;
       }
     }
+  }
+}
+
+.sv-ar-code {
+  position: relative;
+  width: 420px;
+  max-width: 85%;
+  max-height: 90%;
+  padding: 8px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+
+  .ff-title {
+    margin: 0.5em 0 1em 0;
+
+    .ff-icon {
+        height: 2em;
+        width: 2em;
+        padding: 2px;
+        border-radius: 20px;
+        background-color: $menu-color-background-hover;
+      }
+  }
+
+  img {
+    height: 250px;
+    margin: auto;
   }
 }
 
@@ -1376,6 +1399,7 @@ $tour-entry-indent: 12px;
   background-color: $menu-color-text;
   border-radius: 15px;
   color: black;
+  cursor: auto;
 
   & > .ff-button {
     width: 30px;
@@ -1384,6 +1408,7 @@ $tour-entry-indent: 12px;
     flex: 0 1 auto;
     padding: 0px;
     margin-right: 3px;
+    background-color: $menu-color-text;
     -webkit-tap-highlight-color: transparent;
 
     .ff-icon {
@@ -1415,4 +1440,16 @@ $tour-entry-indent: 12px;
     margin-left: 3px;
     margin-right: 3px;
   }
+}
+
+.sv-narrate-player {
+  position: absolute;
+  pointer-events: auto;
+  width: 200px;
+  max-width: 75%;
+  margin: auto auto;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  padding-top: 6px;
 }
