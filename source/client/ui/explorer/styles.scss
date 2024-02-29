@@ -429,6 +429,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-standard-annotation {
   pointer-events: none;
+
+  &.sv-enable-events {
+    pointer-events: auto;
+    cursor: pointer;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

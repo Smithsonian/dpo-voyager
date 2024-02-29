@@ -176,13 +176,13 @@ export default class CVAnnotationView extends CObject3D
             ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
             ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
 
-            if(annotation && annotation.data.viewId.length) {
-                this.normalizeViewOrbit(annotation.data.viewId);
-                this.snapshots.ins.id.setValue(annotation.data.viewId);
-                this.snapshots.ins.tween.set();
-            }
-
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
+        }
+
+        if(annotation && annotation.data.viewId.length) {
+            this.normalizeViewOrbit(annotation.data.viewId);
+            this.snapshots.ins.id.setValue(annotation.data.viewId);
+            this.snapshots.ins.tween.set();
         }
     }
 

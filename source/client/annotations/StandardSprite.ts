@@ -146,6 +146,8 @@ class StandardAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation.data;
 
+        annotation.viewId.length ? this.classList.add("sv-enable-events") : this.classList.remove("sv-enable-events");
+
         this.titleElement.innerText = this.sprite.annotation.title;
 
         _color.fromArray(annotation.color);

@@ -198,7 +198,10 @@ export default class CVAnnotationsTask extends CVTask
         });
 
         this._state = id;
-        this._activeAnnotations.activeAnnotation.set("viewId", id);
+        const annotation = this._activeAnnotations.activeAnnotation;
+        annotation.set("viewId", id);
+        this._activeAnnotations.updateAnnotation(annotation, true);
+
     }
 
     restoreAnnotationView()
@@ -212,7 +215,9 @@ export default class CVAnnotationsTask extends CVTask
     {
         const machine = this._machine;
         machine.deleteState(this._state);
-        this._activeAnnotations.activeAnnotation.set("viewId", "");
+        const annotation = this._activeAnnotations.activeAnnotation;
+        annotation.set("viewId", "");
+        this._activeAnnotations.updateAnnotation(annotation, true);
     }
 
     protected onPointerUp(event: IPointerEvent)
