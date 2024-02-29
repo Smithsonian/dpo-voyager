@@ -112,7 +112,7 @@ export default class CVARManager extends Component
 
         // SI-specific to return QR codes for legacy content
         const docUri = document.documentURI;
-        if(this._arCodeImage == null && docUri.includes("3d-api.si.edu")) {
+        if(this._arCodeImage == null && docUri.includes(".si.edu")) {
             const uuid = docUri.split("/").pop().split(":").pop();
             this._arCodeImage = "https://3d-api.si.edu/voyager/" + uuid + "/qrcode";
         }
