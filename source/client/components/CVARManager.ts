@@ -114,7 +114,9 @@ export default class CVARManager extends Component
         const docUri = document.documentURI;
         if(this._arCodeImage == null && docUri.includes(".si.edu") && docUri.includes("3d-api")) {
             const uuid = docUri.split("/").pop().split(":").pop();
-            this._arCodeImage = "https://3d-api.si.edu/voyager/" + uuid + "/qrcode";
+            if(uuid.length) {
+                this._arCodeImage = "https://3d-api.si.edu/voyager/" + uuid + "/qrcode";
+            }
         }
 
         return this._arCodeImage;

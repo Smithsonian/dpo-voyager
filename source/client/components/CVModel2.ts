@@ -291,7 +291,7 @@ export default class CVModel2 extends CObject3D
                 ins.roughness.changed || ins.metalness.changed || ins.occlusion.changed)) {
             this.updateMaterial();
         }
-        else if(ins.override.changed && !ins.override.value) {    
+        else if(ins.override.changed && !ins.override.value && ins.shader.value === EShaderMode.Default) {
             this.object3D.traverse(object => {
                 const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
                 if (material && material.isUberPBRMaterial) {

@@ -482,8 +482,12 @@ export class AudioView extends CustomElement
     }
 
     protected onTimeChange() {
-        this.audio.initializeClip(this.audioId);
-        this.audio.setTimeElapsed(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value) | 0);
+        const isActive = this.audioId == this.audio.activeId;
+
+        if(isActive) {
+            this.audio.initializeClip(this.audioId);
+            this.audio.setTimeElapsed(parseFloat((this.querySelector("#time-slider") as HTMLInputElement).value) | 0);
+        }
     }
 
     // Format seconds in friendlier datetime-like string

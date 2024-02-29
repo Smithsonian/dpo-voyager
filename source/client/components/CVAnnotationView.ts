@@ -179,11 +179,6 @@ export default class CVAnnotationView extends CObject3D
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
 
-        if(annotation && annotation.data.viewId.length) {
-            this.normalizeViewOrbit(annotation.data.viewId);
-            this.snapshots.ins.id.setValue(annotation.data.viewId);
-            this.snapshots.ins.tween.set();
-        }
     }
 
     get hasAnnotations() {
@@ -477,6 +472,13 @@ export default class CVAnnotationView extends CObject3D
     protected onSpriteClick(event: any)
     {
         this.emit(event);
+
+        const annotation = event.annotation;
+        if(annotation && annotation.data.viewId.length) {
+            this.normalizeViewOrbit(annotation.data.viewId);
+            this.snapshots.ins.id.setValue(annotation.data.viewId);
+            this.snapshots.ins.tween.set();
+        }
     }
 
     protected onSpriteLink(event: any)
@@ -560,6 +562,11 @@ export default class CVAnnotationView extends CObject3D
         ins.tags.setValue(annotation ? annotation.tags.join(", ") : "");
         ins.imageCredit.setValue(annotation ? annotation.imageCredit : "", true);
         ins.imageAltText.setValue(annotation ? annotation.imageAltText : "", true);
+
+        // update article list
+        const names = this.reader.articles.map(entry => entry.article.title);
+        names.unshift("(none)");
+        ins.article.setOptions(names);
     }
 
     // helper function to bring saved state orbit into alignment with current view orbit
