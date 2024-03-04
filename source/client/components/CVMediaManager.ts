@@ -290,4 +290,16 @@ export default class CVMediaManager extends CAssetManager
             this.refresh().then(() => this.rootUrlChanged());
         }
     }
+
+    getUniqueName(path: string) : string
+    {
+        let filename = path.split("/").pop();
+        const standaloneManager = this.standaloneFileManager;
+        const exists = standaloneManager ? standaloneManager.getFile(path) : this.getAssetByPath(path);
+        if(exists) {
+            filename = Date.now() + "_" + filename;
+        }
+
+        return filename;
+    }
 }

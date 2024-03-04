@@ -29,6 +29,7 @@ import { EDerivativeQuality } from "../../schema/model";
 import DocumentView, { customElement, html } from "./DocumentView";
 import ShareMenu from "./ShareMenu";
 import CVAnnotationView from "client/components/CVAnnotationView";
+import ARCode from "./ARCode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -126,7 +127,6 @@ export default class MainMenu extends DocumentView
 
         const narrationButtonVisible = setup.audio.outs.narrationEnabled.value;
         const narrationActive = setup.audio.outs.narrationPlaying.value;
-        const narrationDisabled = setup.audio.outs.isPlaying.value && !setup.audio.outs.narrationPlaying.value;
 
         const language = setup.language;
 
@@ -136,14 +136,14 @@ export default class MainMenu extends DocumentView
         models.forEach(model => {
             hasARderivatives = model.derivatives.getByQuality(EDerivativeQuality.AR).length > 0 ? true : hasARderivatives;
         });
-        const arButtonVisible = this.arManager.outs.available.value && hasARderivatives && models.length >= 1;
+        const arButtonVisible = (this.arManager.outs.available.value || this.arManager.arCodeImage ) && hasARderivatives && models.length >= 1;
 
 
         return html`
             ${arButtonVisible ? html`<ff-button icon="ar" id="ar-btn" title=${language.getLocalizedString("Enter AR View")}
                 @click=${this.onEnterAR}></ff-button>` : null}
             ${narrationButtonVisible ? html`<ff-button icon="audio" id="audio-btn" title=${language.getLocalizedString("Play Audio Narration")}
-                ?selected=${narrationActive} ?disabled=${narrationDisabled} @click=${this.onToggleNarration}></ff-button>` : null}
+                ?selected=${narrationActive} @click=${this.onToggleNarration}></ff-button>` : null}
             ${tourButtonVisible ? html`<ff-button id="tour-btn" icon="globe" title=${language.getLocalizedString("Interactive Tours")}
                 ?selected=${toursActive} @click=${this.onToggleTours}></ff-button>` : null}
             ${readerButtonVisible ? html`<ff-button id="reader-btn" icon="article" title=${language.getLocalizedString("Read Articles")}
@@ -242,8 +242,19 @@ export default class MainMenu extends DocumentView
 
     protected onEnterAR()
     {
-        const arIns = this.arManager.ins;
-        arIns.enabled.setValue(true);
+        const ar = this.arManager;
+        const arIns = ar.ins;
+
+        if(ar.outs.available.value) {
+            arIns.enabled.setValue(true);
+        }
+        else {
+            ARCode.show(this.parentElement.parentElement.parentElement, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
+                //this.shareButtonSelected = false;
+                //this.requestUpdate();
+                this.setElementFocus("ar-btn");
+            });
+        }
     }
 
     protected onToggleNarration()

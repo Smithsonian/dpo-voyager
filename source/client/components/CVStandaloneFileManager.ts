@@ -93,9 +93,9 @@ export default class CVStandaloneFileManager extends Component
         super.dispose();
     }
 
-    getFile(name: string) : File
+    getFile(path: string) : File
     {
-        return this.fileMap[name];
+        return path in this.fileMap ? this.fileMap[path] : null;
     }
 
     getFiles() : File[]

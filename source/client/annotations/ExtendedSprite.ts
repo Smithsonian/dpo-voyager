@@ -160,6 +160,7 @@ class ExtendedAnnotation extends AnnotationElement
 
         const annotationObj = this.sprite.annotation;
         const annotation = this.sprite.annotation.data;
+        const audio = this.sprite.audioManager;
 
         // update title
         this.titleElement.innerText = this.sprite.annotation.title;
@@ -189,7 +190,7 @@ class ExtendedAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 if(annotation.audioId) {
-                    this.querySelector("#audio_container").append(this.sprite.audioManager.getPlayerById(annotation.audioId));
+                    this.querySelector("#audio_container").append(audio.getPlayerById(annotation.audioId));
                 }
 
                 this.classList.add("sv-expanded");
@@ -202,7 +203,7 @@ class ExtendedAnnotation extends AnnotationElement
                 this.contentElement.style.height = "0";
                 this.handler = window.setTimeout(() => this.contentElement.style.display = "none", 300);
 
-                if(annotation.audioId) {
+                if(audio.activeId == annotation.audioId) {
                     this.sprite.audioManager.stop();
                 }
             }

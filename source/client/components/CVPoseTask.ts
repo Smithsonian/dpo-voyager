@@ -118,12 +118,16 @@ export default class CVPoseTask extends CVTask
         const setup = this.activeDocument.setup;
         setup.reader.ins.enabled.setValue(false);   // disable reader
         setup.navigation.ins.zoomExtents.set();     // zoom all viewports
+        setup.grid.ins.labelEnabled.setValue(false);// disable grid label
 
         super.activateTask();
     }
 
     deactivateTask()
     {
+        const setup = this.activeDocument.setup;
+        setup.grid.ins.labelEnabled.setValue(true);// enable grid label
+
         super.deactivateTask();
 
         // stop observing active node and active document changes

@@ -68,6 +68,7 @@ export default class ChromeView extends DocumentView
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.narrationPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
@@ -77,6 +78,7 @@ export default class ChromeView extends DocumentView
     protected disconnected()
     {
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
+        this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
@@ -113,6 +115,7 @@ export default class ChromeView extends DocumentView
 
         const captionsVisible = setup.audio.outs.isPlaying.value;
         const captionsEnabled = setup.audio.ins.captionsEnabled.value;
+        const audioVisible = setup.audio.outs.narrationPlaying.value;
 
         const isEditing = !!this.system.getComponent("CVStoryApplication", true);
         const toolBarAllowed = isEditing || !toursEnabled;
@@ -145,6 +148,7 @@ export default class ChromeView extends DocumentView
         titleElement.innerHTML = title;
 
         return html`${showTourEndMsg ? html`<div class="sr-only" role="alert" id="screen-reader-msg">Tour Ending...</div>` : null}
+            ${audioVisible ? html`<div class="sv-narrate-player">${setup.audio.getPlayerById(setup.audio.narrationId)}</div>` : null}
             <div class="sv-chrome-header">
                 <div class="sv-main-menu-wrapper">
                     ${menuVisible ? html`<sv-main-menu role="region" aria-label="Main toolbar" .system=${this.system}></sv-main-menu>` : null}

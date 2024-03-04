@@ -216,6 +216,7 @@ class CircleAnnotation extends AnnotationElement
         const annotation = this.sprite.annotation;
         const annotationData = annotation.data;
         const isTruncated = !this.overlayed && this.truncated;
+        const audio = this.sprite.audioManager;
 
         // update title
         this.markerElement.innerText = annotationData.marker;
@@ -251,7 +252,7 @@ class CircleAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 if(annotationData.audioId) {
-                    this.querySelector("#audio_container").append(this.sprite.audioManager.getPlayerById(annotationData.audioId));
+                    this.querySelector("#audio_container").append(audio.getPlayerById(annotationData.audioId));
                 }
 
                 this.classList.add("sv-expanded");
@@ -263,7 +264,7 @@ class CircleAnnotation extends AnnotationElement
                 this.classList.remove("sv-expanded");
                 this.contentElement.style.display = "none";
 
-                if(annotationData.audioId) {
+                if(audio.activeId == annotationData.audioId) {
                     this.sprite.audioManager.stop();
                 }
             }
@@ -284,10 +285,10 @@ class CircleAnnotation extends AnnotationElement
         if(annotationData.audioId) {
             if(annotationData.expanded && !audioView) {
                 const audioContainer = this.querySelector("#audio_container");
-                audioContainer.append(this.sprite.audioManager.getPlayerById(annotationData.audioId));
+                audioContainer.append(audio.getPlayerById(annotationData.audioId));
             }
-            else if(!annotationData.expanded && audioView) {
-                this.sprite.audioManager.stop();
+            else if(!annotationData.expanded && audioView && audio.activeId == annotationData.audioId) {
+                audio.stop();
             }
         }
     }
