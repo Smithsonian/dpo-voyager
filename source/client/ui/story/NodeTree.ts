@@ -32,6 +32,9 @@ class NodeTree extends Tree<NVNode>
     @property({ attribute: false })
     system: System;
 
+    @property({ type: Boolean })
+    draggable = true;
+
     protected documentProvider: CVDocumentProvider = null;
     protected nodeProvider: CVNodeProvider = null;
 
@@ -163,5 +166,16 @@ class NodeTree extends Tree<NVNode>
             this.setSelected(event.next, true);
             event.next.on("change", this.onUpdate, this);
         }
+    }
+
+    protected onNodeDrop(event: DragEvent, targetTreeNode: NVNode){
+        super.onNodeDrop(event, targetTreeNode);
+        const sourceId = event.dataTransfer.getData(Tree.dragDropMimeType);
+        const source = targetTreeNode.getNodeById(sourceId) as NVNode;
+        if(source === targetTreeNode) return; //Drop on self
+        
+        source.transform.parent.removeChild(source.transform);
+        targetTreeNode.transform.addChild(source.transform); 
+        this.onUpdate();
     }
 }
