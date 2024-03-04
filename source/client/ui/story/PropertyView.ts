@@ -78,7 +78,7 @@ export default class PropertyView extends CustomElement
         const labelElement = index >= 0 ? html`<div class="sv-field-label">${labels[index]}</div>` : null;
         const commitOnly = this.commitonly;
 
-        return html`<div class="ff-flex-row sv-field-row">
+        return html`<div class="ff-flex-row sv-field-part">
             ${labelElement}
             <ff-property-field .property=${property} .index=${index} ?commitonly=${commitOnly}></ff-property-field>
         </div>`;
