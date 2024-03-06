@@ -42,9 +42,12 @@ export default class PropertyOptions extends CustomElement
     @property({ attribute: false })
     language: CVLanguageManager = null;
 
+    @property({type: Boolean, reflect: true})
+    dropdown :boolean = false;
+
     protected firstConnected()
     {
-        this.classList.add("sv-property-view", "sv-property-options");
+        this.classList.add("sv-property", "sv-property-options");
     }
 
     protected update(changedProperties: PropertyValues): void
@@ -69,8 +72,43 @@ export default class PropertyOptions extends CustomElement
 
         super.update(changedProperties);
     }
-
     protected render()
+    {
+        if(this.dropdown){
+            return this.renderDropdown();
+        }else{
+            return this.renderButtons();
+        }
+    }
+
+    protected renderDropdown(){
+        const property = this.property;
+        const indexMap = this.indexMap;
+        const name = this.name || property.name;
+        const options = this.options || property.schema.options;
+        const value = property.value;
+        const language = this.language;
+
+        let optionsList;
+        if (indexMap) {
+            optionsList = indexMap.map(index =>
+                html`<option value=${index} ?selected=${index === value}>${language ? language.getLocalizedString(options[index]) : options[index]}</option>`);
+        }
+        else {
+            optionsList = options.map((option, index) =>
+                html`<option value=${index} ?selected=${index === value}>${language ? language.getLocalizedString(option) : option}</option>`)
+        }
+
+        return html`
+            <label class="ff-label ff-off">${name}</label>
+            <select class="sv-property-field" @change=${(e)=>this.property.setValue(e.target.value)}>
+                ${optionsList}
+            </select>
+        `;
+    }
+
+
+    protected renderButtons()
     {
         const property = this.property;
         const indexMap = this.indexMap;

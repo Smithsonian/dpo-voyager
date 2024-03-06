@@ -40,28 +40,16 @@ export default class PropertyColor extends CustomElement
     name = "";
 
     protected color: Color = new Color();
-    protected pickerActive = false;
 
     constructor()
     {
         super();
-        this.onPointerDown = this.onPointerDown.bind(this);
     }
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-property-view", "sv-property-color");
-    }
-
-    protected connected()
-    {
-        document.addEventListener("pointerdown", this.onPointerDown, { capture: true, passive: true });
-    }
-
-    protected disconnected()
-    {
-        document.removeEventListener("pointerdown", this.onPointerDown);
+        this.classList.add("sv-property", "sv-property-color");
     }
 
     protected update(changedProperties: PropertyValues): void
@@ -95,66 +83,19 @@ export default class PropertyColor extends CustomElement
         const color = this.color.toString();
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
-            ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorEditChange}></ff-color-edit>` : null}`;
+            <input type="color" value="${color}" @change=${this.onColorChange}>
+        `;
     }
 
-    protected async setPickerFocus()
+    protected onColorChange(event: Event)
     {
-        await this.updateComplete;
-        const container = this.getElementsByTagName("ff-color-edit").item(0) as HTMLElement;
-        (getFocusableElements(container)[0] as HTMLElement).focus();
-    }
-
-    protected onButtonClick(event: IButtonClickEvent)
-    {
-        this.pickerActive = !this.pickerActive;
-        this.requestUpdate();
-
-        if(this.pickerActive) {
-            this.setPickerFocus();
-        }
-    }
-
-    protected onColorEditChange(event: IColorEditChangeEvent)
-    {
-        this.property.setValue(event.detail.color.toRGBArray());
+        this.color = new Color((event.target as HTMLInputElement).value);
+        this.property.setValue(this.color.toRGBArray());
     }
 
     protected onPropertyChange(value: number[])
     {
         this.color.fromArray(value);
         this.requestUpdate();
-    }
-
-    // if color picker is active and user clicks outside, close picker
-    protected onPointerDown(event: PointerEvent)
-    {
-        if (!this.pickerActive) {
-            return;
-        }
-
-        if (event.composedPath()[0] instanceof Node && this.contains(event.composedPath()[0] as Node)) {
-            return;
-        }
-
-        this.pickerActive = false;
-        this.requestUpdate();
-    }
-
-    protected onKeyDown(e: KeyboardEvent)
-    {
-        if (e.code === "Escape") {
-            e.preventDefault();
-            e.stopPropagation();
-            this.pickerActive = false;
-            this.requestUpdate();
-
-            (this.getElementsByTagName("ff-button")[0] as HTMLElement).focus();
-        }
-        else if(e.code === "Tab") {
-            const element = this.getElementsByTagName("ff-color-edit")[0] as HTMLElement;
-            focusTrap(getFocusableElements(element) as HTMLElement[], e);
-        }
     }
 }

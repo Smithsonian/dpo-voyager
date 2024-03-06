@@ -33,9 +33,9 @@ export default class PropertyString extends CustomElement
 
     protected firstConnected()
     {
-        this.classList.add("sv-property-view", "sv-property-string");
+        this.classList.add("sv-property", "sv-property-string");
     }
-
+    
     protected update(changedProperties: PropertyValues): void
     {
         if (!this.property) {
@@ -59,13 +59,24 @@ export default class PropertyString extends CustomElement
         super.update(changedProperties);
     }
 
+    protected onChange = (event: Event) => {
+        const value = (event.target as HTMLInputElement).value;
+        this.property.setValue(value);
+    }
+
     protected render()
     {
         const property = this.property;
         const name = this.name || property.name;
         const text = property.value;
 
-        return html`<label class="ff-label ff-off">${name}</label>
-            <div class="ff-string">${text}</div>`;
+        return html`${name? html`<label class="ff-label ff-off">${name}</label>`:null}
+            <input type="text" class="sv-property-field ff-input"
+                value=${text} 
+                @change=${this.onChange}
+                @focus=${(e)=>{ e.target.select();}}}
+                @keypress=${(e)=>{if(e.key === "Enter"){e.target.blur();}}}
+            >
+        `;
     }
 }

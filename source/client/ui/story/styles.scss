@@ -334,6 +334,7 @@ $color-component-meta-light: #d9d998;
 // TASK VIEW
 
 .sv-task-view {
+  container-type: size;
   @include fullsize;
   display: flex;
   flex-direction: column;
@@ -401,43 +402,79 @@ $color-component-meta-light: #d9d998;
 // PROPERTY VIEW
 
 .sv-property-view {
-  flex: 0 0 auto;
+  flex-grow: 1;
+  max-width: 100%;
   display: flex;
   margin: 2px 0;
-  
+
   * {
     box-sizing: content-box;
   }
 
   .sv-property-name {
-    flex: 1 1 25%;
+    flex: 0 1 25%;
     padding-top: 4px;
     color: $color-text-dark;
   }
 
-  .sv-property-value {
-    flex: 1 1 75%;
-    @include ellipsis;
-  }
-
-  .sv-field-row {
-    margin: 4px 0;
-  }
-  .sv-field-label {
-    flex: 0 0 auto;
-    margin: 0 8px 0 0;
-    color: $color-icon;
-  }
-  .ff-property-field {
-    height: 1em;
-    flex: 1 1 auto;
-    padding: 2px;
-    background-color: $color-background-darker;
-
-    input {
-      padding: 2px;
-      background-color: $color-background-darker;
+  .sv-property{
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+    .ff-label{
+      padding: 0 2px;
+      align-self: center;
     }
+
+    .ff-button.ff-control{
+      display: block;
+      margin: 2px;
+      padding: 0 5px;
+      line-height: 1.35;
+    }
+
+
+    .sv-property-field {
+      background-color: $color-background-darker;
+      flex: 1 1 auto;
+      min-width: auto;
+      max-width: 20ch;
+      line-height: 1.35;
+      margin: 2px;
+      padding: 2px;
+
+      color: inherit;
+      border: none;
+
+      .ff-input{
+        box-sizing: border-box;
+        width: 100%;
+        background: none;
+      }
+    }
+  }
+
+
+  .sv-property-group {
+    /* for properties that are an array of values*/
+    flex-grow: 1;
+    max-width: 75%;
+    display: flex;
+    flex-wrap: wrap;
+    .sv-property{
+      justify-content: flex-end;
+      margin-left: 4px;
+      .sv-property-field{
+        width: 6ch;
+        flex-grow: 1;
+      }
+    }
+  }
+}
+
+@container (width < 350px){
+  .sv-property-view .sv-property-group{
+    flex-direction: column;
   }
 }
 
