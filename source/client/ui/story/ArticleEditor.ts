@@ -38,6 +38,7 @@ import 'tinymce/plugins/media';
 /* Import content css */
 import contentUiCss from '!!raw-loader!./editor_css/content.ui.min.css';
 import contentCss from '!!raw-loader!./editor_css/content.min.css';
+import contentOverrides from '!!raw-loader!./editor_css/overrides.css';
 
 import Notification from "@ff/ui/Notification";
 import MessageBox from "@ff/ui/MessageBox";
@@ -214,7 +215,7 @@ export default class ArticleEditor extends SystemView
             link_assume_external_targets: 'https',
             paste_as_text: true,
             content_css: false,
-            content_style: [contentCss, contentUiCss].join('\n'),
+            content_style: [contentCss, contentUiCss, contentOverrides].join('\n'),
             convert_urls: false,
             image_caption: true,
             link_default_target: '_blank',
