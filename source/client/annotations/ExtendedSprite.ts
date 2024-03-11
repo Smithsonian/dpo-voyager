@@ -225,7 +225,6 @@ class ExtendedAnnotation extends AnnotationElement
     protected onClickAudio(event: MouseEvent)
     {
         event.stopPropagation();
-        this.sprite.emitClickEvent();
     }
 
     protected onKeyDown(event: KeyboardEvent)
