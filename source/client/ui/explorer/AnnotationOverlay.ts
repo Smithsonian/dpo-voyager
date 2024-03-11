@@ -27,6 +27,7 @@ import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 export default class AnnotationOverlay extends Popup
 {
     protected content: HTMLElement = null;
+    protected resizeObserver: ResizeObserver = null;
 
     static show(parent: HTMLElement, content: HTMLElement, title: string): Promise<void>
     {
@@ -57,13 +58,30 @@ export default class AnnotationOverlay extends Popup
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-annotation-overlay");
+        this.classList.add("sv-annotation-overlay", "sv-annotation");
+    }
+
+    protected connected()
+    {
+        super.connected();
+        
+        if(!this.resizeObserver) { 
+            this.resizeObserver = new ResizeObserver(() => this.onResize());
+        }
+        this.resizeObserver.observe(this);
+    }
+
+    protected disconnected()
+    {
+        this.resizeObserver.disconnect();
+
+        super.disconnected();
     }
 
     protected render()
     {
         return html`
-        <div class="sv-help-region" id="anno_container" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div class="sv-help-region" id="anno_container" role="region" aria-label="Annotation pop-up" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
                 <div class="ff-flex-spacer ff-title"><b>${this.title}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title="Close" @click=${this.close}></ff-button>

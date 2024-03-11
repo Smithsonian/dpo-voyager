@@ -439,6 +439,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 .sv-annotation-overlay {
   padding: 7px;
   background-color: $menu-color-background;
+  max-width: 80%;
+  min-width: 50%;
+  max-height: 90%;
+  overflow-y: auto;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

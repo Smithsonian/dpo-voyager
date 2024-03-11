@@ -26,6 +26,7 @@ import "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import AnnotationFactory from "./AnnotationFactory";
+import { EQuadrant } from "client/../../libs/ff-three/source/HTMLSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +41,8 @@ export default class ExtendedSprite extends AnnotationSprite
     protected stemLine: Line;
     protected quadrant = -1;
     protected adaptive = true;
+    protected originalHeight;
+    protected originalWidth;
 
     constructor(annotation: Annotation)
     {
@@ -105,11 +108,51 @@ export default class ExtendedSprite extends AnnotationSprite
 
         // don't show if behind the camera
         this.setVisible(!this.isBehindCamera(this.stemLine, camera));
+
+        // check if annotation is out of bounds and update if needed
+        if (this.annotation.data.expanded) {
+
+            if(!element.truncated) {
+                if(!element.classList.contains("sv-expanded")) {
+                    element.requestUpdate().then(() => {
+                        this.originalHeight = element.offsetHeight;
+                        this.originalWidth = element.offsetWidth;
+                        this.checkTruncate(element, container);
+                    });
+                    return;
+                }
+                else {
+                    this.originalHeight = element.offsetHeight;
+                    this.originalWidth = element.offsetWidth;
+                }
+            }
+
+            this.checkTruncate(element, container);     
+        }
     }
 
     protected createHTMLElement(): ExtendedAnnotation
     {
         return new ExtendedAnnotation(this);
+    }
+
+    // Helper function to check if annotation should truncate
+    protected checkTruncate(element: AnnotationElement, container: HTMLElement) {
+        const top = this.quadrant == EQuadrant.TopLeft || this.quadrant == EQuadrant.TopRight;
+        const x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+        const y = top ? element.getBoundingClientRect().bottom - container.getBoundingClientRect().top 
+            : element.getBoundingClientRect().top - container.getBoundingClientRect().top;
+
+        const shouldTruncate = !top ? y + this.originalHeight >= container.offsetHeight : y - this.originalHeight <= 0;
+        if(shouldTruncate !== element.truncated) {
+            element.truncated = shouldTruncate;
+            element.requestUpdate().then(() => {
+                //this.checkBounds(element, container);
+            });
+        }
+        else {
+            //this.checkBounds(element, container);
+        }
     }
 }
 
@@ -134,6 +177,7 @@ class ExtendedAnnotation extends AnnotationElement
         this.onClickArticle = this.onClickArticle.bind(this);
         this.onClickAudio = this.onClickAudio.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
+        this.onClickOverlay = this.onClickOverlay.bind(this);
 
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-title");
@@ -161,15 +205,17 @@ class ExtendedAnnotation extends AnnotationElement
         const annotationObj = this.sprite.annotation;
         const annotation = this.sprite.annotation.data;
         const audio = this.sprite.audioManager;
+        const isTruncated = !this.overlayed && this.truncated;
 
         // update title
         this.titleElement.innerText = this.sprite.annotation.title;
 
         const contentTemplate = html`
-        ${annotation.imageUri ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
-        <p>${unsafeHTML(annotationObj.lead)}</p>
-        ${annotation.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-        ${annotation.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
+        ${annotation.imageUri && !isTruncated ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
+        ${!isTruncated ? html`<p>${unsafeHTML(annotationObj.lead)}</p>` : null}
+        ${annotation.audioId && !this.overlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
+        ${annotation.articleId && !isTruncated ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}
+        ${isTruncated ? html`<ff-button inline text="+more info" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
 
@@ -183,7 +229,7 @@ class ExtendedAnnotation extends AnnotationElement
         }
 
         // update expanded/collapsed
-        if (this.isExpanded !== annotation.expanded) {
+        if (this.isExpanded !== annotation.expanded && !this.overlayed) {
 
             this.isExpanded = annotation.expanded;
             window.clearTimeout(this.handler);
@@ -195,8 +241,8 @@ class ExtendedAnnotation extends AnnotationElement
 
                 this.classList.add("sv-expanded");
                 this.style.minWidth = this.sprite.annotation.lead.length < 40 && (!annotation.audioId || annotation.audioId.length == 0) ? "0" : "";
-                this.contentElement.style.display = "inherit";
-                this.contentElement.style.height = this.contentElement.scrollHeight + "px";
+                this.contentElement.style.display = "block";
+                this.contentElement.style.height = "auto"; //this.contentElement.scrollHeight + "px";
             }
             else {
                 this.classList.remove("sv-expanded");
@@ -212,6 +258,7 @@ class ExtendedAnnotation extends AnnotationElement
 
     protected onClickTitle(event: MouseEvent)
     {
+        this.contentElement.style.display = "block";
         event.stopPropagation();
         this.sprite.emitClickEvent();
     }
@@ -226,6 +273,14 @@ class ExtendedAnnotation extends AnnotationElement
     {
         event.stopPropagation();
         this.sprite.emitClickEvent();
+    }
+
+    protected onClickOverlay(event: MouseEvent)
+    {
+        event.stopPropagation();
+        const content = this.contentElement;
+        this.overlayed = true;
+        this.showOverlay(content);
     }
 
     protected onKeyDown(event: KeyboardEvent)
