@@ -139,11 +139,15 @@ export default class ExtendedSprite extends AnnotationSprite
     // Helper function to check if annotation should truncate
     protected checkTruncate(element: AnnotationElement, container: HTMLElement) {
         const top = this.quadrant == EQuadrant.TopLeft || this.quadrant == EQuadrant.TopRight;
-        const x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+        const right = this.quadrant == EQuadrant.TopRight || this.quadrant == EQuadrant.BottomRight;
+        const x = right ? element.getBoundingClientRect().left - container.getBoundingClientRect().left
+            : element.getBoundingClientRect().right - container.getBoundingClientRect().left;
         const y = top ? element.getBoundingClientRect().bottom - container.getBoundingClientRect().top 
             : element.getBoundingClientRect().top - container.getBoundingClientRect().top;
 
-        const shouldTruncate = !top ? y + this.originalHeight >= container.offsetHeight : y - this.originalHeight <= 0;
+        const shouldTruncateVert = !top ? y + this.originalHeight >= container.offsetHeight : y - this.originalHeight <= 0;
+        const shouldTruncateHoriz = right ? x + this.originalWidth >= container.offsetWidth : x - this.originalWidth <= 0;
+        const shouldTruncate = shouldTruncateVert || shouldTruncateHoriz;
         if(shouldTruncate !== element.truncated) {
             element.truncated = shouldTruncate;
             element.requestUpdate().then(() => {
