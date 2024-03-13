@@ -360,6 +360,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     z-index: 2;
   }
 
+  &.sv-short {
+    width: unset;
+    min-width: unset;
+  }
+
   &.sv-q0 {
     transform: translate(0, -100%);
     border-bottom-style: solid;

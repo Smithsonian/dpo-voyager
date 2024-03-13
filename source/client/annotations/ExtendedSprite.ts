@@ -150,6 +150,7 @@ export default class ExtendedSprite extends AnnotationSprite
         const shouldTruncate = shouldTruncateVert || shouldTruncateHoriz;
         if(shouldTruncate !== element.truncated) {
             element.truncated = shouldTruncate;
+            shouldTruncate ? element.classList.add("sv-short") : element.classList.remove("sv-short");
             element.requestUpdate().then(() => {
                 //this.checkBounds(element, container);
             });
