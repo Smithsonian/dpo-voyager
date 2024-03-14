@@ -228,7 +228,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         }
 
         const color = data.color;
-        if (color && (color[0] !== 1 || color[1] !== 1 || color[2] !== 1)) {
+        if (color && (color[0] !== 0 || color[1] !== 0.61 || color[2] !== 0.87)) {
             json.color = color.slice();
         }
 
