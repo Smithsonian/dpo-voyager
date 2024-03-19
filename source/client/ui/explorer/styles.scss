@@ -1390,6 +1390,16 @@ $tour-entry-indent: 12px;
   max-width: 85%;
 }
 
+.sv-splash {
+  padding: 7px;
+  pointer-events: auto;
+  background-color: $menu-color-background;
+  max-width: 80%;
+  min-width: 50%;
+  max-height: 90%;
+  overflow-y: auto;
+}
+
 .sv-audio-view {
   display: flex;
   align-items: center;

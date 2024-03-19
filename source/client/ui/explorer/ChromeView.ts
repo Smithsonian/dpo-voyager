@@ -36,6 +36,7 @@ import DocumentView, { customElement, html } from "./DocumentView";
 import LanguageMenu from "./LanguageMenu";
 import { EUIElements } from "client/components/CVInterface";
 import CVAssetReader from "client/components/CVAssetReader";
+import SplashScreen from "./SplashScreen";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,7 @@ export default class ChromeView extends DocumentView
     protected documentProps = new Subscriber("value", this.onUpdate, this);
     protected titleElement: HTMLDivElement;
     protected assetPath: string = "";
+    protected needsSplash: boolean = true;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -127,6 +129,14 @@ export default class ChromeView extends DocumentView
         const showTourEndMsg = this.activeDocument.setup.tours.outs.ending.value;
         this.activeDocument.setup.tours.outs.ending.setValue(false);
 
+        const introText = this.activeDocument.outs.intro.value;
+        if(this.needsSplash && introText.length > 0) {
+            this.needsSplash = false;
+            SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
+                //(this.querySelector("#main-help") as HTMLElement).focus();
+            });
+        }
+
         if (!interfaceVisible) {
             return html``;
         }
@@ -171,6 +181,16 @@ export default class ChromeView extends DocumentView
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>`;
+    }
+
+    protected firstUpdated(_changedProperties: Map<string | number | symbol, unknown>): void {
+        const introText = this.activeDocument.outs.intro.value;console.log(introText);
+        if(this.needsSplash && introText.length > 0) {
+            this.needsSplash = false;
+            SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
+                //(this.querySelector("#main-help") as HTMLElement).focus();
+            });
+        }
     }
 
     protected onSelectTour(event: ITourMenuSelectEvent)
