@@ -29,6 +29,7 @@ export default class SplashScreen extends Popup
     protected url: string;
     protected language: CVLanguageManager = null;
     protected content: string = "";
+    protected contentElement: HTMLDivElement;
 
    
     static show(parent: HTMLElement, language: CVLanguageManager, content: string): Promise<void>
@@ -62,12 +63,16 @@ export default class SplashScreen extends Popup
     protected firstConnected()
     {
         super.firstConnected();
+        this.contentElement = this.createElement("div", null);
         this.classList.add("sv-splash");
     }
 
     protected render()
     {
         const language = this.language;
+        const contentElement = this.contentElement;
+
+        contentElement.innerHTML = this.content;
 
         return html`
         <div class="sv-help-region" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
@@ -76,7 +81,7 @@ export default class SplashScreen extends Popup
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div>
-                ${this.content}
+                ${contentElement}
             </div>
         </div>
         `;

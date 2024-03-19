@@ -184,7 +184,7 @@ export default class ChromeView extends DocumentView
     }
 
     protected firstUpdated(_changedProperties: Map<string | number | symbol, unknown>): void {
-        const introText = this.activeDocument.outs.intro.value;console.log(introText);
+        const introText = this.activeDocument.outs.intro.value;
         if(this.needsSplash && introText.length > 0) {
             this.needsSplash = false;
             SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
