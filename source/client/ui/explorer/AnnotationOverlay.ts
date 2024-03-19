@@ -81,7 +81,7 @@ export default class AnnotationOverlay extends Popup
     protected render()
     {
         return html`
-        <div class="sv-help-region" id="anno_container" role="region" aria-label="Annotation pop-up" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div class="sv-help-region" id="anno_container" role="region" @wheel=${(e) => this.discardEvents(e)} @pointerdown=${(e) => this.discardEvents(e)} aria-label="Annotation pop-up" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
                 <div class="ff-flex-spacer ff-title"><b>${this.title}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title="Close" @click=${this.close}></ff-button>
@@ -119,5 +119,9 @@ export default class AnnotationOverlay extends Popup
                 currentSelected.setAttribute("tabIndex", "0");
             }
         }
+    }
+
+    protected discardEvents(event: PointerEvent | WheelEvent) {
+        event.stopPropagation();
     }
 }

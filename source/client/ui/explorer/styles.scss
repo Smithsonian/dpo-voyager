@@ -443,11 +443,13 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-annotation-overlay {
   padding: 7px;
+  pointer-events: auto;
   background-color: $menu-color-background;
-  max-width: 80%;
+  max-width: #{"min(80%, 800px)"};
   min-width: 50%;
   max-height: 90%;
   overflow-y: auto;
+  cursor: auto;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
