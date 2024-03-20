@@ -118,6 +118,12 @@ export default class ModelReader
 
                 const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
 
+                if (material.flatShading) {
+                    mesh.geometry.computeVertexNormals();
+                    material.flatShading = false;
+                    console.warn("Normals unavailable so they have been calculated. For best outcomes, please provide normals with geometry.");
+                }
+
                 // copy properties from previous material
                 if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial") {
                     uberMat.copy(material);
