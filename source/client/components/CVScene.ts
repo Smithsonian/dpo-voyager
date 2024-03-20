@@ -266,11 +266,13 @@ export default class CVScene extends CVNode
         }
 
         this.cameras.forEach(camera => {
-            const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
-            const near = Math.min(far / 1000.0, this.outs.boundingRadius.value / 100.0);
-            if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
-                camera.ins.far.setValue(far);
-                camera.ins.near.setValue(near);
+            if(camera.addIns.autoNearFar.value) {
+                const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+                const near = Math.min(far / 1000.0, this.outs.boundingRadius.value / 100.0);
+                if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
+                    camera.ins.far.setValue(far);
+                    camera.ins.near.setValue(near);
+                }
             }
         });
     }

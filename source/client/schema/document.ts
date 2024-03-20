@@ -92,6 +92,7 @@ export interface ICamera
     type: TCameraType;
     perspective?: IPerspectiveCameraProps;
     orthographic?: IOrthographicCameraProps;
+    autoNearFar?: boolean;
 }
 
 /**
