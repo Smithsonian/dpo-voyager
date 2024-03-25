@@ -95,13 +95,16 @@ export default class ExtendedSprite extends AnnotationSprite
             this.quadrant = this.orientationQuadrant;
         }
 
-        // update adaptive width
+        // update adaptive settings
         if(this.adaptive !== this.isAdaptive) {
             if(this.isAdaptive) {
                 element.classList.remove("sv-static-width");
             }
             else {
                 element.classList.add("sv-static-width");
+                element.truncated = false;
+                element.classList.remove("sv-short");
+                element.requestUpdate();
             }
             this.adaptive = this.isAdaptive;
         }
@@ -110,7 +113,7 @@ export default class ExtendedSprite extends AnnotationSprite
         this.setVisible(!this.isBehindCamera(this.stemLine, camera));
 
         // check if annotation is out of bounds and update if needed
-        if (this.annotation.data.expanded) {
+        if (this.adaptive && this.annotation.data.expanded) {
 
             if(!element.truncated) {
                 if(!element.classList.contains("sv-expanded")) {
@@ -257,6 +260,17 @@ class ExtendedAnnotation extends AnnotationElement
                 if(audio.activeId == annotation.audioId) {
                     this.sprite.audioManager.stop();
                 }
+            }
+        }
+
+        const audioView = this.querySelector(".sv-audio-view");
+        if(annotation.audioId && !this.overlayed) {
+            if(annotation.expanded && !audioView) {
+                const audioContainer = this.querySelector("#audio_container");
+                audioContainer.append(audio.getPlayerById(annotation.audioId));
+            }
+            else if(!annotation.expanded && audioView && audio.activeId == annotation.audioId) {
+                audio.stop();
             }
         }
     }

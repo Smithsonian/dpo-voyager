@@ -362,7 +362,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
   &.sv-short {
     width: unset;
-    min-width: unset;
+    min-width: min-content;
   }
 
   &.sv-q0 {
@@ -1411,6 +1411,7 @@ $tour-entry-indent: 12px;
   align-items: center;
   flex: 1 1 auto;
   max-width: 100%;
+  min-width: 110px;
   height: 30px;
   background-color: $menu-color-text;
   border-radius: 15px;

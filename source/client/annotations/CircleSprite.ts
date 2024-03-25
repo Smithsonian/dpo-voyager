@@ -43,6 +43,7 @@ export default class CircleSprite extends AnnotationSprite
 
     protected offset: Group;
     protected anchorMesh: Mesh;
+    protected adaptive = true;
     protected originalHeight;
     protected originalWidth;
 
@@ -114,6 +115,16 @@ export default class CircleSprite extends AnnotationSprite
 
         this.offset.visible = isShowing;
 
+        // update adaptive settings
+        if(this.adaptive !== this.isAdaptive) {
+            if(!this.isAdaptive) {
+                element.truncated = false;
+                element.classList.remove("sv-short");
+                element.requestUpdate();
+            }
+            this.adaptive = this.isAdaptive;
+        }
+
         // don't show if behind the camera
         this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing); 
         if(!this.getVisible()) {
@@ -121,7 +132,7 @@ export default class CircleSprite extends AnnotationSprite
         }
 
         // check if annotation is out of bounds and update if needed
-        if (annotation.expanded) {
+        if (this.adaptive && annotation.expanded) {
 
             if(!element.truncated) {
                 if(!element.classList.contains("sv-expanded")) {
