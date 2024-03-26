@@ -255,7 +255,8 @@ class ExtendedAnnotation extends AnnotationElement
             else {
                 this.classList.remove("sv-expanded");
                 this.contentElement.style.height = "0";
-                this.handler = window.setTimeout(() => this.contentElement.style.display = "none", 300);
+                //this.handler = window.setTimeout(() => this.contentElement.style.display = "none", 300);
+                this.contentElement.style.display = "none";
 
                 if(audio.activeId == annotation.audioId) {
                     this.sprite.audioManager.stop();
@@ -277,7 +278,6 @@ class ExtendedAnnotation extends AnnotationElement
 
     protected onClickTitle(event: MouseEvent)
     {
-        this.contentElement.style.display = "block";
         event.stopPropagation();
         this.sprite.emitClickEvent();
     }
