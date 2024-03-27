@@ -22,6 +22,7 @@ import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
 
 import Annotation from "../models/Annotation";
 import CVAssetReader from "client/components/CVAssetReader";
+import AnnotationOverlay from "client/ui/explorer/AnnotationOverlay";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,6 +67,7 @@ export default class AnnotationSprite extends HTMLSprite
     static readonly typeName: string = "Annotation";
 
     isAdaptive = true;
+    isAnimating = false;
     assetManager = null;
     audioManager = null;
 
@@ -140,6 +142,25 @@ export default class AnnotationSprite extends HTMLSprite
 export class AnnotationElement extends SpriteElement
 {
     protected sprite: AnnotationSprite;
+    protected isTruncated: boolean = false;
+    protected isOverlayed: boolean = false;
+
+    get truncated()
+    {
+        return this.isTruncated
+    }
+    set truncated(value: boolean)
+    {
+        this.isTruncated = value;
+    }
+    get overlayed()
+    {
+        return this.isOverlayed
+    }
+    set overlayed(value: boolean)
+    {
+        this.isOverlayed = value;
+    }
 
     constructor(sprite: AnnotationSprite)
     {
@@ -165,5 +186,16 @@ export class AnnotationElement extends SpriteElement
     protected discardEvent(event: Event)
     {
         event.stopPropagation();
+    }
+
+    showOverlay(content: HTMLElement)
+    {
+        this.requestUpdate().then(() => {
+            AnnotationOverlay.show(this.parentElement, content, this.sprite.annotation.title).then(() => {
+                this.overlayed = false;
+                this.append(content); // attach content back to original container
+                this.requestUpdate();
+            });
+        });
     }
 }

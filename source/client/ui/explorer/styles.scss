@@ -360,6 +360,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     z-index: 2;
   }
 
+  &.sv-short {
+    width: unset;
+    min-width: min-content;
+  }
+
   &.sv-q0 {
     transform: translate(0, -100%);
     border-bottom-style: solid;
@@ -435,6 +440,17 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     pointer-events: auto;
     cursor: pointer;
   }
+}
+
+.sv-annotation-overlay {
+  padding: 7px;
+  pointer-events: auto;
+  background-color: $menu-color-background;
+  max-width: #{"min(80%, 800px)"};
+  min-width: 50%;
+  max-height: 90%;
+  overflow-y: auto;
+  cursor: auto;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1396,6 +1412,7 @@ $tour-entry-indent: 12px;
   align-items: center;
   flex: 1 1 auto;
   max-width: 100%;
+  min-width: 110px;
   height: 30px;
   background-color: $menu-color-text;
   border-radius: 15px;
