@@ -46,6 +46,7 @@ import CVAssetReader from "./CVAssetReader";
 import CVAudioManager from "./CVAudioManager";
 import CVAssetManager from "./CVAssetManager";
 import CVSnapshots from "./CVSnapshots";
+import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -496,8 +497,16 @@ export default class CVAnnotationView extends CObject3D
         const annotation = event.annotation;
         if(annotation && annotation.data.viewId.length && !this.arManager.outs.isPresenting.value) {
             this.normalizeViewOrbit(annotation.data.viewId);
-            this.snapshots.ins.id.setValue(annotation.data.viewId);
-            this.snapshots.ins.tween.set();
+
+            // If activeAnnotation is being tracked, make sure it is set
+            const activeIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
+            if(activeIdx >= 0) {
+                const viewState = this.snapshots.getState(annotation.data.viewId);
+                viewState.values[activeIdx] = annotation.data.id;
+            }
+            
+            const pulse = this.getMainComponent(CPulse);
+            this.snapshots.tweenTo(annotation.data.viewId, pulse.context.secondsElapsed);
             this._activeView = true;
         }
     }
