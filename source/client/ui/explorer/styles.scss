@@ -1398,6 +1398,11 @@ $tour-entry-indent: 12px;
   min-width: 50%;
   max-height: 90%;
   overflow-y: auto;
+
+  & > :focus-visible {
+    outline: none;
+    box-shadow: 0 0;
+  }
 }
 
 .sv-audio-view {

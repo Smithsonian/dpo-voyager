@@ -86,6 +86,7 @@ export default class SceneView extends SystemView
         this.setAttribute("touch-action", "none"); 
 
         this.tabIndex = 0;
+        this.id = "sv-scene"
         this.ariaLabel = "Interactive 3D Model. Use mouse, touch, or arrow keys to rotate.";
         this.setAttribute("role", "application"),
 

@@ -130,10 +130,10 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.tours.outs.ending.setValue(false);
 
         const introText = this.activeDocument.outs.intro.value;
-        if(this.needsSplash && introText.length > 0) {
+        if(this.needsSplash && introText && introText.length > 0) {
             this.needsSplash = false;
             SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
-                //(this.querySelector("#main-help") as HTMLElement).focus();
+                (this.getRootNode() as ShadowRoot).getElementById("sv-scene").focus();
             });
         }
 

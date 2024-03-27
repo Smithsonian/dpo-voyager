@@ -75,7 +75,7 @@ export default class SplashScreen extends Popup
         contentElement.innerHTML = this.content;
 
         return html`
-        <div class="sv-help-region" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div id="main" tabIndex="-1" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
                 <div class="ff-flex-spacer ff-title"><b>${language.getLocalizedString("Welcome to Voyager")}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
@@ -90,7 +90,7 @@ export default class SplashScreen extends Popup
     protected firstUpdated(changedProperties) {
         super.firstUpdated(changedProperties);
 
-        //(Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
+        (this.querySelector("#main") as HTMLElement).focus();
     }
 
     protected onKeyDownMain(e: KeyboardEvent)

@@ -71,7 +71,7 @@ export default class CVDocument extends CRenderGraph
     protected static readonly outs = {
         assetPath: types.AssetPath("Asset.Path", { preset: "scene.svx.json" }),
         title: types.String("Document.Title"),
-        intro: types.String("Document.Intro"),
+        intro: types.String("Document.Intro", ""),
     };
 
     ins = this.addInputs<CRenderGraph, typeof CVDocument.ins>(CVDocument.ins);
@@ -315,7 +315,7 @@ export default class CVDocument extends CRenderGraph
 
                 const title = this.titles[ELanguageType[language.outs.language.value]];
                 propTitle.setValue(title);
-                const intro = this.intros[ELanguageType[language.outs.language.value]];
+                const intro = this.intros[ELanguageType[language.outs.language.value]] || "";
                 propIntro.setValue(intro);
                 this.analytics.setTitle(title);
                 this.meta = meta;
