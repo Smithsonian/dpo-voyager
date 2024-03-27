@@ -61,6 +61,7 @@ export interface IArticle
     leads?: Dictionary<string>;
     tags?: string[];
     taglist?: Dictionary<string[]>;
+    intros?: Dictionary<string[]>;
 
     mimeType?: string;
     thumbnailUri?: string;

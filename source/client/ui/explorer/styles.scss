@@ -1407,6 +1407,21 @@ $tour-entry-indent: 12px;
   max-width: 85%;
 }
 
+.sv-splash {
+  padding: 7px;
+  pointer-events: auto;
+  background-color: $menu-color-background;
+  max-width: #{"min(80%, 800px)"};
+  min-width: 50%;
+  max-height: 90%;
+  overflow-y: auto;
+
+  & > :focus-visible {
+    outline: none;
+    box-shadow: 0 0;
+  }
+}
+
 .sv-audio-view {
   display: flex;
   align-items: center;
