@@ -113,7 +113,7 @@ export default class ExtendedSprite extends AnnotationSprite
         this.setVisible(!this.isBehindCamera(this.stemLine, camera));
 
         // check if annotation is out of bounds and update if needed
-        if (this.adaptive && this.annotation.data.expanded) {
+        if (this.adaptive && !this.isAnimating && this.annotation.data.expanded) {
 
             if(!element.truncated) {
                 if(!element.classList.contains("sv-expanded")) {
@@ -174,7 +174,7 @@ class ExtendedAnnotation extends AnnotationElement
     protected titleElement: HTMLDivElement;
     protected contentElement: HTMLDivElement;
     protected wrapperElement: HTMLDivElement;
-    protected handler = 0;
+    //protected handler = 0;
     protected isExpanded = undefined;
 
     constructor(sprite: AnnotationSprite)
@@ -240,7 +240,7 @@ class ExtendedAnnotation extends AnnotationElement
         if (this.isExpanded !== annotation.expanded && !this.overlayed) {
 
             this.isExpanded = annotation.expanded;
-            window.clearTimeout(this.handler);
+            //window.clearTimeout(this.handler);
 
             if (this.isExpanded) {
                 if(annotation.audioId) {

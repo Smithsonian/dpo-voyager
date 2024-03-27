@@ -67,6 +67,7 @@ export default class AnnotationSprite extends HTMLSprite
     static readonly typeName: string = "Annotation";
 
     isAdaptive = true;
+    isAnimating = false;
     assetManager = null;
     audioManager = null;
 

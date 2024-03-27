@@ -132,7 +132,7 @@ export default class CircleSprite extends AnnotationSprite
         }
 
         // check if annotation is out of bounds and update if needed
-        if (this.adaptive && annotation.expanded) {
+        if (this.adaptive && !this.isAnimating && annotation.expanded) {
 
             if(!element.truncated) {
                 if(!element.classList.contains("sv-expanded")) {

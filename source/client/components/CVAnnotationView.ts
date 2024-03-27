@@ -92,6 +92,9 @@ export default class CVAnnotationView extends CObject3D
     private _viewports = new Set<Viewport>();
     private _sprites: Dictionary<HTMLSprite> = {};
 
+    private _truncateLock = false;
+    private _activeView = false;
+
     protected get model() {
         return this.getComponent(CVModel2);
     }
@@ -144,6 +147,12 @@ export default class CVAnnotationView extends CObject3D
             if (annotation) {
                 annotation.set("expanded", true);
                 this.updateSprite(annotation);
+
+                // need to lock truncation checking during a tween
+                if(this._activeView) {
+                    this._truncateLock = true;
+                    this._activeView = false;
+                }
             }
 
             const ins = this.ins;
@@ -315,6 +324,16 @@ export default class CVAnnotationView extends CObject3D
 
         const spriteGroup = this.object3D as HTMLSpriteGroup;
         spriteGroup.render(viewport.overlay, context.camera);
+
+        // Handle locking truncation for view animation only after 
+        // the sprite has a chance to do an initial update.
+        if(this._truncateLock) {
+            const annotation = this.activeAnnotation.data;
+            const sprite = this._sprites[annotation.id] as AnnotationSprite;
+            sprite.isAnimating = true;
+            this.snapshots.outs.tweening.once("value", () => { sprite.isAnimating = false; }, this);
+            this._truncateLock = false;
+        }
     }
 
     dispose()
@@ -473,11 +492,13 @@ export default class CVAnnotationView extends CObject3D
     {
         this.emit(event);
 
+        // start view animation if it exists
         const annotation = event.annotation;
-        if(annotation && annotation.data.viewId.length) {
+        if(annotation && annotation.data.viewId.length && !this.arManager.outs.isPresenting.value) {
             this.normalizeViewOrbit(annotation.data.viewId);
             this.snapshots.ins.id.setValue(annotation.data.viewId);
             this.snapshots.ins.tween.set();
+            this._activeView = true;
         }
     }
 
@@ -580,6 +601,6 @@ export default class CVAnnotationView extends CObject3D
             viewState.values[orbitIdx][i] += 360*mult;
             angleOffset += Math.abs(n-viewState.values[orbitIdx][i]);
         });
-        viewState.duration = angleOffset > 0.01 ? 1.0 : 0;
+        viewState.duration = angleOffset > 0.01 ? 1.0 : 0;  // don't animate if we are already there
     }
 }
