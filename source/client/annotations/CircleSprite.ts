@@ -246,7 +246,8 @@ class CircleAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation;
         const annotationData = annotation.data;
-        const isTruncated = !this.overlayed && this.truncated;
+        const isTruncated = !this.overlayed && this.truncated 
+            && (annotationData.imageUri || annotationData.articleId || annotation.lead.length > 0); // make sure we have content to truncate
         const audio = this.sprite.audioManager;
 
         // update title

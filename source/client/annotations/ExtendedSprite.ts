@@ -213,7 +213,8 @@ class ExtendedAnnotation extends AnnotationElement
         const annotationObj = this.sprite.annotation;
         const annotation = this.sprite.annotation.data;
         const audio = this.sprite.audioManager;
-        const isTruncated = !this.overlayed && this.truncated;
+        const isTruncated = !this.overlayed && this.truncated
+            && (annotation.imageUri || annotation.articleId || annotationObj.lead.length > 0); // make sure we have content to truncate;
 
         // update title
         this.titleElement.innerText = this.sprite.annotation.title;

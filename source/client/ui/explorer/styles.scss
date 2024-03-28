@@ -451,6 +451,16 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   max-height: 90%;
   overflow-y: auto;
   cursor: auto;
+
+  .sv-annotation-body {
+    .ff-button {
+      background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

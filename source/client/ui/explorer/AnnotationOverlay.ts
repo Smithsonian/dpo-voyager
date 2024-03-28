@@ -20,6 +20,7 @@ import Popup, { customElement, html } from "@ff/ui/Popup";
 import "@ff/ui/Button";
 import "@ff/ui/TextEdit";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import AnnotationSprite from "client/annotations/AnnotationSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,11 +28,12 @@ import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 export default class AnnotationOverlay extends Popup
 {
     protected content: HTMLElement = null;
+    protected sprite: AnnotationSprite = null;
     protected resizeObserver: ResizeObserver = null;
 
-    static show(parent: HTMLElement, content: HTMLElement, title: string): Promise<void>
+    static show(parent: HTMLElement, content: HTMLElement, sprite: AnnotationSprite): Promise<void>
     {
-        const popup = new AnnotationOverlay(content, title);
+        const popup = new AnnotationOverlay(content, sprite);
         parent.appendChild(popup);
 
         return new Promise((resolve, reject) => {
@@ -39,12 +41,15 @@ export default class AnnotationOverlay extends Popup
         });
     }
 
-    constructor( content: HTMLElement, title: string )
+    constructor( content: HTMLElement, sprite: AnnotationSprite )
     {
         super();
 
+        this.close = this.close.bind(this);
+
         this.content = content;
-        this.title = title;
+        this.title = sprite.annotation.title;
+        this.sprite = sprite;
         this.position = "center";
         this.modal = true;
     }
@@ -64,6 +69,8 @@ export default class AnnotationOverlay extends Popup
     protected connected()
     {
         super.connected();
+
+        this.sprite.addEventListener("link", this.close);
         
         if(!this.resizeObserver) { 
             this.resizeObserver = new ResizeObserver(() => this.onResize());
@@ -74,6 +81,8 @@ export default class AnnotationOverlay extends Popup
     protected disconnected()
     {
         this.resizeObserver.disconnect();
+
+        this.sprite.removeEventListener("link", this.close);
 
         super.disconnected();
     }

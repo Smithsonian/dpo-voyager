@@ -191,7 +191,7 @@ export class AnnotationElement extends SpriteElement
     showOverlay(content: HTMLElement)
     {
         this.requestUpdate().then(() => {
-            AnnotationOverlay.show(this.parentElement, content, this.sprite.annotation.title).then(() => {
+            AnnotationOverlay.show(this.parentElement, content, this.sprite).then(() => {
                 this.overlayed = false;
                 this.append(content); // attach content back to original container
                 this.requestUpdate();
