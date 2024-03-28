@@ -76,7 +76,7 @@ export default class CollectionPanel extends DocumentView
             else if (target.name === "intro") {
                 activeDoc.ins.intro.setValue(sanitizeHtml(text,
                     {
-                        allowedTags: [ 'i','b' ]
+                        allowedTags: [ 'i','b','p' ]
                     }    
                 ));
             }
