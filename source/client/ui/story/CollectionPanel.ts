@@ -53,6 +53,8 @@ export default class CollectionPanel extends DocumentView
             <div class="sv-indent">
                 <div class="sv-label">Title</div>
                 <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>
+                <div class="sv-label">Intro</div>
+                <ff-text-edit name="intro" text=${this.activeDocument.ins.intro.value} @change=${this.onTextEdit}></ff-text-edit>
             </div>`;
     }
 
@@ -68,6 +70,13 @@ export default class CollectionPanel extends DocumentView
                 activeDoc.ins.title.setValue(sanitizeHtml(text,
                     {
                         allowedTags: [ 'i' ]
+                    }    
+                ));
+            }
+            else if (target.name === "intro") {
+                activeDoc.ins.intro.setValue(sanitizeHtml(text,
+                    {
+                        allowedTags: [ 'i','b','p' ]
                     }    
                 ));
             }

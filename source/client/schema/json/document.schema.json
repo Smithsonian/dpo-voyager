@@ -188,13 +188,17 @@
                         "znear",
                         "zfar"
                     ]
+                },
+                "autoNearFar": {
+                    "type": "boolean",
+                    "default": true
                 }
             },
             "required": [
                 "type"
             ],
             "not": {
-                "required": [ "perspective", "orthographic" ]
+                "required": [ "perspective", "orthographic", "autoNearFar" ]
             }
         },
 

@@ -99,6 +99,7 @@ export default class CVGrid extends CObject3D
         this.tape.ins.startPosition.setValue([0,0,0]);
         this.tape.ins.endPosition.setValue([0,0,0]);
         this.tape.ins.visible.setValue(false);
+        this.tape.addTag("no_settings");    // hack to exclude from scene settings
 
         super.create();
     }

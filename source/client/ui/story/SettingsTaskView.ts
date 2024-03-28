@@ -100,7 +100,7 @@ export class SettingsTree extends Tree<ITreeNode>
 
     protected createNodeTreeNode(node: Node): ITreeNode
     {
-        const components = node.components.getArray().filter(component => component["settingProperties"]);
+        const components = node.components.getArray().filter(component => component["settingProperties"] && !component.tags.has("no_settings"));
 
         return {
             id: node.id,

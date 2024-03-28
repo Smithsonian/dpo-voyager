@@ -360,6 +360,11 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     z-index: 2;
   }
 
+  &.sv-short {
+    width: unset;
+    min-width: min-content;
+  }
+
   &.sv-q0 {
     transform: translate(0, -100%);
     border-bottom-style: solid;
@@ -391,6 +396,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   .sv-title {
     padding: 1px 0 2px 0;
     font-weight: bold;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .sv-content {
@@ -433,6 +439,27 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   &.sv-enable-events {
     pointer-events: auto;
     cursor: pointer;
+  }
+}
+
+.sv-annotation-overlay {
+  padding: 7px;
+  pointer-events: auto;
+  background-color: $menu-color-background;
+  max-width: #{"min(80%, 800px)"};
+  min-width: 50%;
+  max-height: 90%;
+  overflow-y: auto;
+  cursor: auto;
+
+  .sv-annotation-body {
+    .ff-button {
+      background: rgba(0, 0, 0, 0.01); // hack to get click events
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 }
 
@@ -1390,11 +1417,27 @@ $tour-entry-indent: 12px;
   max-width: 85%;
 }
 
+.sv-splash {
+  padding: 7px;
+  pointer-events: auto;
+  background-color: $menu-color-background;
+  max-width: #{"min(80%, 800px)"};
+  min-width: 50%;
+  max-height: 90%;
+  overflow-y: auto;
+
+  & > :focus-visible {
+    outline: none;
+    box-shadow: 0 0;
+  }
+}
+
 .sv-audio-view {
   display: flex;
   align-items: center;
   flex: 1 1 auto;
   max-width: 100%;
+  min-width: 110px;
   height: 30px;
   background-color: $menu-color-text;
   border-radius: 15px;
