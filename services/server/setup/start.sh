@@ -8,6 +8,7 @@ source /root/.nvm/nvm.sh
 # install/update node module dependencies
 cd /app
 npm install
+npm install --dev
 
 # build server code in services/server/bin/
 if [ ! -d "services/server/bin" ]; then
@@ -20,5 +21,5 @@ if [ ! -d "dist" ]; then
 fi
 
 # start server in debug mode, watching source code changes
-#npm run watch
+npm run watch
 
