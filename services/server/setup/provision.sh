@@ -25,7 +25,7 @@ nvm use 16.20.2
 nvm alias default 16.20.2
 
 # update npm
-npm i -g npm
+npm i -g npm@8.19.4
 
 # Check node versions
 node --version

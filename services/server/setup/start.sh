@@ -20,5 +20,5 @@ if [ ! -d "dist" ]; then
 fi
 
 # start server in debug mode, watching source code changes
-npm run watch
+#npm run watch
 
