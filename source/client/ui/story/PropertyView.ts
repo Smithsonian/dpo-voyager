@@ -19,7 +19,7 @@ import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyField";
 
-import CustomElement, { customElement, property, html } from "@ff/ui/CustomElement";
+import CustomElement, { customElement, property, html, PropertyValues } from "@ff/ui/CustomElement";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +47,11 @@ export default class PropertyView extends CustomElement
         }
 
         this.classList.add("sv-property-view");
+    }
+
+    protected onPropertyChange()
+    {
+        console.log("PROPERTY CHANGE");
     }
 
     protected render()

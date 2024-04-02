@@ -94,7 +94,7 @@
         "mocha": "^10.2.0",
         "node-sass": "^7.0.3",
         "raw-loader": "^4.0.2",
-        "sass-loader": "^12.1.0",
+        "sass-loader": "^13.3.3",
         "source-map-loader": "^3.0.0",
         "terser-webpack-plugin": "^5.1.4",
         "ts-loader": "^9.2.5",
