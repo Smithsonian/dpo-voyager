@@ -25,7 +25,7 @@ nvm use 12.13.1
 nvm alias default 12.13.1
 
 # update npm
-npm i -g npm
+npm i -g npm@6.14.16
 
 # Check node versions
 node --version
