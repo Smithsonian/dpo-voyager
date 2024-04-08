@@ -111,7 +111,7 @@ export default class ExplorerApplication
     
 Voyager - 3D Explorer and Tool Suite
 3D Foundation Project
-(c) 2022 Smithsonian Institution
+(c) 2024 Smithsonian Institution
 
 https://3d.si.edu
 https://github.com/smithsonian/dpo-voyager
