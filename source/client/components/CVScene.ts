@@ -220,26 +220,29 @@ export default class CVScene extends CVNode
             
             // Scale position and size by unit factor
             lightTransform.children.forEach(light => {
-                const lightTrans = light.getComponent(CTransform, true);
-                const dirLight = light.getComponent(CVDirectionalLight);
+                const lightTrans = light.getComponent(CTransform, true);               
 
-                _vec3.copy(dirLight.light.position);
-                _vec3b.copy(dirLight.light.target.position);
-                const dir = _vec3b.sub(_vec3).normalize();
-                dir.applyEuler(lightTrans.object3D.rotation);
+                if(light.getComponent(CVDirectionalLight, true)) {
+                    const dirLight = light.getComponent(CVDirectionalLight);
 
-                // standardize directional lights to always point at the origin
-                _vec3.copy(dir.negate().multiplyScalar(this.outs.boundingRadius.value*1.2));
+                    _vec3.copy(dirLight.light.position);
+                    _vec3b.copy(dirLight.light.target.position);
+                    const dir = _vec3b.sub(_vec3).normalize();
+                    dir.applyEuler(lightTrans.object3D.rotation);
 
-                // account for any scene unit changes
-                _vec3.multiplyScalar(unitScale);
-                if(dirLight.ins.shadowEnabled.value) {
-                    dirLight.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
-                    dirLight.light.shadow.camera.far = this.outs.boundingRadius.value*4.0;
+                    // standardize directional lights to always point at the origin
+                    _vec3.copy(dir.negate().multiplyScalar(this.outs.boundingRadius.value*1.2));
+
+                    // account for any scene unit changes
+                    _vec3.multiplyScalar(unitScale);
+                    if(dirLight.ins.shadowEnabled.value) {
+                        dirLight.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
+                        dirLight.light.shadow.camera.far = this.outs.boundingRadius.value*4.0;
+                    }
+                    lightTrans.ins.position.setValue(_vec3.toArray());
+                    _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2);
+                    lightTrans.ins.scale.setValue(_vec3.toArray());
                 }
-                lightTrans.ins.position.setValue(_vec3.toArray());
-                _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2);
-                lightTrans.ins.scale.setValue(_vec3.toArray());
             });
         }
     }
