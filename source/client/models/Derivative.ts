@@ -101,11 +101,11 @@ class ObjectCache<T extends object>{
         if( --cached.ref == 0){
             //GC is delayed because we don't want to race for some asset being removed from the scene then added just after
             //Like what  `CVDocument.openDocument()` do.
-            requestIdleCallback(()=>{
+            setTimeout(()=>{
                 if(this.#gc(id, destructor)){
                     this.#rlookup.delete(asset);
                 }
-            });
+            }, 500);
         }else{
             console.debug("Ref count for %s : %d ", id, cached.ref);
         }
