@@ -51,7 +51,7 @@ export default class ShareMenu extends Popup
         this.position = "center";
         this.modal = true;
         let match = /\/scenes\/([^/]+).*?/.exec(window.location.href); 
-        let u = new URL((match?`/scenes/${match[1]}/view`:""), window.location.href);
+        let u = new URL((match?`/ui/scenes/${match[1]}/view`:""), window.location.href);
         u.searchParams.set("lang", ELanguageType[language.ins.language.value]);
         this.url = u.toString();
     }
