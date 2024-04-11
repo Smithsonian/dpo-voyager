@@ -141,6 +141,7 @@ export interface IPBRMaterialSettings
     //emissiveFactor?: ColorRGB;
     //alphaMode?: any; // TODO
     //alphaCutoff?: number;
+    transparent?: boolean;
     doubleSided?: boolean;
     normalSpace?: TNormalSpaceType;
 }
