@@ -381,12 +381,6 @@ $color-component-meta-light: #d9d998;
   flex-basis: 100%;
 }
 
-.sv-drop-zone {
-  border-style: dashed;
-  border-width: 2px;
-  border-color: blue;
-}
-
 .sv-task-option-base-align {
   color: #a0a0a0;
   align-self: flex-end;
@@ -531,6 +525,15 @@ $color-component-meta-light: #d9d998;
     background-color: transparentize($color-background-dark, 0.5);
     z-index: 0;
   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// MISC
+.sv-drop-zone {
+  border-style: dashed;
+  border-width: 2px;
+  border-color: blue;
 }
 
 

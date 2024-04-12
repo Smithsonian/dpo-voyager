@@ -139,7 +139,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         let newFile : File = null;
 
         const element = event.target as HTMLElement;
-        if(element.tagName != "FF-PROPERTY-FIELD") {
+        if(element.tagName != "INPUT") {
             return;
         }
 
@@ -155,7 +155,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
             }
         }
 
-        const id = element.parentElement.parentElement.parentElement.id;
+        const id = element.parentElement.parentElement.id;
         const fileProp = id == "filename" ? this.task.ins.filepath : this.task.ins.captionPath;
         const extText = id == "filename" ? ".mp3" : ".vtt";
 
@@ -183,7 +183,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
     {
         const element = event.target as HTMLElement;
 
-        if(element.tagName == "FF-PROPERTY-FIELD") {
+        if(element.tagName == "INPUT") {
             element.classList.add("sv-drop-zone");
 
             event.preventDefault();
@@ -200,7 +200,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
     {
         const element = event.target as HTMLElement;
         
-        if(element.tagName == "FF-PROPERTY-FIELD") {
+        if(element.tagName == "INPUT") {
             this._dragCounter--;
             if(this._dragCounter === 0) {
                 element.classList.remove("sv-drop-zone");
