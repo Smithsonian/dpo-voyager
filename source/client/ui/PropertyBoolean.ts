@@ -47,7 +47,7 @@ export default class PropertyBoolean extends CustomElement
 
     protected firstConnected()
     {
-        this.classList.add("sv-property-view", "sv-property-boolean");
+        this.classList.add("sv-property", "sv-property-boolean");
     }
 
     protected update(changedProperties: PropertyValues): void
