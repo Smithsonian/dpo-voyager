@@ -81,6 +81,7 @@ export default class CVOrbitNavigation extends CObject3D
         autoZoom: types.Boolean("Settings.AutoZoom", true),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
         offset: types.Vector3("Current.Offset", [ 0, 0, 100 ]),
+        pivot: types.Vector3("Current.Pivot", [ 0, 0, 0 ]),
         minOrbit: types.Vector3("Limits.Min.Orbit", [ -90, -Infinity, -Infinity ]),
         minOffset: types.Vector3("Limits.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
         maxOrbit: types.Vector3("Limits.Max.Orbit", [ 90, Infinity, Infinity ]),
@@ -112,6 +113,7 @@ export default class CVOrbitNavigation extends CObject3D
             this.ins.type,
             this.ins.orbit,
             this.ins.offset,
+            this.ins.pivot,
             this.ins.autoZoom,
             this.ins.autoRotation,
             this.ins.autoRotationSpeed,
@@ -170,7 +172,7 @@ export default class CVOrbitNavigation extends CObject3D
         const cameraComponent = this._scene.activeCameraComponent;
         const camera = cameraComponent ? cameraComponent.camera : null;
 
-        const { projection, preset, orbit, offset } = ins;
+        const { projection, preset, orbit, offset, pivot } = ins;
 
         // camera projection
         if (cameraComponent && projection.changed) {
@@ -202,9 +204,10 @@ export default class CVOrbitNavigation extends CObject3D
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
 
         // orbit, offset and limits
-        if (orbit.changed || offset.changed) {
+        if (orbit.changed || offset.changed || pivot.changed) {
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
+            controller.pivot.fromArray(pivot.value);
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
