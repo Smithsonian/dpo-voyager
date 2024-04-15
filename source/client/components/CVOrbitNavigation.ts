@@ -25,7 +25,7 @@ import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 import { EProjection } from "@ff/three/UniversalCamera";
 
-import { INavigation } from "client/schema/setup";
+import { ENavigationType, TNavigationType, INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
 import CVAssetManager from "./CVAssetManager";
@@ -68,6 +68,7 @@ export default class CVOrbitNavigation extends CObject3D
 
     protected static readonly ins = {
         enabled: types.Boolean("Settings.Enabled", true),
+        type: types.Enum("Settings.Type", ENavigationType, ENavigationType.Orbit),
         pointerEnabled: types.Boolean("Settings.PointerEnabled", true),
         promptEnabled: types.Boolean("Settings.PromptEnabled", true),
         isInUse: types.Boolean("Camera.IsInUse", false),
@@ -108,6 +109,7 @@ export default class CVOrbitNavigation extends CObject3D
     get settingProperties() {
         return [
             this.ins.enabled,
+            this.ins.type,
             this.ins.orbit,
             this.ins.offset,
             this.ins.autoZoom,
@@ -359,6 +361,7 @@ export default class CVOrbitNavigation extends CObject3D
 
         this.ins.copyValues({
             enabled: !!data.enabled,
+            type: ENavigationType[data.type] || ENavigationType.Orbit,
             autoZoom: !!data.autoZoom,
             autoRotation: !!data.autoRotation,
             lightsFollowCamera: !!data.lightsFollowCamera,
@@ -381,7 +384,7 @@ export default class CVOrbitNavigation extends CObject3D
         data.autoRotation = ins.autoRotation.value;
         data.lightsFollowCamera = ins.lightsFollowCamera.value;
 
-        data.type = "Orbit";
+        data.type = ENavigationType[ins.type.value] as TNavigationType;
 
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
