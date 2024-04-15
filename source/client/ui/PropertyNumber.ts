@@ -23,6 +23,8 @@ export default class PropertyNumber extends CustomElement
     index = undefined;
 
     delta :number;
+    protected startValue: number = 0;
+    protected startX: number = 0;
 
     get value(){
         return typeof this.index ==="number"? this.property.value[this.index]: this.property.value
@@ -95,7 +97,7 @@ export default class PropertyNumber extends CustomElement
                     step=${schema.step ?? ""}
                     min=${min ?? ""}
                     max=${max ?? ""}
-                    value=${text}
+                    .value=${text}
                     @change=${this.onChange}
                     @focus=${(e)=>{ e.target.select();}}}
                     @keypress=${(e)=>{if(e.key === "Enter"){e.target.blur();}}}
@@ -144,6 +146,8 @@ export default class PropertyNumber extends CustomElement
         if((target.tagName !== "INPUT" && !target.classList.contains("sv-property-field")) || target == document.activeElement) return;
 
         event.preventDefault();
+        this.startX = event.clientX;
+        this.startValue = this.value;
         this.delta = 0;
         this.setPointerCapture(event.pointerId);
         this.addEventListener("pointermove", this.onPointerMove);
@@ -164,12 +168,13 @@ export default class PropertyNumber extends CustomElement
         if (schema.speed) {
             speed = schema.speed;
         } else if (schema.min !== undefined && schema.max !== undefined) {
-            speed = (schema.max - schema.min) / this.clientWidth;
+            const fieldElement = this.getElementsByClassName("sv-property-field")[0];
+            speed = (schema.max - schema.min) / fieldElement.clientWidth;
         }
 
         speed = event.ctrlKey ? speed * 0.1 : speed;
         speed = event.shiftKey ? speed * 10 : speed;
-        let value = (this.value + event.movementX * speed);
+        let value = (this.startValue + (event.clientX - this.startX) * speed);
 
         value = schema.step !== undefined ? Math.trunc(value / schema.step) * schema.step : value;
 
@@ -190,7 +195,7 @@ export default class PropertyNumber extends CustomElement
         this.removeEventListener("pointermove", this.onPointerMove);
         this.releasePointerCapture(event.pointerId);
         if(this.delta < 3){
-            console.log("Focus");
+            //console.log("Focus");
             this.querySelector("input").focus();
         }
         this.delta = undefined;
