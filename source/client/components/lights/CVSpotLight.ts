@@ -30,7 +30,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
     static readonly type: TLightType = "spot";
 
     static readonly text: string = "Spot Light";
-    static readonly icon: string = "bulb";
+    static readonly icon: string = "spot";
 
     get settingProperties() {
         return [

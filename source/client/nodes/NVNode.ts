@@ -23,7 +23,7 @@ import { IDocument } from "client/schema/document";
 import CVNode from "../components/CVNode";
 
 import CVCamera from "../components/CVCamera";
-import { ICVLight, CLight } from "../components/CVLight";
+import { ICVLight, CLight } from "../components/lights/CVLight";
 
 import CVMeta from "../components/CVMeta";
 import CVModel2 from "../components/CVModel2";
