@@ -31,7 +31,7 @@ import CTransform from "client/../../libs/ff-scene/source/components/CTransform"
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
-import { CLight } from "./CVLight";
+import { CLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
+import CAmbientLight from "@ff/scene/components/CAmbientLight";
 
 import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
@@ -23,19 +23,18 @@ import { ICVLight } from "./CVLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVHemisphereLight extends CHemisphereLight implements ICVLight
+export default class CVAmbienLight extends CAmbientLight implements ICVLight
 {
-    static readonly typeName: string = "CVHemisphereLight";
-    static readonly type: TLightType = "hemisphere";
+    static readonly typeName: string = "CVAmbientLight";
+    static readonly type: TLightType = "ambient";
 
-    static readonly text: string = "Hemisphere Light";
-    static readonly icon: string = "bulb";
+    static readonly text: string = "Ambient Light";
+    static readonly icon: string = "globe";
 
     get settingProperties() {
         return [
             this.ins.color,
             this.ins.intensity,
-            this.ins.ground,
         ];
     }
 
@@ -43,7 +42,6 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
         return [
             this.ins.color,
             this.ins.intensity,
-            this.ins.ground,
         ];
     }
 
@@ -60,8 +58,8 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== CVHemisphereLight.type) {
-            throw new Error("light type mismatch: not an hemisphere light");
+        if (data.type !== CVAmbienLight.type) {
+            throw new Error("light type mismatch: not an ambient light");
         }
 
         data.point = data.point || {} as any;
@@ -69,7 +67,6 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            ground: data.hemisphere?.ground ?? ins.ground.schema.preset,
         });
 
         return node.light;
@@ -82,12 +79,9 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
-            hemisphere:{
-              ground: ins.ground.cloneValue() as ColorRGB,
-            }
         } as ILight;
 
-        data.type = CVHemisphereLight.type;
+        data.type = CVAmbienLight.type;
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

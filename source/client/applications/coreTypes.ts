@@ -51,9 +51,9 @@ import CVAnnotations from "../components/CVAnnotations";
 import CVAnnotationView from "../components/CVAnnotationView";
 import CVStaticAnnotationView from "client/components/CVStaticAnnotationView";
 import CVCamera from "../components/CVCamera";
-import CVDirectionalLight from "../components/CVDirectionalLight";
-import CVPointLight from "../components/CVPointLight";
-import CVSpotLight from "../components/CVSpotLight";
+import CVDirectionalLight from "../components/lights/CVDirectionalLight";
+import CVPointLight from "../components/lights/CVPointLight";
+import CVSpotLight from "../components/lights/CVSpotLight";
 
 import CVInterface from "../components/CVInterface";
 import CVViewer from "../components/CVViewer";
@@ -78,9 +78,10 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
 
-import CVAmbientLight from "client/components/CVAmbientLight";
-import CVHemisphereLight from "client/components/CVHemisphereLight";
-import CVRectLight from "client/components/CVRectLight";
+import CVAmbientLight from "client/components/lights/CVAmbientLight";
+import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
+import CVRectLight from "client/components/lights/CVRectLight";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -29,7 +29,7 @@ export default class CVRectLight extends CRectLight implements ICVLight
     static readonly type: TLightType = "rect";
 
     static readonly text: string = "Rectangular Light";
-    static readonly icon: string = "bulb";
+    static readonly icon: string = "area";
 
     get settingProperties() {
         return [
