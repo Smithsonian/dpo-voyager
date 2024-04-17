@@ -398,6 +398,7 @@ $color-component-meta-light: #d9d998;
 .sv-property-view {
   flex-grow: 1;
   max-width: 100%;
+  max-height: 1.75rem;
   display: flex;
   margin: 2px 0;
 
@@ -531,9 +532,12 @@ $color-component-meta-light: #d9d998;
 ////////////////////////////////////////////////////////////////////////////////
 // MISC
 .sv-drop-zone {
-  border-style: dashed;
-  border-width: 2px;
-  border-color: blue;
+  border-style: dashed !important;
+  border-width: 2px !important;
+  border-color: blue !important;
+  &.sv-property-view{
+    margin: -2px !important;
+  }
 }
 
 
