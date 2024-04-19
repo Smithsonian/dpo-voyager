@@ -56,7 +56,7 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
     {
         const node = this.activeNode;
         const model = node && node.model;
-console.log("UPDATE");
+
         if (!model) {
             return html`<div class="sv-placeholder">Please select a model to edit its pose</div>`;
         }
@@ -70,7 +70,7 @@ console.log("UPDATE");
         const itemUnits = model.ins.localUnits;
         const position = model.ins.position;
         const rotation = model.ins.rotation;
-console.log(model); console.log(position);
+
         return html`
             <div class="sv-commands">
                 <ff-button icon="select" text="Select" index=${EPoseManipMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
