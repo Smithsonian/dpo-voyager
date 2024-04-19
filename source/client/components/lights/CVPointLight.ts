@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-import CSpotLight from "@ff/scene/components/CSpotLight";
+import CPointLight from "@ff/scene/components/CPointLight";
 
-import { IDocument, INode, ILight, ColorRGB } from "client/schema/document";
+import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVSpotLight extends CSpotLight implements ICVLight
+export default class CVPointLight extends CPointLight implements ICVLight
 {
-    static readonly typeName: string = "CVSpotLight";
+    static readonly typeName: string = "CVPointLight";
+    static readonly type: TLightType = "point";
 
-    static readonly text: string = "Spot Light";
+    static readonly text: string = "Point Light";
     static readonly icon: string = "bulb";
 
     get settingProperties() {
@@ -37,8 +38,6 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             this.ins.intensity,
             this.ins.distance,
             this.ins.decay,
-            this.ins.angle,
-            this.ins.penumbra,
             this.ins.shadowEnabled,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
@@ -48,7 +47,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
     get snapshotProperties() {
         return [
             this.ins.color,
-            this.ins.intensity
+            this.ins.intensity,
         ];
     }
 
@@ -69,23 +68,20 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "spot") {
-            throw new Error("light type mismatch: not a spot light");
+        if (data.type !== CVPointLight.type) {
+            throw new Error("light type mismatch: not a point light");
         }
 
-        data.spot = data.spot || {} as any;
+        data.point = data.point || {} as any;
 
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
 
             position: ins.position.schema.preset,
-            target: ins.target.schema.preset,
 
-            distance: data.spot.distance || ins.distance.schema.preset,
-            decay: data.spot.decay !== undefined ? data.spot.decay : ins.decay.schema.preset,
-            angle: data.spot.angle !== undefined ? data.spot.angle : ins.angle.schema.preset,
-            penumbra: data.spot.penumbra || ins.penumbra.schema.preset,
+            distance: data.point.distance || ins.distance.schema.preset,
+            decay: data.point.decay !== undefined ? data.point.decay : ins.decay.schema.preset,
 
             shadowEnabled: data.shadowEnabled || false,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
@@ -102,15 +98,13 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
-            spot: {
+            point: {
                 distance: ins.distance.value,
                 decay: ins.decay.value,
-                angle: ins.angle.value,
-                penumbra: ins.penumbra.value,
             },
         } as ILight;
 
-        data.type = "spot";
+        data.type = CVPointLight.type;
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;
