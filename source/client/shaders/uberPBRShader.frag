@@ -174,7 +174,7 @@ void main() {
 	    #endif
 
     	// reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
-    	vec3 aoSample = texture2D(aoMap, vAoMapUv).rgb;
+    	vec3 aoSample = vec3(texture2D(aoMap, vAoMapUv).r,texture2D(aoMap, vAoMapUv).r,texture2D(aoMap, vAoMapUv).r);
     	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
     	float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;
     	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
