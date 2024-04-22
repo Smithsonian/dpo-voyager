@@ -39,6 +39,10 @@ import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 const _vec3 = new Vector3();
 const _vec3b = new Vector3();
 
+function light_has_shadowSize(l : CLight): l is (CLight & {ins: {shadowSize: Property<number>}}) {
+    return "shadowSize" in l.ins;
+}
+
 /**
  * Manages the scene and the nodes in the scene tree.
  *
@@ -241,8 +245,8 @@ export default class CVScene extends CVNode
                     }
     
                     if(lightNode.ins.shadowEnabled.value) {
-                        if("shadowSize" in lightNode.ins){
-                            (lightNode.ins.shadowSize as Property<number>).setValue(this.outs.boundingRadius.value*2.0);
+                        if(light_has_shadowSize(lightNode)){
+                            lightNode.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
                         }
                         (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far = this.outs.boundingRadius.value*4.0;
                     }
