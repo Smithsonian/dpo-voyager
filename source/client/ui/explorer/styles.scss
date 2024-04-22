@@ -1227,6 +1227,96 @@ $tour-entry-indent: 12px;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PROPERTIES
+.sv-property{
+
+
+  .ff-input{
+    min-width: auto;
+    width: 0;
+    margin: 0;
+    padding: 2px;
+  }
+
+  .ff-input, select{
+    text-align: right;
+    &:focus{
+      text-align: left;
+    }
+  }
+
+  &.sv-property-color {
+    input[type="color"] {
+      cursor: pointer;
+      border: none;
+      margin: 2px;
+      height: 26px;
+      inline-size: 26px;
+      padding: 1px;
+      background: $color-background;
+      border-radius: 2px;
+      &::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+      &::-webkit-color-swatch, &::-moz-color-swatch {
+        border: none;
+        border-radius: 2px;
+      }
+    }
+  }
+  
+  &.sv-property-number{
+    .sv-property-field{
+      position: relative;
+      touch-action: none;
+      display: inline-flex;
+      .ff-bar{
+        background: $color-background-dark;
+        position: absolute;
+        inset: 0;
+        margin: 0;
+        width: 0;
+        box-sizing: border-box;
+        border: 2px solid $color-background-darker;
+      }
+      .ff-input, .ff-unit{
+        position: relative;
+        touch-action: none;
+      }
+
+      .ff-bar, .ff-unit{
+        pointer-events: none;
+        user-select: none;
+      }
+    }
+  }
+
+
+
+  &.sv-property-slider {
+    flex: 0 2 180px;
+
+    .ff-linear-slider {
+      height: 6px;
+      margin: 12px 2px;
+      padding-right: 16px;
+      border-radius: 2px;
+      background-color: $color-background-light;
+
+      .ff-knob {
+        width: 16px;
+        height: 26px;
+        margin: -10px 0 0 0;
+        border-radius: 2px;
+        background-color: $color-primary;
+        box-shadow: 0 0 6px black;
+      }
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // TOOL BAR
 
 .sv-tool-bar {
@@ -1278,7 +1368,7 @@ $tour-entry-indent: 12px;
   align-items: center;
   font-size: 0.882em;
 
-  .sv-property-view {
+  .sv-property {
     flex: 0 1 auto;
     align-self: start;
     display: flex;
@@ -1294,43 +1384,7 @@ $tour-entry-indent: 12px;
     }
   }
 
-  .sv-property-slider {
-    flex: 0 2 180px;
 
-    .ff-linear-slider {
-      height: 6px;
-      margin: 12px 2px;
-      padding-right: 16px;
-      border-radius: 2px;
-      background-color: $color-background-light;
-
-      .ff-knob {
-        width: 16px;
-        height: 26px;
-        margin: -10px 0 0 0;
-        border-radius: 2px;
-        background-color: $color-primary;
-        box-shadow: 0 0 6px black;
-      }
-    }
-  }
-
-  .sv-property-color {
-
-    & > .ff-button {
-      width: 28px;
-      box-sizing: border-box;
-      border: 1px solid $color-background;
-    }
-
-    .ff-color-edit {
-      position: absolute;
-      width: 200px;
-      height: 180px;
-      right: 8px;
-      top: -188px;
-    }
-  }
 
   .sv-options {
     display: flex;

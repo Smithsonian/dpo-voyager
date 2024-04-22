@@ -15,11 +15,22 @@
  * limitations under the License.
  */
 
+import Color from "@ff/core/Color";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyField";
+import "@ff/ui/ColorButton";
+import { IColorEditChangeEvent } from "@ff/ui/ColorButton";
 
 import CustomElement, { customElement, property, html, PropertyValues } from "@ff/ui/CustomElement";
+
+import "../PropertyColor";
+import "../PropertyBoolean";
+import "../PropertyString";
+import "../PropertySlider";
+import "../PropertyNumber";
+import "../PropertyOptions";
+import "../PropertyEvent";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,8 +45,6 @@ export default class PropertyView extends CustomElement
     @property()
     label: string = undefined;
 
-    @property({ type: Boolean })
-    showLabel = true;
 
     @property({ type: Boolean })
     commitonly = false;
@@ -57,35 +66,39 @@ export default class PropertyView extends CustomElement
     protected render()
     {
         const property = this.property;
+        const schema = property.schema;
         const label = this.label !== undefined ? this.label : property.path.split(".").pop();
-        const showLabel = this.showLabel;
-        const headerElement = showLabel ? html`<div class="sv-property-name">${label}</div>` : null;
 
-        if (property.isArray()) {
-            if (property.elementCount > 4) {
-                return;
-            }
-
-            let fields = [];
-            for (let i = 0; i < property.elementCount; ++i) {
-                fields.push(this.renderField(i));
-            }
-            return html`${headerElement}<div class="sv-property-value">${fields}</div>`;
+        if(property.isArray() && property.type !== "number"){
+            console.error("Unsupported property : ", property);
+            return null;
         }
 
-        return html`${headerElement}<div class="sv-property-value">${this.renderField(-1)}</div>`;
+        if(property.type === "number" && property.schema.semantic === "color"){
+            return html`<sv-property-color name=${label} .property=${property}></sv-property-color>`;
+        }else if (property.type === "number" && property.isArray()) {
+            let fields = [];
+            for (let i = 0; i < property.elementCount; ++i) {
+                const fieldLabel = property.schema.labels?.[i] ?? _defaultLabels[i];
+                fields.push(html`<sv-property-number name=${fieldLabel} .index=${i} .property=${property}></sv-property-number>`);
+            }
+            const headerElement = label ? html`<div class="sv-property-name">${label}</div>` : null;
+            return html`${headerElement}<div class="sv-property-group">${fields}</div>`;
+        }else if (schema.event) {
+            return html`<sv-property-event name=${label} .property=${property}></sv-property-event>`;
+        }else if (schema.options) {
+            return html`<sv-property-options dropdown name=${label} .property=${property}></sv-property-options>`;
+        }else if(property.type === "boolean"){
+            return html`<sv-property-boolean name=${label} .property=${property}></sv-property-boolean>`;
+        }else if(property.type === "string"){
+            return html`<sv-property-string name=${label} .property=${property}></sv-property-string>`
+        }else if(property.type === "number"){
+            return html`<sv-property-number name=${label} .property=${property}></sv-property-number>`
+        }else{
+            console.warn("Unhandled property :", property.name);
+            return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;
+        }
+
     }
 
-    protected renderField(index: number)
-    {
-        const property = this.property;
-        const labels = property.schema.labels || _defaultLabels;
-        const labelElement = index >= 0 ? html`<div class="sv-field-label">${labels[index]}</div>` : null;
-        const commitOnly = this.commitonly;
-
-        return html`<div class="ff-flex-row sv-field-row">
-            ${labelElement}
-            <ff-property-field .property=${property} .index=${index} ?commitonly=${commitOnly}></ff-property-field>
-        </div>`;
-    }
 }

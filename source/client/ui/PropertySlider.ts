@@ -42,7 +42,7 @@ export default class PropertySlider extends CustomElement
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-property-view", "sv-property-slider");
+        this.classList.add("sv-property", "sv-property-slider");
     }
 
     protected update(changedProperties: PropertyValues): void

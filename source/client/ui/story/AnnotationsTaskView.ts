@@ -247,6 +247,11 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         let newFile : File = null;
         const imageProp = this.task.activeAnnotations.ins.image;
 
+        const element = event.target as HTMLElement;
+        if(element.tagName != "INPUT") {
+            return;
+        }
+
         if(event.dataTransfer.files.length === 1) {
             newFile = event.dataTransfer.files.item(0);
             filename = newFile.name;
@@ -274,18 +279,20 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             Notification.show(`Unable to load - Only .jpg and .png files are currently supported.`, "warning");
         }
 
-        const element = document.getElementById("image");
         element.classList.remove("sv-drop-zone");
         this._dragCounter = 0;
     }
 
     protected onDragEnter(event: DragEvent)
     {
-        const element = document.getElementById("image");
-        element.classList.add("sv-drop-zone");
+        const element = event.target as HTMLElement;
 
-        event.preventDefault();
-        this._dragCounter++;
+        if(element.tagName == "INPUT") {
+            element.classList.add("sv-drop-zone");
+
+            event.preventDefault();
+            this._dragCounter++;
+        }
     }
 
     protected onDragOver(event: DragEvent)
@@ -295,11 +302,13 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 
     protected onDragLeave(event: DragEvent)
     {
-        this._dragCounter--;
-
-        const element = document.getElementById("image");
-        if(this._dragCounter === 0) {
-            element.classList.remove("sv-drop-zone");
+        const element = event.target as HTMLElement;
+        
+        if(element.tagName == "INPUT") {
+            this._dragCounter--;
+            if(this._dragCounter === 0) {
+                element.classList.remove("sv-drop-zone");
+            }
         }
     }
 }
