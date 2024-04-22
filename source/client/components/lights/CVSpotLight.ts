@@ -15,28 +15,32 @@
  * limitations under the License.
  */
 
-import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
+import CSpotLight from "@ff/scene/components/CSpotLight";
 
-import { IDocument, INode, ILight, ColorRGB } from "client/schema/document";
+import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
 
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class CVDirectionalLight extends CDirectionalLight implements ICVLight
+export default class CVSpotLight extends CSpotLight implements ICVLight
 {
-    static readonly typeName: string = "CVDirectionalLight";
+    static readonly typeName: string = "CVSpotLight";
+    static readonly type: TLightType = "spot";
 
-    static readonly text: string = "Directional Light";
-    static readonly icon: string = "bulb";
+    static readonly text: string = "Spot Light";
+    static readonly icon: string = "spot";
 
     get settingProperties() {
         return [
             this.ins.color,
             this.ins.intensity,
+            this.ins.distance,
+            this.ins.decay,
+            this.ins.angle,
+            this.ins.penumbra,
             this.ins.shadowEnabled,
-            this.ins.shadowSize,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
         ];
@@ -45,7 +49,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
     get snapshotProperties() {
         return [
             this.ins.color,
-            this.ins.intensity,
+            this.ins.intensity
         ];
     }
 
@@ -66,9 +70,11 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "directional") {
-            throw new Error("light type mismatch: not a directional light");
+        if (data.type !== CVSpotLight.type) {
+            throw new Error("light type mismatch: not a spot light");
         }
+
+        data.spot = data.spot || {} as any;
 
         ins.copyValues({
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
@@ -77,9 +83,13 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
 
+            distance: data.spot.distance || ins.distance.schema.preset,
+            decay: data.spot.decay !== undefined ? data.spot.decay : ins.decay.schema.preset,
+            angle: data.spot.angle !== undefined ? data.spot.angle : ins.angle.schema.preset,
+            penumbra: data.spot.penumbra || ins.penumbra.schema.preset,
+
             shadowEnabled: data.shadowEnabled || false,
-            shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
-            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
+            shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
         });
 
@@ -92,17 +102,20 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
         const data = {
             color: ins.color.cloneValue() as ColorRGB,
-            intensity: ins.intensity.value
+            intensity: ins.intensity.value,
+            spot: {
+                distance: ins.distance.value,
+                decay: ins.decay.value,
+                angle: ins.angle.value,
+                penumbra: ins.penumbra.value,
+            },
         } as ILight;
 
-        data.type = "directional";
+        data.type = CVSpotLight.type;
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;
 
-            if (!ins.shadowSize.isDefault()) {
-                data.shadowSize = ins.shadowSize.value;
-            }
             if (!ins.shadowBlur.isDefault()) {
                 data.shadowBlur = ins.shadowBlur.value;
             }

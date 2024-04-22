@@ -42,7 +42,7 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import { Shadow } from "../xr/XRShadow"
-import CVDirectionalLight from "./CVDirectionalLight";
+import CVDirectionalLight from "./lights/CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
 import CVAnalytics from "./CVAnalytics";
 import CVMeta from "./CVMeta";
