@@ -199,6 +199,7 @@ export default class CVARManager extends Component
                 else {
                     isEnabled = false;
                     this.analytics.sendProperty("AR_Enabled", "Unavailable");
+                    Notification.show("AR unavailable on this platform.", "warning");
                 }
             }
 
