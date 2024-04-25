@@ -1382,6 +1382,10 @@ $tour-entry-indent: 12px;
     &.sv-nogap {
       margin: 4px 0 !important;
     }
+
+    &.sv-property-slider {
+      flex: 0 2 180px;
+    }
   }
 
 
