@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -299,7 +299,7 @@ export default class CVModel2 extends CObject3D
                     material.aoMapMix.setScalar(cachedMat.occlusion);
                     material.color.fromArray(cachedMat.color);
                     material.opacity = cachedMat.opacity;
-                    material.transparent = material.opacity < 1 || !!material.alphaMap;
+                    material.transparent = cachedMat.transparent;
                     material.roughness = cachedMat.roughness;
                     material.metalness = cachedMat.metalness;
                     material.side = cachedMat.doubleSided ? DoubleSide : FrontSide;
@@ -585,7 +585,7 @@ export default class CVModel2 extends CObject3D
                 material.aoMapMix.setScalar(ins.occlusion.value);
                 material.color.fromArray(ins.color.value);
                 material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
-                material.transparent = material.opacity < 1 || !!material.alphaMap;
+                material.transparent = material.opacity < 1 || this._materialCache[material.uuid].transparent;
                 //material.depthWrite = material.opacity === 1;
                 material.roughness = ins.roughness.value;
                 material.metalness = ins.metalness.value;
@@ -751,7 +751,8 @@ export default class CVModel2 extends CObject3D
                             roughness: material.roughness,
                             metalness: material.metalness,
                             occlusion: material.aoMapMix.x,
-                            doubleSided: material.side == DoubleSide
+                            doubleSided: material.side == DoubleSide,
+                            transparent: material.transparent
                         }
                     }
                 });

@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,12 @@ import { IDocument } from "client/schema/document";
 import CVNode from "../components/CVNode";
 
 import CVCamera from "../components/CVCamera";
-import { ICVLight, CLight } from "../components/CVLight";
-import CVDirectionalLight from "../components/CVDirectionalLight";
-import CVPointLight from "../components/CVPointLight";
-import CVSpotLight from "../components/CVSpotLight";
+import { ICVLight, CLight } from "../components/lights/CVLight";
 
 import CVMeta from "../components/CVMeta";
 import CVModel2 from "../components/CVModel2";
 import CVScene from "../components/CVScene";
+import { lightTypes } from "client/applications/coreTypes";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -100,34 +98,22 @@ export default class NVNode extends Node
             name = "Model";
         }
         if (isFinite(node.camera)) {
+            this.addTag("controlled");
             this.createComponent(CVCamera).fromDocument(document, node);
             pathMap.set(`camera/${node.camera}`, this.camera);
             name = "Camera";
         }
         if (isFinite(node.light)) {
+            this.addTag("controlled");
             const type = document.lights[node.light].type;
-            switch (type) {
-                case "directional":
-                    this.createComponent(CVDirectionalLight).fromDocument(document, node);
-                    name = "Directional Light";
-                    break;
-                case "point":
-                    this.createComponent(CVPointLight).fromDocument(document, node);
-                    name = "Point Light";
-                    break;
-                case "spot":
-                    this.createComponent(CVSpotLight).fromDocument(document, node);
-                    name = "Spot Light";
-                    break;
-                default:
-                    throw new Error(`unknown light type: '${type}'`);
-            }
-
+            let LightType = lightTypes.find(L=>(L as any).type == type);
+            if(!LightType) throw new Error(`unknown light type: '${type}'`);
+            this.createComponent<ICVLight>(LightType).fromDocument(document, node);
+            name = LightType.text;
             pathMap.set(`light/${node.light}`, this.light);
         }
 
         this.name = node.name || name;
-
         const childIndices = node.children;
         if (childIndices) {
             childIndices.forEach(childIndex => {

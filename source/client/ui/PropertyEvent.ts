@@ -40,7 +40,7 @@ export default class PropertyEvent extends CustomElement
 
     protected firstConnected()
     {
-        this.classList.add("sv-property-view", "sv-property-event");
+        this.classList.add("sv-property", "sv-property-event");
     }
 
     protected update(changedProperties: PropertyValues): void

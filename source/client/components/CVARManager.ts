@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2020 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import { Shadow } from "../xr/XRShadow"
-import CVDirectionalLight from "./CVDirectionalLight";
+import CVDirectionalLight from "./lights/CVDirectionalLight";
 import { EShaderMode } from "client/schema/setup";
 import CVAnalytics from "./CVAnalytics";
 import CVMeta from "./CVMeta";
@@ -199,6 +199,7 @@ export default class CVARManager extends Component
                 else {
                     isEnabled = false;
                     this.analytics.sendProperty("AR_Enabled", "Unavailable");
+                    Notification.show("AR unavailable on this platform.", "warning");
                 }
             }
 

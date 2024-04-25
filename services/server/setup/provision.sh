@@ -20,12 +20,12 @@ export NVM_DIR="/root/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # install node.js
-nvm install 12.13.1
-nvm use 12.13.1
-nvm alias default 12.13.1
+nvm install 16.20.2
+nvm use 16.20.2
+nvm alias default 16.20.2
 
 # update npm
-npm i -g npm
+npm i -g npm@8.19.4
 
 # Check node versions
 node --version

@@ -1,7 +1,7 @@
 # DOCKER IMAGE SETUP SCRIPT
 # INSTALL UBUNTU WITH NODE.JS
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # Install provisioning and startup scripts
 COPY *.sh /var/scripts/

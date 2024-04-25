@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,9 @@ import CVAnnotations from "../components/CVAnnotations";
 import CVAnnotationView from "../components/CVAnnotationView";
 import CVStaticAnnotationView from "client/components/CVStaticAnnotationView";
 import CVCamera from "../components/CVCamera";
-import CVDirectionalLight from "../components/CVDirectionalLight";
-import CVPointLight from "../components/CVPointLight";
-import CVSpotLight from "../components/CVSpotLight";
+import CVDirectionalLight from "../components/lights/CVDirectionalLight";
+import CVPointLight from "../components/lights/CVPointLight";
+import CVSpotLight from "../components/lights/CVSpotLight";
 
 import CVInterface from "../components/CVInterface";
 import CVViewer from "../components/CVViewer";
@@ -78,7 +78,21 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
 
+import CVAmbientLight from "client/components/lights/CVAmbientLight";
+import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
+import CVRectLight from "client/components/lights/CVRectLight";
+
+
 ////////////////////////////////////////////////////////////////////////////////
+
+export const lightTypes = [
+    CVDirectionalLight,
+    CVPointLight,
+    CVSpotLight,
+    CVAmbientLight,
+    CVHemisphereLight,
+    CVRectLight,
+] as const;
 
 const types = [
     CGraph,
@@ -109,9 +123,7 @@ const types = [
     CVAnnotationView,
     CVStaticAnnotationView,
     CVCamera,
-    CVDirectionalLight,
-    CVPointLight,
-    CVSpotLight,
+    ...lightTypes,
 
     CVInterface,
     CVViewer,

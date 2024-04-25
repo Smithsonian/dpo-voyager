@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,6 +187,8 @@ export default class CVTours extends Component
             else {
                 outs.tourIndex.set();
 
+                this.normalizeViewOrbit(CVTours.sceneSnapshotId);
+
                 // recall pre-tour scene state
                 machine.tweenTo(CVTours.sceneSnapshotId, context.secondsElapsed);
                 machine.deleteState(CVTours.sceneSnapshotId);
@@ -245,6 +247,11 @@ export default class CVTours extends Component
         if (ins.previous.changed) {
             // previous step, wrap around when reaching first step
             nextStepIndex = (outs.stepIndex.value + stepCount - 1) % stepCount;
+        }
+
+        // normalize orbit on tour start
+        if(nextStepIndex === 0) {
+            this.normalizeViewOrbit(tour.steps[0].id);
         }
 
         if (nextStepIndex >= 0) {
@@ -337,5 +344,18 @@ export default class CVTours extends Component
 
             return data as ITour;
         });
+    }
+
+    // helper function to bring saved state orbit into alignment with current view orbit
+    protected normalizeViewOrbit(viewId: string) {
+        const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
+        const viewState = this.snapshots.getState(viewId);
+        const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
+        if(viewState) {
+            currentOrbit.forEach((n, i) => {
+                const mult = Math.round((viewState.values[orbitIdx][i]-n)/360);
+                this.snapshots.getTargetProperties()[orbitIdx].value[i] += 360*mult;
+            });
+        }
     }
 }
