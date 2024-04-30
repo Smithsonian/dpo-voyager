@@ -96,6 +96,7 @@ export interface IOrbitNavigation
 {
     orbit: number[];
     offset: number[];
+    pivot?: number[];
     minOrbit: number[];
     maxOrbit: number[];
     minOffset: number[];
