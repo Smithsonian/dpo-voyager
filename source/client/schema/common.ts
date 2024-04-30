@@ -30,7 +30,7 @@ export enum ELanguageType { EN, ES, DE, NL, JA, FR, HAW }
 export enum ELanguageStringType {
     EN = 'English',
     ES = 'Spanish (Español)',
-    DE = 'German (Deutsche)',
+    DE = 'German (Deutsch)',
     NL = 'Dutch (Nederlands)',
     JA = 'Japanese (日本語)',
     FR = 'French (Français)',
