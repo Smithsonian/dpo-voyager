@@ -71,7 +71,6 @@ export default class CVOrbitNavigation extends CObject3D
 
     protected static readonly ins = {
         enabled: types.Boolean("Settings.Enabled", true),
-        type: types.Enum("Settings.Type", ENavigationType, ENavigationType.Orbit),
         pointerEnabled: types.Boolean("Settings.PointerEnabled", true),
         promptEnabled: types.Boolean("Settings.PromptEnabled", true),
         isInUse: types.Boolean("Camera.IsInUse", false),
@@ -113,7 +112,6 @@ export default class CVOrbitNavigation extends CObject3D
     get settingProperties() {
         return [
             this.ins.enabled,
-            this.ins.type,
             this.ins.orbit,
             this.ins.offset,
             this.ins.pivot,
@@ -369,12 +367,12 @@ export default class CVOrbitNavigation extends CObject3D
 
         this.ins.copyValues({
             enabled: !!data.enabled,
-            type: ENavigationType[data.type] || ENavigationType.Orbit,
             autoZoom: !!data.autoZoom,
             autoRotation: !!data.autoRotation,
             lightsFollowCamera: !!data.lightsFollowCamera,
             orbit: orbit.orbit,
             offset: orbit.offset,
+            pivot: orbit.pivot || [ 0, 0, 0 ],
             minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
             maxOrbit: _replaceNull(orbit.maxOrbit, Infinity),
             minOffset: _replaceNull(orbit.minOffset, -Infinity),
@@ -392,11 +390,12 @@ export default class CVOrbitNavigation extends CObject3D
         data.autoRotation = ins.autoRotation.value;
         data.lightsFollowCamera = ins.lightsFollowCamera.value;
 
-        data.type = ENavigationType[ins.type.value] as TNavigationType;
+        data.type = "Orbit";
 
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
             offset: ins.offset.cloneValue(),
+            pivot: ins.pivot.cloneValue(),
             minOrbit: ins.minOrbit.cloneValue(),
             maxOrbit: ins.maxOrbit.cloneValue(),
             minOffset: ins.minOffset.cloneValue(),

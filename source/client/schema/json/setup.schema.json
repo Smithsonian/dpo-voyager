@@ -6,6 +6,20 @@
     "description": "Tours and settings for explorer documents (background, interface, etc.)",
 
     "definitions": {
+        "vector3nullable": {
+            "description": "3-component vector where each member can be null",
+            "$id": "#vector3",
+            "type": "array",
+            "items": {
+                "oneOf":[
+                    {"type": "number"},
+                    {"type": "null"}
+                ]
+            },
+            "minItems": 3,
+            "maxItems": 3,
+            "default": [ 0, 0, 0 ]
+        },
         "viewer": {
             "type": "object",
             "properties": {
@@ -101,11 +115,29 @@
                     "type": "boolean"
                 },
                 "orbit": {
-                    "$comment": "TODO: Implement",
-
                     "type": "object",
                     "properties": {
-
+                        "orbit":{
+                            "$ref": "./common.schema.json#/definitions/vector3"
+                        },
+                        "offset": {
+                            "$ref": "./common.schema.json#/definitions/vector3"
+                        },
+                        "pivot": {
+                            "$ref": "./common.schema.json#/definitions/vector3"
+                        },
+                        "minOrbit": {
+                            "$ref": "#/definitions/vector3nullable"
+                        },
+                        "maxOrbit": {
+                            "$ref": "#/definitions/vector3nullable"
+                        },
+                        "minOffset": {
+                            "$ref": "#/definitions/vector3nullable"
+                        },
+                        "maxOffset": {
+                            "$ref": "#/definitions/vector3nullable"
+                        }
                     }
                 },
                 "walk": {
