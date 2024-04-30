@@ -403,6 +403,7 @@ export default class CVOrbitNavigation extends CObject3D
             mode: ENavigationType[data.type] || ENavigationType.Orbit,
             orbit: orbit.orbit,
             offset: orbit.offset,
+            pivot: orbit.pivot || [ 0, 0, 0 ],
             minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
             maxOrbit: _replaceNull(orbit.maxOrbit, Infinity),
             minOffset: _replaceNull(orbit.minOffset, -Infinity),
@@ -425,6 +426,7 @@ export default class CVOrbitNavigation extends CObject3D
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
             offset: ins.offset.cloneValue(),
+            pivot: ins.pivot.cloneValue(),
             minOrbit: ins.minOrbit.cloneValue(),
             maxOrbit: ins.maxOrbit.cloneValue(),
             minOffset: ins.minOffset.cloneValue(),
