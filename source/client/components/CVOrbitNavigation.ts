@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three";
+import { Box3, Euler, Matrix4, Vector3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -32,6 +32,7 @@ import CVAssetManager from "./CVAssetManager";
 import CVARManager from "./CVARManager";
 import CVModel2 from "./CVModel2";
 import { getMeshTransform } from "client/utils/Helpers";
+import { RAD2DEG } from "three/src/math/MathUtils";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -433,16 +434,22 @@ export default class CVOrbitNavigation extends CObject3D
     }
 
     protected onDoubleClick(event: ITriggerEvent){
-        if(event.component.typeName != "CVModel2") return;
+        if(event.component?.typeName != "CVModel2") return;
         const model = event.component as CVModel2;
-
         const meshTransform = getMeshTransform(model.object3D, event.object3D);
+
+        const camPos = new Vector3().fromArray(this.ins.pivot.value).add(new Vector3().fromArray(this.ins.offset.value));
+
+        //Add CVNode's transform
         const invMeshTransform = meshTransform.clone().invert();
         const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
         // add mesh parent transforms in this branch
-        let localPosition = event.view.pickPosition(event as any, bounds).applyMatrix4(invMeshTransform);
+        let localPosition = event.view.pickPosition(event as any, bounds).applyMatrix4(invMeshTransform).applyMatrix4(model.object3D.matrix);
+        console.debug("Local click position : (%f,%f,%f)", localPosition.x, localPosition.y, localPosition.z);
+        //New pivot is straight-up where the user clicked
         this.ins.pivot.setValue(localPosition.toArray());
-        this.ins.offset.setValue([0, 0, this.ins.offset.value[2]]);
+        //we compute the new orbit and offset.z values to keep the camera mostly in place
+        this.ins.offset.setValue([0, 0, localPosition.distanceTo(camPos)]);
     }
 
     protected onTrigger(event: ITriggerEvent)
