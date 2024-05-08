@@ -124,6 +124,7 @@ export default class CVFloor extends CFloor
             color: data.color || [ 0.6, 0.75, 0.8 ],
             opacity: data.opacity !== undefined ? data.opacity : 0.5,
             receiveShadow: !!data.receiveShadow,
+            autoSize: data.autoSize !== undefined ? data.autoSize : true
         });
     }
 
@@ -138,6 +139,7 @@ export default class CVFloor extends CFloor
             color: ins.color.cloneValue(),
             opacity: ins.opacity.value,
             receiveShadow: ins.receiveShadow.value,
+            autoSize: this.addIns.autoSize.value
         };
     }
 }
