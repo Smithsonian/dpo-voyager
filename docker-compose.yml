@@ -17,14 +17,15 @@ services:
       - .env
     networks:
       app_net:
-        ipv4_address: $VOYAGER_SERVER_IPV4_ADDR
+        ipv4_address: ${VOYAGER_SERVER_IPV4_ADDR}
     ports: #host:container
-      - $VOYAGER_SERVER_PORT:$VOYAGER_SERVER_PORT
+      - ${VOYAGER_SERVER_PORT}:${VOYAGER_SERVER_PORT}
     volumes:
       - .:/app
+
 networks:
   app_net:
     ipam:
       driver: default
       config:
-        - subnet: $VOYAGER_SERVER_SUBNET
+        - subnet: ${VOYAGER_SERVER_SUBNET}

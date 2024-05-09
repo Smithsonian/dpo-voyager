@@ -3,10 +3,10 @@
 # NODE SERVER ENTRYPOINT
 
 # make sure path for node, npm and module binaries is registered
-source /root/.nvm/nvm.sh
+source ~/.nvm/nvm.sh
 
 # install/update node module dependencies
-cd /app
+cd /app || exit
 npm install
 
 # build server code in services/server/bin/
@@ -21,4 +21,3 @@ fi
 
 # start server in debug mode
 npm run server
-
