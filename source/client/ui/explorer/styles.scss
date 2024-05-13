@@ -874,6 +874,29 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
     &:hover { background-color: lighten(#d28842, 10%) }
   }
+
+  .sv-share-button-download {
+    background-color: #5e5e5e;
+
+    &:focus {
+      outline: none;
+      background-color: #808080;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: 0;
+      box-shadow: 0 0;
+    }
+
+    &:focus-visible {
+      outline: none;
+      background: #a0a0a0;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
+
+    &:hover { background-color: lighten(#5e5e5e, 10%) }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
