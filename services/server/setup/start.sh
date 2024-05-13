@@ -19,6 +19,6 @@ if [ ! -d "dist" ]; then
     npm run build-dev
 fi
 
-# start server in debug mode, watching source code changes
-npm run watch
+# start server in debug mode
+npm run server
 

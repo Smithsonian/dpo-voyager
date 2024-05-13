@@ -18,36 +18,36 @@
 import Popup, { customElement, html } from "@ff/ui/Popup";
 
 import "@ff/ui/Button";
-import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-ar-code")
-export default class ARCode extends Popup
+@customElement("sv-splash")
+export default class SplashScreen extends Popup
 {
     protected url: string;
     protected language: CVLanguageManager = null;
-    protected imageUri: string = null;
-    protected needsFocus: boolean = false;
+    protected content: string = "";
+    protected contentElement: HTMLDivElement;
 
-    static show(parent: HTMLElement, language: CVLanguageManager, imageUri: string): Promise<void>
+   
+    static show(parent: HTMLElement, language: CVLanguageManager, content: string): Promise<void>
     {
-        const menu = new ARCode(language, imageUri);
-        parent.appendChild(menu);
+        const screen = new SplashScreen(language, content);
+        parent.appendChild(screen);
 
         return new Promise((resolve, reject) => {
-            menu.on("close", () => resolve());
+            screen.on("close", () => resolve());
         });
     }
 
-    constructor( language: CVLanguageManager, imageUri: string )
+    constructor( language: CVLanguageManager, content: string )
     {
         super();
 
         this.language = language;
-        this.imageUri = imageUri;
+        this.content = content;
         this.position = "center";
         this.modal = true;
 
@@ -63,45 +63,39 @@ export default class ARCode extends Popup
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-ar-code");
-        this.needsFocus = true;
+        this.contentElement = this.createElement("div", null);
+        this.classList.add("sv-splash");
     }
 
     protected render()
     {
         const language = this.language;
+        const contentElement = this.contentElement;
 
-        const windowName = language.getLocalizedString("AR Experience"); 
+        contentElement.innerHTML = this.content;
 
         return html`
-        <div role="region" aria-label=${windowName} @keydown=${e =>this.onKeyDown(e)}>
+        <div id="main" tabIndex="-1" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
-                <div id="arCodeTitle" class="ff-flex-spacer ff-title">${windowName}</div>
+                <div class="ff-flex-spacer ff-title"><b>${language.getLocalizedString("Welcome to Voyager")}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
-            <div class="ff-title" id="embedTitle">${language.getLocalizedString("1. Scan the code with your mobile device to return here.")}</div>
-            <div class="ff-flex-row">
-                <img src=${this.imageUri}></img>
+            <div>
+                ${contentElement}
             </div>
-            <div class="ff-title">${language.getLocalizedString("2. Tap ")}<ff-icon name="ar"></ff-icon>${language.getLocalizedString(" to launch an AR experience! ")}</div>
         </div>
         `;
     }
 
-    protected update(changedProperties) {
-        super.update(changedProperties);
+    protected firstUpdated(changedProperties) {
+        super.firstUpdated(changedProperties);
 
-        if(this.needsFocus) {
-            const container = this.getElementsByClassName("ff-close-button").item(0) as HTMLElement;
-            container.focus();
-            this.needsFocus = false;
-        }
+        (this.querySelector("#main") as HTMLElement).focus();
     }
 
-    protected onKeyDown(e: KeyboardEvent)
+    protected onKeyDownMain(e: KeyboardEvent)
     {
         if (e.code === "Escape") {
-            e.preventDefault();
             this.close();
         }
         else if(e.code === "Tab") {

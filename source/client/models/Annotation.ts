@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,7 +230,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         }
 
         const color = data.color;
-        if (color && (color[0] !== 1 || color[1] !== 1 || color[2] !== 1)) {
+        if (color && (color[0] !== 0 || color[1] !== 0.61 || color[2] !== 0.87)) {
             json.color = color.slice();
         }
 

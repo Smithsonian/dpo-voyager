@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ export default class CVDocument extends CRenderGraph
     protected static readonly validator = new DocumentValidator();
 
     protected titles: Dictionary<string> = {};
+    protected intros: Dictionary<string> = {};
     protected meta: CVMeta = null;
     protected ref_id :number = -1;
 
@@ -65,11 +66,13 @@ export default class CVDocument extends CRenderGraph
         dumpTree: types.Event("Document.DumpTree"),
         download: types.Event("Document.Download"),
         title: types.String("Document.Title"),
+        intro: types.String("Document.Intro", ""),
     };
 
     protected static readonly outs = {
         assetPath: types.AssetPath("Asset.Path", { preset: "scene.svx.json" }),
         title: types.String("Document.Title"),
+        intro: types.String("Document.Intro", ""),
     };
 
     ins = this.addInputs<CRenderGraph, typeof CVDocument.ins>(CVDocument.ins);
@@ -113,12 +116,12 @@ export default class CVDocument extends CRenderGraph
     {
         super.create();
         this.innerGraph.components.on(CVMeta, this.onMetaComponent, this);
-        this.setup.language.outs.language.on("value", this.updateTitle, this);
+        this.setup.language.outs.language.on("value", this.onLanguageUpdate, this);
     }
 
     dispose()
     {
-        this.setup.language.outs.language.off("value", this.updateTitle, this);
+        this.setup.language.outs.language.off("value", this.onLanguageUpdate, this);
         this.innerGraph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
@@ -152,8 +155,16 @@ export default class CVDocument extends CRenderGraph
 
             if(ins.title.value) {
                 this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;     
-                this.updateTitlesMeta();
+                this.updateMeta();
             }
+        }
+
+        if(ins.intro.changed && this.intros) {
+            const language = this.setup.language;
+            outs.intro.setValue(ins.intro.value);
+
+            this.intros[ELanguageType[language.outs.language.value]] = ins.intro.value;     
+            this.updateMeta();
         }
 
         return true;
@@ -288,6 +299,7 @@ export default class CVDocument extends CRenderGraph
     {
         const meta = event.object;
         const propTitle = this.ins.title;
+        const propIntro = this.ins.intro;
         const language = this.setup.language;
 
         if(this.meta === null) {
@@ -297,6 +309,7 @@ export default class CVDocument extends CRenderGraph
         if (event.add && !propTitle.value) {
             meta.once("load", () => {
                 this.titles = meta.collection.get("titles") || {};
+                this.intros = meta.collection.get("intros") || {};
 
                 // TODO: Temporary - remove when single string properties are phased out
                 if(Object.keys(this.titles).length === 0) {
@@ -306,23 +319,28 @@ export default class CVDocument extends CRenderGraph
 
                 const title = this.titles[ELanguageType[language.outs.language.value]];
                 propTitle.setValue(title);
+                const intro = this.intros[ELanguageType[language.outs.language.value]] || "";
+                propIntro.setValue(intro);
                 this.analytics.setTitle(title);
                 this.meta = meta;
             });
         }
     }
 
-    protected updateTitle() {
+    protected onLanguageUpdate() {
         const language = this.setup.language;
 
         const newTitle = this.titles[ELanguageType[language.outs.language.value]];
         this.ins.title.setValue(newTitle);
+        const newIntro = this.intros[ELanguageType[language.outs.language.value]];
+        this.ins.intro.setValue(newIntro);
     }
 
-    protected updateTitlesMeta() {
+    protected updateMeta() {
         const meta = this.meta;
         if(meta) {
-            meta.collection.dictionary["titles"] = this.titles; 
+            meta.collection.dictionary["titles"] = this.titles;
+            meta.collection.dictionary["intros"] = this.intros; 
         }
     }
 }

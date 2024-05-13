@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,17 +90,17 @@ export class SettingsTree extends Tree<ITreeNode>
 
     protected renderNodeHeader(node: ITreeNode)
     {
-        if (node.property) {
-            return html`<div class="ff-text ff-property-label ff-ellipsis">${node.text}</div>
-                <ff-property-view .property=${node.property}></ff-property-view>`;
+        if (!node.property) {
+            return html`<div class="ff-text ff-label ff-ellipsis">${node.text}</div>`;
         }
 
-        return html`<div class="ff-text ff-label ff-ellipsis">${node.text}</div>`;
+        return html`<sv-property-view .property=${node.property}></sv-property-view>`;
+
     }
 
     protected createNodeTreeNode(node: Node): ITreeNode
     {
-        const components = node.components.getArray().filter(component => component["settingProperties"]);
+        const components = node.components.getArray().filter(component => component["settingProperties"] && !component.tags.has("no_settings"));
 
         return {
             id: node.id,

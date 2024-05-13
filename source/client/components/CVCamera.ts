@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 
 import CCamera, { EProjection } from "@ff/scene/components/CCamera";
-import { Node } from "@ff/scene/components/CObject3D";
+import { Node, types } from "@ff/scene/components/CObject3D";
 
 import { IDocument, INode, ICamera } from "client/schema/document";
 
@@ -29,6 +29,12 @@ export default class CVCamera extends CCamera
     static readonly text: string = "Camera";
     static readonly icon: string = "video";
 
+    protected static readonly cameraAddIns = {
+        autoNearFar: types.Boolean("Frustum.AutoNearFar", true),
+    };
+
+    addIns = this.addInputs(CVCamera.cameraAddIns);
+
     get settingProperties() {
         return [
             this.ins.projection,
@@ -36,6 +42,7 @@ export default class CVCamera extends CCamera
             this.ins.size,
             this.ins.near,
             this.ins.far,
+            this.addIns.autoNearFar
         ]
     }
 
@@ -52,6 +59,10 @@ export default class CVCamera extends CCamera
         }
 
         const data = document.cameras[node.camera];
+
+        if(data.autoNearFar != undefined) {
+            this.addIns.autoNearFar.setValue(data.autoNearFar);
+        }
 
         if (data.type === "perspective") {
             this.ins.copyValues({
@@ -95,6 +106,8 @@ export default class CVCamera extends CCamera
                 zfar: ins.far.value
             }
         }
+
+        data.autoNearFar = this.addIns.autoNearFar.value;
 
         document.cameras = document.cameras || [];
         const cameraIndex = document.cameras.length;

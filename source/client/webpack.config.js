@@ -125,7 +125,7 @@ module.exports = function(env, argv)
         output: {
             path: dirs.output,
             filename: isDevMode ? "js/[name].dev.js" : "js/[name].min.js",
-            clean: true,
+            //clean: true,
         },
 
         resolve: {

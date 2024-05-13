@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@ export default class CVGrid extends CObject3D
         this.tape.ins.startPosition.setValue([0,0,0]);
         this.tape.ins.endPosition.setValue([0,0,0]);
         this.tape.ins.visible.setValue(false);
+        this.tape.addTag("no_settings");    // hack to exclude from scene settings
 
         super.create();
     }

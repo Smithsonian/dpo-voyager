@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,9 @@ export default class CircleSprite extends AnnotationSprite
 
     protected offset: Group;
     protected anchorMesh: Mesh;
+    protected adaptive = true;
+    protected originalHeight;
+    protected originalWidth;
 
     constructor(annotation: Annotation)
     {
@@ -112,6 +115,16 @@ export default class CircleSprite extends AnnotationSprite
 
         this.offset.visible = isShowing;
 
+        // update adaptive settings
+        if(this.adaptive !== this.isAdaptive) {
+            if(!this.isAdaptive) {
+                element.truncated = false;
+                element.classList.remove("sv-short");
+                element.requestUpdate();
+            }
+            this.adaptive = this.isAdaptive;
+        }
+
         // don't show if behind the camera
         this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing); 
         if(!this.getVisible()) {
@@ -119,34 +132,69 @@ export default class CircleSprite extends AnnotationSprite
         }
 
         // check if annotation is out of bounds and update if needed
-        if (annotation.expanded) {
-            element.classList.add("sv-expanded");
+        if (this.adaptive && !this.isAnimating && annotation.expanded) {
 
-            let x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
-            let y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
+            if(!element.truncated) {
+                if(!element.classList.contains("sv-expanded")) {
+                    element.requestUpdate().then(() => {
+                        this.originalHeight = element.offsetHeight;
+                        this.originalWidth = element.offsetWidth;
+                        this.checkTruncate(element, container);
+                    });
+                }
+                else {
+                    this.originalHeight = element.offsetHeight;
+                    this.originalWidth = element.offsetWidth;
+                }
+            }
 
-            if (x + element.offsetWidth >= container.offsetWidth && !element.classList.contains("sv-align-right")) {
-                element.classList.add("sv-align-right");
-                element.requestUpdate();
-            }
-            else if (x + element.offsetWidth < container.offsetWidth && element.classList.contains("sv-align-right")){
-                element.classList.remove("sv-align-right");
-                element.requestUpdate();
-            }
-            if (y + element.offsetHeight >= container.offsetHeight && !element.classList.contains("sv-align-bottom")) {
-                element.classList.add("sv-align-bottom");
-                element.requestUpdate();
-            }
-            else if (y + element.offsetHeight < container.offsetHeight && element.classList.contains("sv-align-bottom")) {
-                element.classList.remove("sv-align-bottom");
-                element.requestUpdate();
-            }
+            this.checkTruncate(element, container);
         }
     }
 
     protected createHTMLElement()
     {
         return new CircleAnnotation(this);
+    }
+
+    // Helper function to check if annotation should truncate
+    protected checkTruncate(element: AnnotationElement, container: HTMLElement) {
+        const x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+        const y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
+
+        const shouldTruncate = y + this.originalHeight >= container.offsetHeight;
+        if(shouldTruncate !== element.truncated) {
+            element.truncated = shouldTruncate;
+            element.requestUpdate().then(() => {
+                this.checkBounds(element, container);
+            });
+        }
+        else {
+            this.checkBounds(element, container);
+        }
+    }
+
+    // Helper function to check and handle annotation overlap with bounds of container
+    protected checkBounds(element: AnnotationElement, container: HTMLElement) {
+        const x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+        const y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
+
+        if (x + element.offsetWidth >= container.offsetWidth && !element.classList.contains("sv-align-right")) {
+            element.classList.add("sv-align-right");
+            element.requestUpdate();
+        }
+        else if (x + element.offsetWidth < container.offsetWidth && element.classList.contains("sv-align-right")){
+            element.classList.remove("sv-align-right");
+            element.requestUpdate();
+        }
+        if (y + element.offsetHeight >= container.offsetHeight && !element.classList.contains("sv-align-bottom")) {
+            element.classList.add("sv-align-bottom");
+            element.requestUpdate();
+        }
+        else if (y + element.offsetHeight < container.offsetHeight && element.classList.contains("sv-align-bottom")) {
+            element.classList.remove("sv-align-bottom");
+            element.requestUpdate();
+        }
     }
 }
 
@@ -169,6 +217,7 @@ class CircleAnnotation extends AnnotationElement
         this.onClickArticle = this.onClickArticle.bind(this);
         this.onClickAudio = this.onClickAudio.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
+        this.onClickOverlay = this.onClickOverlay.bind(this);
 
         this.markerElement = this.appendElement("div");
         this.markerElement.classList.add("sv-marker");
@@ -197,17 +246,20 @@ class CircleAnnotation extends AnnotationElement
 
         const annotation = this.sprite.annotation;
         const annotationData = annotation.data;
+        const isTruncated = !this.overlayed && this.truncated 
+            && (annotationData.imageUri || annotationData.articleId || annotation.lead.length > 0); // make sure we have content to truncate
         const audio = this.sprite.audioManager;
 
         // update title
         this.markerElement.innerText = annotationData.marker;
-
+        
         const contentTemplate = html`
-        <div class="sv-title">${annotation.title}</div>
-            ${annotationData.imageUri ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
-            <div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>
-            ${annotationData.audioId ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-            ${annotationData.articleId ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}`;    
+            ${!this.isOverlayed ? html`<div class="sv-title">${annotation.title}</div>` : null}
+            ${annotationData.imageUri && !isTruncated ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
+            ${!isTruncated ? html`<div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>` : null}
+            ${annotationData.audioId && !this.isOverlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
+            ${annotationData.articleId && !isTruncated ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}
+            ${isTruncated ? html`<ff-button inline text="+more info" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;  
 
         render(contentTemplate, this.contentElement);
 
@@ -221,7 +273,7 @@ class CircleAnnotation extends AnnotationElement
         }
 
         // update expanded/collapsed
-        if (this.isExpanded !== annotationData.expanded) {
+        if (this.isExpanded !== annotationData.expanded && !this.overlayed) {
 
             this.isExpanded = annotationData.expanded;
 
@@ -233,7 +285,7 @@ class CircleAnnotation extends AnnotationElement
                 this.classList.add("sv-expanded");
                 //this.style.minWidth = annotationData.lead.length < 40 && (!annotationData.audioId || annotationData.audioId.length == 0) ? "0" : "";
                 this.contentElement.style.display = "block";
-                this.contentElement.style.height = this.contentElement.scrollHeight + "px";
+                this.contentElement.style.height = "auto"; //this.contentElement.scrollHeight + "px";
             }
             else {
                 this.classList.remove("sv-expanded");
@@ -257,7 +309,7 @@ class CircleAnnotation extends AnnotationElement
         }
 
         const audioView = this.querySelector(".sv-audio-view");
-        if(annotationData.audioId) {
+        if(annotationData.audioId && !this.overlayed) {
             if(annotationData.expanded && !audioView) {
                 const audioContainer = this.querySelector("#audio_container");
                 audioContainer.append(audio.getPlayerById(annotationData.audioId));
@@ -281,10 +333,17 @@ class CircleAnnotation extends AnnotationElement
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
     }
 
+    protected onClickOverlay(event: MouseEvent)
+    {
+        event.stopPropagation();
+        const content = this.contentElement;
+        this.overlayed = true;
+        this.showOverlay(content);
+    }
+
     protected onClickAudio(event: MouseEvent)
     {
         event.stopPropagation();
-        this.sprite.emitClickEvent();
     }
 
     protected onKeyDown(event: KeyboardEvent)

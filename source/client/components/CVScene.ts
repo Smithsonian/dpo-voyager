@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 
 const _vec3 = new Vector3();
 const _vec3b = new Vector3();
+
+function light_has_shadowSize(l : CLight): l is (CLight & {ins: {shadowSize: Property<number>}}) {
+    return "shadowSize" in l.ins;
+}
 
 /**
  * Manages the scene and the nodes in the scene tree.
@@ -241,8 +245,8 @@ export default class CVScene extends CVNode
                     }
     
                     if(lightNode.ins.shadowEnabled.value) {
-                        if("shadowSize" in lightNode.ins){
-                            (lightNode.ins.shadowSize as Property<number>).setValue(this.outs.boundingRadius.value*2.0);
+                        if(light_has_shadowSize(lightNode)){
+                            lightNode.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
                         }
                         (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far = this.outs.boundingRadius.value*4.0;
                     }
@@ -274,11 +278,13 @@ export default class CVScene extends CVNode
         }
 
         this.cameras.forEach(camera => {
-            const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
-            const near = Math.min(far / 1000.0, this.outs.boundingRadius.value / 100.0);
-            if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
-                camera.ins.far.setValue(far);
-                camera.ins.near.setValue(near);
+            if(camera.addIns.autoNearFar.value) {
+                const far = 4 * Math.max(orbitRadius, this.outs.boundingRadius.value);
+                const near = Math.min(far / 1000.0, this.outs.boundingRadius.value / 100.0);
+                if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
+                    camera.ins.far.setValue(far);
+                    camera.ins.near.setValue(near);
+                }
             }
         });
     }

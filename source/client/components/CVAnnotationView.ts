@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import CVAssetReader from "./CVAssetReader";
 import CVAudioManager from "./CVAudioManager";
 import CVAssetManager from "./CVAssetManager";
 import CVSnapshots from "./CVSnapshots";
+import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +92,9 @@ export default class CVAnnotationView extends CObject3D
 
     private _viewports = new Set<Viewport>();
     private _sprites: Dictionary<HTMLSprite> = {};
+
+    private _truncateLock = false;
+    private _activeView = false;
 
     protected get model() {
         return this.getComponent(CVModel2);
@@ -144,6 +148,12 @@ export default class CVAnnotationView extends CObject3D
             if (annotation) {
                 annotation.set("expanded", true);
                 this.updateSprite(annotation);
+
+                // need to lock truncation checking during a tween
+                if(this._activeView) {
+                    this._truncateLock = true;
+                    this._activeView = false;
+                }
             }
 
             const ins = this.ins;
@@ -315,6 +325,16 @@ export default class CVAnnotationView extends CObject3D
 
         const spriteGroup = this.object3D as HTMLSpriteGroup;
         spriteGroup.render(viewport.overlay, context.camera);
+
+        // Handle locking truncation for view animation only after 
+        // the sprite has a chance to do an initial update.
+        if(this._truncateLock) {
+            const annotation = this.activeAnnotation.data;
+            const sprite = this._sprites[annotation.id] as AnnotationSprite;
+            sprite.isAnimating = true;
+            this.snapshots.outs.tweening.once("value", () => { sprite.isAnimating = false; }, this);
+            this._truncateLock = false;
+        }
     }
 
     dispose()
@@ -473,11 +493,21 @@ export default class CVAnnotationView extends CObject3D
     {
         this.emit(event);
 
+        // start view animation if it exists
         const annotation = event.annotation;
-        if(annotation && annotation.data.viewId.length) {
+        if(annotation && annotation.data.viewId.length && !this.arManager.outs.isPresenting.value) {
             this.normalizeViewOrbit(annotation.data.viewId);
-            this.snapshots.ins.id.setValue(annotation.data.viewId);
-            this.snapshots.ins.tween.set();
+
+            // If activeAnnotation is being tracked, make sure it is set
+            const activeIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
+            if(activeIdx >= 0) {
+                const viewState = this.snapshots.getState(annotation.data.viewId);
+                viewState.values[activeIdx] = annotation.data.id;
+            }
+            
+            const pulse = this.getMainComponent(CPulse);
+            this.snapshots.tweenTo(annotation.data.viewId, pulse.context.secondsElapsed);
+            this._activeView = true;
         }
     }
 
@@ -574,9 +604,12 @@ export default class CVAnnotationView extends CObject3D
         const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
         const viewState = this.snapshots.getState(viewId);
         const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];
+        let angleOffset = 0;
         currentOrbit.forEach((n, i) => {
             const mult = Math.round((n-viewState.values[orbitIdx][i])/360);
-            viewState.values[orbitIdx][i] += 360*mult; 
+            viewState.values[orbitIdx][i] += 360*mult;
+            angleOffset += Math.abs(n-viewState.values[orbitIdx][i]);
         });
+        viewState.duration = angleOffset > 0.01 ? 1.0 : 0;  // don't animate if we are already there
     }
 }

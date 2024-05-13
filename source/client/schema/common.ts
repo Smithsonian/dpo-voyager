@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ export enum ELanguageType { EN, ES, DE, NL, JA, FR, HAW }
 export enum ELanguageStringType {
     EN = 'English',
     ES = 'Spanish (Español)',
-    DE = 'German (Deutsche)',
+    DE = 'German (Deutsch)',
     NL = 'Dutch (Nederlands)',
     JA = 'Japanese (日本語)',
     FR = 'French (Français)',

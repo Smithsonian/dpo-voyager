@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,6 +116,12 @@ export default class ModelReader
                 mesh.geometry.computeBoundingBox();
 
                 const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
+
+                if (material.flatShading) {
+                    mesh.geometry.computeVertexNormals();
+                    material.flatShading = false;
+                    console.warn("Normals unavailable so they have been calculated. For best outcomes, please provide normals with geometry.");
+                }
 
                 // copy properties from previous material
                 if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial") {

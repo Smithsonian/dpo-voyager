@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2019 Smithsonian Institution
+ * Copyright 2024 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,9 +78,10 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVScene from "../nodes/NVScene";
 import NVNode from "../nodes/NVNode";
 
-import CVAmbienLight from "client/components/lights/CVAmbientLight";
+import CVAmbientLight from "client/components/lights/CVAmbientLight";
 import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
 import CVRectLight from "client/components/lights/CVRectLight";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +89,7 @@ export const lightTypes = [
     CVDirectionalLight,
     CVPointLight,
     CVSpotLight,
-    CVAmbienLight,
+    CVAmbientLight,
     CVHemisphereLight,
     CVRectLight,
 ] as const;
