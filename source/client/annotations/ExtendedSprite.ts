@@ -196,7 +196,7 @@ class ExtendedAnnotation extends AnnotationElement
         this.wrapperElement = this.appendElement("div");
 
         this.contentElement = this.createElement("div", null, this.wrapperElement);
-        this.contentElement.classList.add("sv-content");
+        this.contentElement.classList.add("sv-annotation-body");
         this.contentElement.style.display = "none";
     }
 
