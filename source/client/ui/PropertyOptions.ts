@@ -96,7 +96,7 @@ export default class PropertyOptions extends CustomElement
         }
         else {
             optionsList = options.map((option, index) =>
-                html`<option value=${index} ?selected=${index === value}>${language ? language.getLocalizedString(option) : option}</option>`)
+                html`<option value=${index} ?selected=${index == value}>${language ? language.getLocalizedString(option) : option}</option>`)
         }
 
         return html`

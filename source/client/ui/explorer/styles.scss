@@ -1240,6 +1240,8 @@ $tour-entry-indent: 12px;
 
   .ff-input, select{
     text-align: right;
+    background-image: none;
+    appearance: auto;
     &:focus{
       text-align: left;
     }

@@ -140,8 +140,11 @@ export default class PropertyNumber extends CustomElement
             return;
         }
         let value :number;
-        if(this.property.schema.percent && text.endsWith("%")){
-            value = +text.slice(0, -1) /100;
+        if(this.property.schema.percent){
+            if(text.endsWith("%")) {
+                text = text.slice(0, -1);
+            }
+            value = +text / 100;
         }else{
             value = parseFloat(text);
         }
