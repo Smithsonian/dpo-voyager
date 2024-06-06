@@ -25,7 +25,7 @@ import CComponentProvider, {
 
 import CVTask from "./CVTask";
 import taskSets, { ETaskMode } from "../applications/taskSets";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageStringType, ELanguageType } from "client/schema/common";
 import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ export default class CVTaskProvider extends CComponentProvider<CVTask>
 
     protected static readonly ins = {
         mode: types.Enum("Tasks.Mode", ETaskMode),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
     };
 
     ins = this.addInputs(CVTaskProvider.ins);

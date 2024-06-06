@@ -58,7 +58,7 @@ export default class CVArticlesTask extends CVTask
         lead: types.String("Article.Lead"),
         tags: types.String("Article.Tags"),
         uri: types.String("Article.URI"),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
     };
 
     protected static readonly outs = {

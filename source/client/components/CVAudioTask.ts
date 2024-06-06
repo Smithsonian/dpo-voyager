@@ -23,7 +23,7 @@ import AudioTaskView from "../ui/story/AudioTaskView";
 import { Node } from "@ff/graph/Component";
 import CVDocument from "./CVDocument";
 import CVAudioManager from "./CVAudioManager";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageStringType, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +44,7 @@ export default class CVAudioTask extends CVTask
         filepath: types.String("Audio.Filepath", null),
         captionPath: types.String("Audio.CaptionPath", null),
         isNarration: types.Boolean("Audio.IsNarration", false),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
     };
 
     protected static readonly outs = {

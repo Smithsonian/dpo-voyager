@@ -54,7 +54,7 @@ export default class CVToursTask extends CVTask
         stepCurve: types.Enum("Step.Curve", EEasingCurve),
         stepDuration: types.Number("Step.Duration", 1),
         stepThreshold: types.Percent("Step.Threshold", 0.5),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
     };
 
     protected static readonly outs = {

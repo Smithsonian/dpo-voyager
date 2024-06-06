@@ -46,11 +46,12 @@ export default class CVLanguageManager extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Language.Enabled", false),
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
+        language: types.Enum("Interface.Language", ELanguageType, ELanguageType[DEFAULT_LANGUAGE]),
     };
 
     protected static readonly outs = {
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
+        /* exception to default language: in absence of any dictionary, this is always EN */
+        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN ),
     };
 
     ins = this.addInputs(CVLanguageManager.ins);
@@ -114,7 +115,7 @@ export default class CVLanguageManager extends Component
         const language = ELanguageType[data.language || "EN"];
 
         if(language != outs.language.value && ins.language.value === outs.language.value) {
-            ins.language.setValue(isFinite(language) ? language : ELanguageType.EN);
+            ins.language.setValue(isFinite(language) ? language : ELanguageType[DEFAULT_LANGUAGE]);
         }
     }
 

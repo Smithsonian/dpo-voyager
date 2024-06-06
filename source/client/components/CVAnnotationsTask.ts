@@ -57,13 +57,13 @@ export default class CVAnnotationsTask extends CVTask
 
     protected static readonly ins = {
         mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
+        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
         audio: types.Option("Annotation.Audio", ["None"], 0),
         selection: types.Event("Annotation.Selection")
     };
 
     protected static readonly outs = {
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
+        language: types.Enum("Interface.Language", ELanguageType, ELanguageType[DEFAULT_LANGUAGE]),
     };
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
