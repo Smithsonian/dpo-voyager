@@ -1,0 +1,7 @@
+/*
+ * CSS Rules overrides over tinymce's default styles
+ */
+.mce-content-body img {
+  max-width: 100%;
+  height: auto;
+}

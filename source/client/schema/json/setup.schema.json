@@ -154,6 +154,9 @@
                 },
                 "receiveShadow": {
                     "type": "boolean"
+                },
+                "autoSize": {
+                    "type": "boolean"
                 }
             }
         },

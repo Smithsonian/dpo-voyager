@@ -125,6 +125,7 @@ export interface IFloor
     color: number[];
     opacity: number;
     receiveShadow: boolean;
+    autoSize: boolean;
 }
 
 export interface IGrid
