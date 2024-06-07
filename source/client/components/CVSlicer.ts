@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3, Mesh } from "three";
+import { Box3, DoubleSide, Euler, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
@@ -25,6 +25,8 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import CVScene from "./CVScene";
 import CVModel2 from "./CVModel2";
+import CVCTSlice from "./CVCTSlice";
+import CObject3D from "client/../../libs/ff-scene/source/components/CObject3D";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +45,7 @@ const _planes = [
 /**
  * Component controlling global slicing parameters for all [[CVModel2]] components in a scene.
  */
-export default class CVSlicer extends Component
+export default class CVSlicer extends CObject3D
 {
     static readonly typeName: string = "CVSlicer";
 
@@ -59,7 +61,7 @@ export default class CVSlicer extends Component
         boundingBox: types.Object("Scene.BoundingBox", Box3),
     };
 
-    ins = this.addInputs(CVSlicer.ins);
+    ins = this.addInputs<CObject3D, typeof CVSlicer.ins>(CVSlicer.ins);
 
     get settingProperties() {
         return [
@@ -124,6 +126,22 @@ export default class CVSlicer extends Component
         const max = boundingBox.max.getComponent(axisIndex);
         const value = 1 - ins.position.value;
         this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
+
+        const angle = Math.PI*0.5;
+        if(!this.object3D && isFinite(min) && isFinite(max)) {
+            const geometry = new PlaneGeometry( max-min, max-min );
+            const material = new MeshBasicMaterial( {color: 0xffff00, side: DoubleSide} );
+            const plane = new Mesh( geometry, material );
+            this.object3D = plane;
+            this.object3D.setRotationFromEuler(new Euler(this.plane[1]*angle,this.plane[0]*angle,0));
+            this.object3D.updateMatrix();
+        }
+        else if(this.object3D) {
+            const pos = max - value * (max - min);
+            this.object3D.setRotationFromEuler(new Euler(this.plane[1]*angle,this.plane[0]*angle,0));
+            this.object3D.position.set(Math.abs(this.plane[0])*pos, Math.abs(this.plane[1])*pos, Math.abs(this.plane[2])*pos);
+            this.object3D.updateMatrix();
+        }
 
         const models = this.getGraphComponents(CVModel2);
 
