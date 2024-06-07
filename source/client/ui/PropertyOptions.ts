@@ -67,6 +67,7 @@ export default class PropertyOptions extends CustomElement
             }
             if (this.property) {
                 this.property.on("value", this.onUpdate, this);
+                this.property.on("change", this.onUpdate, this);
             }
         }
 
@@ -92,16 +93,19 @@ export default class PropertyOptions extends CustomElement
         let optionsList;
         if (indexMap) {
             optionsList = indexMap.map(index =>
-                html`<option value=${index} ?selected=${index === value}>${language ? language.getLocalizedString(options[index]) : options[index]}</option>`);
+                html`<option value=${index} ?selected=${this.isSelected(index)}>${language ? language.getLocalizedString(options[index]) : options[index]}</option>`);
         }
         else {
             optionsList = options.map((option, index) =>
-                html`<option value=${index} ?selected=${index == value}>${language ? language.getLocalizedString(option) : option}</option>`)
+                option? html`<option value=${index} ?selected=${this.isSelected(index)}>${language ? language.getLocalizedString(option) : option}</option>`:null)
         }
 
         return html`
             <label class="ff-label ff-off">${name}</label>
-            <select class="sv-property-field" @change=${(e)=>this.property.setValue(e.target.value)}>
+            <select ?multiple=${property.isMulti()} class="sv-property-field" @change=${(e)=>{
+                console.debug("Select value : ", e.target.value);
+                this.property.setValue(e.target.value)
+            }}>
                 ${optionsList}
             </select>
         `;
@@ -120,22 +124,47 @@ export default class PropertyOptions extends CustomElement
         let buttons;
         if (indexMap) {
             buttons = indexMap.map(index =>
-                html`<ff-button role="radio" aria-checked=${index === value ? true : false} tabbingIndex=${indexMap.includes(value) ? (index === value ? 0 : -1) : (index === indexMap[0] ? 0 : -1)} .text=${language ? language.getLocalizedString(options[index]) : options[index]} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
+                html`<ff-button role="radio" aria-checked=${this.isSelected(index)?"true":"false"} ?selected=${this.isSelected(index)} index=${index} .text=${language ? language.getLocalizedString(options[index]) : options[index]} @click=${this.onButtonClick}>
                     </ff-button>`);
         }
         else {
             buttons = options.map((option, index) =>
-                html`<ff-button role="radio" aria-checked=${index === value ? true : false} tabbingIndex=${index === value ? 0 : -1} .text=${language ? language.getLocalizedString(option) : option} .index=${index} .selectedIndex=${value} @click=${this.onButtonClick}>
-                    </ff-button>`)
+                option?html`<ff-button role="radio" aria-checked=${this.isSelected(index)?"true":"false"} ?selected=${this.isSelected(index)} index=${index} .text=${language ? language.getLocalizedString(option) : option}  @click=${this.onButtonClick}>
+                    </ff-button>`:null)
         }
 
-        return html`<label class="ff-label ff-off">${name}</label><div role="radiogroup" @keydown=${e =>this.onKeyDown(e)} title=${name} class="sv-options">${buttons}</div>`;
+        return html`
+            <label class="ff-label ff-off">${name}</label>
+            <div class="sv-options-buttons" role="radiogroup" @keydown=${e =>this.onKeyDown(e)} title=${name} class="sv-options">
+                ${buttons}
+            </div>`;
     }
+
+
+    isSelected(index: number){
+        if(this.property.isMulti()){
+            return this.property.value.includes(index);
+        }else{
+            return this.property.value == index;
+        }
+    }
+
 
     protected onButtonClick(event: IButtonClickEvent)
     {
         const value = event.target.index;
-        this.property.setValue(value);
+        if(this.property.isMulti()){
+            let selection = this.property.value.slice();
+            let valueIndex = selection.indexOf(value);
+            if(valueIndex !== -1){
+                selection = selection.filter(v => v !== value);
+            }else{
+                selection.push(value);
+            }
+            this.property.setValue(selection);
+        }else{
+            this.property.setValue(value);
+        }
     }
 
     protected onKeyDown(e: KeyboardEvent)
