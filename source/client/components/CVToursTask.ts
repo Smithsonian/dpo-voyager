@@ -54,7 +54,6 @@ export default class CVToursTask extends CVTask
         stepCurve: types.Enum("Step.Curve", EEasingCurve),
         stepDuration: types.Number("Step.Duration", 1),
         stepThreshold: types.Percent("Step.Threshold", 0.5),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
     };
 
     protected static readonly outs = {
@@ -102,13 +101,6 @@ export default class CVToursTask extends CVTask
 
         const languageManager = this.activeDocument.setup.language;
 
-        if(ins.language.changed) {   
-            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
-
-            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
-            languageManager.ins.language.setValue(newLanguage);
-            //outs.language.setValue(newLanguage);
-        }
 
         if (tour) {
             const stepList = tour.steps;
@@ -232,8 +224,6 @@ export default class CVToursTask extends CVTask
         if (this.tours) {
             this.tours.ins.enabled.setValue(true);
         }
-
-        this.synchLanguage();
     }
 
     deactivateTask()
@@ -305,18 +295,6 @@ export default class CVToursTask extends CVTask
         this.onTourChange();
         this.onStepChange();
         tours.ins.tourIndex.setValue(tours.outs.tourIndex.value);  // trigger UI refresh
-
-        this.synchLanguage();
     }
 
-    // Make sure this task language matches document
-    protected synchLanguage() {
-        const {ins} = this;
-        const languageManager = this.activeDocument.setup.language;
-
-        if(ins.language.value !== languageManager.outs.language.value)
-        {
-            ins.language.setValue(languageManager.outs.language.value, true);
-        }
-    }
 }

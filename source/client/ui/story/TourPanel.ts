@@ -95,6 +95,7 @@ export default class TourPanel extends DocumentView
         const task = this.toursTask;
         const tours = this.tours;
         const machine = tours.snapshots;
+        const languageManager = this.activeDocument.setup.language;
 
         if (!task || !tours.ins.enabled.value) {
             return html`<div class="ff-placeholder">Tour edit task not available.</div>`;
@@ -122,7 +123,7 @@ export default class TourPanel extends DocumentView
         this.stateTable.rows = tours.activeSteps.map(step => {
             const state = machine.getState(step.id);
             return {
-                title: step.titles[ELanguageType[this.toursTask.ins.language.value]] || "undefined",
+                title: step.titles[ELanguageType[languageManager.ins.language.value]] || "undefined",
                 curve: EEasingCurve[state.curve],
                 duration: state.duration.toFixed(1) + "s",
                 threshold: (state.threshold * 100).toFixed(0) + "%",
