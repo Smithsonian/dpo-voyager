@@ -49,6 +49,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const task = this.task;
         const articles = task.articles;
         const activeArticle = task.activeArticle;
+        const languageManager = this.activeDocument.setup.language;
 
         if (!articles) {
             return html`<div class="sv-placeholder">Please select a scene or model node to edit its articles.</div>`;
@@ -57,7 +58,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const props = task.ins;
 
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${this.task.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${props.title.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Tags</div>
@@ -81,7 +82,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[this.task.ins.language.value] as TLanguageType]}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[languageManager.ins.language.value] as TLanguageType]}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
