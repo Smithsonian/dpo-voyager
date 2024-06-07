@@ -40,7 +40,8 @@ export default class CollectionPanel extends DocumentView
     {
         const languageManager = this.activeDocument.setup.language;
 
-        return html`<div class="sv-panel-header">
+        return html`<div class="ff-scroll-y ff-flex-column" style="padding-bottom: 5px">
+            <div class="sv-panel-header">
                 <ff-icon name="document"></ff-icon>
                 <div class="ff-text">Collection</div>
             </div>
@@ -50,7 +51,8 @@ export default class CollectionPanel extends DocumentView
                 <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>
                 <div class="sv-label">Intro</div>
                 <ff-text-edit name="intro" text=${this.activeDocument.ins.intro.value} @change=${this.onTextEdit}></ff-text-edit>
-            </div>`;
+            </div>
+        </div>`;
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)
