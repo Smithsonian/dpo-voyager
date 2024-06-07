@@ -25,7 +25,7 @@ import Article from "../../models/Article";
 
 import CVArticlesTask from "../../components/CVArticlesTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, ELanguageType, TLanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +82,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[languageManager.ins.language.value] as TLanguageType]}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>

@@ -123,7 +123,7 @@ export default class TourPanel extends DocumentView
         this.stateTable.rows = tours.activeSteps.map(step => {
             const state = machine.getState(step.id);
             return {
-                title: step.titles[ELanguageType[languageManager.ins.language.value]] || "undefined",
+                title: step.titles[languageManager.codeString()] || "undefined",
                 curve: EEasingCurve[state.curve],
                 duration: state.duration.toFixed(1) + "s",
                 threshold: (state.threshold * 100).toFixed(0) + "%",

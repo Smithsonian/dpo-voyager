@@ -27,7 +27,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import CVDocument from "../../components/CVDocument";
 import { IButtonClickEvent } from "@ff/ui/Button";
-import { ELanguageType, DEFAULT_LANGUAGE, ELanguageStringType, TLanguageType } from "client/schema/common";
+import { ELanguageType, DEFAULT_LANGUAGE, ELanguageStringType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +99,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[languageManager.ins.language.value] as TLanguageType]}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .language=${languageManager.ins.language.value} @select=${this.onSelectTour}></sv-tour-list>

@@ -312,7 +312,7 @@ export default class CVArticlesTask extends CVTask
             // if we don't have a uri for this language, create one so that it is editable
             if(article.uri === undefined) {
                 const defaultFolder = CVMediaManager.articleFolder;
-                article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[languageManager.ins.language.value]}.html`;
+                article.uri = `${defaultFolder}/new-article-${article.id}-${languageManager.codeString()}.html`;
                 this.ins.version.set();
             }
             else {

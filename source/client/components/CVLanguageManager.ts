@@ -75,7 +75,11 @@ export default class CVLanguageManager extends Component
         return this._activeLanguages;
     }
 
-    nameString()
+    /**
+     * 
+     * @returns Full text string of the currently selected language
+     */
+    nameString() :string
     {
         return ELanguageStringType[ELanguageType[this.ins.language.value]];
     }

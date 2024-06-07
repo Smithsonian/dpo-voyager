@@ -100,7 +100,7 @@ export default class CVAudioTask extends CVTask
 
         const clip = audioManager.getAudioClip(ins.activeId.value);
         const languageManager = this.activeDocument.setup.language;
-        const activeLanguage = languageManager.ins.language.value;
+        const activeLanguage = languageManager.codeString();
 
         if (ins.create.changed) {
             const newId = Document.generateId();
@@ -129,8 +129,8 @@ export default class CVAudioTask extends CVTask
 
         if (clip && (ins.title.changed || ins.filepath.changed || ins.captionPath.changed)) {
             clip.name = ins.title.value;
-            clip.uris[ELanguageType[activeLanguage]] = ins.filepath.value;
-            clip.captionUris[ELanguageType[activeLanguage]] = ins.captionPath.value;
+            clip.uris[activeLanguage] = ins.filepath.value;
+            clip.captionUris[activeLanguage] = ins.captionPath.value;
             audioManager.updateAudioClip(clip.id);
         }
         if (ins.isNarration.changed) {
@@ -164,11 +164,11 @@ export default class CVAudioTask extends CVTask
         const audioManager = this.audioManager;
         const clip = audioManager.getAudioClip(ins.activeId.value);
         const languageManager = this.activeDocument.setup.language;
-        const activeLanguage = languageManager.ins.language.value;
+        const activeLanguage = languageManager.codeString();
 
         ins.title.setValue(clip ? clip.name : "", true);
-        ins.filepath.setValue(clip ? clip.uris[ELanguageType[activeLanguage]] : "", true);
-        ins.captionPath.setValue(clip ? clip.captionUris[ELanguageType[activeLanguage]] : "", true);
+        ins.filepath.setValue(clip ? clip.uris[activeLanguage] : "", true);
+        ins.captionPath.setValue(clip ? clip.captionUris[activeLanguage] : "", true);
         ins.isNarration.setValue(clip ? this.audioManager.narrationId === clip.id : false, true);
     }
 
