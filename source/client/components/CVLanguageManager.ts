@@ -40,7 +40,7 @@ export default class CVLanguageManager extends Component
     static readonly text: string = "Language";
     static readonly icon: string = "";
 
-    private _activeLanguages: ILanguageOption[] = [];
+    private _activeLanguages: {[key in TLanguageType]?: ILanguageOption} = {};
     private _translations: ITranslation = {};
 
     static readonly isSystemSingleton = true;
@@ -72,7 +72,7 @@ export default class CVLanguageManager extends Component
         return this.getMainComponent(CVAssetReader);
     }
     get activeLanguages() {
-        return this._activeLanguages;
+        return Object.values(this._activeLanguages);
     }
 
     /**
@@ -98,13 +98,14 @@ export default class CVLanguageManager extends Component
     {
         const { ins, outs } = this;
         
-        if(this.activeLanguages.length == 0) {
+        if(this.activeLanguages.length == 0 && ins.language.value == outs.language.value) {
             this.addLanguage(outs.language.value);
             //return;
         }
         
         if (ins.language.changed && ins.language.value != outs.language.value) {
             const newLanguage = ins.language.value;
+            this.addLanguage(newLanguage);
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.language.value].toLowerCase() + ".json").then( json => {
                 this._translations = json;
                 this.updateLanguage(newLanguage);
@@ -121,10 +122,11 @@ export default class CVLanguageManager extends Component
         const { ins, outs } = this;
         data = data || {} as ILanguage;
 
-        const language = ELanguageType[data.language || "EN"];
+        const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
 
-        if(language != outs.language.value && ins.language.value === outs.language.value) {
-            ins.language.setValue(isFinite(language) ? language : ELanguageType[DEFAULT_LANGUAGE]);
+        //If language has already been set, don't overwrite it.
+        if(ins.language.value < 0) {
+            ins.language.setValue(language);
         }
     }
 
@@ -138,11 +140,7 @@ export default class CVLanguageManager extends Component
     }
 
     addLanguage(language: ELanguageType) {
-        const exists = this._activeLanguages.find(element => element.id === language)
-
-        if(!exists) {
-            this._activeLanguages.push({ id: language, name: ELanguageStringType[ELanguageType[language]] });
-        }
+        this._activeLanguages[ELanguageType[language]] ??= { id: language, name: ELanguageStringType[ELanguageType[language]] };
     }
 
     getLocalizedString(text: string): string
