@@ -38,18 +38,13 @@ export default class CollectionPanel extends DocumentView
 
     protected render()
     {
-        const taskProvider = this.taskProvider;
         const languageManager = this.activeDocument.setup.language;
-        if(taskProvider.ins.language.value !== languageManager.outs.language.value)
-        {
-            taskProvider.ins.language.setValue(languageManager.outs.language.value, true);
-        }
 
         return html`<div class="sv-panel-header">
                 <ff-icon name="document"></ff-icon>
                 <div class="ff-text">Collection</div>
             </div>
-            <sv-property-view .property=${this.taskProvider.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
             <div class="sv-indent">
                 <div class="sv-label">Title</div>
                 <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>
