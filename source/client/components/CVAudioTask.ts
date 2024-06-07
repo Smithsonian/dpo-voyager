@@ -44,7 +44,6 @@ export default class CVAudioTask extends CVTask
         filepath: types.String("Audio.Filepath", null),
         captionPath: types.String("Audio.CaptionPath", null),
         isNarration: types.Boolean("Audio.IsNarration", false),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType[DEFAULT_LANGUAGE]]),
     };
 
     protected static readonly outs = {
@@ -83,8 +82,6 @@ export default class CVAudioTask extends CVTask
         //this.nodeProvider.activeNode = this.nodeProvider.scopedNodes[0];
         
         super.activateTask();
-
-        this.synchLanguage();
     }
 
     deactivateTask()
@@ -103,13 +100,7 @@ export default class CVAudioTask extends CVTask
 
         const clip = audioManager.getAudioClip(ins.activeId.value);
         const languageManager = this.activeDocument.setup.language;
-
-        if(ins.language.changed) {   
-            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
-
-            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
-            languageManager.ins.language.setValue(newLanguage);
-        }
+        const activeLanguage = languageManager.ins.language.value;
 
         if (ins.create.changed) {
             const newId = Document.generateId();
@@ -138,8 +129,8 @@ export default class CVAudioTask extends CVTask
 
         if (clip && (ins.title.changed || ins.filepath.changed || ins.captionPath.changed)) {
             clip.name = ins.title.value;
-            clip.uris[ELanguageType[ins.language.value]] = ins.filepath.value;
-            clip.captionUris[ELanguageType[ins.language.value]] = ins.captionPath.value;
+            clip.uris[ELanguageType[activeLanguage]] = ins.filepath.value;
+            clip.captionUris[ELanguageType[activeLanguage]] = ins.captionPath.value;
             audioManager.updateAudioClip(clip.id);
         }
         if (ins.isNarration.changed) {
@@ -172,27 +163,17 @@ export default class CVAudioTask extends CVTask
         const ins = this.ins;
         const audioManager = this.audioManager;
         const clip = audioManager.getAudioClip(ins.activeId.value);
+        const languageManager = this.activeDocument.setup.language;
+        const activeLanguage = languageManager.ins.language.value;
 
         ins.title.setValue(clip ? clip.name : "", true);
-        ins.filepath.setValue(clip ? clip.uris[ELanguageType[ins.language.value]] : "", true);
-        ins.captionPath.setValue(clip ? clip.captionUris[ELanguageType[ins.language.value]] : "", true);
+        ins.filepath.setValue(clip ? clip.uris[ELanguageType[activeLanguage]] : "", true);
+        ins.captionPath.setValue(clip ? clip.captionUris[ELanguageType[activeLanguage]] : "", true);
         ins.isNarration.setValue(clip ? this.audioManager.narrationId === clip.id : false, true);
     }
 
     protected onDocumentLanguageChange()
     {
-        this.synchLanguage();
         this.onAudioChange();
-    }
-
-    // Make sure this task language matches document
-    protected synchLanguage() {
-        const {ins} = this;
-        const languageManager = this.activeDocument.setup.language;
-
-        if(ins.language.value !== languageManager.outs.language.value)
-        {
-            ins.language.setValue(languageManager.outs.language.value, true);
-        }
     }
 }
