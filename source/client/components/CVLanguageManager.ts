@@ -20,6 +20,7 @@ import { ILanguage, ILanguageOption } from "client/schema/setup";
 import { ELanguageType, TLanguageType, ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
 import { ITagUpdateEvent } from "./CVModel2";
+import { enumToArray } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +47,11 @@ export default class CVLanguageManager extends Component
 
     protected static readonly ins = {
         enabled: types.Boolean("Language.Enabled", false),
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType[DEFAULT_LANGUAGE]),
+        language: types.Enum("Interface.Language", ELanguageType, {
+            preset: ELanguageType[DEFAULT_LANGUAGE],
+            enum: ELanguageType,
+            options: enumToArray(ELanguageStringType).map(key => ELanguageStringType[key])
+        }),
     };
 
     protected static readonly outs = {
