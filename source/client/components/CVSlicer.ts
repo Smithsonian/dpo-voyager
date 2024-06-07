@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-import { Box3, DoubleSide, Euler, Mesh, MeshBasicMaterial, PlaneGeometry } from "three";
+import { Box3, DoubleSide, Euler, Mesh, MeshBasicMaterial, PlaneGeometry, Texture } from "three";
 
-import Component, { types } from "@ff/graph/Component";
+import { types } from "@ff/graph/Component";
+import CObject3D from "@ff/scene/components/CObject3D";
 
 import { ISlicer, ESliceAxis, TSliceAxis } from "client/schema/setup";
 
@@ -25,8 +26,7 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import CVScene from "./CVScene";
 import CVModel2 from "./CVModel2";
-import CVCTSlice from "./CVCTSlice";
-import CObject3D from "client/../../libs/ff-scene/source/components/CObject3D";
+import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -79,8 +79,16 @@ export default class CVSlicer extends CObject3D
         ];
     }
 
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
+    }
+
     protected plane: number[] = null;
     protected axisIndex = -1;
+    protected xSliceSprites: Texture = null;
+    protected sliceDimU = 43;
+    protected sliceDimV = 11;
+    protected sliceCount = 469;
 
     create()
     {
@@ -93,6 +101,10 @@ export default class CVSlicer extends CObject3D
     update(context)
     {
         const ins = this.ins;
+
+        if(this.xSliceSprites == null) {
+            this.assetReader.getTexture("xSlice.jpg").then((texture) => this.xSliceSprites = texture);
+        }
 
         if (ins.axis.changed) {
             const axisIndex = ins.axis.getValidatedValue();
@@ -127,16 +139,21 @@ export default class CVSlicer extends CObject3D
         const value = 1 - ins.position.value;
         this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
 
+        // init slice plane
         const angle = Math.PI*0.5;
         if(!this.object3D && isFinite(min) && isFinite(max)) {
             const geometry = new PlaneGeometry( max-min, max-min );
-            const material = new MeshBasicMaterial( {color: 0xffff00, side: DoubleSide} );
+            const material = new MeshBasicMaterial( {side: DoubleSide} );
+            this.xSliceSprites.repeat.set(1/this.sliceDimU,1/this.sliceDimV);
+            material.map = this.xSliceSprites;
             const plane = new Mesh( geometry, material );
             this.object3D = plane;
-            this.object3D.setRotationFromEuler(new Euler(this.plane[1]*angle,this.plane[0]*angle,0));
-            this.object3D.updateMatrix();
         }
-        else if(this.object3D) {
+        // update slice plane
+        if(this.object3D) {
+            const sliceIdx = Math.round(value * (this.sliceCount-1));
+            this.xSliceSprites.offset.set((sliceIdx%this.sliceDimU)/this.sliceDimU, (1-(1/this.sliceDimV))-Math.floor(sliceIdx/this.sliceDimU)/this.sliceDimV);
+
             const pos = max - value * (max - min);
             this.object3D.setRotationFromEuler(new Euler(this.plane[1]*angle,this.plane[0]*angle,0));
             this.object3D.position.set(Math.abs(this.plane[0])*pos, Math.abs(this.plane[1])*pos, Math.abs(this.plane[2])*pos);
