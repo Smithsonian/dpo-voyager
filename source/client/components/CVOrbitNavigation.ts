@@ -275,24 +275,26 @@ export default class CVOrbitNavigation extends CObject3D
             else {
                 const prompt = this.arManager.shadowRoot.getElementById("prompt") as HTMLElement;
 
-                // prompt rotation function
-                const pause = 2.0;
-                const period = 1.5;
-                const cycle = 2.0 * period;
-                const fadeLength = 0.2 * period;
-                let deltaMod = delta % (cycle + pause);
-                if(deltaMod > cycle && deltaMod < cycle + pause) {
-                    prompt.style.opacity = deltaMod < cycle + fadeLength ? `${1.0 - ((deltaMod - cycle) / fadeLength)}` : "0.0";
-                    deltaMod = 0.0;
+                if(prompt) {
+                    // prompt rotation function
+                    const pause = 2.0;
+                    const period = 1.5;
+                    const cycle = 2.0 * period;
+                    const fadeLength = 0.2 * period;
+                    let deltaMod = delta % (cycle + pause);
+                    if(deltaMod > cycle && deltaMod < cycle + pause) {
+                        prompt.style.opacity = deltaMod < cycle + fadeLength ? `${1.0 - ((deltaMod - cycle) / fadeLength)}` : "0.0";
+                        deltaMod = 0.0;
+                    }
+                    else if(deltaMod < fadeLength) {
+                        prompt.style.opacity = deltaMod < fadeLength ? `${deltaMod / fadeLength}` : "1.0";
+                    }
+                    
+                    const promptOffset = Math.sin((deltaMod/period) * Math.PI) * 20.0;
+                    controller.orbit.y = this._initYOrbit + promptOffset;
+            
+                    prompt.style.transform = `translateX(${-4*promptOffset}px)`;
                 }
-                else if(deltaMod < fadeLength) {
-                    prompt.style.opacity = deltaMod < fadeLength ? `${deltaMod / fadeLength}` : "1.0";
-                }
-                
-                const promptOffset = Math.sin((deltaMod/period) * Math.PI) * 20.0;
-                controller.orbit.y = this._initYOrbit + promptOffset;
-        
-                prompt.style.transform = `translateX(${-4*promptOffset}px)`;
             }
         }
 
