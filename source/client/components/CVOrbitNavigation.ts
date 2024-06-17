@@ -75,7 +75,6 @@ export default class CVOrbitNavigation extends CObject3D
         promptEnabled: types.Boolean("Settings.PromptEnabled", true),
         isInUse: types.Boolean("Camera.IsInUse", false),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
-        projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
         autoRotation: types.Boolean("Navigation.AutoRotation", false),
         autoRotationSpeed: types.Number("Navigation.AutoRotationSpeed", 10),
@@ -175,13 +174,8 @@ export default class CVOrbitNavigation extends CObject3D
         const cameraComponent = this._scene.activeCameraComponent;
         const camera = cameraComponent ? cameraComponent.camera : null;
 
-        const { projection, preset, orbit, offset, pivot } = ins;
+        const { preset, orbit, offset, pivot } = ins;
 
-        // camera projection
-        if (cameraComponent && projection.changed) {
-            camera.setProjection(projection.getValidatedValue());
-            cameraComponent.ins.projection.setValue(projection.value, true);
-        }
 
         // camera preset
         if (preset.changed && preset.value !== EViewPreset.None) {
