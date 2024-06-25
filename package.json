@@ -1,0 +1,34 @@
+{
+    "name": "ff-core",
+    "version": "0.1.0",
+    "description": "FF Core Typescript Foundation Library",
+    "scripts": {
+        "build": "tsc -p source",
+        "test": "tsc -p test; mocha -c --ui tdd node_modules/@ff/test/core/test.js || exit 0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/framelab/ff-core.git"
+    },
+    "keywords": [
+        "typescript",
+        "react"
+    ],
+    "author": {
+        "name": "Ralph Wiedemeier",
+        "url": "https://about.me/ralphw"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/framelab/ff-core/issues"
+    },
+    "homepage": "https://github.com/framelab/ff-core#readme",
+    "devDependencies": {
+        "@types/chai": "^4.2.11",
+        "@types/mocha": "^7.0.2",
+        "chai": "^4.2.0",
+        "mocha": "^7.1.2",
+        "module-alias": "^2.2.2",
+        "typescript": "^3.8.3"
+    }
+}

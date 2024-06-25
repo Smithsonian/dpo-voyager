@@ -1,0 +1,12 @@
+# FOLDERS
+.idea/
+.vscode/
+node_modules/
+built/
+doc/
+
+# FILES
+.env
+.DS_Store
+*.log
+*.tsbuildinfo
