@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "target": "ES6",
+        "module": "CommonJS",
+        "experimentalDecorators": true,
+        "sourceMap": true,
+
+        "outDir": "built/export",
+        "rootDir": "source",
+
+        "baseUrl": ".",
+        "paths": {
+            "@ff/core/*": [ "../ff-core/source/*" ]
+        }
+    },
+    "include": [
+        "source/**/*"
+    ],
+    "references": [
+        { "path":  "../ff-core/tsconfig.json" }
+    ]
+}
