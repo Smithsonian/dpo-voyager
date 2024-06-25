@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import SystemView from "client/../../libs/ff-scene/source/ui/SystemView";
+import SystemView from "@ff/scene/ui/SystemView";
 import { customElement, html } from "../explorer/DocumentView";
 
 ////////////////////////////////////////////////////////////////////////////////

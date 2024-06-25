@@ -23,7 +23,7 @@ import CVScene from "./CVScene";
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import { IEnvironment } from "client/schema/setup";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import CScene from "client/../../libs/ff-scene/source/components/CScene";
+import CScene from "@ff/scene/components/CScene";
 
 const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
 

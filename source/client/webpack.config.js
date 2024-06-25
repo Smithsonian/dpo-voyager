@@ -49,7 +49,6 @@ const dirs = {
     assets: path.resolve(project, "assets"),
     output: path.resolve(project, "dist"),
     modules: path.resolve(project, "node_modules"),
-    libs: path.resolve(project, "libs"),
 };
 
 const apps = {
@@ -135,13 +134,13 @@ module.exports = function(env, argv)
             // Aliases for FF Foundation Library components
             alias: {
                 "client": path.resolve(dirs.source, "client"),
-                "@ff/core": path.resolve(dirs.libs, "ff-core/source"),
-                "@ff/graph": path.resolve(dirs.libs, "ff-graph/source"),
-                "@ff/ui": path.resolve(dirs.libs, "ff-ui/source"),
-                "@ff/react": path.resolve(dirs.libs, "ff-react/source"),
-                "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
-                "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
-                "@ff/scene": path.resolve(dirs.libs, "ff-scene/source"),
+                "@ff/core": path.resolve(dirs.source, "ff-core/source"),
+                "@ff/graph": path.resolve(dirs.source, "ff-graph/source"),
+                "@ff/ui": path.resolve(dirs.source, "ff-ui/source"),
+                "@ff/react": path.resolve(dirs.source, "ff-react/source"),
+                "@ff/browser": path.resolve(dirs.source, "ff-browser/source"),
+                "@ff/three": path.resolve(dirs.source, "ff-three/source"),
+                "@ff/scene": path.resolve(dirs.source, "ff-scene/source"),
                 "three$": path.resolve(dirs.modules, "three/src/Three"),
                 "../../../build/three.module.js": path.resolve(dirs.modules, "three/src/Three")
             },

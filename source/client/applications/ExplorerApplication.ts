@@ -44,7 +44,7 @@ import { EDerivativeQuality } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
 import { EBackgroundStyle } from "client/schema/setup";
-import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";

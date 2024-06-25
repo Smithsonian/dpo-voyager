@@ -30,14 +30,14 @@ import "./ReaderView";
 import "./CaptionView"
 
 import DocumentView, { customElement, html } from "./DocumentView";
-import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 import ARPrompt from "./ARPrompt";
 import ARMenu from "./ARMenu";
 import CVARManager from "client/components/CVARManager";
 import CVAssetReader from "client/components/CVAssetReader";
 import CaptionView from "./CaptionView";
-import { EQuadViewLayout } from "client/../../libs/ff-scene/source/RenderQuadView";
+import { EQuadViewLayout } from "@ff/scene/RenderQuadView";
 
 ////////////////////////////////////////////////////////////////////////////////
 

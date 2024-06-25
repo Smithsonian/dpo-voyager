@@ -26,7 +26,7 @@ import "@ff/ui/Button";
 
 import AnnotationSprite, { Annotation, AnnotationElement } from "./AnnotationSprite";
 import AnnotationFactory from "./AnnotationFactory";
-import { EQuadrant } from "client/../../libs/ff-three/source/HTMLSprite";
+import { EQuadrant } from "@ff/three/HTMLSprite";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -14,13 +14,13 @@
         "baseUrl": ".",
         "paths": {
             "client/*": [ "./*" ],
-            "@ff/core/*": [ "../../libs/ff-core/source/*" ],
-            "@ff/graph/*": [ "../../libs/ff-graph/source/*" ],
-            "@ff/browser/*": [ "../../libs/ff-browser/source/*" ],
-            "@ff/ui/*": [ "../../libs/ff-ui/source/*" ],
-            "@ff/react/*": [ "../../libs/ff-react/source/*" ],
-            "@ff/three/*": [ "../../libs/ff-three/source/*" ],
-            "@ff/scene/*": [ "../../libs/ff-scene/source/*" ]
+            "@ff/core/*": [ "../ff-core/source/*" ],
+            "@ff/graph/*": [ "../ff-graph/source/*" ],
+            "@ff/browser/*": [ "../ff-browser/source/*" ],
+            "@ff/ui/*": [ "../ff-ui/source/*" ],
+            "@ff/react/*": [ "../ff-react/source/*" ],
+            "@ff/three/*": [ "../ff-three/source/*" ],
+            "@ff/scene/*": [ "../ff-scene/source/*" ]
         }
     }
 }
