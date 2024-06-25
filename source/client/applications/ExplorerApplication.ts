@@ -17,7 +17,6 @@
 
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
-import Commander from "@ff/core/Commander";
 import TypeRegistry from "@ff/core/TypeRegistry";
 
 import Notification from "@ff/ui/Notification";
@@ -123,7 +122,6 @@ Version: ${ENV_VERSION}
 
     readonly props: IExplorerApplicationProps;
     readonly system: System;
-    readonly commander: Commander;
 
     protected get assetManager() {
         return this.system.getMainComponent(CVAssetManager);
@@ -149,7 +147,6 @@ Version: ${ENV_VERSION}
         registry.add(coreTypes);
         registry.add(explorerTypes);
 
-        this.commander = new Commander();
         const system = this.system = new System(registry);
 
         const engine = system.graph.createCustomNode(NVEngine);

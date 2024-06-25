@@ -16,7 +16,6 @@
  */
 
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
-import Commander from "@ff/core/Commander";
 import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
@@ -68,7 +67,6 @@ export default class StoryApplication
     readonly props: IStoryApplicationProps;
     readonly explorer: ExplorerApplication;
     readonly system: System;
-    readonly commander: Commander;
 
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
@@ -91,13 +89,11 @@ export default class StoryApplication
         this.props = props || {};
 
         this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
 
         // register additional story tool components
         const registry = this.system.registry;
         registry.add(storyTypes);
 
-        //this.logController = new LogController(this.system, this.commander);
 
         // add story components
         this.system.graph.createCustomNode(NVoyagerStory, "Story");
