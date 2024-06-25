@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+	
+import {live} from "lit-html/directives/live";
 
 import Property from "@ff/graph/Property";
 import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
@@ -64,6 +66,7 @@ export default class PropertyOptions extends CustomElement
             const property = changedProperties.get("property") as Property;
             if (property) {
                 property.off("value", this.onUpdate, this);
+                property.off("change", this.onUpdate, this);
             }
             if (this.property) {
                 this.property.on("value", this.onUpdate, this);
@@ -102,8 +105,7 @@ export default class PropertyOptions extends CustomElement
 
         return html`
             <label class="ff-label ff-off">${name}</label>
-            <select ?multiple=${property.isMulti()} class="sv-property-field" @change=${(e)=>{
-                console.debug("Select value : ", e.target.value);
+            <select ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
                 this.property.setValue(e.target.value)
             }}>
                 ${optionsList}
