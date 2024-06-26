@@ -130,11 +130,13 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.tours.outs.ending.setValue(false);
 
         const introText = this.activeDocument.outs.intro.value;
-        if(this.needsSplash && introText && introText.length > 0) {
+        if(introText) {
+            if(this.needsSplash && introText.length > 0) {
+                SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
+                    (this.getRootNode() as ShadowRoot).getElementById("sv-scene").focus();
+                });
+            }
             this.needsSplash = false;
-            SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
-                (this.getRootNode() as ShadowRoot).getElementById("sv-scene").focus();
-            });
         }
 
         if (!interfaceVisible) {
@@ -181,16 +183,6 @@ export default class ChromeView extends DocumentView
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>`;
-    }
-
-    protected firstUpdated(_changedProperties: Map<string | number | symbol, unknown>): void {
-        const introText = this.activeDocument.outs.intro.value;
-        if(this.needsSplash && introText.length > 0) {
-            this.needsSplash = false;
-            SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
-                //(this.querySelector("#main-help") as HTMLElement).focus();
-            });
-        }
     }
 
     protected onSelectTour(event: ITourMenuSelectEvent)
