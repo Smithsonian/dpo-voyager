@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
-import fetch from "@ff/browser/fetch";
 import Component, { Node } from "@ff/graph/Component";
 
-import JSONWriter from "../io/JSONWriter";
 import { INodeComponents } from "../nodes/NVNode";
 
 import CVDocument from "./CVDocument";
 import CVAssetManager from "./CVAssetManager";
 import CVStandaloneFileManager from "./CVStandaloneFileManager"
-import CVAssetReader from "./CVAssetReader";
-import { resolve } from "dns";
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +35,6 @@ export default class CVAssetWriter extends Component
 
     static readonly isSystemSingleton = true;
 
-    protected jsonWriter: JSONWriter;
 
 
     constructor(node: Node, id: string)
@@ -47,7 +43,6 @@ export default class CVAssetWriter extends Component
 
         const loadingManager = this.assetManager.loadingManager;
 
-        this.jsonWriter = new JSONWriter(loadingManager);
     }
 
     protected get assetManager() {
@@ -57,31 +52,49 @@ export default class CVAssetWriter extends Component
         return this.getGraphComponent(CVStandaloneFileManager, true);
     }
 
-    putJSON(json: any, assetPath: string): Promise<void>
-    {
-        const url = this.assetManager.getAssetUrl(assetPath);
-        return this.jsonWriter.put(json, url);
-    }
 
-    putText(text: string, assetPath: string): Promise<string>
+    async put(body: string|BlobPart, contentType :string, assetPath: string): Promise<void>
     {
+
         const standaloneManager = this.standaloneFileManager;
         if(standaloneManager) {
-            standaloneManager.addFile(assetPath, [text]);
-            return Promise.resolve(text);
+            standaloneManager.addFile(assetPath, [body]);
+            return Promise.resolve();
         }
-        else {
-            const url = this.assetManager.getAssetUrl(assetPath);
-            return fetch.text(url, "PUT", text);
+
+        const url = this.assetManager.getAssetUrl(assetPath);
+        const res = await fetch(url, {
+            method: "PUT",
+            headers:{
+                "Accept": "text/plain",
+                "Content-Type": contentType,
+            },
+            body,
+        });
+        if(!res.ok) {
+            const txt = await res.text();
+            throw new Error(`Failed to PUT ${contentType} to ${url}: ${txt ?? res.statusText}`);
         }
+    }
+
+    async putJSON(json: any, assetPath: string): Promise<void>
+    {
+        if (typeof json !== "string") {
+            json = JSON.stringify(json);
+        }
+        return await this.put(json, "application/json", assetPath);
+    }
+
+    async putText(text: string, assetPath: string): Promise<void>
+    {
+        return await this.put(text, "text/plain", assetPath);
     }
 
     putDocument(document: CVDocument, components?: INodeComponents, assetPath?: string): Promise<void>
     {
-        const url = this.assetManager.getAssetUrl(assetPath || document.outs.assetPath.value);
         const documentData = document.deflateDocument(components);
 
-        return this.jsonWriter.put(documentData, url)
+        return this.putJSON(documentData, assetPath || document.outs.assetPath.value);
     }
 
 }
