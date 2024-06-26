@@ -21,9 +21,9 @@ import CVAssetManager from "./CVAssetManager";
 import CVDocumentProvider from "./CVDocumentProvider";
 
 import CVMediaManager from "./CVMediaManager";
-import { IFileInfo } from "client/../../libs/ff-scene/source/components/CAssetManager";
-import { Dictionary } from "client/../../libs/ff-core/source/types";
-import CSelection from "client/../../libs/ff-graph/source/components/CSelection";
+import { IFileInfo } from "@ff/scene/components/CAssetManager";
+import { Dictionary } from "@ff/core/types";
+import CSelection from "@ff/graph/components/CSelection";
 
 ////////////////////////////////////////////////////////////////////////////////
 

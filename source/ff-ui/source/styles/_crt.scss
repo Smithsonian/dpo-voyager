@@ -1,0 +1,53 @@
+/**
+ * FF Typescript Foundation Library
+ * Copyright 2019 Ralph Wiedemeier, Frame Factory GmbH
+ *
+ * License: MIT
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+// COLORS
+
+$color-background: #1c332b !default;
+$color-background-dark: darken($color-background, 5%) !default;
+$color-background-darker: darken($color-background, 10%) !default;
+$color-background-light: #268054 !default;
+$color-background-lighter: lighten($color-background-light, 5%) !default;
+$color-background-hover: $color-background-lighter !default;
+
+$color-primary: #66994d !default; // blue
+$color-primary-light: lighten($color-primary, 8%) !default;
+$color-primary-dark: darken($color-primary, 8%) !default;
+
+$color-secondary: #E64A19 !default; // orange
+$color-secondary-light: lighten($color-secondary, 15%) !default;
+$color-secondary-dark: darken($color-secondary, 15%) !default;
+
+$color-text: #d6e6cf !default;
+$color-text-disabled: #7db386 !default;
+$color-icon: #7db386 !default;
+$color-icon-disabled: #7db386 !default;
+
+////////////////////////////////////////////////////////////////////////////////
+
+//@import url('https://fonts.googleapis.com/css?family=Play:400,700');
+//$font-ui: "Play", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+@font-face {
+  font-family: 'C64';
+  src: url('/fonts/C64_Pro-STYLE.woff') format('woff');
+}
+$font-ui: "C64", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+@import "./styles";
+
+////////////////////////////////////////////////////////////////////////////////
+// GLOBAL
+
+body {
+  @include font-ui-normal;
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: $color-background;
+  color: $color-text;
+}

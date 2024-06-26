@@ -1,0 +1,45 @@
+/**
+ * FF Typescript Foundation Library
+ * Copyright 2019 Ralph Wiedemeier, Frame Factory GmbH
+ *
+ * License: MIT
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+// COLORS
+
+$color-background: #d0d0d0 !default;
+$color-background-dark: darken($color-background, 10%) !default;
+$color-background-darker: darken($color-background, 20%) !default;
+$color-background-light: lighten($color-background, 5%) !default;
+$color-background-lighter: lighten($color-background, 10%) !default;
+$color-background-hover: $color-background-lighter !default;
+
+$color-primary: #5299cc !default; // blue
+$color-primary-light: lighten($color-primary, 8%) !default;
+$color-primary-dark: darken($color-primary, 8%) !default;
+
+$color-secondary: #E64A19 !default; // orange
+$color-secondary-light: lighten($color-secondary, 15%) !default;
+$color-secondary-dark: darken($color-secondary, 15%) !default;
+
+$color-text: #black !default;
+$color-text-disabled: #808080 !default;
+$color-icon: #606060 !default;
+$color-icon-disabled: #606060 !default;
+
+////////////////////////////////////////////////////////////////////////////////
+
+@import "./styles";
+
+////////////////////////////////////////////////////////////////////////////////
+// GLOBAL
+
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.88rem;
+  background-color: $color-background;
+  color: $color-text;
+}

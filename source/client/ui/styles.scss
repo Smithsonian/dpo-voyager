@@ -17,10 +17,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//@import "../../../libs/ff-ui/source/styles/dark";
-@import "../../../libs/ff-ui/source/styles/styles";
-//@import "../../../libs/ff-scene/source/ui/styles";
-@import "../../../libs/ff-three/source/ui/styles";
+@import "@ff/ui/styles/styles";
+@import "@ff/three/ui/styles";
 
 ////////////////////////////////////////////////////////////////////////////////
 // TYPOGRAPHY

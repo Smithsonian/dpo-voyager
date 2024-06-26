@@ -18,7 +18,7 @@
 import Component, { types, IComponentEvent } from "@ff/graph/Component";
 import { IAudio } from "client/schema/setup";
 import CVMeta from "./CVMeta";
-import { Dictionary } from "client/../../libs/ff-core/source/types";
+import { Dictionary } from "@ff/core/types";
 import { IAudioClip } from "client/schema/meta";
 import CVAssetManager from "./CVAssetManager";
 import CVLanguageManager from "./CVLanguageManager";

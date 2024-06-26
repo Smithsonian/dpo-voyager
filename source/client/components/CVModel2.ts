@@ -40,7 +40,7 @@ import { Vector3 as LocalVector3 } from "client/schema/common";
 import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
 import CVSetup from "./CVSetup";
-import { Dictionary } from "client/../../libs/ff-core/source/types";
+import { Dictionary } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 

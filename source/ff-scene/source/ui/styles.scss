@@ -1,0 +1,268 @@
+/**
+ * FF Typescript Foundation Library
+ * Copyright 2019 Ralph Wiedemeier, Frame Factory GmbH
+ *
+ * License: MIT
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+// ASSET TREE
+
+.ff-asset-tree {
+  .ff-tree-node {
+
+    &.ff-folder {
+      background-color: $color-background-darker;
+    }
+    &.ff-file {
+      background-color: $color-background-dark;
+    }
+    &[selected] {
+      background-color: $color-primary;
+    }
+
+    .ff-header {
+      display: flex;
+      align-items: center;
+      line-height: 1.6em;
+
+      .ff-icon {
+        margin: 0 4px 2px 0;
+        height: 1.1em;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HIERARCHY TREE
+
+.ff-hierarchy-tree-view {
+  @include fullsize;
+  display: flex;
+  flex-direction: column;
+
+  & > .ff-header {
+    flex: 0 0 auto;
+    height: 22px;
+    padding: 4px;
+    background-color: $color-background;
+
+    .ff-text {
+      flex: 1 1 auto;
+      align-self: center;
+      color: $color-icon;
+    }
+    .ff-button {
+      flex: 0 1 32px;
+      color: $color-text;
+      padding: 0;
+    }
+    .ff-button + .ff-text {
+      padding-left: 8px;
+    }
+  }
+}
+
+.ff-hierarchy-tree {
+  .ff-tree-node-container {
+    border-top: 1px solid #40464d;
+    border-bottom: 1px solid #40464d;
+  }
+
+  .ff-tree-node {
+    .ff-header {
+      padding-bottom: 1px;
+    }
+
+    &.ff-node {
+      &.ff-odd {
+        background-color: #0e1421;
+      }
+      &.ff-even {
+        background-color: #131c2e;
+      }
+
+      & > .ff-header .ff-text {
+        color: #b8c8d9;
+      }
+      & > .ff-content {
+        margin-left: 9px;
+      }
+    }
+    &.ff-component {
+      background-color: #24272b;
+
+      & > .ff-content {
+        margin-left: 11px;
+      }
+    }
+    &[selected] {
+      background-color: $color-primary !important;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PROPERTY TREE
+
+.ff-property-tree {
+  .ff-tree-node {
+    &.ff-leaf {
+      background-color: $color-background;
+    }
+    &.ff-node {
+      background-color: darken($color-background-darker, 1%);
+    }
+    &.ff-component {
+      background-color: lighten($color-background-darker, 1%);
+    }
+
+    &.ff-inputs {
+      background-color: #2e231e; //darken($color-background, 6%);
+      & > .ff-header .ff-text {
+        color: #d9ccc7;
+      }
+
+      .ff-inner {
+        background-color: #382c24;
+        & > .ff-header .ff-text {
+          color: #d9ccc7;
+        }
+      }
+    }
+    &.ff-outputs {
+      background-color: #1e292e;
+      & > .ff-header .ff-text {
+        color: #c7d4d9;
+      }
+      .ff-inner {
+        background-color: #243338;
+        & > .ff-header .ff-text {
+          color: #c7d4d9;
+        }
+      }
+    }
+
+    .ff-header {
+      display: flex;
+
+      & > .ff-label {
+        padding-bottom: 1px;
+      }
+      & > .ff-property-label {
+        flex: 0 0 27%;
+        padding-bottom: 1px;
+      }
+      & > .ff-property-view {
+        flex: 1 1 auto;
+      }
+    }
+  }
+}
+
+.ff-property-view {
+  display: flex;
+
+  .ff-label {
+    padding: 0 2px;
+    color: $color-text-dark;
+    user-select: none;
+  }
+  .ff-property-field {
+    flex: 1 1 100%;
+    margin: 2px;
+  }
+  .ff-edit-button {
+    display: flex;
+    flex: 0 0 18px;
+    padding: 1px 2px;
+
+    .ff-popup {
+      margin-top: 2px;
+      padding: 4px;
+      background-color: $color-background;
+      box-shadow: 0 0 12px black;
+    }
+
+    .ff-color-edit {
+      width: 200px;
+      height: 200px;
+    }
+  }
+}
+
+@keyframes ff-event-flash {
+  from { background-color: #ccff33; }
+  to { background-color: auto; }
+}
+
+.ff-property-field {
+  position: relative;
+  background-color: $color-background-dark;
+  overflow: hidden;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+  &:hover .ff-event-button {
+    background-color: $color-background-lighter;
+  }
+
+  .ff-bar {
+    z-index: 0;
+    margin: 2px 0;
+    background-color: darken($color-background-light, 2%);
+  }
+  .ff-content {
+    line-height: 1.1;
+    padding: 0 2px;
+    text-align: end;
+  }
+  .ff-event-button {
+    z-index: 1;
+    box-sizing: border-box;
+    position: absolute;
+    top: 1px; bottom: 1px; right: 1px;
+    width: 33%;
+    min-width: 30px;
+    max-width: 100px;
+    background-color: $color-background-light;
+
+    &.ff-event-flash {
+      animation-name: ff-event-flash;
+      animation-duration: 0.7s;
+    }
+  }
+
+  &.ff-input {
+    .ff-event-button {
+      border-top: 1px solid $color-background-lighter;
+      border-left: 1px solid $color-background-lighter;
+      border-bottom: 1px solid $color-background-darker;
+      border-right: 1px solid $color-background-darker;
+    }
+
+    &.ff-linked {
+      pointer-events: none;
+      color: #e6b673;
+    }
+  }
+  &.ff-output {
+    pointer-events: none;
+    &.ff-linked {
+      pointer-events: none;
+      color: #73bfe6;
+    }
+  }
+
+  &.ff-event {
+  }
+  &.ff-option {
+  }
+
+  .ff-line-edit {
+    z-index: 2;
+  }
+}

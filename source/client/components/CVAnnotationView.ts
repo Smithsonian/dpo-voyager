@@ -46,7 +46,7 @@ import CVAssetReader from "./CVAssetReader";
 import CVAudioManager from "./CVAudioManager";
 import CVAssetManager from "./CVAssetManager";
 import CVSnapshots from "./CVSnapshots";
-import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
+import CPulse from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 

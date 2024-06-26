@@ -1,0 +1,43 @@
+/**
+ * FF Typescript Foundation Library
+ * Copyright 2020 Ralph Wiedemeier, Frame Factory GmbH
+ *
+ * License: MIT
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+// VIEWPORT OVERLAY
+
+.ff-viewport-overlay {
+  //display: flex;
+  //flex-direction: column;
+  //justify-content: space-between;
+  padding: 6px;
+  font-size: 0.75rem;
+
+  .ff-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .ff-labels {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ff-top-left, .ff-bottom-left {
+    align-items: flex-start;
+  }
+  .ff-top-center, .ff-bottom-center {
+    align-items: center;
+  }
+  .ff-top-right, .ff-bottom-right {
+    align-items: flex-end;
+  }
+
+  .ff-label-box {
+    box-sizing: border-box;
+    padding: 1px 8px 2px 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 2em;
+  }
+}

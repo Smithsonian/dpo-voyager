@@ -22,7 +22,7 @@ import "./PropertyView";
 
 import CVAudioTask from "../../components/CVAudioTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
-import List from "client/../../libs/ff-ui/source/List";
+import List from "@ff/ui/List";
 import { IAudioClip } from "client/schema/meta";
 import Notification from "@ff/ui/Notification";
 import CVMediaManager from "client/components/CVMediaManager";

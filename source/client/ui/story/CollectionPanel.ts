@@ -20,7 +20,7 @@ import sanitizeHtml from 'sanitize-html';
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
 import CVDocument from "client/components/CVDocument";
-import { ILineEditChangeEvent } from "client/../../libs/ff-ui/source/LineEdit";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -27,10 +27,10 @@ import { IDocument, IScene } from "client/schema/document";
 import CVNode from "./CVNode";
 import CVModel2 from "./CVModel2";
 import unitScaleFactor from "client/utils/unitScaleFactor";
-import CTransform from "client/../../libs/ff-scene/source/components/CTransform";
+import CTransform from "@ff/scene/components/CTransform";
 import CVCamera from "./CVCamera";
 import CVSetup from "./CVSetup";
-import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
+import CRenderer from "@ff/scene/components/CRenderer";
 import { CLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 
