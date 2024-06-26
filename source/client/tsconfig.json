@@ -18,7 +18,6 @@
             "@ff/graph/*": [ "../ff-graph/source/*" ],
             "@ff/browser/*": [ "../ff-browser/source/*" ],
             "@ff/ui/*": [ "../ff-ui/source/*" ],
-            "@ff/react/*": [ "../ff-react/source/*" ],
             "@ff/three/*": [ "../ff-three/source/*" ],
             "@ff/scene/*": [ "../ff-scene/source/*" ]
         }
