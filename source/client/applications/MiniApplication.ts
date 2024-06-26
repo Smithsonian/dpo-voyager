@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import parseUrlParameter from "@ff/browser/parseUrlParameter";
 
 import TypeRegistry from "@ff/core/TypeRegistry";
 
@@ -175,12 +174,13 @@ export default class MiniApplication
         const props = this.props;
         const manager = this.assetManager;
 
-        props.root = props.root || parseUrlParameter("root") || parseUrlParameter("r");
-        props.document = props.document || parseUrlParameter("document") || parseUrlParameter("d");
-        props.model = props.model || parseUrlParameter("model") || parseUrlParameter("m");
-        props.geometry = props.geometry || parseUrlParameter("geometry") || parseUrlParameter("g");
-        props.texture = props.texture || parseUrlParameter("texture") || parseUrlParameter("t");
-        props.quality = props.quality || parseUrlParameter("quality") || parseUrlParameter("q");
+        const qs = new URL(window.location.href).searchParams;
+        props.root = props.root || qs.get("root") || qs.get("r");
+        props.document = props.document || qs.get("document") || qs.get("d");
+        props.model = props.model || qs.get("model") || qs.get("m");
+        props.geometry = props.geometry || qs.get("geometry") || qs.get("g");
+        props.texture = props.texture || qs.get("texture") || qs.get("t");
+        props.quality = props.quality || qs.get("quality") || qs.get("q");
 
         const url = props.root || props.document || props.model || props.geometry;
         this.setBaseUrl(new URL(url || ".", window.location as any).href);

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
@@ -144,9 +143,10 @@ export default class StoryApplication
     {
         const props = this.props;
 
-        props.referrer = props.referrer || parseUrlParameter("referrer");
-        props.mode = props.mode || parseUrlParameter("mode") || "prep";
-        props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
+        const qs = new URL(window.location.href).searchParams;
+        props.referrer = props.referrer || qs.get("referrer");
+        props.mode = props.mode || qs.get("mode") || "prep";
+        props.expert = props.expert !== undefined ? props.expert : qs.get("expert") !== "false";
         props.dragdrop = props.dragdrop || false; 
 
         // If in standalone mode, remove root and document params that may be present
