@@ -18,8 +18,11 @@
 import { LoadingManager } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-export default class JSONReader
+/**
+ * Most generic loader, for files that require little to no processing.
+ * In particular text/html/json files.
+ */
+export default class FileReader
 {
     private _loadingManager: LoadingManager;
 
@@ -28,7 +31,7 @@ export default class JSONReader
         this._loadingManager = loadingManager;
     }
 
-    async get(url: string): Promise<any>
+    async getJSON(url: string): Promise<any>
     {
         this._loadingManager.itemStart(url);
 
@@ -45,6 +48,29 @@ export default class JSONReader
 
             this._loadingManager.itemEnd(url);
             return result.json();
+        });
+    }
+
+    /**
+     * Get text. Will prefer text/html over text/plain if url ends with .html.
+     */
+    async getText(url: string): Promise<any>
+    {
+        this._loadingManager.itemStart(url);
+
+        return fetch(url, {
+            headers: {
+                "Accept": url.endsWith(".html")?"text/html":"text/plain"
+            }
+        }).then(result => {
+            if (!result.ok) {
+                this._loadingManager.itemError(url);
+                this._loadingManager.itemEnd(url);
+                throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
+            }
+
+            this._loadingManager.itemEnd(url);
+            return result.text();
         });
     }
 }
