@@ -88,9 +88,11 @@ export default class CollectionPanel extends DocumentView
         if (previous) {
             previous.setup.language.outs.language.off("value", this.onUpdate, this);
             previous.outs.title.off("value", this.onUpdate, this);
+            previous.outs.intro.off("value", this.onUpdate, this);
         }
         if (next) {
             next.outs.title.on("value", this.onUpdate, this);
+            next.outs.intro.on("value", this.onUpdate, this);
             next.setup.language.outs.language.on("value", this.onUpdate, this);
         }
     }
