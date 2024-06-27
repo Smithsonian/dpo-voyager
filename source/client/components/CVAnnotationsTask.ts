@@ -57,17 +57,12 @@ export default class CVAnnotationsTask extends CVTask
 
     protected static readonly ins = {
         mode: types.Enum("Mode", EAnnotationsTaskMode, EAnnotationsTaskMode.Off),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
         audio: types.Option("Annotation.Audio", ["None"], 0),
         selection: types.Event("Annotation.Selection")
     };
 
-    protected static readonly outs = {
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
-    };
 
     ins = this.addInputs<CVTask, typeof CVAnnotationsTask.ins>(CVAnnotationsTask.ins);
-    outs = this.addOutputs<CVTask, typeof CVAnnotationsTask.outs>(CVAnnotationsTask.outs);
 
     private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
@@ -104,7 +99,6 @@ export default class CVAnnotationsTask extends CVTask
     {
         this.startObserving();
         super.activateTask();
-        this.synchLanguage();
         this.synchAudioOptions();
 
         //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
@@ -133,15 +127,6 @@ export default class CVAnnotationsTask extends CVTask
             this.emitUpdateEvent();
         }
 
-        if(ins.language.changed) {   
-            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
-
-            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
-            languageManager.ins.language.setValue(newLanguage);
-            outs.language.setValue(newLanguage);
-            return true;
-        }
-
         if(ins.audio.changed) {
             const audioManager = this.activeDocument.setup.audio;
             const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
@@ -157,8 +142,6 @@ export default class CVAnnotationsTask extends CVTask
         if(ins.selection.changed) {
             this.setAudio();
         }
-
-        this.synchLanguage();
 
         return true;
     }
@@ -377,17 +360,6 @@ export default class CVAnnotationsTask extends CVTask
         const textboxes = document.getElementsByClassName("ff-text-edit");
         for(let box of textboxes) {
             (box as HTMLElement).blur();
-        }
-    }
-
-    // Make sure this task language matches document
-    protected synchLanguage() {
-        const {ins} = this;
-        const languageManager = this.activeDocument.setup.language;
-
-        if(ins.language.value !== languageManager.outs.language.value)
-        {
-            ins.language.setValue(languageManager.outs.language.value, true);
         }
     }
 

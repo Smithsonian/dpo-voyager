@@ -38,24 +38,21 @@ export default class CollectionPanel extends DocumentView
 
     protected render()
     {
-        const taskProvider = this.taskProvider;
         const languageManager = this.activeDocument.setup.language;
-        if(taskProvider.ins.language.value !== languageManager.outs.language.value)
-        {
-            taskProvider.ins.language.setValue(languageManager.outs.language.value, true);
-        }
 
-        return html`<div class="sv-panel-header">
+        return html`<div class="ff-scroll-y ff-flex-column" style="padding-bottom: 5px">
+            <div class="sv-panel-header">
                 <ff-icon name="document"></ff-icon>
                 <div class="ff-text">Collection</div>
             </div>
-            <sv-property-view .property=${this.taskProvider.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
             <div class="sv-indent">
                 <div class="sv-label">Title</div>
                 <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>
                 <div class="sv-label">Intro</div>
                 <ff-text-edit name="intro" text=${this.activeDocument.ins.intro.value} @change=${this.onTextEdit}></ff-text-edit>
-            </div>`;
+            </div>
+        </div>`;
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)
@@ -88,9 +85,11 @@ export default class CollectionPanel extends DocumentView
         if (previous) {
             previous.setup.language.outs.language.off("value", this.onUpdate, this);
             previous.outs.title.off("value", this.onUpdate, this);
+            previous.outs.intro.off("value", this.onUpdate, this);
         }
         if (next) {
             next.outs.title.on("value", this.onUpdate, this);
+            next.outs.intro.on("value", this.onUpdate, this);
             next.setup.language.outs.language.on("value", this.onUpdate, this);
         }
     }

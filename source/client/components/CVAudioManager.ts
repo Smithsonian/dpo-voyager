@@ -166,29 +166,31 @@ export default class CVAudioManager extends Component
         }
         else {
             const clip = this.audioClips[id];
-            const uri = clip.uris[language];
-            if(uri) {
-                const absUri = this.assetManager.getAssetUrl(uri);
-                clip.durations[language] = "pending";
+            Object.keys(clip.uris).forEach(language => {
+                const uri = clip.uris[language];
+                if(uri) {
+                    const absUri = this.assetManager.getAssetUrl(uri);
+                    clip.durations[language] = "pending";
 
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const request = new XMLHttpRequest();
-                request.open('GET', absUri, true);
-                request.responseType = 'arraybuffer';
-                request.onload = () => {
-                    const blob = new Blob([request.response], { type: "audio/mpeg" });
-                    const url = window.URL.createObjectURL(blob);
-                    this._audioMap[uri] = url;
-                    audioContext.decodeAudioData(request.response,
-                        (buffer) => {
-                            let duration = buffer.duration;
-                            clip.durations[language] = duration.toString();
-                            this.getPlayerById(id).requestUpdate();                      
-                        }
-                    )
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const request = new XMLHttpRequest();
+                    request.open('GET', absUri, true);
+                    request.responseType = 'arraybuffer';
+                    request.onload = () => {
+                        const blob = new Blob([request.response], { type: "audio/mpeg" });
+                        const url = window.URL.createObjectURL(blob);
+                        this._audioMap[uri] = url;
+                        audioContext.decodeAudioData(request.response,
+                            (buffer) => {
+                                let duration = buffer.duration;
+                                clip.durations[language] = duration.toString();
+                                this.getPlayerById(id).requestUpdate();                                         
+                            }
+                        )
+                    }
+                    request.send();
                 }
-                request.send();
-            }
+            });
 
             return "pending";
         }

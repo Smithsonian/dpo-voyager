@@ -32,7 +32,7 @@ import { ISelectAnnotationEvent } from "./AnnotationList";
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, ELanguageType, TLanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
 
 import sanitizeHtml from 'sanitize-html';
 import CVMediaManager from "client/components/CVMediaManager";
@@ -58,12 +58,12 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         this.sceneview = explorer.shadowRoot.querySelector(".sv-scene-view") as HTMLElement;
         
         this.task.on("update", this.onUpdate, this);
-        this.task.ins.language.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.language.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.task.ins.language.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.language.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
 
         // set cursor to grab when leaving
@@ -76,6 +76,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
     {
         const node = this.activeNode;
         const annotations = node && node.getComponent(CVAnnotationView, true);
+        const languageManager = this.activeDocument.setup.language;
 
         if (!annotations) {
             // set cursor to grab
@@ -118,7 +119,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             ${imagePropView}
             <sv-property-view .property=${audioProp}></sv-property-view>
             <sv-property-view .property=${inProps.marker}></sv-property-view>
-            <sv-property-view .property=${this.task.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view .property=${inProps.article}></sv-property-view>
                 <sv-property-view .property=${inProps.tags}></sv-property-view>
@@ -142,7 +143,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[ELanguageType[this.task.ins.language.value] as TLanguageType]}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>

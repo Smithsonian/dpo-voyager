@@ -25,7 +25,7 @@ import CComponentProvider, {
 
 import CVTask from "./CVTask";
 import taskSets, { ETaskMode } from "../applications/taskSets";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageStringType, ELanguageType } from "client/schema/common";
 import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,6 @@ export default class CVTaskProvider extends CComponentProvider<CVTask>
 
     protected static readonly ins = {
         mode: types.Enum("Tasks.Mode", ETaskMode),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
     };
 
     ins = this.addInputs(CVTaskProvider.ins);
@@ -76,15 +75,6 @@ export default class CVTaskProvider extends CComponentProvider<CVTask>
 
             const taskSet = taskSets[ins.mode.getValidatedValue()];
             taskSet.forEach(taskType => this.createComponent(taskType));
-        }
-
-        if(ins.language.changed) {   
-            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
-
-            if(languageManager) {
-                languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
-                languageManager.ins.language.setValue(newLanguage);
-            }
         }
 
         return true;
