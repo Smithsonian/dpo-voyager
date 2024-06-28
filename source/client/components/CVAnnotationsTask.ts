@@ -252,7 +252,7 @@ export default class CVAnnotationsTask extends CVTask
     protected createAnnotation(position: number[], direction: number[])
     {
         const languageManager = this.activeDocument.setup.language;
-        const language = this.ins.language.value;
+        const language = languageManager.ins.language.value;
         const annotations = this.activeAnnotations;
         if (!annotations) {
             return;

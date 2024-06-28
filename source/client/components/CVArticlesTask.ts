@@ -125,9 +125,9 @@ export default class CVArticlesTask extends CVTask
             const defaultFolder = CVMediaManager.articleFolder;
 
             //Set language first otherwise other keys are in the wrong locale
-            article.language = ins.language.value;
+            article.language = languageManager.ins.language.value;
             article.title = languageManager.getLocalizedString("New Article");
-            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[languageManager.ins.language.value]}.html`;
 
 
             this.createEditArticle(article);
