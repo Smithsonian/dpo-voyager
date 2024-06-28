@@ -59,6 +59,9 @@ export default class CVMeta extends Component
 
         if (data.collection) {
             this.collection.dictionary = data.collection;
+            Object.keys(this.collection.get("titles")).forEach( key => {
+                this.language.addLanguage(ELanguageType[key]);
+            });
         }
         if (data.process) {
             this.process.dictionary = data.process;

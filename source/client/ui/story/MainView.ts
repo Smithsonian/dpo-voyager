@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import ExplorerPanel from "./ExplorerPanel";
+
 import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
@@ -30,7 +32,7 @@ import NavigatorPanel from "./NavigatorPanel";
 import CVTaskProvider, { ETaskMode } from "../../components/CVTaskProvider";
 
 import TaskBar from "./TaskBar";
-import ExplorerPanel from "./ExplorerPanel";
+
 import EditorPanel from "./EditorPanel";
 import TourPanel from "./TourPanel";
 import TaskPanel from "./TaskPanel";

@@ -20,6 +20,7 @@ import { ILanguage, ILanguageOption } from "client/schema/setup";
 import { ELanguageType, TLanguageType, ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
 import { ITagUpdateEvent } from "./CVModel2";
+import { enumToArray } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,18 +40,23 @@ export default class CVLanguageManager extends Component
     static readonly text: string = "Language";
     static readonly icon: string = "";
 
-    private _activeLanguages: ILanguageOption[] = [];
+    private _activeLanguages: {[key in TLanguageType]?: ILanguageOption} = {};
     private _translations: ITranslation = {};
 
     static readonly isSystemSingleton = true;
 
     protected static readonly ins = {
         enabled: types.Boolean("Language.Enabled", false),
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
+        language: types.Enum("Interface.Language", ELanguageType, {
+            preset: ELanguageType[DEFAULT_LANGUAGE],
+            enum: ELanguageType,
+            options: enumToArray(ELanguageStringType).map(key => ELanguageStringType[key])
+        }),
     };
 
     protected static readonly outs = {
-        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN),
+        /* exception to default language: in absence of any dictionary, this is always EN */
+        language: types.Enum("Interface.Language", ELanguageType, ELanguageType.EN ),
     };
 
     ins = this.addInputs(CVLanguageManager.ins);
@@ -66,10 +72,14 @@ export default class CVLanguageManager extends Component
         return this.getMainComponent(CVAssetReader);
     }
     get activeLanguages() {
-        return this._activeLanguages;
+        return Object.values(this._activeLanguages);
     }
 
-    nameString()
+    /**
+     * 
+     * @returns Full text string of the currently selected language
+     */
+    nameString() :string
     {
         return ELanguageStringType[ELanguageType[this.ins.language.value]];
     }
@@ -88,13 +98,14 @@ export default class CVLanguageManager extends Component
     {
         const { ins, outs } = this;
         
-        if(this.activeLanguages.length == 0) {
+        if(this.activeLanguages.length == 0 && ins.language.value == outs.language.value) {
             this.addLanguage(outs.language.value);
             //return;
         }
         
         if (ins.language.changed && ins.language.value != outs.language.value) {
             const newLanguage = ins.language.value;
+            this.addLanguage(newLanguage);
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.language.value].toLowerCase() + ".json").then( json => {
                 this._translations = json;
                 this.updateLanguage(newLanguage);
@@ -111,10 +122,11 @@ export default class CVLanguageManager extends Component
         const { ins, outs } = this;
         data = data || {} as ILanguage;
 
-        const language = ELanguageType[data.language || "EN"];
+        const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
 
-        if(language != outs.language.value && ins.language.value === outs.language.value) {
-            ins.language.setValue(isFinite(language) ? language : ELanguageType.EN);
+        //If language has already been set, don't overwrite it.
+        if(ins.language.value < 0) {
+            ins.language.setValue(language);
         }
     }
 
@@ -128,11 +140,7 @@ export default class CVLanguageManager extends Component
     }
 
     addLanguage(language: ELanguageType) {
-        const exists = this._activeLanguages.find(element => element.id === language)
-
-        if(!exists) {
-            this._activeLanguages.push({ id: language, name: ELanguageStringType[ELanguageType[language]] });
-        }
+        this._activeLanguages[ELanguageType[language]] ??= { id: language, name: ELanguageStringType[ELanguageType[language]] };
     }
 
     getLocalizedString(text: string): string

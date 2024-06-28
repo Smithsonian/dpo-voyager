@@ -89,19 +89,7 @@ export default class PropertyNumber extends CustomElement
         const value = this.value;
         let text :string;
         
-        if(!isFinite(value)){
-            text = value > 0 ? "inf" : "-inf";
-        }else{
-            const precision = schema.precision !== undefined
-            ? schema.precision : PropertyField.defaultPrecision;
-
-            if (schema.percent) {
-                text = (value * 100).toFixed(precision - 2);
-            } else {
-                text = value.toFixed(precision);
-            }
-
-        }
+        text = this.setPrecision(value);
 
         return html`
             <label class="ff-label ff-off">${name}</label>
@@ -132,6 +120,26 @@ export default class PropertyNumber extends CustomElement
         }
     }
 
+    protected setPrecision(value: number) : string {
+        const schema = this.property.schema;
+        let text :string;
+
+        if(!isFinite(value)){
+            text = value > 0 ? "inf" : "-inf";
+        }
+        else{
+            const precision = schema.precision !== undefined
+            ? schema.precision : PropertyField.defaultPrecision;
+
+            if (schema.percent) {
+                text = (value * 100).toFixed(precision - 2);
+            } else {
+                text = value.toFixed(precision);
+            }
+        }
+        return text;
+    }
+
     protected onChange = (event: Event) => {
         let text = (event.target as HTMLInputElement).value;
 
@@ -145,6 +153,13 @@ export default class PropertyNumber extends CustomElement
                 text = text.slice(0, -1);
             }
             value = +text / 100;
+
+            // Handle special case where precision-rounded number will match current widget text.
+            // Lit sees it as unchanged and will not re-render the widget.
+            const currentValueText = this.setPrecision(this.value);
+            if(this.setPrecision(value) == currentValueText) {
+                (event.target as HTMLInputElement).value = currentValueText;
+            }
         }else{
             value = parseFloat(text);
         }

@@ -58,7 +58,6 @@ export default class CVArticlesTask extends CVTask
         lead: types.String("Article.Lead"),
         tags: types.String("Article.Tags"),
         uri: types.String("Article.URI"),
-        language: types.Option("Task.Language", Object.keys(ELanguageStringType).map(key => ELanguageStringType[key]), ELanguageStringType[ELanguageType.EN]),
     };
 
     protected static readonly outs = {
@@ -98,7 +97,6 @@ export default class CVArticlesTask extends CVTask
     {
         this.startObserving();
         super.activateTask();
-        this.synchLanguage();
     }
 
     deactivateTask()
@@ -121,13 +119,6 @@ export default class CVArticlesTask extends CVTask
             return false;
         }
         const languageManager = this.activeDocument.setup.language;
-
-        if(ins.language.changed) {   
-            const newLanguage = ELanguageType[ELanguageType[ins.language.value]];
-
-            languageManager.addLanguage(newLanguage);  // add in case this is a currently inactive language
-            languageManager.ins.language.setValue(newLanguage);
-        }
 
         if (meta && ins.create.changed) {
             const article = new Article();
@@ -312,6 +303,7 @@ export default class CVArticlesTask extends CVTask
         const ins = this.ins;
         const outs = this.outs;
         const meta = this.meta;
+        const languageManager = this.activeDocument.setup.language;
         let article = this.reader.activeArticle;
 
         if (meta && article && meta.articles.getById(article.id)) {
@@ -323,7 +315,7 @@ export default class CVArticlesTask extends CVTask
             // if we don't have a uri for this language, create one so that it is editable
             if(article.uri === undefined) {
                 const defaultFolder = CVMediaManager.articleFolder;
-                article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[ins.language.value]}.html`;
+                article.uri = `${defaultFolder}/new-article-${article.id}-${languageManager.codeString()}.html`;
                 this.ins.version.set();
             }
             else {
@@ -347,20 +339,9 @@ export default class CVArticlesTask extends CVTask
         const article = this.activeArticle;
         const {ins} = this;
 
-        this.synchLanguage();
         this.onArticleChange();
     }
 
-    // Make sure this task language matches document
-    protected synchLanguage() {
-        const {ins} = this;
-        const languageManager = this.activeDocument.setup.language;
-
-        if(ins.language.value !== languageManager.outs.language.value)
-        {
-            ins.language.setValue(languageManager.outs.language.value, true);
-        }
-    }
 
     // Handle potential media manager name change
     protected onAssetRename(event: IAssetRenameEvent) {

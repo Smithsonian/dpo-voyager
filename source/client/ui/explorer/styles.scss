@@ -1342,6 +1342,19 @@ $tour-entry-indent: 12px;
       }
     }
   }
+
+  &.sv-property-options{
+    .sv-options-buttons{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 2px 0;
+      gap: 2px;
+      .ff-button.ff-control{
+        flex: 0 1 auto;
+      }
+    }
+  }
 }
 
 

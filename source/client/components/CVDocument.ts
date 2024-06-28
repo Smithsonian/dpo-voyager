@@ -332,7 +332,7 @@ export default class CVDocument extends CRenderGraph
 
         const newTitle = this.titles[ELanguageType[language.outs.language.value]];
         this.ins.title.setValue(newTitle);
-        const newIntro = this.intros[ELanguageType[language.outs.language.value]];
+        const newIntro = this.intros[ELanguageType[language.outs.language.value]] || "";
         this.ins.intro.setValue(newIntro);
     }
 
