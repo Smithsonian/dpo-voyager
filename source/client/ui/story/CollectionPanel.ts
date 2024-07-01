@@ -52,6 +52,8 @@ export default class CollectionPanel extends DocumentView
                 <div class="sv-label">Intro</div>
                 <ff-text-edit name="intro" text=${this.activeDocument.ins.intro.value} @change=${this.onTextEdit}></ff-text-edit>
             </div>
+            <div class="sv-label">Copyright</div>
+            <ff-line-edit name="copyright" text=${this.activeDocument.ins.copyright.value} @change=${this.onTextEdit}></ff-line-edit>
         </div>`;
     }
 
@@ -76,6 +78,14 @@ export default class CollectionPanel extends DocumentView
                         allowedTags: [ 'i','b','p' ]
                     }    
                 ));
+            }
+            else if (target.name === "copyright") {
+                activeDoc.ins.copyright.setValue(sanitizeHtml(text,
+                    {
+                        allowedTags: [ 'i','b','a' ]
+                    }
+                ));
+            
             }
         }
     }
