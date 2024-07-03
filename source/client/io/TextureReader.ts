@@ -50,7 +50,7 @@ export default class TextureReader
                 resolve(texture);
             }, null, errorEvent => {
                 console.error(errorEvent);
-                reject(new Error(errorEvent.message));
+                reject(new Error((errorEvent as any).message));
             });
         });
     }

@@ -17,12 +17,15 @@
 
 //import resolvePathname from "resolve-pathname";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, sRGBEncoding, SRGBColorSpace, MeshPhysicalMaterial } from "three";
+import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, SRGBColorSpace, MeshPhysicalMaterial, WebGLRenderer } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
+import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +37,8 @@ export default class ModelReader
     static readonly mimeTypes = [ "model/gltf+json", "model/gltf-binary" ];
 
     protected loadingManager: LoadingManager;
-    protected gltfLoader;
+    protected renderer: CRenderer;
+    protected gltfLoader :GLTFLoader;
 
     protected customDracoPath = null;
 
@@ -45,8 +49,20 @@ export default class ModelReader
             this.gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
         }
     }
-   
-    constructor(loadingManager: LoadingManager)
+
+
+    setAssetPath(path: string){
+        path = path.endsWith("/")? path.slice(0, -1):path;
+        if(!this.customDracoPath) this.dracoPath = `${path}/js/draco/`;
+
+        /** 
+         * GLTFLoader.ktx2Loader has been here for a long time but only added to types definitions in r165
+         * We wait until now to require it because renderer.views is not defined until after update
+         */
+        ((this.gltfLoader as any).ktx2Loader as KTX2Loader).setTranscoderPath(`${path}/js/basis/`);
+    }
+
+    constructor(loadingManager: LoadingManager, renderer: CRenderer)
     {
         this.loadingManager = loadingManager;
 
@@ -58,9 +74,17 @@ export default class ModelReader
 
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath(this.customDracoPath || DEFAULT_DRACO_PATH);
-
+        this.renderer = renderer;
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
+        this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+        const ktx2Loader = new KTX2Loader(this.loadingManager);
+        ktx2Loader.setTranscoderPath("/js/basis/");
+        this.gltfLoader.setKTX2Loader(ktx2Loader);
+        setTimeout(()=>{
+            //Allow an update to happen. @todo check how robust it is
+            ktx2Loader.detectSupport(this.renderer.views[0].renderer);
+        }, 0);
     }
 
     dispose()
@@ -94,7 +118,7 @@ export default class ModelReader
                 }
                 else {
                     console.error(`failed to load '${url}': ${error}`);
-                    reject(new Error(error));
+                    reject(new Error(error as any));
                 }
             })
         });
