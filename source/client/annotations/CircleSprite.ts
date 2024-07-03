@@ -222,8 +222,8 @@ class CircleAnnotation extends AnnotationElement
         this.markerElement = this.appendElement("div");
         this.markerElement.classList.add("sv-marker");
         this.markerElement.addEventListener("click", this.onClickMarker);
-        //this.markerElement.addEventListener("keydown", this.onKeyDown);
-        //this.markerElement.setAttribute("tabindex", "0");
+        this.markerElement.addEventListener("keydown", this.onKeyDown);
+        this.markerElement.setAttribute("tabindex", "0");
 
         this.contentElement = this.appendElement("div");
         this.contentElement.classList.add("sv-annotation-body");

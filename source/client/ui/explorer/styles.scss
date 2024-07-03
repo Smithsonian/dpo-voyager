@@ -256,6 +256,13 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   .sv-img-credit {
     font-size: x-small;
   }
+
+  &:has(:focus-visible) {
+    outline: none;
+    background-color: $menu-color-background-dark;
+    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    opacity: 1 !important;
+  }
   
   @include noselect;
 }

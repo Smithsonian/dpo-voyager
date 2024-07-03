@@ -39,9 +39,11 @@ export default class CVViewer extends Component
     static readonly icon: string = "";
 
     private _rootElement: HTMLElement = null;
+    private _needsAnnoFocus: boolean = false;
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
+        annotationExit: types.Event("Annotations.Exit"),
         activeAnnotation: types.String("Annotations.ActiveId"),
         activeTags: types.String("Tags.Active"),
         sortedTags: types.String("Tags.Sorted"),
@@ -164,9 +166,13 @@ export default class CVViewer extends Component
             const id = ins.activeAnnotation.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.setActiveAnnotationById(id));
         }
+        if(ins.annotationExit.changed) {
+            ins.annotationsVisible.setValue(false);
+        }
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
+            this._needsAnnoFocus = ins.annotationsVisible.value;
         }
         if (ins.activeTags.changed) {
             const tags = ins.activeTags.value;
@@ -185,6 +191,18 @@ export default class CVViewer extends Component
     //     const qualityName = this.ins.quality.getOptionText();
     //     context.viewport.overlay.setLabel(ELocation.BottomRight, "quality", `Quality: ${qualityName}`);
     // }
+
+    tock() {
+        if(this._needsAnnoFocus) {
+            const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay');
+            const elem = overlayElement.getElementsByClassName("sv-title")[0] as HTMLElement;
+            if(elem) {
+                elem.focus();
+            }
+            this._needsAnnoFocus = false;
+        }
+        return false;
+    }
 
     fromData(data: IViewer)
     {
