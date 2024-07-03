@@ -440,7 +440,7 @@ export default class CVOrbitNavigation extends CObject3D
         let localPosition = event.view.pickPosition(event as any, bounds)
             .applyMatrix4(invMeshTransform)      //Add internal transform
             .applyMatrix4(model.object3D.matrix) //Add mesh "pose"
-            .applyMatrix4(model.transform.object3D.matrix) //Add mesh's "transform" (attached CTransform)
+            .applyMatrix4(model.transform.object3D.matrixWorld) //Add mesh's "transform" (attached CTransform)
 
         const orbit = new Vector3().fromArray(this.ins.orbit.value).multiplyScalar(DEG2RAD);
         const pivot = new Vector3().fromArray(this.ins.pivot.value);
