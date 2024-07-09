@@ -440,6 +440,9 @@ export class AudioView extends CustomElement
         super();
 
         this.onDrag = this.onDrag.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+
+        this.addEventListener("keydown", this.onKeyDown);
     }
 
     protected firstConnected()
@@ -464,7 +467,7 @@ export class AudioView extends CustomElement
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
@@ -481,6 +484,20 @@ export class AudioView extends CustomElement
 
     protected onDrag(event: MouseEvent) {
         event.stopPropagation();
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Space" || e.code === "Enter") {
+            if((e.target as HTMLElement).id == "play-btn") {
+                this.playAudio(null, this.audioId);
+            }
+        }
+        else if(e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") {
+            if((e.target as HTMLElement).id == "time-slider") {
+                e.stopPropagation();
+            }
+        }
     }
 
     protected onTimeChange() {

@@ -219,10 +219,11 @@ class CircleAnnotation extends AnnotationElement
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onClickOverlay = this.onClickOverlay.bind(this);
 
+        this.addEventListener("keydown", this.onKeyDown);
+
         this.markerElement = this.appendElement("div");
         this.markerElement.classList.add("sv-marker");
         this.markerElement.addEventListener("click", this.onClickMarker);
-        this.markerElement.addEventListener("keydown", this.onKeyDown);
         this.markerElement.setAttribute("tabindex", "0");
 
         this.contentElement = this.appendElement("div");
@@ -258,8 +259,8 @@ class CircleAnnotation extends AnnotationElement
             ${annotationData.imageUri && !isTruncated ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
             ${!isTruncated ? html`<div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>` : null}
             ${annotationData.audioId && !this.isOverlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-            ${annotationData.articleId && !isTruncated ? html`<ff-button inline text="Read more..." icon="document" @click=${this.onClickArticle}></ff-button>` : null}
-            ${isTruncated ? html`<ff-button inline text="+more info" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;  
+            ${annotationData.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @pointerdown=${this.onClickArticle}></ff-button>` : null}
+            ${isTruncated ? html`<ff-button inline id="more-info" text="+more info" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;  
 
         render(contentTemplate, this.contentElement);
 
@@ -327,13 +328,13 @@ class CircleAnnotation extends AnnotationElement
         this.sprite.emitClickEvent();
     }
 
-    protected onClickArticle(event: MouseEvent)
+    protected onClickArticle(event: UIEvent)
     {
         event.stopPropagation();
         this.sprite.emitLinkEvent(this.sprite.annotation.data.articleId);
     }
 
-    protected onClickOverlay(event: MouseEvent)
+    protected onClickOverlay(event: UIEvent)
     {
         event.stopPropagation();
         const content = this.contentElement;
@@ -349,8 +350,16 @@ class CircleAnnotation extends AnnotationElement
     protected onKeyDown(event: KeyboardEvent)
     {
         if (event.code === "Space" || event.code === "Enter") {
-            event.stopPropagation();
-            this.sprite.emitClickEvent();
+            const target = event.target as HTMLElement;
+            if(target.id === "read-more") {
+                this.onClickArticle(event);
+            }
+            else if(target.id === "more-info") {
+                this.onClickOverlay(event);
+            }
+            else {
+                this.sprite.emitClickEvent();
+            }
         }
     }
 }

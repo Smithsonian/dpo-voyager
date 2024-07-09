@@ -404,6 +404,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     padding: 1px 0 2px 0;
     font-weight: bold;
     -webkit-tap-highlight-color: transparent;
+
+    &:focus-visible {
+      outline: none;
+    }
   }
 
   .sv-content {
