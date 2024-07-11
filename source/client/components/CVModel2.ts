@@ -774,7 +774,7 @@ export default class CVModel2 extends CObject3D
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
                 // set overlay map options
-                const overlayOptions = ["None"];
+                const overlayOptions = this.ins.overlayMap.schema.options || ["None"];
                 overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
                 this.ins.overlayMap.setOptions(overlayOptions);
                 if(this.ins.overlayMap.value !== 0) {
