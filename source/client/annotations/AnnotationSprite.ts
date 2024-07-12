@@ -178,7 +178,7 @@ export class AnnotationElement extends SpriteElement
 
         this.setAttribute("aria-label", "annotation")
         this.setAttribute("aria-live", "polite");
-        this.setAttribute("role", "region");
+        this.setAttribute("role", "button");
     }
 
     protected firstConnected()
