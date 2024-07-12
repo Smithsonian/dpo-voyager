@@ -61,6 +61,10 @@ export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
 }
 
+export interface IActiveTagUpdateEvent extends ITypedEvent<"active-tag-update">
+{
+}
+
 export default class CVAnnotationView extends CObject3D
 {
     static readonly typeName: string = "CVAnnotationView";
@@ -95,6 +99,7 @@ export default class CVAnnotationView extends CObject3D
 
     private _truncateLock = false;
     private _activeView = false;
+    private _hasNewActiveTags = false;
 
     protected get model() {
         return this.getComponent(CVModel2);
@@ -238,6 +243,7 @@ export default class CVAnnotationView extends CObject3D
                 activeTags.forEach(tag => {
                     if (tags.indexOf(tag) >= 0) {
                         visible = true;
+                        this._hasNewActiveTags = true;
                     }
                 });
 
@@ -336,6 +342,12 @@ export default class CVAnnotationView extends CObject3D
                 this.snapshots.outs.tweening.once("value", () => { sprite.isAnimating = false;}, this);
             }
             this._truncateLock = false;
+        }
+
+        // Handle active tag updates
+        if(this._hasNewActiveTags) {
+            this.emit<IActiveTagUpdateEvent>({ type: "active-tag-update" });
+            this._hasNewActiveTags = false;
         }
     }
 

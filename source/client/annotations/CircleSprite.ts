@@ -109,6 +109,7 @@ export default class CircleSprite extends AnnotationSprite
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
         element.setOpacity(opacity);
+        element.setVisible(this.annotation.data.visible);
 
         const annotation = this.annotation.data;
         const isShowing = annotation.visible;

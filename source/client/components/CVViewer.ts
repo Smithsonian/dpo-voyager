@@ -24,10 +24,11 @@ import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
 import { EDerivativeQuality } from "client/schema/model";
 
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
-import CVAnnotationView, { IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
+import CVAnnotationView, { IActiveTagUpdateEvent, IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
 import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
 import CVARManager from "./CVARManager";
+import {getFocusableElements} from "../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -194,8 +195,15 @@ export default class CVViewer extends Component
 
     tock() {
         if(this._needsAnnoFocus) {
-            const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay');
-            const elem = overlayElement.getElementsByClassName("sv-title")[0] as HTMLElement;
+            let elem = null;
+            if(this.ins.sortedTags.value.length > 0) { // handle annotation tag groups
+                const tagElement = this.rootElement.shadowRoot.querySelector('.sv-tag-buttons');
+                elem = tagElement.getElementsByClassName("ff-button")[0] as HTMLElement;
+            }
+            else {
+                const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay');
+                elem = overlayElement.getElementsByClassName("sv-title")[0] as HTMLElement;
+            }
             if(elem) {
                 elem.focus();
             }
@@ -320,11 +328,13 @@ export default class CVViewer extends Component
 
         if (event.add) {
             component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.on<IActiveTagUpdateEvent>("active-tag-update", this.focusTags, this);
             component.on<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
             component.ins.visible.setValue(this.ins.annotationsVisible.value);
         }
         else if (event.remove) {
             component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+            component.off<IActiveTagUpdateEvent>("active-tag-update", this.focusTags, this);
             component.off<IAnnotationClickEvent>("click", this.onAnnotationClick, this);
         }
     }
@@ -344,5 +354,13 @@ export default class CVViewer extends Component
     protected onModelLoad(event: IModelLoadEvent) {
         this.rootElement.dispatchEvent(new CustomEvent('model-load', { detail: EDerivativeQuality[event.quality] }));
         this.refreshTagCloud();
+    }
+
+    protected focusTags() {
+        const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay') as HTMLElement;
+        const elems = getFocusableElements(overlayElement) as HTMLElement[];
+        if(elems.length > 0) {
+            elems[0].focus();
+        }
     }
 }

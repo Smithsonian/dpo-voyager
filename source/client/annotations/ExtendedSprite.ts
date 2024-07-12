@@ -87,6 +87,7 @@ export default class ExtendedSprite extends AnnotationSprite
 
         this.stemLine.material["opacity"] = opacity;
         element.setOpacity(opacity);
+        element.setVisible(this.annotation.data.visible);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {

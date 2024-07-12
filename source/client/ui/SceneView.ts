@@ -88,7 +88,7 @@ export default class SceneView extends SystemView
 
         this.tabIndex = 0;
         this.id = "sv-scene"
-        this.ariaLabel = "Interactive 3D Model. Use mouse, touch, or arrow keys to rotate.";
+        this.ariaLabel = "Interactive 3D Model. Use mouse, touch, or arrow keys to rotate. Escape key to exit annotations.";
         this.setAttribute("role", "application"),
 
         // Add screen readertext only element
@@ -235,9 +235,19 @@ export default class SceneView extends SystemView
 
     protected onKeyDownOverlay(e: KeyboardEvent)
     {
+        const viewer = this.system.getComponent(CVSetup).viewer;
         if (e.code === "Escape") {
             e.preventDefault();
-            this.system.getComponent(CVSetup).viewer.ins.annotationExit.set();
+            if(viewer.ins.sortedTags.value.length > 0) {
+                const tagElement = viewer.rootElement.shadowRoot.querySelector('.sv-tag-buttons');
+                const elem = tagElement.getElementsByClassName("ff-button")[0] as HTMLElement;
+                if(elem) {
+                    elem.focus();
+                }
+            }
+            else {
+                this.system.getComponent(CVSetup).viewer.ins.annotationExit.set();
+            }
         }
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e);
