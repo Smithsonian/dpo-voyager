@@ -716,35 +716,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     margin: 2px 0;
     @include circle-btn;
   }
-
-  .sv-scroll-btn {
-    border-radius: 2px;
-    font-size: 10px;
-    height: calc($main-menu-button-size / 2);
-    background-color: $color-background;
-    z-index: 2;
-    padding: 0px;
-    position: sticky;
-
-    &.up {
-      top: 0px;
-      margin-top: 0px;
-    }
-    
-    &.down {
-      bottom: $canvas-border-width*2;
-      margin-top: $canvas-border-width*2;
-    }
-
-    &:hover {
-      background-color: $color-background-lighter;
-      fill: $color-text;
-    }
-
-    &:focus, &:focus-visible {
-      background-color: $color-background;
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
