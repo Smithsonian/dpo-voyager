@@ -26,10 +26,9 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
+import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const DEFAULT_DRACO_PATH = "https://www.gstatic.com/draco/versioned/decoders/1.5.6/";
 
 export default class ModelReader
 {
@@ -66,20 +65,14 @@ export default class ModelReader
     {
         this.loadingManager = loadingManager;
 
-        //const dracoPath = resolvePathname("js/draco/", window.location.origin + window.location.pathname);
-
-        if (ENV_DEVELOPMENT) {
-            console.log("ModelReader.constructor - DRACO path: %s", this.customDracoPath || DEFAULT_DRACO_PATH);
-        }
-
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(this.customDracoPath || DEFAULT_DRACO_PATH);
+        dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
         this.renderer = renderer;
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
         this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
         const ktx2Loader = new KTX2Loader(this.loadingManager);
-        ktx2Loader.setTranscoderPath("/js/basis/");
+        ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
         this.gltfLoader.setKTX2Loader(ktx2Loader);
         setTimeout(()=>{
             //Allow an update to happen. @todo check how robust it is
