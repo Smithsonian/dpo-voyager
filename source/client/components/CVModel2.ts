@@ -246,6 +246,8 @@ export default class CVModel2 extends CObject3D
             else {
                 this.object3D.visible = false;
             }
+
+            this.outs.updated.set();
         }
 
         if (ins.tags.changed) {
