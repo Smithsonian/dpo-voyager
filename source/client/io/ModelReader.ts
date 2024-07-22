@@ -17,7 +17,7 @@
 
 //import resolvePathname from "resolve-pathname";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { LoadingManager, Object3D, Scene, Group, Mesh, MeshStandardMaterial, SRGBColorSpace, MeshPhysicalMaterial, WebGLRenderer } from "three";
+import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorSpace } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
@@ -90,7 +90,9 @@ export default class ModelReader
     dispose()
     {
         this.gltfLoader.dracoLoader.dispose();
+        ((this.gltfLoader as any).ktx2Loader as KTX2Loader).dispose();   // TODO: Update type definitions for loader access
         this.gltfLoader.setDRACOLoader(null);
+        this.gltfLoader.setKTX2Loader(null);
         this.gltfLoader = null;
     }
 
