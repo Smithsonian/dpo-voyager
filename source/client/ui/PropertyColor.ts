@@ -83,7 +83,7 @@ export default class PropertyColor extends CustomElement
         const color = this.color.toString();
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <input type="color" value="${color}" @change=${this.onColorChange}>
+            <input type="color" tabindex="0" value="${color}" @change=${this.onColorChange}>
         `;
     }
 
