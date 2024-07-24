@@ -36,10 +36,10 @@ export default class Logo extends CustomElement
 
     protected render()
     {
-        const logoSm = html`<div class="sv-logo-sm"><object data="${this.assetPath}images/logo-sm.svg" type="image/svg+xml" alt="Logo"></div>
+        const logoSm = html`<div class="sv-logo-sm"><object tabIndex="-1" data="${this.assetPath}images/logo-sm.svg" type="image/svg+xml" alt="Logo"></div>
             ${Logo.defaultSmall}
         </object></div>`;
-        const logoFull = html`<div class="sv-logo-full"><object style="height: 100%; width:100%" data="${this.assetPath}images/logo-full.svg" type="image/svg+xml" alt="Logo">
+        const logoFull = html`<div class="sv-logo-full"><object tabIndex="-1" style="height: 100%; width:100%" data="${this.assetPath}images/logo-full.svg" type="image/svg+xml" alt="Logo">
             ${Logo.defaultFull}
         </object></div>`;
 

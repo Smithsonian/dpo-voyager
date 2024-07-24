@@ -72,6 +72,7 @@ export default class MainMenu extends DocumentView
         this.activeDocument.setup.audio.outs.narrationEnabled.on("value", this.onUpdate, this);
         this.activeDocument.setup.tours.ins.closed.on("value", this.setTourFocus, this);
         this.activeDocument.setup.reader.ins.closed.on("value", this.setReaderFocus, this);
+        this.activeDocument.setup.viewer.ins.annotationExit.on("value", this.setAnnotationFocus, this);
         this.toolProvider.ins.closed.on("value", this.setToolsFocus, this);
 
         if(!this.resizeObserver) { 
@@ -85,6 +86,7 @@ export default class MainMenu extends DocumentView
         this.resizeObserver.disconnect();
 
         this.toolProvider.ins.closed.off("value", this.setToolsFocus, this);
+        this.activeDocument.setup.viewer.ins.annotationExit.off("value", this.setAnnotationFocus, this);
         this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
         this.activeDocument.setup.tours.ins.closed.off("value", this.setTourFocus, this);
         this.activeDocument.setup.audio.outs.narrationEnabled.off("value", this.onUpdate, this);
@@ -276,6 +278,10 @@ export default class MainMenu extends DocumentView
     protected setToolsFocus()
     {
         this.setElementFocus("tools-btn");
+    }
+    protected setAnnotationFocus()
+    {
+        this.setElementFocus("anno-btn");
     }
 
     protected setElementFocus(elementID: string)

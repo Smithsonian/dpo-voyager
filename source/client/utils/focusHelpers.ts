@@ -21,7 +21,7 @@ const _selectors = 'a[href], button, input, textarea, select, details,[tabindex]
 export function getFocusableElements (element: HTMLElement) 
 {
     return [...element.querySelectorAll(_selectors)]
-      .filter(el => !el.hasAttribute('disabled') && !el.getAttribute("aria-hidden") && (el.getAttribute("tabindex") !== "-1"))
+      .filter(el => !el.hasAttribute('disabled') && !!el.getClientRects().length && (el as HTMLElement).style.visibility !== "hidden" && !el.getAttribute("aria-hidden") && (el.getAttribute("tabindex") !== "-1"))
 }
 
 export function focusTrap (focusableElements: HTMLElement[], e: KeyboardEvent) 
