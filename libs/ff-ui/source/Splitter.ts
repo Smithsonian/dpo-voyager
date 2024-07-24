@@ -186,18 +186,20 @@ export default class Splitter extends CustomElement
     protected onPointerUpOrCancel(event: PointerEvent)
     {
         if (event.isPrimary) {
-            event.stopPropagation();
             event.preventDefault();
 
             this._isActive = false;
 
-            this.dispatchEvent(new CustomEvent(Splitter.changeEvent, {
-                detail: {
-                    direction: this.direction,
-                    position: this._position,
-                    isDragging: false
-                }
-            }) as ISplitterChangeEvent);
+            if(this._position > 0) {
+                event.stopPropagation();
+                this.dispatchEvent(new CustomEvent(Splitter.changeEvent, {
+                    detail: {
+                        direction: this.direction,
+                        position: this._position,
+                        isDragging: false
+                    }
+                }) as ISplitterChangeEvent);
+            }
         }
     }
 }

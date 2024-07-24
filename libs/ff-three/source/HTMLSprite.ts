@@ -188,7 +188,7 @@ export class SpriteElement extends CustomElement
     setOpacity(opacity: number)
     {
         this.style.opacity = opacity.toString();
-        this.style.visibility = opacity > 0 ? "visible" : "hidden";
+        this.style.pointerEvents = opacity > 0 ? "auto" : "none";
     }
 
     setPosition(x: number, y: number)
