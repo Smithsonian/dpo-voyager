@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import fetch from "@ff/browser/fetch";
 import Component, { Node } from "@ff/graph/Component";
 
-import JSONReader from "../io/JSONReader";
+import FileReader from "../io/FileReader";
 import ModelReader from "../io/ModelReader";
 import GeometryReader from "../io/GeometryReader";
 import TextureReader from "../io/TextureReader";
@@ -39,7 +38,7 @@ export default class CVAssetReader extends Component
 
     static readonly isSystemSingleton = true;
 
-    readonly jsonLoader: JSONReader;
+    readonly fileLoader: FileReader;
     readonly modelLoader: ModelReader;
     readonly geometryLoader: GeometryReader;
     readonly textureLoader: TextureReader;
@@ -53,7 +52,7 @@ export default class CVAssetReader extends Component
 
         const loadingManager = this.assetManager.loadingManager;
 
-        this.jsonLoader = new JSONReader(loadingManager);
+        this.fileLoader = new FileReader(loadingManager);
         this.modelLoader = new ModelReader(loadingManager);
         this.geometryLoader = new GeometryReader(loadingManager);
         this.textureLoader = new TextureReader(loadingManager);
@@ -89,13 +88,13 @@ export default class CVAssetReader extends Component
     async getJSON(assetPath: string): Promise<any>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return this.jsonLoader.get(url);
+        return this.fileLoader.getJSON(url);
     }
 
     async getText(assetPath: string): Promise<string>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return fetch.text(url, "GET");
+        return this.fileLoader.getText(url);
     }
 
     async getModel(assetPath: string): Promise<THREE.Object3D>
@@ -131,6 +130,6 @@ export default class CVAssetReader extends Component
     async getSystemJSON(assetPath: string): Promise<any>
     {
         const url = this.getSystemAssetUrl(assetPath);
-        return this.jsonLoader.get(url);
+        return this.fileLoader.getJSON(url);
     }
 }
