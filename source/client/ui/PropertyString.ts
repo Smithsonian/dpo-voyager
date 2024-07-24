@@ -72,7 +72,7 @@ export default class PropertyString extends CustomElement
 
         return html`${name? html`<label class="ff-label ff-off">${name}</label>`:null}
             <input type="text" class="sv-property-field ff-input"
-                value=${text} 
+                .value=${text} 
                 @change=${this.onChange}
                 @focus=${(e)=>{ e.target.select();}}}
                 @keypress=${(e)=>{if(e.key === "Enter"){e.target.blur();}}}
