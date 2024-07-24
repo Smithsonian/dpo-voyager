@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import parseUrlParameter from "@ff/browser/parseUrlParameter";
-import Commander from "@ff/core/Commander";
 import System from "@ff/graph/System";
 
 import CPickSelection from "@ff/scene/components/CPickSelection";
@@ -68,7 +66,6 @@ export default class StoryApplication
     readonly props: IStoryApplicationProps;
     readonly explorer: ExplorerApplication;
     readonly system: System;
-    readonly commander: Commander;
 
     protected get assetReader() {
         return this.system.getMainComponent(CVAssetReader);
@@ -91,13 +88,11 @@ export default class StoryApplication
         this.props = props || {};
 
         this.system = this.explorer.system;
-        this.commander = this.explorer.commander;
 
         // register additional story tool components
         const registry = this.system.registry;
         registry.add(storyTypes);
 
-        //this.logController = new LogController(this.system, this.commander);
 
         // add story components
         this.system.graph.createCustomNode(NVoyagerStory, "Story");
@@ -148,9 +143,10 @@ export default class StoryApplication
     {
         const props = this.props;
 
-        props.referrer = props.referrer || parseUrlParameter("referrer");
-        props.mode = props.mode || parseUrlParameter("mode") || "prep";
-        props.expert = props.expert !== undefined ? props.expert : parseUrlParameter("expert") !== "false";
+        const qs = new URL(window.location.href).searchParams;
+        props.referrer = props.referrer || qs.get("referrer");
+        props.mode = props.mode || qs.get("mode") || "prep";
+        props.expert = props.expert !== undefined ? props.expert : qs.get("expert") !== "false";
         props.dragdrop = props.dragdrop || false; 
 
         // If in standalone mode, remove root and document params that may be present

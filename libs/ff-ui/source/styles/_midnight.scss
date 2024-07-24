@@ -1,0 +1,28 @@
+/**
+ * FF Typescript Foundation Library
+ * Copyright 2020 Ralph Wiedemeier, Frame Factory GmbH
+ *
+ * License: MIT
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+// MIDNIGHT COLOR THEME
+
+$color-background: #30404d;
+$color-icon: #98a6b3;
+$color-icon-disabled: #6c7680;
+
+////////////////////////////////////////////////////////////////////////////////
+
+@import "./styles";
+
+////////////////////////////////////////////////////////////////////////////////
+// GLOBAL
+
+body {
+  @include font-ui-normal;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  background-color: $color-background;
+  color: $color-text;
+}
