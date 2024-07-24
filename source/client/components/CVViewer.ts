@@ -202,7 +202,7 @@ export default class CVViewer extends Component
             }
             else {
                 const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay');
-                elem = overlayElement.getElementsByClassName("sv-title")[0] as HTMLElement;
+                elem = overlayElement.querySelector('[tabindex="0"]');
             }
             if(elem) {
                 elem.focus();
