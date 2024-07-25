@@ -225,7 +225,7 @@ class ExtendedAnnotation extends AnnotationElement
         ${annotation.imageUri && !isTruncated ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
         ${!isTruncated ? html`<p>${unsafeHTML(annotationObj.lead)}</p>` : null}
         ${annotation.audioId && !this.overlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-        ${annotation.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @pointerdown=${this.onClickArticle}></ff-button>` : null}
+        ${annotation.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @keydown=${this.onKeyDownArticle} @pointerdown=${this.onClickArticle}></ff-button>` : null}
         ${isTruncated ? html`<ff-button inline id="more-info" text="+more info" @pointerdown=${this.onClickOverlay} ></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
@@ -308,14 +308,21 @@ class ExtendedAnnotation extends AnnotationElement
     {
         if (event.code === "Space" || event.code === "Enter") {
             const target = event.target as HTMLElement;
-            if(target.id === "read-more") {
-                this.onClickArticle(event);
-            }
-            else if(target.id === "more-info") {
+            if(target.id === "more-info") {
                 this.onClickOverlay(event);
             }
             else {
                 this.sprite.emitClickEvent();
+            }
+        }
+    }
+
+    protected onKeyDownArticle(event: KeyboardEvent)
+    {
+        if (event.code === "Space" || event.code === "Enter") {
+            const target = event.target as HTMLElement;
+            if(target.id === "read-more") {
+                this.onClickArticle(event);
             }
         }
     }

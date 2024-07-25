@@ -260,7 +260,7 @@ class CircleAnnotation extends AnnotationElement
             ${annotationData.imageUri && !isTruncated ? html`<div><img alt="${annotation.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotationData.imageUri)}">${annotation.imageCredit ? html`<div class="sv-img-credit">${annotation.imageCredit}</div>` : null}</div>` : null}
             ${!isTruncated ? html`<div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>` : null}
             ${annotationData.audioId && !this.isOverlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-            ${annotationData.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @pointerdown=${this.onClickArticle}></ff-button>` : null}
+            ${annotationData.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @keydown=${this.onKeyDownArticle} @pointerdown=${this.onClickArticle}></ff-button>` : null}
             ${isTruncated ? html`<ff-button inline id="more-info" text="+more info" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;  
 
         render(contentTemplate, this.contentElement);
@@ -352,14 +352,21 @@ class CircleAnnotation extends AnnotationElement
     {
         if (event.code === "Space" || event.code === "Enter") {
             const target = event.target as HTMLElement;
-            if(target.id === "read-more") {
-                this.onClickArticle(event);
-            }
-            else if(target.id === "more-info") {
+            if(target.id === "more-info") {
                 this.onClickOverlay(event);
             }
             else {
                 this.sprite.emitClickEvent();
+            }
+        }
+    }
+
+    protected onKeyDownArticle(event: KeyboardEvent)
+    {
+        if (event.code === "Space" || event.code === "Enter") {
+            const target = event.target as HTMLElement;
+            if(target.id === "read-more") {
+                this.onClickArticle(event);
             }
         }
     }

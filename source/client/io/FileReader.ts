@@ -56,7 +56,7 @@ export default class FileReader
      */
     async getText(url: string): Promise<any>
     {
-        this._loadingManager.itemStart(url);
+        //this._loadingManager.itemStart(url);
 
         return fetch(url, {
             headers: {
@@ -64,12 +64,12 @@ export default class FileReader
             }
         }).then(result => {
             if (!result.ok) {
-                this._loadingManager.itemError(url);
-                this._loadingManager.itemEnd(url);
+                //this._loadingManager.itemError(url);
+                //this._loadingManager.itemEnd(url);
                 throw new Error(`failed to fetch from '${url}', status: ${result.status} ${result.statusText}`);
             }
 
-            this._loadingManager.itemEnd(url);
+            //this._loadingManager.itemEnd(url);
             return result.text();
         });
     }

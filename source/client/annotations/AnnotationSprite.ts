@@ -198,7 +198,7 @@ export class AnnotationElement extends SpriteElement
             AnnotationOverlay.show(this.parentElement, content, this.sprite).then(() => {
                 this.overlayed = false;
                 this.append(content); // attach content back to original container
-                (this.getElementsByClassName("sv-title")[0] as HTMLElement).focus();
+                (this.querySelector('[tabindex="0"]') as HTMLElement).focus();
                 this.requestUpdate();
             });
         });

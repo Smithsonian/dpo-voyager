@@ -29,6 +29,7 @@ import CVAnalytics from "./CVAnalytics";
 import CVLanguageManager from "./CVLanguageManager";
 import CVARManager from "./CVARManager";
 import {getFocusableElements} from "../utils/focusHelpers";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -173,7 +174,12 @@ export default class CVViewer extends Component
         if (ins.annotationsVisible.changed) {
             const visible = ins.annotationsVisible.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
-            this._needsAnnoFocus = ins.annotationsVisible.value;
+
+            const setup = this.getGraphComponent(CVSetup);
+            if(setup) {
+                const tourIns = setup.tours.ins;
+                this._needsAnnoFocus = ins.annotationsVisible.value && !tourIns.enabled.value;
+            }
         }
         if (ins.activeTags.changed) {
             const tags = ins.activeTags.value;
@@ -357,6 +363,11 @@ export default class CVViewer extends Component
     }
 
     protected focusTags() {
+        const setup = this.getGraphComponent(CVSetup);
+        if(setup && setup.tours.ins.enabled.value) {
+            return;
+        }
+
         const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay') as HTMLElement;
         const elems = getFocusableElements(overlayElement) as HTMLElement[];
         if(elems.length > 0) {
