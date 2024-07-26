@@ -1,21 +1,3 @@
-[submodule "libs/ff-core"]
-	path = libs/ff-core
-	url = https://github.com/Smithsonian/ff-core
-[submodule "libs/ff-browser"]
-	path = libs/ff-browser
-	url = https://github.com/Smithsonian/ff-browser
-[submodule "libs/ff-three"]
-	path = libs/ff-three
-	url = https://github.com/Smithsonian/ff-three
-[submodule "libs/ff-ui"]
-	path = libs/ff-ui
-	url = https://github.com/Smithsonian/ff-ui
-[submodule "libs/ff-graph"]
-	path = libs/ff-graph
-	url = https://github.com/Smithsonian/ff-graph
-[submodule "libs/ff-scene"]
-	path = libs/ff-scene
-	url = https://github.com/Smithsonian/ff-scene
 [submodule "docs/public"]
 	path = docs/public
 	url = https://github.com/Smithsonian/dpo-voyager

@@ -130,7 +130,7 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.tours.outs.ending.setValue(false);
 
         const introText = this.activeDocument.outs.intro.value;
-        if(introText) {
+        if(introText) { // TODO: Stop intro pop-up from spawning when setting property in Story
             if(this.needsSplash && introText.length > 0) {
                 SplashScreen.show(this, this.activeDocument.setup.language, introText).then(() => {
                     (this.getRootNode() as ShadowRoot).getElementById("sv-scene").focus();

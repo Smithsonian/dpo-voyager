@@ -24,7 +24,7 @@ import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/u
 import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
 import CVSetup from "client/components/CVSetup";
-import CVTape from "client/components/CVTape";
+import {getFocusableElements, focusTrap} from "../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +60,7 @@ export default class SceneView extends SystemView
 
         //this.onResize = this.onResize.bind(this);
         this.onPointerUpOrCancel = this.onPointerUpOrCancel.bind(this);
+        this.onKeyDownOverlay = this.onKeyDownOverlay.bind(this);
 
         this.manipTarget = new ManipTarget();
 
@@ -87,7 +88,7 @@ export default class SceneView extends SystemView
 
         this.tabIndex = 0;
         this.id = "sv-scene"
-        this.ariaLabel = "Interactive 3D Model. Use mouse, touch, or arrow keys to rotate.";
+        this.ariaLabel = "Interactive 3D Model. Use mouse, touch, or arrow keys to rotate. Escape key to exit annotations.";
         this.setAttribute("role", "application"),
 
         // Add screen readertext only element
@@ -108,6 +109,7 @@ export default class SceneView extends SystemView
         });
 
         this.overlay.classList.add("sv-content-overlay");
+        this.overlay.addEventListener("keydown", this.onKeyDownOverlay);
 
         this.splitter = this.appendElement(QuadSplitter, {
             position: "absolute",
@@ -229,6 +231,27 @@ export default class SceneView extends SystemView
     protected onMeasure() {
         this.measuring = this.system.getComponent(CVSetup).tape.ins.enabled.value;
         this.style.cursor = this.measuring ? "default" : "grab";
+    }
+
+    protected onKeyDownOverlay(e: KeyboardEvent)
+    {
+        const viewer = this.system.getComponent(CVSetup).viewer;
+        if (e.code === "Escape") {
+            e.preventDefault();
+            if(viewer.ins.sortedTags.value.length > 0) {
+                const tagElement = viewer.rootElement.shadowRoot.querySelector('.sv-tag-buttons');
+                const elem = tagElement.getElementsByClassName("ff-button")[0] as HTMLElement;
+                if(elem) {
+                    elem.focus();
+                }
+            }
+            else {
+                this.system.getComponent(CVSetup).viewer.ins.annotationExit.set();
+            }
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e);
+        }
     }
 
     /*protected onResize()

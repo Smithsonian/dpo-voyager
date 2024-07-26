@@ -164,6 +164,10 @@ export default class PropertyNumber extends CustomElement
             value = parseFloat(text);
         }
 
+        if(!isFinite(value)) {
+            value = 0;
+        }
+
         this.setValue(value);
     }
 

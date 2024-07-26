@@ -351,17 +351,17 @@ export default class CVAudioManager extends Component
         const clip = this.audioClips[id];
         if(clip) {
             const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-            const absUri = this.assetManager.getAssetUrl(uri);
             if(this.audioPlayer.src != this._audioMap[uri]) {
                 this.audioPlayer.setAttribute("src", this._audioMap[uri]);
                 this.audioPlayer.load();
-                
-                // Set caption track source
-                this.audioPlayer.children[0].setAttribute("src", "");
-                const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-                if(captionUri) {
-                    this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
-                }
+            }
+
+            // Set caption track source
+            const textTrack = this.audioPlayer.children[0];
+            textTrack.setAttribute("src", "");
+            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+            if(captionUri) {
+                textTrack.setAttribute("src", this.assetManager.getAssetUrl(captionUri));
             }
         }
     }
@@ -440,6 +440,9 @@ export class AudioView extends CustomElement
         super();
 
         this.onDrag = this.onDrag.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+
+        this.addEventListener("keydown", this.onKeyDown);
     }
 
     protected firstConnected()
@@ -464,7 +467,7 @@ export class AudioView extends CustomElement
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div class="sv-timer">${elapsedStr}/${durationStr}</div><input id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
@@ -481,6 +484,20 @@ export class AudioView extends CustomElement
 
     protected onDrag(event: MouseEvent) {
         event.stopPropagation();
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Space" || e.code === "Enter") {
+            if((e.target as HTMLElement).id == "play-btn") {
+                this.playAudio(null, this.audioId);
+            }
+        }
+        else if(e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") {
+            if((e.target as HTMLElement).id == "time-slider") {
+                e.stopPropagation();
+            }
+        }
     }
 
     protected onTimeChange() {

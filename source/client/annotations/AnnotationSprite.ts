@@ -175,6 +175,10 @@ export class AnnotationElement extends SpriteElement
         //this.addEventListener("pointerup", this.discardEvent);
         this.addEventListener("pointercancel", this.discardEvent);
         this.addEventListener("click", this.discardEvent);
+
+        this.setAttribute("aria-label", "annotation")
+        this.setAttribute("aria-live", "polite");
+        this.setAttribute("role", "button");
     }
 
     protected firstConnected()
@@ -194,6 +198,7 @@ export class AnnotationElement extends SpriteElement
             AnnotationOverlay.show(this.parentElement, content, this.sprite).then(() => {
                 this.overlayed = false;
                 this.append(content); // attach content back to original container
+                (this.querySelector('[tabindex="0"]') as HTMLElement).focus();
                 this.requestUpdate();
             });
         });

@@ -21,6 +21,7 @@ import CVDocument from "../../components/CVDocument";
 import CVViewer from "../../components/CVViewer";
 
 import DocumentView, { customElement, html } from "./DocumentView";
+import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +58,7 @@ export default class TagCloud extends DocumentView
                 ?selected=${activeTags.indexOf(tag) >= 0}
                 @click=${e => this.onSelectTag(tag)}></ff-button>`);
 
-        return html`<div class="sv-blue-bar"><div class="sv-section">
+        return html`<div class="sv-blue-bar" @keydown=${this.onKeyDown} role="region" aria-label="Tag Cloud Menu"><div class="sv-section">
                 <ff-button class="sv-section-lead" transparent icon="close" title="Close Tag Menu" @click=${this.onClickClose}></ff-button>
                 <div class="sv-tag-buttons">${tagButtons}</div>
         </div></div>`;
@@ -66,6 +67,7 @@ export default class TagCloud extends DocumentView
     protected onClickClose()
     {
         this.viewer.ins.annotationsVisible.setValue(false);
+        this.viewer.ins.annotationExit.set();
     }
 
     protected onSelectTag(tag: string)
@@ -100,6 +102,17 @@ export default class TagCloud extends DocumentView
             this.viewer = next.setup.viewer;
             this.viewer.ins.activeTags.on("value", this.onUpdate, this);
             this.viewer.outs.tagCloud.on("value", this.onUpdate, this);
+        }
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Escape") {
+            e.preventDefault();
+            this.onClickClose();
+        }
+        else if(e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
         }
     }
 }

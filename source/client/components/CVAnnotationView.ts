@@ -61,6 +61,10 @@ export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 {
 }
 
+export interface IActiveTagUpdateEvent extends ITypedEvent<"active-tag-update">
+{
+}
+
 export default class CVAnnotationView extends CObject3D
 {
     static readonly typeName: string = "CVAnnotationView";
@@ -95,6 +99,7 @@ export default class CVAnnotationView extends CObject3D
 
     private _truncateLock = false;
     private _activeView = false;
+    private _hasNewActiveTags = false;
 
     protected get model() {
         return this.getComponent(CVModel2);
@@ -238,6 +243,7 @@ export default class CVAnnotationView extends CObject3D
                 activeTags.forEach(tag => {
                     if (tags.indexOf(tag) >= 0) {
                         visible = true;
+                        this._hasNewActiveTags = true;
                     }
                 });
 
@@ -331,9 +337,17 @@ export default class CVAnnotationView extends CObject3D
         if(this._truncateLock) {
             const annotation = this.activeAnnotation.data;
             const sprite = this._sprites[annotation.id] as AnnotationSprite;
-            sprite.isAnimating = true;
-            this.snapshots.outs.tweening.once("value", () => { sprite.isAnimating = false; }, this);
+            if(this.snapshots.outs.tweening.value) {
+                sprite.isAnimating = true;
+                this.snapshots.outs.tweening.once("value", () => { sprite.isAnimating = false;}, this);
+            }
             this._truncateLock = false;
+        }
+
+        // Handle active tag updates
+        if(this._hasNewActiveTags) {
+            this.emit<IActiveTagUpdateEvent>({ type: "active-tag-update" });
+            this._hasNewActiveTags = false;
         }
     }
 
@@ -522,6 +536,7 @@ export default class CVAnnotationView extends CObject3D
         if (reader) {
             this.reader.ins.articleId.setValue(event.annotation.data.articleId);
             this.reader.ins.enabled.setValue(true);
+            this.reader.ins.focus.setValue(true);
         }
     }
 
@@ -615,6 +630,13 @@ export default class CVAnnotationView extends CObject3D
             viewState.values[orbitIdx][i] += 360*mult;
             angleOffset += Math.abs(n-viewState.values[orbitIdx][i]);
         });
-        viewState.duration = angleOffset > 0.01 ? 1.0 : 0;  // don't animate if we are already there
+
+        // TODO: Factor offset into duration check
+        /*const offsetIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Offset");
+        const currentOffset = this.snapshots.getCurrentValues()[offsetIdx];
+        const offset = viewState.values[offsetIdx];
+        const dist = Math.sqrt(Math.pow(offset[0]-currentOffset[0],2)+Math.pow(offset[1]-currentOffset[1],2)+Math.pow(offset[2]-currentOffset[2],2));*/
+
+        viewState.duration = /*dist > 0.01 ||*/ angleOffset > 0.01 ? 1.0 : 0;  // don't animate if we are already there
     }
 }

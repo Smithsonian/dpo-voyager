@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 
-import ExplorerPanel from "./ExplorerPanel";
-
-import parseUrlParameter from "@ff/browser/parseUrlParameter";
 import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../../applications/StoryApplication";
@@ -41,6 +38,7 @@ import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 import AssetPanel from "./AssetPanel";
 import CollectionPanel from "./CollectionPanel";
+import ExplorerPanel from "./ExplorerPanel";
 
 import "./styles.scss";
 
@@ -148,7 +146,7 @@ export default class MainView extends CustomElement
         registry.set("article-editor", () => new EditorPanel(system));
         registry.set("collection", () => new CollectionPanel(system));
 
-        const reset = parseUrlParameter("reset") !== undefined;
+        const reset = new URL(window.location.href).searchParams.get("reset") !== null;
         const state = reset ? null : localStorage.get("voyager-story", MainView.stateKey);
 
         this.state = state || {
