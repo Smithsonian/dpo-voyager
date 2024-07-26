@@ -218,6 +218,7 @@ class CircleAnnotation extends AnnotationElement
         this.onClickArticle = this.onClickArticle.bind(this);
         this.onClickAudio = this.onClickAudio.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
+        this.onKeyDownArticle = this.onKeyDownArticle.bind(this);
         this.onClickOverlay = this.onClickOverlay.bind(this);
 
         this.addEventListener("keydown", this.onKeyDown);
