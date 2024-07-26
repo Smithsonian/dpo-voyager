@@ -351,17 +351,17 @@ export default class CVAudioManager extends Component
         const clip = this.audioClips[id];
         if(clip) {
             const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-            const absUri = this.assetManager.getAssetUrl(uri);
             if(this.audioPlayer.src != this._audioMap[uri]) {
                 this.audioPlayer.setAttribute("src", this._audioMap[uri]);
                 this.audioPlayer.load();
-                
-                // Set caption track source
-                this.audioPlayer.children[0].setAttribute("src", "");
-                const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-                if(captionUri) {
-                    this.audioPlayer.children[0].setAttribute("src", this.assetManager.getAssetUrl(captionUri));
-                }
+            }
+
+            // Set caption track source
+            const textTrack = this.audioPlayer.children[0];
+            textTrack.setAttribute("src", "");
+            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+            if(captionUri) {
+                textTrack.setAttribute("src", this.assetManager.getAssetUrl(captionUri));
             }
         }
     }
