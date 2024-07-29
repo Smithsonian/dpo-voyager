@@ -1230,22 +1230,31 @@ $tour-entry-indent: 12px;
   }
 
   &.sv-property-color {
-    input[type="color"] {
-      cursor: pointer;
-      border: none;
-      margin: 2px;
+    position: relative;
+    display: block;
+
+    & > .ff-button {
+      width: 26px;
+      max-width: 20ch;
       height: 26px;
       inline-size: 26px;
+      box-sizing: border-box;
       padding: 1px;
       background: $color-background;
       border-radius: 2px;
-      &::-webkit-color-swatch-wrapper {
-        padding: 0;
-      }
-      &::-webkit-color-swatch, &::-moz-color-swatch {
-        border: none;
-        border-radius: 2px;
-      }
+      border: none;
+      margin: 2px;
+    }
+
+    .ff-color-edit {
+      position: absolute;
+      width: 200px;
+      height: 180px;
+      right: 0px;
+      top: -188px;
+      background: $color-background-dark;
+      padding: 8px;
+      border-radius: 2px;
     }
   }
   
