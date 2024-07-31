@@ -46,9 +46,10 @@ export default class AnnotationOverlay extends Popup
         super();
 
         this.close = this.close.bind(this);
+        this.onKeyDownMain = this.onKeyDownMain.bind(this);
 
         this.content = content;
-        this.title = sprite.annotation.title;
+        this.title = "";
         this.sprite = sprite;
         this.position = "center";
         this.modal = true;
@@ -90,9 +91,9 @@ export default class AnnotationOverlay extends Popup
     protected render()
     {
         return html`
-        <div class="sv-help-region" id="anno_container" role="region" @wheel=${(e) => this.discardEvents(e)} @pointerdown=${(e) => this.discardEvents(e)} aria-label="Annotation pop-up" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div class="sv-help-region" id="anno_container" role="region" @wheel=${(e) => this.discardEvents(e)} @pointerdown=${(e) => this.discardEvents(e)} aria-label="Annotation pop-up" aria-live="polite" aria-atomic="true" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title"><b>${this.title}</b></div>
+                <div id="ovr_title" class="ff-flex-spacer ff-title"><b>${this.title}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title="Close" @click=${this.close}></ff-button>
             </div>
         </div>
@@ -102,10 +103,13 @@ export default class AnnotationOverlay extends Popup
     protected firstUpdated(changedProperties) {
         super.firstUpdated(changedProperties);
 
+        (this.getElementsByClassName("ff-close-button")[0] as HTMLElement).focus();
+
         const annoContainer = this.querySelector("#anno_container");
         annoContainer.append(this.content);
 
-        //(Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
+        // Trigger screen reader update
+        setTimeout(() => {this.title = this.sprite.annotation.title; this.requestUpdate();}, 100);   
     }
 
     protected onKeyDownMain(e: KeyboardEvent)
@@ -114,19 +118,8 @@ export default class AnnotationOverlay extends Popup
             this.close();
         }
         else if(e.code === "Tab") {
+            e.stopPropagation();
             focusTrap(getFocusableElements(this) as HTMLElement[], e);
-        }
-    }
-
-    // resets tabIndex if needed
-    protected tabReset(e: FocusEvent) {
-        const currentActive = e.target instanceof Element ? e.target as Element : null;
-        if(currentActive) {
-            const currentSelected = Array.from(currentActive.parentElement.children).find(elem => elem.hasAttribute("selected"));
-            if(currentSelected !== currentActive) {
-                currentActive.setAttribute("tabIndex", "-1");
-                currentSelected.setAttribute("tabIndex", "0");
-            }
         }
     }
 

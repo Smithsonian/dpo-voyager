@@ -18,7 +18,6 @@
 import { Dictionary } from "@ff/core/types";
 
 import download from "@ff/browser/download";
-import fetch from "@ff/browser/fetch";
 import convert from "@ff/browser/convert";
 
 import { Node, types } from "@ff/graph/Component";
@@ -234,7 +233,10 @@ export default class CVCaptureTask extends CVTask
             }
             else {
                 const file = new File([blob], fileName);
-                fetch.file(fileURL, "PUT", file)
+                fetch(fileURL, {
+                    method:"PUT",
+                    body: file,
+                })
                 .then(() => {
                     this.updateImageMeta(quality, this._mimeType, filePath);
                     new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);

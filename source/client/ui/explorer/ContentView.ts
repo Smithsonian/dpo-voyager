@@ -132,7 +132,7 @@ export default class ContentView extends DocumentView
         if (reader) {
             readerVisible = ! tourMenuVisible && reader.ins.enabled.value && reader.ins.visible.value;
 
-            readerPosition = reader.ins.position.value;
+            readerPosition = reader.ins.position.getValidatedValue();
 
             // do not use right reader position on mobile
             if(this.isMobile === true) {

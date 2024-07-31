@@ -83,6 +83,7 @@ export default class StandardSprite extends AnnotationSprite
 
         this.stemLine.material["opacity"] = opacity;
         element.setOpacity(opacity);
+        element.setVisible(this.annotation.data.visible);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {
@@ -130,8 +131,8 @@ class StandardAnnotation extends AnnotationElement
         this.titleElement = this.appendElement("div");
         this.titleElement.classList.add("sv-title");
         this.titleElement.addEventListener("click", this.onClickTitle);
-        //this.titleElement.addEventListener("keydown", this.onKeyDown);
-        //this.titleElement.setAttribute("tabindex", "0");
+        this.titleElement.addEventListener("keydown", this.onKeyDown);
+        this.titleElement.setAttribute("tabindex", "0");
     }
 
     protected firstConnected()

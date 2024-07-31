@@ -20,9 +20,8 @@ import Popup, { customElement, html } from "@ff/ui/Popup";
 import "@ff/ui/Button";
 import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
-import { ILanguageOption } from "client/schema/setup";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
-import { IButtonClickEvent } from "@ff/ui/Button";
+import { IButtonClickEvent, IButtonKeyboardEvent } from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,6 +49,11 @@ export default class HelpMain extends Popup
         <path d="m154.14 245.86c7.8125 7.8086 7.8125 20.473 0 28.281-7.8086 7.8125-20.473 7.8125-28.281 0l-80-80c-7.8125-7.8086-7.8125-20.473 0-28.281l80-80c7.8086-7.8125 20.473-7.8125 28.281 0 7.8125 7.8086 7.8125 20.473 0 28.281l-45.855 45.859h271.71c11.047 0 20 8.9531 20 20s-8.9531 20-20 20h-271.83z"/>
         <path d="m1005.9 245.86c-7.8125 7.8086-7.8125 20.473 0 28.281 7.8086 7.8125 20.473 7.8125 28.281 0l80-80c7.8125-7.8086 7.8125-20.473 0-28.281l-80-80c-7.8086-7.8125-20.473-7.8125-28.281 0-7.8125 7.8086-7.8125 20.473 0 28.281l45.855 45.859h-271.71c-11.047 0-20 8.9531-20 20s8.9531 20 20 20h271.83z"/>
         <path d="m760 560c34.895 0 64.574 22.344 75.508 53.504 12.723-8.5273 28.027-13.504 44.492-13.504 44.184 0 80 35.816 80 80v140c0 131.5-80 270.22-80 360 0 11.047-8.9531 20-20 20s-20-8.9531-20-20c0-104.19 80-229.01 80-360v-140c0-22.09-17.91-40-40-40s-40 17.91-40 40v60c0 11.047-8.9531 20-20 20s-20-8.9531-20-20v-100c0-22.09-17.91-40-40-40s-40 17.91-40 40v60c0 11.047-8.9531 20-20 20s-20-8.9531-20-20v-420c0-22.09-17.91-40-40-40s-40 17.91-40 40v420c0 11.047-8.9531 20-20 20s-20-8.9531-20-20v-340c0-22.09-17.91-40-40-40s-40 17.91-40 40v460c0 23.965-33.184 24.707-40.188 10.035l-74.84-129.63c-11.047-19.129-35.508-25.684-54.641-14.641-19.133 11.047-25.688 35.512-14.641 54.641 5.0859 8.8164 24.645 42.75 28.75 49.801 34.176 58.645 48.719 157.61 73.109 200.2 35.914 62.723 114.65 172.31 118.68 177.9 6.457 8.9609 4.4258 21.461-4.5352 27.918-8.9609 6.457-21.461 4.4258-27.918-4.5352-4.0977-5.6875-77.148-105.45-120.79-181.18-31.273-54.27-42.051-146.11-73.188-200.31-4.0703-7.0859-23.664-40.984-28.75-49.801-22.094-38.262-8.9805-87.188 29.281-109.28 38.262-22.09 87.191-8.9805 109.28 29.281l40.387 69.953v-390.36c0-44.184 35.816-80 80-80 14.57 0 28.234 3.8945 40 10.703v-10.703c0-44.184 35.816-80 80-80s80 35.816 80 80v290.7c11.766-6.8086 25.43-10.703 40-10.703z"/></g></svg>`;
+    protected static readonly arrowKeys = html`<svg class="ff-icon" viewBox="0 200 1300 800" xmlns="http://www.w3.org/2000/svg"><g>
+        <path d="m479.04 936.24h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.003906-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.559 0-40.922 18.359-40.922 40.922v238.92c0.003906 22.555 18.363 40.914 40.922 40.914zm85.562-148.56h24.84v-86.039c0-4.9219 4.0781-9 9-9s9 4.0781 9 9v86.039h24.84c4.9219 0 7.9219 5.2812 5.5195 9.4805l-33.84 58.68c-2.3984 4.1992-8.5195 4.1992-11.039 0l-33.84-58.68c-2.4023-4.1992 0.71875-9.4805 5.5195-9.4805z"/>
+        <path d="m717.96 263.76h-238.92c-22.559 0-40.922 18.359-40.922 40.922l0.003906 238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.007813-238.92c0-22.559-18.359-40.918-40.918-40.918zm-85.562 148.56h-24.84v86.039c0 4.9219-4.0781 9-9 9s-9-4.0781-9-9v-86.039h-24.84c-4.9219 0-7.9219-5.2812-5.5195-9.4805l33.84-58.68c2.3984-4.1992 8.5195-4.1992 11.039 0l33.84 58.68c2.4023 4.1992-0.59766 9.4805-5.5195 9.4805z"/>
+        <path d="m1116 895.32v-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.559 0-40.922 18.359-40.922 40.922v238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.68-0.007813 40.918-18.367 40.918-40.926zm-148.44-85.559v-24.961h-86.039c-4.9219 0-9-4.0781-9-9s4.0781-9 9-9h86.039v-24.84c0-4.9219 5.2812-7.9219 9.4805-5.5195l58.68 33.84c4.1992 2.3984 4.1992 8.5195 0 11.039l-58.68 33.84c-4.1992 2.5195-9.4805-0.60156-9.4805-5.3984z"/>
+        <path d="m84 656.4v238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.003906-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.684 0-40.922 18.359-40.922 40.918zm148.44 85.562v24.84h86.039c4.9219 0 9 4.0781 9 9s-4.0781 9-9 9h-86.039v24.84c0 4.9219-5.2812 7.9219-9.4805 5.5195l-58.68-33.84c-4.1992-2.3984-4.1992-8.5195 0-11.039l58.68-33.84c4.1992-2.4023 9.4805 0.59766 9.4805 5.5195z"/></g></svg>`;
 
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
     {
@@ -97,72 +101,82 @@ export default class HelpMain extends Popup
         const fsVisible = this.parentElement.querySelector("#fullscreen-btn") ? true : false;
         const toolsVisible = this.parentElement.querySelector("#tools-btn") ? true : false;
 
-        const navContent = html`<div class="sv-help-row">
+        const navContent = html`<div class="sv-help-row" aria-live="polite" aria-atomic="true">
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="rotate"></ff-icon>
                                         <div class="sv-help-text"><b>Orbit</b></div>
                                         <div class="sv-help-text">${HelpMain.leftClick}Left-click and drag</div>
+                                        <div class="sr-only"> Or.</div>
                                         <div class="sv-help-text">${HelpMain.oneFinger}One-finger drag</div>
+                                        <div class="sr-only"> Or.</div>
+                                        <div class="sv-help-text">${HelpMain.arrowKeys}Arrow keys</div>
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="move"></ff-icon>
                                         <div class="sv-help-text"><b>Pan</b></div>
                                         <div class="sv-help-text">${HelpMain.rightClick}Right-click and drag</div>
+                                        <div class="sr-only"> Or.</div>
                                         <div class="sv-help-text">${HelpMain.twoFinger}Two-finger drag</div>
+                                        <div class="sr-only"> Or.</div>
+                                        <div class="sv-help-text">Shift + ${HelpMain.arrowKeys}Arrow keys</div>
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="zoom"></ff-icon>
                                         <div class="sv-help-text"><b>Zoom</b></div>
                                         <div class="sv-help-text">${HelpMain.mouseWheel}Mouse wheel</div>
+                                        <div class="sr-only"> Or.</div>
                                         <div class="sv-help-text">${HelpMain.pinch}Two-finger pinch</div>
+                                        <div class="sr-only"> Or.</div>
+                                        <div class="sv-help-text">Ctrl + ${HelpMain.arrowKeys}Arrow keys</div>
                                     </div>
+                                    <div id="sr-trigger" class="sr-only"></div>
                                 </div>`;
 
         const menuContent = html`<div class="sv-help-text">The tools below can be accessed by clicking the corresponding icons on the menu bar to the left of the screen.</div>
                                 <div class="sv-help-row">
                                     ${arVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="ar"></ff-icon>
-                                        <div class="sv-help-text">Launch an augmented<br>reality experience</div>
+                                        <ff-icon title="AR." class="ff-off" name="ar"></ff-icon>
+                                        <div class="sv-help-text">Launch an augmented<br>reality experience.</div>
                                     </div>`:""}
                                     ${audioVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="audio"></ff-icon>
-                                        <div class="sv-help-text">Hear an audio<br>narration of the scene</div>
+                                        <ff-icon title="Play Narration." class="ff-off" name="audio"></ff-icon>
+                                        <div class="sv-help-text">Hear an audio<br>narration of the scene.</div>
                                     </div>`:""}
                                     ${toursVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="globe"></ff-icon>
-                                        <div class="sv-help-text">Take a curated guided<br>tour of the scene</div>
+                                        <ff-icon title="Tours." class="ff-off" name="globe"></ff-icon>
+                                        <div class="sv-help-text">Take a curated guided<br>tour of the scene.</div>
                                     </div>`:""}                       
                                     ${readerVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="article"></ff-icon>
-                                        <div class="sv-help-text">Read articles about<br>the scene content</div>
+                                        <ff-icon title="Articles." class="ff-off" name="article"></ff-icon>
+                                        <div class="sv-help-text">Read articles about<br>the scene content.</div>
                                     </div>`:""}
                                     ${annosVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="comment"></ff-icon>
-                                        <div class="sv-help-text">Show annotations<br>highlighting key points</div>
+                                        <ff-icon title="Annotations." class="ff-off" name="comment"></ff-icon>
+                                        <div class="sv-help-text">Show annotations<br>highlighting key points.</div>
                                     </div>`:""}
                                     <div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="share"></ff-icon>
+                                        <ff-icon title="Share." class="ff-off" name="share"></ff-icon>
                                         <div class="sv-help-text">Share the experience<br>with a friend!</div>
                                     </div>
                                     ${fsVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="expand"></ff-icon>
-                                        <div class="sv-help-text">View the experience<br>in fullscreen mode</div>
+                                        <ff-icon title="Fullscreen." class="ff-off" name="expand"></ff-icon>
+                                        <div class="sv-help-text">View the experience<br>in fullscreen mode.</div>
                                     </div>`:""}
                                     ${toolsVisible ? html`<div class="sv-help-section sv-help-short">
-                                        <ff-icon class="ff-off" name="tools"></ff-icon>
-                                        <div class="sv-help-text">Open the advanced<br>tool menu</div>
+                                        <ff-icon title="Advanced Tools." class="ff-off" name="tools"></ff-icon>
+                                        <div class="sv-help-text">Open the advanced<br>tool menu.</div>
                                     </div>`:""}
                                 </div>`;
 
         return html`
-        <div class="sv-help-region" role="region" aria-label="Introduction to Voyager" @keydown=${e =>this.onKeyDownMain(e)}>
+        <div class="sv-help-region" role="region" aria-label="Introduction to Voyager" aria-live="polite" @keydown=${e =>this.onKeyDownMain(e)}>
             <div class="ff-flex-row">
                 <div class="ff-flex-spacer ff-title"><b>${language.getLocalizedString("Introduction to Voyager")}</b></div>
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div class="sv-commands">
-                <ff-button text="Navigation" index=${EHelpSection.Nav} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
-                <ff-button text="Menu Icons" index=${EHelpSection.Menu} selectedIndex=${section} @click=${this.onClickSection}></ff-button>
+                <ff-button text="Navigation" index=${EHelpSection.Nav} selectedIndex=${section} @click=${(e) => this.onClickSection(e, EHelpSection.Nav)}></ff-button>
+                <ff-button text="Menu Icons" index=${EHelpSection.Menu} selectedIndex=${section} @click=${(e) => this.onClickSection(e, EHelpSection.Menu)}></ff-button>
             </div>
             ${section === EHelpSection.Nav ? navContent : menuContent}
         </div>
@@ -172,12 +186,15 @@ export default class HelpMain extends Popup
     protected firstUpdated(changedProperties) {
         super.firstUpdated(changedProperties);
 
-        //(Array.from(this.getElementsByClassName("sv-entry")).find(elem => elem.getAttribute("tabIndex") === "0") as HTMLElement).focus();
+        (Array.from(this.getElementsByClassName("ff-button")).find(elem => elem.getAttribute("text") === "Navigation") as HTMLElement).focus();
+
+        // trigger screen reader on first pass
+        setTimeout(() => {this.querySelector("#sr-trigger").textContent = "section end"}, 100);
     }
 
-    protected onClickSection(event: IButtonClickEvent)
+    protected onClickSection(event: IButtonClickEvent, idx: number)
     {
-        this.helpView = event.target.index;
+        this.helpView = idx;
         this.requestUpdate();
     }
 

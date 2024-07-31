@@ -138,7 +138,6 @@ module.exports = function(env, argv)
                 "@ff/core": path.resolve(dirs.libs, "ff-core/source"),
                 "@ff/graph": path.resolve(dirs.libs, "ff-graph/source"),
                 "@ff/ui": path.resolve(dirs.libs, "ff-ui/source"),
-                "@ff/react": path.resolve(dirs.libs, "ff-react/source"),
                 "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
                 "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
                 "@ff/scene": path.resolve(dirs.libs, "ff-scene/source"),
