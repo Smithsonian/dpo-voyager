@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three";
+import { Box3, Euler, Matrix4, Quaternion, Vector3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -25,11 +25,14 @@ import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 import { EProjection } from "@ff/three/UniversalCamera";
 
-import { INavigation } from "client/schema/setup";
+import { ENavigationType, TNavigationType, INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
 import CVAssetManager from "./CVAssetManager";
 import CVARManager from "./CVARManager";
+import CVModel2 from "./CVModel2";
+import { getMeshTransform } from "client/utils/Helpers";
+import { DEG2RAD, RAD2DEG } from "three/src/math/MathUtils";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +75,6 @@ export default class CVOrbitNavigation extends CObject3D
         promptEnabled: types.Boolean("Settings.PromptEnabled", true),
         isInUse: types.Boolean("Camera.IsInUse", false),
         preset: types.Enum("Camera.ViewPreset", EViewPreset, EViewPreset.None),
-        projection: types.Enum("Camera.Projection", EProjection, EProjection.Perspective),
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
         autoRotation: types.Boolean("Navigation.AutoRotation", false),
         autoRotationSpeed: types.Number("Navigation.AutoRotationSpeed", 10),
@@ -80,6 +82,7 @@ export default class CVOrbitNavigation extends CObject3D
         autoZoom: types.Boolean("Settings.AutoZoom", true),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
         offset: types.Vector3("Current.Offset", [ 0, 0, 100 ]),
+        pivot: types.Vector3("Current.Pivot", [ 0, 0, 0 ]),
         minOrbit: types.Vector3("Limits.Min.Orbit", [ -90, -Infinity, -Infinity ]),
         minOffset: types.Vector3("Limits.Min.Offset", [ -Infinity, -Infinity, 0.1 ]),
         maxOrbit: types.Vector3("Limits.Max.Orbit", [ 90, Infinity, Infinity ]),
@@ -110,6 +113,7 @@ export default class CVOrbitNavigation extends CObject3D
             this.ins.enabled,
             this.ins.orbit,
             this.ins.offset,
+            this.ins.pivot,
             this.ins.autoZoom,
             this.ins.autoRotation,
             this.ins.autoRotationSpeed,
@@ -125,6 +129,7 @@ export default class CVOrbitNavigation extends CObject3D
         return [
             this.ins.orbit,
             this.ins.offset,
+            this.ins.pivot,
         ];
     }
 
@@ -143,6 +148,7 @@ export default class CVOrbitNavigation extends CObject3D
         super.create();
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
+        this.system.on<ITriggerEvent>("double-click", this.onDoubleClick, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
         this.system.on<IKeyboardEvent>("keydown", this.onKeyboard, this);
 
@@ -168,13 +174,8 @@ export default class CVOrbitNavigation extends CObject3D
         const cameraComponent = this._scene.activeCameraComponent;
         const camera = cameraComponent ? cameraComponent.camera : null;
 
-        const { projection, preset, orbit, offset } = ins;
+        const { preset, orbit, offset, pivot } = ins;
 
-        // camera projection
-        if (cameraComponent && projection.changed) {
-            camera.setProjection(projection.getValidatedValue());
-            cameraComponent.ins.projection.setValue(projection.value, true);
-        }
 
         // camera preset
         if (preset.changed && preset.value !== EViewPreset.None) {
@@ -200,9 +201,10 @@ export default class CVOrbitNavigation extends CObject3D
         const { minOrbit, minOffset, maxOrbit, maxOffset} = ins;
 
         // orbit, offset and limits
-        if (orbit.changed || offset.changed) {
+        if (orbit.changed || offset.changed || pivot.changed) {
             controller.orbit.fromArray(orbit.value);
             controller.offset.fromArray(offset.value);
+            controller.pivot.fromArray(pivot.value);
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
@@ -364,6 +366,7 @@ export default class CVOrbitNavigation extends CObject3D
             lightsFollowCamera: !!data.lightsFollowCamera,
             orbit: orbit.orbit,
             offset: orbit.offset,
+            pivot: orbit.pivot || [ 0, 0, 0 ],
             minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
             maxOrbit: _replaceNull(orbit.maxOrbit, Infinity),
             minOffset: _replaceNull(orbit.minOffset, -Infinity),
@@ -386,6 +389,7 @@ export default class CVOrbitNavigation extends CObject3D
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
             offset: ins.offset.cloneValue(),
+            pivot: ins.pivot.cloneValue(),
             minOrbit: ins.minOrbit.cloneValue(),
             maxOrbit: ins.maxOrbit.cloneValue(),
             minOffset: ins.minOffset.cloneValue(),
@@ -420,6 +424,53 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         this._hasChanged = true;
+    }
+
+    protected onDoubleClick(event: ITriggerEvent){
+        if(event.component?.typeName != "CVModel2") return;
+        const model = event.component as CVModel2;
+        const meshTransform = getMeshTransform(model.object3D, event.object3D);
+        let pos = new Vector3(), rot = new Quaternion(), scale = new Vector3();
+        model.transform.object3D.matrix.decompose(pos, rot, scale)
+
+        //Add CVNode's transform
+        const invMeshTransform = meshTransform.clone().invert();
+        const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+        // add mesh's "pose".
+        let localPosition = event.view.pickPosition(event as any, bounds)
+            .applyMatrix4(invMeshTransform)      //Add internal transform
+            .applyMatrix4(model.object3D.matrix) //Add mesh "pose"
+            .applyMatrix4(model.transform.object3D.matrixWorld) //Add mesh's "transform" (attached CTransform)
+
+        const orbit = new Vector3().fromArray(this.ins.orbit.value).multiplyScalar(DEG2RAD);
+        const pivot = new Vector3().fromArray(this.ins.pivot.value);
+
+        //we compute the new orbit and offset.z values to keep the camera in place
+        let orbitRad = new Euler().setFromVector3(orbit, "YXZ");
+        let orbitQuat = new Quaternion().setFromEuler(orbitRad);
+        //Offset from pivot with applied rotation
+        const offset = new Vector3().fromArray(this.ins.offset.value).applyQuaternion(orbitQuat);
+        //Current camera absolute position
+        const camPos = pivot.clone().add(offset);
+        //We want the camera position to stay the same with the new parameters
+        //First we need to get the path from the camera to the new pivot
+        const clickToCam = camPos.clone().sub(localPosition);
+        //We then use it to "look at" the new pivot
+        orbitQuat.setFromUnitVectors(
+            new Vector3(0, 0, 1),
+            clickToCam.clone().normalize(),
+        );
+
+        //Rotation
+        orbitRad.setFromQuaternion(orbitQuat, "YXZ");
+        const orbitAngles = new Vector3().setFromEuler(orbitRad).multiplyScalar(RAD2DEG);
+        
+
+        //New pivot is straight-up where the user clicked
+        this.ins.pivot.setValue(localPosition.toArray());
+        //We always keep roll as-it-was because it tends to add up in disorienting ways
+        this.ins.orbit.setValue([orbitAngles.x, orbitAngles.y, this.ins.orbit.value[2]]);
+        this.ins.offset.setValue([0, 0, clickToCam.length()]);
     }
 
     protected onTrigger(event: ITriggerEvent)
