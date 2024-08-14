@@ -61,6 +61,10 @@ export default class ToursTaskView extends TaskView<CVToursTask>
     {
         //console.log("TourTaskView.render");
 
+        if(!this.activeDocument) {
+            return;
+        }
+
         const task = this.task;
         const tours = task.tours;
 
