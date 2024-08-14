@@ -41,6 +41,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
 import CVSetup from "./CVSetup";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
+import CVTargets from "./CVTargets";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -191,6 +192,9 @@ export default class CVModel2 extends CObject3D
         // link units with annotation view
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
+
+        // create targets component for this model
+        this.node.createComponent(CVTargets);
 
         // set quality based on max texture size
         const maxTextureSize = this.renderer.outs.maxTextureSize.value;
@@ -776,7 +780,7 @@ export default class CVModel2 extends CObject3D
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
                 // set overlay map options
-                const overlayOptions = this.ins.overlayMap.schema.options || ["None"];
+                const overlayOptions = ["None"];
                 overlayOptions.push(...derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).map(image => image.data.uri));
                 this.ins.overlayMap.setOptions(overlayOptions);
                 if(this.ins.overlayMap.value !== 0) {
