@@ -42,9 +42,6 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
     protected get snapshots() {
         return this.activeDocument.setup.snapshots;
     }
-    //protected get manager() {
-    //    return this.activeDocument.setup.targets;
-    //}
 
     protected connected()
     {
@@ -64,75 +61,54 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         super.disconnected();
     }
 
-    protected renderFeatureMenu()
-    {
-        const features = this.snapshots.targetFeatures;
-        const keys = Object.keys(features);
-
-        const buttons = keys.map(key => {
-            const title = key[0].toUpperCase() + key.substr(1);
-            const selected = !!features[key];
-            return html`<ff-button text=${title} name=${key} ?selected=${selected} @click=${this.onClickFeature}></ff-button>`;
-        });
-
-        return html`<div class="sv-commands">
-            <ff-button text="OK" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
-            <ff-button text="Cancel" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
-        </div><div class="ff-flex-item-stretch sv-tour-feature-menu">${buttons}</div>`;
-    }
-
     protected render()
     {
         const task = this.task;
         const targets = this.targets;
         
         if (!targets) {
-            return html`<div class="sv-placeholder">Please select a model to edit its targets.</div>`;
+            return html`<div class="sv-placeholder">Please select a model to edit its overlays.</div>`;
         }
-
-        if (this.featureConfigMode) {
-            return this.renderFeatureMenu();
-        }
-
-        this.sceneview.style.cursor = this.task.ins.paintMode.value === EPaintMode.Interact ? "grab" : "default";
 
         const targetList = targets.targets;
-        const activeTarget = targets.activeTarget;
+        const activeOverlay = targets.activeTarget;
         const props = task.ins;
 
-        const zoneConfig = activeTarget && activeTarget.type === "Zone" ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <div class="sv-label"><b>Zone Configuration</b></div>
-            <sv-property-view .property=${task.ins.zoneTitle}></sv-property-view>
-            <sv-property-view .property=${task.ins.zoneColor}></sv-property-view>
+        this.sceneview.style.cursor = props.paintMode.value === EPaintMode.Interact ? "grab" : "default";
+
+        const overlayConfig = html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            <div class="sv-label"><b>Overlays</b></div>
+            <sv-property-view .property=${props.overlayTitle}></sv-property-view>
+            <sv-property-view .property=${props.overlayColor}></sv-property-view>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
                 <ff-button text="Interact" icon="pointer" class="ff-control" @click=${this.onClickInteract}></ff-button>
                 <ff-button text="Paint" icon="brush" class="ff-control" @click=${this.onClickPaint}></ff-button>
                 <ff-button text="Erase" icon="eraser" class="ff-control" @click=${this.onClickErase}></ff-button>
             </ff-button-group>
-            <sv-property-view .property=${task.ins.zoneBrushSize}></sv-property-view>
+            <sv-property-view .property=${props.overlayBrushSize}></sv-property-view>
             <div class="sv-commands">
                 <ff-button text="Fill All" class="ff-control" @click=${this.onClickFillAll}></ff-button>
                 <ff-button text="Clear All" class="ff-control" @click=${this.onClickClearAll}></ff-button>
             </div>
-        </div>` : null;
+        </div>`;
 
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickZoneCreate}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!activeTarget || activeTarget.type !== "Zone"} @click=${this.onClickZoneDelete}></ff-button>
-            <ff-button text="Save" icon="save" @click=${this.onClickZoneSave}></ff-button>
+            <ff-button text="Create" icon="create" @click=${this.onClickOverlayCreate}></ff-button>       
+            <ff-button text="Delete" icon="trash" ?disabled=${!activeOverlay} @click=${this.onClickOverlayDelete}></ff-button>
+            <ff-button text="Save" icon="save" @click=${this.onClickOverlaySave}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-splitter-section" style="flex-basis: 40%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-target-list .data=${targetList.slice()} .selectedItem=${activeTarget} @select=${this.onSelectTarget}></sv-target-list>
+                        <sv-target-list .data=${targetList.slice()} .selectedItem=${activeOverlay} @select=${this.onSelectOverlay}></sv-target-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
                 <div class="ff-splitter-section" style="flex-basis: 60%">
-                    ${zoneConfig}
+                    ${overlayConfig}
                 </div>
             </div>
         </div>`;
@@ -144,10 +120,10 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         this.requestUpdate();
     }
 
-    protected onSelectTarget(event: ISelectTargetEvent)
+    protected onSelectOverlay(event: ISelectOverlayEvent)
     {
-        if( event.detail.index !== this.task.targets.ins.targetIndex.value ) {
-            this.task.targets.ins.targetIndex.setValue(event.detail.index);
+        if( event.detail.index !== this.task.ins.activeIndex.value ) {
+            this.task.ins.activeIndex.setValue(event.detail.index);
             this.requestUpdate();
         }
     }
@@ -200,37 +176,37 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         super.onActiveNode(previous, next);
     }
 
-    // Handle adding new zone
-    protected onClickZoneCreate()
+    // Handle adding new overlay
+    protected onClickOverlayCreate()
     {
-        this.task.ins.createZone.set();
+        this.task.ins.createOverlay.set();
     }
 
-    // Handle zone delete
-    protected onClickZoneDelete()
+    // Handle overlay delete
+    protected onClickOverlayDelete()
     {
-        this.task.ins.deleteZone.set();
+        this.task.ins.deleteOverlay.set();
     }
 
-    // Handle zone save
-    protected onClickZoneSave()
+    // Handle overlay save
+    protected onClickOverlaySave()
     {
-        this.task.ins.saveZones.set();
+        this.task.ins.saveOverlays.set();
     }
 
-    // Handle zone fill
+    // Handle overlay fill
     protected onClickFillAll()
     {
-        this.task.ins.zoneFill.set();
+        this.task.ins.overlayFill.set();
     }
 
-    // Handle zone clear
+    // Handle overlay clear
     protected onClickClearAll()
     {
-        this.task.ins.zoneClear.set();
+        this.task.ins.overlayClear.set();
     }
 
-    // Handle zone mode changes
+    // Handle overlay mode changes
     protected onClickInteract()
     {
         this.task.ins.paintMode.setValue(EPaintMode.Interact); 
@@ -247,17 +223,17 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface ISelectTargetEvent extends CustomEvent
+interface ISelectOverlayEvent extends CustomEvent
 {
-    target: TargetList;
+    target: OverlayList;
     detail: {
-        target: ITarget;
+        overlay: ITarget;
         index: number;
     }
 }
 
 @customElement("sv-target-list")
-export class TargetList extends List<ITarget>
+export class OverlayList extends List<ITarget>
 {
     @property({ attribute: false })
     selectedItem: ITarget = null;
