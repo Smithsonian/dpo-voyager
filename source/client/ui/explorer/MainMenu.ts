@@ -204,6 +204,7 @@ export default class MainMenu extends DocumentView
         }
 
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
+        viewerIns.annotationFocus.setValue(true);
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
     }
 
