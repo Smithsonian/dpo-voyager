@@ -46,6 +46,7 @@ export default class CVViewer extends Component
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
         annotationExit: types.Event("Annotations.Exit"),
+        annotationFocus: types.Boolean("Annotations.Focus", false),
         activeAnnotation: types.String("Annotations.ActiveId"),
         activeTags: types.String("Tags.Active"),
         sortedTags: types.String("Tags.Sorted"),
@@ -176,9 +177,10 @@ export default class CVViewer extends Component
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.visible.setValue(visible));
 
             const setup = this.getGraphComponent(CVSetup);
-            if(setup) {
+            if(setup && ins.annotationFocus.value) {
                 const tourIns = setup.tours.ins;
                 this._needsAnnoFocus = ins.annotationsVisible.value && !tourIns.enabled.value;
+                ins.annotationFocus.setValue(false);
             }
         }
         if (ins.activeTags.changed) {
@@ -202,7 +204,7 @@ export default class CVViewer extends Component
     tock() {
         if(this._needsAnnoFocus) {
             let elem = null;
-            if(this.ins.sortedTags.value.length > 0) { // handle annotation tag groups
+            if(this.outs.tagCloud.value.length > 0) { // handle annotation tag groups
                 const tagElement = this.rootElement.shadowRoot.querySelector('.sv-tag-buttons');
                 elem = tagElement.getElementsByClassName("ff-button")[0] as HTMLElement;
             }
@@ -363,6 +365,7 @@ export default class CVViewer extends Component
     }
 
     protected focusTags() {
+        const ins = this.ins;
         const setup = this.getGraphComponent(CVSetup);
         if(setup && setup.tours.ins.enabled.value) {
             return;
@@ -370,8 +373,9 @@ export default class CVViewer extends Component
 
         const overlayElement = this.rootElement.shadowRoot.querySelector('ff-viewport-overlay') as HTMLElement;
         const elems = getFocusableElements(overlayElement) as HTMLElement[];
-        if(elems.length > 0) {
+        if(ins.annotationFocus.value && elems.length > 0) {
             elems[0].focus();
+            ins.annotationFocus.setValue(false);
         }
     }
 }
