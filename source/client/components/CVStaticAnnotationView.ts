@@ -22,29 +22,16 @@ import { ITypedEvent, Node, types } from "@ff/graph/Component";
 import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
 import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
 
-import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/CObject3D";
-import CRenderer from "@ff/scene/components/CRenderer";
+import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
-import CVModel2 from "./CVModel2";
-import CVMeta from "./CVMeta";
-import CVReader from "./CVReader";
-import unitScaleFactor from "../utils/unitScaleFactor";
-
-import { IAnnotation } from "client/schema/model";
 import Annotation from "../models/Annotation";
 
-import AnnotationSprite, { IAnnotationClickEvent, IAnnotationLinkEvent } from "../annotations/AnnotationSprite";
+import { IAnnotationClickEvent } from "../annotations/AnnotationSprite";
 import AnnotationFactory from "../annotations/AnnotationFactory";
 
 import "../annotations/StandardSprite";
 import "../annotations/ExtendedSprite";
 import "../annotations/CircleSprite";
-import CVARManager from "./CVARManager";
-import CVLanguageManager from "./CVLanguageManager";
-import { ELanguageType, EUnitType } from "client/schema/common";
-import CVAssetReader from "./CVAssetReader";
-import CVAudioManager from "./CVAudioManager";
-import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,9 +50,9 @@ export default class CVStaticAnnotationView extends CObject3D
 {
     static readonly typeName: string = "CVStaticAnnotationView";
 
-    /*static readonly ins = {
-        unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 }),
-        activeTags: types.String("Tags.Active"),
+    static readonly ins = {
+        unitScale: types.Number("Transform.UnitScale", { preset: 1, precision: 5 })
+        /*activeTags: types.String("Tags.Active"),
         title: types.String("Annotation.Title"),
         lead: types.String("Annotation.Lead"),
         marker: types.String("Annotation.Marker"),
@@ -80,10 +67,10 @@ export default class CVStaticAnnotationView extends CObject3D
         audioId: types.String("Annotation.AudioID"),
         tilt: types.Number("Annotation.Tilt"),
         azimuth: types.Number("Annotation.Azimuth"),
-        color: types.ColorRGB("Annotation.Color"),
+        color: types.ColorRGB("Annotation.Color"),*/
     };
 
-    ins = this.addInputs<CObject3D, typeof CVStaticAnnotationView.ins>(CVStaticAnnotationView.ins);*/
+    ins = this.addInputs<CObject3D, typeof CVStaticAnnotationView.ins>(CVStaticAnnotationView.ins);
 
     //private _activeAnnotation: Annotation = null;
     private _annotations: Dictionary<Annotation> = {};
@@ -106,6 +93,11 @@ export default class CVStaticAnnotationView extends CObject3D
 
         const ins = this.ins;
         const object3D = this.object3D;
+
+        if (ins.unitScale.changed) {
+            object3D.scale.setScalar(ins.unitScale.value);
+            object3D.updateMatrix();
+        }
         
         if (ins.visible.changed) {
             (object3D as HTMLSpriteGroup).setVisible(ins.visible.value);
