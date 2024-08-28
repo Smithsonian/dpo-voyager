@@ -18,16 +18,14 @@
 
 import List from "@ff/ui/List";
 
-import { ITarget } from "client/schema/model";
-
-import CVOverlayTask, { EPaintMode } from "../../components/CVOverlayTask";
+import CVOverlayTask, { EPaintMode, IOverlay } from "../../components/CVOverlayTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
 
 import CVDocument from "../../components/CVDocument";
-import CVTargets from "../../components/CVTargets";
 import { IButtonClickEvent } from "@ff/ui/Button";
 
 import NVNode from "../../nodes/NVNode";
+import { IAsset } from "client/models/Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +33,7 @@ import NVNode from "../../nodes/NVNode";
 export default class OverlayTaskView extends TaskView<CVOverlayTask>
 {
     protected featureConfigMode = false;
-    protected targets: CVTargets = null;
+    protected overlays: IOverlay[];
 
     protected sceneview : HTMLElement = null;
 
@@ -64,19 +62,18 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
     protected render()
     {
         const task = this.task;
-        const targets = this.targets;
+        const overlays = this.overlays;
         
-        if (!targets) {
+        if (!overlays) {
             return html`<div class="sv-placeholder">Please select a model to edit its overlays.</div>`;
         }
 
-        const targetList = targets.targets;
-        const activeOverlay = targets.activeTarget;
         const props = task.ins;
+        const activeOverlay = overlays[props.activeIndex.value];
 
         this.sceneview.style.cursor = props.paintMode.value === EPaintMode.Interact ? "grab" : "default";
 
-        const overlayConfig = html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+        const overlayConfig = activeOverlay ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label"><b>Overlays</b></div>
             <sv-property-view .property=${props.overlayTitle}></sv-property-view>
             <sv-property-view .property=${props.overlayColor}></sv-property-view>
@@ -91,7 +88,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
                 <ff-button text="Fill All" class="ff-control" @click=${this.onClickFillAll}></ff-button>
                 <ff-button text="Clear All" class="ff-control" @click=${this.onClickClearAll}></ff-button>
             </div>
-        </div>`;
+        </div>` : null;
 
 
         return html`<div class="sv-commands">
@@ -101,9 +98,10 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item sv-task-item-full">Overlay Images</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 40%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-target-list .data=${targetList.slice()} .selectedItem=${activeOverlay} @select=${this.onSelectOverlay}></sv-target-list>
+                        <sv-overlay-list .data=${overlays.slice()} .selectedItem=${activeOverlay} @select=${this.onSelectOverlay}></sv-overlay-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -128,30 +126,6 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         }
     }
 
-
-    protected onFeatureMenuConfirm()
-    {
-        this.snapshots.updateTargets();
-
-        this.featureConfigMode = false;
-        this.requestUpdate();
-    }
-
-    protected onFeatureMenuCancel()
-    {
-        this.featureConfigMode = false;
-        this.requestUpdate();
-    }
-
-    protected onClickFeature(event: IButtonClickEvent)
-    {
-        const features = this.snapshots.targetFeatures;
-        const key = event.target.name;
-
-        features[key] = !features[key];
-        this.requestUpdate();
-    }
-
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         this.requestUpdate();
@@ -159,7 +133,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        const prevTargets = previous ? previous.getComponent(CVTargets, true) : null;
+        /*const prevTargets = previous ? previous.getComponent(CVTargets, true) : null;
         const nextTargets = next ? next.getComponent(CVTargets, true) : null;
 
         if(prevTargets)
@@ -171,6 +145,16 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         {
             this.targets = nextTargets;
             nextTargets.outs.targetIndex.on("value", this.onUpdate, this);
+        }*/
+
+        if(previous && previous.model)
+        {
+           
+        }
+
+        if(next && next.model)
+        {
+            this.overlays = this.task.overlays;
         }
 
         super.onActiveNode(previous, next);
@@ -227,51 +211,34 @@ interface ISelectOverlayEvent extends CustomEvent
 {
     target: OverlayList;
     detail: {
-        overlay: ITarget;
+        overlay: IOverlay;
         index: number;
     }
 }
 
-@customElement("sv-target-list")
-export class OverlayList extends List<ITarget>
+@customElement("sv-overlay-list")
+export class OverlayList extends List<IOverlay>
 {
     @property({ attribute: false })
-    selectedItem: ITarget = null;
+    selectedItem: IOverlay = null;
 
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-target-list");
+        this.classList.add("sv-overlay-list");
     }
 
-    protected getClass(item: ITarget): string
+    protected renderItem(item: IOverlay)
     {
-        if(item.type === "Header") {
-            return "sv-target-list-header";
-        }
-        else {
-            return "";
-        }
+        return html`${item.asset.uri}`;
     }
 
-    protected renderItem(item: ITarget)
-    {
-        const hasTarget = item.snapshots.length > 0; 
-
-        if(item.type === "Header") {
-            return item.title;
-        }
-        else {
-            return hasTarget ? html`${item.title}<div class="sv-target-colorbox" style="background-color:${item.color}"></div>` : html`${item.title}<div class="sv-target-colorbox" style="background-color:${item.color}"></div>`;
-        }
-    }
-
-    protected isItemSelected(item: ITarget)
+    protected isItemSelected(item: IOverlay)
     {
         return item === this.selectedItem;
     }
 
-    protected onClickItem(event: MouseEvent, item: ITarget, index: number)
+    protected onClickItem(event: MouseEvent, item: IOverlay, index: number)
     {
         this.dispatchEvent(new CustomEvent("select", {
             detail: { target: item, index }

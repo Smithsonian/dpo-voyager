@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component, { types } from "@ff/graph/Component";
+/*import Component, { types } from "@ff/graph/Component";
 import { IPulseContext } from "@ff/graph/components/CPulse";
 
 import { ITarget, ITargets } from "client/schema/model";
@@ -78,13 +78,6 @@ export default class CVTargets extends Component
             outs.targetTitle.setValue(target ? target.title : "");
         }
 
-        /*if(ins.visible.changed)
-        {
-            if(this.material && this.material.zoneMap) {
-                this.material.enableZoneMap(ins.visible.value);
-            }
-        }*/
-
         return true;
     }
-}
+}*/

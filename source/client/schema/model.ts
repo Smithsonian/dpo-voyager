@@ -17,6 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 import { ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
+import { CanvasTexture } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -144,25 +145,4 @@ export interface IPBRMaterialSettings
     transparent?: boolean;
     doubleSided?: boolean;
     normalSpace?: TNormalSpaceType;
-}
-
-/**
- * Describes a targeted state change. Links to snapshot id for new state.
- * Target type can be model, zone, or annotation.
- */
-export type ITargets = ITarget[];
-
-export interface ITarget
-{
-    type: string;
-    id: string;
-    title: string;
-    color: string;
-    snapshots: ITargetSnapshot[];
-}
-
-export interface ITargetSnapshot
-{
-    title: string;
-    id: string;
 }
