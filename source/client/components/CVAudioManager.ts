@@ -289,6 +289,12 @@ export default class CVAudioManager extends Component
     play(id: string)
     {
         const { outs } = this;
+        const uri = this.getAudioClipUri(id);
+
+        if(!uri) {
+            Notification.show("Failed to play audio clip - no uri", "warning");
+            return;
+        }
 
         // handle currently playing track
         if(outs.isPlaying.value) {
@@ -309,7 +315,7 @@ export default class CVAudioManager extends Component
             this.activeId = id;
             this.isPlaying = true;
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
-            this.analytics.sendProperty("Audio_Play", this.getAudioClipUri(id));
+            this.analytics.sendProperty("Audio_Play", uri);
         })
         .catch(error => Notification.show(`Failed to play audio at '${this.audioPlayer.getAttribute("src")}':${error}`, "warning"));
     }

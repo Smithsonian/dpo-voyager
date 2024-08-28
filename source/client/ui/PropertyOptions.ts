@@ -106,7 +106,7 @@ export default class PropertyOptions extends CustomElement
         return html`
             <label class="ff-label ff-off">${name}</label>
             <select ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
-                this.property.setValue(e.target.value)
+                this.property.setValue(parseInt(e.target.value))
             }}>
                 ${optionsList}
             </select>

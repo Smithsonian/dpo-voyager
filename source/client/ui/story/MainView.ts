@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import ExplorerPanel from "./ExplorerPanel";
+
 import localStorage from "@ff/browser/localStorage";
 
 import StoryApplication, { IStoryApplicationProps } from "../../applications/StoryApplication";
@@ -38,7 +40,6 @@ import ConsolePanel from "./ConsolePanel";
 import InspectorPanel from "./InspectorPanel";
 import AssetPanel from "./AssetPanel";
 import CollectionPanel from "./CollectionPanel";
-import ExplorerPanel from "./ExplorerPanel";
 
 import "./styles.scss";
 

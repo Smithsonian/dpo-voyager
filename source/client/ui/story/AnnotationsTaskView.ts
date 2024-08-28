@@ -74,6 +74,10 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
 
     protected render()
     {
+        if(!this.activeDocument) {
+            return;
+        }
+
         const node = this.activeNode;
         const annotations = node && node.getComponent(CVAnnotationView, true);
         const languageManager = this.activeDocument.setup.language;

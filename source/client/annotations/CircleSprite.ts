@@ -303,10 +303,10 @@ class CircleAnnotation extends AnnotationElement
         // Handle shifting annotation body when out-of-bounds
         if (this.isExpanded) {
             this.contentElement.style.removeProperty("transform");
-            if (this.classList.contains("sv-align-right")) {
+            if (this.classList.contains("sv-align-right") && !this.overlayed) {
                 this.contentElement.style.transform = `translateX(-${this.offsetWidth}px)`;
             }
-            if (this.classList.contains("sv-align-bottom")) {
+            if (this.classList.contains("sv-align-bottom") && !this.overlayed) {
                 this.contentElement.style.transform = `translateY(-${this.offsetHeight-this.markerElement.offsetHeight}px)`;
             }
         }

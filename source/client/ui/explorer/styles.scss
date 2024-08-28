@@ -258,9 +258,6 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 
   &:has(:focus-visible) {
-    outline: none;
-    background-color: $menu-color-background-dark;
-    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
     opacity: 1 !important;
   }
   
@@ -293,6 +290,12 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     font-size: 0.9em;
     color: #fff;
     -webkit-tap-highlight-color: transparent;
+
+    &:focus-visible {
+      outline: none;
+      background-color: $menu-color-background-dark;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
   }
 
   .sv-annotation-body {
@@ -301,6 +304,12 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     border-radius: 4px;
     margin: 0px 1px;
     width: 100%;
+
+    &:has(:focus-visible) {
+      outline: none;
+      background-color: $menu-color-background-dark;
+      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    }
 
     .sv-title {
       padding: 0 0 2px 0;
@@ -359,6 +368,12 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   color: $color-text;
   pointer-events: auto;
   overflow-wrap: normal;
+
+  &:has(:focus-visible) {
+    outline: none;
+    background-color: $menu-color-background-dark;
+    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+  }
 
   &.sv-expanded {
     width: 20%;
