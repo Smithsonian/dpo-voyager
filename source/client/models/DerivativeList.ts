@@ -159,7 +159,7 @@ export default class DerivativeList
     createModelAsset(assetPath: string, quality: EDerivativeQuality | string): Derivative
     {
         quality = (typeof quality === "string" ? EDerivativeQuality[quality] : quality) as EDerivativeQuality;
-        quality = isFinite(quality) ? quality : EDerivativeQuality.Medium;
+        quality = quality != null ? quality : EDerivativeQuality.Medium;
 
         const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
 
@@ -173,7 +173,7 @@ export default class DerivativeList
     createMeshAsset(geoPath: string, colorMapPath?: string, occlusionMapPath?: string, normalMapPath?: string, quality?: EDerivativeQuality | string): Derivative
     {
         quality = (typeof quality === "string" ? EDerivativeQuality[quality] : quality) as EDerivativeQuality;
-        quality = isFinite(quality) ? quality : EDerivativeQuality.Medium;
+        quality = quality != null ? quality : EDerivativeQuality.Medium;
 
         const derivative = this.getOrCreate(EDerivativeUsage.Web3D, quality);
 

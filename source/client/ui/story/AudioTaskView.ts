@@ -57,7 +57,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
 
     protected render()
     {
-        if(!this.task.audioManager) {
+        if(!this.task.audioManager || !this.activeDocument) {
             return;
         }
         

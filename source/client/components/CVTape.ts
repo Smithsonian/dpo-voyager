@@ -112,6 +112,7 @@ export default class CVTape extends CObject3D
         lineMaterial.transparent = true;
         this.line = new Line(lineGeometry, lineMaterial);
         this.line.visible = false;
+        this.line.frustumCulled = false;
 
         // add distance label
         this.annotationView = this.node.createComponent(CVStaticAnnotationView);
@@ -164,6 +165,10 @@ export default class CVTape extends CObject3D
 
             endPin.scale.setScalar(radius * 0.003);
             endPin.updateMatrix();
+
+            const defaultScale = radius * 0.05;
+            this.annotationView.ins.unitScale.setValue(defaultScale);
+            ins.endPosition.set(); // always trigger recalculation
         }
 
         // if tape is enabled, listen for pointer events to set tape start/end
@@ -234,7 +239,8 @@ export default class CVTape extends CObject3D
 
             // update distance label
             const data = this.label.data;
-            data.position = [(positions[0]+positions[3])/2.0,(positions[1]+positions[4])/2.0,(positions[2]+positions[5])/2.0];
+            const scaleFactor = 1/this.annotationView.ins.unitScale.value;
+            data.position = [scaleFactor*(positions[0]+positions[3])/2.0,scaleFactor*(positions[1]+positions[4])/2.0,scaleFactor*(positions[2]+positions[5])/2.0];
             const units = this.ins.globalUnits.getOptionText();
             this.label.title = tapeLength.toFixed(2) + " " + units;
             this.annotationView.updateAnnotation(this.label, true);
