@@ -18,14 +18,13 @@
 
 import List from "@ff/ui/List";
 
-import CVOverlayTask, { EPaintMode, IOverlay } from "../../components/CVOverlayTask";
+import CVOverlayTask, { EPaintMode } from "../../components/CVOverlayTask";
 import { TaskView, customElement, property, html } from "../../components/CVTask";
 
 import CVDocument from "../../components/CVDocument";
-import { IButtonClickEvent } from "@ff/ui/Button";
 
 import NVNode from "../../nodes/NVNode";
-import { IAsset } from "client/models/Asset";
+import { IOverlay } from "../../components/CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +32,6 @@ import { IAsset } from "client/models/Asset";
 export default class OverlayTaskView extends TaskView<CVOverlayTask>
 {
     protected featureConfigMode = false;
-    protected overlays: IOverlay[];
 
     protected sceneview : HTMLElement = null;
 
@@ -62,7 +60,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
     protected render()
     {
         const task = this.task;
-        const overlays = this.overlays;
+        const overlays = task.overlays;
         
         if (!overlays) {
             return html`<div class="sv-placeholder">Please select a model to edit its overlays.</div>`;
@@ -154,7 +152,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
         if(next && next.model)
         {
-            this.overlays = this.task.overlays;
+            //this.overlays = this.task.overlays;
         }
 
         super.onActiveNode(previous, next);

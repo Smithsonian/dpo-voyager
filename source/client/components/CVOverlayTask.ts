@@ -29,7 +29,7 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import NVNode from "../nodes/NVNode";
-import {Vector2, Raycaster, Scene, CanvasTexture, Mesh} from 'three';
+import {Vector2, Raycaster, Scene, CanvasTexture, Mesh, Texture} from 'three';
 import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
@@ -57,7 +57,7 @@ export interface IGLTFExportOptions
 export interface IOverlay
 {
     canvas: HTMLCanvasElement;
-    texture: CanvasTexture;
+    texture: Texture;
     asset: IAsset;
 }
 
@@ -106,7 +106,6 @@ export default class CVOverlayTask extends CVTask
     private _oldColor: number[] = [1.0, 0.0, 0.0];
     private _overlayDisplayCount: number = 0;
     private _baseCanvas: HTMLCanvasElement = null;
-    private _overlays: IOverlay[];
     private _canvasMap: Dictionary<HTMLCanvasElement> = {};
     private _textureMap: Dictionary<CanvasTexture> = {};
 
@@ -130,7 +129,7 @@ export default class CVOverlayTask extends CVTask
     }
 
     get overlays() {
-        return this._overlays;
+        return this.activeModel ? this.activeModel.getOverlays() : null;
     }
 
     getCanvas(key: string) {
@@ -213,19 +212,25 @@ export default class CVOverlayTask extends CVTask
         }
 
         if(ins.createOverlay.changed)
-        {
-            const newUri = "New_Overlay_" + this._overlayDisplayCount++ + ".jpg";
-            overlays.splice(overlays.length, 0, {
-                canvas: this.getCanvas(newUri),
-                texture: this.getTexture(newUri),
-                asset: {
-                    uri: newUri,
-                    type: EAssetType.Image,
-                    mapType: EMapType.Zone
-                }
-            });
+        {  
+            const model = this.activeModel;
+            const derivative = model.activeDerivative;
+            const qualityName = EDerivativeQuality[derivative.data.quality].toLowerCase();
+            const newUri = model.node.name + "-overlaymap-" + this._overlayDisplayCount++ + "-" + qualityName + ".jpg";
+            const newAsset = derivative.createAsset(EAssetType.Image, newUri);
+            newAsset.data.mapType = EMapType.Zone;
+            this.material.zoneMap = null;
+
+            // add new overlay
+            const newOverlay = model.getOverlay(newUri);
+            newOverlay.canvas = this.getCanvas(newUri);
+            newOverlay.texture = this.getTexture(newUri);
+            newOverlay.asset = newAsset.data;
 
             ins.activeIndex.setValue(overlays.length - 1);
+
+            this.onSave();
+      
             this.onOverlayChange();
             this.emit("update");
             return true;
@@ -337,14 +342,10 @@ export default class CVOverlayTask extends CVTask
             this.ins.activeNode.setValue(next.name); 
             this.activeModel = next.model;
 
-            this._overlays = next.model.activeDerivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone)
-                .map(image => {
-                    return {
-                        canvas: this.getCanvas(image.data.uri),
-                        texture: this.getTexture(image.data.uri),
-                        asset: image.data
-                    }
-                });
+            this.overlays.forEach(overlay => {
+                overlay.canvas = this.getCanvas(overlay.asset.uri);
+                overlay.texture = this.getTexture(overlay.asset.uri);
+            });
 
             next.model.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
             next.model.on<IPointerEvent>("pointer-down", this.onPointerDown, this);
@@ -537,42 +538,22 @@ export default class CVOverlayTask extends CVTask
         const tempCanvas = document.createElement('canvas') as HTMLCanvasElement;
 
         if(this.activeTexture) {  // TODO: always true, need to change
-            const assetBaseName = model.node.name;
+            const derivative = model.activeDerivative;
+            const quality = derivative.data.quality;
 
-            this.qualities.forEach(quality => {
-                const derivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
+            const asset = derivative.findAsset(EAssetType.Model);
+            const imageSize : number = +asset.data.imageSize;
+            const imageName = this.overlays[this.ins.activeIndex.value].asset.uri;
 
-                if(derivative.data.quality == quality) {
-                    const asset = derivative.findAsset(EAssetType.Model);
-                    const imageSize : number = +asset.data.imageSize;
-                    const qualityName = EDerivativeQuality[quality].toLowerCase();
-                    const imageName = assetBaseName + "-overlaymap-" + qualityName + ".jpg";
+            // generate image data at correct resolution for this derivative
+            tempCanvas.width = imageSize;
+            tempCanvas.height = imageSize;
 
-                    // generate image data at correct resolution for this derivative
-                    tempCanvas.width = imageSize;
-                    tempCanvas.height = imageSize;
+            tempCanvas.getContext('2d').scale(1, -1); // need to invert Y
+            tempCanvas.getContext('2d').drawImage(currentCanvas,0,0,currentCanvas.width,currentCanvas.height,0,0,imageSize,imageSize * -1);
 
-                    tempCanvas.getContext('2d').scale(1, -1); // need to invert Y
-                    tempCanvas.getContext('2d').drawImage(currentCanvas,0,0,currentCanvas.width,currentCanvas.height,0,0,imageSize,imageSize * -1);
-    
-                    const dataURI = tempCanvas.toDataURL("image/jpeg");
-                    this.saveTexture(imageName, dataURI, quality);
-
-                    // if needed, add new overlaymap asset to derivative
-                    const imageAssets = derivative.findAssets(EAssetType.Image);
-                    if(imageAssets.length === 0 || !imageAssets.some(image => image.data.mapType === EMapType.Zone)) {
-                        const newAsset = derivative.createAsset(EAssetType.Image, imageName);
-                        newAsset.data.mapType = EMapType.Zone;
-                    }
-
-                    if(quality === model.activeDerivative.data.quality) {
-                        // update overlay options for active model
-                        const overlayOptions = model.ins.overlayMap.schema.options;
-                        overlayOptions.push(imageName);
-                        model.ins.overlayMap.setOptions(overlayOptions);
-                    }
-                }
-            });
+            const dataURI = tempCanvas.toDataURL("image/jpeg");
+            this.saveTexture(imageName, dataURI, quality);
         }
     }
 
