@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture } from "three";
+import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, CanvasTexture } from "three";
 
 import Notification from "@ff/ui/Notification";
 
@@ -68,6 +68,7 @@ export interface IOverlay
     canvas: HTMLCanvasElement;
     texture: Texture;
     asset: IAsset;
+    fromFile: boolean;
 }
 
 /**
@@ -198,7 +199,7 @@ export default class CVModel2 extends CObject3D
 
     getOverlay(key: string) : IOverlay {
         if(key in this._overlays) {
-            return this._overlays[key]
+            return this._overlays[key];
         }
         else {
             const overlayProp = this.ins.overlayMap;
@@ -207,12 +208,21 @@ export default class CVModel2 extends CObject3D
             {
                 canvas: null,
                 texture: null,
-                asset: null
+                asset: null,
+                fromFile: false
             };
         }
     }
     getOverlays() {
         return Object.keys(this._overlays).map(key => this._overlays[key]);
+    }
+    deleteOverlay(key: string) {
+        const overlayProp = this.ins.overlayMap;
+        const options = overlayProp.schema.options;
+        options.splice(options.indexOf(key),1);
+        overlayProp.setOptions(options);
+
+        delete this._overlays[key];
     }
 
     create()
@@ -586,13 +596,14 @@ export default class CVModel2 extends CObject3D
         }
         const mapURI = this.ins.overlayMap.getOptionText();
         if (mapURI !== "None") {
-            const texture = this.getOverlay(mapURI).texture;console.log(texture);
+            const texture = this.getOverlay(mapURI).texture;
             if(texture) {
                 this.updateOverlayMaterial(texture);
             }
             else {
                 this.assetReader.getTexture(mapURI).then(map => {
                     this.updateOverlayMaterial(map);
+                    this.getOverlay(mapURI).texture = map;
                 });
             }
         }
@@ -818,12 +829,9 @@ export default class CVModel2 extends CObject3D
                 derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).forEach(image => {
                     const overlay = this.getOverlay(image.data.uri);
                     overlay.asset = image.data;
+                    overlay.fromFile = true;
                 });
 
-                // set overlay map options
-                /*const overlayOptions = ["None"];
-                overlayOptions.push(...Object.keys(this._overlays));
-                this.ins.overlayMap.setOptions(overlayOptions);*/
                 if(this.ins.overlayMap.value !== 0) {
                     this.ins.overlayMap.set();
                 }

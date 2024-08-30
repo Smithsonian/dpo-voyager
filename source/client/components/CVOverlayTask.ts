@@ -34,8 +34,8 @@ import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { IAsset } from "client/models/Asset";
 import { Dictionary } from "@ff/core/types";
+import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,16 +50,6 @@ export interface IGLTFExportOptions
     binary: boolean;
     includeCustomExtensions: boolean;
 } 
-
-/**
- * Describes an overlay image
- */
-export interface IOverlay
-{
-    canvas: HTMLCanvasElement;
-    texture: Texture;
-    asset: IAsset;
-}
 
 export enum EPaintMode { Interact, Paint, Erase };
 
@@ -112,6 +102,9 @@ export default class CVOverlayTask extends CVTask
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
     }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
+    }
 
     get material() {
         let mat = null;
@@ -143,7 +136,22 @@ export default class CVOverlayTask extends CVTask
     }
 
     getTexture(key: string) {
-        return this._textureMap[key] ? this._textureMap[key] : this._textureMap[key] = new CanvasTexture(this.getCanvas(key));
+        const idx = this.ins.activeIndex.value;
+        const overlay = this.overlays[idx];
+
+        if(overlay.fromFile) {
+            overlay.fromFile = false;
+            overlay.texture.dispose();
+            overlay.texture = new CanvasTexture(this.getCanvas(key));
+            overlay.texture.flipY = false;
+        }
+        
+        if(!overlay.texture) {
+            overlay.texture = new CanvasTexture(this.getCanvas(key));
+            overlay.texture.flipY = false;
+        }
+
+        return overlay.texture;
     }
     setTexture(key: string, texture: CanvasTexture) {
         this._textureMap[key] = texture;
@@ -151,8 +159,7 @@ export default class CVOverlayTask extends CVTask
 
     get activeTexture() {
         const idx = this.ins.activeIndex.value;
-        const key = this.overlays[idx].asset.uri;
-        return idx >= 0 ? this.getTexture(key) : null;
+        return idx >= 0 ? this.getTexture(this.overlays[idx].asset.uri) : null;
     }
 
     get baseCanvas() {
@@ -193,6 +200,7 @@ export default class CVOverlayTask extends CVTask
         const ins = this.ins;
         const idx = this.ins.activeIndex.value;
         const overlays = this.overlays;
+        const model = this.activeModel;
 
         if (!overlays) {
             return false;
@@ -200,36 +208,38 @@ export default class CVOverlayTask extends CVTask
 
         const overlay = overlays[idx];
 
-        if (overlay) {
-            //if(ins.overlayTitle.changed) {
-            //    target.title = ins.overlayTitle.value;
-            //}
-        }
-
         if(ins.activeIndex.changed) {
-            this.onOverlayChange();
+            if(overlay && overlay.fromFile && !overlay.texture) {
+                // load texture from file if not done yet
+                this.assetReader.getTexture(overlay.asset.uri).then((map) => {
+                    map.flipY = false;
+                    overlay.texture = map;
+                    this.material.zoneMap = map;
+                    this.onOverlayChange();
+                });
+            }
+            else {
+                this.onOverlayChange();
+            }
             return true;
         }
 
         if(ins.createOverlay.changed)
-        {  
-            const model = this.activeModel;
+        {     
             const derivative = model.activeDerivative;
             const qualityName = EDerivativeQuality[derivative.data.quality].toLowerCase();
-            const newUri = model.node.name + "-overlaymap-" + this._overlayDisplayCount++ + "-" + qualityName + ".jpg";
+            const newUri = model.node.name + "-overlaymap-" + (this.overlays.length+1) + "-" + qualityName + ".jpg";
             const newAsset = derivative.createAsset(EAssetType.Image, newUri);
             newAsset.data.mapType = EMapType.Zone;
-            this.material.zoneMap = null;
 
             // add new overlay
             const newOverlay = model.getOverlay(newUri);
+            ins.activeIndex.setValue(this.overlays.length - 1);
             newOverlay.canvas = this.getCanvas(newUri);
             newOverlay.texture = this.getTexture(newUri);
             newOverlay.asset = newAsset.data;
 
-            ins.activeIndex.setValue(overlays.length - 1);
-
-            this.onSave();
+            //this.onSave();
       
             this.onOverlayChange();
             this.emit("update");
@@ -238,9 +248,10 @@ export default class CVOverlayTask extends CVTask
 
         if(ins.deleteOverlay.changed)
         {
-            overlays.splice(idx, 1);
+            this.activeModel.deleteOverlay(overlay.asset.uri);
             ins.activeIndex.setValue(-1);
 
+            this.onOverlayChange();
             this.emit("update");
             return true;
         }
@@ -335,6 +346,7 @@ export default class CVOverlayTask extends CVTask
             previous.model.off<IPointerEvent>("pointer-down", this.onPointerDown, this);
             previous.model.off<IPointerEvent>("pointer-move", this.onPointerMove, this);           
             previous.model.outs.quality.off("value", this.onQualityChange, this);
+            previous.model.ins.overlayMap.on("value", this.onUpdateIdx, this);
         }
 
         if(next && next.model)
@@ -342,16 +354,12 @@ export default class CVOverlayTask extends CVTask
             this.ins.activeNode.setValue(next.name); 
             this.activeModel = next.model;
 
-            this.overlays.forEach(overlay => {
-                overlay.canvas = this.getCanvas(overlay.asset.uri);
-                overlay.texture = this.getTexture(overlay.asset.uri);
-            });
-
             next.model.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
             next.model.on<IPointerEvent>("pointer-down", this.onPointerDown, this);
             next.model.on<IPointerEvent>("pointer-move", this.onPointerMove, this);
 
             next.model.outs.quality.on("value", this.onQualityChange, this);
+            next.model.ins.overlayMap.on("value", this.onUpdateIdx, this);
 
             if(this.material.map) {
                 const baseCtx = this.baseCanvas.getContext('2d');
@@ -369,16 +377,32 @@ export default class CVOverlayTask extends CVTask
 
     protected onOverlayChange()
     {
-        if(this.ins.activeIndex.value >= 0) {
+        const idx = this.ins.activeIndex.value + 1;
+        const isShowing = idx > 0;
+
+        if(this.activeModel.ins.overlayMap.value != idx) {
+            this.activeModel.ins.overlayMap.setValue(idx);
+        }
+
+        if(isShowing) {
             this.ctx = this.activeCanvas.getContext('2d');
             this.ctx.lineWidth = Math.round(this.ins.overlayBrushSize.value);
-            this.ctx.fillStyle = this.colorString;
+            this.ctx.fillStyle = this.colorString;    
+        }
+        
+        this.material.zoneMap = this.activeTexture;
+        this.material.transparent = isShowing;
+        this.material.enableZoneMap(isShowing); 
 
-            this.material.zoneMap = this.activeTexture;
-            this.material.transparent = true;
-
+        if(this.activeTexture) {
             this.updateOverlayTexture();
         }
+    }
+
+    protected onUpdateIdx()
+    {
+        const idx = this.activeModel.ins.overlayMap.value - 1;
+        this.ins.activeIndex.setValue(idx);
     }
 
     protected onQualityChange()
@@ -427,9 +451,9 @@ export default class CVOverlayTask extends CVTask
         }
 
         // do not handle if overlay not selected
-        //if(!this.targets.activeTarget || this.targets.activeTarget.type != "Overlay") {
-        //    return;
-        //}
+        if(this.ins.activeIndex.value < 0) {
+            return;
+        }
 
         if(!this.picker) {
             this.picker = new VGPUPicker(event.view.renderer);
@@ -519,12 +543,11 @@ export default class CVOverlayTask extends CVTask
 
         ctx.fillRect(0,0,dim,dim);
 
-        // if we have a pre-loaded zone texture we need to copy the image
-        if(material.zoneMap && !material.zoneMap.isCanvasTexture) {
+        // if we have a pre-loaded overlay texture we need to copy the image
+        if(this.overlays[this.ins.activeIndex.value].fromFile) {
+            const map = this.overlays[this.ins.activeIndex.value].texture;
             ctx.save();
-            ctx.scale(1, -1);
-            //baseCtx.drawImage(this.material.map.image,0,-this.material.map.image.height);
-            ctx.drawImage(material.zoneMap.image,0,-material.zoneMap.image.height);
+            ctx.drawImage(map.image,0,0);
             ctx.restore();
         }
 
