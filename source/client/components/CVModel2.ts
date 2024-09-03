@@ -65,7 +65,6 @@ export interface IModelLoadEvent extends ITypedEvent<"model-load">
  */
 export interface IOverlay
 {
-    canvas: HTMLCanvasElement;
     texture: Texture;
     asset: IAsset;
     fromFile: boolean;
@@ -206,7 +205,6 @@ export default class CVModel2 extends CObject3D
             overlayProp.setOptions(overlayProp.schema.options.concat(key));
             return this._overlays[key] = 
             {
-                canvas: null,
                 texture: null,
                 asset: null,
                 fromFile: false
@@ -222,6 +220,7 @@ export default class CVModel2 extends CObject3D
         options.splice(options.indexOf(key),1);
         overlayProp.setOptions(options);
 
+        this._overlays[key].texture.dispose();
         delete this._overlays[key];
     }
 
@@ -368,6 +367,9 @@ export default class CVModel2 extends CObject3D
     {
         this.derivatives.clear();
         this._activeDerivative = null;
+        for (let key in this._overlays) {
+            this._overlays[key].texture.dispose();
+        }
 
         super.dispose();
     }

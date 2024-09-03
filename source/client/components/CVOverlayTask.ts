@@ -29,7 +29,7 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import NVNode from "../nodes/NVNode";
-import {Vector2, Raycaster, Scene, CanvasTexture, Mesh, Texture} from 'three';
+import {Vector2, Raycaster, Scene, CanvasTexture, Mesh} from 'three';
 import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
@@ -94,7 +94,6 @@ export default class CVOverlayTask extends CVTask
     protected uv: Vector2;
 
     private _oldColor: number[] = [1.0, 0.0, 0.0];
-    private _overlayDisplayCount: number = 0;
     private _baseCanvas: HTMLCanvasElement = null;
     private _canvasMap: Dictionary<HTMLCanvasElement> = {};
     private _textureMap: Dictionary<CanvasTexture> = {};
@@ -139,6 +138,7 @@ export default class CVOverlayTask extends CVTask
         const idx = this.ins.activeIndex.value;
         const overlay = this.overlays[idx];
 
+        // replace Texture from file with CanvasTexture
         if(overlay.fromFile) {
             overlay.fromFile = false;
             overlay.texture.dispose();
@@ -192,6 +192,11 @@ export default class CVOverlayTask extends CVTask
     dispose()
     {
         this.stopObserving();
+
+        for (let key in this._canvasMap) {
+            this._canvasMap[key] = null;
+        }
+
         super.dispose();
     }
 
@@ -235,11 +240,8 @@ export default class CVOverlayTask extends CVTask
             // add new overlay
             const newOverlay = model.getOverlay(newUri);
             ins.activeIndex.setValue(this.overlays.length - 1);
-            newOverlay.canvas = this.getCanvas(newUri);
             newOverlay.texture = this.getTexture(newUri);
             newOverlay.asset = newAsset.data;
-
-            //this.onSave();
       
             this.onOverlayChange();
             this.emit("update");
@@ -248,6 +250,7 @@ export default class CVOverlayTask extends CVTask
 
         if(ins.deleteOverlay.changed)
         {
+            this._canvasMap[overlay.asset.uri] = null;
             this.activeModel.deleteOverlay(overlay.asset.uri);
             ins.activeIndex.setValue(-1);
 
@@ -368,8 +371,6 @@ export default class CVOverlayTask extends CVTask
                 baseCtx.drawImage(this.material.map.image,0,-this.material.map.image.height);
                 baseCtx.restore();
             }
-
-            //this.onOverlayChange();
         }
 
         super.onActiveNode(previous, next);
@@ -433,8 +434,6 @@ export default class CVOverlayTask extends CVTask
         currentCtx.drawImage(tempCanvas,0,0,tempCanvas.width,tempCanvas.height,0,0,imageSize,imageSize);
 
         // refresh target texture
-        //this.overlayTexture = null;
-        //const refresh = this.overlayTexture;
         this.activeTexture.needsUpdate = true;
     }
 
