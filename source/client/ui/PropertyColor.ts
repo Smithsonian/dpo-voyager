@@ -21,12 +21,10 @@ import Property from "@ff/graph/Property";
 import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
-import { IButtonClickEvent } from "@ff/ui/Button";
-
 import "@ff/ui/ColorEdit";
-import { IColorEditChangeEvent } from "@ff/ui/ColorEdit";
 
-import {getFocusableElements, focusTrap} from "../utils/focusHelpers";
+import type { IColorEditChangeEvent } from "@ff/ui/ColorEdit";
+import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +37,11 @@ export default class PropertyColor extends CustomElement
     @property({ type: String })
     name = "";
 
+    @property({attribute: false, type: Boolean})
+    pickerActive :boolean = false;
+
     protected color: Color = new Color();
+
 
     constructor()
     {
@@ -50,6 +52,11 @@ export default class PropertyColor extends CustomElement
     {
         super.firstConnected();
         this.classList.add("sv-property", "sv-property-color");
+    }
+
+    protected disconnected()
+    {
+        this.pickerActive = false;
     }
 
     protected update(changedProperties: PropertyValues): void
@@ -73,6 +80,15 @@ export default class PropertyColor extends CustomElement
             }
         }
 
+        if(changedProperties.has("pickerActive")){
+            if(this.pickerActive){
+                this.setPickerFocus();
+                document.addEventListener("pointerdown", this.onPointerDown, { capture: true, passive: true });
+            }else{
+                document.removeEventListener("pointerdown", this.onPointerDown, {capture: true});
+            }
+        }
+
         super.update(changedProperties);
     }
 
@@ -83,13 +99,25 @@ export default class PropertyColor extends CustomElement
         const color = this.color.toString();
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <input type="color" tabindex="0" .value="${color}" @change=${this.onColorChange}>
+            <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
+            ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>` : null}
         `;
     }
 
-    protected onColorChange(event: Event)
+    protected async setPickerFocus()
     {
-        this.color = new Color((event.target as HTMLInputElement).value);
+        await this.updateComplete;
+        const container = this.getElementsByTagName("ff-color-edit").item(0) as HTMLElement;
+        (getFocusableElements(container)[0] as HTMLElement).focus();
+    }
+    
+    protected onButtonClick(event: Event)
+    {
+        this.pickerActive = !this.pickerActive;
+    }
+    
+    protected onColorChange(event: IColorEditChangeEvent)
+    {
         this.property.setValue(this.color.toRGBArray());
     }
 
@@ -97,5 +125,31 @@ export default class PropertyColor extends CustomElement
     {
         this.color.fromArray(value);
         this.requestUpdate();
+    }
+    // if color picker is active and user clicks outside, close picker
+    protected onPointerDown = (event: PointerEvent) => {
+        if (!this.pickerActive) {
+            return;
+        }
+
+        if (event.composedPath()[0] instanceof Node && this.contains(event.composedPath()[0] as Node)) {
+            return;
+        }
+        this.pickerActive = false;
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "Escape" || e.code === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.pickerActive = false;
+
+            (this.getElementsByTagName("ff-button")[0] as HTMLElement).focus();
+        }
+        else if(e.code === "Tab") {
+            const element = this.getElementsByTagName("ff-color-edit")[0] as HTMLElement;
+            focusTrap(getFocusableElements(element) as HTMLElement[], e);
+        }
     }
 }

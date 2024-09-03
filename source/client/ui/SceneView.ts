@@ -238,7 +238,7 @@ export default class SceneView extends SystemView
         const viewer = this.system.getComponent(CVSetup).viewer;
         if (e.code === "Escape") {
             e.preventDefault();
-            if(viewer.ins.sortedTags.value.length > 0) {
+            if(viewer.outs.tagCloud.value.length > 0) {
                 const tagElement = viewer.rootElement.shadowRoot.querySelector('.sv-tag-buttons');
                 const elem = tagElement.getElementsByClassName("ff-button")[0] as HTMLElement;
                 if(elem) {

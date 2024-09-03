@@ -89,6 +89,7 @@ export default class TagCloud extends DocumentView
             }
         }
 
+        this.viewer.ins.annotationFocus.setValue(true);
         this.viewer.ins.activeTags.setValue(activeTags.join(", "));
     }
 

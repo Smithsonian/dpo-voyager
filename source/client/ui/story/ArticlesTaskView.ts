@@ -46,6 +46,10 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
     protected render()
     {
+        if(!this.activeDocument) {
+            return;
+        }
+        
         const task = this.task;
         const articles = task.articles;
         const activeArticle = task.activeArticle;
