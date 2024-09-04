@@ -17,6 +17,7 @@ import {
     Color,
     Points,
     PointsMaterial,
+    Material,
 } from "three";
 
 import { computeLocalBoundingBox } from "./helpers";
@@ -148,11 +149,9 @@ export default class Bracket extends LineSegments
 
     dispose()
     {
-        if (this.parent) {
-            this.parent.remove(this);
-        }
 
         this.geometry.dispose();
+        (this.material as Material).dispose();
     }
 
     protected static expandBoundingBox(object: Object3D, root: Object3D, box: Box3)
