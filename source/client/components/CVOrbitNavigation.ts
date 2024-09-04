@@ -101,6 +101,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _isAutoZooming = false;
     private _autoRotationStartTime = null;
     private _initYOrbit = null;
+    private _projection :EProjection = null;
 
     constructor(node: Node, id: string)
     {
@@ -264,7 +265,8 @@ export default class CVOrbitNavigation extends CObject3D
         controller.camera = cameraComponent.camera;
 
         const transform = cameraComponent.transform;
-        const forceUpdate = this.changed || ins.autoRotation.value || ins.promptActive.value;
+
+        const forceUpdate = this.changed || this._projection != cameraComponent.ins.projection.value || ins.autoRotation.value || ins.promptActive.value;
 
         if ((ins.autoRotation.value || ins.promptActive.value) && this._autoRotationStartTime) {
             const now = performance.now();
@@ -301,6 +303,7 @@ export default class CVOrbitNavigation extends CObject3D
         }
 
         if (controller.updateCamera(transform.object3D, forceUpdate)) {
+            this._projection = cameraComponent.ins.projection.value;
             controller.orbit.toArray(ins.orbit.value);
             ins.orbit.set(true);
             controller.offset.toArray(ins.offset.value);
