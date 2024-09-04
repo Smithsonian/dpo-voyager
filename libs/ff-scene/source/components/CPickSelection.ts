@@ -17,16 +17,16 @@ import { IPointerEvent } from "../RenderView";
 import CObject3D from "./CObject3D";
 import CTransform from "./CTransform";
 import CScene, { ISceneAfterRenderEvent } from "./CScene";
-import { DirectionalLight, DirectionalLightHelper, HemisphereLight, HemisphereLightHelper, Object3D, PointLight, PointLightHelper, RectAreaLight, SpotLight, SpotLightHelper } from "three";
+import { DirectionalLightHelper, HemisphereLightHelper, Object3D, PointLightHelper, SpotLightHelper } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const helpers = [
-    [DirectionalLightHelper, DirectionalLight],
-    [PointLightHelper, PointLight],
-    [SpotLightHelper, SpotLight],
-    [HemisphereLightHelper, HemisphereLight],
-    [PointLightHelper, RectAreaLight],
+    [DirectionalLightHelper, "DirectionalLight"],
+    [PointLightHelper, "PointLight"],
+    [SpotLightHelper, "SpotLight"],
+    [HemisphereLightHelper, "HemisphereLight"],
+    [PointLightHelper, "RectAreaLight"],
 ] as const;
 
 const _inputs = {
@@ -80,7 +80,7 @@ export default class CPickSelection extends CSelection
     {
         super.onSelectNode(node, selected);
 
-        const transform = node.getComponent(CTransform, true);
+        const transform = node.getComponent(CObject3D, true);
         if (transform) {
             this.updateBracket(transform, selected);
         }
@@ -135,14 +135,16 @@ export default class CPickSelection extends CSelection
         const transform = component.transform;
         if (selected) {
             if (object3D) {
-                let bracket;
-                for(let [HelperCl, Cl] of helpers){
-                    if(object3D.children[0] instanceof Cl){
-                        bracket = new HelperCl(object3D.children[0] as any, 1.0);
+                let bracket :Object3D & { dispose: () => void; };
+                if((object3D as any).isLight){
+                    let HelperCl = helpers.find(([h,type])=>type === object3D.type)?.[0];
+                    if(HelperCl){
+                        bracket = new HelperCl(object3D as any, 1.0);
                         /** @bug PointLightHelper doesn't call it internally in  its update() method. */ 
                         bracket.updateWorldMatrix( true, false );
                     }
                 }
+
                 if(!bracket){
                     bracket = new Bracket(object3D);
                 }
@@ -163,6 +165,7 @@ export default class CPickSelection extends CSelection
                 const bracket = this._brackets.get(component);
                 if (bracket) {
                     this._brackets.delete(component);
+                    bracket.removeFromParent();
                     bracket.dispose();
                 }
             }
@@ -170,6 +173,7 @@ export default class CPickSelection extends CSelection
                 const bracket = this._brackets.get(transform);
                 if (bracket) {
                     this._brackets.delete(transform);
+                    bracket.removeFromParent();
                     bracket.dispose();
                 }
             }
