@@ -116,6 +116,7 @@ export default class CVModel2 extends CObject3D
         unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
         quality: types.Enum("LoadedQuality", EDerivativeQuality),
         updated: types.Event("Updated"),
+        overlayMap: types.Option("Material.OverlayMap", ["None"], 0)
     };
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
@@ -604,8 +605,8 @@ export default class CVModel2 extends CObject3D
             }
             else {
                 this.assetReader.getTexture(mapURI).then(map => {
-                    this.updateOverlayMaterial(map);
                     this.getOverlay(mapURI).texture = map;
+                    this.updateOverlayMaterial(map);
                 });
             }
         }
@@ -627,6 +628,7 @@ export default class CVModel2 extends CObject3D
                 material.enableZoneMap(texture != null);
             }
         });
+        this.outs.overlayMap.setValue(this.ins.overlayMap.value);
     }
 
     protected updateMaterial()

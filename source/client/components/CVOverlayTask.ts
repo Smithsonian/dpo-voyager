@@ -20,11 +20,11 @@ import { IPointerEvent } from "@ff/scene/RenderView";
 import CRenderer from "@ff/scene/components/CRenderer";
 import Notification from "@ff/ui/Notification";
 import convert from "@ff/browser/convert";
+import { Dictionary } from "@ff/core/types";
 
 import CVTask, { types } from "./CVTask";
 import OverlayTaskView from "../ui/story/OverlayTaskView";
 
-import CVDocument from "./CVDocument";
 import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
@@ -34,7 +34,6 @@ import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { Dictionary } from "@ff/core/types";
 import CVAssetReader from "./CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +93,6 @@ export default class CVOverlayTask extends CVTask
     protected uv: Vector2;
 
     private _oldColor: number[] = [1.0, 0.0, 0.0];
-    private _baseCanvas: HTMLCanvasElement = null;
     private _canvasMap: Dictionary<HTMLCanvasElement> = {};
     private _textureMap: Dictionary<CanvasTexture> = {};
 
@@ -162,10 +160,6 @@ export default class CVOverlayTask extends CVTask
         return idx >= 0 ? this.getTexture(this.overlays[idx].asset.uri) : null;
     }
 
-    get baseCanvas() {
-        return this._baseCanvas ? this._baseCanvas : this._baseCanvas = this.createBaseCanvas();
-    }
-
     get colorString() {
         return "#" + Math.round(this.ins.overlayColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.overlayColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.overlayColor.value[2]*255).toString(16).padStart(2, '0') + "FF";
     }
@@ -214,7 +208,7 @@ export default class CVOverlayTask extends CVTask
         const overlay = overlays[idx];
 
         if(ins.activeIndex.changed) {
-            if(overlay && overlay.fromFile && !overlay.texture) {
+            if(overlay && overlay.fromFile && !overlay.texture) {console.log("LOAD MAP2");
                 // load texture from file if not done yet
                 this.assetReader.getTexture(overlay.asset.uri).then((map) => {
                     map.flipY = false;
@@ -327,20 +321,6 @@ export default class CVOverlayTask extends CVTask
         return new OverlayTaskView(this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument)
-    {
-        if (previous) {
-            
-        }
-        if (next) {
-            if (this.isActiveTask) {
-                //this.targets.ins.enabled.setValue(true);
-            }
-        }
-
-        this.changed = true;
-    }
-
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
         if(previous && previous.model)
@@ -349,28 +329,21 @@ export default class CVOverlayTask extends CVTask
             previous.model.off<IPointerEvent>("pointer-down", this.onPointerDown, this);
             previous.model.off<IPointerEvent>("pointer-move", this.onPointerMove, this);           
             previous.model.outs.quality.off("value", this.onQualityChange, this);
-            previous.model.ins.overlayMap.on("value", this.onUpdateIdx, this);
+            previous.model.outs.overlayMap.off("value", this.onUpdateIdx, this);
         }
 
         if(next && next.model)
         {
             this.ins.activeNode.setValue(next.name); 
             this.activeModel = next.model;
+            this.onUpdateIdx();
 
             next.model.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
             next.model.on<IPointerEvent>("pointer-down", this.onPointerDown, this);
             next.model.on<IPointerEvent>("pointer-move", this.onPointerMove, this);
 
             next.model.outs.quality.on("value", this.onQualityChange, this);
-            next.model.ins.overlayMap.on("value", this.onUpdateIdx, this);
-
-            if(this.material.map) {
-                const baseCtx = this.baseCanvas.getContext('2d');
-                baseCtx.save();
-                baseCtx.scale(1, -1);
-                baseCtx.drawImage(this.material.map.image,0,-this.material.map.image.height);
-                baseCtx.restore();
-            }
+            next.model.outs.overlayMap.on("value", this.onUpdateIdx, this);
         }
 
         super.onActiveNode(previous, next);
@@ -499,24 +472,6 @@ export default class CVOverlayTask extends CVTask
         this.updateOverlayTexture();
     }
 
-
-    protected createBaseCanvas()
-    {
-        const material = this.material;
-        const dim = material && material.map ? material.map.image.width : 4096;
-        let canvas = document.createElement('canvas') as HTMLCanvasElement;
-        canvas.width = dim;
-        canvas.height = dim;
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-        canvas.style.objectFit = "scale-down";
-        canvas.style.boxSizing = "border-box";
-        canvas.style.position = "absolute";
-        canvas.style.zIndex = "1";
-
-        return canvas;
-    }
-
     protected createZoneCanvas()
     {   
         const material = this.material;
@@ -567,12 +522,11 @@ export default class CVOverlayTask extends CVTask
             const imageSize : number = +asset.data.imageSize;
             const imageName = this.overlays[this.ins.activeIndex.value].asset.uri;
 
-            // generate image data at correct resolution for this derivative
+            // generate image data at correct resolution for this derivative  **TODO - if we aren't saving different qualities at once, tempCanvas is unnecessary
             tempCanvas.width = imageSize;
             tempCanvas.height = imageSize;
 
-            tempCanvas.getContext('2d').scale(1, -1); // need to invert Y
-            tempCanvas.getContext('2d').drawImage(currentCanvas,0,0,currentCanvas.width,currentCanvas.height,0,0,imageSize,imageSize * -1);
+            tempCanvas.getContext('2d').drawImage(currentCanvas,0,0,currentCanvas.width,currentCanvas.height,0,0,imageSize,imageSize);
 
             const dataURI = tempCanvas.toDataURL("image/jpeg");
             this.saveTexture(imageName, dataURI, quality);
