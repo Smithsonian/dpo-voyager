@@ -23,12 +23,28 @@ describe("Color", function() {
         assert.approximately(c.w, 0xff / 255, eps, "alpha");
     });
 
+    it("fromString - static constructor from 8-digit hex string #4d7e0988", function() {
+        const c = Color.fromString("#4d7e0908");
+        assert.approximately(c.x, 0x4d / 255, eps, "red");
+        assert.approximately(c.y, 0x7e / 255, eps, "green");
+        assert.approximately(c.z, 0x09 / 255, eps, "blue");
+        assert.approximately(c.w, 0x08 / 255, eps, "alpha");
+    });
+
     it("fromString - static constructor from 3-digit hex string #6ea", function() {
         const c = Color.fromString("#6ea");
         assert.approximately(c.x, 0x66 / 255, eps, "red");
         assert.approximately(c.y, 0xee / 255, eps, "green");
         assert.approximately(c.z, 0xaa / 255, eps, "blue");
         assert.approximately(c.w, 0xff / 255, eps, "alpha");
+    });
+
+    it("fromString - static constructor from 4-digit hex string #6ea", function() {
+        const c = Color.fromString("#6ea3");
+        assert.approximately(c.x, 0x66 / 255, eps, "red");
+        assert.approximately(c.y, 0xee / 255, eps, "green");
+        assert.approximately(c.z, 0xaa / 255, eps, "blue");
+        assert.approximately(c.w, 0x33 / 255, eps, "alpha");
     });
 
     it("fromString - static constructor from rgb(47, 25, 243)", function() {
