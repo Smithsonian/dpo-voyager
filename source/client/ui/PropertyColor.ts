@@ -40,6 +40,9 @@ export default class PropertyColor extends CustomElement
     @property({attribute: false, type: Boolean})
     pickerActive :boolean = false;
 
+    @property({type: Boolean})
+    compact :boolean = false;
+
     protected color: Color = new Color();
 
 
@@ -99,7 +102,18 @@ export default class PropertyColor extends CustomElement
         const color = this.color.toString();
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
+            <span class="sv-property-field">
+                ${this.compact?null:html`<input class="ff-input"
+                        type="text"
+                        pattern="(0x|#)?[0-9a-fA-F]"
+                        .value=${color}
+                        @change=${(ev)=>{
+                            this.color.setString(ev.target.value);
+                            this.onColorChange();
+                        }}
+                    >`}
+                <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
+            </span>
             ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>` : null}
         `;
     }
@@ -116,7 +130,7 @@ export default class PropertyColor extends CustomElement
         this.pickerActive = !this.pickerActive;
     }
     
-    protected onColorChange(event: IColorEditChangeEvent)
+    protected onColorChange()
     {
         this.property.setValue(this.color.toRGBArray());
     }
