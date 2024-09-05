@@ -5,11 +5,9 @@
         "module": "CommonJS",
         "experimentalDecorators": true,
         "sourceMap": true,
-
-        "outDir": "built/export",
-        "rootDir": "source"
+        "outDir": "build",
     },
     "include": [
-        "source/**/*"
+        "source/**/*", "test/**/*"
     ]
 }

@@ -3,8 +3,8 @@
 .vscode/
 node_modules/
 
+build/
 dist/
-test/
 files/
 services/server/bin/
 services/secrets.env
