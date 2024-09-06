@@ -90,7 +90,7 @@ export default class CVModel2 extends CObject3D
         name: types.String("Model.Name"),
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
-        quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.High),
+        quality: types.Enum("Model.Quality", EDerivativeQuality, EDerivativeQuality.Thumb),
         tags: types.String("Model.Tags"),
         renderOrder: types.Number("Model.RenderOrder", 0),
         shadowSide: types.Enum("Model.ShadowSide", ESideType, ESideType.Back),
@@ -245,18 +245,6 @@ export default class CVModel2 extends CObject3D
         const av = this.node.createComponent(CVAnnotationView);
         av.ins.unitScale.linkFrom(this.outs.unitScale);
 
-        // set quality based on max texture size
-        const maxTextureSize = this.renderer.outs.maxTextureSize.value;
-
-        if (maxTextureSize < 2048) {
-            this.ins.quality.setValue(EDerivativeQuality.Low);
-        }
-        else if (maxTextureSize < 4096) {
-            this.ins.quality.setValue(EDerivativeQuality.Medium);
-        }
-        else {
-            this.ins.quality.setValue(EDerivativeQuality.High);
-        }
     }
 
     update()
@@ -308,7 +296,7 @@ export default class CVModel2 extends CObject3D
         }
 
         if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
-            this.autoLoad(ins.quality.value);
+            this.autoLoad();
         }
         else if (ins.quality.changed) {
             const derivative = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
@@ -738,29 +726,28 @@ export default class CVModel2 extends CObject3D
      * loads the desired quality level.
      * @param quality
      */
-    protected autoLoad(quality: EDerivativeQuality): Promise<void>
+    protected autoLoad(): Promise<void>
     {
-        const sequence : Derivative[] = [];
 
-        const lowestQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.Thumb);
-        if (lowestQualityDerivative) {
-            sequence.push(lowestQualityDerivative);
-        }
-
-        const targetQualityDerivative = this.derivatives.select(EDerivativeUsage.Web3D, quality);
-        if (targetQualityDerivative && targetQualityDerivative !== lowestQualityDerivative) {
-            sequence.push(targetQualityDerivative);
-        }
-
-        if (sequence.length === 0) {
+        const nearestDerivative = this.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value);
+        if (nearestDerivative) {
+            return this.loadDerivative(nearestDerivative); 
+        }else {
             Notification.show(`No 3D derivatives available for '${this.displayName}'.`);
             return Promise.resolve();
-        }
+        };
+    }
 
-        // load sequence of derivatives one by one
-        return sequence.reduce((promise, derivative) => {
-            return promise.then(() => this.loadDerivative(derivative)); 
-        }, Promise.resolve());
+    public unload(){
+        if (this._activeDerivative) {
+            if(this._activeDerivative.model) this.removeObject3D(this._activeDerivative.model);
+            this._activeDerivative.unload();
+            this._activeDerivative = null;
+        }
+    }
+
+    public isLoading(){
+        return !!this._loadingDerivative;
     }
 
     /**
@@ -809,10 +796,7 @@ export default class CVModel2 extends CObject3D
                     this.assetManager.initialLoad = true; 
                 }
 
-                if (this._activeDerivative) {
-                    if(this._activeDerivative.model) this.removeObject3D(this._activeDerivative.model);
-                    this._activeDerivative.unload();
-                }
+                this.unload();
                 this._activeDerivative = derivative;
                 this._loadingDerivative = null;
                 this.addObject3D(derivative.model);
@@ -824,9 +808,10 @@ export default class CVModel2 extends CObject3D
                     this._boxFrame = null;
                 }
 
-                // update bounding box based on loaded derivative
-                this._localBoundingBox.makeEmpty();
-                helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
+                // // update bounding box based on loaded derivative
+                // @fixme add back once sure it's not causing dynamic LOD flickering
+                // this._localBoundingBox.makeEmpty();
+                // helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
                 this.outs.updated.set();
 
                 if (ENV_DEVELOPMENT) {

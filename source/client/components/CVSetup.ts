@@ -35,6 +35,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAudioManager from "./CVAudioManager";
+import CVDerivativesController from "./CVDerivativesController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +61,7 @@ export default class CVSetup extends Component
         "reader": CVReader,
         "viewer": CVViewer,
         "navigation": CVOrbitNavigation,
+        "derivatives": CVDerivativesController, 
         "background": CVBackground,
         "environment": CVEnvironment,
         "language": CVLanguageManager,
@@ -82,6 +84,7 @@ export default class CVSetup extends Component
     reader: CVReader;
     viewer: CVViewer;
     navigation: CVOrbitNavigation;
+    derivatives: CVDerivativesController;
     background: CVBackground;
     floor: CVFloor;
     grid: CVGrid;
