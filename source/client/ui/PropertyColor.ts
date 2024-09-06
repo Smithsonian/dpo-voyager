@@ -114,7 +114,9 @@ export default class PropertyColor extends CustomElement
                             try{
                                 this.color.setString(ev.target.value);
                                 this.onColorChange();
+                                ev.target.setCustomValidity("");
                             }catch(e){
+                                ev.target.setCustomValidity(e.message);
                                 Notification.show(`Not a valid color: ${ev.target.value}`, "warning", 1000);
                             }
                         }}
