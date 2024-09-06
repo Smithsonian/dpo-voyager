@@ -16,7 +16,7 @@
  */
 
 import { Dictionary } from "@ff/core/types";
-import { ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
+import { ColorRGB, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -132,7 +132,7 @@ export interface IAsset
 
 export interface IPBRMaterialSettings
 {
-    color?: ColorRGBA
+    color?: ColorRGB
     opacity?: number;
     hiddenOpacity?: number;
     roughness?: number;
