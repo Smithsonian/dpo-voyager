@@ -478,9 +478,9 @@ export default class Color implements IVector4
         return [ this.r, this.g, this.b, this.a ];
     }
 
-    toString(includeAlpha: boolean = true): string
+    toString(includeAlpha?: boolean): string
     {
-        if (includeAlpha && this.w < 1) {
+        if (includeAlpha || (typeof includeAlpha === "undefined" && this.w < 1)) {
             return `rgba(${this.redByte}, ${this.greenByte}, ${this.blueByte}, ${this.w})`;
         }
         else {

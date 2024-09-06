@@ -22,6 +22,7 @@ import CustomElement, { customElement, property, PropertyValues, html } from "@f
 
 import "@ff/ui/Button";
 import "@ff/ui/ColorEdit";
+import Notification from "@ff/ui/Notification";
 
 import type { IColorEditChangeEvent } from "@ff/ui/ColorEdit";
 import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
@@ -45,6 +46,9 @@ export default class PropertyColor extends CustomElement
 
     protected color: Color = new Color();
 
+    get alphaEnabled(){
+        return this.property.elementCount === 4;
+    }
 
     constructor()
     {
@@ -68,8 +72,8 @@ export default class PropertyColor extends CustomElement
             throw new Error("missing property attribute");
         }
 
-        if (this.property.type !== "number" || this.property.elementCount !== 3) {
-            throw new Error(`not an color property: '${this.property.path}'`);
+        if (this.property.type !== "number" || 4 < this.property.elementCount ||this.property.elementCount < 3) {
+            throw new Error(`not a color property: '${this.property.path}'`);
         }
 
         if (changedProperties.has("property")) {
@@ -99,17 +103,20 @@ export default class PropertyColor extends CustomElement
     {
         const property = this.property;
         const name = this.name || property.name;
-        const color = this.color.toString();
+        const color = this.color.toString(this.alphaEnabled);
 
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
                 ${this.compact?null:html`<input class="ff-input"
                         type="text"
-                        pattern="(0x|#)?[0-9a-fA-F]"
                         .value=${color}
                         @change=${(ev)=>{
-                            this.color.setString(ev.target.value);
-                            this.onColorChange();
+                            try{
+                                this.color.setString(ev.target.value);
+                                this.onColorChange();
+                            }catch(e){
+                                Notification.show(`Not a valid color: ${ev.target.value}`, "warning", 1000);
+                            }
                         }}
                     >`}
                 <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
@@ -132,7 +139,8 @@ export default class PropertyColor extends CustomElement
     
     protected onColorChange()
     {
-        this.property.setValue(this.color.toRGBArray());
+
+        this.property.setValue( (this.alphaEnabled)? this.color.toRGBAArray() : this.color.toRGBArray() );
     }
 
     protected onPropertyChange(value: number[])
