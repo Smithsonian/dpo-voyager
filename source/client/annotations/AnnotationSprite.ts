@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Object3D, Camera, ArrayCamera, PerspectiveCamera, Vector3 } from "three";
+import { Object3D, Camera, ArrayCamera, PerspectiveCamera, Vector3, Object3DEventMap } from "three";
 
 import { ITypedEvent } from "@ff/core/Publisher";
 import HTMLSprite, { SpriteElement, html } from "@ff/three/HTMLSprite";
@@ -54,6 +54,11 @@ export interface IAnnotationLinkEvent extends ITypedEvent<"link">
     link: string;
 }
 
+export interface IAnnotationEventMap extends Object3DEventMap{
+    click: IAnnotationClickEvent;
+    link: IAnnotationLinkEvent;
+}
+
 /**
  * Defines the visual appearance of an annotation.
  * An annotation consists of a 3D (WebGL) part and a 2D (HTML) part.
@@ -62,7 +67,7 @@ export interface IAnnotationLinkEvent extends ITypedEvent<"link">
  * - *"click"* Emitted if the user clicks on the annotation.
  * - *"link"* Emitted if the user activates a link on the annotation.
  */
-export default class AnnotationSprite extends HTMLSprite
+export default class AnnotationSprite extends HTMLSprite<IAnnotationEventMap>
 {
     static readonly typeName: string = "Annotation";
 

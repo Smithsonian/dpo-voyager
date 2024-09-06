@@ -25,6 +25,7 @@ import FontReader, { IBitmapFont } from "../io/FontReader";
 
 import CVAssetManager from "./CVAssetManager";
 import CRenderer from "@ff/scene/components/CRenderer";
+import { Object3D, BufferGeometry, Texture } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -103,19 +104,19 @@ export default class CVAssetReader extends Component
         return this.fileLoader.getText(url);
     }
 
-    async getModel(assetPath: string): Promise<THREE.Object3D>
+    async getModel(assetPath: string): Promise<Object3D>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.modelLoader.get(url);
     }
 
-    async getGeometry(assetPath: string): Promise<THREE.BufferGeometry>
+    async getGeometry(assetPath: string): Promise<BufferGeometry>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.geometryLoader.get(url);
     }
 
-    async getTexture(assetPath: string): Promise<THREE.Texture>
+    async getTexture(assetPath: string): Promise<Texture>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.textureLoader.get(url);
@@ -127,7 +128,7 @@ export default class CVAssetReader extends Component
         return this.fontReader.load(url);
     }
 
-    async getSystemTexture(assetPath: string): Promise<THREE.Texture>
+    async getSystemTexture(assetPath: string): Promise<Texture>
     {
         const url = this.getSystemAssetUrl(assetPath);
         return this.textureLoader.get(url);

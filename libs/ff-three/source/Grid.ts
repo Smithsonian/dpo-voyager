@@ -20,8 +20,8 @@ export interface IGridProps
     size: number;
     mainDivisions: number;
     subDivisions: number;
-    mainColor: THREE.Color | string | number;
-    subColor: THREE.Color | string | number;
+    mainColor: Color | string | number;
+    subColor: Color | string | number;
 }
 
 export default class Grid extends LineSegments
@@ -51,7 +51,7 @@ export default class Grid extends LineSegments
         this.geometry = Grid.generate(props);
     }
 
-    protected static generate(props: IGridProps): THREE.BufferGeometry
+    protected static generate(props: IGridProps): BufferGeometry
     {
         const mainColor = new Color(props.mainColor as any);
         const subColor = new Color(props.subColor as any);
