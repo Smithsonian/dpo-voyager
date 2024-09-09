@@ -119,7 +119,7 @@ export default class ModelReader
         });
     }
 
-    protected createModelGroup(gltf): Object3D
+    protected async createModelGroup(gltf): Promise<Object3D>
     {
         const scene: Scene = gltf.scene;
 
@@ -161,6 +161,7 @@ export default class ModelReader
             }
         });
 
+        await this.renderer.views[0].renderer.compileAsync(scene, this.renderer.activeCamera, this.renderer.activeScene);
         return scene;
     }
 }
