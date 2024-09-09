@@ -738,7 +738,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 if (this._activeDerivative) {
-                    this.removeObject3D(this._activeDerivative.model);
+                    if(this._activeDerivative.model) this.removeObject3D(this._activeDerivative.model);
                     this._activeDerivative.unload();
                 }
                 this._activeDerivative = derivative;
