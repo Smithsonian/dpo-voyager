@@ -10,6 +10,7 @@ import {
     Camera,
     Vector2,
     Vector3,
+    Object3DEventMap,
 } from "three";
 
 import CustomElement, { customElement, html } from "@ff/ui/CustomElement";
@@ -31,7 +32,7 @@ export enum EQuadrant { TopRight, TopLeft, BottomLeft, BottomRight }
  * A Three.js Object representing a 3D renderable part and a 2D (HTML) part.
  * HTML sprites should have a [[HTMLSpriteGroup]] as their parent.
  */
-export default class HTMLSprite extends Object3D
+export default class HTMLSprite<EventMap extends Object3DEventMap = Object3DEventMap> extends Object3D<EventMap>
 {
     readonly isHTMLSprite = true;
 

@@ -35,7 +35,7 @@ export interface IObject3DObjectEvent extends ITypedEvent<"object">
 }
 
 /**
- * Base class for drawable components. Wraps a THREE.Object3D based instance.
+ * Base class for drawable components. Wraps a Object3D based instance.
  * If component is added to a node together with a [[Transform]] component,
  * it is automatically added as a child to the transform.
  */
@@ -63,7 +63,7 @@ export default class CObject3D extends Component implements ICObject3D
     outs = this.addOutputs(CObject3D.object3DOuts);
 
 
-    private _object3D: THREE.Object3D = null;
+    private _object3D: Object3D = null;
     private _isPickable = false;
 
     constructor(node: Node, id: string)
@@ -91,17 +91,17 @@ export default class CObject3D extends Component implements ICObject3D
         const transform = this.transform;
         return transform ? transform.getParentComponent(CScene, true) : undefined;
     }
-    /** The underlying [[THREE.Object3D]] of this component. */
-    get object3D(): THREE.Object3D | null {
+    /** The underlying [[Object3D]] of this component. */
+    get object3D(): Object3D | null {
         return this._object3D;
     }
 
     /**
-     * Assigns a [[THREE.Object3D]] to this component. The object automatically becomes a child
+     * Assigns a [[Object3D]] to this component. The object automatically becomes a child
      * of the parent component's object.
      * @param object
      */
-    set object3D(object: THREE.Object3D)
+    set object3D(object: Object3D)
     {
         const currentObject = this._object3D;
         if (currentObject) {
@@ -254,33 +254,33 @@ export default class CObject3D extends Component implements ICObject3D
         return true;
     }
 
-    protected onAddToParent(parent: THREE.Object3D)
+    protected onAddToParent(parent: Object3D)
     {
         parent.add(this._object3D);
     }
 
-    protected onRemoveFromParent(parent: THREE.Object3D)
+    protected onRemoveFromParent(parent: Object3D)
     {
         parent.remove(this._object3D);
     }
 
     /**
-     * Adds a [[THREE.Object3D]] as a child to this component's object.
+     * Adds a [[Object3D]] as a child to this component's object.
      * Registers the object with the picking service to make it pickable.
      * @param object
      */
-    protected addObject3D(object: THREE.Object3D)
+    protected addObject3D(object: Object3D)
     {
         this._object3D.add(object);
         this.registerPickableObject3D(object, true);
     }
 
     /**
-     * Removes a [[THREE.Object3D]] child from this component's object.
+     * Removes a [[Object3D]] child from this component's object.
      * Also unregisters the object from the picking service.
      * @param object
      */
-    protected removeObject3D(object: THREE.Object3D)
+    protected removeObject3D(object: Object3D)
     {
         this.unregisterPickableObject3D(object, true);
         this._object3D.remove(object);
@@ -292,7 +292,7 @@ export default class CObject3D extends Component implements ICObject3D
      * @param object
      * @param recursive
      */
-    protected registerPickableObject3D(object: THREE.Object3D, recursive: boolean)
+    protected registerPickableObject3D(object: Object3D, recursive: boolean)
     {
         GPUPicker.add(object, recursive);
     }
@@ -303,14 +303,14 @@ export default class CObject3D extends Component implements ICObject3D
      * @param object
      * @param recursive
      */
-    protected unregisterPickableObject3D(object: THREE.Object3D, recursive: boolean)
+    protected unregisterPickableObject3D(object: Object3D, recursive: boolean)
     {
         GPUPicker.remove(object, recursive);
     }
 
     private _onParent(event: IComponentEvent<ICObject3D>)
     {
-        // add this THREE.Object3D to the parent THREE.Object3D
+        // add this Object3D to the parent Object3D
         if (this._object3D && !this._object3D.parent && event.add) {
             this.onAddToParent(event.object.object3D);
         }

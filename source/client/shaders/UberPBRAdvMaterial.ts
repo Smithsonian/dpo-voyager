@@ -34,9 +34,9 @@ export interface IUberPBRAdvShaderProps extends MeshPhysicalMaterialParameters
 
 export default class UberPBRMaterial extends MeshPhysicalMaterial
 {
-    isUberPBRMaterial: boolean;
-    isMeshStandardMaterial: boolean;
-    isMeshPhysicalMaterial: boolean;
+    readonly isUberPBRMaterial = true;
+    readonly isMeshStandardMaterial = true;
+    readonly isMeshPhysicalMaterial = true;
 
     uniforms: {
         aoMapMix: { value: Vector3 },
@@ -66,9 +66,6 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
 
         this.type = "UberPBRAdvMaterial";
 
-        this.isUberPBRMaterial = true;
-        this.isMeshStandardMaterial = true;
-        this.isMeshPhysicalMaterial = true;
 
         this.defines = {
             "STANDARD": true,
@@ -88,7 +85,7 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
                 cutPlaneColor: { value: new Vector3(1, 0, 0) },
                 zoneMap: { value: null },
             }
-        ]);
+        ]) as any;
 
         this._aoMapMix = this.uniforms.aoMapMix.value;
         this._cutPlaneDirection = this.uniforms.cutPlaneDirection.value;

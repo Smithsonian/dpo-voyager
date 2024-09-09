@@ -20,7 +20,7 @@ import { Dictionary } from "@ff/core/types";
 import { ITypedEvent, Node, types } from "@ff/graph/Component";
 
 import Viewport, { IViewportDisposeEvent } from "@ff/three/Viewport";
-import HTMLSpriteGroup, { HTMLSprite } from "@ff/three/HTMLSpriteGroup";
+import HTMLSpriteGroup from "@ff/three/HTMLSpriteGroup";
 
 import CObject3D, { IPointerEvent, IRenderContext } from "@ff/scene/components/CObject3D";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -95,7 +95,7 @@ export default class CVAnnotationView extends CObject3D
     private _annotations: Dictionary<Annotation> = {};
 
     private _viewports = new Set<Viewport>();
-    private _sprites: Dictionary<HTMLSprite> = {};
+    private _sprites: Dictionary<AnnotationSprite> = {};
 
     private _truncateLock = false;
     private _activeView = false;
