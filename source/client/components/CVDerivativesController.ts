@@ -14,6 +14,14 @@ interface ILOD{
   enabled?:boolean;
 }
 
+const sizes = {
+  [EDerivativeQuality.High]: 4096*4096,
+  [EDerivativeQuality.Medium]: 2048*2048,
+  [EDerivativeQuality.Low]: 1024*1024,
+  [EDerivativeQuality.Thumb]: 512*512,
+} as const
+
+
 function isOnScreen(b :Box3) :boolean{
   return Math.min(Math.abs(b.max.x), Math.abs(b.min.x)) < 1 && Math.min(Math.abs(b.max.y), Math.abs(b.min.y)) < 1;
 }
@@ -68,6 +76,15 @@ export default class CVDerivativesController extends Component{
   static readonly text: string = "Derivatives selection";
   static readonly icon: string = "";
 
+  /** Number of frames since last change */
+  private _debounce :number = 0;
+
+  private _budget = sizes[EDerivativeQuality.High]*2+1;
+
+  threshold(q :EDerivativeQuality){
+    return this._budget - sizes[q]*2;
+  }
+
   protected static readonly ins = {
     enabled: types.Boolean("Settings.Enabled", true),
   }
@@ -84,7 +101,8 @@ export default class CVDerivativesController extends Component{
   private _scene :CScene;
   protected get renderer() {
     return this.getMainComponent(CRenderer);
-}
+  }
+
   get activeScene(){
     return this.renderer?.activeSceneComponent;
   }
@@ -96,13 +114,16 @@ export default class CVDerivativesController extends Component{
   }
 
 
+
+
   tock(context :IPulseContext) :boolean{
     const cameraComponent = this._scene?.activeCameraComponent;
     if (!this.ins.enabled.value || !cameraComponent) {
         return false;
     }
-
-    if(context.frameNumber % 5 != 0) return false;
+    if(this._debounce++ < 20){
+      return false;
+    }
 
     let changed = false;
     const centerWeights = [];
@@ -157,19 +178,27 @@ export default class CVDerivativesController extends Component{
     })
     .sort((a, b)=> b.weight - a.weight);
 
-  
+    let usedBudget = 0;
     for(let i = 0; i < models.length; i++){
       const  {model, relSize, weight} = models[i];
       const current = model.ins.quality.value;
       let quality = EDerivativeQuality.Thumb;
-      if(i < 2){
+      if(usedBudget < this.threshold(EDerivativeQuality.High) ){
+        usedBudget += sizes[EDerivativeQuality.High];
         quality = EDerivativeQuality.High;
-      }else if(i < 5){
-        quality = EDerivativeQuality.Medium;
-      }else if(i < 10){
+      }else if( usedBudget< this.threshold(EDerivativeQuality.Medium)){
+        usedBudget += sizes[EDerivativeQuality.Medium];
+        quality = EDerivativeQuality.Medium
+      }else if(usedBudget < this.threshold(EDerivativeQuality.Low)){
+        usedBudget += sizes[EDerivativeQuality.Low];
         quality = EDerivativeQuality.Low;
+      }else if(usedBudget < this._budget){
+        usedBudget += sizes[EDerivativeQuality.Thumb];
+        quality = EDerivativeQuality.Thumb
+      }else if(this._budget <= usedBudget){
+        /** @fixme Overbudget, completely unload models that are way out of view? */
+        //console.debug("Should unload : ", model.name);
       }
-      /** @fixme completely unload models that are way out of view? */
 
       if(quality === current) continue;
       const bestMatchDerivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
@@ -180,12 +209,23 @@ export default class CVDerivativesController extends Component{
       }
     }
     if(changed){
-      console.debug("Performance : ", Math.round(1/context.secondsDelta));
+      this._debounce = 0;
+      console.debug("Performance : ", this.renderer.outs.framerate.value);
       //Perform some checks on weights
       console.debug("Sizes: [%s]", models.map(m=>Math.round(m.relSize*100)).join(","));
       //console.debug("Visible:[%s]", models.map(m=>m.onScreen?"O":"N").join(", "));
       console.debug("Visible :", boxes.map(b=>`${b}`));
       console.debug("Weights: [%s]", centerWeights.map(n=>Math.round(n*100)).join(","));
+    }else{
+      //Performance adjustment has quite a high cost as it makes us re-download the models even as users make no changes to the scene
+      //So we should do it as little as possible.
+      /** @fixme also check if there is no in-flight requests */
+      if(120 <= this.renderer.outs.framerate.value && this._budget < Math.pow(4096*8, 2)){
+        this._budget += Math.floor(this.renderer.outs.framerate.value/120)*1024*1024;
+      }else if(this.renderer.outs.framerate.value < 60 &&  sizes[EDerivativeQuality.High]*2 < this._budget){
+        this._budget -= 512*512;
+      }
+      this._debounce = 0;
     }
     return changed;
   }
