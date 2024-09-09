@@ -230,6 +230,8 @@ export default class ModelReader
             })));
         }
         await this.queue;
+
+        await this.renderer.views[0].renderer.compileAsync(scene, this.renderer.activeCamera, this.renderer.activeScene);
         return scene;
     }
 }
