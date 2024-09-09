@@ -716,9 +716,19 @@ export default class CVModel2 extends CObject3D
 
         return derivative.load(this.assetReader)
             .then(() => {
-                if (!derivative.model || !this.node || 
-                  (this._activeDerivative && derivative.data.quality != this.ins.quality.value)) {
+                if ( !derivative.model
+                  || !this.node
+                  || (this._activeDerivative && derivative.data.quality != this.ins.quality.value)
+                ) {
+                    //Either derivative is not valid, or we have been disconnected, 
+                    // or this derivative is no longer needed as it's not the requested quality 
+                    // AND we already have _something_ to display
                     derivative.unload();
+                    return;
+                }
+
+                if(this._activeDerivative && this._activeDerivative == derivative){
+                    //a race condition can happen where a derivative fires it's callback but it's already the active one.
                     return;
                 }
 
