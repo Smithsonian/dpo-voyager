@@ -14,6 +14,10 @@ interface ILOD{
   enabled?:boolean;
 }
 
+/**
+ * Expected map sizes in pixels
+ * The number given is number of pixels for a square map of the expected quality
+ */
 const sizes = {
   [EDerivativeQuality.High]: 4096*4096,
   [EDerivativeQuality.Medium]: 2048*2048,
@@ -51,6 +55,30 @@ function depthWeight(min:number, max:number){
     if(-1 < min && max < 1 ) return 1;
     return 1 - 2/(Math.max(1,max-1) - Math.min(-1, min+1));
 }
+
+const hyst = 0.02; //In absolute % of screen area unit
+const steps = [
+    [0.04, EDerivativeQuality.Thumb],
+    [0.1, EDerivativeQuality.Low],
+    [0.4, EDerivativeQuality.Medium],
+];
+/**
+ * Calculate desired quality setting
+ * 
+ * An hysteresis is necessary to prevent flickering, 
+ * but it would be interesting to configure if we upgrade-first or downgrade-first
+ * depending on resources contention 
+ * 
+ * @fixme here we should take into account the renderer's resolution:
+ * we probably don't need a 4k texture when rendering an object over 40% of a 800px viewport
+ */
+export function getQuality(current :EDerivativeQuality, relSize:number):EDerivativeQuality{
+  return steps.find(([size, q])=>{
+      if (current <= q) size += hyst;
+      return relSize < size;
+  })?.[1] ?? EDerivativeQuality.High;
+}
+
 /**
  * Due to the nature of NDC coordinates, size on the (x, y, 0) plane would be infinite
  * Simply clamp it for now.
@@ -58,7 +86,6 @@ function depthWeight(min:number, max:number){
 function clampSize(size :number){
   return Math.min(size, 2);
 }
-
 
 const _ndcBox = new Box3();
 const _localBox = new Box3();
@@ -79,7 +106,7 @@ export default class CVDerivativesController extends Component{
   /** Number of frames since last change */
   private _debounce :number = 0;
 
-  private _budget = sizes[EDerivativeQuality.High]*2+1;
+  private _budget = sizes[EDerivativeQuality.High]*2;
 
   threshold(q :EDerivativeQuality){
     return this._budget - sizes[q]*2;
@@ -111,6 +138,30 @@ export default class CVDerivativesController extends Component{
   {
       super(node, id);
       this._scene = this.activeScene;
+      this.renderer.outs.maxTextureSize.on("value", ()=>{
+        // We expect scene performance to always be texture-limited.
+        // For example a hundred untextured objects with 25k vertices each would pose absolutely no problem even to a low end mobile device. 
+        // However a few 4k maps are enough to overload such a device's GPU and internet connection.
+        // First, evaluate raw maximum texture space as an upper bound. This is halved because:
+        //  1. we don't particularly want to max-out. This is not a "reasonable", but a "system max supported" value. 
+        //  2. This is total available space and any object can have any number of textures (we'd be able to refine this exact number if we wanted)
+        //      to which we need to add lightmaps, environment, etc. We just simplify to 1/4 the texture space
+        let budget = Math.pow(this.renderer.outs.maxTextureSize.value/2, 2);
+        if(typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency < 4){
+          console.debug("Reduce budget because of low CPU count");
+          budget = budget/2;
+        }
+        if((navigator as any).userAgentData?.mobile){
+          console.debug("Reduce budget because of mobile device");
+          budget = budget/1.5; //
+        }
+        if(typeof (navigator as any).deviceMemory === "number" && (navigator as any).deviceMemory < 8){
+          console.debug("Reduce budget because of low RAM");
+          budget = Math.min(budget, sizes[EDerivativeQuality.High]*4);
+        }
+        this._budget = Math.max(sizes[EDerivativeQuality.High]*2, budget);
+        console.debug("Performance budget: ", Math.sqrt(this._budget));
+      });
   }
 
 
@@ -125,10 +176,10 @@ export default class CVDerivativesController extends Component{
       return false;
     }
 
-    let changed = false;
+    let changes = 0; //We don't want to start too many upgrades at once
     const centerWeights = [];
     const boxes = [];
-    const models :Array<{model:CVModel2, relSize:number, onScreen:boolean, weight: number}> = this.getGraphComponents(CVModel2).map(model=>{
+    let models :Array<{model:CVModel2, relSize:number, clipped: boolean, quality:EDerivativeQuality, weight: number}> = this.getGraphComponents(CVModel2).map(model=>{
       _ndcBox.makeEmpty();
 
       //We can't just use the model's matrixWorld here because it might not have loaded yet.
@@ -160,74 +211,80 @@ export default class CVDerivativesController extends Component{
           _ndcBox.expandByPoint(_vec3a);
       });
 
-      const depthMod = depthWeight(_ndcBox.min.z, _ndcBox.max.z);
+      _localBox.getCenter(_vec3a);
+      const distance = (_vec3a.distanceTo(cameraComponent.camera.position))/cameraComponent.camera.far;
+
+      const depthMod = Math.max(1-distance, 0.2);
       const centerMod = maxCenterWeight(_ndcBox);
       _ndcBox.getSize(_vec3a);
       let relSize = (_vec3a.x *_vec3a.y)/4;
+
       _ndcBox.min.clampScalar(-1,1);
       _ndcBox.max.clampScalar(-1,1);
       _ndcBox.getSize(_vec3a);
       let visibleSize = (_vec3a.x *_vec3a.y)/4;
 
+      let clipped = 1 < distance
+                  || _ndcBox.max.z < 0 //Behind us
+                  || (visibleSize == 0);
 
-      const onScreen = isOnScreen(_ndcBox);
-      boxes.push(visibleSize/relSize);
+      boxes.push([visibleSize, distance]);
       const weight = visibleSize*centerMod*depthMod;
-      centerWeights.push(maxCenterWeight(_ndcBox));
-      return {model, relSize, onScreen, weight};
+      return {model, relSize: visibleSize, clipped, weight, quality: Math.max(model.ins.quality.value, getQuality(model.ins.quality.value, visibleSize))};
     })
-    .sort((a, b)=> b.weight - a.weight);
+    .sort((a, b)=> a.weight - b.weight); //Models that have a high difference between their relSize and weight are the first to get downgraded
 
-    let usedBudget = 0;
-    for(let i = 0; i < models.length; i++){
-      const  {model, relSize, weight} = models[i];
-      const current = model.ins.quality.value;
-      let quality = EDerivativeQuality.Thumb;
-      if(usedBudget < this.threshold(EDerivativeQuality.High) ){
-        usedBudget += sizes[EDerivativeQuality.High];
-        quality = EDerivativeQuality.High;
-      }else if( usedBudget< this.threshold(EDerivativeQuality.Medium)){
-        usedBudget += sizes[EDerivativeQuality.Medium];
-        quality = EDerivativeQuality.Medium
-      }else if(usedBudget < this.threshold(EDerivativeQuality.Low)){
-        usedBudget += sizes[EDerivativeQuality.Low];
-        quality = EDerivativeQuality.Low;
-      }else if(usedBudget < this._budget){
-        usedBudget += sizes[EDerivativeQuality.Thumb];
-        quality = EDerivativeQuality.Thumb
-      }else if(this._budget <= usedBudget){
-        /** @fixme Overbudget, completely unload models that are way out of view? */
-        //console.debug("Should unload : ", model.name);
+    /** @fixme : ideally, cancel anything that is in-glight and no longer needed */
+
+    //Now we have a list of upgrade-only quality requests.
+    //We need to know whether or not we'd want to downgrade some models
+    let textureSize = models.reduce((size, {quality})=>size + sizes[quality], 0);
+    let clippedOnly = true, idx = 0, downgrades = 0, hidden = 0, passes=1;
+
+    while(this._budget < textureSize){
+      const model = models[idx];
+      if(model.clipped || !clippedOnly){
+        let q = getQuality(model.model.ins.quality.value, model.relSize);
+        if( q < model.quality){
+          textureSize = textureSize - sizes[model.quality] + sizes[q];
+          model.quality = q;
+          if(!model.clipped) downgrades++;
+        }
       }
+      if(models.length <= ++idx){
+        passes++;
+        for(let model of models){
+          model.relSize = model.relSize*model.weight;
+        }
+        if(passes == 1)console.debug("%d downgrades after first pass", downgrades);
+        if(model.quality == EDerivativeQuality.Thumb) break; // Prevent infinite loop
+        clippedOnly = false;
+        idx = 0;
+      }
+    }
+
+    let loading = models.reduce((s,m)=>s+(m.model.isLoading()?1:0),0);
+    for(let i = 0; i < models.length; i++){
+      if(5 < loading) break;
+      const  {model, quality} = models[i];
+      const current = model.ins.quality.value;
 
       if(quality === current) continue;
       const bestMatchDerivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
       if(bestMatchDerivative && bestMatchDerivative.data.quality != current ){
+        if(current < bestMatchDerivative.data.quality && 2 < (++changes)){continue;}
         //console.debug("Set quality for ", model.ins.name.value, " from ", current, " to ", bestMatchDerivative.data.quality);
         model.ins.quality.setValue(bestMatchDerivative.data.quality);
-        changed = true;
       }
     }
-    if(changed){
+    if(0 < changes){
       this._debounce = 0;
-      console.debug("Performance : ", this.renderer.outs.framerate.value);
-      //Perform some checks on weights
-      console.debug("Sizes: [%s]", models.map(m=>Math.round(m.relSize*100)).join(","));
-      //console.debug("Visible:[%s]", models.map(m=>m.onScreen?"O":"N").join(", "));
-      console.debug("Visible :", boxes.map(b=>`${b}`));
-      console.debug("Weights: [%s]", centerWeights.map(n=>Math.round(n*100)).join(","));
-    }else{
-      //Performance adjustment has quite a high cost as it makes us re-download the models even as users make no changes to the scene
-      //So we should do it as little as possible.
-      /** @fixme also check if there is no in-flight requests */
-      if(120 <= this.renderer.outs.framerate.value && this._budget < Math.pow(4096*8, 2)){
-        this._budget += Math.floor(this.renderer.outs.framerate.value/120)*1024*1024;
-      }else if(this.renderer.outs.framerate.value < 60 &&  sizes[EDerivativeQuality.High]*2 < this._budget){
-        this._budget -= 512*512;
-      }
-      this._debounce = 0;
+      const countQ = (q :EDerivativeQuality)=>models.reduce((s, m)=>(s+((m.quality=== q)?1:0)), 0);
+      console.debug(`models :(%d, %d, %d, %d)`, countQ(EDerivativeQuality.High), countQ(EDerivativeQuality.Medium), countQ(EDerivativeQuality.Low), countQ(EDerivativeQuality.Thumb));
+      console.debug(`%d clipped models, %d hidden, %d downgraded in %d downgrade passes`, models.reduce((s,m)=>s+(m.clipped?1:0), 0), hidden, downgrades, passes);
     }
-    return changed;
+    // We could refine our "pixel budget" here by getting the actual number of maps loaded on each model
+    return 0 < changes;
   }
   
   fromData(data: ILOD)

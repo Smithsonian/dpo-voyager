@@ -670,6 +670,18 @@ export default class CVModel2 extends CObject3D
         };
     }
 
+    public unload(){
+        if (this._activeDerivative) {
+            if(this._activeDerivative.model) this.removeObject3D(this._activeDerivative.model);
+            this._activeDerivative.unload();
+            this._activeDerivative = null;
+        }
+    }
+
+    public isLoading(){
+        return !!this._loadingDerivative;
+    }
+
     /**
      * Loads and displays the given derivative.
      * @param derivative
@@ -681,7 +693,7 @@ export default class CVModel2 extends CObject3D
             return;
         }
         if(this._activeDerivative && this._activeDerivative == derivative) return;
-        console.debug("Load derivative : ", derivative.data.quality);
+        ENV_DEVELOPMENT && console.debug("Load derivative : ", derivative.data.quality);
         if(this._loadingDerivative == derivative) {
             return new Promise(resolve=> this._loadingDerivative.on("load", resolve));
         }
@@ -712,10 +724,7 @@ export default class CVModel2 extends CObject3D
                     this.assetManager.initialLoad = true; 
                 }
 
-                if (this._activeDerivative) {
-                    if(this._activeDerivative.model) this.removeObject3D(this._activeDerivative.model);
-                    this._activeDerivative.unload();
-                }
+                this.unload();
                 this._activeDerivative = derivative;
                 this._loadingDerivative = null;
                 this.addObject3D(derivative.model);
@@ -727,9 +736,10 @@ export default class CVModel2 extends CObject3D
                     this._boxFrame = null;
                 }
 
-                // update bounding box based on loaded derivative
-                this._localBoundingBox.makeEmpty();
-                helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
+                // // update bounding box based on loaded derivative
+                // @fixme add back once sure it's not causing dynamic LOD flickering
+                // this._localBoundingBox.makeEmpty();
+                // helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
                 this.outs.updated.set();
 
                 if (ENV_DEVELOPMENT) {
