@@ -72,6 +72,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVOverlayTask,
         CVAudioTask,
         CVSettingsTask,
     ]

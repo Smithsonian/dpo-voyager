@@ -35,6 +35,7 @@ import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "clie
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
 import CVAssetReader from "./CVAssetReader";
+import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -208,7 +209,7 @@ export default class CVOverlayTask extends CVTask
         const overlay = overlays[idx];
 
         if(ins.activeIndex.changed) {
-            if(overlay && overlay.fromFile && !overlay.texture) {console.log("LOAD MAP2");
+            if(overlay && overlay.fromFile && !overlay.texture) {
                 // load texture from file if not done yet
                 this.assetReader.getTexture(overlay.asset.uri).then((map) => {
                     map.flipY = false;
@@ -364,9 +365,11 @@ export default class CVOverlayTask extends CVTask
             this.ctx.fillStyle = this.colorString;    
         }
         
-        this.material.zoneMap = this.activeTexture;
-        this.material.transparent = isShowing;
-        this.material.enableZoneMap(isShowing); 
+        if(this.material) {
+            this.material.zoneMap = this.activeTexture;
+            this.material.transparent = isShowing;
+            this.material.enableZoneMap(isShowing);
+        }
 
         if(this.activeTexture) {
             this.updateOverlayTexture();
@@ -381,36 +384,10 @@ export default class CVOverlayTask extends CVTask
 
     protected onQualityChange()
     {
-        const currentCanvas = this.activeCanvas;
-        const currentCtx = currentCanvas.getContext('2d');
-        const lineWidth = currentCtx.lineWidth;
-
-        // get new image size
-        const derivative = this.activeModel.derivatives.select(EDerivativeUsage.Web3D, this.activeModel.outs.quality.value);
-        const asset = derivative.findAsset(EAssetType.Model);
-        const imageSize = asset.data.imageSize;
-
-        // copy image to temp canvas
-        const tempCanvas = document.createElement('canvas') as HTMLCanvasElement;
-        tempCanvas.height = currentCanvas.height;
-        tempCanvas.width = currentCanvas.width;
-        tempCanvas.getContext('2d').drawImage(currentCanvas,0,0);
-
-        // resize canvas and redraw
-        currentCanvas.height = imageSize;
-        currentCanvas.width = imageSize;
-        currentCtx.lineWidth = lineWidth;
-        currentCtx.lineJoin = "round";
-        currentCtx.lineCap = "round";
-        currentCtx.fillStyle = this.ctx.fillStyle;
-        currentCtx.strokeStyle = this.ctx.strokeStyle;
-        currentCtx.drawImage(tempCanvas,0,0,tempCanvas.width,tempCanvas.height,0,0,imageSize,imageSize);
-
-        // refresh target texture
-        this.activeTexture.needsUpdate = true;
+        this.ins.activeIndex.setValue(-1);
     }
 
-    updateOverlayTexture() {
+    protected updateOverlayTexture() {
         this.activeTexture.needsUpdate = true; 
         this.system.getComponent(CRenderer).forceRender();
     }
@@ -475,7 +452,7 @@ export default class CVOverlayTask extends CVTask
     protected createZoneCanvas()
     {   
         const material = this.material;
-        const dim = material.map ? material.map.image.width : 4096;
+        const dim = material.map ? material.map.image.width : 4096;  // TODO: Adapt to better size maps for models w/o diffuse
 
         const canvas  = document.createElement('canvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
@@ -519,7 +496,7 @@ export default class CVOverlayTask extends CVTask
             const quality = derivative.data.quality;
 
             const asset = derivative.findAsset(EAssetType.Model);
-            const imageSize : number = +asset.data.imageSize;
+            const imageSize : number = +asset.data.imageSize || currentCanvas.width;
             const imageName = this.overlays[this.ins.activeIndex.value].asset.uri;
 
             // generate image data at correct resolution for this derivative  **TODO - if we aren't saving different qualities at once, tempCanvas is unnecessary
@@ -533,23 +510,30 @@ export default class CVOverlayTask extends CVTask
         }
     }
 
-    protected saveTexture(baseName: string, uri: string, quality: EDerivativeQuality) {
+    protected saveTexture(filePath: string, uri: string, quality: EDerivativeQuality) {
 
-        const fileURL = this.assetManager.getAssetUrl(baseName);
-        const fileName = this.assetManager.getAssetName(baseName);
+        const fileURL = this.assetManager.getAssetUrl(filePath);
+        const fileName = this.assetManager.getAssetName(filePath);
         const blob = convert.dataURItoBlob(uri);
         const file = new File([blob], fileName);
+        const standaloneFM = this.graph.getMainComponent(CVStandaloneFileManager, true);
 
-        fetch(fileURL, {
-            method:"PUT",
-            body: file,
-        })
-        .then(() => {
-            //this.updateImageMeta(quality, this._mimeType, filePath);
-            new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
-        })
-        .catch(e => {
-            new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
-        });
+        if(standaloneFM) {
+            standaloneFM.addFile(filePath, [blob]);
+            new Notification(`Saved ${fileName} to scene package.`, "info", 4000);    
+        }
+        else {
+            fetch(fileURL, {
+                method:"PUT",
+                body: file,
+            })
+            .then(() => {
+                //this.updateImageMeta(quality, this._mimeType, filePath);
+                new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
+            })
+            .catch(e => {
+                new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
+            });
+        }
     }
 }

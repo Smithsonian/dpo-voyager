@@ -203,7 +203,10 @@ export default class CVModel2 extends CObject3D
         }
         else {
             const overlayProp = this.ins.overlayMap;
-            overlayProp.setOptions(overlayProp.schema.options.concat(key));
+            if(!overlayProp.schema.options.includes(key)) {
+                overlayProp.setOptions(overlayProp.schema.options.concat(key));
+            }
+
             return this._overlays[key] = 
             {
                 texture: null,
@@ -213,7 +216,7 @@ export default class CVModel2 extends CObject3D
         }
     }
     getOverlays() {
-        return Object.keys(this._overlays).map(key => this._overlays[key]);
+        return Object.keys(this._overlays).filter(key => this.ins.overlayMap.schema.options.includes(key)).map(key => this._overlays[key]);
     }
     deleteOverlay(key: string) {
         const overlayProp = this.ins.overlayMap;
@@ -830,7 +833,10 @@ export default class CVModel2 extends CObject3D
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);
 
                 // load overlays
+                const overlayProp = this.ins.overlayMap;
+                overlayProp.setOptions(["None"]);
                 derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).forEach(image => {
+                    overlayProp.setOptions(overlayProp.schema.options.concat(image.data.uri));
                     const overlay = this.getOverlay(image.data.uri);
                     overlay.asset = image.data;
                     overlay.fromFile = true;
