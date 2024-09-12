@@ -92,7 +92,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickOverlayCreate}></ff-button>       
             <ff-button text="Delete" icon="trash" ?disabled=${!activeOverlay} @click=${this.onClickOverlayDelete}></ff-button>
-            <ff-button text="Save" icon="save" @click=${this.onClickOverlaySave}></ff-button>
+            <ff-button text="Save" icon="save" ?disabled=${!activeOverlay} @click=${this.onClickOverlaySave}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
@@ -228,7 +228,7 @@ export class OverlayList extends List<IOverlay>
 
     protected renderItem(item: IOverlay)
     {
-        return html`${item.asset.uri}`;
+        return html`${item.isDirty ? "**" : null}${item.asset.uri}`;
     }
 
     protected isItemSelected(item: IOverlay)

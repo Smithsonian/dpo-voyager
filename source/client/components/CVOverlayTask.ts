@@ -237,6 +237,7 @@ export default class CVOverlayTask extends CVTask
             ins.activeIndex.setValue(this.overlays.length - 1);
             newOverlay.texture = this.getTexture(newUri);
             newOverlay.asset = newAsset.data;
+            this.setSaveNeeded(true);
       
             this.onOverlayChange();
             this.emit("update");
@@ -304,6 +305,7 @@ export default class CVOverlayTask extends CVTask
             this.ctx.fillRect(0,0, this.activeCanvas.width, this.activeCanvas.height);
             this.ctx.fillStyle = this.colorString;
             this.updateOverlayTexture();
+            this.setSaveNeeded(true);
             return true;
         }
 
@@ -311,6 +313,7 @@ export default class CVOverlayTask extends CVTask
         {
             this.ctx.fillRect(0,0, this.activeCanvas.width, this.activeCanvas.height);
             this.updateOverlayTexture();
+            this.setSaveNeeded(true);
             return true;
         }
 
@@ -420,6 +423,10 @@ export default class CVOverlayTask extends CVTask
 
     protected onPointerUp(event: IPointerEvent)
     {
+        if(this.isPainting) {
+            this.setSaveNeeded(true);
+        }
+
         this.isPainting = false;
     }
 
@@ -488,26 +495,13 @@ export default class CVOverlayTask extends CVTask
     protected onSave() {
         const currentCanvas = this.activeCanvas;
         const model = this.activeModel;
+        const derivative = model.activeDerivative;
+        const quality = derivative.data.quality;
 
-        const tempCanvas = document.createElement('canvas') as HTMLCanvasElement;
+        const imageName = this.overlays[this.ins.activeIndex.value].asset.uri;
 
-        if(this.activeTexture) {  // TODO: always true, need to change
-            const derivative = model.activeDerivative;
-            const quality = derivative.data.quality;
-
-            const asset = derivative.findAsset(EAssetType.Model);
-            const imageSize : number = +asset.data.imageSize || currentCanvas.width;
-            const imageName = this.overlays[this.ins.activeIndex.value].asset.uri;
-
-            // generate image data at correct resolution for this derivative  **TODO - if we aren't saving different qualities at once, tempCanvas is unnecessary
-            tempCanvas.width = imageSize;
-            tempCanvas.height = imageSize;
-
-            tempCanvas.getContext('2d').drawImage(currentCanvas,0,0,currentCanvas.width,currentCanvas.height,0,0,imageSize,imageSize);
-
-            const dataURI = tempCanvas.toDataURL("image/jpeg");
-            this.saveTexture(imageName, dataURI, quality);
-        }
+        const dataURI = currentCanvas.toDataURL("image/jpeg");
+        this.saveTexture(imageName, dataURI, quality);
     }
 
     protected saveTexture(filePath: string, uri: string, quality: EDerivativeQuality) {
@@ -528,6 +522,7 @@ export default class CVOverlayTask extends CVTask
                 body: file,
             })
             .then(() => {
+                this.setSaveNeeded(false);
                 //this.updateImageMeta(quality, this._mimeType, filePath);
                 new Notification(`Successfully uploaded image to '${fileURL}'`, "info", 4000);
             })
@@ -535,5 +530,11 @@ export default class CVOverlayTask extends CVTask
                 new Notification(`Failed to upload image to '${fileURL}'`, "error", 8000);
             });
         }
+    }
+
+    protected setSaveNeeded(isDirty: boolean) {
+        const activeOverlay = this.overlays[this.ins.activeIndex.value];
+        activeOverlay.isDirty = isDirty;
+        this.emit("update");
     }
 }

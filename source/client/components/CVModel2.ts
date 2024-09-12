@@ -68,6 +68,7 @@ export interface IOverlay
     texture: Texture;
     asset: IAsset;
     fromFile: boolean;
+    isDirty: boolean;
 }
 
 /**
@@ -211,7 +212,8 @@ export default class CVModel2 extends CObject3D
             {
                 texture: null,
                 asset: null,
-                fromFile: false
+                fromFile: false,
+                isDirty: false
             };
         }
     }
