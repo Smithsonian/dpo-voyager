@@ -114,7 +114,7 @@ export class LightToolView extends ToolView<CVLightTool>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                 <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
-                <sv-property-color .property=${activeLight.ins.color} name=${language.getLocalizedString("Color")}></sv-property-color>
+                <sv-property-color .property=${activeLight.ins.color} .compact=${true} name=${language.getLocalizedString("Color")}></sv-property-color>
             </div>
         </div>` : null;
 
