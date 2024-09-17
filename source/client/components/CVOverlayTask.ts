@@ -228,7 +228,7 @@ export default class CVOverlayTask extends CVTask
         {     
             const derivative = model.activeDerivative;
             const qualityName = EDerivativeQuality[derivative.data.quality].toLowerCase();
-            const newUri = model.node.name + "-overlaymap-" + (this.overlays.length+1) + "-" + qualityName + ".jpg";
+            const newUri = this.getUniqueName(model.node.name, qualityName);
             const newAsset = derivative.createAsset(EAssetType.Image, newUri);
             newAsset.data.mapType = EMapType.Zone;
 
@@ -492,7 +492,8 @@ export default class CVOverlayTask extends CVTask
         return canvas;
     }
 
-    protected onSave() {
+    protected onSave() 
+    {
         const currentCanvas = this.activeCanvas;
         const model = this.activeModel;
         const derivative = model.activeDerivative;
@@ -504,7 +505,8 @@ export default class CVOverlayTask extends CVTask
         this.saveTexture(imageName, dataURI, quality);
     }
 
-    protected saveTexture(filePath: string, uri: string, quality: EDerivativeQuality) {
+    protected saveTexture(filePath: string, uri: string, quality: EDerivativeQuality) 
+    {
 
         const fileURL = this.assetManager.getAssetUrl(filePath);
         const fileName = this.assetManager.getAssetName(filePath);
@@ -532,9 +534,25 @@ export default class CVOverlayTask extends CVTask
         }
     }
 
-    protected setSaveNeeded(isDirty: boolean) {
+    protected setSaveNeeded(isDirty: boolean) 
+    {
         const activeOverlay = this.overlays[this.ins.activeIndex.value];
         activeOverlay.isDirty = isDirty;
         this.emit("update");
+    }
+
+    protected getUniqueName(name: string, quality: string) : string
+    {
+        var newName = name + "-overlaymap-" + (this.overlays.length+1) + "-" + quality + ".jpg";
+        var count = 2;
+        while(this.overlays.some(overlay => {
+            return overlay.asset.uri == newName;
+        }))
+        {
+            newName = name + "-overlaymap-" + (this.overlays.length+count) + "-" + quality + ".jpg";
+            count++;
+        }
+
+        return newName;
     }
 }

@@ -228,7 +228,7 @@ export class OverlayList extends List<IOverlay>
 
     protected renderItem(item: IOverlay)
     {
-        return html`${item.isDirty ? "**" : null}${item.asset.uri}`;
+        return html`${item.isDirty ? "(unsaved) " : null}${item.asset.uri}`;
     }
 
     protected isItemSelected(item: IOverlay)
