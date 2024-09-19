@@ -38,23 +38,11 @@ function isOnScreen(b :Box3) :boolean{
  * We add X offset and Y offset because we kind of _want_ diagonals to be a little underweighted
  * 
  */
-function maxCenterWeight(b :Box3){
+export function maxCenterWeight(b :Box3){
     let dxy = Math.max(-b.max.x, b.min.x, 0) + Math.max(-b.max.y, b.min.y, 0);
-    return 1 / (1+Math.pow(dxy,4));
+    return 1 / (Math.pow(1+dxy,4));
 }
 
-/**
- * Applies a modifier using Z depth
- * Keep in mind that actual depth decay is already accounted-for naturally through screen-space coordinates
- * 
- */
-function depthWeight(min:number, max:number){
-    if(max < -1 || 1 < min ) return 0;
-    //Actual depth when within near/far bounds is already accounted-for
-    //through NDC projection. We could however implement some kind of exponential decay here
-    if(-1 < min && max < 1 ) return 1;
-    return 1 - 2/(Math.max(1,max-1) - Math.min(-1, min+1));
-}
 
 const hyst = 0.02; //In absolute % of screen area unit
 const steps = [
@@ -228,9 +216,13 @@ export default class CVDerivativesController extends Component{
                   || _ndcBox.max.z < 0 //Behind us
                   || (visibleSize == 0);
 
-      boxes.push([visibleSize, distance]);
-      const weight = visibleSize*centerMod*depthMod;
-      return {model, relSize: visibleSize, clipped, weight, quality: Math.max(model.ins.quality.value, getQuality(model.ins.quality.value, visibleSize))};
+      const weight = Math.max(visibleSize, 0.1)*centerMod*depthMod;
+      boxes.push([weight, depthMod]);
+
+      //Upgrade only here
+      let quality =  Math.max(model.ins.quality.value, getQuality(model.ins.quality.value, visibleSize));
+
+      return {model, relSize: visibleSize, clipped, weight, quality};
     })
     .sort((a, b)=> a.weight - b.weight); //Models that have a high difference between their relSize and weight are the first to get downgraded
 
@@ -281,7 +273,9 @@ export default class CVDerivativesController extends Component{
       this._debounce = 0;
       const countQ = (q :EDerivativeQuality)=>models.reduce((s, m)=>(s+((m.quality=== q)?1:0)), 0);
       console.debug(`models :(%d, %d, %d, %d)`, countQ(EDerivativeQuality.High), countQ(EDerivativeQuality.Medium), countQ(EDerivativeQuality.Low), countQ(EDerivativeQuality.Thumb));
-      console.debug(`%d clipped models, %d hidden, %d downgraded in %d downgrade passes`, models.reduce((s,m)=>s+(m.clipped?1:0), 0), hidden, downgrades, passes);
+      console.debug(`%d/%d clipped models, %d hidden, %d downgraded in %d downgrade passes`, models.reduce((s,m)=>s+(m.clipped?1:0), 0), models.length, hidden, downgrades, passes);
+      //console.debug("DepthMods:", boxes.map(b=>`[${b.join(",")}]`).join(", "));
+      console.debug("Highest priorities : ",models.slice(-3).map(m=>m.model.name).join(", "));
     }
     // We could refine our "pixel budget" here by getting the actual number of maps loaded on each model
     return 0 < changes;

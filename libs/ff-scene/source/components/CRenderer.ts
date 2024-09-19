@@ -6,7 +6,7 @@
  */
 
 import { Mesh } from "three";
-import * as constants from "three/src/constants";
+import * as constants from "three/src/constants.js";
 
 import Component, { Node, ITypedEvent, types } from "@ff/graph/Component";
 import CPulse, { IPulseEvent } from "@ff/graph/components/CPulse";
