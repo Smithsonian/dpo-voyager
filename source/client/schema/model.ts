@@ -17,6 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 import { ColorRGB, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
+import { QuaternionTuple } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +52,7 @@ export interface IModel
     overlayMap?: number;
     shadowSide?: TSideType;
     translation?: Vector3;
-    rotation?: Vector4;
+    rotation?: QuaternionTuple;
     boundingBox?: IBoundingBox;
     material?: IPBRMaterialSettings;
     annotations?: IAnnotation[];

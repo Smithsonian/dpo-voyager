@@ -159,7 +159,7 @@ export default class UniversalCamera extends Camera
         // TODO: Implement
     }
 
-    moveToView(boundingBox: THREE.Box3)
+    moveToView(boundingBox: Box3)
     {
         this.updateMatrixWorld(false);
         _box.copy(boundingBox);
@@ -278,20 +278,20 @@ export default class UniversalCamera extends Camera
     toJSON(meta)
     {
         const data = super.toJSON(meta);
-
-        data.object.fov = this.fov;
-        data.object.size = this.size;
-        data.object.aspect = this.aspect;
-        data.object.zoom = this.zoom;
-        data.object.near = this.near;
-        data.object.far = this.far;
-
-        data.object.focus = this.focus;
-        data.object.filmGauge = this.filmGauge;
-        data.object.filmOffset = this.filmOffset;
+        Object.assign(data.object, {
+            fov: this.fov,
+            size: this.size,
+            aspect: this.aspect,
+            zoom: this.zoom,
+            near: this.near,
+            far: this.far,
+            focus: this.focus,
+            filmGauge: this.filmGauge,
+            filmOffset: this.filmOffset,
+        });
 
         if (this.view !== null) {
-            data.object.view = Object.assign({}, this.view);
+            (data.object as any).view = Object.assign({}, this.view);
         }
 
         return data;
