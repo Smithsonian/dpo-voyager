@@ -16,8 +16,13 @@
  */
 
 import { Dictionary } from "@ff/core/types";
+<<<<<<< HEAD
 import { ColorRGB, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
 import { QuaternionTuple } from "three";
+=======
+import { ColorRGBA, EUnitType, TUnitType, Vector3, Vector4 } from "./common";
+import { CanvasTexture } from "three";
+>>>>>>> dev-overlay
 
 ////////////////////////////////////////////////////////////////////////////////
 
