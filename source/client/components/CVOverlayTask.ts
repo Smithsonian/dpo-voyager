@@ -81,12 +81,8 @@ export default class CVOverlayTask extends CVTask
 
     isPainting: boolean = false;
 
-    protected overlayScene: Scene;
-    protected qualities: EDerivativeQuality[] = [EDerivativeQuality.Low, EDerivativeQuality.Medium, EDerivativeQuality.High];
+    //protected qualities: EDerivativeQuality[] = [EDerivativeQuality.Low, EDerivativeQuality.Medium, EDerivativeQuality.High];
     
-
-    protected onClickPosition: Vector2;
-    protected raycaster: Raycaster;
     protected ctx: CanvasRenderingContext2D;
     protected activeModel: CVModel2;
     protected picker: VGPUPicker;
@@ -169,11 +165,8 @@ export default class CVOverlayTask extends CVTask
         super(node, id);
 
         const configuration = this.configuration;
-        configuration.bracketsVisible = false;
+        configuration.bracketsVisible = true;
 
-        this.overlayScene = new Scene();
-        this.onClickPosition = new Vector2();
-        this.raycaster = new Raycaster();
         this.uv = new Vector2();  
     }
 
