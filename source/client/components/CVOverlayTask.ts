@@ -68,7 +68,6 @@ export default class CVOverlayTask extends CVTask
         saveOverlays: types.Event("Overlay.Save"),
         overlayFill: types.Event("Overlay.Fill"),
         overlayClear: types.Event("Overlay.Clear"),
-        overlayTitle: types.String("Overlay.Title"),
         overlayColor: types.ColorRGB("Overlay.Color", [1.0, 0.0, 0.0]),
         overlayBrushSize: types.Unit("Overlay.BrushSize", {preset: 10, min: 1, max: 100}),
         paintMode: types.Enum("Paint.Mode", EPaintMode, EPaintMode.Interact)

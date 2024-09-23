@@ -73,7 +73,6 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
         const overlayConfig = activeOverlay ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label"><b>Overlays</b></div>
-            <sv-property-view .property=${props.overlayTitle}></sv-property-view>
             <sv-property-view .property=${props.overlayColor}></sv-property-view>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
