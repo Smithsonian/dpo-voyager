@@ -24,21 +24,27 @@ export function getFocusableElements (element: HTMLElement)
       .filter(el => !el.hasAttribute('disabled') && !!el.getClientRects().length && (el as HTMLElement).style.visibility !== "hidden" && !el.getAttribute("aria-hidden") && (el.getAttribute("tabindex") !== "-1"))
 }
 
-export function focusTrap (focusableElements: HTMLElement[], e: KeyboardEvent) 
+export function focusTrap (focusableElements: HTMLElement[], e: KeyboardEvent, noScroll: boolean = false) 
 {
+    const idx = focusableElements.findIndex(elem => elem === e.target)
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length-1];
+    e.preventDefault();
     
     if(e.shiftKey) {
-        if(e.target === firstElement) {
-            e.preventDefault();
-            lastElement.focus();
+        if(idx === 0) {     
+            lastElement.focus({preventScroll: noScroll});
+        }
+        else {
+            focusableElements[idx-1].focus({preventScroll: noScroll});
         }
     }
     else {
-        if(e.target === lastElement) {
-            e.preventDefault();
-            firstElement.focus();
+        if(idx === focusableElements.length-1) {
+            firstElement.focus({preventScroll: noScroll});
+        }
+        else {
+            focusableElements[idx+1].focus({preventScroll: noScroll});
         }
     }
 }
