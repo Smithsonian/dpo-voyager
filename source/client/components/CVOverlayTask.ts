@@ -340,6 +340,13 @@ export default class CVOverlayTask extends CVTask
 
             next.model.outs.quality.on("value", this.onQualityChange, this);
             next.model.outs.overlayMap.on("value", this.onUpdateIdx, this);
+
+            // load overlays
+            const overlayProp = this.activeModel.ins.overlayMap;
+            overlayProp.setOptions(["None"]);
+            this.activeModel.activeDerivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).forEach(image => {
+                overlayProp.setOptions(overlayProp.schema.options.concat(image.data.uri));
+            });
         }
 
         super.onActiveNode(previous, next);

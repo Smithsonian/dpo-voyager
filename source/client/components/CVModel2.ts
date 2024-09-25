@@ -217,8 +217,9 @@ export default class CVModel2 extends CObject3D
             };
         }
     }
-    getOverlays() {
-        return Object.keys(this._overlays).filter(key => this.ins.overlayMap.schema.options.includes(key)).map(key => this._overlays[key]);
+    getOverlays() { //TODO: This should be more efficient
+        return Object.keys(this._overlays).filter(key => this.activeDerivative.findAssets(EAssetType.Image).some(image => image.data.uri == key))
+            .map(key => this._overlays[key]);
     }
     deleteOverlay(key: string) {
         const overlayProp = this.ins.overlayMap;
@@ -602,8 +603,11 @@ export default class CVModel2 extends CObject3D
             });
             return;
         }
-        const mapURI = this.ins.overlayMap.getOptionText();
-        if (mapURI !== "None") {
+
+        const overlays = this.getOverlays();
+        const currIdx = this.ins.overlayMap.value-1;
+        if (currIdx >= 0 && overlays.length > currIdx) {
+            const mapURI = this.getOverlays()[currIdx].asset.uri;
             const texture = this.getOverlay(mapURI).texture;
             if(texture) {
                 this.updateOverlayMaterial(texture);

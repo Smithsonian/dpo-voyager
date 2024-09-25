@@ -72,7 +72,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         this.sceneview.style.cursor = props.paintMode.value === EPaintMode.Interact ? "grab" : "default";
 
         const overlayConfig = activeOverlay ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <div class="sv-label"><b>Overlays</b></div>
+            <div class="sv-label"><b>Overlay Editing</b></div>
             <sv-property-view .property=${props.overlayColor}></sv-property-view>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
