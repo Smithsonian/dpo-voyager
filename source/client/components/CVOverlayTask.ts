@@ -29,7 +29,7 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import NVNode from "../nodes/NVNode";
-import {Vector2, Raycaster, Scene, CanvasTexture, Mesh} from 'three';
+import {Vector2, CanvasTexture, Mesh} from 'three';
 import VGPUPicker from "../utils/VGPUPicker";
 import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
 import UberPBRMaterial from "client/shaders/UberPBRMaterial";
@@ -124,7 +124,7 @@ export default class CVOverlayTask extends CVTask
 
     get activeCanvas() {
         const idx = this.ins.activeIndex.value;
-        const key = this.overlays[idx].asset.uri;
+        const key = this.overlays[idx].asset.data.uri;
         return idx >= 0 ? this.getCanvas(key) : null;
     }
 
@@ -153,7 +153,7 @@ export default class CVOverlayTask extends CVTask
 
     get activeTexture() {
         const idx = this.ins.activeIndex.value;
-        return idx >= 0 ? this.getTexture(this.overlays[idx].asset.uri) : null;
+        return idx >= 0 ? this.getTexture(this.overlays[idx].asset.data.uri) : null;
     }
 
     get colorString() {
@@ -203,7 +203,7 @@ export default class CVOverlayTask extends CVTask
         if(ins.activeIndex.changed) {
             if(overlay && overlay.fromFile && !overlay.texture) {
                 // load texture from file if not done yet
-                this.assetReader.getTexture(overlay.asset.uri).then((map) => {
+                this.assetReader.getTexture(overlay.asset.data.uri).then((map) => {
                     map.flipY = false;
                     overlay.texture = map;
                     this.material.zoneMap = map;
@@ -228,8 +228,8 @@ export default class CVOverlayTask extends CVTask
             const newOverlay = model.getOverlay(newUri);
             ins.activeIndex.setValue(this.overlays.length - 1);
             newOverlay.texture = this.getTexture(newUri);
-            newOverlay.asset = newAsset.data;
-            this.setSaveNeeded(true);
+            newOverlay.asset = newAsset;
+            this.onSave();
       
             this.onOverlayChange();
             this.emit("update");
@@ -238,8 +238,9 @@ export default class CVOverlayTask extends CVTask
 
         if(ins.deleteOverlay.changed)
         {
-            this._canvasMap[overlay.asset.uri] = null;
-            this.activeModel.deleteOverlay(overlay.asset.uri);
+            this._canvasMap[overlay.asset.data.uri] = null;
+            this.activeModel.deleteOverlay(overlay.asset.data.uri);
+            this.activeModel.activeDerivative.removeAsset(overlay.asset);
             ins.activeIndex.setValue(-1);
 
             this.onOverlayChange();
@@ -498,7 +499,7 @@ export default class CVOverlayTask extends CVTask
         const derivative = model.activeDerivative;
         const quality = derivative.data.quality;
 
-        const imageName = this.overlays[this.ins.activeIndex.value].asset.uri;
+        const imageName = this.overlays[this.ins.activeIndex.value].asset.data.uri;
 
         const dataURI = currentCanvas.toDataURL("image/jpeg");
         this.saveTexture(imageName, dataURI, quality);
@@ -545,7 +546,7 @@ export default class CVOverlayTask extends CVTask
         var newName = name + "-overlaymap-" + (this.overlays.length+1) + "-" + quality + ".jpg";
         var count = 2;
         while(this.overlays.some(overlay => {
-            return overlay.asset.uri == newName;
+            return overlay.asset.data.uri == newName;
         }))
         {
             newName = name + "-overlaymap-" + (this.overlays.length+count) + "-" + quality + ".jpg";

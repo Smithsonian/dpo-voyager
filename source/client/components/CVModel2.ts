@@ -41,7 +41,7 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import CVEnvironment from "./CVEnvironment";
 import CVSetup from "./CVSetup";
 import { Dictionary } from "client/../../libs/ff-core/source/types";
-import { IAsset } from "client/models/Asset";
+import Asset from "client/models/Asset";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ export interface IModelLoadEvent extends ITypedEvent<"model-load">
 export interface IOverlay
 {
     texture: Texture;
-    asset: IAsset;
+    asset: Asset;
     fromFile: boolean;
     isDirty: boolean;
 }
@@ -607,7 +607,7 @@ export default class CVModel2 extends CObject3D
         const overlays = this.getOverlays();
         const currIdx = this.ins.overlayMap.value-1;
         if (currIdx >= 0 && overlays.length > currIdx) {
-            const mapURI = this.getOverlays()[currIdx].asset.uri;
+            const mapURI = this.getOverlays()[currIdx].asset.data.uri;
             const texture = this.getOverlay(mapURI).texture;
             if(texture) {
                 this.updateOverlayMaterial(texture);
@@ -844,7 +844,7 @@ export default class CVModel2 extends CObject3D
                 derivative.findAssets(EAssetType.Image).filter(image => image.data.mapType === EMapType.Zone).forEach(image => {
                     overlayProp.setOptions(overlayProp.schema.options.concat(image.data.uri));
                     const overlay = this.getOverlay(image.data.uri);
-                    overlay.asset = image.data;
+                    overlay.asset = image;
                     overlay.fromFile = true;
                 });
 

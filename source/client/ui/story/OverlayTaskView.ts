@@ -24,7 +24,8 @@ import { TaskView, customElement, property, html } from "../../components/CVTask
 import CVDocument from "../../components/CVDocument";
 
 import NVNode from "../../nodes/NVNode";
-import { IOverlay } from "../../components/CVModel2";
+import CVModel2, { IOverlay } from "../../components/CVModel2";
+import { EDerivativeQuality } from "client/schema/model";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +35,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
     protected featureConfigMode = false;
 
     protected sceneview : HTMLElement = null;
+    protected activeModel: CVModel2;
 
     protected get snapshots() {
         return this.activeDocument.setup.snapshots;
@@ -68,11 +70,12 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
         const props = task.ins;
         const activeOverlay = overlays[props.activeIndex.value];
+        const activeQuality = this.activeModel.activeDerivative.data.quality;
 
         this.sceneview.style.cursor = props.paintMode.value === EPaintMode.Interact ? "grab" : "default";
 
         const overlayConfig = activeOverlay ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <div class="sv-label"><b>Overlay Editing</b></div>
+            <div class="sv-label"><b>Overlay Editing [${EDerivativeQuality[activeQuality]} Derivative]</b></div>
             <sv-property-view .property=${props.overlayColor}></sv-property-view>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
@@ -130,28 +133,13 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
-        /*const prevTargets = previous ? previous.getComponent(CVTargets, true) : null;
-        const nextTargets = next ? next.getComponent(CVTargets, true) : null;
-
-        if(prevTargets)
-        {
-            prevTargets.outs.targetIndex.off("value", this.onUpdate, this);
-        }
-
-        if(nextTargets)
-        {
-            this.targets = nextTargets;
-            nextTargets.outs.targetIndex.on("value", this.onUpdate, this);
-        }*/
-
         if(previous && previous.model)
-        {
-           
+        {           
         }
 
         if(next && next.model)
         {
-            //this.overlays = this.task.overlays;
+            this.activeModel = next.model;
         }
 
         super.onActiveNode(previous, next);
@@ -227,7 +215,7 @@ export class OverlayList extends List<IOverlay>
 
     protected renderItem(item: IOverlay)
     {
-        return html`${item.isDirty ? "(unsaved) " : null}${item.asset.uri}`;
+        return html`${item.isDirty ? "(unsaved) " : null}${item.asset.data.uri}`;
     }
 
     protected isItemSelected(item: IOverlay)
