@@ -51,6 +51,7 @@ export default class VGPUPicker extends GPUPicker
 
         const viewport = event.viewport;
         camera = viewport.updateCamera(camera);
+        camera.layers.disable(1);
 
         const overrideMaterial = scene.overrideMaterial;
         const shader = scene.overrideMaterial = this.uvShader;
@@ -71,6 +72,7 @@ export default class VGPUPicker extends GPUPicker
         renderer.setClearColor(_color);
 
         scene.overrideMaterial = overrideMaterial;
+        camera.layers.enable(1);
 
         const buffer = this.pickBuffer;
 
@@ -103,6 +105,7 @@ export default class VGPUPicker extends GPUPicker
 
         const viewport = event.viewport;
         camera = viewport.updateCamera(camera);
+        camera.layers.disable(1);
 
         const overrideMaterial = scene.overrideMaterial;
         const shader = scene.overrideMaterial = this.zoneShader;
@@ -121,6 +124,7 @@ export default class VGPUPicker extends GPUPicker
         renderer.setClearColor(_color);
 
         scene.overrideMaterial = overrideMaterial;
+        camera.layers.enable(1);
 
         const buffer = this.pickBuffer;
 
