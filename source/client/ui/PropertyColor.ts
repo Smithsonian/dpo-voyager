@@ -44,6 +44,9 @@ export default class PropertyColor extends CustomElement
     @property({type: Boolean})
     compact :boolean = false;
 
+    @property({type: Boolean})
+    floating :boolean = true;
+
     protected color: Color = new Color();
 
     get alphaEnabled(){
@@ -105,6 +108,9 @@ export default class PropertyColor extends CustomElement
         const name = this.name || property.name;
         const color = this.color.toString(this.alphaEnabled);
 
+        const colorEdit = html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>`;
+        const popupColorEdit = html`<ff-popup .keepVisible=${true} .anchor=${this} .position=${"anchor"} .align=${"end"} .justify=${"end"}>${colorEdit}</ff-popup>`
+
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
                 ${this.compact?null:html`<input class="ff-input"
@@ -123,7 +129,7 @@ export default class PropertyColor extends CustomElement
                     >`}
                 <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
             </span>
-            ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>` : null}
+            ${this.pickerActive ? (this.floating ? popupColorEdit : colorEdit) : null}
         `;
     }
 
