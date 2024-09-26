@@ -610,28 +610,29 @@ export default class CVModel2 extends CObject3D
             const mapURI = this.getOverlays()[currIdx].asset.data.uri;
             const texture = this.getOverlay(mapURI).texture;
             if(texture) {
-                this.updateOverlayMaterial(texture);
+                this.updateOverlayMaterial(texture, mapURI);
             }
             else {
                 this.assetReader.getTexture(mapURI).then(map => {
                     this.getOverlay(mapURI).texture = map;
-                    this.updateOverlayMaterial(map);
+                    this.updateOverlayMaterial(map, mapURI);
                 });
             }
         }
         else {
-            this.updateOverlayMaterial(null);
+            this.updateOverlayMaterial(null, null);
         }
     }
 
     // helper function to update overlay map state
-    protected updateOverlayMaterial(texture: Texture)
+    protected updateOverlayMaterial(texture: Texture, uri: string)
     {
         this.object3D.traverse(object => {
             const material = object["material"];
             if (material && material.isUberPBRMaterial) {
                 if(texture) {
                     texture.flipY = false;
+                    material.enableOverlayAlpha(uri.endsWith(".jpg"));
                 }
                 material.zoneMap = texture;
                 material.enableZoneMap(texture != null);

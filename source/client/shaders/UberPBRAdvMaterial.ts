@@ -75,6 +75,7 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
             "MODE_XRAY": false,
             "CUT_PLANE": false,
             "USE_ZONEMAP": false,
+            "OVERLAY_ALPHA": false
         };
 
         this.uniforms = UniformsUtils.merge([
@@ -251,7 +252,12 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
         }
     }
 
-    enableZoneMap(enabled) {
+    enableZoneMap(enabled: boolean) {
         this.defines["USE_ZONEMAP"] = enabled;
+    }
+
+    // enable black-to-alpha blending for overlays
+    enableOverlayAlpha(enabled: boolean) {
+        this.defines["OVERLAY_ALPHA"] = enabled;
     }
 }

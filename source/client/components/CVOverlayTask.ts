@@ -501,7 +501,7 @@ export default class CVOverlayTask extends CVTask
 
         const imageName = this.overlays[this.ins.activeIndex.value].asset.data.uri;
 
-        const dataURI = currentCanvas.toDataURL("image/jpeg");
+        const dataURI = currentCanvas.toDataURL("image/png");
         this.saveTexture(imageName, dataURI, quality);
     }
 
@@ -543,13 +543,13 @@ export default class CVOverlayTask extends CVTask
 
     protected getUniqueName(name: string, quality: string) : string
     {
-        var newName = name + "-overlaymap-" + (this.overlays.length+1) + "-" + quality + ".jpg";
+        var newName = name + "-overlaymap-" + (this.overlays.length+1) + "-" + quality + ".png";
         var count = 2;
         while(this.overlays.some(overlay => {
             return overlay.asset.data.uri == newName;
         }))
         {
-            newName = name + "-overlaymap-" + (this.overlays.length+count) + "-" + quality + ".jpg";
+            newName = name + "-overlaymap-" + (this.overlays.length+count) + "-" + quality + ".png";
             count++;
         }
 
