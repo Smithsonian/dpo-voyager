@@ -63,8 +63,8 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
     {
         const task = this.task;
         const overlays = task.overlays;
-        
-        if (!overlays) {
+
+        if (!this.activeModel) {
             return html`<div class="sv-placeholder">Please select a model to edit its overlays.</div>`;
         }
 
@@ -77,6 +77,7 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
         const overlayConfig = activeOverlay ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <div class="sv-label"><b>Overlay Editing [${EDerivativeQuality[activeQuality]} Derivative]</b></div>
             <sv-property-view .property=${props.overlayColor}></sv-property-view>
+            <sv-property-view .property=${props.overlayOpacity}></sv-property-view>
             <div class="sv-label"><b>Painting Tools</b></div>
             <ff-button-group class="sv-commands">
                 <ff-button text="Interact" icon="pointer" class="ff-control" @click=${this.onClickInteract}></ff-button>
@@ -133,6 +134,8 @@ export default class OverlayTaskView extends TaskView<CVOverlayTask>
 
     protected onActiveNode(previous: NVNode, next: NVNode)
     {
+        this.activeModel = null;
+
         if(previous && previous.model)
         {           
         }

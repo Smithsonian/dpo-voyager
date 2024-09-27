@@ -68,6 +68,7 @@ export default class CVOverlayTask extends CVTask
         saveOverlays: types.Event("Overlay.Save"),
         overlayFill: types.Event("Overlay.Fill"),
         overlayClear: types.Event("Overlay.Clear"),
+        overlayOpacity: types.Percent("Overlay.Opacity", 1.0),
         overlayColor: types.ColorRGB("Overlay.Color", [1.0, 0.0, 0.0]),
         overlayBrushSize: types.Unit("Overlay.BrushSize", {preset: 10, min: 1, max: 100}),
         paintMode: types.Enum("Paint.Mode", EPaintMode, EPaintMode.Interact)
@@ -157,7 +158,8 @@ export default class CVOverlayTask extends CVTask
     }
 
     get colorString() {
-        return "#" + Math.round(this.ins.overlayColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.overlayColor.value[1]*255).toString(16).padStart(2, '0') + Math.round(this.ins.overlayColor.value[2]*255).toString(16).padStart(2, '0') + "FF";
+        return "#" + Math.round(this.ins.overlayColor.value[0]*255).toString(16).padStart(2, '0') + Math.round(this.ins.overlayColor.value[1]*255).toString(16).padStart(2, '0') 
+        + Math.round(this.ins.overlayColor.value[2]*255).toString(16).padStart(2, '0') + Math.round(this.ins.overlayOpacity.value*255).toString(16).padStart(2, '0');
     }
 
     constructor(node: Node, id: string)
@@ -254,7 +256,7 @@ export default class CVOverlayTask extends CVTask
             return true;
         }
 
-        if(ins.overlayColor.changed)
+        if(ins.overlayColor.changed || ins.overlayOpacity.changed)
         {
             const newColor = this.colorString;
             this.ctx.fillStyle = newColor;
@@ -275,13 +277,10 @@ export default class CVOverlayTask extends CVTask
         if(ins.paintMode.changed)
         {
             if(ins.paintMode.value == EPaintMode.Paint) {
-                const newColor = this.colorString;
-                this.ctx.fillStyle = newColor;
-                this.ctx.strokeStyle = newColor;
+                this.ctx.globalCompositeOperation="source-over";
             }
             else if(ins.paintMode.value == EPaintMode.Erase) {
-                this.ctx.fillStyle = "#000000FF";
-                this.ctx.strokeStyle = "#000000FF";
+                this.ctx.globalCompositeOperation="destination-out";
             }
             return true;
         }
@@ -294,9 +293,10 @@ export default class CVOverlayTask extends CVTask
 
         if(ins.overlayClear.changed)
         {
-            this.ctx.fillStyle = "#000000FF";
-            this.ctx.fillRect(0,0, this.activeCanvas.width, this.activeCanvas.height);
-            this.ctx.fillStyle = this.colorString;
+            this.ctx.globalCompositeOperation="destination-out";
+            this.ctx.clearRect(0,0, this.activeCanvas.width, this.activeCanvas.height);
+            this.ctx.globalCompositeOperation="source-over";
+            //this.ctx.fillStyle = this.colorString;
             this.updateOverlayTexture();
             this.setSaveNeeded(true);
             return true;
@@ -304,6 +304,7 @@ export default class CVOverlayTask extends CVTask
 
         if(ins.overlayFill.changed)
         {
+            this.ctx.clearRect(0,0, this.activeCanvas.width, this.activeCanvas.height);
             this.ctx.fillRect(0,0, this.activeCanvas.width, this.activeCanvas.height);
             this.updateOverlayTexture();
             this.setSaveNeeded(true);
@@ -363,9 +364,11 @@ export default class CVOverlayTask extends CVTask
         }
 
         if(isShowing) {
+            const compOp = this.ctx ? this.ctx.globalCompositeOperation : "source-over";
             this.ctx = this.activeCanvas.getContext('2d');
             this.ctx.lineWidth = Math.round(this.ins.overlayBrushSize.value);
-            this.ctx.fillStyle = this.colorString;    
+            this.ctx.fillStyle = this.colorString;
+            this.ctx.globalCompositeOperation = compOp;    
         }
         
         if(this.material) {
@@ -452,7 +455,11 @@ export default class CVOverlayTask extends CVTask
         this.activeTexture.transformUv( this.uv );
 
         const brushWidth = this.ins.overlayBrushSize.value;
-        this.ctx.fillRect(Math.floor(this.uv.x*this.activeCanvas.width)-(brushWidth/2), Math.floor(this.uv.y*this.activeCanvas.height)-(brushWidth/2), brushWidth, brushWidth);
+
+        const width = Math.floor(this.uv.x*this.activeCanvas.width)-(brushWidth/2);
+        const height = Math.floor(this.uv.y*this.activeCanvas.height)-(brushWidth/2);
+        this.ctx.clearRect(width, height, brushWidth, brushWidth);
+        this.ctx.fillRect(width, height, brushWidth, brushWidth);
         this.updateOverlayTexture();
     }
 
