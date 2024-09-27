@@ -456,8 +456,8 @@ export default class CVOverlayTask extends CVTask
 
         const brushWidth = Math.round(this.ins.overlayBrushSize.value);
 
-        const width = Math.floor(this.uv.x*this.activeCanvas.width)-(brushWidth/2);
-        const height = Math.floor(this.uv.y*this.activeCanvas.height)-(brushWidth/2);
+        const width = Math.floor(this.uv.x*this.activeCanvas.width)-Math.floor(brushWidth/2);
+        const height = Math.floor(this.uv.y*this.activeCanvas.height)-Math.floor(brushWidth/2);
         this.ctx.clearRect(width, height, brushWidth, brushWidth);
         this.ctx.fillRect(width, height, brushWidth, brushWidth);
         this.updateOverlayTexture();
