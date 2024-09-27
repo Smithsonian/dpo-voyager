@@ -454,7 +454,7 @@ export default class CVOverlayTask extends CVTask
         this.uv.setY(shaderUVs.y);
         this.activeTexture.transformUv( this.uv );
 
-        const brushWidth = this.ins.overlayBrushSize.value;
+        const brushWidth = Math.round(this.ins.overlayBrushSize.value);
 
         const width = Math.floor(this.uv.x*this.activeCanvas.width)-(brushWidth/2);
         const height = Math.floor(this.uv.y*this.activeCanvas.height)-(brushWidth/2);
@@ -508,7 +508,8 @@ export default class CVOverlayTask extends CVTask
 
         const imageName = this.overlays[this.ins.activeIndex.value].asset.data.uri;
 
-        const dataURI = currentCanvas.toDataURL("image/png");
+        const mimeType = imageName.endsWith(".png") ? "image/png" : "image/jpeg";
+        const dataURI = currentCanvas.toDataURL(mimeType);
         this.saveTexture(imageName, dataURI, quality);
     }
 
