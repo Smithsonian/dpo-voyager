@@ -22,6 +22,7 @@ import CustomElement, { customElement, property, PropertyValues, html } from "@f
 
 import "@ff/ui/Button";
 import "@ff/ui/ColorEdit";
+import Notification from "@ff/ui/Notification";
 
 import type { IColorEditChangeEvent } from "@ff/ui/ColorEdit";
 import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
@@ -40,8 +41,17 @@ export default class PropertyColor extends CustomElement
     @property({attribute: false, type: Boolean})
     pickerActive :boolean = false;
 
+    @property({type: Boolean})
+    compact :boolean = false;
+
+    @property({type: Boolean})
+    floating :boolean = true;
+
     protected color: Color = new Color();
 
+    get alphaEnabled(){
+        return this.property.elementCount === 4;
+    }
 
     constructor()
     {
@@ -65,8 +75,8 @@ export default class PropertyColor extends CustomElement
             throw new Error("missing property attribute");
         }
 
-        if (this.property.type !== "number" || this.property.elementCount !== 3) {
-            throw new Error(`not an color property: '${this.property.path}'`);
+        if (this.property.type !== "number" || 4 < this.property.elementCount ||this.property.elementCount < 3) {
+            throw new Error(`not a color property: '${this.property.path}'`);
         }
 
         if (changedProperties.has("property")) {
@@ -96,11 +106,30 @@ export default class PropertyColor extends CustomElement
     {
         const property = this.property;
         const name = this.name || property.name;
-        const color = this.color.toString();
+        const color = this.color.toString(this.alphaEnabled);
+
+        const colorEdit = html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>`;
+        const popupColorEdit = html`<ff-popup .keepVisible=${true} .anchor=${this} .position=${"anchor"} .align=${"end"} .justify=${"end"}>${colorEdit}</ff-popup>`
 
         return html`<label class="ff-label ff-off">${name}</label>
-            <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
-            ${this.pickerActive ? html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>` : null}
+            <span class="sv-property-field">
+                ${this.compact?null:html`<input class="ff-input"
+                        type="text"
+                        .value=${color}
+                        @change=${(ev)=>{
+                            try{
+                                this.color.setString(ev.target.value);
+                                this.onColorChange();
+                                ev.target.setCustomValidity("");
+                            }catch(e){
+                                ev.target.setCustomValidity(e.message);
+                                Notification.show(`Not a valid color: ${ev.target.value}`, "warning", 1000);
+                            }
+                        }}
+                    >`}
+                <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
+            </span>
+            ${this.pickerActive ? (this.floating ? popupColorEdit : colorEdit) : null}
         `;
     }
 
@@ -116,9 +145,10 @@ export default class PropertyColor extends CustomElement
         this.pickerActive = !this.pickerActive;
     }
     
-    protected onColorChange(event: IColorEditChangeEvent)
+    protected onColorChange()
     {
-        this.property.setValue(this.color.toRGBArray());
+
+        this.property.setValue( (this.alphaEnabled)? this.color.toRGBAArray() : this.color.toRGBArray() );
     }
 
     protected onPropertyChange(value: number[])

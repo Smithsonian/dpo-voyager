@@ -52,8 +52,8 @@ export interface IFloorMaterialParameters extends MeshPhongMaterialParameters
 
 export class FloorMaterial extends MeshPhongMaterial
 {
-    isMeshPhongMaterial: boolean;
-    isFloorMaterial: boolean;
+    readonly isMeshPhongMaterial = true;
+    readonly isFloorMaterial = true;
 
     uniforms: {
     };
@@ -68,9 +68,6 @@ export class FloorMaterial extends MeshPhongMaterial
         super(params);
 
         this.type = "FloorMaterial";
-
-        this.isMeshPhongMaterial = true;
-        this.isFloorMaterial = true;
 
         this.defines = {};
         this.uniforms = UniformsUtils.merge([

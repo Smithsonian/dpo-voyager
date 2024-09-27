@@ -33,6 +33,10 @@ uniform float opacity;
 	uniform float clearcoatRoughness;
 #endif
 
+#ifdef USE_DISPERSION
+	uniform float dispersion;
+#endif
+
 #ifdef USE_IRIDESCENCE
 	uniform float iridescence;
 	uniform float iridescenceIOR;
@@ -128,10 +132,11 @@ void main() {
             discard;
         }
     #endif
+		
+	vec4 diffuseColor = vec4( diffuse, opacity );
 
 	#include <clipping_planes_fragment>
 
-	vec4 diffuseColor = vec4( diffuse, opacity );
 	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
 	vec3 totalEmissiveRadiance = emissive;
 
@@ -240,7 +245,13 @@ void main() {
 
 	#ifdef USE_ZONEMAP
 		vec4 zoneColor = texture2D(zoneMap, vZoneUv);
-		gl_FragColor += mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(zoneColor.rgb, 1.0), zoneColor.a);
+
+		#ifdef OVERLAY_ALPHA
+			gl_FragColor += mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(zoneColor.rgb, 1.0), zoneColor.a);
+		#endif
+		#ifndef OVERLAY_ALPHA
+			gl_FragColor = mix(gl_FragColor, vec4(zoneColor.rgb, 1.0), zoneColor.a);
+		#endif
 	#endif
 
 	#include <tonemapping_fragment>

@@ -3,6 +3,7 @@
         "target": "ES6",
         "module": "commonjs",
         "sourceMap": true,
+        "types": [],
 
         "outDir": "../../services/server/bin",
         "baseUrl": "../../services/server/bin/node_modules"

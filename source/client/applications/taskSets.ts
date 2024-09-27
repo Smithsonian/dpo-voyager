@@ -22,6 +22,7 @@ import CVAnnotationsTask from "../components/CVAnnotationsTask";
 import CVDerivativesTask from "../components/CVDerivativesTask";
 import CVArticlesTask from "../components/CVArticlesTask";
 import CVToursTask from "../components/CVToursTask";
+import CVOverlayTask from "../components/CVOverlayTask";
 import CVAudioTask from "../components/CVAudioTask";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +37,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        //CVOverlayTask,
         CVAudioTask,
         CVSettingsTask,
     ],
@@ -59,6 +61,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        CVOverlayTask,
         CVAudioTask,
         CVSettingsTask,
     ],
@@ -69,6 +72,7 @@ export default {
         CVAnnotationsTask,
         CVArticlesTask,
         CVToursTask,
+        //CVOverlayTask,
         CVAudioTask,
         CVSettingsTask,
     ]

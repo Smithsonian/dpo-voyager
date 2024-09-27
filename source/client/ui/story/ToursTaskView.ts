@@ -182,7 +182,11 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             task.ins.tourTitle.setValue(sanitizeHtml(text));
         }
         else if (target.name === "lead") {
-            task.ins.tourLead.setValue(text);
+            task.ins.tourLead.setValue(sanitizeHtml(text, 
+                {
+                    allowedTags: [ 'b', 'i', 'em', 'strong', 'sup', 'sub' ],
+                }
+            ));
         }
         else if (target.name === "tags") {
             task.ins.tourTags.setValue(text);
