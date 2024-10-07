@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3, DoubleSide, Euler, Mesh, MeshBasicMaterial, PlaneGeometry, Texture } from "three";
+import { Box3, DoubleSide, Euler, Mesh, MeshBasicMaterial, NotEqualStencilFunc, PlaneGeometry, ReplaceStencilOp, Texture } from "three";
 
 import { types } from "@ff/graph/Component";
 import CObject3D from "@ff/scene/components/CObject3D";
@@ -85,10 +85,10 @@ export default class CVSlicer extends CObject3D
 
     protected plane: number[] = null;
     protected axisIndex = -1;
-    protected xSliceSprites: Texture = null;
-    protected sliceDimU = 43;
-    protected sliceDimV = 11;
-    protected sliceCount = 469;
+    protected sliceSprites: Texture[] = [null,null,null];
+    protected sliceDims = [{u: 20, v: 20}, {u: 14, v: 20}, {u: 27, v: 20}];
+    protected sliceSize = [{x: 70.2, y: 36.4, z: 52}, {x: 70.2, y: 52, z: 36.4}, {x: 36.4, y: 52, z: 70.2}];
+    protected sliceCounts = [400, 280, 540];
 
     create()
     {
@@ -102,8 +102,14 @@ export default class CVSlicer extends CObject3D
     {
         const ins = this.ins;
 
-        if(this.xSliceSprites == null) {
-            this.assetReader.getTexture("xSlice.jpg").then((texture) => this.xSliceSprites = texture);
+        if(this.sliceSprites[0] == null) {
+            this.assetReader.getTexture("xSlice.jpg").then((texture) => {this.sliceSprites[0] = texture; ins.enabled.set();});
+        }
+        if(this.sliceSprites[1] == null) {
+            this.assetReader.getTexture("ySlice.jpg").then((texture) => {this.sliceSprites[1] = texture; ins.enabled.set(); });
+        }
+        if(this.sliceSprites[2] == null) {
+            this.assetReader.getTexture("zSlice.jpg").then((texture) => {this.sliceSprites[2] = texture; ins.enabled.set(); });
         }
 
         if (ins.axis.changed) {
@@ -116,6 +122,13 @@ export default class CVSlicer extends CObject3D
             else {
                 ins.inverted.setValue(false);
                 this.axisIndex = axisIndex;
+
+                if(this.object3D) {
+                    this.sliceSprites[axisIndex].repeat.set(1/this.sliceDims[axisIndex].u,1/this.sliceDims[axisIndex].v);
+                    this.object3D["material"].map = this.sliceSprites[axisIndex];
+                    this.object3D.scale.set(this.sliceSize[axisIndex].x, this.sliceSize[axisIndex].y, 1.0);
+                    this.object3D.updateMatrix();
+                }
             }
         }
 
@@ -134,28 +147,45 @@ export default class CVSlicer extends CObject3D
 
         // set components of slicing plane vector
         this.plane = _planes[planeIndex];
-        const min = boundingBox.min.getComponent(axisIndex);
-        const max = boundingBox.max.getComponent(axisIndex);
+        let min = boundingBox.min.getComponent(axisIndex);
+        let max = boundingBox.max.getComponent(axisIndex);
+        const boundsScale = this.sliceSize[axisIndex].z/(max-min);
+        min *= boundsScale;
+        max *= boundsScale;
         const value = 1 - ins.position.value;
         this.plane[3] = axisInverted ? value * (max - min) - max :  max - value * (max - min);
 
         // init slice plane
         const angle = Math.PI*0.5;
-        if(!this.object3D && isFinite(min) && isFinite(max)) {
-            const geometry = new PlaneGeometry( max-min, max-min );
+        if(!this.object3D && isFinite(min) && isFinite(max) && this.sliceSprites[axisIndex]) {
+            //const geometry = new PlaneGeometry( ((max-min)*1.929)/1.41, (max-min)/1.41 );
+            const geometry = new PlaneGeometry( 1.0, 1.0 );
             const material = new MeshBasicMaterial( {side: DoubleSide} );
-            this.xSliceSprites.repeat.set(1/this.sliceDimU,1/this.sliceDimV);
-            material.map = this.xSliceSprites;
+            
+            material.stencilWrite = true;
+            material.stencilRef = 0;
+            material.stencilFunc = NotEqualStencilFunc;
+            material.stencilFail = ReplaceStencilOp;
+            material.stencilZFail = ReplaceStencilOp;
+            material.stencilZPass = ReplaceStencilOp;
+
+            this.sliceSprites[axisIndex].repeat.set(1/this.sliceDims[axisIndex].u,1/this.sliceDims[axisIndex].v);
+            material.map = this.sliceSprites[axisIndex];
             const plane = new Mesh( geometry, material );
             this.object3D = plane;
+            this.object3D.scale.set(this.sliceSize[axisIndex].x, this.sliceSize[axisIndex].y, 1.0);
+            this.object3D.renderOrder = 10;
         }
         // update slice plane
         if(this.object3D) {
-            const sliceIdx = Math.round(value * (this.sliceCount-1));
-            this.xSliceSprites.offset.set((sliceIdx%this.sliceDimU)/this.sliceDimU, (1-(1/this.sliceDimV))-Math.floor(sliceIdx/this.sliceDimU)/this.sliceDimV);
+            const idx = Math.round(value * (this.sliceCounts[axisIndex]));
+            const sliceIdx = this.plane[0] ? this.sliceCounts[axisIndex] - idx : idx;
+            
+            this.sliceSprites[axisIndex].offset.set((sliceIdx%this.sliceDims[axisIndex].u)/this.sliceDims[axisIndex].u, (1-(1/this.sliceDims[axisIndex].v))-Math.floor(sliceIdx/this.sliceDims[axisIndex].u)/this.sliceDims[axisIndex].v);
 
             const pos = max - value * (max - min);
-            this.object3D.setRotationFromEuler(new Euler(this.plane[1]*angle,this.plane[0]*angle,0));
+            const rotPlane = _planes[axisIndex];
+            this.object3D.setRotationFromEuler(new Euler(rotPlane[1]*3*angle,rotPlane[0]*angle+rotPlane[2]*2*angle,-rotPlane[1]*angle+rotPlane[2]*angle));
             this.object3D.position.set(Math.abs(this.plane[0])*pos, Math.abs(this.plane[1])*pos, Math.abs(this.plane[2])*pos);
             this.object3D.updateMatrix();
         }
@@ -210,7 +240,7 @@ export default class CVSlicer extends CObject3D
     {
         const ins = this.ins;
 
-        if (ins.enabled.changed) {
+        if (ins.enabled.value != material.defines["CUT_PLANE"]) {
             material.enableCutPlane(ins.enabled.value);
             material.needsUpdate = true;
         }

@@ -174,7 +174,7 @@ export default class CVScene extends CVNode
 
         this.models.forEach(model => {
             if(model.object3D.visible){
-                box.expandByObject(model.object3D);
+                box.expandByObject(model.object3D, true);
             }
         });
         box.getSize(_vec3);

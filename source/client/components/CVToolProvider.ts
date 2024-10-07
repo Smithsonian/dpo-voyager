@@ -24,6 +24,7 @@ import CComponentProvider, {
 
 import CVTool from "./CVTool";
 import CVAnalytics from "./CVAnalytics";
+import CVSliceTool from "./CVSliceTool";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +37,7 @@ export default class CVToolProvider extends CComponentProvider<CVTool>
     static readonly componentType = CVTool;
 
     protected static readonly ins = {
-        visible: types.Boolean("Tools.Visible"),
+        visible: types.Boolean("Tools.Visible", true),  // HACK for demo purposes
         closed: types.Event("Tools.Closed")
     };
 

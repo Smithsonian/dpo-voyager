@@ -39,11 +39,11 @@ export default class NVTools extends Node
     createComponents()
     {
         this.createComponent(CVToolProvider);
-        this.createComponent(CVViewTool);
+        /*this.createComponent(CVViewTool);         // HACK for Demo purposes
         this.createComponent(CVRenderTool);
         this.createComponent(CVEnvironmentTool);
         this.createComponent(CVLightTool);
-        this.createComponent(CVTapeTool);
+        this.createComponent(CVTapeTool);*/
         this.createComponent(CVSliceTool);
     }
 }

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide } from "three";
+import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, AlwaysStencilFunc, IncrementWrapStencilOp, MeshBasicMaterial, DecrementWrapStencilOp } from "three";
 
 import Notification from "@ff/ui/Notification";
 
 import { ITypedEvent, Node, types } from "@ff/graph/Component";
-import CObject3D from "@ff/scene/components/CObject3D";
+import CObject3D, { IRenderContext } from "@ff/scene/components/CObject3D";
 
 import * as helpers from "@ff/three/helpers";
 
@@ -797,5 +797,45 @@ export default class CVModel2 extends CObject3D
                 this.registerPickableObject3D(node, true);
             }
         });
+    }
+
+
+    preRender(context: IRenderContext)
+    {
+        let saveMat = null;
+        this.object3D.traverse(object => {
+            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
+            if (material && material.isUberPBRMaterial) {
+                saveMat = material;
+            }
+        });
+
+        if(!saveMat) {
+            return;
+        }
+
+        // modify material for stencil buffer pass
+        saveMat.depthWrite = false;
+        saveMat.depthTest = false;
+        saveMat.colorWrite = false;
+        saveMat.stencilWrite = true;
+        saveMat.stencilFunc = AlwaysStencilFunc;
+        saveMat.side = BackSide;
+        saveMat.stencilFail = IncrementWrapStencilOp;
+        saveMat.stencilZFail = IncrementWrapStencilOp;
+        saveMat.stencilZPass = IncrementWrapStencilOp;
+
+        this.renderer.views[0].renderer.render(this.object3D, context.camera);
+
+        // restore material for regular render pass
+        saveMat.depthWrite = true;
+        saveMat.depthTest = true;
+        saveMat.colorWrite = true;
+        saveMat.stencilWrite = true;
+        saveMat.stencilFunc = AlwaysStencilFunc;
+        saveMat.side = FrontSide;
+        saveMat.stencilFail = DecrementWrapStencilOp;
+        saveMat.stencilZFail = DecrementWrapStencilOp;
+        saveMat.stencilZPass = DecrementWrapStencilOp;
     }
 }
