@@ -27,6 +27,7 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
+import UberBasicMaterial from "client/shaders/UberBasicMaterial";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -135,7 +136,8 @@ export default class ModelReader
 
                 mesh.geometry.computeBoundingBox();
 
-                const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
+                const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : 
+                    material.type === "MeshBasicMaterial" ? new UberBasicMaterial() : new UberPBRMaterial();
 
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
@@ -144,7 +146,7 @@ export default class ModelReader
                 }
 
                 // copy properties from previous material
-                if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial") {
+                if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial" || material.type === "MeshBasicMaterial") {
                     uberMat.copy(material);
                 }
 
