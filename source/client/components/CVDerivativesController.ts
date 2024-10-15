@@ -6,7 +6,7 @@ import CPulse, { IPulseContext, IPulseEvent } from "@ff/graph/components/CPulse"
 import Component from "@ff/graph/Component";
 import { EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 import CRenderer from "@ff/scene/components/CRenderer";
-import { Vector2, Vector3, Box3, Matrix4 } from "three";
+import { Vector2, Vector3, Box3, Matrix4, Object3D } from "three";
 import CTransform from "@ff/scene/components/CTransform";
 import CVNode from "./CVNode";
 
@@ -79,6 +79,7 @@ const _ndcBox = new Box3();
 const _localBox = new Box3();
 const _vec3a = new Vector3();
 const _mat4 = new Matrix4();
+const _cam_fwd = new Vector3(0, 0, 1);
 
 /**
  * Dynamic LOD handling. * 
@@ -164,10 +165,11 @@ export default class CVDerivativesController extends Component{
       return false;
     }
 
+    cameraComponent.camera.getWorldDirection(_cam_fwd);
+
     let changes = 0; //We don't want to start too many upgrades at once
-    const centerWeights = [];
-    const boxes = [];
-    let models :Array<{model:CVModel2, relSize:number, clipped: boolean, quality:EDerivativeQuality, weight: number}> = this.getGraphComponents(CVModel2).map(model=>{
+    const weights :Array<[string, any]>= [];
+    let models :Array<{model:CVModel2, size:number, clipped: boolean, quality:EDerivativeQuality, weight: number}> = this.getGraphComponents(CVModel2).map(model=>{
       _ndcBox.makeEmpty();
 
       //We can't just use the model's matrixWorld here because it might not have loaded yet.
@@ -182,9 +184,11 @@ export default class CVDerivativesController extends Component{
         _localBox.applyMatrix4(_mat4);
         t = t.parent as CTransform|CVNode;
       }
+      let clipped = true;
       //Ideally we use NDC (Normalized Display Coordinates) to compute the perceived size of an object on-screen
       //The thing with NDC is they are crap at representing objects that are on the side of the camera
       //They tends to have infinite (X,Y) sizes that don't make any sense
+      //Additionally it's hard to make sense of objects that crosses the camera's cross plane.
       [
         [_localBox.min.x, _localBox.min.y, _localBox.min.z],
         [_localBox.max.x, _localBox.min.y, _localBox.min.z],
@@ -196,35 +200,44 @@ export default class CVDerivativesController extends Component{
         [_localBox.min.x, _localBox.max.y, _localBox.min.z],
       ].forEach((coords:[number, number, number], index)=>{
           _vec3a.set(...coords).project(cameraComponent.camera);
-          _ndcBox.expandByPoint(_vec3a);
+          if(cameraComponent.camera.near < _vec3a.z && _vec3a.z < 1){
+            if(Math.abs(_vec3a.x) < 1 && Math.abs(_vec3a.y) < 1){
+              clipped = false;
+            }
+            _ndcBox.expandByPoint(_vec3a);
+          }
       });
 
       _localBox.getCenter(_vec3a);
-      const distance = (_vec3a.distanceTo(cameraComponent.camera.position))/cameraComponent.camera.far;
+      const distance = _vec3a.distanceTo(cameraComponent.camera.position)/cameraComponent.camera.far;
+      const angle = _vec3a.angleTo(_cam_fwd);
 
-      const depthMod = Math.max(1-distance, 0.2);
-      const centerMod = maxCenterWeight(_ndcBox);
-      _ndcBox.getSize(_vec3a);
-      let relSize = (_vec3a.x *_vec3a.y)/4;
-
+      _localBox.getSize(_vec3a);
       _ndcBox.min.clampScalar(-1,1);
       _ndcBox.max.clampScalar(-1,1);
       _ndcBox.getSize(_vec3a);
       let visibleSize = (_vec3a.x *_vec3a.y)/4;
+      //let visibleSize = Math.abs((_localBox.max.angleTo(_cam_fwd) - _localBox.min.angleTo(_cam_fwd)))/(cameraComponent.camera.fov*Math.PI/180);
 
-      let clipped = 1 < distance
-                  || _ndcBox.max.z < 0 //Behind us
-                  || (visibleSize == 0);
 
-      const weight = Math.max(visibleSize, 0.1)*centerMod*depthMod;
-      boxes.push([weight, depthMod]);
+      const depthMod = Math.max(1-distance, 0.1);
+      const angleMod = 1 - Math.abs(angle)/Math.PI;
+
+      weights.push([model.ins.name.value, {distance, angle, depthMod, angleMod, visibleSize}]);
+
+      const weight = depthMod*angleMod;
 
       //Upgrade only here
       let quality =  Math.max(model.ins.quality.value, getQuality(model.ins.quality.value, visibleSize));
 
-      return {model, relSize: visibleSize, clipped, weight, quality};
+      return {model, size:visibleSize, clipped, weight, quality};
     })
-    .sort((a, b)=> a.weight - b.weight); //Models that have a high difference between their relSize and weight are the first to get downgraded
+    .sort((a, b)=> a.weight - b.weight); //Models that have a high difference between their size and weight are the first to get downgraded
+
+
+
+
+
 
     /** @fixme : ideally, cancel anything that is in-glight and no longer needed */
 
@@ -236,7 +249,7 @@ export default class CVDerivativesController extends Component{
     while(this._budget < textureSize){
       const model = models[idx];
       if(model.clipped || !clippedOnly){
-        let q = getQuality(model.model.ins.quality.value, model.relSize);
+        let q = getQuality(model.model.ins.quality.value, model.size);
         if( q < model.quality){
           textureSize = textureSize - sizes[model.quality] + sizes[q];
           model.quality = q;
@@ -246,7 +259,9 @@ export default class CVDerivativesController extends Component{
       if(models.length <= ++idx){
         passes++;
         for(let model of models){
-          model.relSize = model.relSize*model.weight;
+          //Here it is important to decide _how_ models size is to be changed
+          //It affects which models will be downgraded first
+          model.size = model.size*model.weight;
         }
         if(passes == 1)console.debug("%d downgrades after first pass", downgrades);
         if(model.quality == EDerivativeQuality.Thumb) break; // Prevent infinite loop
@@ -269,13 +284,24 @@ export default class CVDerivativesController extends Component{
         model.ins.quality.setValue(bestMatchDerivative.data.quality);
       }
     }
+
+
     if(0 < changes){
       this._debounce = 0;
+      let notClipped = models.filter(m=>!m.clipped);
+      let byDistance = weights.sort(([, a],[, b])=> a.distance - b.distance).slice(0);
+      let byAngle = weights.sort(([, a],[, b])=> a.angle - b.angle).reverse().slice(0, 4);
+      let byVsize = weights.sort(([, a],[, b])=> a.visibleSize - b.visibleSize).reverse().slice(0, 4);
+
+      // console.debug("Centered : ", byAngle.map(m=>`${m[0]} (${m[1].angleMod})`).join(", "));
+      // console.debug("Visible : \n\t", notClipped.map(m=>m.model.ins.name.value).join("\n\t"))
+      //console.log("VSize : ", byVsize[0][1].visibleSize, byVsize.map(m=>m[0]).join(", "));
+  
+
       const countQ = (q :EDerivativeQuality)=>models.reduce((s, m)=>(s+((m.quality=== q)?1:0)), 0);
       console.debug(`models :(%d, %d, %d, %d)`, countQ(EDerivativeQuality.High), countQ(EDerivativeQuality.Medium), countQ(EDerivativeQuality.Low), countQ(EDerivativeQuality.Thumb));
-      console.debug(`%d/%d clipped models, %d hidden, %d downgraded in %d downgrade passes`, models.reduce((s,m)=>s+(m.clipped?1:0), 0), models.length, hidden, downgrades, passes);
-      //console.debug("DepthMods:", boxes.map(b=>`[${b.join(",")}]`).join(", "));
-      console.debug("Highest priorities : ",models.slice(-3).map(m=>m.model.name).join(", "));
+      //console.debug(`%d/%d clipped models, %d hidden, %d downgraded in %d downgrade passes`, models.reduce((s,m)=>s+(m.clipped?1:0), 0), models.length, hidden, downgrades, passes);
+      //console.debug("High quality models : ", models.filter((m)=>m.quality ===EDerivativeQuality.High).map(m=>m.model.ins.name.value).join(", "))
     }
     // We could refine our "pixel budget" here by getting the actual number of maps loaded on each model
     return 0 < changes;
