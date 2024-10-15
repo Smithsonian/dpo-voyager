@@ -71,6 +71,7 @@ export default class SceneView extends SystemView
         this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
         this.ownerDocument.addEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
         this.ownerDocument.addEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
+        this.addEventListener("dblclick", this.manipTarget.onDoubleClick);
         this.addEventListener("wheel", this.manipTarget.onWheel);
         this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
         this.addEventListener("keydown", this.manipTarget.onKeyDown);
@@ -168,6 +169,7 @@ export default class SceneView extends SystemView
             this.ownerDocument.addEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
             this.ownerDocument.addEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
             this.ownerDocument.addEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.addEventListener("dblclick", this.manipTarget.onDoubleClick);
             this.addEventListener("wheel", this.manipTarget.onWheel);
             this.addEventListener("contextmenu", this.manipTarget.onContextMenu);
             this.addEventListener("keydown", this.manipTarget.onKeyDown);
@@ -186,6 +188,7 @@ export default class SceneView extends SystemView
             this.ownerDocument.removeEventListener("pointermove", this.manipTarget.onPointerMove);         // To catch out of frame drag releases
             this.ownerDocument.removeEventListener("pointerup", this.onPointerUpOrCancel);     // To catch out of frame drag releases
             this.ownerDocument.removeEventListener("pointercancel", this.onPointerUpOrCancel); // To catch out of frame drag releases
+            this.removeEventListener("dblclick", this.manipTarget.onDoubleClick);
             this.removeEventListener("wheel", this.manipTarget.onWheel);
             this.removeEventListener("contextmenu", this.manipTarget.onContextMenu);
             this.removeEventListener("keydown", this.manipTarget.onKeyDown);
