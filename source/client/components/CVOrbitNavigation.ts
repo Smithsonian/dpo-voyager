@@ -102,6 +102,7 @@ export default class CVOrbitNavigation extends CObject3D
     private _autoRotationStartTime = null;
     private _initYOrbit = null;
     private _projection :EProjection = null;
+    private _clickDebounce :number = null
 
     constructor(node: Node, id: string)
     {
@@ -149,7 +150,6 @@ export default class CVOrbitNavigation extends CObject3D
         super.create();
 
         this.system.on<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
-        this.system.on<ITriggerEvent>("double-click", this.onDoubleClick, this);
         this.system.on<ITriggerEvent>("wheel", this.onTrigger, this);
         this.system.on<IKeyboardEvent>("keydown", this.onKeyboard, this);
 
@@ -417,15 +417,26 @@ export default class CVOrbitNavigation extends CObject3D
             return;
         }
 
-        if (this.ins.enabled.value && this._scene.activeCameraComponent) {
-            if (event.type === "pointer-down" && window.getSelection().type !== "None") {
-                window.getSelection().removeAllRanges();
-            }
-            this._controller.setViewportSize(viewport.width, viewport.height);
-            this._controller.onPointer(event);
-            event.stopPropagation = true;
+        if (!this.ins.enabled.value || !this._scene.activeCameraComponent) {
+            return;
         }
 
+        if (event.type === "pointer-down" ) {
+            if(window.getSelection().type !== "None"){
+                window.getSelection().removeAllRanges();
+            }
+            const ts = event.originalEvent.timeStamp;
+            if(ts < this._clickDebounce + 400){
+                this.onDoubleClick({...event, type: "double-click", wheel: 0});
+                this._clickDebounce = 0;
+            }else{
+                this._clickDebounce = ts;
+            }
+        }
+        this._controller.setViewportSize(viewport.width, viewport.height);
+        this._controller.onPointer(event);
+
+        event.stopPropagation = true;
         this._hasChanged = true;
     }
 
