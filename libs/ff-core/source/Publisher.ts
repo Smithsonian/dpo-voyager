@@ -182,15 +182,15 @@ export default class Publisher
      * @param type Type name of the event.
      * @param message The object sent to the subscribers of the event type.
      */
-    emit(type: string, message?: any);
+    emit(type: string, message?: any):boolean;
     /**
      * Emits an event to all subscribers of the event's type.
      * @param event The event object sent to the subscribers of the event's type.
      */
-    emit<T extends ITypedEvent<string>>(event: T);
-    emit(eventOrType, message?)
+    emit<T extends ITypedEvent<string>>(event: T):boolean;
+    emit<T extends ITypedEvent<string>>(eventOrType:string|T, message?:T)
     {
-        let type, payload;
+        let type:string, payload:T;
         if (typeof eventOrType === "string") {
             type = eventOrType;
             payload = message;
@@ -212,7 +212,7 @@ export default class Publisher
                 throw new Error(`can't emit; unknown event type: '${type}'`);
             }
 
-            return;
+            return false;
         }
 
         for (let i = 0, n = subscribers.length; i < n; ++i) {
@@ -224,6 +224,7 @@ export default class Publisher
                 subscriber.callback(payload);
             }
         }
+        return subscribers.length != 0;
     }
 
     /**
