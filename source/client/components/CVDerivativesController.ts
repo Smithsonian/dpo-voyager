@@ -127,34 +127,34 @@ export default class CVDerivativesController extends Component{
   {
       super(node, id);
       this._scene = this.activeScene;
-      this.renderer.outs.maxTextureSize.on("value", ()=>{
-        // We expect scene performance to always be texture-limited.
-        // For example a hundred untextured objects with 25k vertices each would pose absolutely no problem even to a low end mobile device. 
-        // However a few 4k maps are enough to overload such a device's GPU and internet connection.
-        // First, evaluate raw maximum texture space as an upper bound. This is halved because:
-        //  1. we don't particularly want to max-out. This is not a "reasonable", but a "system max supported" value. 
-        //  2. This is total available space and any object can have any number of textures (we'd be able to refine this exact number if we wanted)
-        //      to which we need to add lightmaps, environment, etc. We just simplify to 1/4 the texture space
-        let budget = Math.pow(this.renderer.outs.maxTextureSize.value/2, 2);
-        if(typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency < 4){
-          console.debug("Reduce budget because of low CPU count");
-          budget = budget/2;
-        }
-        if((navigator as any).userAgentData?.mobile){
-          console.debug("Reduce budget because of mobile device");
-          budget = budget/1.5; //
-        }
-        if(typeof (navigator as any).deviceMemory === "number" && (navigator as any).deviceMemory < 8){
-          console.debug("Reduce budget because of low RAM");
-          budget = Math.min(budget, sizes[EDerivativeQuality.High]*4);
-        }
-        this._budget = Math.max(sizes[EDerivativeQuality.High]*2, budget);
-        console.debug("Performance budget: ", Math.sqrt(this._budget));
-      });
+      this.renderer.outs.maxTextureSize.on("value", this.setTextureBudget);
   }
 
 
-
+  setTextureBudget = ()=>{
+    // We expect scene performance to always be texture-limited.
+    // For example a hundred untextured objects with 25k vertices each would pose absolutely no problem even to a low end mobile device. 
+    // However a few 4k maps are enough to overload such a device's GPU and internet connection.
+    // First, evaluate raw maximum texture space as an upper bound. This is halved because:
+    //  1. we don't particularly want to max-out. This is not a "reasonable", but a "system max supported" value. 
+    //  2. This is total available space and any object can have any number of textures (we'd be able to refine this exact number if we wanted)
+    //      to which we need to add lightmaps, environment, etc. We just simplify to 1/4 the texture space
+    let budget = Math.pow(this.renderer.outs.maxTextureSize.value/2, 2);
+    if(typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency < 4){
+      console.debug("Reduce budget because of low CPU count");
+      budget = budget/2;
+    }
+    if((navigator as any).userAgentData?.mobile){
+      console.debug("Reduce budget because of mobile device");
+      budget = budget/1.5; //
+    }
+    if(typeof (navigator as any).deviceMemory === "number" && (navigator as any).deviceMemory < 8){
+      console.debug("Reduce budget because of low RAM");
+      budget = Math.min(budget, sizes[EDerivativeQuality.High]*4);
+    }
+    this._budget = Math.max(sizes[EDerivativeQuality.High]*2, budget);
+    console.debug("Performance budget: ", Math.sqrt(this._budget));
+  }
 
   tock(context :IPulseContext) :boolean{
     const cameraComponent = this._scene?.activeCameraComponent;
@@ -280,6 +280,7 @@ export default class CVDerivativesController extends Component{
       const bestMatchDerivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
       if(bestMatchDerivative && bestMatchDerivative.data.quality != current ){
         if(current < bestMatchDerivative.data.quality && 2 < (++changes)){continue;}
+        /** @fixme should prevent having too many loading models at once because that creates network contention */
         //console.debug("Set quality for ", model.ins.name.value, " from ", current, " to ", bestMatchDerivative.data.quality);
         model.ins.quality.setValue(bestMatchDerivative.data.quality);
       }
