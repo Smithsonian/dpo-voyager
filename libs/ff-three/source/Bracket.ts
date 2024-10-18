@@ -130,6 +130,10 @@ export default class Bracket extends LineSegments
         this.renderOrder = 1;
     }
 
+    update(){
+        
+    }
+
     dispose()
     {
 

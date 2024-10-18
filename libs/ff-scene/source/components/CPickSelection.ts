@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import Component, { types } from "@ff/graph/Component";
+import Component, { IUpdateContext, types } from "@ff/graph/Component";
 import ComponentTracker from "@ff/graph/ComponentTracker";
 import Node from "@ff/graph/Node";
 import CSelection from "@ff/graph/components/CSelection";
@@ -15,19 +15,25 @@ import Axes from "@ff/three/Axes";
 
 import { IPointerEvent } from "../RenderView";
 
+import SpotLightHelper from "@ff/three/lights/SpotLightHelper";
+import DirectionalLightHelper from "@ff/three/lights/DirectionalLightHelper";
+import PointLightHelper from "@ff/three/lights/PointLightHelper";
+import AmbientLightHelper from "@ff/three/lights/AmbientLightHelper";
+import RectLightHelper from "@ff/three/lights/RectLightHelper";
+
 import CObject3D from "./CObject3D";
 import CTransform from "./CTransform";
 import CScene, { ISceneAfterRenderEvent } from "./CScene";
-import { Box3, Color, DirectionalLightHelper, HemisphereLightHelper, Object3D, PointLightHelper, SpotLightHelper, Vector3 } from "three";
-
+import { Box3, Color, Object3D } from "three";
 ////////////////////////////////////////////////////////////////////////////////
 
 const helpers = [
     [DirectionalLightHelper, "DirectionalLight"],
     [PointLightHelper, "PointLight"],
     [SpotLightHelper, "SpotLight"],
-    [HemisphereLightHelper, "HemisphereLight"],
-    [PointLightHelper, "RectAreaLight"],
+    [AmbientLightHelper, "HemisphereLight"],
+    [AmbientLightHelper, "AmbientLight"],
+    [RectLightHelper, "RectAreaLight"],
 ] as const;
 
 const _inputs = {
@@ -36,15 +42,15 @@ const _inputs = {
     viewportAxes: types.Boolean("Viewport.Axes", false),
 };
 
-type Disposable = Object3D & {dispose: ()=>void};
+type HelperClass = Object3D & {dispose: ()=>void, update: ()=>void};
 export default class CPickSelection extends CSelection
 {
     static readonly typeName: string = "CPickSelection";
 
     ins = this.addInputs<CSelection, typeof _inputs>(_inputs);
 
-    private _brackets = new Map<Component, Disposable>();
-    private _axes :Disposable;
+    private _brackets = new Map<Component, HelperClass>();
+    private _axes :HelperClass;
 
 
     create()
@@ -116,21 +122,6 @@ export default class CPickSelection extends CSelection
         }
     }
 
-    // protected onActiveGraph(graph: Graph)
-    // {
-    //     if (this._sceneTracker) {
-    //         this._sceneTracker.dispose();
-    //     }
-    //
-    //     if (graph) {
-    //         this._sceneTracker = new ComponentTracker(graph.components, CScene, component => {
-    //             component.on<ISceneAfterRenderEvent>("after-render", this.onSceneAfterRender, this);
-    //         }, component => {
-    //             component.off<ISceneAfterRenderEvent>("after-render", this.onSceneAfterRender, this);
-    //         });
-    //     }
-    // }
-
     protected onPointerUp(event: IPointerEvent)
     {
         if (!this.ins.viewportPicking.value || !event.isPrimary || event.isDragging) {
@@ -144,7 +135,12 @@ export default class CPickSelection extends CSelection
             this.clearSelection();
         }
     }
-
+    tick(ctx:IUpdateContext) :boolean{
+        for(let b of this._brackets.values()){
+            b.update();
+        }
+        return false;
+    }
 
     protected updateBracket(component: CTransform | CObject3D, selected: boolean)
     {
@@ -156,11 +152,13 @@ export default class CPickSelection extends CSelection
         const transform = component.transform;
         if (selected) {
             if (object3D) {
-                let bracket :Disposable;
+                let bracket :HelperClass;
                 if((object3D as any).isLight){
+                    
                     let HelperCl = helpers.find(([h,type])=>type === object3D.type)?.[0];
                     if(HelperCl){
-                        bracket = new HelperCl(object3D as any, 1.0);
+                        object3D.updateMatrix();
+                        bracket = new HelperCl(object3D as any);
                         /** @bug PointLightHelper doesn't call it internally in  its update() method. */ 
                         bracket.updateWorldMatrix( true, false );
                     }

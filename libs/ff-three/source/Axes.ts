@@ -109,6 +109,11 @@ export default class Axes extends LineSegments2
       }
 
       this.renderOrder = 1;
+      this.update();
+  }
+
+  update(){
+    
   }
 
   dispose()

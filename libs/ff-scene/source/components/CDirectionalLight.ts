@@ -20,7 +20,10 @@ export default class CDirectionalLight extends CLight
     protected static readonly dirLightIns = {
         position: types.Vector3("Light.Position"),
         target: types.Vector3("Light.Target", [ 0, -1, 0 ]),
-        shadowSize: types.Number("Shadow.Size", 100),
+        shadowSize: types.Number("Shadow.Size", {
+            preset: 100,
+            min: 0,
+        }),
     };
 
     ins = this.addInputs<CLight, typeof CDirectionalLight["dirLightIns"]>(CDirectionalLight.dirLightIns);
