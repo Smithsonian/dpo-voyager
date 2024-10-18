@@ -20,9 +20,16 @@ export default class CSpotLight extends CLight
     protected static readonly spotLightIns = {
         position: types.Vector3("Light.Position"),
         target: types.Vector3("Light.Target", [ 0, -1, 0 ]),
-        distance: types.Number("Light.Distance"),
+        distance: types.Number("Light.Distance", {
+            preset: 0,
+            min: 0
+        }),
         decay: types.Number("Light.Decay", 1),
-        angle: types.Number("Light.Angle", 45),
+        angle: types.Number("Light.Angle", {
+            preset:45,
+            min: 0,
+            max: 89
+        }),
         penumbra: types.Percent("Light.Penumbra", 0.5),
     };
 
