@@ -15,8 +15,6 @@ import {
     Matrix4,
     Box3,
     Color,
-    Points,
-    PointsMaterial,
     Material,
 } from "three";
 
@@ -65,16 +63,16 @@ export default class Bracket extends LineSegments
         let has_volume = isFinite(size[0]) && isFinite(size[1]) && isFinite(size[2])
         if ( has_volume && props.axes){
             vertices = [
-                0, 0, 0,	length, 0, 0,
-                0, 0, 0,	0, length, 0,
-                0, 0, 0,	0, 0, length,
+                0, 0, 0,	length, 0, 0,   0, 0, 0,
+                0, 0, 0,	0, length, 0,   0, 0, 0,
+                0, 0, 0,	0, 0, length,   0, 0, 0,
             ];
             colors = [
-                1, 0, 0,	1, 0.6, 0,
-                0, 1, 0,	0.6, 1, 0,
-                0, 0, 1,	0, 0.6, 1
+                .65, .23, .29,	.65, .23, .29, .65, .23, .29, 
+                .43, .63, .11,	.43, .63, .11,	.43, .63, .11,
+                .25, .3, .88,	.25, .3, .88,	.25, .3, .88,
 
-            ]
+            ];
         }else if(has_volume) {
             vertices = [
                 min[0], min[1], min[2], min[0] + size[0], min[1], min[2],
@@ -123,26 +121,11 @@ export default class Bracket extends LineSegments
         const material = new LineBasicMaterial({
             color: props.color,
             vertexColors: !!colors,
-            
+            toneMapped: false,
             depthTest: false
         });
 
         super(geometry, material);
-
-        // Origin, as in "geometry's internal (0,0,0) point". We generally don't need this?
-        // const originGeometry = new BufferGeometry();
-        // originGeometry.setAttribute('position', new Float32BufferAttribute([0, 0, 0], 3));
-        // const originMaterial = new PointsMaterial({ 
-        //     size: 3,
-        //     color: props.color,
-        //     sizeAttenuation: false,
-        //     depthTest: false
-        // });
-        // const originPoint = new Points(originGeometry, originMaterial);
-        // originPoint.renderOrder = 2;
-        // this.add(originPoint);
-
-
 
         this.renderOrder = 1;
     }

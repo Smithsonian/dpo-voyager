@@ -11,13 +11,14 @@ import Node from "@ff/graph/Node";
 import CSelection from "@ff/graph/components/CSelection";
 
 import Bracket from "@ff/three/Bracket";
+import Axes from "@ff/three/Axes";
 
 import { IPointerEvent } from "../RenderView";
 
 import CObject3D from "./CObject3D";
 import CTransform from "./CTransform";
 import CScene, { ISceneAfterRenderEvent } from "./CScene";
-import { DirectionalLightHelper, HemisphereLightHelper, Object3D, PointLightHelper, SpotLightHelper } from "three";
+import { Box3, Color, DirectionalLightHelper, HemisphereLightHelper, Object3D, PointLightHelper, SpotLightHelper, Vector3 } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,14 +36,15 @@ const _inputs = {
     viewportAxes: types.Boolean("Viewport.Axes", false),
 };
 
+type Disposable = Object3D & {dispose: ()=>void};
 export default class CPickSelection extends CSelection
 {
     static readonly typeName: string = "CPickSelection";
 
     ins = this.addInputs<CSelection, typeof _inputs>(_inputs);
 
-    private _brackets = new Map<Component, Object3D & {dispose: ()=>void}>();
-    private _sceneTracker: ComponentTracker<CScene> = null;
+    private _brackets = new Map<Component, Disposable>();
+    private _axes :Disposable;
 
 
     create()
@@ -50,15 +52,12 @@ export default class CPickSelection extends CSelection
         super.create();
 
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-
     }
 
     dispose()
     {
-        this._sceneTracker.dispose();
 
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        this._sceneTracker.dispose();
 
         super.dispose();
     }
@@ -72,6 +71,28 @@ export default class CPickSelection extends CSelection
         }
         if(this.ins.viewportAxes.changed){
             //FIXME : add axes helper to scene
+            if(this._axes){
+                console.debug("Remove scene axes");
+                this._axes.removeFromParent();
+                this._axes.dispose();
+            }
+            if(this.ins.viewportAxes.value){
+                console.debug("Create scene axes : ", this.ins.viewportAxes.value);
+                //Length should be half CVGrid's size.
+                const scene = this.system.getMainComponent(CScene);
+                let bbox = new Box3();
+                bbox.expandByObject(scene.scene);
+                let length = Math.max(bbox.max.x, bbox.max.y, bbox.max.z);
+                let f = 1;
+
+                while (length / f > 5) {
+                    f = f * 10;
+                }
+
+                length = Math.ceil(length / f) * f/2;
+                this._axes = new Axes(scene.scene, {length: length, width: 3, colors: [new Color(0x9a3c4a), new Color(0x628928), new Color(0x3d5e8b)], depthTest: true});
+                scene.scene.add(this._axes);
+            }
         }
         return true;
     }
@@ -130,12 +151,12 @@ export default class CPickSelection extends CSelection
         if (!component) {
             return;
         }
-
+        if(!this.ins.viewportBrackets.value) return; //Don't create brackets to be hidden
         const object3D = component.object3D;
         const transform = component.transform;
         if (selected) {
             if (object3D) {
-                let bracket :Object3D & { dispose: () => void; };
+                let bracket :Disposable;
                 if((object3D as any).isLight){
                     let HelperCl = helpers.find(([h,type])=>type === object3D.type)?.[0];
                     if(HelperCl){
@@ -153,7 +174,7 @@ export default class CPickSelection extends CSelection
             }
             
             if(transform){
-                let o = new Bracket(transform.object3D, {axes: true});
+                let o = new Axes(transform.object3D);
                 this._brackets.set(transform, o);
                 transform.object3D.add(o);
             }else{
