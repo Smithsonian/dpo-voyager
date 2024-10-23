@@ -88,16 +88,24 @@ ff-tab-header, ff-dock-panel-header {
   background-color: $color-background-dark;
   border-bottom: 3px solid $color-background-darker;
 
-  overflow: auto;
+  overflow: clip visible;
 
   .ff-group {
     align-items: stretch;
   }
 
-  .sv-story-logo {
-    height: 28px !important; 
+  .sv-logo{
+    height: 28px;
+    min-width: 28px;
+    flex: 0 50 126px;
     margin: 8px;
     align-self: center;
+    .sv-short{
+      max-width: 28px;
+    }
+    .sv-full{
+      flex: 1 0 126px;
+    }
   }
 
   .sv-mode {
@@ -108,6 +116,20 @@ ff-tab-header, ff-dock-panel-header {
     margin: 4px;
     background-color: darken($color-secondary, 5%);
     color: $color-background-dark;
+    .sv-mode-sm{
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 800px){
+    .sv-mode {
+      .sv-mode-sm{
+        display: inherit;
+      }
+      .sv-mode-lg{
+        display: none;
+      }
+    }
   }
 
   .sv-spacer {
@@ -136,6 +158,12 @@ ff-tab-header, ff-dock-panel-header {
       .ff-icon {
         fill: $color-text-light;
       }
+    }
+  }
+  
+  @media screen and (max-width: 850px){
+    .ff-button {
+      padding: 4px 2px;
     }
   }
 }
@@ -564,4 +592,19 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+
+.sv-hover-dropdown{
+  display: flex;
+  position: relative;
+  > ul {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+  &.show > ul{
+    display: inherit;
+  }
+
+}
 
