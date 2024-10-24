@@ -74,13 +74,14 @@ export default class HTMLSpriteGroup extends Object3D
         if (!this.visible) {
             return;
         }
-
+        //Only get bounds once to prevent forced reflows while looping
+        const bounds = container.getBoundingClientRect();
         const children = this.children as HTMLSprite[];
         for (let i = 0, n = children.length; i < n; ++i) {
             const child = children[i];
             const element = child.getHTMLElement(container);
             if (element) {
-                child.renderHTMLElement(element, container, camera);
+                child.renderHTMLElement(element, bounds, camera);
             }
         }
     }

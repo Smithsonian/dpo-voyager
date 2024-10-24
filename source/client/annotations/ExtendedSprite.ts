@@ -78,9 +78,9 @@ export default class ExtendedSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(element: ExtendedAnnotation, container: HTMLElement, camera: Camera)
+    renderHTMLElement(element: ExtendedAnnotation, bounds: DOMRect, camera: Camera)
     {
-        super.renderHTMLElement(element, container, camera, this.stemLine, _offset);
+        super.renderHTMLElement(element, bounds, camera, this.stemLine, _offset);
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
@@ -121,7 +121,7 @@ export default class ExtendedSprite extends AnnotationSprite
                     element.requestUpdate().then(() => {
                         this.originalHeight = element.offsetHeight;
                         this.originalWidth = element.offsetWidth;
-                        this.checkTruncate(element, container);
+                        this.checkTruncate(element, bounds);
                     });
                     return;
                 }
@@ -131,7 +131,7 @@ export default class ExtendedSprite extends AnnotationSprite
                 }
             }
 
-            this.checkTruncate(element, container);     
+            this.checkTruncate(element, bounds);
         }
     }
 
@@ -141,16 +141,15 @@ export default class ExtendedSprite extends AnnotationSprite
     }
 
     // Helper function to check if annotation should truncate
-    protected checkTruncate(element: AnnotationElement, container: HTMLElement) {
+    protected checkTruncate(element: AnnotationElement, bounds: DOMRect) {
         const top = this.quadrant == EQuadrant.TopLeft || this.quadrant == EQuadrant.TopRight;
         const right = this.quadrant == EQuadrant.TopRight || this.quadrant == EQuadrant.BottomRight;
-        const x = right ? element.getBoundingClientRect().left - container.getBoundingClientRect().left
-            : element.getBoundingClientRect().right - container.getBoundingClientRect().left;
-        const y = top ? element.getBoundingClientRect().bottom - container.getBoundingClientRect().top 
-            : element.getBoundingClientRect().top - container.getBoundingClientRect().top;
-
-        const shouldTruncateVert = !top ? y + this.originalHeight >= container.offsetHeight : y - this.originalHeight <= 0;
-        const shouldTruncateHoriz = right ? x + this.originalWidth >= container.offsetWidth : x - this.originalWidth <= 0;
+        const x = right ? element.getBoundingClientRect().left - bounds.left
+            : element.getBoundingClientRect().right - bounds.left;
+        const y = top ? element.getBoundingClientRect().bottom - bounds.top 
+            : element.getBoundingClientRect().top - bounds.top;
+        const shouldTruncateVert = !top ? y + this.originalHeight >= bounds.height : y - this.originalHeight <= 0;
+        const shouldTruncateHoriz = right ? x + this.originalWidth >= bounds.width : x - this.originalWidth <= 0;
         const shouldTruncate = shouldTruncateVert || shouldTruncateHoriz;
         if(shouldTruncate !== element.truncated) {
             element.truncated = shouldTruncate;
