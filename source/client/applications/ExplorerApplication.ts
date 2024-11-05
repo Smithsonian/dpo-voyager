@@ -261,7 +261,7 @@ Version: ${ENV_VERSION}
 
     evaluateProps()
     {
-        const props = this.props;
+        const props = {...this.props};
         const manager = this.assetManager;
         const qs = new URL(window.location.href).searchParams;
         props.root = props.root || qs.get("root") || qs.get("r");
