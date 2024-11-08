@@ -15,11 +15,11 @@
         "docs": "cd docs && jekyll build",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "up": "docker-compose up -d & docker-compose logs -f",
-        "down": "docker-compose stop & docker-compose rm -f -v",
-        "restart": "docker-compose stop & docker-compose rm -f -v; docker-compose up -d; docker-compose logs -f",
-        "bash": "docker-compose exec server bash",
-        "build": "docker-compose exec server bash -i -c 'source ~/.bashrc; npm run build-dev; npm run build-prod'"
+        "up": "docker compose up -d & docker compose logs -f",
+        "down": "docker compose stop & docker compose rm -f -v",
+        "restart": "docker compose stop & docker compose rm -f -v; docker compose up -d; docker compose logs -f",
+        "bash": "docker compose exec server bash",
+        "build": "docker compose exec server bash -i -c 'source ~/.bashrc; npm run build-dev; npm run build-prod'"
     },
     "nodemonConfig": {
         "delay": 1000,
