@@ -16,6 +16,7 @@ import {
   Float32BufferAttribute,
   Points,
   PointsMaterial,
+  Sphere,
 } from "three";
 
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2";
@@ -45,7 +46,7 @@ export interface IAxesProps
 export default class Axes extends LineSegments2
 {
   static readonly defaultProps = {
-      length: 0.25,
+      length: 0.15,
       width: 2,
       depthTest: false,
       colors: [new Color(0xffd633), new Color(0xa63b4a), new Color(0x6fa21c), new Color(0x2f83e1)],
@@ -62,14 +63,14 @@ export default class Axes extends LineSegments2
 
       computeLocalBoundingBox(target, box);
 
-      const length = props.length;
+      const size = (box.isEmpty()? 1: box.getBoundingSphere(new Sphere()).radius) * props.length;
 
       const originColor :Color = props.colors.length === 4? props.colors[0]: null;
 
       let vertices :number[] = [
-          0, 0, 0,	length, 0, 0,
-          0, 0, 0,	0, length, 0,
-          0, 0, 0,	0, 0, length,
+          0, 0, 0,	size, 0, 0,
+          0, 0, 0,	0, size, 0,
+          0, 0, 0,	0, 0, size,
       ];
 
 
@@ -108,7 +109,7 @@ export default class Axes extends LineSegments2
         this.add(this.originPoint);
       }
 
-      this.renderOrder = 1;
+      this.renderOrder = 2;
       this.update();
   }
 
