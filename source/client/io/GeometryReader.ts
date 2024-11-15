@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { LoadingManager, BufferGeometry } from "three";
+import { LoadingManager, BufferGeometry, Mesh } from "three";
 
-import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {PLYLoader} from "three/examples/jsm/loaders/PLYLoader";
+import type {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
+import type {PLYLoader} from "three/examples/jsm/loaders/PLYLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,13 +26,11 @@ export default class GeometryReader
 {
     static readonly extensions = [ "obj", "ply" ];
 
-    protected objLoader: any;
-    protected plyLoader: any;
+    protected objLoader ?:OBJLoader;
+    protected plyLoader ?:PLYLoader;
 
     constructor(loadingManager: LoadingManager)
     {
-        this.objLoader = new OBJLoader(loadingManager);
-        this.plyLoader = new PLYLoader(loadingManager);
     }
 
     isValid(url: string): boolean
@@ -45,10 +43,11 @@ export default class GeometryReader
     {
         const extension = url.split(".").pop().toLowerCase();
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (extension === "obj") {
+                this.objLoader ??= new (await import("three/examples/jsm/loaders/OBJLoader")).OBJLoader();
                 this.objLoader.load(url, result => {
-                    const geometry = result.children[0].geometry;
+                    const geometry = (result.children[0] as Mesh).geometry;
                     if (geometry && geometry.type === "Geometry" || geometry.type === "BufferGeometry") {
                         return resolve(geometry);
                     }
@@ -57,6 +56,7 @@ export default class GeometryReader
                 });
             }
             else if (extension === "ply") {
+                this.plyLoader ??= new (await import("three/examples/jsm/loaders/PLYLoader")).PLYLoader();
                 this.plyLoader.load(url, geometry => {
                     if (geometry && geometry.type === "Geometry" || geometry.type === "BufferGeometry") {
                         return resolve(geometry);
