@@ -21,6 +21,7 @@ import {
 } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
+declare const ENV_DEVELOPMENT:boolean;
 
 const _vec3 = new Vector3();
 const _mat4 = new Matrix4();

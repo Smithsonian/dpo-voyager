@@ -30,6 +30,7 @@ import CRenderer from "./components/CRenderer";
 import UniversalCamera from "@ff/three/UniversalCamera";
 
 ////////////////////////////////////////////////////////////////////////////////
+declare const ENV_DEVELOPMENT: boolean;
 
 export { Viewport };
 

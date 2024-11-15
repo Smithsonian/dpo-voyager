@@ -19,6 +19,9 @@ import ObjectRegistry from "@ff/core/ObjectRegistry";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Webpack constant: true during development build
+declare const ENV_DEVELOPMENT: boolean;
+
 /**
  * Graph in a graph/node/component system. A graph contains a collection of nodes.
  * Graphs can be nested, i.e. a graph can be a subgraph of another graph, the parent graph.
