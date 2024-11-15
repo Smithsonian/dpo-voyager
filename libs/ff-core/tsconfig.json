@@ -5,7 +5,7 @@
         "module": "CommonJS",
         "experimentalDecorators": true,
         "sourceMap": true,
-        "outDir": "build",
+        "outDir": "../../build/libs/ff-core/",
     },
     "include": [
         "source/**/*", "test/**/*"
