@@ -11,6 +11,7 @@ import resolvePathname from "resolve-pathname";
 import { Dictionary } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
+declare const ENV_DEVELOPMENT: boolean;
 
 interface IXMLElement extends xmlTools.Element
 {

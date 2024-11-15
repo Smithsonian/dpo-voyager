@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+      "target": "es2017",
+      "module": "CommonJS",
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "moduleResolution": "node",
+      //"noUnusedLocals": true,
+      "experimentalDecorators": true,
+      "outDir": "./build",
+  },
+  "references": [
+    { "path":  "source/client/tsconfig.json" },
+    { "path":  "source/test/tsconfig.json" }
+  ]
+}

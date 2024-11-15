@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "composite": true,
+      "target": "es2017",
+      "module": "CommonJS",
+      "sourceMap": true,
+      //"strict": true,
+      "jsx": "react",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "moduleResolution": "node",
+      //"noUnusedLocals": true,
+      "experimentalDecorators": true,
+
+      "outDir": "../../build/source/test",
+      "rootDir": ".",
+      "baseUrl": ".",
+      "paths": {
+          "client/*": [ "../client/*" ],
+          "@ff/core/*": [ "../../libs/ff-core/source/*" ],
+          "@ff/graph/*": [ "../../libs/ff-graph/source/*" ],
+          "@ff/browser/*": [ "../../libs/ff-browser/source/*" ],
+          "@ff/ui/*": [ "../../libs/ff-ui/source/*" ],
+          "@ff/three/*": [ "../../libs/ff-three/source/*" ],
+          "@ff/scene/*": [ "../../libs/ff-scene/source/*" ]
+      }
+  },
+  "references": [
+      { "path":  "../client/tsconfig.json" },
+      { "path":  "../../libs/ff-core/tsconfig.json" },
+      { "path":  "../../libs/ff-browser/tsconfig.json" },
+      { "path":  "../../libs/ff-ui/tsconfig.json" },
+      { "path": "../../libs/ff-scene/tsconfig.json"}
+  ]
+}

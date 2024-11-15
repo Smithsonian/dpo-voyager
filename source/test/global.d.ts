@@ -1,0 +1,2 @@
+
+import "../client/global";

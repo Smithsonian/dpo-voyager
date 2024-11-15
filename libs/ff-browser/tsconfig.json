@@ -6,9 +6,7 @@
         "experimentalDecorators": true,
         "sourceMap": true,
 
-        "outDir": "built/export",
-        "rootDir": "source",
-
+        "outDir": "../../build/libs/ff-browser/",
         "baseUrl": ".",
         "paths": {
             "@ff/core/*": [ "../ff-core/source/*" ]

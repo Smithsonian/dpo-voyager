@@ -6,16 +6,15 @@
         "experimentalDecorators": true,
         "sourceMap": true,
 
-        "outDir": "built/export",
-        "rootDir": "source",
+        "outDir": "../../build/libs/ff-graph/",
 
         "baseUrl": ".",
         "paths": {
-            "@ff/core/*": [ "../ff-core/source/*" ]
+            "@ff/core/*": [ "../ff-core/source/*" ],
         }
     },
     "include": [
-        "source/**/*"
+        "source/**/*", "test/**/*"
     ],
     "references": [
         { "path":  "../ff-core/tsconfig.json" }

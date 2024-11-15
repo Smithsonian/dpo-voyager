@@ -6,8 +6,7 @@
         "experimentalDecorators": true,
         "sourceMap": true,
 
-        "outDir": "built/export",
-        "rootDir": "source",
+        "outDir": "../../build/libs/ff-scene/",
 
         "baseUrl": ".",
         "paths": {

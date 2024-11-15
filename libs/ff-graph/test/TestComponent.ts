@@ -5,8 +5,8 @@
  * License: MIT
  */
 
-import Component, { IUpdateContext } from "@ff/graph/Component";
-import { types } from "@ff/graph/propertyTypes";
+import Component, { IUpdateContext } from "../source/Component";
+import { types } from "../source/propertyTypes";
 
 ////////////////////////////////////////////////////////////////////////////////
 

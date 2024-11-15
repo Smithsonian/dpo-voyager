@@ -42,7 +42,7 @@ export type IDerivativeUpdateEvent = IDocumentUpdateEvent<Derivative>;
 export type IDerivativeDisposeEvent = IDocumentDisposeEvent<Derivative>;
 
 // @ts-ignore: change property type from string to enum
-export interface IDerivative extends IDerivativeJSON
+export interface IDerivative extends Omit<IDerivativeJSON,"usage"|"quality"|"assets">
 {
     usage: EDerivativeUsage;
     quality: EDerivativeQuality;

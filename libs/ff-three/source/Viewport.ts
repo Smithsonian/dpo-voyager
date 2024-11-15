@@ -28,6 +28,7 @@ import ViewportOverlay, { ELocation } from "./ui/ViewportOverlay";
 import CameraController from "./CameraController";
 
 ////////////////////////////////////////////////////////////////////////////////
+declare const ENV_DEVELOPMENT:boolean;
 
 export interface IBaseEvent extends IManipBaseEvent
 {

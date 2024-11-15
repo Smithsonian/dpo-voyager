@@ -19,14 +19,14 @@
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
 import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorSpace } from "three";
 
-import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
-import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
+
+import type { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,17 +37,20 @@ export default class ModelReader
 
     protected loadingManager: LoadingManager;
     protected renderer: CRenderer;
-    protected gltfLoader :GLTFLoader;
+    protected gltfLoader :Promise<GLTFLoader>;
 
     protected customDracoPath = null;
 
     set dracoPath(path: string) 
     {
         this.customDracoPath = path;
-        if(this.gltfLoader.dracoLoader !== null) {
-            this.gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
-        }
+        this.gltfLoader.then((gltfLoader)=>{
+            if(gltfLoader.dracoLoader !== null) {
+                gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
+            }
+        });
     }
+
 
 
     setAssetPath(path: string){
@@ -65,27 +68,37 @@ export default class ModelReader
     {
         this.loadingManager = loadingManager;
 
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
-        this.renderer = renderer;
-        this.gltfLoader = new GLTFLoader(loadingManager);
-        this.gltfLoader.setDRACOLoader(dracoLoader);
-        this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
-        const ktx2Loader = new KTX2Loader(this.loadingManager);
-        ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
-        this.gltfLoader.setKTX2Loader(ktx2Loader);
-        setTimeout(()=>{
-            //Allow an update to happen. @todo check how robust it is
-            ktx2Loader.detectSupport(this.renderer.views[0].renderer);
-        }, 0);
+        this.gltfLoader = Promise.all([
+            import('three/examples/jsm/loaders/DRACOLoader.js'),
+            import('three/examples/jsm/libs/meshopt_decoder.module.js'),
+            import('three/examples/jsm/loaders/GLTFLoader.js'),
+            import('three/examples/jsm/loaders/KTX2Loader.js'),
+        ]).then(([{DRACOLoader}, {MeshoptDecoder}, {GLTFLoader}, {KTX2Loader}])=>{
+            const dracoLoader = new DRACOLoader();
+            dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
+            this.renderer = renderer;
+            const gltfLoader = new GLTFLoader(loadingManager);
+            gltfLoader.setDRACOLoader(dracoLoader);
+            gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+            const ktx2Loader = new KTX2Loader(this.loadingManager);
+            ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
+            gltfLoader.setKTX2Loader(ktx2Loader);
+            setTimeout(()=>{
+                //Allow an update to happen. @todo check how robust it is
+                ktx2Loader.detectSupport(this.renderer.views[0].renderer);
+            }, 0);
+            return gltfLoader
+        });
     }
 
     dispose()
     {
-        this.gltfLoader.dracoLoader.dispose();
-        ((this.gltfLoader as any).ktx2Loader as KTX2Loader).dispose();   // TODO: Update type definitions for loader access
-        this.gltfLoader.setDRACOLoader(null);
-        this.gltfLoader.setKTX2Loader(null);
+        this.gltfLoader.then(gltfLoader=>{
+            gltfLoader.dracoLoader.dispose();
+            ((gltfLoader as any).ktx2Loader as KTX2Loader).dispose();   // TODO: Update type definitions for loader access
+            gltfLoader.setDRACOLoader(null);
+            gltfLoader.setKTX2Loader(null);
+        });
         this.gltfLoader = null;
     }
 
@@ -102,11 +115,12 @@ export default class ModelReader
 
     get(url: string): Promise<Object3D>
     {
-        return new Promise((resolve, reject) => {
-            this.gltfLoader.load(url, gltf => {
+        return new Promise(async (resolve, reject) => {
+            const gltfLoader = await this.gltfLoader;
+            gltfLoader.load(url, gltf => {
                 resolve(this.createModelGroup(gltf));
             }, null, error => {
-                if(this.gltfLoader === null || this.gltfLoader.dracoLoader === null) {
+                if(this.gltfLoader === null || gltfLoader.dracoLoader === null) {
                     // HACK to avoid errors when component is removed while loading still in progress.
                     // Remove once Three.js supports aborting requests again.
                     resolve(null);
