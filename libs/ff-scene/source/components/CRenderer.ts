@@ -5,8 +5,7 @@
  * License: MIT
  */
 
-import { Mesh } from "three";
-import * as constants from "three/src/constants";
+import { BasicShadowMap, PCFShadowMap, PCFSoftShadowMap } from "three";
 
 import Component, { Node, ITypedEvent, types } from "@ff/graph/Component";
 import CPulse, { IPulseEvent } from "@ff/graph/components/CPulse";
@@ -15,13 +14,14 @@ import RenderView from "../RenderView";
 import CScene, { IActiveCameraEvent } from "./CScene";
 
 ////////////////////////////////////////////////////////////////////////////////
+declare const ENV_DEVELOPMENT: boolean;
 
 export enum EShadowMapType { Basic, PCF, PCFSoft /* , VSM */ }
 
 const _shadowMapType = {
-    [EShadowMapType.Basic]: constants.BasicShadowMap,
-    [EShadowMapType.PCF]: constants.PCFShadowMap,
-    [EShadowMapType.PCFSoft]: constants.PCFSoftShadowMap,
+    [EShadowMapType.Basic]: BasicShadowMap,
+    [EShadowMapType.PCF]: PCFShadowMap,
+    [EShadowMapType.PCFSoft]: PCFSoftShadowMap,
     //[EShadowMapType.VSM]: constants.VSMShadowMap,
 };
 
