@@ -27,7 +27,7 @@ export type IAssetUpdateEvent = IDocumentUpdateEvent<Asset>;
 export type IAssetDisposeEvent = IDocumentDisposeEvent<Asset>;
 
 // @ts-ignore: change property type from string to enum
-export interface IAsset extends IAssetJSON
+export interface IAsset extends Omit<IAssetJSON,"type"|"mapType">
 {
     type: EAssetType;
     mapType: EMapType;
