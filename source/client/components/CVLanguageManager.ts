@@ -124,10 +124,7 @@ export default class CVLanguageManager extends Component
 
         const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
 
-        //If language has already been set, don't overwrite it.
-        if(ins.language.value < 0) {
-            ins.language.setValue(language);
-        }
+        ins.language.setValue(language);
     }
 
     toData(): ILanguage
