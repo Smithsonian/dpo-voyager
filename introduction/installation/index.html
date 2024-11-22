@@ -350,18 +350,19 @@
     <h2 id="installation">Installation</h2>
 <p>This document describes how to install a local development server, and build the source code for development and production.</p>
 <p><strong>If you are just interested in using Voyager on your site and have no need to host or customize it, please take a look at <a href="../../explorer/usage/">How To: Embed a model on your site</a>.</strong></p>
-<p>The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 18.04),
+<p>The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 20.04),
 or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.</p>
 <h4 id="prerequisites">Prerequisites</h4>
-<p>Operating system for direct installation: <strong>Linux only</strong> (tested on Ubuntu server 18.04).</p>
+<p>Operating system for direct installation: <strong>Linux only</strong> (tested on Ubuntu server 20.04).</p>
 <p>Before cloning the Github project, please install the following tools</p>
 <ul>
 <li><a href="https://nodejs.org/en/">Node.js</a> - required</li>
 <li><a href="https://www.docker.com/">Docker</a> - required for installation in a Docker container</li>
-<li><a href="https://docs.docker.com/compose/install/">Docker Compose</a> - required for installation in a Docker container</li>
+<li><a href="https://docs.docker.com/compose/install/">Docker Compose</a> - V2 required for installation in a Docker container</li>
 </ul>
 <p>Now create a project folder and clone the project from Github. Make sure not to forget the <code>--recurse-submodules</code> option,
 this also clones the required submodules.</p>
+<p><strong>Tip:</strong> Make sure your project files are not owned by root/Administrator to avoid permissions issues down the line!</p>
 <div class="highlight"><pre class="chroma"><code class="language-fallback" data-lang="fallback">mkdir &lt;my_project_dir&gt;
 cd &lt;my_project_dir&gt;
 git clone --recurse-submodules https://github.com/smithsonian/dpo-voyager .
