@@ -378,6 +378,9 @@ Version: ${ENV_VERSION}
         if(props.reader) {
             this.enableReader(props.reader);
         }
+        if(props.lang) {
+            this.setLanguage(props.lang);
+        }
     }
 
     ////////////////////////////////////////////
