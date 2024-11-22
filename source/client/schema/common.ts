@@ -26,7 +26,7 @@ export type ColorRGB = Vector3;
 export type ColorRGBA = Vector4;
 
 export type TLanguageType = "EN" | "ES" | "DE" | "NL" | "JA" | "FR" | "HAW";
-export enum ELanguageType { DEFAULT =-1, EN, ES, DE, NL, JA, FR, HAW }
+export enum ELanguageType { EN, ES, DE, NL, JA, FR, HAW }
 export enum ELanguageStringType {
     EN = 'English',
     ES = 'Spanish (Español)',

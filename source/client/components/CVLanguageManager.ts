@@ -48,7 +48,7 @@ export default class CVLanguageManager extends Component
     protected static readonly ins = {
         enabled: types.Boolean("Language.Enabled", false),
         language: types.Enum("Interface.Language", ELanguageType, {
-            preset: ELanguageType.DEFAULT,
+            preset: ELanguageType[DEFAULT_LANGUAGE],
             enum: ELanguageType,
             options: enumToArray(ELanguageStringType).map(key => ELanguageStringType[key])
         }),
@@ -103,7 +103,7 @@ export default class CVLanguageManager extends Component
             //return;
         }
         
-        if (ins.language.changed && ins.language.value != outs.language.value && ins.language.value != ELanguageType.DEFAULT) {
+        if (ins.language.changed && ins.language.value != outs.language.value) {
             const newLanguage = ins.language.value;
             this.addLanguage(newLanguage);
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.language.value].toLowerCase() + ".json").then( json => {
@@ -124,7 +124,8 @@ export default class CVLanguageManager extends Component
 
         const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
 
-        if(ins.language.value === ELanguageType.DEFAULT){
+        //If language has already been set, don't overwrite it.
+        if(ins.language.value < 0) {
             ins.language.setValue(language);
         }
     }
