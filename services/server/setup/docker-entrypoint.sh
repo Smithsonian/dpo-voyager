@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
 readonly APP_HOME=/app
@@ -6,6 +6,7 @@ readonly APP_HOME=/app
 # NVM_DIR is set when building the Docker image
 # shellcheck disable=SC1091,SC2154
 source "${NVM_DIR}/nvm.sh"
+echo "source '${NVM_DIR}/nvm.sh'" >> ~/.bashrc
 
 cd "${APP_HOME}"
 npm install
