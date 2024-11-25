@@ -68,10 +68,10 @@ export default class ModelReader
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
         this.renderer = renderer;
-        this.gltfLoader = new GLTFLoader(loadingManager);
+        this.gltfLoader = new GLTFLoader();
         this.gltfLoader.setDRACOLoader(dracoLoader);
         this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
-        const ktx2Loader = new KTX2Loader(this.loadingManager);
+        const ktx2Loader = new KTX2Loader();
         ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
         this.gltfLoader.setKTX2Loader(ktx2Loader);
         setTimeout(()=>{
@@ -102,7 +102,8 @@ export default class ModelReader
 
     get(url: string): Promise<Object3D>
     {
-        return new Promise((resolve, reject) => {
+        this.loadingManager.itemStart(url);
+        return new Promise<Object3D>((resolve, reject) => {
             this.gltfLoader.load(url, gltf => {
                 resolve(this.createModelGroup(gltf));
             }, null, error => {
@@ -116,6 +117,12 @@ export default class ModelReader
                     reject(new Error(error as any));
                 }
             })
+        }).then((result)=>{
+            this.loadingManager.itemEnd(url);
+            return result;
+        }, (e)=> {
+            this.loadingManager.itemError(url);
+            throw e;
         });
     }
 
