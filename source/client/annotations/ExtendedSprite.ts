@@ -247,7 +247,11 @@ class ExtendedAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 if(annotation.audioId) {
-                    this.querySelector("#audio_container").append(audio.getPlayerById(annotation.audioId));
+                    const audioContainer = this.querySelector("#audio_container");
+                    if(audioContainer.firstChild) {
+                        audioContainer.removeChild(audioContainer.firstChild);
+                    }
+                    audioContainer.append(audio.getPlayerById(annotation.audioId));
                 }
 
                 this.classList.add("sv-expanded");
@@ -269,8 +273,11 @@ class ExtendedAnnotation extends AnnotationElement
 
         const audioView = this.querySelector(".sv-audio-view");
         if(annotation.audioId && !this.overlayed) {
-            if(annotation.expanded && !audioView) {
+            if(annotation.expanded) {
                 const audioContainer = this.querySelector("#audio_container");
+                if(audioView) {
+                    audioContainer.removeChild(audioView);
+                }
                 audioContainer.append(audio.getPlayerById(annotation.audioId));
             }
             else if(!annotation.expanded && audioView && audio.activeId == annotation.audioId) {

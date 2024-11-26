@@ -282,7 +282,11 @@ class CircleAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 if(annotationData.audioId) {
-                    this.querySelector("#audio_container").append(audio.getPlayerById(annotationData.audioId));
+                    const audioContainer = this.querySelector("#audio_container");
+                    if(audioContainer.firstChild) {
+                        audioContainer.removeChild(audioContainer.firstChild);
+                    }
+                    audioContainer.append(audio.getPlayerById(annotationData.audioId));
                 }
 
                 this.classList.add("sv-expanded");
@@ -313,8 +317,11 @@ class CircleAnnotation extends AnnotationElement
 
         const audioView = this.querySelector(".sv-audio-view");
         if(annotationData.audioId && !this.overlayed) {
-            if(annotationData.expanded && !audioView) {
+            if(annotationData.expanded) {
                 const audioContainer = this.querySelector("#audio_container");
+                if(audioView) {
+                    audioContainer.removeChild(audioView);
+                }
                 audioContainer.append(audio.getPlayerById(annotationData.audioId));
             }
             else if(!annotationData.expanded && audioView && audio.activeId == annotationData.audioId) {
