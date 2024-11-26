@@ -74,9 +74,9 @@ export default class StandardSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(element: StandardAnnotation, container: HTMLElement, camera: Camera)
+    renderHTMLElement(element: StandardAnnotation, bounds: DOMRect, camera: Camera)
     {
-        super.renderHTMLElement(element, container, camera, this.stemLine, _offset);
+        super.renderHTMLElement(element, bounds, camera, this.stemLine, _offset);
 
         const angleOpacity = math.scaleLimit(this.viewAngle * math.RAD2DEG, 90, 100, 1, 0);
         const opacity = this.annotation.data.visible ? angleOpacity : 0;

@@ -1,11 +1,8 @@
-# creates a Docker image and launches a container
-# with a simple development server built with Node.js and Express.
+# Creates a Docker image and launches a container with a simple development
+# server built with Node.js and Express.
 #
-# The server provides unsecured read access to dist/ and
-# read/write access through WebDAV to files/
-
-version: '3'
-
+# The server provides unsecured read access to dist/ and read/write access
+# through WebDAV to files/
 services:
   server:
     image: voyager/server

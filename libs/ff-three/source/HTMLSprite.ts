@@ -106,7 +106,7 @@ export default class HTMLSprite<EventMap extends Object3DEventMap = Object3DEven
      * @param anchor The 3D object to which the HTML sprite element is attached.
      * @param offset An offset to be added to the anchor 3D object.
      */
-    renderHTMLElement(element: SpriteElement, container: HTMLElement, camera: Camera, anchor?: Object3D, offset?: Vector3)
+    renderHTMLElement(element: SpriteElement, bounds: DOMRect, camera: Camera, anchor?: Object3D, offset?: Vector3)
     {
         anchor = anchor || this;
 
@@ -127,9 +127,8 @@ export default class HTMLSprite<EventMap extends Object3DEventMap = Object3DEven
         _vec2b.set(_vec3b.x, _vec3b.y);
         _vec2a.set(_vec3a.x, _vec3a.y);
         _vec2b.sub(_vec2a);
-
-        const x = (_vec3b.x + 1) * 0.5 * container.clientWidth;
-        const y = (1 - _vec3b.y) * 0.5 * container.clientHeight;
+        const x = (_vec3b.x + 1) * 0.5 * bounds.width;
+        const y = (1 - _vec3b.y) * 0.5 * bounds.height;
 
         element.setPosition(x, y);
 

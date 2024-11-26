@@ -1226,7 +1226,11 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 .sv-property{
-
+  &[disabled]{
+    cursor: default;
+    filter: brightness(0.6);
+    pointer-events: none;
+  }
 
   .ff-input{
     min-width: auto;

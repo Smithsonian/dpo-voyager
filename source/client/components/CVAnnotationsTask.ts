@@ -128,7 +128,7 @@ export default class CVAnnotationsTask extends CVTask
         if(ins.audio.changed) {
             const audioManager = this.activeDocument.setup.audio;
             const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
-            if(id != audioManager.narrationId) {
+            if(id != audioManager.narrationId || id == "") {
                 this._activeAnnotations.ins.audioId.setValue(id);
             }
             else {
@@ -356,6 +356,7 @@ export default class CVAnnotationsTask extends CVTask
     protected emitUpdateEvent()
     {
         this.emit("update");
+        this.ins.selection.set();
     }
 
     // Handles annotation selection in outside of task.

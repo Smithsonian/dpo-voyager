@@ -10,21 +10,23 @@ This document describes how to install a local development server, and build the
 
 **If you are just interested in using Voyager on your site and have no need to host or customize it, please take a look at [How To: Embed a model on your site](../../explorer/usage/).**
 
-The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 18.04),
+The Voyager development environment can be run either directly in a suitable Linux environment (tested on Ubuntu Server 20.04),
 or in a Docker container. If you already have Docker and Docker Compose installed, we highly recommend installing in a container.
 
 #### Prerequisites
 
-Operating system for direct installation: **Linux only** (tested on Ubuntu server 18.04).
+Operating system for direct installation: **Linux only** (tested on Ubuntu server 20.04).
 
 Before cloning the Github project, please install the following tools
 
  * [Node.js](https://nodejs.org/en/) - required
  * [Docker](https://www.docker.com/) - required for installation in a Docker container
- * [Docker Compose](https://docs.docker.com/compose/install/) - required for installation in a Docker container
+ * [Docker Compose](https://docs.docker.com/compose/install/) - V2 required for installation in a Docker container
 
 Now create a project folder and clone the project from Github. Make sure not to forget the `--recurse-submodules` option,
 this also clones the required submodules.
+
+**Tip:** Make sure your project files are not owned by root/Administrator to avoid permissions issues down the line!
 
 ```
 mkdir <my_project_dir>

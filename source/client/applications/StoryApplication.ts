@@ -141,7 +141,7 @@ export default class StoryApplication
 
     protected evaluateProps()
     {
-        const props = this.props;
+        const props = {...this.props};
 
         const qs = new URL(window.location.href).searchParams;
         props.referrer = props.referrer || qs.get("referrer");
