@@ -156,8 +156,8 @@ export default class StoryApplication
             revisedUrl.searchParams.delete("root");
             revisedUrl.searchParams.delete("document");
             window.history.replaceState(null,null,revisedUrl);
-            props.root = null;
-            props.document = null;
+            this.explorer.props.root = null;
+            this.explorer.props.document = null;
         }
 
         this.explorer.evaluateProps();
@@ -188,6 +188,7 @@ export default class StoryApplication
             this.assetManager.ins.baseUrlValid.setValue(true);
         }
 
+        app.dragdrop = props.dragdrop;
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);
     }
