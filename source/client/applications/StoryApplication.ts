@@ -188,6 +188,7 @@ export default class StoryApplication
             this.assetManager.ins.baseUrlValid.setValue(true);
         }
 
+        app.dragdrop = props.dragdrop;
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);
     }
