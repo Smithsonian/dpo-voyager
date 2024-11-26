@@ -156,8 +156,8 @@ export default class StoryApplication
             revisedUrl.searchParams.delete("root");
             revisedUrl.searchParams.delete("document");
             window.history.replaceState(null,null,revisedUrl);
-            props.root = null;
-            props.document = null;
+            this.explorer.props.root = null;
+            this.explorer.props.document = null;
         }
 
         this.explorer.evaluateProps();
