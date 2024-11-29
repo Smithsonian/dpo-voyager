@@ -87,9 +87,9 @@ export default class CircleSprite extends AnnotationSprite
         super.update();
     }
 
-    renderHTMLElement(element: AnnotationElement, container: HTMLElement, camera: UniversalCamera)
+    renderHTMLElement(element: AnnotationElement, bounds: DOMRect, camera: UniversalCamera)
     {
-        super.renderHTMLElement(element, container, camera, this.anchorMesh, _offset);
+        super.renderHTMLElement(element, bounds, camera, this.anchorMesh, _offset);
 
         // Override viewAngle calculation using temporary offset
         const anchor = this.anchorMesh;
@@ -140,7 +140,7 @@ export default class CircleSprite extends AnnotationSprite
                     element.requestUpdate().then(() => {
                         this.originalHeight = element.offsetHeight;
                         this.originalWidth = element.offsetWidth;
-                        this.checkTruncate(element, container);
+                        this.checkTruncate(element, bounds);
                     });
                 }
                 else {
@@ -149,7 +149,7 @@ export default class CircleSprite extends AnnotationSprite
                 }
             }
 
-            this.checkTruncate(element, container);
+            this.checkTruncate(element, bounds);
         }
     }
 
@@ -159,40 +159,40 @@ export default class CircleSprite extends AnnotationSprite
     }
 
     // Helper function to check if annotation should truncate
-    protected checkTruncate(element: AnnotationElement, container: HTMLElement) {
-        const x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
-        const y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
+    protected checkTruncate(element: AnnotationElement, bounds: DOMRect) {
+        const x = element.getBoundingClientRect().left - bounds.left;
+        const y = element.getBoundingClientRect().top - bounds.top;
 
-        const shouldTruncate = y + this.originalHeight >= container.offsetHeight;
+        const shouldTruncate = y + this.originalHeight >= bounds.height;
         if(shouldTruncate !== element.truncated) {
             element.truncated = shouldTruncate;
             element.requestUpdate().then(() => {
-                this.checkBounds(element, container);
+                this.checkBounds(element, bounds);
             });
         }
         else {
-            this.checkBounds(element, container);
+            this.checkBounds(element, bounds);
         }
     }
 
     // Helper function to check and handle annotation overlap with bounds of container
-    protected checkBounds(element: AnnotationElement, container: HTMLElement) {
-        const x = element.getBoundingClientRect().left - container.getBoundingClientRect().left;
-        const y = element.getBoundingClientRect().top - container.getBoundingClientRect().top;
+    protected checkBounds(element: AnnotationElement, bounds: DOMRect) {
+        const x = element.getBoundingClientRect().left - bounds.left;
+        const y = element.getBoundingClientRect().top - bounds.top;
 
-        if (x + element.offsetWidth >= container.offsetWidth && !element.classList.contains("sv-align-right")) {
+        if (x + element.offsetWidth >= bounds.width && !element.classList.contains("sv-align-right")) {
             element.classList.add("sv-align-right");
             element.requestUpdate();
         }
-        else if (x + element.offsetWidth < container.offsetWidth && element.classList.contains("sv-align-right")){
+        else if (x + element.offsetWidth < bounds.width && element.classList.contains("sv-align-right")){
             element.classList.remove("sv-align-right");
             element.requestUpdate();
         }
-        if (y + element.offsetHeight >= container.offsetHeight && !element.classList.contains("sv-align-bottom")) {
+        if (y + element.offsetHeight >= bounds.height && !element.classList.contains("sv-align-bottom")) {
             element.classList.add("sv-align-bottom");
             element.requestUpdate();
         }
-        else if (y + element.offsetHeight < container.offsetHeight && element.classList.contains("sv-align-bottom")) {
+        else if (y + element.offsetHeight < bounds.height && element.classList.contains("sv-align-bottom")) {
             element.classList.remove("sv-align-bottom");
             element.requestUpdate();
         }
@@ -282,7 +282,11 @@ class CircleAnnotation extends AnnotationElement
 
             if (this.isExpanded) {
                 if(annotationData.audioId) {
-                    this.querySelector("#audio_container").append(audio.getPlayerById(annotationData.audioId));
+                    const audioContainer = this.querySelector("#audio_container");
+                    if(audioContainer.firstChild) {
+                        audioContainer.removeChild(audioContainer.firstChild);
+                    }
+                    audioContainer.append(audio.getPlayerById(annotationData.audioId));
                 }
 
                 this.classList.add("sv-expanded");
@@ -313,8 +317,11 @@ class CircleAnnotation extends AnnotationElement
 
         const audioView = this.querySelector(".sv-audio-view");
         if(annotationData.audioId && !this.overlayed) {
-            if(annotationData.expanded && !audioView) {
+            if(annotationData.expanded) {
                 const audioContainer = this.querySelector("#audio_container");
+                if(audioView) {
+                    audioContainer.removeChild(audioView);
+                }
                 audioContainer.append(audio.getPlayerById(annotationData.audioId));
             }
             else if(!annotationData.expanded && audioView && audio.activeId == annotationData.audioId) {

@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { Vector3, Euler, Quaternion, EulerOrder } from "three";
+import { Vector3, Euler, Quaternion, EulerOrder, Matrix4 } from "three";
 
 import { Node, types } from "@ff/graph/Component";
 
@@ -107,7 +107,7 @@ export default class CCamera extends CObject3D
      * Updating the properties then also updates the matrix of the internal universal camera object.
      * @param matrix A 4x4 transform matrix. If omitted, properties are updated from the matrix of the internal camera.
      */
-    setPropertiesFromMatrix(matrix?: THREE.Matrix4)
+    setPropertiesFromMatrix(matrix?: Matrix4)
     {
         const silent = !matrix;
         matrix = matrix || this.object3D.matrix;

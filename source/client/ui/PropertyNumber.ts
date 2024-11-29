@@ -32,6 +32,9 @@ export default class PropertyNumber extends CustomElement
     @property({ type: String })
     name = "";
 
+    @property({ type: Boolean })
+    disabled :boolean = false;
+
     /**
      * Handles vector properties by specifying an array index.
      */
@@ -49,11 +52,15 @@ export default class PropertyNumber extends CustomElement
     protected firstConnected()
     {
         this.classList.add("sv-property", "sv-property-number");
-        this.addEventListener("pointerdown", this.onPointerDown);
-        this.addEventListener("pointerup", this.onPointerUp);
-        this.addEventListener("pointercancel", this.onPointerUp);
     }
 
+    protected disconnected(): void {
+        if(!this.disabled){
+            this.removeEventListener("pointerdown", this.onPointerDown);
+            this.removeEventListener("pointerup", this.onPointerUp);
+            this.removeEventListener("pointercancel", this.onPointerUp);
+        }
+    }
     
     protected update(changedProperties: PropertyValues): void
     {
@@ -71,7 +78,21 @@ export default class PropertyNumber extends CustomElement
                 property.off("value", this.onUpdate, this);
             }
             if (this.property) {
+                this.title = this.property.name;
                 this.property.on("value", this.onUpdate, this);
+            }
+        }
+        
+        if(changedProperties.has("disabled")){
+            if(this.disabled){
+                this.removeEventListener("pointerdown", this.onPointerDown);
+                this.removeEventListener("pointerup", this.onPointerUp);
+                this.removeEventListener("pointercancel", this.onPointerUp);
+            }else{
+                this.addEventListener("pointerdown", this.onPointerDown);
+                this.addEventListener("pointerup", this.onPointerUp);
+                this.addEventListener("pointercancel", this.onPointerUp);
+
             }
         }
 
@@ -88,14 +109,13 @@ export default class PropertyNumber extends CustomElement
         const bounded = isFinite(min) && isFinite(max);
         const value = this.value;
         let text :string;
-        
         text = this.setPrecision(value);
 
         return html`
             <label class="ff-label ff-off">${name}</label>
             <div class="sv-property-field">
                 ${bounded? html`<span class="ff-off ff-bar" style="width:${ 100*(value - min) / (max - min)}%;"></span>`:null}
-                <input class="ff-input"
+                <input ?disabled=${this.disabled} class="ff-input"
                     type="text"
                     pattern="[+\\-]?([0-9.]+|inf)${schema.percent ? "%?" : ""}"
                     step=${schema.step ?? ""}

@@ -52,6 +52,7 @@ export default class CVStoryApplication extends Component
     ins = this.addInputs(CVStoryApplication.ins);
 
     referrer: string = "";
+    dragdrop: boolean = false;
 
     protected get taskProvider() {
         return this.getMainComponent(CVTaskProvider);

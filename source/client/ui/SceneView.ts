@@ -250,7 +250,7 @@ export default class SceneView extends SystemView
             }
         }
         else if(e.code === "Tab") {
-            focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e);
+            focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e, true);
         }
     }
 

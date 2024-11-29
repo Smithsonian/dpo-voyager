@@ -34,9 +34,10 @@ import CVAnnotationView, { IAnnotationsUpdateEvent, IAnnotationClickEvent } from
 
 import AnnotationsTaskView from "../ui/story/AnnotationsTaskView";
 import CVScene from "client/components/CVScene";
-import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
 import { getMeshTransform } from "client/utils/Helpers";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
+import CPulse from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +68,6 @@ export default class CVAnnotationsTask extends CVTask
     private _activeAnnotations: CVAnnotationView = null;
     private _defaultScale = 1;
     private _machine: CVSnapshots = null;
-    private _state: string = null;
 
     constructor(node: Node, id: string)
     {
@@ -89,6 +89,10 @@ export default class CVAnnotationsTask extends CVTask
         }
     }
 
+    get selectedState() {
+        return this._activeAnnotations.activeAnnotation.data.viewId;
+    }
+
     createView()
     {
         return new AnnotationsTaskView(this);
@@ -99,28 +103,22 @@ export default class CVAnnotationsTask extends CVTask
         this.startObserving();
         super.activateTask();
         this.synchAudioOptions();
-
-        //this.selection.selectedComponents.on(CVAnnotationView, this.onSelectAnnotations, this);
-        //this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     deactivateTask()
     {
         this.stopObserving();
-        //this.selection.selectedComponents.off(CVAnnotationView, this.onSelectAnnotations, this);
-        //this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
 
         super.deactivateTask();
     }
 
     update(context)
     {
-        const {ins, outs} = this;
+        const {ins} = this;
         
         if(!this.activeDocument) {
             return false;
         }
-        const languageManager = this.activeDocument.setup.language;
 
         if (ins.mode.changed) {
             this.emitUpdateEvent();
@@ -129,7 +127,7 @@ export default class CVAnnotationsTask extends CVTask
         if(ins.audio.changed) {
             const audioManager = this.activeDocument.setup.audio;
             const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
-            if(id != audioManager.narrationId) {
+            if(id != audioManager.narrationId || id == "") {
                 this._activeAnnotations.ins.audioId.setValue(id);
             }
             else {
@@ -179,7 +177,6 @@ export default class CVAnnotationsTask extends CVTask
             threshold: 0.5,
         });
 
-        this._state = id;
         const annotation = this._activeAnnotations.activeAnnotation;
         annotation.set("viewId", id);
         this._activeAnnotations.updateAnnotation(annotation, true);
@@ -189,14 +186,23 @@ export default class CVAnnotationsTask extends CVTask
     restoreAnnotationView()
     {
         const machine = this._machine;
-        machine.ins.id.setValue(this._state);
-        machine.ins.tween.set();
+        const annotation = this._activeAnnotations.activeAnnotation;
+
+        // If activeAnnotation is being tracked, make sure it is set
+        const activeIdx = machine.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
+        if(activeIdx >= 0) {
+            const viewState = machine.getState(this.selectedState);
+            viewState.values[activeIdx] = annotation.data.id;
+        }
+        
+        const pulse = this.getMainComponent(CPulse);
+        machine.tweenTo(this.selectedState, pulse.context.secondsElapsed);
     }
 
     deleteAnnotationView()
     {
         const machine = this._machine;
-        machine.deleteState(this._state);
+        machine.deleteState(this.selectedState);
         const annotation = this._activeAnnotations.activeAnnotation;
         annotation.set("viewId", "");
         this._activeAnnotations.updateAnnotation(annotation, true);
@@ -352,6 +358,7 @@ export default class CVAnnotationsTask extends CVTask
     protected emitUpdateEvent()
     {
         this.emit("update");
+        this.ins.selection.set();
     }
 
     // Handles annotation selection in outside of task.

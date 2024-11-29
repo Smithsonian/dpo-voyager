@@ -1,25 +1,25 @@
 {
     "name": "voyager",
-    "version": "0.44.0",
+    "version": "0.46.1",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
         "server": "nodemon services/server/bin/index.js",
-        "watch": "concurrently \"cd source/client && webpack --watch --env=app=story\" \"tsc -b source/server -w\" \"nodemon services/server/bin/index.js\"",
+        "watch": "concurrently \"cd source/client && webpack --watch --env=app=story\" \"tsc -p source/server -w\" \"nodemon services/server/bin/index.js\"",
         "build-dev": "cd source/client; webpack --mode=development --env=app=all; cd ../..",
         "build-dev-local": "cd source/client; webpack --mode=development --env=app=all --local=true; cd ../..",
         "build-prod": "cd source/client; webpack --mode=production --env=app=all; cd ../..",
         "build-prod-local": "cd source/client; webpack --mode=production --env=app=all --local=true; cd ../..",
-        "build-server": "tsc -b source/server",
+        "build-server": "tsc -p source/server",
         "build-libs": "tsc -b libs",
         "docs": "cd docs && jekyll build",
         "doc": "typedoc --name \"Smithsonian Voyager\" --exclude \"**/node_modules/**\" --ignoreCompilerErrors --mode file --target ES6 --theme minimal --out doc/ source/",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "up": "docker-compose up -d & docker-compose logs -f",
-        "down": "docker-compose stop & docker-compose rm -f -v",
-        "restart": "docker-compose stop & docker-compose rm -f -v; docker-compose up -d; docker-compose logs -f",
-        "bash": "docker-compose exec server bash",
-        "build": "docker-compose exec server bash -i -c 'source ~/.bashrc; npm run build-dev; npm run build-prod'"
+        "up": "docker compose up -d && docker compose logs -f",
+        "down": "docker compose stop && docker compose rm -f -v",
+        "restart": "docker compose stop && docker compose rm -f -v; docker compose up -d; docker compose logs -f",
+        "bash": "docker compose exec server bash",
+        "build": "docker compose exec server bash -i -c 'source ~/.bashrc; npm run build-dev; npm run build-prod'"
     },
     "nodemonConfig": {
         "delay": 1000,
@@ -27,9 +27,13 @@
             "services/server/bin",
             "node_modules/@ff/core",
             "node_modules/@ff/server"
-        ]
+        ],
+       	"ignore": [
+           "**/files/**",
+           "**/.git/**"
+       	]
     },
-    "engines":{
+    "engines": {
         "node": ">=14.15.0"
     },
     "repository": {
@@ -55,7 +59,7 @@
         "buffer": "^6.0.3",
         "client-zip": "^2.0.0",
         "clone-deep": "^4.0.1",
-        "express": "^4.18.2",
+        "express": "^4.21.0",
         "filenamify": "^4.3.0",
         "handlebars": "^4.7.7",
         "hotkeys-js": "^3.8.7",
@@ -68,14 +72,14 @@
         "process": "^0.11.10",
         "readable-stream": "^3.6.0",
         "resolve-pathname": "^3.0.0",
-        "sanitize-html": "^2.5.1",
+        "sanitize-html": "^2.13.1",
         "simple-dropzone": "^0.8.3",
         "stream-browserify": "^3.0.0",
         "style-loader": "^3.3.1",
-        "three": "^0.158.0",
+        "three": "^0.168.0",
         "tinymce": "^6.3.1",
         "toposort": "^2.0.2",
-        "webdav": "^5.3.0",
+        "webdav": "^5.7.1",
         "webdav-server": "^2.6.2",
         "xml-js": "^1.6.11"
     },
@@ -83,7 +87,7 @@
         "@types/chai": "^4.2.21",
         "@types/mocha": "^9.0.0",
         "@types/node": "^14.0.26",
-        "@types/three": "^0.155.1",
+        "@types/three": "^0.168.0",
         "chai": "^4.3.8",
         "concurrently": "^6.2.1",
         "copy-webpack-plugin": "^11.0.0",
@@ -98,13 +102,13 @@
         "raw-loader": "^4.0.2",
         "sass": "^1.77.5",
         "sass-loader": "^13.3.3",
-        "source-map-loader": "^3.0.0",
+        "source-map-loader": "^3.0.2",
         "terser-webpack-plugin": "^5.1.4",
         "ts-loader": "^9.5.1",
         "typedoc": "^0.22.11",
         "typescript": "^4.3.5",
         "typescript-json-schema": "^0.50.1",
         "webpack": "^5.88.1",
-        "webpack-cli": "^4.9.2"
+        "webpack-cli": "^4.10.0"
     }
 }

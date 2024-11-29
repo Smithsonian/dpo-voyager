@@ -21,6 +21,7 @@ import "@ff/ui/Button";
 import { ITour } from "client/schema/setup";
 import { ELanguageType } from "client/schema/common";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers"
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +58,7 @@ export default class TourMenu extends CustomElement
                 <h1>${Object.keys(tour.titles).length > 0 ? tour.titles[ELanguageType[this.activeLanguage]] || "undefined" : tour.title}</h1>
                 <ff-icon class="ff-off" name="triangle-right">
             </div>
-            <p>${Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead}</p>
+            <p>${unsafeHTML(Object.keys(tour.leads).length > 0 ? tour.leads[ELanguageType[this.activeLanguage]] : tour.lead)}</p>
         </div>`;
     }
 

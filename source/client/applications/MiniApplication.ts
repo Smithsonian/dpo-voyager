@@ -171,7 +171,7 @@ export default class MiniApplication
 
     evaluateProps()
     {
-        const props = this.props;
+        const props = {...this.props};
         const manager = this.assetManager;
 
         const qs = new URL(window.location.href).searchParams;

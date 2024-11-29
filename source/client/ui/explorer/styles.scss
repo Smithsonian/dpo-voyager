@@ -1253,7 +1253,11 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 .sv-property{
-
+  &[disabled]{
+    cursor: default;
+    filter: brightness(0.6);
+    pointer-events: none;
+  }
 
   .ff-input{
     min-width: auto;
@@ -1275,17 +1279,14 @@ $tour-entry-indent: 12px;
     position: relative;
     display: block;
 
-    & > .ff-button {
-      width: 26px;
-      max-width: 20ch;
-      height: 26px;
-      inline-size: 26px;
-      box-sizing: border-box;
-      padding: 1px;
-      background: $color-background;
-      border-radius: 2px;
-      border: none;
-      margin: 2px;
+    & > .sv-property-field {
+      display: flex;
+      
+      .ff-button{
+        min-width: 23px;
+        border-radius: 2px;
+        margin: 2px;
+      }
     }
 
     .ff-color-edit {

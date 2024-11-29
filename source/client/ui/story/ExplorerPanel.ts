@@ -24,6 +24,7 @@ import { relative } from "path";
 import { IStoryApplicationProps } from "client/applications/StoryApplication";
 import { SimpleDropzone } from 'simple-dropzone';
 import CVMediaManager from "client/components/CVMediaManager";
+import CVStoryApplication from "client/components/CVStoryApplication";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,8 +38,9 @@ export default class ExplorerPanel extends CustomElement
     {
         super();
         this.application = application;
+        const storyApp: CVStoryApplication = application.system.getComponent(CVStoryApplication);
 
-        if((application.props as IStoryApplicationProps).dragdrop === true) {
+        if(storyApp && storyApp.dragdrop === true) {
             this.addEventListener('dragenter', this.onDragEnter);
             this.addEventListener('dragleave', this.onDragLeave);
             this.addEventListener('drop', this.onDragDrop);

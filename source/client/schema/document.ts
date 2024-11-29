@@ -21,6 +21,7 @@ import { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB } from "./
 import { IMeta } from "./meta";
 import { IModel } from "./model";
 import { ISetup } from "./setup";
+import { QuaternionTuple } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +79,7 @@ export interface INode
 
     matrix?: Matrix4;
     translation?: Vector3;
-    rotation?: Quaternion;
+    rotation?: QuaternionTuple;
     scale?: Vector3;
 
     camera?: Index;
