@@ -58,6 +58,13 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
 
     model: Object3D = null;
 
+    abortControl :AbortController = null;
+
+    constructor(json?: IDerivativeJSON){
+        super(json);
+        this.addEvent("load");
+    }
+
     dispose()
     {
         this.unload();
@@ -70,10 +77,15 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
             throw new Error("can't load, not a Web3D derivative");
         }
 
+        if(this.abortControl){
+            console.warn("Aborting inflight derivative load");
+            this.abortControl.abort("Derivative load cancelled"); //This should not happen, but if in doubt, cancel duplicates
+        }
+        this.abortControl = new AbortController();
         const modelAsset = this.findAsset(EAssetType.Model);
 
         if (modelAsset) {
-            return assetReader.getModel(modelAsset.data.uri)
+            return assetReader.getModel(modelAsset.data.uri, {signal: this.abortControl.signal})
             .then(object => {
                 if (this.model) {
                     disposeObject(this.model);
@@ -114,6 +126,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
 
     unload()
     {
+        this.abortControl?.abort();
         if (this.model) {
             disposeObject(this.model);
             this.model = null;
