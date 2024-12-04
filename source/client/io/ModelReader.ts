@@ -133,8 +133,6 @@ export default class ModelReader
                    material.map.colorSpace = SRGBColorSpace;
                 }
 
-                mesh.geometry.computeBoundingBox();
-
                 const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
 
                 if (material.flatShading) {
