@@ -57,7 +57,7 @@ export default class HelpMain extends Popup
 
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
     {
-        const menu = new HelpMain(language);
+        const menu = new HelpMain(parent, language);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -65,13 +65,14 @@ export default class HelpMain extends Popup
         });
     }
 
-    constructor( language: CVLanguageManager )
+    constructor( parent: HTMLElement, language: CVLanguageManager )
     {
         super();
 
         this.language = language;
         this.position = "center";
         this.modal = true;
+        this.portal = parent;
 
         this.url = window.location.href;
     }

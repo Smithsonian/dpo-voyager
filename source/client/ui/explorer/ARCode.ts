@@ -34,7 +34,7 @@ export default class ARCode extends Popup
 
     static show(parent: HTMLElement, language: CVLanguageManager, imageUri: string): Promise<void>
     {
-        const menu = new ARCode(language, imageUri);
+        const menu = new ARCode(parent, language, imageUri);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -42,13 +42,14 @@ export default class ARCode extends Popup
         });
     }
 
-    constructor( language: CVLanguageManager, imageUri: string )
+    constructor( parent: HTMLElement, language: CVLanguageManager, imageUri: string )
     {
         super();
 
         this.language = language;
         this.imageUri = imageUri;
         this.position = "center";
+        this.portal = parent;
         this.modal = true;
 
         this.url = window.location.href;

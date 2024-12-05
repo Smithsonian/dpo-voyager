@@ -33,7 +33,7 @@ export default class LanguageMenu extends Popup
 
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
     {
-        const menu = new LanguageMenu(language);
+        const menu = new LanguageMenu(parent, language);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -41,13 +41,14 @@ export default class LanguageMenu extends Popup
         });
     }
 
-    constructor( language: CVLanguageManager )
+    constructor( parent: HTMLElement, language: CVLanguageManager )
     {
         super();
 
         this.language = language;
         this.position = "center";
         this.modal = true;
+        this.portal = parent;
 
         this.url = window.location.href;
     }
