@@ -117,11 +117,11 @@ export default class CVAudioManager extends Component
             if(this.audioPlayer && this._narrationId) {
                 if(outs.narrationPlaying.value && this.activeId == this._narrationId) {
                     this.stop();
+                    outs.narrationPlaying.setValue(false);
                 }
                 else if(!outs.narrationPlaying.value){
                     this.play(this._narrationId);
                 }
-                outs.narrationPlaying.setValue(!outs.narrationPlaying.value);
             }
         }
         return true;
@@ -305,7 +305,6 @@ export default class CVAudioManager extends Component
             this.setTimeElapsed(0);
         }
 
-        outs.isPlaying.setValue(true);
         this.audioView = this.audioViews[id];
 
         this.initializeClip(id);
@@ -313,7 +312,9 @@ export default class CVAudioManager extends Component
         this.audioPlayer.play()
         .then(() => {
             this.activeId = id;
+            outs.isPlaying.setValue(true);
             this.isPlaying = true;
+            outs.narrationPlaying.setValue(id == this.narrationId);
             Object.keys(this.audioViews).forEach((key) => this.audioViews[key].requestUpdate());
             this.analytics.sendProperty("Audio_Play", uri);
         })
