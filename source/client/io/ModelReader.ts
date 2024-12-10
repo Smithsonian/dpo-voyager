@@ -109,13 +109,10 @@ export default class ModelReader
         return this.loadModel(url, {signal})
         .then(data=>this.gltfLoader.parseAsync(data, resourcePath))
         .then(gltf=>this.createModelGroup(gltf))
-        .then((result)=>{
-            this.loadingManager.itemEnd(url);
-            return result;
-        }, (e)=> {
+        .catch((e)=> {
             this.loadingManager.itemError(url);
             throw e;
-        });
+        }).finally(()=> this.loadingManager.itemEnd( url ));
     }
 
     /**
@@ -147,7 +144,6 @@ export default class ModelReader
         }
 
         if(!this.loading[url]?.listeners.length){
-            this.loadingManager.itemStart( url );
     
             this.loading[url] = {listeners:[], abortController: new AbortController()};
     
@@ -160,15 +156,12 @@ export default class ModelReader
                 //Skip all the progress tracking from FileLoader since we don't use it.
                 return r.arrayBuffer();
             }).then(data=> {
-                this.loadingManager.itemEnd( url );
                 this.loading[url].listeners.forEach(({onload})=>onload(data));
             }, (e)=>{
                 this.loading[url].listeners.forEach(({onerror})=>onerror(e));
                 if(e.name != "AbortError" && e.name != "ABORT_ERR"){
                     console.error(e);
-                    this.loadingManager.itemError( url );
                 }
-                this.loadingManager.itemEnd( url );
             }).finally(()=>{
                 delete this.loading[url];
             });

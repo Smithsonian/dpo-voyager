@@ -205,7 +205,7 @@ class AssetLoadingManager extends LoadingManager
     protected onLoadingError()
     {
         if (ENV_DEVELOPMENT) {
-            console.error(`Loading error`);
+            console.log(`Loading error`);
         }
 
         // trigger update
