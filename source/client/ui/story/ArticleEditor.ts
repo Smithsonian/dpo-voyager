@@ -118,6 +118,14 @@ export default class ArticleEditor extends SystemView
     {
         return this.assetReader.getText(assetPath)
         .then(content => this.parseArticle(content, assetPath))
+        .catch(e=>{
+            return `
+                <h2>Article not found at ${assetPath}</h2>
+                <p>
+                    ${e}
+                </p>
+            `;
+        })
         .then(content => {
             //this._editor.root.innerHTML = content;
             tinymce.activeEditor.setContent(content, {format: "raw"});
