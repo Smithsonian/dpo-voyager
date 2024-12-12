@@ -17,21 +17,18 @@
 
 import Property from "@ff/graph/Property";
 
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/LinearSlider";
 import { ILinearSliderChangeEvent } from "@ff/ui/LinearSlider";
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-slider")
-export default class PropertySlider extends CustomElement
+export default class PropertySlider extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
+    type = "number";
 
     @property({ type: Number })
     min: number = undefined;
@@ -39,24 +36,14 @@ export default class PropertySlider extends CustomElement
     @property({ type: Number })
     max: number = undefined;
 
-    @property({ type: Boolean })
-    disabled = false;
-
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-property", "sv-property-slider");
+        this.classList.add("sv-property-slider");
     }
 
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (this.property.type !== "number") {
-            throw new Error(`not a number property: '${this.property.path}'`);
-        }
 
         if (changedProperties.has("property")) {
             const property = changedProperties.get("property") as Property;

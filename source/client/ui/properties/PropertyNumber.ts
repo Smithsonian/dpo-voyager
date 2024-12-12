@@ -20,20 +20,14 @@ import CustomElement, { customElement, property, PropertyValues, html } from "@f
 
 import "@ff/ui/Button";
 import PropertyField from "@ff/scene/ui/PropertyField";
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-number")
-export default class PropertyNumber extends CustomElement
+export default class PropertyNumber extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
-
-    @property({ type: Boolean })
-    disabled :boolean = false;
+    type = "number";
 
     /**
      * Handles vector properties by specifying an array index.
@@ -51,7 +45,8 @@ export default class PropertyNumber extends CustomElement
 
     protected firstConnected()
     {
-        this.classList.add("sv-property", "sv-property-number");
+        super.firstConnected()
+        this.classList.add("sv-property-number");
     }
 
     protected disconnected(): void {
@@ -64,13 +59,6 @@ export default class PropertyNumber extends CustomElement
     
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (this.property.type !== "number") {
-            throw new Error("not an number property");
-        }
 
         if (changedProperties.has("property")) {
             const property = changedProperties.get("property") as Property;

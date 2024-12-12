@@ -16,47 +16,35 @@
  */
 
 import Property from "@ff/graph/Property";
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, PropertyValues, html, property } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-event")
-export default class PropertyEvent extends CustomElement
+export default class PropertyEvent extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
-
-    @property({ type: String })
-    text = "";
-
-    @property({ type: String })
-    icon = "";
-
-    @property({ type: Boolean })
-    disabled = false;
+    @property({type: String})
+    icon :string;
 
     protected firstConnected()
     {
-        this.classList.add("sv-property", "sv-property-event");
+        super.firstConnected();
+        this.classList.add("sv-property-event");
     }
 
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (!this.property.schema.event) {
-            throw new Error(`not an event property: '${this.property.path}'`);
-        }
-
         if (changedProperties.has("property")) {
+            if (!this.property) {
+                throw new Error("missing property attribute");
+            }
+            if (!this.property.schema.event) {
+                throw new Error(`not an event property: '${this.property.path}'`);
+            }
             const property = changedProperties.get("property") as Property;
             if (property) {
                 property.off("value", this.onUpdate, this);
@@ -74,11 +62,10 @@ export default class PropertyEvent extends CustomElement
         const property = this.property;
         const name = this.name || property.name;
         const text = this.text;
-        const icon = this.icon;
 
         return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
             <div class="sv-options >
-                <ff-button ?disabled=${this.disabled} aria-labelledby="${name}-label" .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
+                <ff-button ?disabled=${this.disabled} aria-labelledby="${name}-label" icon="zoom" .text=${text} @click=${this.onButtonClick}></ff-button>
             </div>`;
     }
 

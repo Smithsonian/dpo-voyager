@@ -24,13 +24,13 @@ import { IColorEditChangeEvent } from "@ff/ui/ColorButton";
 
 import CustomElement, { customElement, property, html, PropertyValues } from "@ff/ui/CustomElement";
 
-import "../PropertyColor";
-import "../PropertyBoolean";
-import "../PropertyString";
-import "../PropertySlider";
-import "../PropertyNumber";
-import "../PropertyOptions";
-import "../PropertyEvent";
+import "../properties/PropertyColor";
+import "../properties/PropertyBoolean";
+import "../properties/PropertyString";
+import "../properties/PropertySlider";
+import "../properties/PropertyNumber";
+import "../properties/PropertyOptions";
+import "../properties/PropertyEvent";
 
 ////////////////////////////////////////////////////////////////////////////////
 

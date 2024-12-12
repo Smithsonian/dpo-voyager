@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-import "../ui/PropertyBoolean";
-import "../ui/PropertyOptions";
-import "../ui/PropertySlider";
+import "../ui/properties/PropertyBoolean";
+import "../ui/properties/PropertyOptions";
+import "../ui/properties/PropertySlider";
 
 import CVDocument from "./CVDocument";
 

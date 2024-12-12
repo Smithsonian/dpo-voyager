@@ -16,49 +16,27 @@
  */
 
 import Property from "@ff/graph/Property";
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
-import CVLanguageManager from "client/components/CVLanguageManager";
+
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-boolean")
-export default class PropertyBoolean extends CustomElement
+export default class PropertyBoolean extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
-
-    @property({ attribute: false })
-    text: string | string[] = null;
-
-    @property({ attribute: false })
-    language: CVLanguageManager = null;
-
-    @property({ type: Boolean })
-    disabled = false;
-
-    @property({ type: String })
-    customLabelStyle = "";
-
+    type = "boolean";
     protected firstConnected()
     {
-        this.classList.add("sv-property", "sv-property-boolean");
+        super.firstConnected();
+        this.classList.add("sv-property-boolean");
     }
 
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (this.property.type !== "boolean") {
-            throw new Error("not a boolean property");
-        }
 
         if (changedProperties.has("property")) {
             const property = changedProperties.get("property") as Property;
@@ -80,13 +58,12 @@ export default class PropertyBoolean extends CustomElement
         const labelName = name.replace(/\s/g, '');
         const text = this.text;
         const language = this.language;
-        const customClass = this.customLabelStyle;
 
         let label = property.value ?
             Array.isArray(text) ? text[1] : (text || "On") :
             Array.isArray(text) ? text[0] : (text || "Off");
 
-        return html`<label id="${labelName}-label" class="ff-label ff-off  ${customClass}">${name}</label>
+        return html`<label id="${labelName}-label" class="ff-label ff-off">${name}</label>
         <div title="${name}"><ff-button role="switch" aria-labelledby="${labelName}-label" aria-checked=${property.value} .text=${language ? language.getLocalizedString(label) : label} ?disabled=${this.disabled} ?selected=${property.value} @click=${this.onButtonClick}></ff-button></div>`;
     }
 
