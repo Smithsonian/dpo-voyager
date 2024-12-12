@@ -141,7 +141,7 @@ export default class TourPanel extends DocumentView
         </div>
         <div class="ff-flex-item-stretch ff-flex-row">
             <div class="ff-splitter-section" style="flex-basis: 60%">
-                <div class="ff-scroll-y ff-flex-column">${this.stateTable}</div>
+                <div class="ff-scroll-y ff-fullsize ff-flex-column">${this.stateTable}</div>
             </div>
             <ff-splitter></ff-splitter>
             <div class="ff-splitter-section" style="flex-basis: 40%">
