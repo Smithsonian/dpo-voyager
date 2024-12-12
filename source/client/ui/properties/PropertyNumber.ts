@@ -16,9 +16,8 @@
  */
 
 import Property from "@ff/graph/Property";
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
-import "@ff/ui/Button";
 import PropertyField from "@ff/scene/ui/PropertyField";
 import PropertyBase from "./PropertyBase";
 
@@ -50,7 +49,7 @@ export default class PropertyNumber extends PropertyBase
     }
 
     protected disconnected(): void {
-        if(!this.disabled){
+        if(this.ariaDisabled !== "true"){
             this.removeEventListener("pointerdown", this.onPointerDown);
             this.removeEventListener("pointerup", this.onPointerUp);
             this.removeEventListener("pointercancel", this.onPointerUp);
@@ -71,8 +70,8 @@ export default class PropertyNumber extends PropertyBase
             }
         }
         
-        if(changedProperties.has("disabled")){
-            if(this.disabled){
+        if(changedProperties.has("ariaDisabled")){
+            if(this.ariaDisabled === "true"){
                 this.removeEventListener("pointerdown", this.onPointerDown);
                 this.removeEventListener("pointerup", this.onPointerUp);
                 this.removeEventListener("pointercancel", this.onPointerUp);
@@ -103,7 +102,7 @@ export default class PropertyNumber extends PropertyBase
             <label class="ff-label ff-off">${name}</label>
             <div class="sv-property-field">
                 ${bounded? html`<span class="ff-off ff-bar" style="width:${ 100*(value - min) / (max - min)}%;"></span>`:null}
-                <input ?disabled=${this.disabled} class="ff-input"
+                <input ?disabled=${this.ariaDisabled === "true"} class="ff-input"
                     type="text"
                     pattern="[+\\-]?([0-9.]+|inf)${schema.percent ? "%?" : ""}"
                     step=${schema.step ?? ""}

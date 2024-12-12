@@ -107,7 +107,7 @@ export default class PropertyColor extends PropertyBase
 
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
-                ${this.compact?null:html`<input ?disabled=${this.disabled} class="ff-input"
+                ${this.compact?null:html`<input ?disabled=${this.ariaDisabled === "true"} class="ff-input"
                         type="text"
                         .value=${color}
                         @change=${(ev)=>{

@@ -18,11 +18,11 @@
 import {live} from "lit-html/directives/live";
 
 import Property from "@ff/graph/Property";
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
-import CVLanguageManager from "client/components/CVLanguageManager";
+
 import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ export default class PropertyOptions extends PropertyBase
 
         return html`
             <label class="ff-label ff-off">${name}</label>
-            <select ?disabled=${this.disabled} ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
+            <select ?disabled=${this.ariaDisabled === "true"} ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
                 this.property.setValue(parseInt(e.target.value))
             }}>
                 ${optionsList}

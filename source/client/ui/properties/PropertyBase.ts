@@ -40,8 +40,8 @@ export default class PropertyBase extends CustomElement
     @property({ attribute: false })
     language: CVLanguageManager = null;
 
-    @property({ type: Boolean, attribute: "aria-disabled"})
-    disabled = false;
+    @property({ attribute: "aria-disabled"})
+    ariaDisabled:"true"|"false"|null;
 
     protected firstConnected()
     {

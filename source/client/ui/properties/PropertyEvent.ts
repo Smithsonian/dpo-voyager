@@ -65,7 +65,7 @@ export default class PropertyEvent extends PropertyBase
 
         return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
             <div class="sv-options >
-                <ff-button ?disabled=${this.disabled} aria-labelledby="${name}-label" icon="zoom" .text=${text} @click=${this.onButtonClick}></ff-button>
+                <ff-button ?disabled=${this.ariaDisabled === "true"} aria-labelledby="${name}-label" icon="zoom" .text=${text} @click=${this.onButtonClick}></ff-button>
             </div>`;
     }
 

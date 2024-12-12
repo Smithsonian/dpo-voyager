@@ -64,7 +64,7 @@ export default class PropertyBoolean extends PropertyBase
             Array.isArray(text) ? text[0] : (text || "Off");
 
         return html`<label id="${labelName}-label" class="ff-label ff-off">${name}</label>
-        <div title="${name}"><ff-button role="switch" aria-labelledby="${labelName}-label" aria-checked=${property.value} .text=${language ? language.getLocalizedString(label) : label} ?disabled=${this.disabled} ?selected=${property.value} @click=${this.onButtonClick}></ff-button></div>`;
+        <div title="${name}"><ff-button role="switch" aria-labelledby="${labelName}-label" aria-checked=${property.value} .text=${language ? language.getLocalizedString(label) : label} ?disabled=${this.ariaDisabled === "true"} ?selected=${property.value} @click=${this.onButtonClick}></ff-button></div>`;
     }
 
     protected onButtonClick(event: IButtonClickEvent)

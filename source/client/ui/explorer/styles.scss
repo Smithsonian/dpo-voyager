@@ -1226,7 +1226,7 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 .sv-property{
-  &[disabled] {
+  &[disabled], &[aria-disabled="true"] {
     filter: brightness(0.6);
   }
 
