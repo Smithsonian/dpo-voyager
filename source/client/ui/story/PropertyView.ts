@@ -49,6 +49,9 @@ export default class PropertyView extends CustomElement
     @property({ type: Boolean })
     commitonly = false;
 
+    @property({type: Boolean})
+    disabled = false;
+
     protected firstConnected()
     {
         if (!this.property) {
@@ -69,32 +72,33 @@ export default class PropertyView extends CustomElement
         const schema = property.schema;
         const label = this.label !== undefined ? this.label : property.path.split(".").pop();
         let linked = this.property.hasMainInLinks();
+        let disabled = this.disabled || linked;
         if(property.isArray() && property.type !== "number"){
             console.error("Unsupported property : ", property);
             return null;
         }
         if(property.type === "number" && property.schema.semantic === "color"){
-            return html`<sv-property-color ?disabled=${linked} name=${label} .property=${property}></sv-property-color>`;
+            return html`<sv-property-color ?disabled=${disabled} name=${label} .property=${property}></sv-property-color>`;
         }else if (property.type === "number" && property.isArray()) {
             let fields = [];
             for (let i = 0; i < property.elementCount; ++i) {
                 
-                let index_linked = linked || this.property.hasInLinks(i);
+                let index_disabled = disabled || this.property.hasInLinks(i);
                 const fieldLabel = property.schema.labels?.[i] ?? _defaultLabels[i];
-                fields.push(html`<sv-property-number ?disabled=${index_linked} name=${fieldLabel} .index=${i} .property=${property}></sv-property-number>`);
+                fields.push(html`<sv-property-number ?disabled=${index_disabled} name=${fieldLabel} .index=${i} .property=${property}></sv-property-number>`);
             }
             const headerElement = label ? html`<div class="sv-property-name">${label}</div>` : null;
             return html`${headerElement}<div class="sv-property-group">${fields}</div>`;
         }else if (schema.event) {
-            return html`<sv-property-event ?disabled=${linked} name=${label} .property=${property}></sv-property-event>`;
+            return html`<sv-property-event ?disabled=${disabled} name=${label} .property=${property}></sv-property-event>`;
         }else if (schema.options) {
-            return html`<sv-property-options ?disabled=${linked} dropdown name=${label} .property=${property}></sv-property-options>`;
+            return html`<sv-property-options ?disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
         }else if(property.type === "boolean"){
-            return html`<sv-property-boolean ?disabled=${linked} name=${label} .property=${property}></sv-property-boolean>`;
+            return html`<sv-property-boolean ?disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
         }else if(property.type === "string"){
-            return html`<sv-property-string ?disabled=${linked} name=${label} .property=${property}></sv-property-string>`
+            return html`<sv-property-string ?disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){
-            return html`<sv-property-number ?disabled=${linked} name=${label} .property=${property}></sv-property-number>`
+            return html`<sv-property-number ?disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
         }else{
             console.warn("Unhandled property :", property.name);
             return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;

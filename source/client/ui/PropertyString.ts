@@ -31,6 +31,9 @@ export default class PropertyString extends CustomElement
     @property({ type: String })
     name = "";
 
+    @property({ type: Boolean })
+    disabled = false;
+
     protected firstConnected()
     {
         this.classList.add("sv-property", "sv-property-string");
@@ -71,7 +74,7 @@ export default class PropertyString extends CustomElement
         const text = property.value;
 
         return html`${name? html`<label class="ff-label ff-off">${name}</label>`:null}
-            <input type="text" class="sv-property-field ff-input"
+            <input ?disabled=${this.disabled} type="text" class="sv-property-field ff-input"
                 .value=${text} 
                 @change=${this.onChange}
                 @focus=${(e)=>{ e.target.select();}}}

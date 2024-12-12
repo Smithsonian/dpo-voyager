@@ -47,6 +47,9 @@ export default class PropertyColor extends CustomElement
     @property({type: Boolean})
     floating :boolean = true;
 
+    @property({ type: Boolean })
+    disabled = false;
+
     protected color: Color = new Color();
 
     get alphaEnabled(){
@@ -113,7 +116,7 @@ export default class PropertyColor extends CustomElement
 
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
-                ${this.compact?null:html`<input class="ff-input"
+                ${this.compact?null:html`<input ?disabled=${this.disabled} class="ff-input"
                         type="text"
                         .value=${color}
                         @change=${(ev)=>{

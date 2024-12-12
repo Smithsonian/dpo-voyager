@@ -38,6 +38,9 @@ export default class PropertyEvent extends CustomElement
     @property({ type: String })
     icon = "";
 
+    @property({ type: Boolean })
+    disabled = false;
+
     protected firstConnected()
     {
         this.classList.add("sv-property", "sv-property-event");
@@ -74,8 +77,8 @@ export default class PropertyEvent extends CustomElement
         const icon = this.icon;
 
         return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
-            <div class="sv-options">
-                <ff-button aria-labelledby="${name}-label" .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
+            <div class="sv-options >
+                <ff-button ?disabled=${this.disabled} aria-labelledby="${name}-label" .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
             </div>`;
     }
 

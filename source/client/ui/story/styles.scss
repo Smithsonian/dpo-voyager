@@ -489,13 +489,13 @@ $color-component-meta-light: #d9d998;
     }
   }
 
-  .sv-property-block .sv-property,
+  &.sv-property-block .sv-property,
   .sv-property.sv-property-block
   {
     display: block;
     max-height: unset;
     padding-right: 6px;
-    > textarea{
+    > textarea, > input{
       width: 100%;
       max-width: 100%;
     }

@@ -47,6 +47,9 @@ export default class PropertyOptions extends CustomElement
     @property({type: Boolean, reflect: true})
     dropdown :boolean = false;
 
+    @property({ type: Boolean })
+    disabled = false;
+
     protected firstConnected()
     {
         this.classList.add("sv-property", "sv-property-options");
@@ -105,7 +108,7 @@ export default class PropertyOptions extends CustomElement
 
         return html`
             <label class="ff-label ff-off">${name}</label>
-            <select ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
+            <select ?disabled=${this.disabled} ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
                 this.property.setValue(parseInt(e.target.value))
             }}>
                 ${optionsList}
