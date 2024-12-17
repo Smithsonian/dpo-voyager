@@ -640,6 +640,6 @@ export default class CVAnnotationView extends CObject3D
         const offset = viewState.values[offsetIdx];
         const dist = Math.sqrt(Math.pow(offset[0]-currentOffset[0],2)+Math.pow(offset[1]-currentOffset[1],2)+Math.pow(offset[2]-currentOffset[2],2));
 
-        viewState.duration = Math.min(Math.max(angleOffset/180, dist/bounds)*1.0,1.5); // max 1.5s
+        viewState.duration = Math.min(Math.max(angleOffset/180, dist/bounds, 0.3),1.5); // max 1.5s, min 0.3s
     }
 }
