@@ -632,7 +632,7 @@ export default class CVAnnotationView extends CObject3D
             angleOffset += Math.abs(n-viewState.values[orbitIdx][i]);
         });
 
-        // TODO: Factor offset into duration check
+        // Factor offset into duration calculation
         const scene = this.getGraphComponent(CVScene);
         const bounds = scene.outs.boundingRadius.value;
         const offsetIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Offset");
