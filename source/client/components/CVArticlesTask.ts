@@ -236,11 +236,6 @@ export default class CVArticlesTask extends CVTask
     {
         const uri = article.uri;
 
-        const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
-        if(standaloneFiles) {
-            standaloneFiles.addFile(uri);
-        }
-
         return this.assetWriter.putText(`<h1>${article.title}</h1>`, uri)
         .then(() => this.mediaManager.refresh())
         .then(() => {
