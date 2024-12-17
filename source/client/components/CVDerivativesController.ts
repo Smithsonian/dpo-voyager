@@ -4,11 +4,12 @@ import CScene from "@ff/scene/components/CScene";
 import CVModel2 from "./CVModel2";
 import CPulse, { IPulseContext, IPulseEvent } from "@ff/graph/components/CPulse";
 import Component from "@ff/graph/Component";
-import { EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
+import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { Vector2, Vector3, Box3, Matrix4, Object3D } from "three";
 import CTransform from "@ff/scene/components/CTransform";
 import CVNode from "./CVNode";
+import Derivative from "client/models/Derivative";
 
 interface ILOD{
   enabled?:boolean;
@@ -26,8 +27,17 @@ const sizes = {
 } as const
 
 
-function isOnScreen(b :Box3) :boolean{
-  return Math.min(Math.abs(b.max.x), Math.abs(b.min.x)) < 1 && Math.min(Math.abs(b.max.y), Math.abs(b.min.y)) < 1;
+interface ModelDisplayState{
+  model :CVModel2;
+  qualityRequest :EDerivativeQuality;
+  clipped :boolean;
+  weight: number;
+}
+
+function getSize(model :CVModel2, quality :EDerivativeQuality) :number{
+  const bestMatchDerivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
+  const asset = bestMatchDerivative.findAsset(EAssetType.Model);
+  return ((asset?.data?.imageSize )? Math.pow(asset.data.imageSize, 2): sizes[bestMatchDerivative.data.quality]);
 }
 
 /**
@@ -65,14 +75,6 @@ export function getQuality(current :EDerivativeQuality, relSize:number):EDerivat
       if (current <= q) size += hyst;
       return relSize < size;
   })?.[1] ?? EDerivativeQuality.High;
-}
-
-/**
- * Due to the nature of NDC coordinates, size on the (x, y, 0) plane would be infinite
- * Simply clamp it for now.
- */
-function clampSize(size :number){
-  return Math.min(size, 2);
 }
 
 const _ndcBox = new Box3();
@@ -167,9 +169,9 @@ export default class CVDerivativesController extends Component{
 
     cameraComponent.camera.getWorldDirection(_cam_fwd);
 
-    let changes = 0; //We don't want to start too many upgrades at once
+    let loading = 0;
     const weights :Array<[string, any]>= [];
-    let models :Array<{model:CVModel2, size:number, clipped: boolean, quality:EDerivativeQuality, weight: number}> = this.getGraphComponents(CVModel2).map(model=>{
+    let collection :Array<ModelDisplayState> = this.getGraphComponents(CVModel2).map(model=>{
       _ndcBox.makeEmpty();
 
       //We can't just use the model's matrixWorld here because it might not have loaded yet.
@@ -228,84 +230,85 @@ export default class CVDerivativesController extends Component{
       const weight = depthMod*angleMod;
 
       //Upgrade only here
-      let quality =  Math.max(model.ins.quality.value, getQuality(model.ins.quality.value, visibleSize));
-
-      return {model, size:visibleSize, clipped, weight, quality};
+      let qualityRequest =  getQuality(model.ins.quality.value, visibleSize);
+      if(model.isLoading()) loading++;
+      return {model, clipped, weight, qualityRequest} as ModelDisplayState;
     })
-    .sort((a, b)=> a.weight - b.weight); //Models that have a high difference between their size and weight are the first to get downgraded
+    .sort((a, b)=> a.weight - b.weight) //Sort low weights first
 
 
 
-
-
-
-    /** @fixme : ideally, cancel anything that is in-glight and no longer needed */
-
-    //Now we have a list of upgrade-only quality requests.
-    //We need to know whether or not we'd want to downgrade some models
-    let textureSize = models.reduce((size, {quality})=>size + sizes[quality], 0);
-    let clippedOnly = true, idx = 0, downgrades = 0, hidden = 0, passes=1;
-
-    while(this._budget < textureSize){
-      const model = models[idx];
-      if(model.clipped || !clippedOnly){
-        let q = getQuality(model.model.ins.quality.value, model.size);
-        if( q < model.quality){
-          textureSize = textureSize - sizes[model.quality] + sizes[q];
-          model.quality = q;
-          if(!model.clipped) downgrades++;
-        }
+    let changes = new Map<CVModel2, EDerivativeQuality>();
+    let upgrades = new Map<CVModel2, EDerivativeQuality>();
+    let textureSize = 0;
+    //Now we have a list of  best-fit quality requests.
+    //We first compute how much texture space upgrading this would use
+    //to know whether or not we'd want to downgrade some models
+    let downgradable = [];
+    for(let item of collection){
+      let quality = item.model.ins.quality.value;
+      if(item.model.isLoading() && item.model.ins.quality.value != item.qualityRequest){
+        //Opportunistically cancel any derivative we no longer want
+        changes.set(item.model, item.qualityRequest);
+        quality = item.qualityRequest;
+        if(item.model.activeDerivative && item.model.activeDerivative.data.quality == item.qualityRequest) loading--;
+      }else if(item.model.ins.quality.value < item.qualityRequest){
+        //Upgrade models as requested
+        upgrades.set(item.model, item.qualityRequest);
+        quality = item.qualityRequest;
+      }else if(item.model.ins.quality.value != 0){
+        downgradable.push(item);
       }
-      if(models.length <= ++idx){
-        passes++;
-        for(let model of models){
-          //Here it is important to decide _how_ models size is to be changed
-          //It affects which models will be downgraded first
-          model.size = model.size*model.weight;
-        }
-        if(passes == 1)console.debug("%d downgrades after first pass", downgrades);
-        if(model.quality == EDerivativeQuality.Thumb) break; // Prevent infinite loop
-        clippedOnly = false;
-        idx = 0;
-      }
+      textureSize += getSize(item.model, quality);
     }
 
-    let loading = models.reduce((s,m)=>s+(m.model.isLoading()?1:0),0);
-    for(let i = 0; i < models.length; i++){
-      if(5 < loading) break;
-      const  {model, quality} = models[i];
-      const current = model.ins.quality.value;
+    for(let item of downgradable){
+      //We don't want to overload the system
+      // but once we don't have too much going on, we want to keep on downgrading clipped assets
+      if(textureSize < this._budget*2/3 && 6 <= changes.size) break;
+      if(!item.clipped) continue;
+      if(item.model.ins.quality.value < item.qualityRequest) continue;
+      changes.set(item.model, item.qualityRequest);
+      textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+    }
 
+    for(let item of downgradable){
+      let overbudget = this._budget <= textureSize;
+      //We are much less agressive with assets that are in-view
+      // We downgrade only if 2 levels above request or we are over budget
+      if(item.qualityRequest < item.model.ins.quality.value + (overbudget? 0: -1)) continue;
+      changes.set(item.model, item.qualityRequest);
+      textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+    }
+
+    for(let item of downgradable){
+      //This is "contingency mode". 
+      //A well-made scene shouldn't get there but we _have_ to be able to handle this
+      if(textureSize < this._budget ) break;
+      changes.set(item.model, Math.max(item.qualityRequest-1, 0));
+      textureSize += getSize(item.model, item.qualityRequest-1) - getSize(item.model, item.model.ins.quality.value);
+    }
+    
+    for(let [model, quality] of [...changes.entries(), ...upgrades.entries()]){
+      if(6 < loading) break;
+      const current = model.ins.quality.value;
       if(quality === current) continue;
       const bestMatchDerivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
       if(bestMatchDerivative && bestMatchDerivative.data.quality != current ){
-        if(current < bestMatchDerivative.data.quality && 2 < (++changes)){continue;}
         /** @fixme should prevent having too many loading models at once because that creates network contention */
         //console.debug("Set quality for ", model.ins.name.value, " from ", current, " to ", bestMatchDerivative.data.quality);
         model.ins.quality.setValue(bestMatchDerivative.data.quality);
+        loading++;
       }
     }
 
-
-    if(0 < changes){
+    if(0 < changes.size){
       this._debounce = 0;
-      let notClipped = models.filter(m=>!m.clipped);
-      let byDistance = weights.sort(([, a],[, b])=> a.distance - b.distance).slice(0);
-      let byAngle = weights.sort(([, a],[, b])=> a.angle - b.angle).reverse().slice(0, 4);
-      let byVsize = weights.sort(([, a],[, b])=> a.visibleSize - b.visibleSize).reverse().slice(0, 4);
-
-      // console.debug("Centered : ", byAngle.map(m=>`${m[0]} (${m[1].angleMod})`).join(", "));
-      // console.debug("Visible : \n\t", notClipped.map(m=>m.model.ins.name.value).join("\n\t"))
-      //console.log("VSize : ", byVsize[0][1].visibleSize, byVsize.map(m=>m[0]).join(", "));
-  
-
-      const countQ = (q :EDerivativeQuality)=>models.reduce((s, m)=>(s+((m.quality=== q)?1:0)), 0);
+      const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
+      console.debug("%d models are currently loading", loading);
       console.debug(`models :(%d, %d, %d, %d)`, countQ(EDerivativeQuality.High), countQ(EDerivativeQuality.Medium), countQ(EDerivativeQuality.Low), countQ(EDerivativeQuality.Thumb));
-      //console.debug(`%d/%d clipped models, %d hidden, %d downgraded in %d downgrade passes`, models.reduce((s,m)=>s+(m.clipped?1:0), 0), models.length, hidden, downgrades, passes);
-      //console.debug("High quality models : ", models.filter((m)=>m.quality ===EDerivativeQuality.High).map(m=>m.model.ins.name.value).join(", "))
     }
-    // We could refine our "pixel budget" here by getting the actual number of maps loaded on each model
-    return 0 < changes;
+    return 0 < changes.size;
   }
   
   fromData(data: ILOD)
