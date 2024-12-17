@@ -204,10 +204,13 @@ export default class CVToursTask extends CVTask
                 taglist: {},
                 steps: []
             });
+            if(languageManager.codeString() != DEFAULT_LANGUAGE){
+                tourList[tourIndex + 1].titles[languageManager.codeString()] = languageManager.getLocalizedString("Tour")+" #" + _nextTourIndex;
+            }
             tourList[tourIndex + 1].titles[DEFAULT_LANGUAGE] = "New Tour #" + _nextTourIndex++;
             tours.ins.tourIndex.setValue(tourIndex + 1);
             tours.outs.count.setValue(tourList.length);
-            languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
+            //languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
             return true;
         }
 
