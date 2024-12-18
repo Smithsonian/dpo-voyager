@@ -70,6 +70,7 @@ export default class WebDAVProvider
     set rootUrl(url: string) {
         this._rootUrl = url;
         this._rootPath = new URL(url).pathname;
+        if(!this._rootPath.endsWith("/")) this._rootPath = this._rootPath.split("/").slice(0, -1).join("/")+"/";
 
         if (ENV_DEVELOPMENT) {
             console.log("WebDAVProvider - rootUrl: %s, rootPath: %s", this.rootUrl, this.rootPath)
