@@ -97,7 +97,7 @@ export default class ShareMenu extends Popup
                 <a href=${facebookShareUrl} tabindex="-1" target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-facebook" icon="facebook" title="Facebook"></ff-button></a>
                 <a href=${linkedInShareUrl} tabindex="-1" target="_blank" rel="noopener noreferrer"><ff-button class="sv-share-button-linkedin" icon="linkedin" title="LinkedIn"></ff-button></a>
                 <a href=${emailUrl} tabindex="-1" target="_blank"><ff-button class="sv-share-button-email" icon="email" title=${language.getLocalizedString("Email")}></ff-button></a>
-                <a href="/api/v1/scenes/${encodeURIComponent(this.name)}?format=zip" download><ff-button class="sv-share-button-download" icon="folder" title=${language.getLocalizedString("Download")}></ff-button></a>
+                <a href="/scenes/${encodeURIComponent(this.name)}?format=zip" download><ff-button class="sv-share-button-download" icon="folder" title=${language.getLocalizedString("Download")}></ff-button></a>
             </div>
             <div class="ff-title" id="embedTitle">${language.getLocalizedString("Embed Link")}</div>
             <div class="ff-flex-row sv-embed-link">
