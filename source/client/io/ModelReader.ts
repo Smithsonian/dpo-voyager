@@ -70,7 +70,7 @@ export default class ModelReader
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
         this.renderer = renderer;
-        this.gltfLoader = new GLTFLoader();
+        this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
         this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
         const ktx2Loader = new KTX2Loader();

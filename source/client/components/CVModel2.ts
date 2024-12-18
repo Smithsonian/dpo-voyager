@@ -381,7 +381,9 @@ export default class CVModel2 extends CObject3D
         this.derivatives.clear();
         this._activeDerivative = null;
         for (let key in this._overlays) {
-            this._overlays[key].texture.dispose();
+            if(this._overlays[key].texture) {
+                this._overlays[key].texture.dispose();
+            }
         }
 
         super.dispose();
@@ -633,18 +635,20 @@ export default class CVModel2 extends CObject3D
     // helper function to update overlay map state
     protected updateOverlayMaterial(texture: Texture, uri: string)
     {
-        this.object3D.traverse(object => {
-            const material = object["material"];
-            if (material && material.isUberPBRMaterial) {
-                if(texture) {
-                    texture.flipY = false;
-                    material.enableOverlayAlpha(uri.endsWith(".jpg"));
+        if(this.object3D) {
+            this.object3D.traverse(object => {
+                const material = object["material"];
+                if (material && material.isUberPBRMaterial) {
+                    if(texture) {
+                        texture.flipY = false;
+                        material.enableOverlayAlpha(uri.endsWith(".jpg"));
+                    }
+                    material.zoneMap = texture;
+                    material.enableZoneMap(texture != null);
                 }
-                material.zoneMap = texture;
-                material.enableZoneMap(texture != null);
-            }
-        });
-        this.outs.overlayMap.setValue(this.ins.overlayMap.value);
+            });
+            this.outs.overlayMap.setValue(this.ins.overlayMap.value);
+        }
     }
 
     protected updateMaterial()

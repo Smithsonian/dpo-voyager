@@ -129,6 +129,12 @@ export default class SceneView extends SystemView
         this.splitter.layout = EQuadViewLayout.Single;
 
         this.manipTarget.next = this.view;
+
+        this.system.getMainComponent(CVDocumentProvider).on("active-component", (e:any)=>{
+            if(!e.next){
+                this.view.renderer.dispose();
+            }
+        }, this);
     }
 
     protected connected()
