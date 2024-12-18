@@ -123,7 +123,7 @@ export default class CVArticlesTask extends CVTask
         if (meta && ins.create.changed) {
             const article = new Article();
             const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[DEFAULT_LANGUAGE]}.html`;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${DEFAULT_LANGUAGE}.html`;
 
             const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
             if(standaloneFiles) {

@@ -18,25 +18,23 @@
 import Color from "@ff/core/Color";
 import Property from "@ff/graph/Property";
 
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
 import "@ff/ui/ColorEdit";
 import Notification from "@ff/ui/Notification";
 
-import type { IColorEditChangeEvent } from "@ff/ui/ColorEdit";
 import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
+
+
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-color")
-export default class PropertyColor extends CustomElement
+export default class PropertyColor extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
+    type = "number";
 
     @property({attribute: false, type: Boolean})
     pickerActive :boolean = false;
@@ -61,7 +59,7 @@ export default class PropertyColor extends CustomElement
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-property", "sv-property-color");
+        this.classList.add("sv-property-color");
     }
 
     protected disconnected()
@@ -71,15 +69,11 @@ export default class PropertyColor extends CustomElement
 
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (this.property.type !== "number" || 4 < this.property.elementCount ||this.property.elementCount < 3) {
-            throw new Error(`not a color property: '${this.property.path}'`);
-        }
 
         if (changedProperties.has("property")) {
+            if (this.property.type !== "number" || 4 < this.property.elementCount ||this.property.elementCount < 3) {
+                throw new Error(`not a color property: '${this.property.path}'`);
+            }
             const property = changedProperties.get("property") as Property;
             if (property) {
                 property.off("value", this.onPropertyChange, this);
@@ -113,7 +107,7 @@ export default class PropertyColor extends CustomElement
 
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
-                ${this.compact?null:html`<input class="ff-input"
+                ${this.compact?null:html`<input ?disabled=${this.ariaDisabled === "true"} class="ff-input"
                         type="text"
                         .value=${color}
                         @change=${(ev)=>{

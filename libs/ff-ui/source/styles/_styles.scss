@@ -168,10 +168,6 @@ $tx-medium: 0.3s;
 ////////////////////////////////////////////////////////////////////////////////
 // UTILITY CLASSES
 
-// expands the element to match the size of the parent element
-.ff-fullsize {
-  @include fullsize;
-}
 
 // displays a little downward facing triangle
 .ff-caret-down {
@@ -273,8 +269,8 @@ button, input {
 }
 
 .ff-scroll-y {
-  @include fullsize;
   overflow-y: auto;
+  max-height: 100%;
 }
 
 .ff-position-above {

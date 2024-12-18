@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import "../ui/PropertyOptions";
+import "../ui/properties/PropertyOptions";
 
 import CVDocument from "./CVDocument";
 import CVViewer from "./CVViewer";

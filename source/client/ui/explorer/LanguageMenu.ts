@@ -83,7 +83,7 @@ export default class LanguageMenu extends Popup
                 <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
             </div>
             <div class="ff-flex-row">
-                <div class="ff-scroll-y sv-scroll-offset" role="listbox">
+                <div class="ff-scroll-y" style="width:100%" role="listbox">
                     ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
                 </div>
             </div>

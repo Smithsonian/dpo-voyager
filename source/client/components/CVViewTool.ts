@@ -17,8 +17,8 @@
 
 import "@ff/ui/Button";
 
-import "../ui/PropertyOptions";
-import "../ui/PropertyEvent";
+import "../ui/properties/PropertyOptions";
+import "../ui/properties/PropertyEvent";
 
 import CVDocument from "./CVDocument";
 import { EViewPreset } from "./CVOrbitNavigation";

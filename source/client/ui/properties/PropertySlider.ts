@@ -17,21 +17,18 @@
 
 import Property from "@ff/graph/Property";
 
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/LinearSlider";
 import { ILinearSliderChangeEvent } from "@ff/ui/LinearSlider";
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-slider")
-export default class PropertySlider extends CustomElement
+export default class PropertySlider extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
+    type = "number";
 
     @property({ type: Number })
     min: number = undefined;
@@ -42,18 +39,11 @@ export default class PropertySlider extends CustomElement
     protected firstConnected()
     {
         super.firstConnected();
-        this.classList.add("sv-property", "sv-property-slider");
+        this.classList.add("sv-property-slider");
     }
 
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (this.property.type !== "number") {
-            throw new Error(`not a number property: '${this.property.path}'`);
-        }
 
         if (changedProperties.has("property")) {
             const property = changedProperties.get("property") as Property;
@@ -80,7 +70,7 @@ export default class PropertySlider extends CustomElement
         const v = (value - min) / (max - min);
 
         return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
-            <ff-linear-slider aria-labelledby="${name}-label" aria-valuemin=${min.toString()} aria-valuemax=${max.toString()} aria-valuenow=${value.toFixed(3)} role="slider" .value=${v} @keydown=${this.onKeyDown} @change=${this.onSliderChange}></ff-linear-slider>`;
+            <ff-linear-slider class="${(this.ariaDisabled==="true")? "ff-off":"ff-on"}" aria-labelledby="${name}-label" aria-valuemin=${min.toString()} aria-valuemax=${max.toString()} aria-valuenow=${value.toFixed(3)} role="slider" .value=${v} @keydown=${this.onKeyDown} @change=${this.onSliderChange}></ff-linear-slider>`;
     }
 
     protected onSliderChange(event: ILinearSliderChangeEvent)
