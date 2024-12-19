@@ -156,7 +156,7 @@ export default class CVModel2 extends CObject3D
     private _loadingDerivative :Derivative = null;
 
     private _visible: boolean = true;
-    private _boxFrame: Mesh = null;
+    private _boxFrame: Box3Helper = null;
     private _localBoundingBox = new Box3();
     private _prevPosition: Vector3 = new Vector3(0.0,0.0,0.0);
     private _prevRotation: Vector3 = new Vector3(0.0,0.0,0.0);
@@ -463,7 +463,7 @@ export default class CVModel2 extends CObject3D
             boundingBox.min.fromArray(data.boundingBox.min);
             boundingBox.max.fromArray(data.boundingBox.max);
 
-            this._boxFrame = new (Box3Helper as any)(boundingBox, "#009cde");
+            this._boxFrame = new Box3Helper(boundingBox, "#009cde");
             this.addObject3D(this._boxFrame);
             this._boxFrame.updateMatrixWorld(true);
         
@@ -820,7 +820,7 @@ export default class CVModel2 extends CObject3D
 
                 if (this._boxFrame) {
                     this.removeObject3D(this._boxFrame);
-                    this._boxFrame.geometry.dispose();
+                    this._boxFrame.dispose();
                     this._boxFrame = null;
                 }
 

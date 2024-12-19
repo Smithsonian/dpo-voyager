@@ -130,11 +130,13 @@ export default class SceneView extends SystemView
 
         this.manipTarget.next = this.view;
 
-        this.system.getMainComponent(CVDocumentProvider).on("active-component", (e:any)=>{
+        /*this.system.getMainComponent(CVDocumentProvider).on("active-component", (e:any)=>{
             if(!e.next){
                 this.view.renderer.dispose();
+                //this.view.renderer.renderLists.dispose();
+                //console.log(this.view.renderer.info);
             }
-        }, this);
+        }, this);*/
     }
 
     protected connected()
