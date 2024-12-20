@@ -209,7 +209,7 @@ class AssetLoadingManager extends LoadingManager
         }
 
         // trigger update
-        this._isBusy = false;
-        this._manager.ins.busy.set();
+        //this._isBusy = false;
+        //this._manager.ins.busy.set();
     }
 }
