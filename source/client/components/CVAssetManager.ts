@@ -205,11 +205,11 @@ class AssetLoadingManager extends LoadingManager
     protected onLoadingError()
     {
         if (ENV_DEVELOPMENT) {
-            console.error(`Loading error`);
+            console.log(`Loading error`);
         }
 
         // trigger update
-        this._isBusy = false;
-        this._manager.ins.busy.set();
+        //this._isBusy = false;
+        //this._manager.ins.busy.set();
     }
 }

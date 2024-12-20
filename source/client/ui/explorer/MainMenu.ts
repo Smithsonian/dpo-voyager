@@ -214,7 +214,8 @@ export default class MainMenu extends DocumentView
             this.shareButtonSelected = true;
             this.requestUpdate();
 
-            ShareMenu.show(this, this.activeDocument.setup.language).then(() => {
+            const container = this.closest("sv-chrome-view") as HTMLElement;
+            ShareMenu.show(container, this.activeDocument.setup.language).then(() => {
                 this.shareButtonSelected = false;
                 this.requestUpdate();
                 this.setElementFocus("share-btn");
@@ -252,7 +253,8 @@ export default class MainMenu extends DocumentView
             arIns.enabled.setValue(true);
         }
         else {
-            ARCode.show(this.parentElement.parentElement.parentElement, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
+            const container = this.closest("sv-chrome-view") as HTMLElement;
+            ARCode.show(container, this.activeDocument.setup.language, ar.arCodeImage).then(() => {
                 //this.shareButtonSelected = false;
                 //this.requestUpdate();
                 this.setElementFocus("ar-btn");

@@ -47,6 +47,7 @@ import CVAudioManager from "./CVAudioManager";
 import CVAssetManager from "./CVAssetManager";
 import CVSnapshots from "./CVSnapshots";
 import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
+import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -631,12 +632,14 @@ export default class CVAnnotationView extends CObject3D
             angleOffset += Math.abs(n-viewState.values[orbitIdx][i]);
         });
 
-        // TODO: Factor offset into duration check
-        /*const offsetIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Offset");
+        // Factor offset into duration calculation
+        const scene = this.getGraphComponent(CVScene);
+        const bounds = scene.outs.boundingRadius.value;
+        const offsetIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Offset");
         const currentOffset = this.snapshots.getCurrentValues()[offsetIdx];
         const offset = viewState.values[offsetIdx];
-        const dist = Math.sqrt(Math.pow(offset[0]-currentOffset[0],2)+Math.pow(offset[1]-currentOffset[1],2)+Math.pow(offset[2]-currentOffset[2],2));*/
+        const dist = Math.sqrt(Math.pow(offset[0]-currentOffset[0],2)+Math.pow(offset[1]-currentOffset[1],2)+Math.pow(offset[2]-currentOffset[2],2));
 
-        viewState.duration = /*dist > 0.01 ||*/ angleOffset > 0.01 ? 1.0 : 0;  // don't animate if we are already there
+        viewState.duration = Math.min(Math.max(angleOffset/180, dist/bounds, 0.3),1.5); // max 1.5s, min 0.3s
     }
 }

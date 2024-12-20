@@ -822,11 +822,12 @@ export default class CVARManager extends Component
 
     protected placeModel( hit: Vector3 ) {
         const scene = this.vScene.scene!;
+        const sizeLimit = 0.15/this.ins.arScale.value;
         const isWall = this.ins.wallMount.value === true;
         const {min, max} = _boundingBox;
         const boundingRadius = this.sceneNode.outs.boundingRadius.value;
-        const width = Math.max((max.x-min.x)*1.25, 0.15);
-        const height = isWall ? Math.max((max.y-min.y)*1.25, 0.15) : Math.max((max.z-min.z)*1.25, 0.15);
+        const width = Math.max((max.x-min.x)*1.25, sizeLimit);
+        const height = isWall ? Math.max((max.y-min.y)*1.25, sizeLimit) : Math.max((max.z-min.z)*1.25, sizeLimit);
         const centerOffsetX = (min.x+max.x)/2.0;
         const centerOffsetZ = (min.z+max.z)/2.0;
         const centerOffsetY = (min.y+max.y)/2.0;
