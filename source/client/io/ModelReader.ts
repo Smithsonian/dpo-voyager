@@ -74,7 +74,7 @@ export default class ModelReader
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
         this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
-        const ktx2Loader = new KTX2Loader();
+        const ktx2Loader = new KTX2Loader(loadingManager);
         ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
         this.gltfLoader.setKTX2Loader(ktx2Loader);
         setTimeout(()=>{
