@@ -27,6 +27,7 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
+import { disposeObject } from "@ff/three/helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -108,7 +109,7 @@ export default class ModelReader
         let resourcePath = LoaderUtils.extractUrlBase( url );
         return this.loadModel(url, {signal})
         .then(data=>this.gltfLoader.parseAsync(data, resourcePath))
-        .then(gltf=>this.createModelGroup(gltf))
+        .then(gltf=>this.createModelGroup(gltf, {signal}))
         .catch((e)=> {
             this.loadingManager.itemError(url);
             throw e;
@@ -172,8 +173,9 @@ export default class ModelReader
         });
 	}
 
-    protected async createModelGroup(gltf :GLTF): Promise<Object3D>
+    protected async createModelGroup(gltf :GLTF, {signal}:{signal?:AbortSignal}={}): Promise<Object3D>
     {
+        if(signal.aborted) throw new DOMException(signal.reason, "AbortError");
         const scene = gltf.scene;
 
         scene.traverse((object: any) => {
@@ -214,7 +216,19 @@ export default class ModelReader
             }
         });
 
-        await this.renderer.views[0].renderer.compileAsync(scene, this.renderer.activeCamera, this.renderer.activeScene);
+        try {
+            await this.renderer.views[0].renderer.compileAsync(scene, this.renderer.activeCamera, this.renderer.activeScene);
+            if(signal.aborted) throw new DOMException(signal.reason, "AbortError");
+        }
+        catch(e) {
+            try {
+                disposeObject(scene);
+            }
+            catch(e) {
+                console.warn("Failed to dispose of cancelled glTF scene", e);
+            }
+            throw e;
+        }
         return scene;
     }
 }
