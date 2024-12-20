@@ -28,13 +28,13 @@
             "node_modules/@ff/core",
             "node_modules/@ff/server"
         ],
-       	"ignore": [
-           "**/files/**",
-           "**/.git/**"
-       	]
+        "ignore": [
+            "**/files/**",
+            "**/.git/**"
+        ]
     },
     "engines": {
-        "node": ">=14.15.0"
+        "node": ">=16.20.2"
     },
     "repository": {
         "type": "git",
@@ -86,7 +86,7 @@
     "devDependencies": {
         "@types/chai": "^4.2.21",
         "@types/mocha": "^9.0.0",
-        "@types/node": "^14.0.26",
+        "@types/node": "^16.18.108",
         "@types/three": "^0.168.0",
         "chai": "^4.3.8",
         "concurrently": "^6.2.1",

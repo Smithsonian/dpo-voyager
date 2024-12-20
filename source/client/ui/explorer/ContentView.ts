@@ -201,7 +201,7 @@ export default class ContentView extends DocumentView
         }
 
         return html`<div class="ff-fullsize sv-content-only">${sceneView}</div>
-            <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+            <sv-spinner ?visible=${isLoading && isInitialLoad} .assetPath=${this.assetPath}></sv-spinner>
             ${captionView}
             ${promptVisible ? html`<sv-action-prompt></sv-action-prompt>` : null}`;
     }
