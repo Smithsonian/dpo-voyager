@@ -6,10 +6,10 @@ import CPulse, { IPulseContext, IPulseEvent } from "@ff/graph/components/CPulse"
 import Component from "@ff/graph/Component";
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 import CRenderer from "@ff/scene/components/CRenderer";
-import { Vector2, Vector3, Box3, Matrix4, Object3D } from "three";
+import { Vector2, Vector3, Box3, Matrix4, Object3D, Quaternion } from "three";
 import CTransform from "@ff/scene/components/CTransform";
 import CVNode from "./CVNode";
-import Derivative from "client/models/Derivative";
+import * as helpers from "@ff/three/helpers";
 
 interface ILOD{
   enabled?:boolean;
@@ -80,6 +80,8 @@ export function getQuality(current :EDerivativeQuality, relSize:number):EDerivat
 const _ndcBox = new Box3();
 const _localBox = new Box3();
 const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _quat = new Quaternion();
 const _mat4 = new Matrix4();
 const _cam_fwd = new Vector3(0, 0, 1);
 
@@ -179,8 +181,15 @@ export default class CVDerivativesController extends Component{
       const scale = model.outs.unitScale.value;
       let t :CTransform|CVNode = model.transform;
       _localBox.copy(model.localBoundingBox);
-      _localBox.min.multiplyScalar(scale);
-      _localBox.max.multiplyScalar(scale);
+      //_localBox.min.multiplyScalar(scale);
+      //_localBox.max.multiplyScalar(scale);
+ 
+      _vec3a.fromArray(model.ins.position.value).multiplyScalar(scale);
+      helpers.degreesToQuaternion(model.ins.rotation.value, CVModel2.rotationOrder, _quat);
+      _vec3b.setScalar(scale);
+      _mat4.compose(_vec3a, _quat, _vec3b);
+      _localBox.applyMatrix4(_mat4);
+
       while(t){
         _mat4.fromArray(t.outs.matrix.value);
         _localBox.applyMatrix4(_mat4);
@@ -202,7 +211,7 @@ export default class CVDerivativesController extends Component{
         [_localBox.min.x, _localBox.max.y, _localBox.min.z],
       ].forEach((coords:[number, number, number], index)=>{
           _vec3a.set(...coords).project(cameraComponent.camera);
-          if(cameraComponent.camera.near < _vec3a.z && _vec3a.z < 1){
+          if(/*cameraComponent.camera.near < _vec3a.z &&*/ _vec3a.z < 1){
             if(Math.abs(_vec3a.x) < 1 && Math.abs(_vec3a.y) < 1){
               clipped = false;
             }
@@ -214,13 +223,12 @@ export default class CVDerivativesController extends Component{
       const distance = _vec3a.distanceTo(cameraComponent.camera.position)/cameraComponent.camera.far;
       const angle = _vec3a.angleTo(_cam_fwd);
 
-      _localBox.getSize(_vec3a);
+      //_localBox.getSize(_vec3a);
       _ndcBox.min.clampScalar(-1,1);
       _ndcBox.max.clampScalar(-1,1);
       _ndcBox.getSize(_vec3a);
       let visibleSize = (_vec3a.x *_vec3a.y)/4;
       //let visibleSize = Math.abs((_localBox.max.angleTo(_cam_fwd) - _localBox.min.angleTo(_cam_fwd)))/(cameraComponent.camera.fov*Math.PI/180);
-
 
       const depthMod = Math.max(1-distance, 0.1);
       const angleMod = 1 - Math.abs(angle)/Math.PI;
