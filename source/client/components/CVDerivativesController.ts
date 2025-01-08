@@ -84,6 +84,7 @@ const _vec3b = new Vector3();
 const _quat = new Quaternion();
 const _mat4 = new Matrix4();
 const _cam_fwd = new Vector3(0, 0, 1);
+const _ndc_fwd = new Vector3(0, 0, 1);
 
 /**
  * Dynamic LOD handling. * 
@@ -219,9 +220,18 @@ export default class CVDerivativesController extends Component{
           }
       });
 
-      _localBox.getCenter(_vec3a);
-      const distance = _vec3a.distanceTo(cameraComponent.camera.position)/cameraComponent.camera.far;
-      const angle = _vec3a.angleTo(_cam_fwd);
+      cameraComponent.camera.getWorldPosition(_vec3a);
+      //Best-case distance
+      let distance =  _localBox.distanceToPoint(_vec3a)/cameraComponent.camera.far;
+      let angle = 0;
+      if(distance != 0){
+        _vec3a.set(
+          (_ndcBox.min.x < 0 && 0 < _ndcBox.max.x)? 0: Math.min(Math.abs(_ndcBox.max.x), Math.abs(_ndcBox.min.x)),
+          (_ndcBox.min.y < 0 && 0 < _ndcBox.max.y)?0: Math.min(Math.abs(_ndcBox.max.y), Math.abs(_ndcBox.min.y)),
+          _ndcBox.max.z,
+        );
+        angle = _vec3a.angleTo(_ndc_fwd);
+      }
 
       //_localBox.getSize(_vec3a);
       _ndcBox.min.clampScalar(-1,1);
