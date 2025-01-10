@@ -53,7 +53,7 @@ export interface IDocumentAsset
 {
     type: "application/si-dpo-3d.document+json";
     version: string;
-    copyright?: string;
+    copyright: string;
     generator?: string;
 }
 
