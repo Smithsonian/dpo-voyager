@@ -228,7 +228,6 @@ $color-component-meta-light: #d9d998;
 }
 
 .sv-collection-panel {
-  padding: 6px;
 
   .sv-indent {
     margin: 2px 2px 2px 15px;
@@ -419,9 +418,8 @@ $color-component-meta-light: #d9d998;
 // PROPERTY VIEW
 
 .sv-property-view {
-  flex-grow: 1;
   max-width: 100%;
-  max-height: 2.0em;
+  flex-grow: 1;
   display: flex;
   margin: 2px 0;
 
@@ -487,6 +485,18 @@ $color-component-meta-light: #d9d998;
         width: 6ch;
         flex-grow: 1;
       }
+    }
+  }
+
+  &.sv-property-block .sv-property,
+  .sv-property.sv-property-block
+  {
+    display: block;
+    max-height: unset;
+    padding-right: 6px;
+    > textarea, > input{
+      width: 100%;
+      max-width: 100%;
     }
   }
 }

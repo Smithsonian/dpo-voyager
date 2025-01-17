@@ -937,16 +937,16 @@ $tour-entry-indent: 12px;
   max-width: 85%;
   height: 200px;
   max-height: 85%;
-  padding: 8px;
+  padding: 0;
   background: $color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
   pointer-events: auto;
 
   .ff-title {
-    margin: 0.3em 0 0.3em 0.3em;
+    padding: 0.6em 0 0.6em 15px;
   }
   .ff-header {
-    padding: 0.3em 0 0.3em 0.3em;
+    padding: 0.6em 0 0.6em 15px;
     background: $menu-color-background-dark;
   }
   .ff-button {
@@ -1226,10 +1226,8 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 .sv-property{
-  &[disabled]{
-    cursor: default;
+  &[disabled], &[aria-disabled="true"] {
     filter: brightness(0.6);
-    pointer-events: none;
   }
 
   .ff-input{

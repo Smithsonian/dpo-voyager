@@ -59,18 +59,13 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
             return html`<div class="sv-placeholder">Please select a scene or model node to edit its articles.</div>`;
         }
 
-        const props = task.ins;
-
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
-            <div class="sv-label">Title</div>
-            <ff-line-edit name="title" text=${props.title.value} @change=${this.onTextEdit}></ff-line-edit>
-            <div class="sv-label">Tags</div>
-            <ff-line-edit name="tags" text=${props.tags.value} @change=${this.onTextEdit}></ff-line-edit>
+            <sv-property-view class="sv-property-block" .property=${task.ins.title}></sv-property-view>
+            <sv-property-view class="sv-property-block" .property=${task.ins.tags}></sv-property-view>
             <div class="sv-label">Lead</div>
-            <ff-text-edit name="lead" text=${props.lead.value} @change=${this.onTextEdit}></ff-text-edit>
-            <div class="sv-label">URI</div>
-            <ff-line-edit name="uri" text=${props.uri.value} @change=${this.onTextEdit}></ff-line-edit>
+            <ff-text-edit name="lead" text=${task.ins.lead.value} @change=${this.onTextEdit}></ff-text-edit>
+            <sv-property-view disabled .property=${task.ins.uri}></sv-property-view>
         </div>` : null;
 
         const uri = activeArticle ? activeArticle.uri : null;
@@ -135,17 +130,8 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const target = event.target;
         const text = event.detail.text;
 
-        if (target.name === "title") {
-            task.ins.title.setValue(text);
-        }
         if (target.name === "lead") {
             task.ins.lead.setValue(text);
-        }
-        if (target.name === "tags") {
-            task.ins.tags.setValue(text);
-        }
-        if (target.name === "uri" && !event.detail.isEditing) {
-            task.ins.uri.setValue(text);
         }
     }
 
