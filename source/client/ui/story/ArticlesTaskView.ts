@@ -65,7 +65,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
             <sv-property-view class="sv-property-block" .property=${task.ins.tags}></sv-property-view>
             <div class="sv-label">Lead</div>
             <ff-text-edit name="lead" text=${task.ins.lead.value} @change=${this.onTextEdit}></ff-text-edit>
-            <sv-property-view disabled .property=${task.ins.uri}></sv-property-view>
+            <sv-property-view class="sv-property-block" disabled .property=${task.ins.uri}></sv-property-view>
         </div>` : null;
 
         const uri = activeArticle ? activeArticle.uri : null;
