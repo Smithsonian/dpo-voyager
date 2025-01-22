@@ -228,6 +228,7 @@ $color-component-meta-light: #d9d998;
 }
 
 .sv-collection-panel {
+  padding: 6px;
 
   .sv-indent {
     margin: 2px 2px 2px 15px;
@@ -422,6 +423,7 @@ $color-component-meta-light: #d9d998;
   flex-grow: 1;
   display: flex;
   margin: 2px 0;
+  max-height: min-content;
 
   * {
     box-sizing: content-box;

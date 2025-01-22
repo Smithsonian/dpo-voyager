@@ -269,8 +269,8 @@ button, input {
 }
 
 .ff-scroll-y {
+  @include fullsize;
   overflow-y: auto;
-  max-height: 100%;
 }
 
 .ff-position-above {
