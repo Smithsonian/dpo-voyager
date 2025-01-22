@@ -248,7 +248,7 @@ export default class CVDerivativesController extends Component{
       const weight = depthMod*angleMod;
 
       //Upgrade only here
-      let qualityRequest =  getQuality(model.ins.quality.value, visibleSize);
+      let qualityRequest =  model.derivatives.select(EDerivativeUsage.Web3D, getQuality(model.ins.quality.value, visibleSize))?.data.quality;
       if(model.isLoading()) loading++;
       return {model, clipped, weight, qualityRequest} as ModelDisplayState;
     })
@@ -257,7 +257,6 @@ export default class CVDerivativesController extends Component{
 
 
     let changes = new Map<CVModel2, EDerivativeQuality>();
-    let upgrades = new Map<CVModel2, EDerivativeQuality>();
     let textureSize = 0;
     //Now we have a list of  best-fit quality requests.
     //We first compute how much texture space upgrading this would use
@@ -272,7 +271,7 @@ export default class CVDerivativesController extends Component{
         if(item.model.activeDerivative && item.model.activeDerivative.data.quality == item.qualityRequest) loading--;
       }else if(item.model.ins.quality.value < item.qualityRequest){
         //Upgrade models as requested
-        upgrades.set(item.model, item.qualityRequest);
+        changes.set(item.model, item.qualityRequest);
         quality = item.qualityRequest;
       }else if(item.model.ins.quality.value != 0){
         downgradable.push(item);
@@ -307,7 +306,7 @@ export default class CVDerivativesController extends Component{
       textureSize += getSize(item.model, item.qualityRequest-1) - getSize(item.model, item.model.ins.quality.value);
     }
     
-    for(let [model, quality] of [...changes.entries(), ...upgrades.entries()]){
+    for(let [model, quality] of changes.entries()){
       if(6 < loading) break;
       const current = model.ins.quality.value;
       if(quality === current) continue;
@@ -320,7 +319,7 @@ export default class CVDerivativesController extends Component{
       }
     }
 
-    if(0 < changes.size){
+    if(loading != 0 && changes.size){
       this._debounce = 0;
       const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
       console.debug("%d models are currently loading", loading);
