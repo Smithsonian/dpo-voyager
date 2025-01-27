@@ -112,7 +112,7 @@ export default class ReaderView extends DocumentView
 
                 // Hack so that initial article display is detected by screen readers.
                 if(this.firstRender) {
-                    setTimeout(() => {container.insertAdjacentHTML("beforeend","<div>-end of article-</div>");}, 200);
+                    setTimeout(() => {container.insertAdjacentHTML("beforeend","<div class='sr-only'>-end of article-</div>");}, 200);
                     this.firstRender = false;
                 }
             }
