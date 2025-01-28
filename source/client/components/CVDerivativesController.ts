@@ -169,10 +169,11 @@ export default class CVDerivativesController extends Component{
     if(this._debounce++ < 20){
       return false;
     }
+    this._debounce = 0;
 
     cameraComponent.camera.getWorldDirection(_cam_fwd);
 
-    let loading = 0;
+    let currently_loading = 0;
     const weights :Array<[string, any]>= [];
     let collection :Array<ModelDisplayState> = this.getGraphComponents(CVModel2).map(model=>{
       _ndcBox.makeEmpty();
@@ -249,83 +250,117 @@ export default class CVDerivativesController extends Component{
 
       //Upgrade only here
       let qualityRequest =  model.derivatives.select(EDerivativeUsage.Web3D, getQuality(model.ins.quality.value, visibleSize))?.data.quality;
-      if(model.isLoading()) loading++;
+      if(model.isLoading()) currently_loading++;
       return {model, clipped, weight, qualityRequest} as ModelDisplayState;
     })
     .sort((a, b)=> a.weight - b.weight) //Sort low weights first
 
 
 
-    let changes = new Map<CVModel2, EDerivativeQuality>();
+    let downgrades = new Map<CVModel2, EDerivativeQuality>();
+    /** Separate upgrade path. We compute uprgades first but apply them last */
+    let upgrades = new Map<CVModel2, EDerivativeQuality>();
     let textureSize = 0;
     //Now we have a list of  best-fit quality requests.
     //We first compute how much texture space upgrading this would use
     //to know whether or not we'd want to downgrade some models
-    let downgradable = [];
+    let downgradable :ModelDisplayState[] = [];
     for(let item of collection){
-      let quality = item.model.ins.quality.value;
-      if(item.model.isLoading() && item.model.ins.quality.value != item.qualityRequest){
-        //Opportunistically cancel any derivative we no longer want
-        changes.set(item.model, item.qualityRequest);
-        quality = item.qualityRequest;
-        if(item.model.activeDerivative && item.model.activeDerivative.data.quality == item.qualityRequest) loading--;
-      }else if(item.model.ins.quality.value < item.qualityRequest){
+      let current_quality = item.model.ins.quality.value;
+      if(item.model.isLoading() && current_quality != item.qualityRequest && item.model.activeDerivative){
+        // Opportunistically cancel any derivative we no longer want
+        // Additionally, set the quality to the current derivative's value
+        item.model.ins.quality.setValue(item.model.activeDerivative.data.quality);
+        current_quality = item.model.activeDerivative.data.quality;
+        currently_loading --;
+      }
+      
+      if(current_quality < item.qualityRequest){
         //Upgrade models as requested
-        changes.set(item.model, item.qualityRequest);
-        quality = item.qualityRequest;
-      }else if(item.model.ins.quality.value != 0){
+        upgrades.set(item.model, item.qualityRequest);
+        current_quality = item.qualityRequest;
+      }else if(item.qualityRequest < item.model.ins.quality.value){
         downgradable.push(item);
       }
-      textureSize += getSize(item.model, quality);
+      textureSize += getSize(item.model, current_quality);
     }
 
-    for(let item of downgradable){
-      //We don't want to overload the system
-      // but once we don't have too much going on, we want to keep on downgrading clipped assets
-      if(textureSize < this._budget*2/3 && 6 <= changes.size) break;
-      if(!item.clipped) continue;
-      if(item.model.ins.quality.value < item.qualityRequest) continue;
-      changes.set(item.model, item.qualityRequest);
-      textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
-    }
+    let overbudget = this._budget <= textureSize;
+
+    //Now we decide what to downgrade
 
     for(let item of downgradable){
-      let overbudget = this._budget <= textureSize;
-      //We are much less agressive with assets that are in-view
-      // We downgrade only if 2 levels above request or we are over budget
-      if(item.qualityRequest < item.model.ins.quality.value + (overbudget? 0: -1)) continue;
-      changes.set(item.model, item.qualityRequest);
-      textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+      /**Opportunistic downgrade :
+       * Happens only as long as one of these conditions are met :
+       * - we are near our max budget usage
+       * - loading is reasonably idle
+       * AND the model is either
+       * - entirely clipped 
+       * - two levels above the expected quality
+       */
+      if( (
+        this._budget*2/3 < textureSize
+        || 2 <= (downgrades.size+upgrades.size + currently_loading)
+        ) && (
+          item.clipped
+          || item.qualityRequest < item.model.ins.quality.value + 1
+        )
+      ){
+        downgrades.set(item.model, item.qualityRequest);
+        textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+      }
     }
+    let normal_downgrades = downgrades.size;
 
+    /**Agressive downgrades
+     * If we are over-budget, blindly downgrade everything that can be until we are not.
+    */
     for(let item of downgradable){
-      //This is "contingency mode". 
-      //A well-made scene shouldn't get there but we _have_ to be able to handle this
       if(textureSize < this._budget ) break;
-      changes.set(item.model, Math.max(item.qualityRequest-1, 0));
-      textureSize += getSize(item.model, item.qualityRequest-1) - getSize(item.model, item.model.ins.quality.value);
+      if(downgrades.has(item.model)) continue;
+      downgrades.set(item.model, item.qualityRequest);
+      textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+    }
+    let hard_downgrades = downgrades.size - normal_downgrades;
+
+    /**"contingency" downgrades. 
+     * Downgrade everything starting from the lower weights to one level _below_ what was requested
+     * A well-made scene shouldn't get there but we _have_ to be able to handle this
+     */
+    for(let item of downgradable){
+      if(textureSize < this._budget ) break;
+      const q = item.model.derivatives.select(EDerivativeUsage.Web3D, Math.max(item.qualityRequest - 1, 0)).data.quality;
+      downgrades.set(item.model, q);
+      textureSize += getSize(item.model, q) - getSize(item.model, item.model.ins.quality.value);
     }
     
-    for(let [model, quality] of changes.entries()){
-      if(6 < loading) break;
+    /**
+     * Apply the changes. 
+     * We start with the downgrades in the order they were added
+     * Then with the upgrades, starting with the higher-weighted ones
+     */
+    for(let [model, quality] of [...downgrades.entries(), ...[...upgrades.entries()].reverse()]){
+      //We don't want to have too many models loading at once
+      if(6 < currently_loading) break;
       const current = model.ins.quality.value;
       if(quality === current) continue;
       const bestMatchDerivative = model.derivatives.select(EDerivativeUsage.Web3D, quality);
       if(bestMatchDerivative && bestMatchDerivative.data.quality != current ){
-        /** @fixme should prevent having too many loading models at once because that creates network contention */
-        //console.debug("Set quality for ", model.ins.name.value, " from ", current, " to ", bestMatchDerivative.data.quality);
         model.ins.quality.setValue(bestMatchDerivative.data.quality);
-        loading++;
+        currently_loading++;
       }
     }
 
-    if(loading != 0 && changes.size){
-      this._debounce = 0;
+    if(currently_loading != 0){
       const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
-      console.debug("%d models are currently loading", loading);
+      console.debug("%d models are currently loading", currently_loading);
+      if(hard_downgrades != downgrades.size){
+        console.debug("%d contingency downgrades were needed", downgrades.size - normal_downgrades - hard_downgrades)
+      }
+      console.debug("%d/%d opportunistic downgrades", normal_downgrades, hard_downgrades);
       console.debug(`models :(%d, %d, %d, %d)`, countQ(EDerivativeQuality.High), countQ(EDerivativeQuality.Medium), countQ(EDerivativeQuality.Low), countQ(EDerivativeQuality.Thumb));
     }
-    return 0 < changes.size;
+    return 0 < downgrades.size;
   }
   
   fromData(data: ILOD)

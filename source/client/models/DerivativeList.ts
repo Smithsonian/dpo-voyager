@@ -68,7 +68,6 @@ export default class DerivativeList
         for (let i = qualityIndex + 1; i < _qualityLevels.length; ++i) {
             const derivative = this.get(usage, _qualityLevels[i]);
             if (derivative) {
-                console.warn(`derivative quality '${qualityKey}' not available, using higher quality`);
                 return derivative;
             }
         }
@@ -76,7 +75,6 @@ export default class DerivativeList
         for (let i = qualityIndex - 1; i >= 0; --i) {
             const derivative = this.get(usage, _qualityLevels[i]);
             if (derivative) {
-                console.warn(`derivative quality '${qualityKey}' not available, using lower quality`);
                 return derivative;
             }
         }
