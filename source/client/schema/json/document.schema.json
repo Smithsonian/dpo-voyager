@@ -312,7 +312,7 @@
                 "copyright": {
                     "description": "A copyright message to credit the content creator.",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 0
                 },
                 "generator": {
                     "description": "Tool that generated this presentation description.",

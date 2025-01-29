@@ -66,7 +66,7 @@ export default class CVDocument extends CRenderGraph
         download: types.Event("Document.Download"),
         title: types.String("Document.Title"),
         intro: types.String("Document.Intro", ""),
-        copyright: types.String("Document.Copyright", "(c) Smithsonian Institution. All rights reserved."),
+        copyright: types.String("Document.Copyright", ""),
     };
 
     protected static readonly outs = {
@@ -280,11 +280,14 @@ export default class CVDocument extends CRenderGraph
                 type: CVDocument.mimeType,
                 version: CVDocument.version,
                 generator: "Voyager",
-                copyright: this.ins.copyright.value,
             },
             scene: 0,
             scenes: [],
         };
+
+        if(this.ins.copyright.value.length > 0) {
+            document.asset.copyright = this.ins.copyright.value;
+        }
 
         const pathMap = new Map<Component, string>();
         document.scene = this.root.toDocument(document, pathMap, components);
