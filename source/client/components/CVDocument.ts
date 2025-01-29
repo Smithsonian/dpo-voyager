@@ -58,7 +58,7 @@ export default class CVDocument extends CRenderGraph
 
     protected titles: Dictionary<string> = {};
     protected intros: Dictionary<string> = {};
-    protected meta: CVMeta = null;
+    protected _meta: CVMeta = null;
 
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
@@ -106,6 +106,9 @@ export default class CVDocument extends CRenderGraph
             name = name.substr(0, index);
         }
         return name;
+    }
+    get meta() {
+        return this._meta;
     }
 
     protected get analytics() {
@@ -304,8 +307,8 @@ export default class CVDocument extends CRenderGraph
         const propIntro = this.ins.intro;
         const language = this.setup.language;
 
-        if(this.meta === null) {
-            this.meta=meta;
+        if(this._meta === null) {
+            this._meta=meta;
         }
 
         if (event.add && !propTitle.value) {
@@ -324,7 +327,7 @@ export default class CVDocument extends CRenderGraph
                 const intro = this.intros[ELanguageType[language.outs.language.value]] || "";
                 propIntro.setValue(intro);
                 this.analytics.setTitle(title);
-                this.meta = meta;
+                this._meta = meta;
             });
         }
     }
