@@ -18,39 +18,34 @@
 import Property from "@ff/graph/Property";
 import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
-import "@ff/ui/Button";
-import { IButtonClickEvent } from "@ff/ui/Button";
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-property-event")
-export default class PropertyEvent extends CustomElement
+@customElement("sv-property-string")
+export default class PropertyString extends PropertyBase
 {
+    type = "string";
     @property({ attribute: false })
     property: Property = null;
 
     @property({ type: String })
     name = "";
 
-    @property({ type: String })
-    text = "";
-
-    @property({ type: String })
-    icon = "";
-
     protected firstConnected()
     {
-        this.classList.add("sv-property", "sv-property-event");
+        super.firstConnected();
+        this.classList.add( "sv-property-string");
     }
-
+    
     protected update(changedProperties: PropertyValues): void
     {
         if (!this.property) {
             throw new Error("missing property attribute");
         }
 
-        if (!this.property.schema.event) {
-            throw new Error(`not an event property: '${this.property.path}'`);
+        if (this.property.type !== "string") {
+            throw new Error(`not a string property: '${this.property.path}'`);
         }
 
         if (changedProperties.has("property")) {
@@ -66,21 +61,24 @@ export default class PropertyEvent extends CustomElement
         super.update(changedProperties);
     }
 
+    protected onChange = (event: Event) => {
+        const value = (event.target as HTMLInputElement).value;
+        this.property.setValue(value);
+    }
+
     protected render()
     {
         const property = this.property;
         const name = this.name || property.name;
-        const text = this.text;
-        const icon = this.icon;
+        const text = property.value;
 
-        return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
-            <div class="sv-options">
-                <ff-button aria-labelledby="${name}-label" .text=${text} .icon=${icon} @click=${this.onButtonClick}></ff-button>
-            </div>`;
-    }
-
-    protected onButtonClick(event: IButtonClickEvent)
-    {
-        this.property.set();
+        return html`${name? html`<label class="ff-label ff-off">${name}</label>`:null}
+            <input ?disabled=${this.ariaDisabled === "true"} type="text" class="sv-property-field ff-input"
+                .value=${text} 
+                @change=${this.onChange}
+                @focus=${(e)=>{ e.target.select();}}}
+                @keypress=${(e)=>{if(e.key === "Enter"){e.target.blur();}}}
+            >
+        `;
     }
 }

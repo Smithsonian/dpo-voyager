@@ -37,6 +37,10 @@ export default class TextEdit extends CustomElement
     @property({ type: Number })
     index = 0;
 
+    /** Optional number to define the number of visible rows in the control. */
+    @property({ type: Number })
+    rows = 0;
+
     /** Text to be edited in the control. */
     @property({ type: String })
     text = "";
@@ -103,7 +107,7 @@ export default class TextEdit extends CustomElement
     protected render()
     {
         return html`<textarea
-            .value=${this.text} placeholder=${this.placeholder} aria-labelledby=${this.getAttribute("aria-labelledby") ?? ''}
+            .value=${this.text} placeholder=${this.placeholder} rows=${this.rows} aria-labelledby=${this.getAttribute("aria-labelledby") ?? ''}
             @keydown=${this.onKeyDown} @change=${this.onChange} @input=${this.onInput}
             @focus=${this.onFocus} @blur=${this.onBlur} 
             style="text-align: ${this.align};" ?readonly=${this.readonly} maxlength=${ifDefined(this.maxLength > 0 ? this.maxLength : undefined)}}></textarea>`;

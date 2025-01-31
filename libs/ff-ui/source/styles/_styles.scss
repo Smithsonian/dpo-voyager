@@ -168,10 +168,6 @@ $tx-medium: 0.3s;
 ////////////////////////////////////////////////////////////////////////////////
 // UTILITY CLASSES
 
-// expands the element to match the size of the parent element
-.ff-fullsize {
-  @include fullsize;
-}
 
 // displays a little downward facing triangle
 .ff-caret-down {
@@ -543,7 +539,7 @@ ff-popup-button {
   display: block;
   overflow: hidden;
   background-color: $color-background-darker;
-  min-height: 1.2em;
+  min-height: 1.6em;
 
   input {
     padding: 2px;

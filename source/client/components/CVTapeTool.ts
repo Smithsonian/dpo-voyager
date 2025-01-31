@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import "../ui/PropertyBoolean";
-import "../ui/PropertyString";
+import "../ui/properties/PropertyBoolean";
+import "../ui/properties/PropertyString";
 
 import CVDocument from "./CVDocument";
 import { ETapeState } from "./CVTape";

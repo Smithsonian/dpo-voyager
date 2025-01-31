@@ -40,6 +40,17 @@ export default class CollectionPanel extends DocumentView
     {
         const languageManager = this.activeDocument.setup.language;
 
+        const meta = this.activeDocument.meta;
+        let customMetas = [];
+        if(meta) {
+            meta.collection.ids.forEach(id => {
+                if(!["title","titles","intros"].includes(id)) {
+                    customMetas.push(html`<br><div class="sv-label">${id}</div>
+                    <ff-line-edit name=${id} text=${meta.collection.get(id)} @change=${this.onTextEdit}></ff-line-edit>`);
+                }
+            })
+        }
+
         return html`<div class="ff-scroll-y ff-flex-column" style="padding-bottom: 5px">
             <div class="sv-panel-header">
                 <ff-icon name="document"></ff-icon>
@@ -54,6 +65,7 @@ export default class CollectionPanel extends DocumentView
             </div>
             <div class="sv-label">Copyright</div>
             <ff-line-edit name="copyright" text=${this.activeDocument.ins.copyright.value} @change=${this.onTextEdit}></ff-line-edit>
+            ${customMetas}
         </div>`;
     }
 
@@ -86,6 +98,10 @@ export default class CollectionPanel extends DocumentView
                     }
                 ));
             
+            }
+            else {
+                // assign value from custom field
+                this.activeDocument.meta.collection.insert(text,target.name);
             }
         }
     }

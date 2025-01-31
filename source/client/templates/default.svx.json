@@ -2,7 +2,6 @@
     "asset": {
         "type": "application/si-dpo-3d.document+json",
         "version": "1.0",
-        "copyright": "(c) Smithsonian Institution, all rights reserved",
         "generator": "Voyager"
     },
     "scene": 0,

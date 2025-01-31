@@ -18,51 +18,45 @@
 import {live} from "lit-html/directives/live";
 
 import Property from "@ff/graph/Property";
-import CustomElement, { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
 import { IButtonClickEvent } from "@ff/ui/Button";
-import CVLanguageManager from "client/components/CVLanguageManager";
+
+import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @customElement("sv-property-options")
-export default class PropertyOptions extends CustomElement
+export default class PropertyOptions extends PropertyBase
 {
-    @property({ attribute: false })
-    property: Property = null;
-
-    @property({ type: String })
-    name = "";
-
+    type = "number";
     @property({ attribute: false })
     options: string[] = null;
 
     @property({ attribute: false })
     indexMap: number[] = null;
 
-    @property({ attribute: false })
-    language: CVLanguageManager = null;
 
     @property({type: Boolean, reflect: true})
     dropdown :boolean = false;
 
     protected firstConnected()
     {
-        this.classList.add("sv-property", "sv-property-options");
+        super.firstConnected();
+        this.classList.add("sv-property-options");
     }
 
     protected update(changedProperties: PropertyValues): void
     {
-        if (!this.property) {
-            throw new Error("missing property attribute");
-        }
-
-        if (this.property.type !== "number" || !this.property.schema.options) {
-            throw new Error("not an options property");
-        }
-
         if (changedProperties.has("property")) {
+            if (!this.property) {
+                throw new Error("missing property attribute");
+            }
+    
+            if (!this.property.schema.options) {
+                throw new Error("not an options property");
+            }
             const property = changedProperties.get("property") as Property;
             if (property) {
                 property.off("value", this.onUpdate, this);
@@ -105,7 +99,7 @@ export default class PropertyOptions extends CustomElement
 
         return html`
             <label class="ff-label ff-off">${name}</label>
-            <select ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
+            <select ?disabled=${this.ariaDisabled === "true"} ?multiple=${property.isMulti()} .value=${live(value)} class="sv-property-field" @change=${(e)=>{
                 this.property.setValue(parseInt(e.target.value))
             }}>
                 ${optionsList}

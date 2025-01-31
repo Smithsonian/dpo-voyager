@@ -943,7 +943,7 @@ $tour-entry-indent: 12px;
   pointer-events: auto;
 
   .ff-title {
-    margin: 0.3em 0 0.3em 0.3em;
+    padding: 0.3em 0 0.3em 0.3em;
   }
   .ff-header {
     padding: 0.3em 0 0.3em 0.3em;
@@ -1226,10 +1226,8 @@ $tour-entry-indent: 12px;
 ////////////////////////////////////////////////////////////////////////////////
 // PROPERTIES
 .sv-property{
-  &[disabled]{
-    cursor: default;
+  &[disabled], &[aria-disabled="true"] {
     filter: brightness(0.6);
-    pointer-events: none;
   }
 
   .ff-input{
