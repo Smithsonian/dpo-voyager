@@ -103,7 +103,7 @@ export default class PropertyColor extends PropertyBase
         const color = this.color.toString(this.alphaEnabled);
 
         const colorEdit = html`<ff-color-edit .color=${this.color} @keydown=${e =>this.onKeyDown(e)} @change=${this.onColorChange}></ff-color-edit>`;
-        const popupColorEdit = html`<ff-popup .keepVisible=${true} .anchor=${this} .position=${"anchor"} .align=${"end"} .justify=${"fixed"}>${colorEdit}</ff-popup>`
+        const popupColorEdit = html`<ff-popup .keepVisible=${true} .anchor=${this} .position=${"anchor"} .align=${"end"} .justify=${"end"}>${colorEdit}</ff-popup>`
 
         return html`<label class="ff-label ff-off">${name}</label>
             <span class="sv-property-field">
