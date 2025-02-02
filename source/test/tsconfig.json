@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+      "target": "ES2017",
+      "module": "CommonJS",
+      "sourceMap": true,
+      //"strict": true,
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "moduleResolution": "node",
+      //"noUnusedLocals": true,
+      "experimentalDecorators": true,
+      "skipLibCheck": true,
+      "noEmitOnError": false,
+      "baseUrl": ".",
+      "outDir": "build",
+      "paths": {
+          "client/*": [ "../client/*" ],
+          "@ff/core/*": [ "../../libs/ff-core/source/*" ],
+          "@ff/graph/*": [ "../../libs/ff-graph/source/*" ],
+          "@ff/browser/*": [ "../../libs/ff-browser/source/*" ],
+          "@ff/ui/*": [ "../../libs/ff-ui/source/*" ],
+          "@ff/three/*": [ "../../libs/ff-three/source/*" ],
+          "@ff/scene/*": [ "../../libs/ff-scene/source/*" ]
+      }
+  },
+  "include": ["./**/*.test.ts", "../client/global.d.ts"]
+}
