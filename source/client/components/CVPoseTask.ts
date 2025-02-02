@@ -84,6 +84,7 @@ export default class CVPoseTask extends CVTask
         configuration.annotationsVisible = false;
         configuration.interfaceVisible = false;
         configuration.bracketsVisible = true;
+        configuration.axesVisible = true;
     }
 
     protected get renderer() {
