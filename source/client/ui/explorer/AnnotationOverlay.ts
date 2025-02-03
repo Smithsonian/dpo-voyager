@@ -33,7 +33,7 @@ export default class AnnotationOverlay extends Popup
 
     static show(parent: HTMLElement, content: HTMLElement, sprite: AnnotationSprite): Promise<void>
     {
-        const popup = new AnnotationOverlay(content, sprite);
+        const popup = new AnnotationOverlay(parent, content, sprite);
         parent.appendChild(popup);
 
         return new Promise((resolve, reject) => {
@@ -41,7 +41,7 @@ export default class AnnotationOverlay extends Popup
         });
     }
 
-    constructor( content: HTMLElement, sprite: AnnotationSprite )
+    constructor( parent: HTMLElement, content: HTMLElement, sprite: AnnotationSprite )
     {
         super();
 
@@ -52,6 +52,7 @@ export default class AnnotationOverlay extends Popup
         this.title = "";
         this.sprite = sprite;
         this.position = "center";
+        this.portal = parent;
         this.modal = true;
     }
 

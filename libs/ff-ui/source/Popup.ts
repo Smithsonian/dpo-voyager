@@ -106,7 +106,7 @@ export default class Popup extends CustomElement
         super.firstConnected();
 
         this.setStyle({
-            position: "fixed",
+            position: this.position == "center" ? "absolute" : "fixed",
             zIndex: "1000"
         });
 

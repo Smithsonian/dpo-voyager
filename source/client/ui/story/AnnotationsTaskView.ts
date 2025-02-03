@@ -129,7 +129,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                 <sv-property-view .property=${inProps.tags}></sv-property-view>
                 <sv-property-view .property=${inProps.title}></sv-property-view>
                 <div class="sv-label" style="${overLimit ? "color: red" : ""}">Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
-                <ff-text-edit name="lead" text=${inProps.lead.value} maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
+                <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
             </div>
             <div class="sv-label">View Point</div>
             <div class="sv-commands">

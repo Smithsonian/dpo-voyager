@@ -34,7 +34,7 @@ export default class SplashScreen extends Popup
    
     static show(parent: HTMLElement, language: CVLanguageManager, content: string): Promise<void>
     {
-        const screen = new SplashScreen(language, content);
+        const screen = new SplashScreen(parent, language, content);
         parent.appendChild(screen);
 
         return new Promise((resolve, reject) => {
@@ -42,13 +42,14 @@ export default class SplashScreen extends Popup
         });
     }
 
-    constructor( language: CVLanguageManager, content: string )
+    constructor( parent: HTMLElement, language: CVLanguageManager, content: string )
     {
         super();
 
         this.language = language;
         this.content = content;
         this.position = "center";
+        this.portal = parent;
         this.modal = true;
 
         this.url = window.location.href;

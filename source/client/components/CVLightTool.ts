@@ -17,10 +17,10 @@
 
 import CLight from "@ff/scene/components/CLight";
 
-import "../ui/PropertyBoolean";
-import "../ui/PropertyOptions";
-import "../ui/PropertySlider";
-import "../ui/PropertyColor";
+import "../ui/properties/PropertyBoolean";
+import "../ui/properties/PropertyOptions";
+import "../ui/properties/PropertySlider";
+import "../ui/properties/PropertyColor";
 
 import CVDocument from "./CVDocument";
 

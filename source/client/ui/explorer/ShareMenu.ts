@@ -36,7 +36,7 @@ export default class ShareMenu extends Popup
 
     static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
     {
-        const menu = new ShareMenu(language);
+        const menu = new ShareMenu(parent, language);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -44,12 +44,13 @@ export default class ShareMenu extends Popup
         });
     }
 
-    constructor( language: CVLanguageManager )
+    constructor( parent: HTMLElement, language: CVLanguageManager )
     {
         super();
 
         this.language = language;
         this.position = "center";
+        this.portal = parent;
         this.modal = true;
         let match = /\/scenes\/([^/]+).*?/.exec(window.location.href); 
         let u = new URL((match?`/ui/scenes/${match[1]}/view`:""), window.location.href);

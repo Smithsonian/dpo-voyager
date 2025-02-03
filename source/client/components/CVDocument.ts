@@ -58,7 +58,8 @@ export default class CVDocument extends CRenderGraph
 
     protected titles: Dictionary<string> = {};
     protected intros: Dictionary<string> = {};
-    protected meta: CVMeta = null;
+    protected _meta: CVMeta = null;
+    
     protected ref_id :number = -1;
 
     protected static readonly ins = {
@@ -67,7 +68,7 @@ export default class CVDocument extends CRenderGraph
         download: types.Event("Document.Download"),
         title: types.String("Document.Title"),
         intro: types.String("Document.Intro", ""),
-        copyright: types.String("Document.Copyright", "(c) Smithsonian Institution. All rights reserved."),
+        copyright: types.String("Document.Copyright", ""),
     };
 
     protected static readonly outs = {
@@ -107,6 +108,9 @@ export default class CVDocument extends CRenderGraph
             name = name.substr(0, index);
         }
         return name;
+    }
+    get meta() {
+        return this._meta;
     }
 
     protected get analytics() {
@@ -282,13 +286,16 @@ export default class CVDocument extends CRenderGraph
                 type: CVDocument.mimeType,
                 version: CVDocument.version,
                 generator: "Voyager",
-                copyright: this.ins.copyright.value,
                 id: this.ref_id,
 
             },
             scene: 0,
             scenes: [],
         };
+
+        if(this.ins.copyright.value.length > 0) {
+            document.asset.copyright = this.ins.copyright.value;
+        }
 
         const pathMap = new Map<Component, string>();
         document.scene = this.root.toDocument(document, pathMap, components);
@@ -305,8 +312,8 @@ export default class CVDocument extends CRenderGraph
         const propIntro = this.ins.intro;
         const language = this.setup.language;
 
-        if(this.meta === null) {
-            this.meta=meta;
+        if(this._meta === null) {
+            this._meta=meta;
         }
 
         if (event.add && !propTitle.value) {
@@ -325,7 +332,7 @@ export default class CVDocument extends CRenderGraph
                 const intro = this.intros[ELanguageType[language.outs.language.value]] || "";
                 propIntro.setValue(intro);
                 this.analytics.setTitle(title);
-                this.meta = meta;
+                this._meta = meta;
             });
         }
     }

@@ -240,9 +240,10 @@ Version: ${ENV_VERSION}
 
     reloadDocument()
     {
-        this.documentProvider.removeActiveDocument();
+        const oldDocument = this.documentProvider.activeComponent;
         this.documentProvider.createDocument(documentTemplate as any);
         this.evaluateProps();
+        oldDocument.dispose();
     }
 
     loadModel(modelPath: string, quality: string)

@@ -104,10 +104,10 @@ export default class CVAssetReader extends Component
         return this.fileLoader.getText(url);
     }
 
-    async getModel(assetPath: string): Promise<Object3D>
+    async getModel(assetPath: string, {signal}:{signal?:AbortSignal}={}): Promise<Object3D>
     {
         const url = this.assetManager.getAssetUrl(assetPath);
-        return this.modelLoader.get(url);
+        return this.modelLoader.get(url, {signal});
     }
 
     async getGeometry(assetPath: string): Promise<BufferGeometry>

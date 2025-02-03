@@ -115,7 +115,7 @@ export default class ChromeView extends DocumentView
         const activeLanguage = language.outs.language.value;
         const languagesVisible = languages.length > 1 && setup.interface.isShowing(EUIElements.language);
 
-        const captionsVisible = setup.audio.outs.isPlaying.value;
+        const captionsVisible = setup.audio.outs.isPlaying.value && setup.audio.getClipCaptionUri(setup.audio.activeId);
         const captionsEnabled = setup.audio.ins.captionsEnabled.value;
         const audioVisible = setup.audio.outs.narrationPlaying.value;
 
