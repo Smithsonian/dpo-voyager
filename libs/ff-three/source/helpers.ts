@@ -109,6 +109,11 @@ export function computeLocalBoundingBox(object: Object3D, box: Box3, root?: Obje
         root = object;
     }
 
+    // Don't include branches under invisible objects or masked objects
+    if(!object.visible || object.layers.mask > 1) {
+        return;
+    }
+
     const geometry = (object as any).geometry;
     if (geometry && object.visible) {
 
