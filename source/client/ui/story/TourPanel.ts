@@ -27,6 +27,7 @@ import CVToursTask from "../../components/CVToursTask";
 
 import DocumentView, { customElement, html } from "../explorer/DocumentView";
 import { ELanguageType } from "client/schema/common";
+import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -118,6 +119,8 @@ export default class TourPanel extends DocumentView
             <sv-property-view .property=${task.ins.stepCurve}></sv-property-view>
             <sv-property-view .property=${task.ins.stepDuration} commitonly></sv-property-view>
             <sv-property-view .property=${task.ins.stepThreshold} commitonly></sv-property-view>
+            <div class="sv-label">Alt Text</div>
+            <ff-text-edit name="altText" text=${task.ins.stepAltText.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : html`<div class="ff-placeholder"><div>Create or select a tour step to edit.</div></div>`;
 
         this.stateTable.rows = tours.activeSteps.map(step => {
@@ -207,5 +210,15 @@ export default class TourPanel extends DocumentView
         }
 
         this.requestUpdate();
+    }
+
+    protected onTextEdit(event: ILineEditChangeEvent)
+    {
+            const target = event.target;
+            const text = event.detail.text;
+
+            if (target.name === "altText") {
+                this.toursTask.ins.stepAltText.setValue(text);
+            }
     }
 }
