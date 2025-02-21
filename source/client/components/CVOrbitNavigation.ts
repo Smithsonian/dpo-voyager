@@ -19,7 +19,7 @@ import { Box3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
-import CameraController from "@ff/three/CameraController";
+import CameraController, { EControllerMode } from "@ff/three/CameraController";
 import { IKeyboardEvent, IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
 import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
@@ -76,6 +76,7 @@ export default class CVOrbitNavigation extends CObject3D
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
         autoRotation: types.Boolean("Navigation.AutoRotation", false),
         autoRotationSpeed: types.Number("Navigation.AutoRotationSpeed", 10),
+        mode: types.Enum("Navigation.Mode", EControllerMode, EControllerMode.Orbit),
         zoomExtents: types.Event("Settings.ZoomExtents"),
         autoZoom: types.Boolean("Settings.AutoZoom", true),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
@@ -108,6 +109,7 @@ export default class CVOrbitNavigation extends CObject3D
     get settingProperties() {
         return [
             this.ins.enabled,
+            this.ins.mode,
             this.ins.orbit,
             this.ins.offset,
             this.ins.autoZoom,
@@ -179,6 +181,11 @@ export default class CVOrbitNavigation extends CObject3D
         // camera preset
         if (preset.changed && preset.value !== EViewPreset.None) {
             orbit.setValue(_orientationPresets[preset.getValidatedValue()].slice());
+        }
+
+        // nav mode
+        if (ins.mode.changed) {
+            this._controller.controllerMode = ins.mode.value;
         }
 
         // include lights
@@ -369,6 +376,8 @@ export default class CVOrbitNavigation extends CObject3D
             minOffset: _replaceNull(orbit.minOffset, -Infinity),
             maxOffset: _replaceNull(orbit.maxOffset, Infinity),
         });
+
+        this._controller.reset();
     }
 
     toData(): INavigation
