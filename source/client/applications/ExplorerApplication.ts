@@ -245,7 +245,7 @@ Version: ${ENV_VERSION}
         const oldDocument = this.documentProvider.activeComponent;
         this.documentProvider.createDocument(documentTemplate as any);
         this.evaluateProps();
-        oldDocument.dispose();
+        oldDocument?.dispose();
     }
 
     loadModel(modelPath: string, quality: string)
