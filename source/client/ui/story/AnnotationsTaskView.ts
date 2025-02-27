@@ -233,6 +233,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
       {
         if(e.ctrlKey && e.shiftKey) {
             this._leadLimit = 0;
+            (this.getElementsByTagName("ff-text-edit")[0] as HTMLElement).blur();
             this.requestUpdate();
         }
       }
