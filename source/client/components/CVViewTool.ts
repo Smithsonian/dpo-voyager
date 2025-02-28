@@ -63,7 +63,7 @@ export class ViewToolView extends ToolView<CVViewTool>
         const navigation = document.setup.navigation;
         const language = document.setup.language;
 
-        const projection = navigation.ins.projection;
+        const projection = navigation.scene.activeCameraComponent.ins.projection;
         const preset = navigation.ins.preset;
         const zoom = navigation.ins.zoomExtents;
 

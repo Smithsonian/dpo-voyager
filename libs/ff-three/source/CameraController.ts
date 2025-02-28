@@ -10,6 +10,9 @@ import {
     Vector3,
     Matrix4,
     Box3,
+    Spherical,
+    Euler,
+    Quaternion,
 } from "three";
 
 import math from "@ff/core/math";
@@ -30,6 +33,9 @@ const _mat4 = new Matrix4();
 const _box3 = new Box3();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
+const _vec3c = new Vector3();
+const _eua = new Euler();
+const _quat = new Quaternion();
 
 enum EControllerMode { Orbit, FirstPerson }
 enum EManipMode { Off, Pan, Orbit, Dolly, Zoom, PanDolly, Roll }
@@ -42,6 +48,7 @@ export default class CameraController implements IManip
 
     orbit = new Vector3(0, 0, 0);
     offset = new Vector3(0, 0, 50);
+    pivot = new Vector3(0, 0, 0);
 
     minOrbit = new Vector3(-90, -Infinity, -Infinity);
     maxOrbit = new Vector3(90, Infinity, Infinity);
@@ -146,15 +153,22 @@ export default class CameraController implements IManip
         this.viewportHeight = height;
     }
 
+    /**
+     * Copy the object's matrix into the controller's properties
+     * effectively the inverse operation of updateCamera
+     */
     updateController(object?: Object3D, adaptLimits?: boolean)
     {
         const camera = this.camera;
         object = object || camera;
 
-        const orbit = this.orbit;
         const offset = this.offset;
-        threeMath.decomposeOrbitMatrix(object.matrix, orbit, offset);
-        this.orbit.multiplyScalar(threeMath.RAD2DEG);
+        object.matrix.decompose(_vec3b, _quat, _vec3c);
+        //Rotation
+        _eua.setFromQuaternion(_quat, "YXZ");
+        _vec3a.setFromEuler(_eua).multiplyScalar(threeMath.RAD2DEG);
+        this.orbit.copy(_vec3a);
+        this.offset.copy(_vec3b.sub(this.pivot).applyQuaternion(_quat.invert()));
 
         if (adaptLimits) {
             this.minOffset.min(offset);
@@ -177,14 +191,31 @@ export default class CameraController implements IManip
             return;
         }
 
+
+        // _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        // _eua.setFromVector3(_vec3a, "YXZ");
+        // _quat.setFromEuler(_eua);
+        // //Position, relative to pivot point
+        // _vec3b.copy(this.offset).applyEuler(_eua).add(this.pivot);
+        // //Keep scale
+        // _vec3c.setFromMatrixScale(object.matrix);
+        // //Compose everything
+        // object.matrix.compose(_vec3b, _quat,  _vec3c);
+
+
         // rotate box to camera space
         _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
+        _quat.setFromEuler(_eua.setFromVector3(_vec3a));
         _vec3b.setScalar(0);
-        threeMath.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
-
+        _vec3c.setScalar(1);
+        //Ignore the pivot point for now. Rotate the box into camera space
+        _mat4.compose(_vec3b, _quat, _vec3c);
         _box3.copy(box).applyMatrix4(_mat4.transpose());
         _box3.getSize(_vec3a);
         _box3.getCenter(_vec3b);
+
+        _vec3c.copy(this.pivot).applyMatrix4(_mat4);
+        _vec3b.sub(_vec3c);
 
         offset.x = _vec3b.x;
         offset.y = _vec3b.y;
@@ -221,7 +252,17 @@ export default class CameraController implements IManip
         }
 
         _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
-        _vec3b.copy(this.offset);
+        _eua.setFromVector3(_vec3a, "YXZ");
+        _quat.setFromEuler(_eua);
+        //Position, relative to pivot point
+        _vec3b.copy(this.offset).applyEuler(_eua).add(this.pivot);
+        //Keep scale
+        _vec3c.setFromMatrixScale(object.matrix);
+        //Compose everything
+        object.matrix.compose(_vec3b, _quat,  _vec3c);
+
+
+        object.matrixWorldNeedsUpdate = true;
 
         if (camera.isOrthographicCamera) {
             _vec3b.z = this.maxOffset.z; // fixed distance = maxOffset.z
@@ -229,9 +270,6 @@ export default class CameraController implements IManip
             camera.far = 2 * this.maxOffset.z; // adjust far clipping
             camera.updateProjectionMatrix();
         }
-
-        threeMath.composeOrbitMatrix(_vec3a, _vec3b, object.matrix);
-        object.matrixWorldNeedsUpdate = true;
 
         return true;
     }
