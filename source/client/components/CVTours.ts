@@ -150,6 +150,22 @@ export default class CVTours extends Component
             step.titles[ELanguageType[this.language.outs.language.value]] = inTitle;
         }
     }
+    get stepAltText() {
+        const step = this.activeStep;
+
+        if(step) {
+            return step.altTexts[ELanguageType[this.language.outs.language.value]] || "undefined";
+        }
+        else {
+            return null;
+        }
+    }
+    set stepAltText(inText: string) {
+        const step = this.activeStep;
+        if(step) {
+            step.altTexts[ELanguageType[this.language.outs.language.value]] = inText;
+        }
+    }
 
     create()
     {
@@ -170,6 +186,7 @@ export default class CVTours extends Component
         const tours = this._tours;
         const machine = this.snapshots;
         const navigation = this.setup.navigation;
+        const srElement = this.setup.viewer.rootElement.shadowRoot.querySelector("#sceneview-sr");
 
         if (ins.enabled.changed) {
 
@@ -192,6 +209,8 @@ export default class CVTours extends Component
                 // recall pre-tour scene state
                 machine.tweenTo(CVTours.sceneSnapshotId, context.secondsElapsed);
                 machine.deleteState(CVTours.sceneSnapshotId);
+
+                srElement.textContent = "";
 
                 return true;
             }
@@ -242,6 +261,7 @@ export default class CVTours extends Component
                 outs.tourLead.setValue("");
                 outs.stepIndex.set();
                 nextStepIndex = -1;
+                srElement.textContent = "";
             }
         }
         if (ins.previous.changed) {
@@ -262,6 +282,7 @@ export default class CVTours extends Component
             outs.stepTitle.setValue(this.stepTitle || "undefined");
             machine.ins.id.setValue(step.id);
             tween ? machine.ins.tween.set() : machine.ins.recall.set();
+            srElement.textContent = this.stepAltText != "undefined" ? "Alt text: " + this.stepAltText : "";
         }
 
         return true;
@@ -275,6 +296,7 @@ export default class CVTours extends Component
             steps: tour.steps.map(step => ({
                 title: step.title,
                 titles: step.titles || {},
+                altTexts: step.altTexts || {},
                 id: step.id,
             })),
             lead: tour.lead || "",
@@ -317,6 +339,10 @@ export default class CVTours extends Component
                     }
                     else if (step.title) {
                         tourstep.title = step.title;
+                    }
+
+                    if (Object.keys(step.altTexts).length > 0) {
+                        tourstep.altTexts = step.altTexts;
                     }
 
                     return tourstep as ITourStep;

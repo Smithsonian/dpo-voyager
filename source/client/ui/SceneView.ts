@@ -95,6 +95,7 @@ export default class SceneView extends SystemView
         this.srAnnouncement = this.appendElement("div");
         this.srAnnouncement.classList.add("sr-only");
         this.srAnnouncement.setAttribute("aria-live", "polite");
+        this.srAnnouncement.setAttribute("id", "sceneview-sr");
 
         this.canvas = this.appendElement("canvas", {
             display: "block",

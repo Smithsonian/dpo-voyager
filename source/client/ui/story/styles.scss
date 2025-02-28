@@ -490,9 +490,7 @@ $color-component-meta-light: #d9d998;
     }
   }
 
-  &.sv-property-block .sv-property,
-  .sv-property.sv-property-block
-  {
+  &.sv-property-block, &.sv-property-block .sv-property {
     display: block;
     max-height: unset;
     padding-right: 6px;

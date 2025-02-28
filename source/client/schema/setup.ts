@@ -197,6 +197,7 @@ export interface ITourStep
 {
     title: string;
     titles?: Dictionary<string>;
+    altTexts?: Dictionary<string>;
     id: string;
 }
 
