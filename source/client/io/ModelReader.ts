@@ -139,6 +139,12 @@ export default class ModelReader
                 const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : 
                     material.type === "MeshBasicMaterial" ? new UberBasicMaterial() : new UberPBRMaterial();
 
+                // update default shaders for extended functionality
+                uberMat.onBeforeCompile = (shader) => {
+                    shader.vertexShader = this.injectVertexShaderCode(shader.vertexShader);
+                    shader.fragmentShader = this.injectFragmentShaderCode(shader.fragmentShader);
+                }
+                
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
                     material.flatShading = false;
@@ -164,5 +170,185 @@ export default class ModelReader
         });
 
         return scene;
+    }
+
+    protected injectVertexShaderCode(shader: string) : string {
+        shader = shader.replace(
+            '#include <common>',
+            '// Zone map support\n \
+            #if defined(USE_ZONEMAP)\n \
+                varying vec2 vZoneUv;\n \
+            #endif\n \
+            \n \
+            #ifdef MODE_XRAY\n \
+                varying float vIntensity;\n \
+            #endif\n \
+            \n \
+            #if defined(CUT_PLANE) && !defined(USE_TRANSMISSION)\n \
+                varying vec3 vWorldPosition;\n \
+            #endif\n \
+            #include <common>'
+        )
+
+        shader = shader.replace(
+            '#include <uv_vertex>',
+            '#include <uv_vertex>\n \
+            \n \
+            // Zone map support\n \
+            #if defined(USE_ZONEMAP)\n \
+                #if defined(USE_MAP)\n \
+                    vZoneUv = (mapTransform * vec3(vMapUv, 1)).xy;\n \
+                #else\n \
+                    vZoneUv = uv;\n \
+                #endif\n \
+            #endif'
+        )
+
+        shader = shader.replace(
+            '#include <worldpos_vertex>',
+            '#if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0 || defined(CUT_PLANE)\n \
+                vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );\n \
+            #endif'
+        )
+
+        shader = shader.slice(0,shader.lastIndexOf('}')).concat(
+            '\n \
+            #ifdef CUT_PLANE\n \
+                vWorldPosition = worldPosition.xyz / worldPosition.w;\n \
+            #endif\n \
+            \n \
+            #ifdef MODE_NORMALS\n \
+                vNormal = normal;\n \
+            #endif\n \
+            \n \
+            #ifdef MODE_XRAY\n \
+                vIntensity = pow(abs(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)))), 3.0);\n \
+            #endif\n \
+            }'
+        )
+
+        return shader;
+    }
+
+    protected injectFragmentShaderCode(shader: string) {
+        shader = shader.slice(0,shader.lastIndexOf('}')).concat(
+            '\n \
+            #ifdef MODE_NORMALS\n \
+                gl_FragColor = vec4(vec3(normal * 0.5 + 0.5), 1.0);\n \
+            #endif\n \
+            \n \
+            #ifdef MODE_XRAY\n \
+                gl_FragColor = vec4(vec3(0.4, 0.7, 1.0) * vIntensity, 1.0);\n \
+            #endif\n \
+            }'
+        )
+
+        shader = shader.replace(
+            'void main() {',
+            '// Zone map support\n \
+            #if defined(USE_ZONEMAP)\n \
+                varying vec2 vZoneUv;\n \
+                uniform sampler2D zoneMap;\n \
+            #endif\n \
+            \n \
+            #ifdef USE_AOMAP\n \
+                uniform vec3 aoMapMix;\n \
+            #endif\n \
+            \n \
+            #ifdef MODE_XRAY\n \
+                varying float vIntensity;\n \
+            #endif\n \
+            \n \
+            #ifdef CUT_PLANE\n \
+                #if !defined(USE_TRANSMISSION)\n \
+                    varying vec3 vWorldPosition;\n \
+                #endif\n \
+                uniform vec4 cutPlaneDirection;\n \
+                uniform vec3 cutPlaneColor;\n \
+            #endif\n \
+            \n \
+            void main() {\n \
+                #ifdef CUT_PLANE\n \
+                    if (dot(vWorldPosition, cutPlaneDirection.xyz) < -cutPlaneDirection.w) {\n \
+                        discard;\n \
+                    }\n \
+                #endif\n \
+            '
+        )
+
+        shader = shader.replace(
+            '#include <normal_fragment_maps>',
+            '#include <normal_fragment_maps>\n \
+            \n \
+            #ifdef CUT_PLANE\n \
+                // on the cut surface (back facing fragments revealed), replace normal with cut plane direction\n \
+                if (!gl_FrontFacing) {\n \
+                    normal = -cutPlaneDirection.xyz;\n \
+                }\n \
+            #endif'
+        )
+
+        shader = shader.replace(
+            '#include <opaque_fragment>',
+            '#ifdef CUT_PLANE\n \
+            if (!gl_FrontFacing) {\n \
+                outgoingLight = cutPlaneColor.rgb;\n \
+            }\n \
+            #endif\n \
+            \n \
+            #include <opaque_fragment>\n \
+            \n \
+            #ifdef USE_ZONEMAP\n \
+                vec4 zoneColor = texture2D(zoneMap, vZoneUv);\n \
+            \n \
+                #ifdef OVERLAY_ALPHA\n \
+                    gl_FragColor += mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(zoneColor.rgb, 1.0), zoneColor.a);\n \
+                #endif\n \
+                #ifndef OVERLAY_ALPHA\n \
+                    gl_FragColor = mix(gl_FragColor, vec4(zoneColor.rgb, 1.0), zoneColor.a);\n \
+                #endif\n \
+            #endif'
+        )
+
+        shader = shader.replace(
+            '#include <aomap_fragment>',
+            '#ifdef USE_AOMAP\n \
+                // if cut plane is enabled, disable ambient occlusion on back facing fragments\n \
+                #ifdef CUT_PLANE\n \
+                    if (gl_FrontFacing) {\n \
+                #endif\n \
+                \n \
+                // reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture\n \
+                vec3 aoSample = vec3(texture2D(aoMap, vAoMapUv).r,texture2D(aoMap, vAoMapUv).r,texture2D(aoMap, vAoMapUv).r);\n \
+                vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));\n \
+                float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;\n \
+                float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;\n \
+                reflectedLight.directDiffuse *= ambientOcclusion2;\n \
+                reflectedLight.directSpecular *= ambientOcclusion;\n \
+                //reflectedLight.indirectDiffuse *= ambientOcclusion;\n \
+                \n \
+                #if defined( USE_CLEARCOAT )\n \
+                    clearcoatSpecularIndirect *= ambientOcclusion;\n \
+                #endif\n \
+                \n \
+                #if defined( USE_SHEEN )\n \
+                    sheenSpecularIndirect *= ambientOcclusion;\n \
+                #endif\n \
+                \n \
+                #if defined( USE_ENVMAP ) && defined( STANDARD )\n \
+                \n \
+                    float dotNV = saturate( dot( geometryNormal, geometryViewDir ) );\n \
+                \n \
+                    reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );\n \
+                \n \
+                #endif\n \
+                \n \
+                #ifdef CUT_PLANE\n \
+                    }\n \
+                #endif\n \
+            #endif'
+        )
+
+        return shader;
     }
 }

@@ -76,9 +76,10 @@ varying vec3 vViewPosition;
 #include <uv_pars_fragment>
 
 // Zone map support
-#if defined(USE_ZONEMAP)
-	varying vec2 vZoneUv;
-#endif
+//#if defined(USE_ZONEMAP)
+//	varying vec2 vZoneUv;
+//	uniform sampler2D zoneMap;
+//#endif
 
 #include <map_pars_fragment>
 #include <alphamap_pars_fragment>
@@ -106,7 +107,7 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
 
-#ifdef USE_ZONEMAP
+/*#ifdef USE_ZONEMAP
 	uniform sampler2D zoneMap;
 #endif
 
@@ -124,14 +125,14 @@ varying vec3 vViewPosition;
 	#endif
     uniform vec4 cutPlaneDirection;
     uniform vec3 cutPlaneColor;
-#endif
+#endif*/
 
 void main() {
-    #ifdef CUT_PLANE
+    /*#ifdef CUT_PLANE
         if (dot(vWorldPosition, cutPlaneDirection.xyz) < -cutPlaneDirection.w) {
             discard;
         }
-    #endif
+    #endif*/
 		
 	vec4 diffuseColor = vec4( diffuse, opacity );
 
@@ -151,13 +152,13 @@ void main() {
 	#include <normal_fragment_begin>
 	#include <normal_fragment_maps>
 
-	#ifdef CUT_PLANE
+	/*#ifdef CUT_PLANE
 	    // on the cut surface (back facing fragments revealed), replace normal with cut plane direction
         if (!gl_FrontFacing) {
             normal = -cutPlaneDirection.xyz;
             diffuseColor.rgb = cutPlaneColor.rgb;
         }
-	#endif
+	#endif*/
 
     #include <clearcoat_normal_fragment_begin>
     #include <clearcoat_normal_fragment_maps>
@@ -170,9 +171,9 @@ void main() {
 	#include <lights_fragment_end>
 
 	// modulation
-	//#include <aomap_fragment>
+	#include <aomap_fragment>
 	// REPLACED WITH
-	#ifdef USE_AOMAP
+	/*#ifdef USE_AOMAP
 	    // if cut plane is enabled, disable ambient occlusion on back facing fragments
 	    #ifdef CUT_PLANE
             if (gl_FrontFacing) {
@@ -206,7 +207,7 @@ void main() {
     	#ifdef CUT_PLANE
     	    }
     	#endif
-    #endif
+    #endif*/
 
 	vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
 	vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;
@@ -235,15 +236,15 @@ void main() {
 
 	#endif
 
-	#ifdef CUT_PLANE
+	/*#ifdef CUT_PLANE
 	if (!gl_FrontFacing) {
 		outgoingLight = cutPlaneColor.rgb;
 	}
-	#endif
+	#endif*/
 
 	#include <opaque_fragment>
 
-	#ifdef USE_ZONEMAP
+	/*#ifdef USE_ZONEMAP
 		vec4 zoneColor = texture2D(zoneMap, vZoneUv);
 
 		#ifdef OVERLAY_ALPHA
@@ -252,7 +253,7 @@ void main() {
 		#ifndef OVERLAY_ALPHA
 			gl_FragColor = mix(gl_FragColor, vec4(zoneColor.rgb, 1.0), zoneColor.a);
 		#endif
-	#endif
+	#endif*/
 
 	#include <tonemapping_fragment>
 	#include <colorspace_fragment>
@@ -260,11 +261,11 @@ void main() {
 	#include <premultiplied_alpha_fragment>
 	#include <dithering_fragment>
 
-    #ifdef MODE_NORMALS
+    /*#ifdef MODE_NORMALS
         gl_FragColor = vec4(vec3(normal * 0.5 + 0.5), 1.0);
     #endif
 
     #ifdef MODE_XRAY
         gl_FragColor = vec4(vec3(0.4, 0.7, 1.0) * vIntensity, 1.0);
-    #endif
+    #endif*/
 }

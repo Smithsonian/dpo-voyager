@@ -3,16 +3,16 @@
 
 varying vec3 vViewPosition;
 
-#if defined(USE_TRANSMISSION) || defined(CUT_PLANE)
+#if defined(USE_TRANSMISSION)// || defined(CUT_PLANE)
 
 	varying vec3 vWorldPosition;
 
 #endif
 
 // Zone map support
-#if defined(USE_ZONEMAP)	
-	varying vec2 vZoneUv;
-#endif
+//#if defined(USE_ZONEMAP)	
+//	varying vec2 vZoneUv;
+//#endif
 
 #include <common>
 #include <batching_pars_vertex>
@@ -27,9 +27,9 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
 
-#ifdef MODE_XRAY
-    varying float vIntensity;
-#endif
+//#ifdef MODE_XRAY
+//    varying float vIntensity;
+//#endif
 
 //#ifdef CUT_PLANE
 //    varying vec3 vWorldPosition;
@@ -40,13 +40,13 @@ void main() {
 	#include <uv_vertex>
 
 // Zone map support
-#if defined(USE_ZONEMAP)
+/*#if defined(USE_ZONEMAP)
 	#if defined(USE_MAP)
 		vZoneUv = (mapTransform * vec3(vMapUv, 1)).xy;
 	#else
 		vZoneUv = uv;
 	#endif
-#endif
+#endif*/
 
 	#include <color_vertex>
 	#include <morphinstance_vertex>
@@ -74,11 +74,11 @@ void main() {
 
 	vViewPosition = - mvPosition.xyz;
 
-	// #include <worldpos_vertex>
+	#include <worldpos_vertex>
 	// REPLACED WITH
-	#if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0 || defined(CUT_PLANE)
-    	vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
-    #endif
+	//#if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0 || defined(CUT_PLANE)
+    //	vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
+    //#endif
 
 	#include <shadowmap_vertex>
 	#include <fog_vertex>
@@ -89,11 +89,11 @@ void main() {
 
 #endif
 
-#ifdef CUT_PLANE
+/*#ifdef CUT_PLANE
     vWorldPosition = worldPosition.xyz / worldPosition.w;
 #endif
 
 #ifdef MODE_NORMALS
     vNormal = normal;
-#endif
+#endif*/
 }

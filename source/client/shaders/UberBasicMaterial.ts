@@ -20,8 +20,8 @@ import { Vector3, Vector4, Color, Side, UniformsUtils, ShaderLib, NoBlending, Do
     MeshBasicMaterial,
     MeshBasicMaterialParameters} from "three";
 
-const fragmentShader = require("./uberBasicShader.frag").default;
-const vertexShader = require("./uberPBRShader.vert").default;
+//const fragmentShader = require("./uberBasicShader.frag").default;
+//const vertexShader = require("./uberPBRShader.vert").default;
 
 import { EShaderMode } from "client/schema/setup";
 
@@ -96,10 +96,10 @@ export default class UberMaterial extends MeshBasicMaterial
         this._cutPlaneColor = this.uniforms.cutPlaneColor.value;
         this._zoneMap = this.uniforms.zoneMap.value;
 
-        //this.vertexShader = ShaderLib.standard.vertexShader;
-        this.vertexShader = vertexShader;
-        //this.fragmentShader = ShaderLib.standard.fragmentShader;
-        this.fragmentShader = fragmentShader;
+        this.vertexShader = ShaderLib.basic.vertexShader;
+        //this.vertexShader = vertexShader;
+        this.fragmentShader = ShaderLib.basic.fragmentShader;
+        //this.fragmentShader = fragmentShader;
 
         this.color = new Color(0xffffff); // diffuse
         //this.roughness = 0.7;
@@ -179,7 +179,8 @@ export default class UberMaterial extends MeshBasicMaterial
                 break;
 
             case EShaderMode.Normals:
-                this._paramCopy = {
+                console.warn("Material unsupported with flat shading.");
+                /*this._paramCopy = {
                     blending: this.blending,
                     transparent: this.transparent,
                     depthWrite: this.depthWrite,
@@ -187,11 +188,12 @@ export default class UberMaterial extends MeshBasicMaterial
                 this.defines["MODE_NORMALS"] = true;
                 this.blending = NoBlending;
                 this.transparent = false;
-                this.depthWrite = true;
+                this.depthWrite = true;*/
                 break;
 
             case EShaderMode.XRay:
-                this._paramCopy = {
+                console.warn("Material unsupported with flat shading.");
+                /*this._paramCopy = {
                     side: this.side,
                     blending: this.blending,
                     transparent: this.transparent,
@@ -201,7 +203,7 @@ export default class UberMaterial extends MeshBasicMaterial
                 this.side = DoubleSide;
                 this.blending = AdditiveBlending;
                 this.transparent = true;
-                this.depthWrite = false;
+                this.depthWrite = false;*/
                 break;
 
             case EShaderMode.Wireframe:
