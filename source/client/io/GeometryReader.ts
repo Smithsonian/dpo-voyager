@@ -17,8 +17,8 @@
 
 import { LoadingManager, BufferGeometry } from "three";
 
-import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {PLYLoader} from "three/examples/jsm/loaders/PLYLoader";
+import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader.js";
+import {PLYLoader} from "three/examples/jsm/loaders/PLYLoader.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 
