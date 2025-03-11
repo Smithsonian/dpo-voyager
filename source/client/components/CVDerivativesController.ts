@@ -26,6 +26,8 @@ const sizes = {
   [EDerivativeQuality.Thumb]: 512*512,
 } as const
 
+/**Absolute minimum value under which we do not expect to be able to function properly */
+const MIN_BUDGET = sizes[EDerivativeQuality.High]*2;
 
 interface ModelDisplayState{
   model :CVModel2;
@@ -87,6 +89,46 @@ const _cam_fwd = new Vector3(0, 0, 1);
 const _ndc_fwd = new Vector3(0, 0, 1);
 
 /**
+ * Simple moving average basic implementation
+ */
+class PerfCounter{
+  private _prev : number = 0;
+  private _buf :number[];
+  private _cursor = 0;
+  /**
+   * 
+   * @param length Moving average length
+   * @param initial initial value to prefill the array with, defaults to 0
+   */
+  constructor(length:number, initial ?:number){
+    this._buf = new Array(length);
+    if(typeof initial === "number") this.reset(initial);
+  }
+
+  /**
+   * Add a timestamp
+   * @param {number} t Timestamp
+   * @param {number} mult Multiplier (how many frames elapsed)
+   */
+  push(t :number, mult:number) :number{
+    this._buf[this._cursor] = mult/(t - this._prev);
+    this._prev = t;
+    this._cursor = (this._cursor + 1) % this._buf.length;
+    return this.get();
+  }
+
+  get() :number{
+    return this._buf.reduce((sum, value)=>sum + value, 0) / this._buf.length;
+  }
+
+  reset(n :number){
+    for(let i = 0; i< this._buf.length; i++){
+      this._buf[i] = n;
+    }
+  }
+}
+
+/**
  * Dynamic LOD handling. * 
  */
 export default class CVDerivativesController extends Component{
@@ -97,8 +139,7 @@ export default class CVDerivativesController extends Component{
   static readonly text: string = "Derivatives selection";
   static readonly icon: string = "";
 
-  /** Number of frames since last change */
-  private _debounce :number = 0;
+  private _fps = new PerfCounter(10, 60);
 
   private _budget = sizes[EDerivativeQuality.High]*2;
 
@@ -157,7 +198,7 @@ export default class CVDerivativesController extends Component{
       console.debug("Reduce budget because of low RAM");
       budget = Math.min(budget, sizes[EDerivativeQuality.High]*4);
     }
-    this._budget = Math.max(sizes[EDerivativeQuality.High]*2, budget);
+    this._budget = Math.max(MIN_BUDGET, budget);
     console.debug("Performance budget: ", Math.sqrt(this._budget));
   }
 
@@ -166,10 +207,17 @@ export default class CVDerivativesController extends Component{
     if (!this.ins.enabled.value || !cameraComponent) {
         return false;
     }
-    if(this._debounce++ < 20){
+    if((context.frameNumber % 20) != 0){
       return false;
     }
-    this._debounce = 0;
+    if((context.frameNumber % 120) == 0){
+      if(this._fps.push(context.secondsElapsed, 120) < 40 && MIN_BUDGET < this._budget){
+        this._budget = Math.max(MIN_BUDGET, this._budget - sizes[EDerivativeQuality.Low]);
+        console.debug("Reducing performance budget to %d (%d average fps)", Math.sqrt(this._budget), this._fps.get());
+        //Prevent this from triggering too much : artificially reset our fps average to 60
+        this._fps.reset(60);
+      }
+    }
 
     cameraComponent.camera.getWorldDirection(_cam_fwd);
 
@@ -239,8 +287,6 @@ export default class CVDerivativesController extends Component{
       _ndcBox.max.clampScalar(-1,1);
       _ndcBox.getSize(_vec3a);
       let visibleSize = (_vec3a.x *_vec3a.y)/4;
-      //let visibleSize = Math.abs((_localBox.max.angleTo(_cam_fwd) - _localBox.min.angleTo(_cam_fwd)))/(cameraComponent.camera.fov*Math.PI/180);
-
       const depthMod = Math.max(1-distance, 0.1);
       const angleMod = 1 - Math.abs(angle)/Math.PI;
 
@@ -285,7 +331,6 @@ export default class CVDerivativesController extends Component{
       textureSize += getSize(item.model, current_quality);
     }
 
-    let overbudget = this._budget <= textureSize;
 
     //Now we decide what to downgrade
 
@@ -298,21 +343,28 @@ export default class CVDerivativesController extends Component{
        * - entirely clipped 
        * - two levels above the expected quality
        */
-      if( (
-        this._budget*2/3 < textureSize
-        || 2 <= (downgrades.size+upgrades.size + currently_loading)
-        ) && (
-          item.clipped
-          || item.qualityRequest < item.model.ins.quality.value + 1
-        )
+      if(
+        /* Change this divider to allow us to downgrade further when idle, saving memory */
+        textureSize < this._budget/2 
+        /* We might allow more downloads to happen in parallel but there is not much performance gains to be expected */
+        && 2 < (downgrades.size + upgrades.size + currently_loading) 
+      ){
+        break;
+      }
+
+      if(
+        item.clipped
+        || item.qualityRequest < item.model.ins.quality.value + 1
       ){
         downgrades.set(item.model, item.qualityRequest);
         textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
       }
     }
+
     let normal_downgrades = downgrades.size;
 
-    /**Agressive downgrades
+    /**
+     * Agressive downgrades
      * If we are over-budget, blindly downgrade everything that can be until we are not.
     */
     for(let item of downgradable){
@@ -322,6 +374,18 @@ export default class CVDerivativesController extends Component{
       textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
     }
     let hard_downgrades = downgrades.size - normal_downgrades;
+
+    /**
+     * Cancel upgrades if necessary
+     * In some cases too many upgrades are scheduled at once (similarly sized items)
+     * We want to prevent that if that would overload the system
+     */
+    for(let [item, q] of upgrades){
+      if(textureSize < this._budget) break; //Run only if overbudget
+      //We are SURE `q != 0` because otherwise it wouldn't have been pushed to the upgrades queue
+      upgrades.delete(item);
+      textureSize += getSize(item, q-1) - getSize(item, q);
+    }
 
     /**"contingency" downgrades. 
      * Downgrade everything starting from the lower weights to one level _below_ what was requested
@@ -353,12 +417,16 @@ export default class CVDerivativesController extends Component{
 
     if(currently_loading != 0){
       const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
-      console.debug("%d models are currently loading", currently_loading);
-      if(hard_downgrades != downgrades.size){
-        console.debug("%d contingency downgrades were needed", downgrades.size - normal_downgrades - hard_downgrades)
-      }
-      console.debug("%d/%d opportunistic downgrades", normal_downgrades, hard_downgrades);
-      console.debug(`models :(%d, %d, %d, %d)`, countQ(EDerivativeQuality.High), countQ(EDerivativeQuality.Medium), countQ(EDerivativeQuality.Low), countQ(EDerivativeQuality.Thumb));
+      console.debug(`models quality: [%d, %d, %d, %d]. loading %d models with %d/%d downgrades %s`, 
+        countQ(EDerivativeQuality.High),
+        countQ(EDerivativeQuality.Medium),
+        countQ(EDerivativeQuality.Low),
+        countQ(EDerivativeQuality.Thumb),
+        currently_loading,
+        normal_downgrades,
+        hard_downgrades,
+        (hard_downgrades != downgrades.size?`(${downgrades.size - normal_downgrades - hard_downgrades} forced downgrades)`:"")
+      );
     }
     return 0 < downgrades.size;
   }
