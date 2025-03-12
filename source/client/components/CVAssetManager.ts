@@ -53,7 +53,7 @@ export default class CVAssetManager extends Component
 
     private _loadingManager = new AssetLoadingManager(this);
     private _baseUrl: string = window.location.href;
-    private _initialLoad: boolean = false;
+    private _initialLoad: boolean = true;
 
     get loadingManager() {
         return this._loadingManager;
