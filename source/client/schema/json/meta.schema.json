@@ -135,6 +135,42 @@
                 "id",
                 "uris"
             ]
+        },
+        "action": {
+            "$id": "action",
+            "description": "Reference to a Voyager action element",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [ "PlayAnimation", "PlayAudio" ]
+                },
+                "trigger": {
+                    "type": "string",
+                    "enum": [ "OnClick" ]
+                },
+                "audioId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "animation": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "style": {
+                    "type": "string",
+                    "enum": [ "Single", "PingPong" ]
+                }
+            },
+            "required": [
+                "id",
+                "type",
+                "trigger"
+            ]
         }
     },
 
@@ -171,6 +207,13 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/audioclip"
+            },
+            "minItems": 0
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/action"
             },
             "minItems": 0
         }

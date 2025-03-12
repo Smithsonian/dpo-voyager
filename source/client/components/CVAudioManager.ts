@@ -251,7 +251,6 @@ export default class CVAudioManager extends Component
             this.audioClips = meta.audio.dictionary;  // needed to support initially empty meta nodes
             meta.once("load", () => {
                 this.audioClips = meta.audio.dictionary;
-                this.outs.updated.set();
                 Object.keys(this.audioClips).forEach(key => {
                     this.updateAudioClip(this.audioClips[key].id);
                 });
@@ -286,7 +285,7 @@ export default class CVAudioManager extends Component
         return data;
     }
 
-    play(id: string)
+    play(id: string, useDefaultPlayer: boolean = false)
     {
         const { outs } = this;
         const uri = this.getAudioClipUri(id);

@@ -30,6 +30,7 @@ export interface IMeta
     images?: IImage[];
     articles?: IArticle[];
     audio?: IAudioClip[];
+    actions?: IAction[];
     leadArticle?: Index;
 }
 
@@ -88,3 +89,25 @@ export interface IAudioClip
     captionUris: Dictionary<string>;
     durations: Dictionary<string>;
 }
+
+/**
+ * Triggered actions (animation, audio, etc. on click, proximity, etc.)
+ */
+ export interface IAction
+ {
+     id: string;
+     type: TActionType;
+     trigger: TActionTrigger;
+     audioId: string;
+     animation: string;
+     style: TActionPlayStyle;
+ }
+
+ export type TActionType = "PlayAnimation" | "PlayAudio";
+ export enum EActionType { PlayAnimation, PlayAudio };
+
+ export type TActionTrigger = "OnClick";
+ export enum EActionTrigger { OnClick };
+
+ export type TActionPlayStyle = "Single" | "PingPong";
+ export enum EActionPlayStyle { Single, PingPong };
