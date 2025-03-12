@@ -144,28 +144,29 @@ export default class ModelReader
             signal.addEventListener("abort", onAbort);
         }
 
-        if(!this.loading[url]?.listeners.length){
+        if(!this.loading[url]){
     
-            this.loading[url] = {listeners:[], abortController: new AbortController()};
+            const {listeners, abortController:{signal}} = this.loading[url] = {listeners:[], abortController: new AbortController()};
     
             fetch(url, {
-                signal: this.loading[url].abortController.signal,
+                signal,
             }).then(r=>{
                 if(!r.ok){
                     throw new Error( `fetch for "${r.url}" responded with ${r.status}: ${r.statusText}`);
                 }
                 //Skip all the progress tracking from FileLoader since we don't use it.
                 return r.arrayBuffer();
+            }).finally(()=>{
+                delete this.loading[url];
             }).then(data=> {
-                this.loading[url].listeners.forEach(({onload})=>onload(data));
+                if(signal.aborted) return; //Might have aborted during the r.arrayBuffer() call
+                listeners.forEach(({onload})=>onload(data));
             }, (e)=>{
-                this.loading[url].listeners.forEach(({onerror})=>onerror(e));
+                listeners.forEach(({onerror})=>onerror(e));
                 if(e.name != "AbortError" && e.name != "ABORT_ERR"){
                     console.error(e);
                 }
-            }).finally(()=>{
-                delete this.loading[url];
-            });
+            })
         }
 
         return new Promise((onload, onerror)=>{
