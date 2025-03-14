@@ -10,7 +10,8 @@ import {
     Vector3,
     Matrix4,
     Box3,
-    Euler
+    Euler,
+    Quaternion
 } from "three";
 
 import math from "@ff/core/math";
@@ -31,6 +32,7 @@ const _mat4 = new Matrix4();
 const _box3 = new Box3();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
+const _quat = new Quaternion();
 const _euler = new Euler();
 
 export enum EControllerMode { Orbit, FirstPerson }
@@ -237,8 +239,9 @@ export default class CameraController implements IManip
         }
         
         if(this.controllerMode == EControllerMode.FirstPerson) {
+            camera.getWorldQuaternion(_quat);
             _vec3b.sub(this.prevOffset);
-            _vec3b.applyEuler(_euler.set(_vec3a.x,_vec3a.y,_vec3a.z));
+            _vec3b.applyQuaternion(_quat);
             _vec3b.copy(this.prevTransform.add(_vec3b));
             _vec3b.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
             this.prevOffset.copy(this.offset);
@@ -373,8 +376,8 @@ export default class CameraController implements IManip
                 const factor = 10;
                 offset.z += dScale * factor;
 
-                offset.x += dX * factor;
-                offset.y -= dY * factor;
+                offset.x += dX * 20 * factor * inverse / this.viewportHeight;
+                offset.y -= dY * 20 * factor * inverse / this.viewportHeight;
             }
         }
     }
