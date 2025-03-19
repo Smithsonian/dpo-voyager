@@ -152,10 +152,10 @@ export interface IAudio
 export interface ITape
 {
     enabled: boolean;
-    /*startPosition: number[];
-    startDirection: number[];
-    endPosition: number[];
-    endDirection: number[];*/
+    startPosition?: number[];
+    startDirection?: number[];
+    endPosition?: number[];
+    endDirection?: number[];
 }
 
 export interface ISlicer

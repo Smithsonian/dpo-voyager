@@ -198,5 +198,7 @@ export default class CVSetup extends Component
                 this[name].fromData(featureData);
             }
         }
+
+        this.slicer.ins.enabled.set();  // slicer needs a push to refresh
     }
 }
