@@ -44,6 +44,14 @@ export default class CVTool extends CVNodeObserver
     }
 
     private _isActiveTool = false;
+    private _enabled = true;
+
+    get enabled() {
+        return this._enabled
+    }
+    set enabled(enable: boolean) {
+        this._enabled = enable;
+    }
 
     dispose()
     {

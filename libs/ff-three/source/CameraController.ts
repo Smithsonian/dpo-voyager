@@ -128,11 +128,13 @@ export default class CameraController implements IManip
 
     onKeypress(event: IKeyboardEvent)
     {
+        const isOrbit = this.controllerMode == EControllerMode.Orbit;
         if(event.key === "ArrowUp" || event.key === "ArrowDown") {
             const dir = event.key === "ArrowUp" ? -1 : 1;
-            this.deltaY = dir*20;
+            this.deltaY = dir * (isOrbit ? 20 : 6);
 
-            this.mode = event.shiftKey ? EManipMode.Pan : (event.ctrlKey ? EManipMode.Dolly : EManipMode.Orbit);
+            this.mode = event.shiftKey ? EManipMode.Pan : isOrbit ? (event.ctrlKey ? EManipMode.Dolly : EManipMode.Orbit)
+                : (event.ctrlKey ? EManipMode.Orbit : EManipMode.Dolly);
             
             return true;
         }
@@ -177,6 +179,10 @@ export default class CameraController implements IManip
      */
     zoomExtents(box: Box3)
     {
+        if(this.controllerMode == EControllerMode.FirstPerson) {
+            return;
+        }
+
         const camera = this.camera;
         const offset = this.offset;
 
@@ -236,15 +242,6 @@ export default class CameraController implements IManip
             camera.size = this.offset.z; // use size to visualize distance
             camera.far = 2 * this.maxOffset.z; // adjust far clipping
             camera.updateProjectionMatrix();
-        }
-        
-        if(this.controllerMode == EControllerMode.FirstPerson) {
-            camera.getWorldQuaternion(_quat);
-            _vec3b.sub(this.prevOffset);
-            _vec3b.applyQuaternion(_quat);
-            _vec3b.copy(this.prevTransform.add(_vec3b));
-            _vec3b.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
-            this.prevOffset.copy(this.offset);
         }
 
         threeMath.composeOrbitMatrix(_vec3a, _vec3b, object.matrix);
@@ -344,7 +341,7 @@ export default class CameraController implements IManip
     {
         const {
             orbit, minOrbit, maxOrbit,
-            offset, minOffset, maxOffset
+            offset, minOffset, maxOffset, camera
         } = this;
 
         let inverse = -1;
@@ -379,6 +376,18 @@ export default class CameraController implements IManip
                 offset.x += dX * 20 * factor * inverse / this.viewportHeight;
                 offset.y -= dY * 20 * factor * inverse / this.viewportHeight;
             }
+        }
+
+        if(this.controllerMode == EControllerMode.FirstPerson) {
+            _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
+            _vec3b.copy(offset);
+            camera.getWorldQuaternion(_quat);
+            _vec3b.sub(this.prevOffset);
+            _vec3b.applyQuaternion(_quat);
+            _vec3b.copy(this.prevTransform.add(_vec3b));
+            _vec3b.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
+            this.prevOffset.copy(this.offset);
+            this.offset = _vec3b;
         }
     }
 
