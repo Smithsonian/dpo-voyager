@@ -149,10 +149,12 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.on<IKeyboardEvent>("keydown", this.onKeyboard, this);
 
         this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
+        this.sceneNode.outs.boundingRadius.on("value", this.onBoundsChange, this);
     }
 
     dispose()
     {
+        this.sceneNode.outs.boundingRadius.on("value", this.onBoundsChange, this);
         this.assetManager.outs.completed.off("value", this.onLoadingCompleted, this);
 
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
@@ -187,10 +189,10 @@ export default class CVOrbitNavigation extends CObject3D
         if (ins.mode.changed) {
             switch(ins.mode.value) {
                 case ENavigationType.Orbit:
-                    this._controller.controllerMode = EControllerMode.Orbit;
+                    controller.controllerMode = EControllerMode.Orbit;
                     break;
                 case ENavigationType.FirstPerson:
-                    this._controller.controllerMode = EControllerMode.FirstPerson;
+                    controller.controllerMode = EControllerMode.FirstPerson;
                     break;
             }
         }
@@ -494,5 +496,10 @@ export default class CVOrbitNavigation extends CObject3D
             this.ins.zoomExtents.set();
             this._isAutoZooming = true;
         }
+    }
+
+    protected onBoundsChange()
+    {
+        this._controller.boundsRadius = this.sceneNode.outs.boundingRadius.value;
     }
 }

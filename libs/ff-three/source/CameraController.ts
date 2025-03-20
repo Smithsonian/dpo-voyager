@@ -52,6 +52,8 @@ export default class CameraController implements IManip
     minOffset = new Vector3(-Infinity, -Infinity, 0.1);
     maxOffset = new Vector3(Infinity, Infinity, 1000);
 
+    boundsRadius = 0;
+
     orientationEnabled = true;
     offsetEnabled = true;
 
@@ -140,7 +142,7 @@ export default class CameraController implements IManip
         }
         else if(event.key === "ArrowLeft" || event.key === "ArrowRight") {
             const dir = event.key === "ArrowLeft" ? -1 : 1;
-            this.deltaX = dir*20;
+            this.deltaX = dir * (isOrbit ? 20 : 6);
 
             this.mode = event.shiftKey ? EManipMode.Pan : EManipMode.Orbit;
 
@@ -327,7 +329,7 @@ export default class CameraController implements IManip
                 break;
 
             case EManipMode.Dolly:
-                this.updatePose(0, 0, isOrbit ? this.deltaY * 0.0075 + 1 : this.deltaY, 0, 0, 0);
+                this.updatePose(0, 0, isOrbit ? this.deltaY * 0.0075 + 1 : this.deltaY * 0.175, 0, 0, 0);
                 break;
 
             case EManipMode.PanDolly:
@@ -370,7 +372,7 @@ export default class CameraController implements IManip
                 offset.z = math.limit(offset.z, minOffset.z, maxOffset.z);
             }
             else {
-                const factor = 10;
+                const factor = this.boundsRadius/20;
                 offset.z += dScale * factor;
 
                 offset.x += dX * 20 * factor * inverse / this.viewportHeight;
