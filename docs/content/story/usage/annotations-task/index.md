@@ -6,7 +6,7 @@ weight: 300
 
 Use the Annotations Task to annotate a model in 3D space using customizable hotspot labels. Voyager uses annotations by XYZ point coordinates. Annotations in Voyager can be customized in a number of ways, see the sub-headings **Customize an Annotation** and **More Tips and Tricks for Annotations** to get help with how to configure annotations to suit your project goals. 
 
-{{% info "The Annotations Task is only available if Voyager Story is started in authoring mode." %}}
+The Annotations Task is only available if Voyager Story is started in authoring mode
 
 
 <details>
