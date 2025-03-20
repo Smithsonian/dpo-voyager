@@ -24,8 +24,8 @@ import CVDocument from "./CVDocument";
 import { EViewPreset } from "./CVOrbitNavigation";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
-import { EControllerMode } from "@ff/three/CameraController";
 import CVSetup from "./CVSetup";
+import { ENavigationType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +37,7 @@ export default class CVViewTool extends CVTool
     static readonly icon = "eye";
 
     get enabled() {
-        return this.getSystemComponent(CVSetup).navigation.ins.mode.value === EControllerMode.Orbit;
+        return this.getSystemComponent(CVSetup).navigation.ins.mode.value === ENavigationType.Orbit;
     }
 
     createView()

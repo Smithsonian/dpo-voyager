@@ -25,7 +25,7 @@ import CScene, { IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 import { EProjection } from "@ff/three/UniversalCamera";
 
-import { INavigation } from "client/schema/setup";
+import { ENavigationType, TNavigationType, INavigation } from "client/schema/setup";
 
 import CVScene from "./CVScene";
 import CVAssetManager from "./CVAssetManager";
@@ -76,7 +76,7 @@ export default class CVOrbitNavigation extends CObject3D
         lightsFollowCamera: types.Boolean("Navigation.LightsFollowCam", true),
         autoRotation: types.Boolean("Navigation.AutoRotation", false),
         autoRotationSpeed: types.Number("Navigation.AutoRotationSpeed", 10),
-        mode: types.Enum("Navigation.Mode", EControllerMode, EControllerMode.Orbit),
+        mode: types.Enum("Navigation.Mode", ENavigationType, ENavigationType.Orbit),
         zoomExtents: types.Event("Settings.ZoomExtents"),
         autoZoom: types.Boolean("Settings.AutoZoom", true),
         orbit: types.Vector3("Current.Orbit", [ -25, -25, 0 ]),
@@ -185,7 +185,14 @@ export default class CVOrbitNavigation extends CObject3D
 
         // nav mode
         if (ins.mode.changed) {
-            this._controller.controllerMode = ins.mode.value;
+            switch(ins.mode.value) {
+                case ENavigationType.Orbit:
+                    this._controller.controllerMode = EControllerMode.Orbit;
+                    break;
+                case ENavigationType.FirstPerson:
+                    this._controller.controllerMode = EControllerMode.FirstPerson;
+                    break;
+            }
         }
 
         // include lights
@@ -369,6 +376,7 @@ export default class CVOrbitNavigation extends CObject3D
             autoZoom: !!data.autoZoom,
             autoRotation: !!data.autoRotation,
             lightsFollowCamera: !!data.lightsFollowCamera,
+            mode: ENavigationType[data.type] || ENavigationType.Orbit,
             orbit: orbit.orbit,
             offset: orbit.offset,
             minOrbit: _replaceNull(orbit.minOrbit, -Infinity),
@@ -390,7 +398,7 @@ export default class CVOrbitNavigation extends CObject3D
         data.autoRotation = ins.autoRotation.value;
         data.lightsFollowCamera = ins.lightsFollowCamera.value;
 
-        data.type = "Orbit";
+        data.type = ENavigationType[ins.mode.value] as TNavigationType;
 
         data.orbit = {
             orbit: ins.orbit.cloneValue(),
