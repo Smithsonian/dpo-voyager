@@ -74,10 +74,22 @@ Annotations can be customized to suit the specific needs of the project. Below a
 * RGB values to adjust the color of the annotation accent color
 * useful for when you have annotation subgroups distinguished by color 
 
-</details>
-
 <details>
- <summary><b>5. Image</b> - Displays an image with the annotation (not yet available)</summary> 
+ <summary><b>5. Image</b> - Displays an image with the annotation</summary> 
+ 
+ * For Extended Annotation Style only 
+ * Drag/drop into the annotation label field or write the file path of the image
+ * Max height of image is 120 px 
+ * Includes the entry of credit/caption and alt text 
+ 
+ </details>
+ 
+ <details>
+ <summary><b>6. Audio</b> - Displays an image with the annotation</summary> 
+
+ * Need to add a New Audio Element using the Audio Task Button in Top Toolbar 
+ * Is NOT Narration 
+ * The audio elements will then be visible in the dropdown option 
  
  </details>
 
@@ -133,7 +145,6 @@ Annotations can be customized to suit the specific needs of the project. Below a
 * Tip: If using both a Lead and Article Link it is a good idea to add an extra space under your lead by hitting enter after your last word in the Lead Text field. This creates extra space for the 'Read more' text and there isn't overlap
  </details>
  
-	</details>
 
 <details>
  <summary><b><font size="+2">More Tips and Tricks for Annotations</font></u></b></summary> 	
@@ -235,7 +246,5 @@ It is also possible to further customize annotation settings within Voyager Stor
 6. In the $\color{fuchsia}{Task\text{ }Window}$, click on the 'Capture Button'
     * N.B. Clicking 'Capture' will record everything that is set up in the scene so make sure the model is positioned in the way you want it to look when a user loads the webpage. It may also affect other aspects of the viewer/model so be careful when using the capture button.
 7. $\color{red}{Save\text{ }Workspace}$ and reload the page to make sure the specific annotations you want are now visible by default. 
-
-</details>
 
 </details>
