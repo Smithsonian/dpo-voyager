@@ -63,7 +63,6 @@ export default class CameraController implements IManip
     protected phase = EManipPhase.Off;
     protected prevPinchDist = 0;
     protected prevOffset = new Vector3(0, 0, 0);
-    protected prevTransform = new Vector3(0, 0, 0);
 
     protected deltaX = 0;
     protected deltaY = 0;
@@ -252,12 +251,6 @@ export default class CameraController implements IManip
         return true;
     }
 
-    reset()
-    {
-        this.prevOffset.set(0,0,0);
-        this.prevTransform.set(0,0,0);
-    }
-
     /**
      * Updates the manipulator.
      * @returns true if the state has changed during the update.
@@ -346,6 +339,8 @@ export default class CameraController implements IManip
             offset, minOffset, maxOffset, camera
         } = this;
 
+        this.prevOffset.copy(offset);
+
         let inverse = -1;
 
         if (this.orientationEnabled) {
@@ -386,10 +381,9 @@ export default class CameraController implements IManip
             camera.getWorldQuaternion(_quat);
             _vec3b.sub(this.prevOffset);
             _vec3b.applyQuaternion(_quat);
-            _vec3b.copy(this.prevTransform.add(_vec3b));
-            _vec3b.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
-            this.prevOffset.copy(this.offset);
-            this.offset = _vec3b;
+            this.offset.applyQuaternion(_quat);
+            this.offset.add(_vec3b);
+            this.offset.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
         }
     }
 

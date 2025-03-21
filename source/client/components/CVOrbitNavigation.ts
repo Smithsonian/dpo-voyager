@@ -386,8 +386,6 @@ export default class CVOrbitNavigation extends CObject3D
             minOffset: _replaceNull(orbit.minOffset, -Infinity),
             maxOffset: _replaceNull(orbit.maxOffset, Infinity),
         });
-
-        this._controller.reset();
     }
 
     toData(): INavigation
