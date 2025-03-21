@@ -85,7 +85,7 @@
                 "type": {
                     "type": "string",
                     "enum": [
-                        "Orbit", "FirstPerson"
+                        "Orbit", "Fly"
                     ]
                 },
                 "enabled": {

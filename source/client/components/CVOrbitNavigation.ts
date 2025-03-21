@@ -191,8 +191,8 @@ export default class CVOrbitNavigation extends CObject3D
                 case ENavigationType.Orbit:
                     controller.controllerMode = EControllerMode.Orbit;
                     break;
-                case ENavigationType.FirstPerson:
-                    controller.controllerMode = EControllerMode.FirstPerson;
+                case ENavigationType.Fly:
+                    controller.controllerMode = EControllerMode.Fly;
                     break;
             }
         }

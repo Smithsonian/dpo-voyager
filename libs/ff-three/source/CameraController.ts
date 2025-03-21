@@ -35,7 +35,7 @@ const _vec3b = new Vector3();
 const _quat = new Quaternion();
 const _euler = new Euler();
 
-export enum EControllerMode { Orbit, FirstPerson }
+export enum EControllerMode { Orbit, Fly }
 enum EManipMode { Off, Pan, Orbit, Dolly, Zoom, PanDolly, Roll }
 enum EManipPhase { Off, Active, Release }
 
@@ -180,7 +180,7 @@ export default class CameraController implements IManip
      */
     zoomExtents(box: Box3)
     {
-        if(this.controllerMode == EControllerMode.FirstPerson) {
+        if(this.controllerMode != EControllerMode.Orbit) {
             return;
         }
 
@@ -375,7 +375,7 @@ export default class CameraController implements IManip
             }
         }
 
-        if(this.controllerMode == EControllerMode.FirstPerson) {
+        if(this.controllerMode == EControllerMode.Fly) {
             _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
             _vec3b.copy(offset);
             camera.getWorldQuaternion(_quat);
