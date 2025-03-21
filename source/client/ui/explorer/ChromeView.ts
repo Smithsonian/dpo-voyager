@@ -220,8 +220,9 @@ export default class ChromeView extends DocumentView
 
     protected openHelp() {
         const language = this.activeDocument.setup.language;
+        const navMode = this.activeDocument.setup.navigation.ins.mode.value;
 
-        HelpMain.show(this, this.activeDocument.setup.language).then(() => {
+        HelpMain.show(this, language, navMode).then(() => {
             (this.querySelector("#main-help") as HTMLElement).focus();
         });
     }

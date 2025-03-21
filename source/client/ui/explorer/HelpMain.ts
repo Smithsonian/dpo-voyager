@@ -22,6 +22,7 @@ import "@ff/ui/TextEdit";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 import { IButtonClickEvent, IButtonKeyboardEvent } from "@ff/ui/Button";
+import { ENavigationType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +33,7 @@ export default class HelpMain extends Popup
 {
     protected url: string;
     protected language: CVLanguageManager = null;
+    protected navMode: ENavigationType = ENavigationType.Orbit;
     protected helpView: EHelpSection = EHelpSection.Nav;
 
     protected static readonly leftClick = html`<svg class="ff-icon" viewBox="150 150 900 900" xmlns="http://www.w3.org/2000/svg"><path d="m600 930.62c-121.73 0-220.41-98.684-220.41-220.41v-220.42c0-121.73 98.684-220.42 220.41-220.42 121.73 0 220.42 98.684 220.42 220.42v220.42c0 121.73-98.684 220.41-220.42 220.41zm-188.93-346.37h377.86v125.95c0 104.34-84.594 188.93-188.93 188.93s-188.93-84.59-188.93-188.93zm159.28-85.285c4.2188 2.8008 8.9414 4.7539 13.902 5.7617v48.035h-106.02zm-17.586-62.66v29.863c0 2.125 0.17188 4.2383 0.50391 6.3008l-137.46 80.293h-4.7383v-33.691zm62.977-71.668v-63.133c96.969 7.9961 173.18 89.234 173.18 188.28v62.977h-173.18v-48.035c7.5078-1.5273 14.469-5.2266 19.965-10.723 7.3828-7.3828 11.523-17.395 11.523-27.836v-62.977c0-10.438-4.1406-20.449-11.523-27.832-5.4961-5.4961-12.457-9.1953-19.965-10.723zm-31.488-19.664v19.664c-7.5117 1.5273-14.469 5.2266-19.965 10.723-6.5625 6.5625-10.562 15.207-11.367 24.387l-141.71 82.766c0.51953-13.695 2.4883-27.031 5.7773-39.832zm31.488 121.2v-62.977c0-2.0938-0.83594-4.0898-2.3008-5.5703-1.4766-1.4648-3.4766-2.3008-5.5703-2.3008h-15.746c-2.0938 0-4.0938 0.83594-5.5742 2.3008-1.4609 1.4805-2.2969 3.4766-2.2969 5.5703v62.977c0 2.0938 0.83594 4.0938 2.2969 5.5742 1.4805 1.4648 3.4805 2.3008 5.5742 2.3008h15.746c2.0938 0 4.0938-0.83594 5.5703-2.3008 1.4648-1.4805 2.3008-3.4805 2.3008-5.5742zm-31.488-157.66-147.54 86.184c30.262-51.859 84.516-87.992 147.54-93.188z" fill-rule="evenodd"/></svg>`;
@@ -54,10 +56,17 @@ export default class HelpMain extends Popup
         <path d="m717.96 263.76h-238.92c-22.559 0-40.922 18.359-40.922 40.922l0.003906 238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.007813-238.92c0-22.559-18.359-40.918-40.918-40.918zm-85.562 148.56h-24.84v86.039c0 4.9219-4.0781 9-9 9s-9-4.0781-9-9v-86.039h-24.84c-4.9219 0-7.9219-5.2812-5.5195-9.4805l33.84-58.68c2.3984-4.1992 8.5195-4.1992 11.039 0l33.84 58.68c2.4023 4.1992-0.59766 9.4805-5.5195 9.4805z"/>
         <path d="m1116 895.32v-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.559 0-40.922 18.359-40.922 40.922v238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.68-0.007813 40.918-18.367 40.918-40.926zm-148.44-85.559v-24.961h-86.039c-4.9219 0-9-4.0781-9-9s4.0781-9 9-9h86.039v-24.84c0-4.9219 5.2812-7.9219 9.4805-5.5195l58.68 33.84c4.1992 2.3984 4.1992 8.5195 0 11.039l-58.68 33.84c-4.1992 2.5195-9.4805-0.60156-9.4805-5.3984z"/>
         <path d="m84 656.4v238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.003906-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.684 0-40.922 18.359-40.922 40.918zm148.44 85.562v24.84h86.039c4.9219 0 9 4.0781 9 9s-4.0781 9-9 9h-86.039v24.84c0 4.9219-5.2812 7.9219-9.4805 5.5195l-58.68-33.84c-4.1992-2.3984-4.1992-8.5195 0-11.039l58.68-33.84c4.1992-2.4023 9.4805 0.59766 9.4805 5.5195z"/></g></svg>`;
+    protected static readonly arrowKeysUD = html`<svg class="ff-icon" viewBox="350 200 500 800" xmlns="http://www.w3.org/2000/svg"><g>
+        <path d="m479.04 936.24h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.003906-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.559 0-40.922 18.359-40.922 40.922v238.92c0.003906 22.555 18.363 40.914 40.922 40.914zm85.562-148.56h24.84v-86.039c0-4.9219 4.0781-9 9-9s9 4.0781 9 9v86.039h24.84c4.9219 0 7.9219 5.2812 5.5195 9.4805l-33.84 58.68c-2.3984 4.1992-8.5195 4.1992-11.039 0l-33.84-58.68c-2.4023-4.1992 0.71875-9.4805 5.5195-9.4805z"/>
+        <path d="m717.96 263.76h-238.92c-22.559 0-40.922 18.359-40.922 40.922l0.003906 238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.007813-238.92c0-22.559-18.359-40.918-40.918-40.918zm-85.562 148.56h-24.84v86.039c0 4.9219-4.0781 9-9 9s-9-4.0781-9-9v-86.039h-24.84c-4.9219 0-7.9219-5.2812-5.5195-9.4805l33.84-58.68c2.3984-4.1992 8.5195-4.1992 11.039 0l33.84 58.68c2.4023 4.1992-0.59766 9.4805-5.5195 9.4805z"/>
+        </g></svg>`;
+    protected static readonly arrowKeysLR = html`<svg class="ff-icon" viewBox="350 350 950 800" xmlns="http://www.w3.org/2000/svg"><g>
+        <path d="m1116 895.32v-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.559 0-40.922 18.359-40.922 40.922v238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.68-0.007813 40.918-18.367 40.918-40.926zm-148.44-85.559v-24.961h-86.039c-4.9219 0-9-4.0781-9-9s4.0781-9 9-9h86.039v-24.84c0-4.9219 5.2812-7.9219 9.4805-5.5195l58.68 33.84c4.1992 2.3984 4.1992 8.5195 0 11.039l-58.68 33.84c-4.1992 2.5195-9.4805-0.60156-9.4805-5.3984z"/>
+        <g transform="translate(350 0)"><path d="m84 656.4v238.92c0 22.559 18.359 40.922 40.922 40.922h238.92c22.559 0 40.922-18.359 40.922-40.922l-0.003906-238.92c0-22.559-18.359-40.922-40.922-40.922l-238.92 0.003907c-22.684 0-40.922 18.359-40.922 40.918zm148.44 85.562v24.84h86.039c4.9219 0 9 4.0781 9 9s-4.0781 9-9 9h-86.039v24.84c0 4.9219-5.2812 7.9219-9.4805 5.5195l-58.68-33.84c-4.1992-2.3984-4.1992-8.5195 0-11.039l58.68-33.84c4.1992-2.4023 9.4805 0.59766 9.4805 5.5195z"/></g></g></svg>`;
 
-    static show(parent: HTMLElement, language: CVLanguageManager): Promise<void>
+    static show(parent: HTMLElement, language: CVLanguageManager, navMode: ENavigationType): Promise<void>
     {
-        const menu = new HelpMain(parent, language);
+        const menu = new HelpMain(parent, language, navMode);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -65,11 +74,12 @@ export default class HelpMain extends Popup
         });
     }
 
-    constructor( parent: HTMLElement, language: CVLanguageManager )
+    constructor(parent: HTMLElement, language: CVLanguageManager, navMode: ENavigationType)
     {
         super();
 
         this.language = language;
+        this.navMode = navMode;
         this.position = "center";
         this.modal = true;
         this.portal = parent;
@@ -92,6 +102,8 @@ export default class HelpMain extends Popup
     protected render()
     {
         const language = this.language;
+        const navMode = this.navMode;
+        const isOrbit = navMode === ENavigationType.Orbit;
         const section = this.helpView;
 
         const arVisible = this.parentElement.querySelector("#ar-btn") ? true : false;
@@ -102,15 +114,18 @@ export default class HelpMain extends Popup
         const fsVisible = this.parentElement.querySelector("#fullscreen-btn") ? true : false;
         const toolsVisible = this.parentElement.querySelector("#tools-btn") ? true : false;
 
+        const fpTileOption = html`<div class="sv-help-text">Ctrl + ${HelpMain.arrowKeysUD}Arrow keys</div>`;
+
         const navContent = html`<div class="sv-help-row" aria-live="polite" aria-atomic="true">
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="rotate"></ff-icon>
-                                        <div class="sv-help-text"><b>Orbit</b></div>
+                                        <div class="sv-help-text"><b>${isOrbit ? 'Orbit' : 'Look Around'}</b></div>
                                         <div class="sv-help-text">${HelpMain.leftClick}Left-click and drag</div>
                                         <div class="sr-only"> Or.</div>
                                         <div class="sv-help-text">${HelpMain.oneFinger}One-finger drag</div>
                                         <div class="sr-only"> Or.</div>
-                                        <div class="sv-help-text">${HelpMain.arrowKeys}Arrow keys</div>
+                                        <div class="sv-help-text">${isOrbit ? HelpMain.arrowKeys : HelpMain.arrowKeysLR}Arrow keys</div>
+                                        ${!isOrbit ? fpTileOption : null}
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="move"></ff-icon>
@@ -123,12 +138,12 @@ export default class HelpMain extends Popup
                                     </div>
                                     <div class="sv-help-section">
                                         <ff-icon class="ff-off" name="zoom"></ff-icon>
-                                        <div class="sv-help-text"><b>Zoom</b></div>
+                                        <div class="sv-help-text"><b>${isOrbit ? 'Zoom' : 'Forward/Backward'}</b></div>
                                         <div class="sv-help-text">${HelpMain.mouseWheel}Mouse wheel</div>
                                         <div class="sr-only"> Or.</div>
                                         <div class="sv-help-text">${HelpMain.pinch}Two-finger pinch</div>
                                         <div class="sr-only"> Or.</div>
-                                        <div class="sv-help-text">Ctrl + ${HelpMain.arrowKeys}Arrow keys</div>
+                                        <div class="sv-help-text">${isOrbit ? 'Ctrl + ' : ''}${isOrbit ? HelpMain.arrowKeys : HelpMain.arrowKeysUD}Arrow keys</div>
                                     </div>
                                     <div id="sr-trigger" class="sr-only"></div>
                                 </div>`;
