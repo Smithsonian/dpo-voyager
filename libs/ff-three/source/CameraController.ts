@@ -334,7 +334,7 @@ export default class CameraController implements IManip
 
             case EManipMode.PanDolly:
                 const pinchScale = (this.deltaPinch - 1) * 0.42 + 1;
-                this.updatePose(this.deltaX * 0.75, this.deltaY * 0.75, 1 / pinchScale, 0, 0, 0);
+                this.updatePose(this.deltaX * 0.75, this.deltaY * 0.75, isOrbit ? 1 / pinchScale : (this.deltaPinch - 1) * -10, 0, 0, 0);
                 break;
         }
     }
