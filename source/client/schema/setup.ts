@@ -25,8 +25,8 @@ export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe }
 export type TBackgroundStyle = "Solid" | "LinearGradient" | "RadialGradient";
 export enum EBackgroundStyle { Solid, LinearGradient, RadialGradient }
 
-export type TNavigationType = "Orbit" | "Fly";
-export enum ENavigationType { Orbit, Fly }
+export type TNavigationType = "Orbit" | "Fly" | "Walk";
+export enum ENavigationType { Orbit, Fly, Walk }
 
 export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }

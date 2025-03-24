@@ -35,7 +35,7 @@ const _vec3b = new Vector3();
 const _quat = new Quaternion();
 const _euler = new Euler();
 
-export enum EControllerMode { Orbit, Fly }
+export enum EControllerMode { Orbit, Fly, Walk }
 enum EManipMode { Off, Pan, Orbit, Dolly, Zoom, PanDolly, Roll }
 enum EManipPhase { Off, Active, Release }
 
@@ -63,6 +63,7 @@ export default class CameraController implements IManip
     protected phase = EManipPhase.Off;
     protected prevPinchDist = 0;
     protected prevOffset = new Vector3(0, 0, 0);
+    protected prevOrbit = new Vector3(0, 0, 0);
 
     protected deltaX = 0;
     protected deltaY = 0;
@@ -340,6 +341,7 @@ export default class CameraController implements IManip
         } = this;
 
         this.prevOffset.copy(offset);
+        this.prevOrbit.copy(orbit).multiplyScalar(math.DEG2RAD);
 
         let inverse = -1;
 
@@ -367,23 +369,27 @@ export default class CameraController implements IManip
                 offset.z = math.limit(offset.z, minOffset.z, maxOffset.z);
             }
             else {
-                const factor = this.boundsRadius/20;
-                offset.z += dScale * factor;
+                const isWalk = this.controllerMode === EControllerMode.Walk
 
-                offset.x += dX * 20 * factor * inverse / this.viewportHeight;
-                offset.y -= dY * 20 * factor * inverse / this.viewportHeight;
+                const factor = this.boundsRadius/25;
+
+                _vec3b.set(dX * 20 * factor * inverse / this.viewportHeight, isWalk ? 0 : dY * 20 * factor * inverse / this.viewportHeight,
+                     dScale * factor);
+
+                if(isWalk) {
+                    _euler.set(this.prevOrbit.x, 0, this.prevOrbit.z);
+                    _vec3b.applyEuler(_euler);
+                }
+
+                offset.x += _vec3b.x;
+                offset.y -= _vec3b.y;
+                offset.z += _vec3b.z;
+
+                _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
+                camera.getWorldQuaternion(_quat);
+                this.offset.applyQuaternion(_quat);
+                this.offset.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
             }
-        }
-
-        if(this.controllerMode == EControllerMode.Fly) {
-            _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
-            _vec3b.copy(offset);
-            camera.getWorldQuaternion(_quat);
-            _vec3b.sub(this.prevOffset);
-            _vec3b.applyQuaternion(_quat);
-            this.offset.applyQuaternion(_quat);
-            this.offset.add(_vec3b);
-            this.offset.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
         }
     }
 
