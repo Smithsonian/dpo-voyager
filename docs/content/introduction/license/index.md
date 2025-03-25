@@ -4,7 +4,7 @@ summary: Voyager is free and open source, licensed under the Apache 2.0 license.
 weight: 300
 ---
 
-Copyright 2019 Smithsonian Institution.
+Copyright 2025 Smithsonian Institution.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use the content of this repository except in compliance with the License. You may obtain a copy of the License at
 

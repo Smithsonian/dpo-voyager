@@ -2,7 +2,7 @@
  * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * From <model-viewer> project (www.modelviewer.dev)
- * Modifications Copyright 2020 Smithsonian Institution
+ * Modifications Copyright 2025 Smithsonian Institution
  * 
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
