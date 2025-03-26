@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2024 Smithsonian Institution
+ * Copyright 2025 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
