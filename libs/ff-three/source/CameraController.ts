@@ -10,6 +10,8 @@ import {
     Vector3,
     Matrix4,
     Box3,
+    Euler,
+    Quaternion
 } from "three";
 
 import math from "@ff/core/math";
@@ -30,8 +32,10 @@ const _mat4 = new Matrix4();
 const _box3 = new Box3();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
+const _quat = new Quaternion();
+const _euler = new Euler();
 
-enum EControllerMode { Orbit, FirstPerson }
+export enum EControllerMode { Orbit, Fly, Walk }
 enum EManipMode { Off, Pan, Orbit, Dolly, Zoom, PanDolly, Roll }
 enum EManipPhase { Off, Active, Release }
 
@@ -48,12 +52,18 @@ export default class CameraController implements IManip
     minOffset = new Vector3(-Infinity, -Infinity, 0.1);
     maxOffset = new Vector3(Infinity, Infinity, 1000);
 
+    boundsRadius = 0;
+
     orientationEnabled = true;
     offsetEnabled = true;
+
+    controllerMode: EControllerMode = EControllerMode.Orbit
 
     protected mode = EManipMode.Off;
     protected phase = EManipPhase.Off;
     protected prevPinchDist = 0;
+    protected prevOffset = new Vector3(0, 0, 0);
+    protected prevOrbit = new Vector3(0, 0, 0);
 
     protected deltaX = 0;
     protected deltaY = 0;
@@ -120,17 +130,19 @@ export default class CameraController implements IManip
 
     onKeypress(event: IKeyboardEvent)
     {
+        const isOrbit = this.controllerMode == EControllerMode.Orbit;
         if(event.key === "ArrowUp" || event.key === "ArrowDown") {
             const dir = event.key === "ArrowUp" ? -1 : 1;
-            this.deltaY = dir*20;
+            this.deltaY = dir * (isOrbit ? 20 : 6);
 
-            this.mode = event.shiftKey ? EManipMode.Pan : (event.ctrlKey ? EManipMode.Dolly : EManipMode.Orbit);
+            this.mode = event.shiftKey ? EManipMode.Pan : isOrbit ? (event.ctrlKey ? EManipMode.Dolly : EManipMode.Orbit)
+                : (event.ctrlKey ? EManipMode.Orbit : EManipMode.Dolly);
             
             return true;
         }
         else if(event.key === "ArrowLeft" || event.key === "ArrowRight") {
             const dir = event.key === "ArrowLeft" ? -1 : 1;
-            this.deltaX = dir*20;
+            this.deltaX = dir * (isOrbit ? 20 : 6);
 
             this.mode = event.shiftKey ? EManipMode.Pan : EManipMode.Orbit;
 
@@ -169,6 +181,10 @@ export default class CameraController implements IManip
      */
     zoomExtents(box: Box3)
     {
+        if(this.controllerMode != EControllerMode.Orbit) {
+            return;
+        }
+
         const camera = this.camera;
         const offset = this.offset;
 
@@ -242,13 +258,14 @@ export default class CameraController implements IManip
      */
     update(): boolean
     {
+        const isOrbit = this.controllerMode == EControllerMode.Orbit;
         if (this.phase === EManipPhase.Off && this.deltaWheel === 0
             && this.deltaX === 0 && this.deltaY === 0) {
             return false;
         }
 
         if (this.deltaWheel !== 0) {
-            this.updatePose(0, 0, this.deltaWheel * 0.07 + 1, 0, 0, 0);
+            this.updatePose(0, 0, isOrbit ? this.deltaWheel * 0.07 + 1 : this.deltaWheel, 0, 0, 0);
             this.deltaWheel = 0;
             return true;
         }
@@ -290,26 +307,28 @@ export default class CameraController implements IManip
 
     protected updateByMode()
     {
+        const isOrbit = this.controllerMode == EControllerMode.Orbit;
+        const noZFactor = isOrbit ? 1 : 0;
         switch(this.mode) {
             case EManipMode.Orbit:
-                this.updatePose(0, 0, 1, this.deltaY, this.deltaX, 0);
+                this.updatePose(0, 0, noZFactor, this.deltaY, this.deltaX, 0);
                 break;
 
             case EManipMode.Pan:
-                this.updatePose(this.deltaX, this.deltaY, 1, 0, 0, 0);
+                this.updatePose(this.deltaX, this.deltaY, noZFactor, 0, 0, 0);
                 break;
 
             case EManipMode.Roll:
-                this.updatePose(0, 0, 1, 0, 0, this.deltaX);
+                this.updatePose(0, 0, noZFactor, 0, 0, this.deltaX);
                 break;
 
             case EManipMode.Dolly:
-                this.updatePose(0, 0, this.deltaY * 0.0075 + 1, 0, 0, 0);
+                this.updatePose(0, 0, isOrbit ? this.deltaY * 0.0075 + 1 : this.deltaY * 0.175, 0, 0, 0);
                 break;
 
             case EManipMode.PanDolly:
                 const pinchScale = (this.deltaPinch - 1) * 0.42 + 1;
-                this.updatePose(this.deltaX * 0.75, this.deltaY * 0.75, 1 / pinchScale, 0, 0, 0);
+                this.updatePose(this.deltaX * 0.75, this.deltaY * 0.75, isOrbit ? 1 / pinchScale : (this.deltaPinch - 1) * -10, 0, 0, 0);
                 break;
         }
     }
@@ -318,8 +337,11 @@ export default class CameraController implements IManip
     {
         const {
             orbit, minOrbit, maxOrbit,
-            offset, minOffset, maxOffset
+            offset, minOffset, maxOffset, camera
         } = this;
+
+        this.prevOffset.copy(offset);
+        this.prevOrbit.copy(orbit).multiplyScalar(math.DEG2RAD);
 
         let inverse = -1;
 
@@ -335,15 +357,39 @@ export default class CameraController implements IManip
         }
 
         if (this.offsetEnabled) {
-            const factor = offset.z = dScale * offset.z;
+            if(this.controllerMode == EControllerMode.Orbit) {
+                const factor = offset.z = dScale * offset.z;
 
-            offset.x += dX * factor * inverse / this.viewportHeight;
-            offset.y -= dY * factor * inverse / this.viewportHeight;
+                offset.x += dX * factor * inverse / this.viewportHeight;
+                offset.y -= dY * factor * inverse / this.viewportHeight;
 
-            // check limits
-            offset.x = math.limit(offset.x, minOffset.x, maxOffset.x);
-            offset.y = math.limit(offset.y, minOffset.y, maxOffset.y);
-            offset.z = math.limit(offset.z, minOffset.z, maxOffset.z);
+                // check limits
+                offset.x = math.limit(offset.x, minOffset.x, maxOffset.x);
+                offset.y = math.limit(offset.y, minOffset.y, maxOffset.y);
+                offset.z = math.limit(offset.z, minOffset.z, maxOffset.z);
+            }
+            else {
+                const isWalk = this.controllerMode === EControllerMode.Walk
+
+                const factor = this.boundsRadius/25;
+
+                _vec3b.set(dX * 20 * factor * inverse / this.viewportHeight, isWalk ? 0 : dY * 20 * factor * inverse / this.viewportHeight,
+                     dScale * factor);
+
+                if(isWalk) {
+                    _euler.set(this.prevOrbit.x, 0, this.prevOrbit.z);
+                    _vec3b.applyEuler(_euler);
+                }
+
+                offset.x += _vec3b.x;
+                offset.y -= _vec3b.y;
+                offset.z += _vec3b.z;
+
+                _vec3a.copy(orbit).multiplyScalar(math.DEG2RAD);
+                camera.getWorldQuaternion(_quat);
+                this.offset.applyQuaternion(_quat);
+                this.offset.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
+            }
         }
     }
 

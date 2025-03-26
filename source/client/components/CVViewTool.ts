@@ -24,6 +24,8 @@ import CVDocument from "./CVDocument";
 import { EViewPreset } from "./CVOrbitNavigation";
 
 import CVTool, { customElement, html, ToolView } from "./CVTool";
+import CVSetup from "./CVSetup";
+import { ENavigationType } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +35,10 @@ export default class CVViewTool extends CVTool
 
     static readonly text = "View";
     static readonly icon = "eye";
+
+    get enabled() {
+        return this.getSystemComponent(CVSetup).navigation.ins.mode.value === ENavigationType.Orbit;
+    }
 
     createView()
     {
@@ -71,13 +77,13 @@ export class ViewToolView extends ToolView<CVViewTool>
             EViewPreset.Left, EViewPreset.Right,
             EViewPreset.Top, EViewPreset.Bottom ];
 
-        return html`<div role="toolbar" aria-label="View tool" class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
+        return tool.enabled ? html`<div role="toolbar" aria-label="View tool" class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${projection} .language=${language} name=${language.getLocalizedString("Projection")}></sv-property-options>
                 <sv-property-options .property=${preset} .language=${language} name=${language.getLocalizedString("View")} .indexMap=${presetMap}></sv-property-options>
                 <sv-property-event .property=${zoom} name=${language.getLocalizedString("Center")} icon="zoom"></sv-property-event>
             </div>
-        </div>`;
+        </div>` : null;
     }
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
@@ -89,7 +95,7 @@ export class ViewToolView extends ToolView<CVViewTool>
     {
         await this.updateComplete;
         const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
-        focusElement.focus();
+        focusElement ? focusElement.focus() : null;
     }
 
     protected onClose(event: MouseEvent)

@@ -25,8 +25,8 @@ export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe }
 export type TBackgroundStyle = "Solid" | "LinearGradient" | "RadialGradient";
 export enum EBackgroundStyle { Solid, LinearGradient, RadialGradient }
 
-export type TNavigationType = "Orbit" | "Walk";
-export enum ENavigationType { Orbit, Walk }
+export type TNavigationType = "Orbit" | "Fly" | "Walk";
+export enum ENavigationType { Orbit, Fly, Walk }
 
 export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }
@@ -152,10 +152,10 @@ export interface IAudio
 export interface ITape
 {
     enabled: boolean;
-    /*startPosition: number[];
-    startDirection: number[];
-    endPosition: number[];
-    endDirection: number[];*/
+    startPosition?: number[];
+    startDirection?: number[];
+    endPosition?: number[];
+    endDirection?: number[];
 }
 
 export interface ISlicer

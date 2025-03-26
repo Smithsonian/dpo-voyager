@@ -256,11 +256,12 @@ export default class CVTape extends CObject3D
     {
         this.ins.copyValues({
             visible: data.enabled,   // TODO: should probably be visible instead of enabled
-            /*startPosition: data.startPosition,
-            startDirection: data.startDirection,
-            endPosition: data.endPosition,
-            endDirection: data.endDirection*/
+            startPosition: data.startPosition || [ 0, 0, 0 ],
+            startDirection: data.startDirection || [ 1, 0, 0 ],
+            endPosition: data.endPosition || [ 0, 0, 0 ],
+            endDirection: data.endDirection || [ 1, 0, 0 ]
         });
+        this.ins.enabled.copyValue(false);  // enable not set from data
     }
 
     toData(): ITape
