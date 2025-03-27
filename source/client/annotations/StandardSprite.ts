@@ -83,7 +83,7 @@ export default class StandardSprite extends AnnotationSprite
 
         this.stemLine.material["opacity"] = opacity;
         element.setOpacity(opacity);
-        element.setVisible(this.annotation.data.visible);
+        //element.setVisible(this.annotation.data.visible);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {
@@ -104,7 +104,7 @@ export default class StandardSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera) && this.annotation.data.visible);
     }
 
     protected createHTMLElement(): StandardAnnotation

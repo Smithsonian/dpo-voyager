@@ -87,7 +87,7 @@ export default class ExtendedSprite extends AnnotationSprite
 
         this.stemLine.material["opacity"] = opacity;
         element.setOpacity(opacity);
-        element.setVisible(this.annotation.data.visible);
+        //element.setVisible(this.annotation.data.visible);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {
@@ -111,7 +111,7 @@ export default class ExtendedSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera) && this.annotation.data.visible);
 
         // check if annotation is out of bounds and update if needed
         if (this.adaptive && !this.isAnimating && this.annotation.data.expanded) {
