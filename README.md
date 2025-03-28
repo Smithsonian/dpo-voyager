@@ -27,7 +27,7 @@ Given that the Smithsonian 3D team has limited resources, our implementation of 
 This software is pre-release and provided "as is". Breaking changes can and will happen during development.
 
 ### License Information
-Copyright 2022 Smithsonian Institution.
+Copyright 2025 Smithsonian Institution.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use the content of this repository except in compliance with the License. You may obtain a copy of the License at
 

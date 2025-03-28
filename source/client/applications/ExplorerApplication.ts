@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2024 Smithsonian Institution
+ * Copyright 2025 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ export default class ExplorerApplication
     
 Voyager - 3D Explorer and Tool Suite
 3D Foundation Project
-(c) 2024 Smithsonian Institution
+(c) 2025 Smithsonian Institution
 
 https://3d.si.edu
 https://github.com/smithsonian/dpo-voyager

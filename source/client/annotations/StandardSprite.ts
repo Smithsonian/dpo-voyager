@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2024 Smithsonian Institution
+ * Copyright 2025 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ export default class StandardSprite extends AnnotationSprite
 
         this.stemLine.material["opacity"] = opacity;
         element.setOpacity(opacity);
-        element.setVisible(this.annotation.data.visible);
+        //element.setVisible(this.annotation.data.visible);
 
         // update quadrant/orientation
         if (this.orientationQuadrant !== this.quadrant) {
@@ -104,7 +104,7 @@ export default class StandardSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.setVisible(!this.isBehindCamera(this.stemLine, camera));
+        this.setVisible(!this.isBehindCamera(this.stemLine, camera) && this.annotation.data.visible);
     }
 
     protected createHTMLElement(): StandardAnnotation

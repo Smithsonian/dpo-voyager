@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2024 Smithsonian Institution
+ * Copyright 2025 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVToolProvider, { IActiveToolEvent } from "../../components/CVToolProvider";
 import CVTool from "../../components/CVTool";
-import CVLanguageManager from "../../components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
+import CVSetup from "client/components/CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,8 +37,8 @@ export default class ToolBar extends SystemView
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
     }
-    protected get language() {
-        return this.system.getComponent(CVLanguageManager);
+    protected get setup() {
+        return this.system.getComponent(CVSetup);
     }
 
     protected firstConnected()
@@ -52,12 +52,14 @@ export default class ToolBar extends SystemView
     {
         super.connected();
         this.toolProvider.on<IActiveToolEvent>("active-component", this.onUpdate, this);
-        this.language.outs.language.on("value", this.onUpdate, this);
+        this.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.setup.navigation.ins.mode.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.language.outs.language.off("value", this.onUpdate, this);
+        this.setup.navigation.ins.mode.off("value", this.onUpdate, this);
+        this.setup.language.outs.language.off("value", this.onUpdate, this);
         this.toolProvider.off<IActiveToolEvent>("active-component", this.onUpdate, this);
         super.disconnected();
     }
@@ -66,13 +68,13 @@ export default class ToolBar extends SystemView
     {
         const tools = this.toolProvider.scopedComponents;
         const activeTool = this.toolProvider.activeComponent;
-        const language = this.language;
+        const language = this.setup.language;
 
         const toolbarWrapper = activeTool ? html`<div>`: null;
 
-        const toolButtons = tools.map(tool =>
+        const toolButtons = tools.map(tool => tool.enabled ?
             html`<ff-button class="sv-tool-button" transparent text=${language.getLocalizedString(tool.text)} icon=${tool.icon}
-                ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>`);
+                ?selected=${tool === activeTool} @click=${e => this.onSelectTool(tool)}></ff-button>` : null);
 
         return html`<div class="sv-blue-bar"><div id="toolmenu" role="region" aria-label=${activeTool ? activeTool.text : null} @close=${this.closeTool} @keydown=${e =>this.onKeyDownTool(e)}>${activeTool ? activeTool.createView() : null}</div>
             <div id="mainmenu" role="region" @keydown=${e =>this.onKeyDownMain(e)} aria-label="Tools and settings" class="sv-section">
@@ -132,7 +134,7 @@ export default class ToolBar extends SystemView
         const buttons = this.getElementsByTagName("ff-button");
         const activeButton = Array.from(buttons).find(button => {
             const label = button.getAttribute("text");
-            return label === this.language.getLocalizedString(this.toolProvider.activeComponent.text)
+            return label === this.setup.language.getLocalizedString(this.toolProvider.activeComponent.text)
         });
         (activeButton as HTMLElement).focus();
         this.toolProvider.activeComponent = null;

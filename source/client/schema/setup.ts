@@ -3,7 +3,7 @@ import { ELanguageType, TLanguageType } from "./common";
 
 /**
  * 3D Foundation Project
- * Copyright 2024 Smithsonian Institution
+ * Copyright 2025 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe }
 export type TBackgroundStyle = "Solid" | "LinearGradient" | "RadialGradient";
 export enum EBackgroundStyle { Solid, LinearGradient, RadialGradient }
 
-export type TNavigationType = "Orbit" | "Walk";
-export enum ENavigationType { Orbit, Walk }
+export type TNavigationType = "Orbit" | "Fly" | "Walk";
+export enum ENavigationType { Orbit, Fly, Walk }
 
 export type TReaderPosition = "Overlay" | "Left" | "Right";
 export enum EReaderPosition { Overlay, Left, Right }
@@ -152,10 +152,10 @@ export interface IAudio
 export interface ITape
 {
     enabled: boolean;
-    /*startPosition: number[];
-    startDirection: number[];
-    endPosition: number[];
-    endDirection: number[];*/
+    startPosition?: number[];
+    startDirection?: number[];
+    endPosition?: number[];
+    endDirection?: number[];
 }
 
 export interface ISlicer

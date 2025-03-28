@@ -1,6 +1,6 @@
 /**
  * 3D Foundation Project
- * Copyright 2024 Smithsonian Institution
+ * Copyright 2025 Smithsonian Institution
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,6 @@ export default class CircleSprite extends AnnotationSprite
         const opacity = this.annotation.data.visible ? angleOpacity : 0;
 
         element.setOpacity(opacity);
-        element.setVisible(this.annotation.data.visible);
 
         const annotation = this.annotation.data;
         const isShowing = annotation.visible;
@@ -127,7 +126,7 @@ export default class CircleSprite extends AnnotationSprite
         }
 
         // don't show if behind the camera
-        this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing); 
+        this.setVisible(!this.isBehindCamera(this.offset, camera) && isShowing && this.annotation.data.visible); 
         if(!this.getVisible()) {
             element.setVisible(this.getVisible());
         }
