@@ -47,7 +47,10 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";
 import CVAnnotationView from "client/components/CVAnnotationView";
-import { ELanguageType } from "client/schema/common";
+import { ELanguageType, EUnitType } from "client/schema/common";
+import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource } from "@iiif/3d-manifesto-dev";
+import IIIFManifest from "client/io/IIIFManifestReader";
+import { Matrix4, Vector3, Euler } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -92,6 +95,11 @@ export interface IExplorerApplicationProps
     /** ISO 639-1 language code to change active component language */
     lang?: string;
 }
+
+const _mat4a = new Matrix4();
+const _mat4b = new Matrix4();
+const _vec3a = new Vector3();
+const _euler = new Euler();
 
 /**
  * Voyager Explorer main application.
@@ -233,8 +241,13 @@ Version: ${ENV_VERSION}
 
         return this.assetReader.getJSON(documentPath)
             .then(data => {
-                merge = merge === undefined ? !data.lights && !data.cameras : merge;
-                return this.documentProvider.amendDocument(data, documentPath, merge);
+                if(data.type && data.type == "Manifest") {
+                    this.loadIIIFManifest(JSON.stringify(data));
+                }
+                else {
+                    merge = merge === undefined ? !data.lights && !data.cameras : merge;
+                    return this.documentProvider.amendDocument(data, documentPath, merge);
+                }
             })
             .then(document => {
                 if (isFinite(dq)) {
@@ -723,6 +736,114 @@ Version: ${ENV_VERSION}
             output = false;
         }
         return output;
+    }
+
+    // load IIIF manifest
+    protected loadIIIFManifest(data: any)
+    {
+        console.log("LOADING IIIF MANIFEST");
+        const activeDoc = this.documentProvider.activeComponent;
+
+        const iiifManifest = new IIIFManifest(data);
+
+        iiifManifest.loadManifest().then(() => {
+        activeDoc.ins.title.setValue(iiifManifest.manifest.__jsonld.label["en"][0]);
+        const scenes = iiifManifest.scenes;
+        scenes.forEach(scene => {
+
+            const bgColor = scene.getBackgroundColor() as any;
+            this.setBackgroundStyle("solid");
+            if(bgColor) {
+                this.setBackgroundColor("rgb("+bgColor.red+","+bgColor.green+","+bgColor.blue+")");
+            }
+            else {
+                this.setBackgroundColor("#000000");
+            }
+
+            const annos = iiifManifest.annotationsFromScene(scene);
+console.log(annos);
+            const filteredAnnos = annos.filter((anno) => {
+                const body = anno.getBody()[0];
+                return (
+                    anno.getMotivation()?.[0] === "painting" &&
+                    (body.isSpecificResource() || body?.getType() === "model")
+                );
+            });
+
+            filteredAnnos.forEach((annotation) => {
+                const model = annotation.getBody()[0];
+                const modelTarget = annotation.getTarget();
+                const newModel = activeDoc.appendModel(model.isSpecificResource() ? model.getSource()?.id : model.id);
+                const nodeTransform = newModel.transform;
+                newModel.ins.localUnits.setValue(EUnitType.mm);
+
+                if (model.isSpecificResource()) {
+                    const transforms = (model as SpecificResource).getTransform() || [];
+
+                    _mat4a.identity();
+                    transforms.forEach((transform) => {
+                        _mat4b.identity();
+                        if(transform.isTranslateTransform) {
+                            const translation = (transform as TranslateTransform).getTranslation() as any;
+                            if (translation) {
+                                _vec3a.set(translation.x,translation.y,translation.z);
+                                _mat4b.setPosition(_vec3a);
+                            }
+                        }
+                        else if (transform.isRotateTransform) {
+                            const rotation = (transform as RotateTransform).getRotation() as any;
+                            _euler.set(rotation.x,rotation.y,rotation.z);
+                            _mat4b.makeRotationFromEuler(_euler);
+                        }
+                        else if(transform.isScaleTransform) {
+                            const scale = (transform as ScaleTransform).getScale() as any;
+                            _mat4b.makeScale(scale.x,scale.y,scale.z);
+                        }
+                        _mat4a.premultiply(_mat4b);
+                    });
+                    newModel.setFromMatrix(_mat4a);                 
+                }
+                
+                /*if (typeof modelTarget !== "string") {
+                    const selector = modelTarget.getSelector();
+                    if (selector && selector.isPointSelector) {
+                      const position = selector.getLocation();
+                      nodeTransform.ins.position.setValue([position.x, position.y, position.z]);
+                    }
+                }*/
+            });
+
+
+            const cameraSources = annos.filter((anno) => {
+                const body = anno.getBody()[0];
+                return (body.isOrthographicCamera || body.isPerspectiveCamera);
+            });
+
+            // only handle one camera for now
+            if(cameraSources.length > 0) {
+                const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+
+                // disable autozoom
+                activeDoc.setup.navigation.ins.autoZoom.setValue(false);
+                // look for translation
+                /*const translation = cameraSources[0].getTarget().map((elem) => {
+                    const selector = elem.selector.filter(e => e.type == "PointSelector");
+                    if(selector.length > 0) {
+                        return selector[0];
+                    }
+                });*/
+                const translation = cameraSources[0].getTarget().getSelector().getLocation();
+                _vec3a.set(translation.x, translation.y, translation.z);
+                const orbit = orbitNavIns.orbit.value;
+                _vec3a.applyEuler(_euler.set(orbit[0], orbit[1], orbit[2]));
+                // add translation
+                if(translation) {
+                    //this.setCameraOffset(_vec3a.x.toString(), _vec3a.y.toString(), _vec3a.z.toString());
+                    orbitNavIns.offset.setValue([_vec3a.x, _vec3a.y, _vec3a.z])
+                }
+            }
+        });
+    });
     }
 }
 

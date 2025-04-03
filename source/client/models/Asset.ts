@@ -157,7 +157,7 @@ export default class Asset extends Document<IAsset, IAssetJSON>
                 return EAssetType.Image;
             }
         }
-
+console.log(data.uri);
         const extension = data.uri.split(".").pop().toLowerCase();
 
         if (extension === "gltf" || extension === "glb") {
@@ -180,7 +180,7 @@ export default class Asset extends Document<IAsset, IAssetJSON>
         if (data.mimeType) {
             return data.mimeType;
         }
-
+        console.log(data.uri);
         const extension = data.uri.split(".").pop().toLowerCase();
 
         if (extension === "gltf") {

@@ -97,6 +97,7 @@ export default class CVModel2 extends CObject3D
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
+        scale: types.Number("Model.Scale", 1),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
         variant: types.Option("Material.Variant", [], 0),
@@ -377,7 +378,7 @@ export default class CVModel2 extends CObject3D
         if (ins.center.changed) {
             this.center();
         }
-        if (ins.position.changed || ins.rotation.changed) {
+        if (ins.position.changed || ins.rotation.changed || ins.scale.changed) {
             this.updateMatrixFromProps();
         }
         if (ins.dumpDerivatives.changed) {
@@ -425,11 +426,13 @@ export default class CVModel2 extends CObject3D
 
         matrix.decompose(_vec3a, _quat, _vec3b);
 
-        _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(ins.position.value);
+        _vec3a.multiplyScalar(1 / (this.outs.unitScale.value * _vec3b.x)).toArray(ins.position.value);
         ins.position.set();
 
         helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
         ins.rotation.set();
+
+        ins.scale.setValue(_vec3b.x);
     }
 
     fromDocument(document: IDocument, node: INode): number
@@ -768,7 +771,7 @@ export default class CVModel2 extends CObject3D
     protected updateMatrixFromProps()
     {
         const ins = this.ins;
-        const unitScale = this.outs.unitScale.value;
+        const unitScale = this.outs.unitScale.value * ins.scale.value;
         const object3D = this.object3D;
 
         _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);

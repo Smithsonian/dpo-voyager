@@ -55,6 +55,7 @@
     },
     "homepage": "https://github.com/Smithsonian/dpo-voyager#readme",
     "dependencies": {
+        "@iiif/3d-manifesto-dev": "^0.6.1",
         "ajv": "^8.6.2",
         "buffer": "^6.0.3",
         "client-zip": "^2.5.0",
