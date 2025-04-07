@@ -100,6 +100,7 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
+        variant: types.Option("Material.Variant", ["Default"], 0),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
         override: types.Boolean("Material.Override", false),
@@ -133,6 +134,7 @@ export default class CVModel2 extends CObject3D
             this.ins.renderOrder,
             this.ins.shadowSide,
             this.ins.shader,
+            this.ins.variant,
             this.ins.overlayMap,
             this.ins.slicerEnabled,
             this.ins.override,
@@ -335,6 +337,10 @@ export default class CVModel2 extends CObject3D
 
         if (ins.overlayMap.changed) {
             this.updateOverlayMap();
+        }
+
+        if (ins.variant.changed) {
+            this.updateVariant();
         }
 
         if (ins.shadowSide.changed) {
@@ -632,6 +638,44 @@ export default class CVModel2 extends CObject3D
         }
     }
 
+    protected updateVariant()
+    {
+        if(!this.activeDerivative) {
+            return;
+        }
+
+        const variantIndex = this.ins.variant.getValidatedValue();
+        const parser = this.assetReader.getGLTFParser(this.activeDerivative.model.uuid);
+
+        this.object3D.traverse( async ( subobject ) => {
+            var object = subobject as any;
+
+            if ( ! object.isMesh || ! object.userData.gltfExtensions ) return;
+            
+            const meshVariantDef = object.userData.gltfExtensions[ 'KHR_materials_variants' ];
+
+            if ( ! meshVariantDef ) return;
+
+            if ( ! object.userData.originalMaterial ) {
+                object.userData.originalMaterial = object.material;
+            }
+
+            const mapping = meshVariantDef.mappings
+                .find( ( mapping ) => mapping.variants.includes( variantIndex ) );
+
+            if ( mapping ) {
+                object.material.copy(await parser.getDependency( 'material', mapping.material ));
+                parser.assignFinalMaterial( object );
+            } else {
+                object.material = object.userData.originalMaterial;
+            }
+
+            object.material.needUpdate = true;
+        } );
+        
+        this.outs.updated.set();
+    }
+
     // helper function to update overlay map state
     protected updateOverlayMaterial(texture: Texture, uri: string)
     {
@@ -880,6 +924,12 @@ export default class CVModel2 extends CObject3D
                     overlay.asset = image;
                     overlay.fromFile = true;
                 });
+
+                // load variants
+                const variants = derivative.model["variants"];
+                if(variants) {
+                    this.ins.variant.setOptions(variants);
+                }
 
                 if(this.ins.overlayMap.value !== 0) {
                     this.ins.overlayMap.set();
