@@ -81,6 +81,7 @@ import NVNode from "../nodes/NVNode";
 import CVAmbientLight from "client/components/lights/CVAmbientLight";
 import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
 import CVRectLight from "client/components/lights/CVRectLight";
+import CVDerivativesController from "client/components/CVDerivativesController";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +130,7 @@ const types = [
     CVViewer,
     CVReader,
     CVOrbitNavigation,
+    CVDerivativesController,
     CVBackground,
     CVFloor,
     CVGrid,
