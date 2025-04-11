@@ -120,8 +120,8 @@ export default class ModelReader
             if(gltf.userData.gltfExtensions) {
                 const variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
                 if(variantsExtension) {
-                    const variants = variantsExtension.variants.map( ( variant ) => variant.name );
-                    gltf.scene["variants"] = variants;
+                    gltf.scene["variants"] = variantsExtension.variants;
+                    gltf.scene["variants"].variantMaterials = {};
                     this._gltfParserCache[gltf.scene.uuid] = gltf.parser;
                 }
             }

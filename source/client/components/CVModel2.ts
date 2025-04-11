@@ -100,7 +100,7 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
-        variant: types.Option("Material.Variant", ["Default"], 0),
+        variant: types.Option("Material.Variant", [], 0),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
         override: types.Boolean("Material.Override", false),
@@ -324,7 +324,7 @@ export default class CVModel2 extends CObject3D
         }
 
         if(ins.renderOrder.changed) {
-            this.updateRenderOrder(this.object3D, ins.renderOrder.value);
+            this.updateRenderOrder(this.object3D, ins.renderOrder.value);this.renderer.logInfo();
         }
 
         if (ins.localUnits.changed || ins.globalUnits.changed) {
@@ -644,7 +644,13 @@ export default class CVModel2 extends CObject3D
             return;
         }
 
-        const variantIndex = this.ins.variant.getValidatedValue();
+        const variantName = this.ins.variant.getOptionText();
+        const variantIndex = this.activeDerivative.model["variants"].findIndex( ( v ) => v.name.includes( variantName ) );
+
+        if(variantIndex < 0) {
+            return;
+        }
+
         const parser = this.assetReader.getGLTFParser(this.activeDerivative.model.uuid);
 
         this.object3D.traverse( async ( subobject ) => {
@@ -664,8 +670,10 @@ export default class CVModel2 extends CObject3D
                 .find( ( mapping ) => mapping.variants.includes( variantIndex ) );
 
             if ( mapping ) {
-                object.material.copy(await parser.getDependency( 'material', mapping.material ));
+                const variantMat = await parser.getDependency( 'material', mapping.material );
+                object.material.copy( variantMat);
                 parser.assignFinalMaterial( object );
+                this.activeDerivative.model["variants"].variantMaterials[variantMat.uuid] = variantMat;
             } else {
                 object.material = object.userData.originalMaterial;
             }
@@ -926,9 +934,13 @@ export default class CVModel2 extends CObject3D
                 });
 
                 // load variants
-                const variants = derivative.model["variants"];
+                const variants = derivative.model["variants"] ? derivative.model["variants"].map( ( variant ) => variant.name ) : null;
                 if(variants) {
-                    this.ins.variant.setOptions(variants);
+                    const variantSet = new Set(this.ins.variant.schema.options);
+                    variants.forEach(variantSet.add, variantSet);
+                    this.ins.variant.setOptions([...variantSet]);
+                    this.ins.variant.setOption(variants[0],true,true);
+                    this.updateVariant();
                 }
 
                 if(this.ins.overlayMap.value !== 0) {

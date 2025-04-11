@@ -61,11 +61,13 @@ export class RenderToolView extends ToolView<CVRenderTool>
         }
 
         const shader = viewer.ins.shader;
+        const variant = viewer.ins.variant;
         const language = document.setup.language;
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-options .property=${shader} .language=${language} name=${language.getLocalizedString("Material")}></sv-property-options>
+                ${variant.schema.options.length > 0 ? html`<sv-property-options .property=${variant} .language=${language} name=${language.getLocalizedString("Variant")}></sv-property-options>`:null}
             </div>
         </div>`;
     }

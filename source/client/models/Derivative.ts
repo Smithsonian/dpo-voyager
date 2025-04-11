@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Object3D, Mesh, Texture } from "three";
+import { Object3D, Mesh, Texture, Material } from "three";
 
 import { disposeObject } from "@ff/three/helpers";
 
@@ -128,6 +128,24 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
     {
         this.abortControl?.abort();
         if (this.model) {
+            // handle disposing variants
+            if(this.model["variants"]) {
+                const materials = this.model["variants"].variantMaterials;
+                for (let key_a in materials) {
+                    const material = materials[key_a] as Material;
+                    if (material) {
+                        for (let key_b in material) {
+                            const texture = material[key_b] as Texture;
+                            if (texture && texture.isTexture) {
+                                texture.dispose();
+                            }
+                        }
+                        material.dispose();
+                    }
+                };
+                this.model["variants"].variantMaterials = null;
+            }
+
             disposeObject(this.model);
             this.model = null;
         }
