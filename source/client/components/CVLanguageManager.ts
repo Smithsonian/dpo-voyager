@@ -40,6 +40,8 @@ export default class CVLanguageManager extends Component
     static readonly text: string = "Language";
     static readonly icon: string = "";
 
+    private _sceneDefaultLanguage:TLanguageType;
+    private _defaultLanguageTranslations: ITranslation = {};
     private _activeLanguages: {[key in TLanguageType]?: ILanguageOption} = {};
     private _translations: ITranslation = {};
 
@@ -73,6 +75,9 @@ export default class CVLanguageManager extends Component
     }
     get activeLanguages() {
         return Object.values(this._activeLanguages);
+    }
+    get defaultLanguage(){
+        return this._sceneDefaultLanguage;
     }
 
     /**
@@ -123,7 +128,9 @@ export default class CVLanguageManager extends Component
         data = data || {} as ILanguage;
 
         const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
-
+        this._sceneDefaultLanguage = data.language || "EN";
+        this.assetReader.getSystemJSON("language/string.resources." + this._sceneDefaultLanguage.toLowerCase() + ".json").then(json => 
+            {this._defaultLanguageTranslations = json});
         ins.language.setValue(language);
     }
 
@@ -157,6 +164,23 @@ export default class CVLanguageManager extends Component
         return dictionary[text] || text;
     }
 
+    getLocalizedStringInDefaultLanguage(text: string): string
+    {
+        const dictionary = this._defaultLanguageTranslations;
+        if(dictionary === undefined) {
+            return text;
+        }
+        if(ENV_DEVELOPMENT && typeof dictionary[text] === "undefined" 
+            && this._sceneDefaultLanguage != DEFAULT_LANGUAGE
+        ){
+            console.groupCollapsed(`Missing translation string "${text}" for "${ELanguageType[this.ins.language.value]}`);
+            console.trace();
+            console.groupEnd();
+        }
+        return dictionary[text] || text;
+    }
+
+    
     protected updateLanguage = (language: ELanguageType) => 
     {
         const { ins, outs } = this;

@@ -32,7 +32,7 @@ import { ISelectAnnotationEvent } from "./AnnotationList";
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageStringType, ELanguageType } from "client/schema/common";
 
 import sanitizeHtml from 'sanitize-html';
 import CVMediaManager from "client/components/CVMediaManager";
@@ -81,6 +81,8 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const node = this.activeNode;
         const annotations = node && node.getComponent(CVAnnotationView, true);
         const languageManager = this.activeDocument.setup.language;
+        const defaultLanguage = languageManager.defaultLanguage;
+        const currentLanguage = ELanguageType[languageManager.ins.language.value];
 
         if (!annotations) {
             // set cursor to grab
@@ -138,19 +140,16 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                 <ff-button text="Delete" ?disabled=${!annotation.data.viewId.length} icon="trash" @click=${this.onDeleteView}></ff-button>
             </div>
         </div>` : null;
-
-        return html`<div class="sv-commands">
-            <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Move" icon="move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Create" icon="create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!annotation} @click=${this.onClickDelete}></ff-button>  
-        </div>
-        <div class="ff-flex-item-stretch">
+        
+        let annotationListRendered;
+        // Display a column in each language if current language is not the default one.
+        if(defaultLanguage!=currentLanguage){
+        annotationListRendered = html`<div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[defaultLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${ELanguageStringType[currentLanguage]}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .currentLanguage=${currentLanguage} .defaultLanguage=${defaultLanguage} @select=${this.onSelectAnnotation} ></sv-annotation-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -158,7 +157,33 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                     ${detailView}
                 </div>
             </div>
-        </div>`;
+        </div>`
+        }
+        else {
+            // else display only one column
+            annotationListRendered = html`<div class="ff-flex-item-stretch">
+            <div class="ff-flex-column ff-fullsize">
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item-full">${ELanguageStringType[defaultLanguage]}</div></div>
+                <div class="ff-splitter-section" style="flex-basis: 30%">
+                    <div class="ff-scroll-y ff-flex-column">
+                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .currentLanguage=${currentLanguage} .defaultLanguage=${defaultLanguage} @select=${this.onSelectAnnotation} ></sv-annotation-list>
+                    </div>
+                </div>
+                <ff-splitter direction="vertical"></ff-splitter>
+                <div class="ff-splitter-section" style="flex-basis: 70%">
+                    ${detailView}
+                </div>
+            </div>
+        </div>`
+    
+        }
+        return html`<div class="sv-commands">
+            <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="Move" icon="move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="Create" icon="create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="Delete" icon="trash" ?disabled=${!annotation} @click=${this.onClickDelete}></ff-button>  
+        </div>
+        ${annotationListRendered}`;
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)
