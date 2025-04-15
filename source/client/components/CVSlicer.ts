@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3, Mesh } from "three";
+import { Box3, Mesh, Plane, Vector3 } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
@@ -25,6 +25,7 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import CVScene from "./CVScene";
 import CVModel2 from "./CVModel2";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +40,9 @@ const _planes = [
     [ 0, 1, 0, 0 ],
     [ 0, 0, 1, 0 ],
 ];
+
+const _vec3 = new Vector3( 0, - 1, 0 );
+const localPlane = new Plane( _vec3, 0.8 );
 
 /**
  * Component controlling global slicing parameters for all [[CVModel2]] components in a scene.
@@ -127,6 +131,9 @@ export default class CVSlicer extends Component
 
         const models = this.getGraphComponents(CVModel2);
 
+        _vec3.set(this.plane[0], this.plane[1], this.plane[2]);
+        localPlane.set(_vec3, this.plane[3]);
+
         // set the slicing plane in the Uber materials of each scene model
         models.forEach(model => {
             if(model.ins.slicerEnabled.value) {
@@ -176,7 +183,11 @@ export default class CVSlicer extends Component
         const ins = this.ins;
 
         if (ins.enabled.changed) {
+            const renderer = this.getMainComponent(CRenderer);
+            renderer.views.forEach(view => view.renderer.localClippingEnabled = ins.enabled.value);
+
             material.enableCutPlane(ins.enabled.value);
+            material.clippingPlanes = [localPlane];
             material.needsUpdate = true;
         }
 

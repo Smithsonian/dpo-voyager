@@ -108,7 +108,7 @@ export default class CVModel2 extends CObject3D
         hiddenOpacity: types.Percent("Material.HiddenOpacity", 0.0),
         roughness: types.Percent("Material.Roughness", 0.8),
         metalness: types.Percent("Material.Metalness", 0.1),
-        occlusion: types.Percent("Material.Occlusion", 0.25),
+        occlusion: types.Percent("Material.Occlusion", { preset: 0.25, max: 2.0}),
         doubleSided: types.Boolean("Material.DoubleSided", false),
         dumpDerivatives: types.Event("Derivatives.Dump"),
     };
@@ -658,7 +658,8 @@ export default class CVModel2 extends CObject3D
         this.object3D.traverse(object => {
             const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
             if (material && material.isUberPBRMaterial) {
-                material.aoMapMix.setScalar(ins.occlusion.value);
+                //material.aoMapMix.setScalar(ins.occlusion.value);
+                material.aoMapIntensity = ins.occlusion.value;
                 material.color.fromArray(ins.color.value);
                 material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
                 material.transparent = material.opacity < 1 || this._materialCache[material.uuid].transparent;

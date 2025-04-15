@@ -14,6 +14,10 @@ varying vec3 vViewPosition;
 	varying vec2 vZoneUv;
 #endif
 
+#ifdef MODE_XRAY
+    varying float vIntensity;
+#endif
+
 #include <common>
 #include <batching_pars_vertex>
 #include <uv_pars_vertex>
@@ -27,10 +31,6 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
 
-#ifdef MODE_XRAY
-    varying float vIntensity;
-#endif
-
 //#ifdef CUT_PLANE
 //    varying vec3 vWorldPosition;
 //#endif
@@ -38,15 +38,6 @@ varying vec3 vViewPosition;
 void main() {
 
 	#include <uv_vertex>
-
-// Zone map support
-#if defined(USE_ZONEMAP)
-	#if defined(USE_MAP)
-		vZoneUv = (mapTransform * vec3(vMapUv, 1)).xy;
-	#else
-		vZoneUv = uv;
-	#endif
-#endif
 
 	#include <color_vertex>
 	#include <morphinstance_vertex>
@@ -60,10 +51,6 @@ void main() {
 	#include <defaultnormal_vertex>
 	#include <normal_vertex>
 
-#ifdef MODE_XRAY
-    vIntensity = pow(abs(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)))), 3.0);
-#endif
-
 	#include <begin_vertex>
 	#include <morphtarget_vertex>
 	#include <skinning_vertex>
@@ -74,11 +61,11 @@ void main() {
 
 	vViewPosition = - mvPosition.xyz;
 
-	// #include <worldpos_vertex>
+	#include <worldpos_vertex>
 	// REPLACED WITH
-	#if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0 || defined(CUT_PLANE)
-    	vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
-    #endif
+	//#if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0 || defined(CUT_PLANE)
+    //	vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
+    //#endif
 
 	#include <shadowmap_vertex>
 	#include <fog_vertex>
@@ -87,6 +74,19 @@ void main() {
 
 	vWorldPosition = worldPosition.xyz;
 
+#endif
+
+#ifdef MODE_XRAY
+    vIntensity = pow(abs(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)))), 3.0);
+#endif
+
+// Zone map support
+#if defined(USE_ZONEMAP)
+	#if defined(USE_MAP)
+		vZoneUv = (mapTransform * vec3(vMapUv, 1)).xy;
+	#else
+		vZoneUv = uv;
+	#endif
 #endif
 
 #ifdef CUT_PLANE
