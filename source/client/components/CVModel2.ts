@@ -179,6 +179,7 @@ export default class CVModel2 extends CObject3D
             this.ins.overlayMap,
             this.ins.override,
             this.ins.opacity,
+            this.ins.variant,
             this.ins.roughness,
             this.ins.metalness,
             this.ins.color,
