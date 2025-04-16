@@ -3,7 +3,7 @@
 
 varying vec3 vViewPosition;
 
-#if defined(USE_TRANSMISSION) || defined(CUT_PLANE)
+#if defined(USE_TRANSMISSION)
 
 	varying vec3 vWorldPosition;
 
@@ -30,10 +30,6 @@ varying vec3 vViewPosition;
 #include <shadowmap_pars_vertex>
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
-
-//#ifdef CUT_PLANE
-//    varying vec3 vWorldPosition;
-//#endif
 
 void main() {
 
@@ -62,10 +58,6 @@ void main() {
 	vViewPosition = - mvPosition.xyz;
 
 	#include <worldpos_vertex>
-	// REPLACED WITH
-	//#if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined ( USE_TRANSMISSION ) || NUM_SPOT_LIGHT_COORDS > 0 || defined(CUT_PLANE)
-    //	vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
-    //#endif
 
 	#include <shadowmap_vertex>
 	#include <fog_vertex>
@@ -87,10 +79,6 @@ void main() {
 	#else
 		vZoneUv = uv;
 	#endif
-#endif
-
-#ifdef CUT_PLANE
-    vWorldPosition = worldPosition.xyz / worldPosition.w;
 #endif
 
 #ifdef MODE_NORMALS

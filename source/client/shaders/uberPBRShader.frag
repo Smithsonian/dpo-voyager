@@ -81,6 +81,14 @@ varying vec3 vViewPosition;
 	uniform sampler2D zoneMap;
 #endif
 
+#ifdef MODE_XRAY
+    varying float vIntensity;
+#endif
+
+#ifdef CUT_PLANE
+    uniform vec3 cutPlaneColor;
+#endif
+
 #include <map_pars_fragment>
 #include <alphamap_pars_fragment>
 #include <alphatest_pars_fragment>
@@ -107,33 +115,11 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
 
-/*#ifdef USE_ZONEMAP
-	uniform sampler2D zoneMap;
-#endif*/
-
-/*#ifdef USE_AOMAP
-    uniform vec3 aoMapMix;
-#endif*/
-
-#ifdef MODE_XRAY
-    varying float vIntensity;
-#endif
-
 #if !defined(USE_TRANSMISSION)
 	varying vec3 vWorldPosition;
 #endif
 
-#ifdef CUT_PLANE
-    uniform vec4 cutPlaneDirection;
-    uniform vec3 cutPlaneColor;
-#endif
-
 void main() {
-    /*#ifdef CUT_PLANE
-        if (dot(vWorldPosition, cutPlaneDirection.xyz) < -cutPlaneDirection.w) {
-            discard;
-        }
-    #endif*/
 		
 	vec4 diffuseColor = vec4( diffuse, opacity );
 
@@ -165,51 +151,6 @@ void main() {
 
 	// modulation
 	#include <aomap_fragment>
-	// REPLACED WITH
-	/*#ifdef USE_AOMAP
-	    // if cut plane is enabled, disable ambient occlusion on back facing fragments
-	    #ifdef CUT_PLANE
-            if (gl_FrontFacing) {
-	    #endif
-
-    	// reads channel R, compatible with a combined OcclusionRoughnessMetallic (RGB) texture
-    	vec3 aoSample = vec3(texture2D(aoMap, vAoMapUv).r,texture2D(aoMap, vAoMapUv).r,texture2D(aoMap, vAoMapUv).r);
-    	vec3 aoFactors = mix(vec3(1.0), aoSample, clamp(aoMapMix * aoMapIntensity, 0.0, 1.0));
-    	float ambientOcclusion = aoFactors.x * aoFactors.y * aoFactors.z;
-    	float ambientOcclusion2 = ambientOcclusion * ambientOcclusion;
-    	reflectedLight.directDiffuse *= ambientOcclusion2;
-    	reflectedLight.directSpecular *= ambientOcclusion;
-    	//reflectedLight.indirectDiffuse *= ambientOcclusion;
-
-    	#if defined( USE_CLEARCOAT ) 
-			clearcoatSpecularIndirect *= ambientOcclusion;
-		#endif
-
-		#if defined( USE_SHEEN ) 
-			sheenSpecularIndirect *= ambientOcclusion;
-		#endif
-
-		#if defined( USE_ENVMAP ) && defined( STANDARD )
-
-			float dotNV = saturate( dot( geometryNormal, geometryViewDir ) );
-
-			reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness );
-
-		#endif
-
-    	#ifdef CUT_PLANE
-    	    }
-    	#endif
-    #endif
-*/
-
-	/*#ifdef CUT_PLANE
-	    // on the cut surface (back facing fragments revealed), replace normal with cut plane direction
-        if (!gl_FrontFacing) {
-            normal = -cutPlaneDirection.xyz;
-            diffuseColor.rgb = cutPlaneColor.rgb;
-        }
-	#endif*/
 	
 	vec3 totalDiffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
 	vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;

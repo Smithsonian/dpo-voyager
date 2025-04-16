@@ -18,8 +18,8 @@
 import { MeshStandardMaterialParameters, MeshStandardMaterial, Vector3, Vector4, Color, 
     Side, UniformsUtils, ShaderLib, NoBlending, DoubleSide, AdditiveBlending, FrontSide, Texture, ObjectSpaceNormalMap } from "three";
 
-const fragmentShader = require("./uberPBRShader.frag").default;
-const vertexShader = require("./uberPBRShader.vert").default;
+//const fragmentShader = require("./uberPBRShader.frag").default;
+//const vertexShader = require("./uberPBRShader.vert").default;
 
 import { EShaderMode } from "client/schema/setup";
 
@@ -92,10 +92,10 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         this._cutPlaneColor = this.uniforms.cutPlaneColor.value;
         this._zoneMap = this.uniforms.zoneMap.value;
 
-        //this.vertexShader = ShaderLib.standard.vertexShader;
-        this.vertexShader = vertexShader;
-        //this.fragmentShader = ShaderLib.standard.fragmentShader;
-        this.fragmentShader = fragmentShader;
+        this.vertexShader = ShaderLib.standard.vertexShader;
+        //this.vertexShader = vertexShader;
+        this.fragmentShader = ShaderLib.standard.fragmentShader;
+        //this.fragmentShader = fragmentShader;
 
         this.color = new Color(0xffffff); // diffuse
         this.roughness = 0.7;
