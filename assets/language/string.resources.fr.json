@@ -80,5 +80,8 @@
   "Tours": "Visites",
   "View": "Vue",
   "Wireframe": "Fil de fer",
-  "XRay": "Rayons X"
+  "XRay": "Rayons X",
+  "X axis": "Axe X",
+	"Y axis": "Axe Y",
+	"Z axis": "Axe Z"
 }
