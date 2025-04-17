@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute, Color } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -45,6 +45,12 @@ export default class CVTape extends CObject3D
 
     static readonly text: string = "Tape";
     static readonly icon: string = "";
+    static readonly axisColors = //: Array<Color> = [new Color(1,0,0), new Color(0,1,0), new Color(0,0,1)];
+    {
+        x: new Color(1,0,0),
+        y: new Color(0,1,0),
+        z: new Color(0,0,1),
+    }
 
     protected static readonly tapeIns = {
         startPosition: types.Vector3("Start.Position"),
@@ -60,6 +66,7 @@ export default class CVTape extends CObject3D
     protected static readonly tapeOuts = {
         state: types.Enum("Tape.State", ETapeState),
         distance: types.Number("Tape.Distance"),
+        distanceVector: types.Vector3("Tape.DecompositionDistance"),
         unitScale: types.Number("UnitScale", { preset: 1, precision: 5 })
     };
 
@@ -85,6 +92,13 @@ export default class CVTape extends CObject3D
     protected startPin: Pin = null;
     protected endPin: Pin = null;
     protected line: Line = null;
+    protected axisLines = 
+    { 
+        x: null,
+        y: null,
+        z: null,
+    }
+    
     protected annotationView: CVStaticAnnotationView = null;
     protected label: Annotation = null;
 
@@ -114,6 +128,21 @@ export default class CVTape extends CObject3D
         this.line.visible = false;
         this.line.frustumCulled = false;
 
+        // decomposition
+        for (const axis in this.axisLines){
+            const axisPoints = [];
+            axisPoints.push(new Vector3(0, 0, 0));
+            axisPoints.push(new Vector3(0, 0, 0));
+            const axislineGeometry = new BufferGeometry().setFromPoints(axisPoints);
+            const axislineMaterial = new LineBasicMaterial();
+            axislineMaterial.color.set(CVTape.axisColors[axis]);
+            axislineMaterial.depthTest = false;
+            axislineMaterial.transparent = true;
+            this.axisLines[axis] = new Line(axislineGeometry, axislineMaterial);
+            this.axisLines[axis].visible = false;
+            this.axisLines[axis].frustumCulled = false;
+        }
+
         // add distance label
         this.annotationView = this.node.createComponent(CVStaticAnnotationView);
         const annotation = this.label = new Annotation(undefined);
@@ -124,6 +153,9 @@ export default class CVTape extends CObject3D
         this.annotationView.addAnnotation(annotation);
 
         this.object3D.add(this.startPin, this.endPin, this.line);
+        for (const axis in this.axisLines){
+            this.object3D.add(this.axisLines[axis]);
+        }
     }
 
     create()
@@ -140,14 +172,24 @@ export default class CVTape extends CObject3D
         this.startPin = null;
         this.endPin = null;
         this.line = null;
-
+        this.axisLines = 
+        { 
+            x: null,
+            y: null,
+            z: null,
+        }
         super.dispose();
     }
 
     update(context)
     {
         const lineGeometry = this.line.geometry as BufferGeometry;
-        const { startPin, endPin, line, ins } = this;
+        const axislineGeometry = {
+            x: this.axisLines.x.geometry as BufferGeometry,
+            y: this.axisLines.y.geometry as BufferGeometry,
+            z: this.axisLines.z.geometry as BufferGeometry,
+        }
+        const { startPin, endPin, line, axisLines, ins } = this;
 
         if (ins.enabled.changed) {
             ins.visible.setValue(ins.enabled.value);
@@ -191,6 +233,9 @@ export default class CVTape extends CObject3D
                     startPin.visible = true;
                     endPin.visible = true;
                     line.visible = true;
+                    for (const axis in axisLines){
+                        axisLines[axis].visible=true;
+                    }
                     this.annotationView.ins.visible.setValue(true);
                 }
             }
@@ -234,9 +279,12 @@ export default class CVTape extends CObject3D
             // update distance between measured points
             _vec3a.fromArray(ins.startPosition.value);
             _vec3b.fromArray(ins.endPosition.value);
-            const tapeLength = _vec3a.distanceTo(_vec3b);
+            const tapeDistanceVector = new Vector3;
+            tapeDistanceVector.subVectors(_vec3b,_vec3a);
+            this.outs.distanceVector.setValue(tapeDistanceVector.toArray());
+            const tapeLength = tapeDistanceVector.length();
             this.outs.distance.setValue(tapeLength);
-
+            
             // update distance label
             const data = this.label.data;
             const scaleFactor = 1/this.annotationView.ins.unitScale.value;
@@ -247,6 +295,23 @@ export default class CVTape extends CObject3D
             if(tapeLength > 0 && this.ins.visible.value) {
                 this.annotationView.ins.visible.setValue(true);
             }
+
+            // update decomposition Lines
+            for (const axis in axisLines){
+                const axisPosition= (axislineGeometry[axis].attributes.position as BufferAttribute).array as Float64Array;
+                let endAxisPosition = new Vector3 ();
+                endAxisPosition.copy(startPin.position);
+                endAxisPosition[axis]=endAxisPosition[axis]+ tapeDistanceVector[axis];
+                axisPosition[0] = startPin.position.x;
+                axisPosition[1] = startPin.position.y;
+                axisPosition[2] = startPin.position.z;
+                axisPosition[3] = endAxisPosition.x;
+                axisPosition[4] = endAxisPosition.y;
+                axisPosition[5] = endAxisPosition.z;
+                axislineGeometry[axis].attributes.position.needsUpdate = true;
+            }
+
+
         }
 
         return true;
@@ -307,7 +372,10 @@ export default class CVTape extends CObject3D
             startPin.visible = true;
             endPin.visible = false;
             line.visible = false;
-
+            for (const axis in this.axisLines){
+                this.axisLines[axis].visible=false;
+            }
+            
             outs.state.setValue(ETapeState.SetEnd);
         }
         else {
@@ -320,6 +388,9 @@ export default class CVTape extends CObject3D
             startPin.visible = true;
             endPin.visible = true;
             line.visible = true;
+            for (const axis in this.axisLines){
+                this.axisLines[axis].visible=true;
+            }
 
             outs.state.setValue(ETapeState.SetStart);
         }
@@ -339,4 +410,4 @@ export default class CVTape extends CObject3D
 
         ins.localUnits.setValue(toUnits);
     }
-}
+ }

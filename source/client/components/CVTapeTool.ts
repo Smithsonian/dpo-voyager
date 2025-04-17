@@ -19,7 +19,7 @@ import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyString";
 
 import CVDocument from "./CVDocument";
-import { ETapeState } from "./CVTape";
+import CVTape, { ETapeState } from "./CVTape";
 
 import CVTool, { ToolView, customElement, html } from "./CVTool";
 
@@ -43,8 +43,10 @@ export default class CVTapeTool extends CVTool
 @customElement("sv-tape-tool-view")
 export class TapeToolView extends ToolView<CVTapeTool>
 {
-    protected firstRender: boolean = true;
-    protected statusMsg: string = "";
+    protected firstMeasureRender: boolean = true;
+    protected firstDecompositionRender: boolean = true;
+    protected distanceMsg: string = "";
+    protected axisMessages: Array<string> = ["","",""];
 
     protected firstConnected()
     {
@@ -66,8 +68,10 @@ export class TapeToolView extends ToolView<CVTapeTool>
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
         const language = document.setup.language;
+        const distanceVector = tape.outs.distanceVector.value;
 
         let text;
+        let axisDecompositionText= ["","",""];
 
         if (!enabled.value) {
             text = language.getLocalizedString("Switch on to take measurements") + ".";
@@ -78,18 +82,26 @@ export class TapeToolView extends ToolView<CVTapeTool>
         else if (state === ETapeState.SetStart) {
             const units = document.root.scene.ins.units.getOptionText();
             text = `${distance.toFixed(2)} ${units}`;
+            axisDecompositionText = distanceVector.map((val)=>(`${Math.abs(val).toFixed(2)} ${units}`) )
         }
         else {
             text = language.getLocalizedString("Tap on model to set end of tape") + ".";
         }
 
-        this.statusMsg = text;
+        this.distanceMsg = text;
+        this.axisMessages = axisDecompositionText;
 
         return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-boolean .property=${enabled} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
-                <div class="sv-property-view"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
+                <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
                 <div class="ff-string" aria-live="polite" aria-atomic="true"></div></div>
+                <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off" style="color:#${CVTape.axisColors.x.getHexString()}">${language.getLocalizedString("X axis")}</label>
+                <div class="ff-string axisMeasure" aria-live="polite" aria-atomic="true"></div></div>
+                <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off" style="color:#${CVTape.axisColors.y.getHexString()}">${language.getLocalizedString("Y axis")}</label>
+                <div class="ff-string axisMeasure" aria-live="polite" aria-atomic="true"></div></div>
+                <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off" style="color:#${CVTape.axisColors.z.getHexString()}">${language.getLocalizedString("Z axis")}</label>
+                <div class="ff-string axisMeasure" aria-live="polite" aria-atomic="true"></div></div>
             </div></div>`;
     }
 
@@ -97,14 +109,27 @@ export class TapeToolView extends ToolView<CVTapeTool>
     {
         super.updated(changedProperties);
 
-        const container = this.getElementsByClassName("ff-string").item(0) as HTMLElement;
-        if(container) {
-            container.innerHTML = this.statusMsg;
+        const distanceContainer = this.getElementsByClassName("ff-string").item(0) as HTMLElement;
+        if(distanceContainer) {
+            distanceContainer.innerHTML = this.distanceMsg;
             // Hack so that initial status message is detected by screen readers.
-            if(this.firstRender) {
-                setTimeout(() => {container.innerHTML = `<div>${this.statusMsg}</div>`}, 200);
-                this.firstRender = false;
+            if(this.firstMeasureRender) {
+                setTimeout(() => {distanceContainer.innerHTML = `<div>${this.distanceMsg}</div>`}, 200);
+                this.firstMeasureRender = false;
             }
+        }
+
+        const axisMeasurementContainers = this.getElementsByClassName("axisMeasure");
+        if (axisMeasurementContainers){
+            for (let i = 0; i < 3; i ++){
+                let container = axisMeasurementContainers.item(i) as HTMLElement;
+                container.innerHTML= this.axisMessages[i]
+                // Hack so that initial status message is detected by screen readers.
+                if(this.firstDecompositionRender) {
+                    setTimeout(() => {container.innerHTML = `<div>${this.axisMessages[i]}</div>`}, 200);
+                    this.firstDecompositionRender = false;
+                }
+            }    
         }
     }
 
