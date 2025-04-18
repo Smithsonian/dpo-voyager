@@ -43,8 +43,8 @@ export default class DirectionalLightHelper extends LightHelper {
   update(){
     super.update();
     if(this.light.castShadow){
-      this.target.scale.setScalar(this.light.shadow.camera.far- this.light.shadow.camera.near);
-      this.target.position.set( 0, -this.light.shadow.camera.near, 0);
+      this.target.scale.setScalar((this.light.shadow.camera.far - this.light.shadow.camera.near)/this.parent.parent.scale.x);
+      this.target.position.set( 0, -this.light.shadow.camera.near/this.parent.parent.scale.x, 0);
       this.target.updateMatrix();
     }
   }
