@@ -65,6 +65,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
         const tool = this.tool;
         const tape = document.setup.tape;
         const enabled = tape.ins.enabled;
+        const decompositionEnabled = tape.ins.decompositionEnabled;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
         const language = document.setup.language;
@@ -82,7 +83,9 @@ export class TapeToolView extends ToolView<CVTapeTool>
         else if (state === ETapeState.SetStart) {
             const units = document.root.scene.ins.units.getOptionText();
             text = `${distance.toFixed(2)} ${units}`;
-            axisDecompositionText = distanceVector.map((val)=>(`${Math.abs(val).toFixed(2)} ${units}`) )
+            if (decompositionEnabled.value) {
+                axisDecompositionText = distanceVector.map((val)=>(`${Math.abs(val).toFixed(2)} ${units}`) )
+            }
         }
         else {
             text = language.getLocalizedString("Tap on model to set end of tape") + ".";
@@ -96,6 +99,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
                 <sv-property-boolean .property=${enabled} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
                 <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
                 <div class="ff-string" aria-live="polite" aria-atomic="true"></div></div>
+                <sv-property-boolean .property=${decompositionEnabled} .language=${language} name=${language.getLocalizedString("Decomposition")}></sv-property-boolean>
                 <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off" style="color:#${CVTape.axisColors.x.getHexString()}">${language.getLocalizedString("X axis")}</label>
                 <div class="ff-string axisMeasure" aria-live="polite" aria-atomic="true"></div></div>
                 <div class="sv-property-view" style="min-width: 10%"><label class="ff-label ff-off" style="color:#${CVTape.axisColors.y.getHexString()}">${language.getLocalizedString("Y axis")}</label>

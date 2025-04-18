@@ -61,6 +61,7 @@ export default class CVTape extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         enabled: types.Boolean("Tape.Enabled", false),
+        decompositionEnabled: types.Boolean("Tape.DecompositionEnabled", false),
     };
 
     protected static readonly tapeOuts = {
@@ -234,7 +235,7 @@ export default class CVTape extends CObject3D
                     endPin.visible = true;
                     line.visible = true;
                     for (const axis in axisLines){
-                        axisLines[axis].visible=true;
+                         axisLines[axis].visible = ins.decompositionEnabled.value;
                     }
                     this.annotationView.ins.visible.setValue(true);
                 }
@@ -242,6 +243,12 @@ export default class CVTape extends CObject3D
             else {
                 this.annotationView.ins.visible.setValue(false);
             }
+        }
+
+        if(ins.decompositionEnabled.changed){
+            for (const axis in axisLines){
+                axisLines[axis].visible = ins.decompositionEnabled.value && ins.visible.value;
+           }            
         }
 
         if (ins.globalUnits.changed) {
@@ -389,7 +396,7 @@ export default class CVTape extends CObject3D
             endPin.visible = true;
             line.visible = true;
             for (const axis in this.axisLines){
-                this.axisLines[axis].visible=true;
+                this.axisLines[axis].visible = ins.decompositionEnabled.value;
             }
 
             outs.state.setValue(ETapeState.SetStart);
