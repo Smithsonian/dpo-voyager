@@ -38,6 +38,7 @@ import CVARManager from "client/components/CVARManager";
 import CVAssetReader from "client/components/CVAssetReader";
 import CaptionView from "./CaptionView";
 import { EQuadViewLayout } from "client/../../libs/ff-scene/source/RenderQuadView";
+import CVModel2 from "client/components/CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -165,12 +166,14 @@ export default class ContentView extends DocumentView
             }
         }
 
-        if(!isLoading && isInitialLoad) { 
-            // send load timer event
-            this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
-            this.analytics.resetTimer();
+        if(!isLoading && isInitialLoad) {
+            if(this.activeDocument && this.activeDocument.hasInnerComponent(CVModel2)) {
+                // send load timer event
+                this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+                this.analytics.resetTimer();
 
-            this.assetManager.initialLoad = false;
+                this.assetManager.initialLoad = false;
+            }
         }
 
         if (readerVisible) {

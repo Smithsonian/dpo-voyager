@@ -10,6 +10,7 @@ import { Vector2, Vector3, Box3, Matrix4, Object3D, Quaternion } from "three";
 import CTransform from "@ff/scene/components/CTransform";
 import CVNode from "./CVNode";
 import * as helpers from "@ff/three/helpers";
+import CVAssetManager from "./CVAssetManager";
 
 interface ILOD{
   enabled?:boolean;
@@ -151,6 +152,9 @@ export default class CVDerivativesController extends Component{
     enabled: types.Boolean("Settings.Enabled", true),
   }
 
+  protected get assetManager() {
+    return this.system.getMainComponent(CVAssetManager);
+  }
 
   ins = this.addInputs<CObject3D, typeof CVDerivativesController.ins>(CVDerivativesController.ins);
 
@@ -204,7 +208,7 @@ export default class CVDerivativesController extends Component{
 
   tock(context :IPulseContext) :boolean{
     const cameraComponent = this._scene?.activeCameraComponent;
-    if (!this.ins.enabled.value || !cameraComponent) {
+    if (!this.ins.enabled.value || !cameraComponent || this.assetManager.initialLoad) {
         return false;
     }
     if((context.frameNumber % 20) != 0){
