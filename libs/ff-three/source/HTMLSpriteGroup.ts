@@ -84,6 +84,7 @@ export default class HTMLSpriteGroup extends Object3D
         }
         //Only get bounds once to prevent forced reflows while looping
         const bounds = container.getBoundingClientRect();
+        container.scrollTop = 0;  // hack to deal with placement of annotations opening out of bounds
 
         const children = this.children as HTMLSprite[];
         for (let i = 0, n = children.length; i < n; ++i) {
