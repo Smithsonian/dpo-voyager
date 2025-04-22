@@ -36,7 +36,7 @@ RUN \
   echo "source ${NVM_DIR}" >> /etc/profile.d/99-nvm.sh
 
 # Install Node
-ENV _NODE_VERSION=16.20.2
+ENV _NODE_VERSION=22.14.0
 RUN \
   . "${NVM_DIR}/nvm.sh" && \
   nvm install "${_NODE_VERSION}" && \
