@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3, Mesh, Plane, Vector3 } from "three";
+import { Box3, DoubleSide, FrontSide, Mesh, Plane, Vector3 } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
@@ -142,7 +142,7 @@ export default class CVSlicer extends Component
                     if (mesh.isMesh) {
                         const material = mesh.material as UberPBRMaterial;
                         if (material.isUberPBRMaterial) {
-                            this.updateMaterial(material);
+                            this.updateMaterial(model, material);
                         }
                     }
                 });
@@ -178,15 +178,20 @@ export default class CVSlicer extends Component
         };
     }
 
-    private updateMaterial(material: UberPBRMaterial)
+    private updateMaterial(model: CVModel2, material: UberPBRMaterial)
     {
         const ins = this.ins;
 
         if (ins.enabled.changed) {
+            const enabled = ins.enabled.value;
             const renderer = this.getMainComponent(CRenderer);
             renderer.views.forEach(view => view.renderer.localClippingEnabled = ins.enabled.value);
 
-            material.enableCutPlane(ins.enabled.value);
+            // configure material
+            material.defines["CUT_PLANE"] = enabled;
+            const doubleSided = model.getOriginalMaterial(material.uuid).doubleSided;
+            material.side = enabled || doubleSided ? DoubleSide : FrontSide;
+
             material.clippingPlanes = [localPlane];
             material.needsUpdate = true;
         }

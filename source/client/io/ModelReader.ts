@@ -17,7 +17,7 @@
 
 //import resolvePathname from "resolve-pathname";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorSpace, LoaderUtils } from "three";
+import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorSpace, LoaderUtils, Material, UniformsUtils, ShaderLib, Vector4, Vector3, ShaderMaterial } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
@@ -197,6 +197,7 @@ export default class ModelReader
                     shader.vertexShader = this.injectVertexShaderCode(shader.vertexShader);
                     shader.fragmentShader = this.injectFragmentShaderCode(shader.fragmentShader);
                 }
+                this.addCustomAttributes(material);
 
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
@@ -329,5 +330,18 @@ export default class ModelReader
         )
 
         return shader;
+    }
+
+    protected addCustomAttributes(material: Material) {
+        UniformsUtils.merge([
+            ShaderLib.standard.uniforms,
+            {
+                cutPlaneDirection: { value: new Vector4(0, 0, -1, 0) },
+                cutPlaneColor: { value: new Vector3(1, 0, 0) },
+                zoneMap: { value: null },
+            }
+        ]) as any;
+
+        console.log((material as ShaderMaterial).uniforms);
     }
 }

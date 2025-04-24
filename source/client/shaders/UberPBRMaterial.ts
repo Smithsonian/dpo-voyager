@@ -222,7 +222,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         }
     }
 
-    enableCutPlane(enabled: boolean)
+    /*enableCutPlane(enabled: boolean)
     {
         this.defines["CUT_PLANE"] = enabled;
 
@@ -233,7 +233,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
         else {
             this.side = this._sideCopy;
         }
-    }
+    }*/
 
     enableObjectSpaceNormalMap(useObjectSpace: boolean)
     {

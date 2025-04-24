@@ -204,6 +204,10 @@ export default class CVModel2 extends CObject3D
         return this.getMainComponent(CRenderer);
     }
 
+    getOriginalMaterial(id: string): Readonly<IPBRMaterialSettings> {
+        return this._materialCache[id];
+    }
+
     getOverlay(key: string) : IOverlay {
         if(key in this._overlays) {
             return this._overlays[key];
