@@ -118,7 +118,8 @@ export default class CVModel2 extends CObject3D
         unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
         quality: types.Enum("LoadedQuality", EDerivativeQuality),
         updated: types.Event("Updated"),
-        overlayMap: types.Option("Material.OverlayMap", ["None"], 0)
+        overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
+        variant: types.Option("Material.Variant", [], 0),
     };
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
@@ -673,12 +674,26 @@ export default class CVModel2 extends CObject3D
             if ( mapping ) {
                 const variantMat = await parser.getDependency( 'material', mapping.material );
                 object.material.copy( variantMat);
-                parser.assignFinalMaterial( object );
+                //parser.assignFinalMaterial( object );
                 this.activeDerivative.model["variants"].variantMaterials[variantMat.uuid] = variantMat;
+
+                // cache variant
+                const material = object.material;
+                this._materialCache[material.uuid] = {
+                    color: material.color.toArray(),
+                    opacity: material.opacity,
+                    hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    occlusion: material.aoMapIntensity,
+                    doubleSided: material.side == DoubleSide,
+                    transparent: material.transparent
+                }
             } else {
                 object.material = object.userData.originalMaterial;
             }
 
+            this.outs.variant.setValue(this.ins.variant.value);
             object.material.needUpdate = true;
         } );
         

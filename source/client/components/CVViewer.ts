@@ -89,6 +89,7 @@ export default class CVViewer extends Component
             this.ins.activeAnnotation,
             this.ins.activeTags,
             this.ins.shader,
+            this.ins.variant,
             this.ins.exposure,
         ];
     }

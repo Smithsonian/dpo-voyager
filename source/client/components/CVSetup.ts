@@ -200,5 +200,8 @@ export default class CVSetup extends Component
         }
 
         this.slicer.ins.enabled.set();  // slicer needs a push to refresh
+        if(this.navigation.ins.autoZoom.value) {
+            this.navigation.ins.zoomExtents.set();
+        }
     }
 }
