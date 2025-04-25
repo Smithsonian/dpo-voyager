@@ -196,7 +196,7 @@ export default class CVSlicer extends Component
             material.needsUpdate = true;
         }
 
-        material.cutPlaneDirection.fromArray(this.plane);
-        material.cutPlaneColor.fromArray(ins.color.value);
+        material.userData.shader.uniforms.cutPlaneDirection.value.fromArray(this.plane);
+        material.userData.shader.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
     }
 }

@@ -196,8 +196,13 @@ export default class ModelReader
                 uberMat.onBeforeCompile = (shader) => {
                     shader.vertexShader = this.injectVertexShaderCode(shader.vertexShader);
                     shader.fragmentShader = this.injectFragmentShaderCode(shader.fragmentShader);
+console.log(shader);
+                    // add custom uniforms
+                    shader.uniforms.cutPlaneDirection = { value: new Vector4(0, 0, -1, 0) };
+                    shader.uniforms.cutPlaneColor = { value: new Vector3(1, 0, 0) };
+                    shader.uniforms.zoneMap = { value: null };
+                    uberMat.userData.shader = shader;
                 }
-                this.addCustomAttributes(material);
 
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
@@ -330,18 +335,5 @@ export default class ModelReader
         )
 
         return shader;
-    }
-
-    protected addCustomAttributes(material: Material) {
-        UniformsUtils.merge([
-            ShaderLib.standard.uniforms,
-            {
-                cutPlaneDirection: { value: new Vector4(0, 0, -1, 0) },
-                cutPlaneColor: { value: new Vector3(1, 0, 0) },
-                zoneMap: { value: null },
-            }
-        ]) as any;
-
-        console.log((material as ShaderMaterial).uniforms);
     }
 }

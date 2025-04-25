@@ -38,12 +38,14 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     readonly isMeshStandardMaterial = true;
     readonly isMeshPhysicalMaterial = false;
 
-    uniforms: {
+    /*uniforms: {
         aoMapMix: { value: Vector3 },
         cutPlaneDirection: { value: Vector4 },
         cutPlaneColor: { value: Vector3 },
         zoneMap: { value: Texture }
-    };
+    };*/
+
+    uniforms: {};
 
     vertexShader: string;
     fragmentShader: string;
@@ -77,7 +79,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
             "OVERLAY_ALPHA": false
         };
 
-        this.uniforms = UniformsUtils.merge([
+        /*this.uniforms = UniformsUtils.merge([
             ShaderLib.standard.uniforms,
             {
                 aoMapMix: { value: new Vector3(0.25, 0.25, 0.25) },
@@ -85,12 +87,12 @@ export default class UberPBRMaterial extends MeshStandardMaterial
                 cutPlaneColor: { value: new Vector3(1, 0, 0) },
                 zoneMap: { value: null },
             }
-        ]) as any;
+        ]) as any;*/
 
-        this._aoMapMix = this.uniforms.aoMapMix.value;
-        this._cutPlaneDirection = this.uniforms.cutPlaneDirection.value;
-        this._cutPlaneColor = this.uniforms.cutPlaneColor.value;
-        this._zoneMap = this.uniforms.zoneMap.value;
+        this.uniforms =  ShaderLib.standard.uniforms;
+        
+        
+        
 
         this.vertexShader = ShaderLib.standard.vertexShader;
         //this.vertexShader = vertexShader;
@@ -107,6 +109,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     }
 
     set cutPlaneDirection(direction: Vector4) {
+        this._cutPlaneDirection = this.userData.shader.uniforms.cutPlaneDirection.value;
         this._cutPlaneDirection.copy(direction);
     }
     get cutPlaneDirection() {
@@ -114,6 +117,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     }
 
     set cutPlaneColor(color: Vector3) {
+        this._cutPlaneColor = this.userData.shader.uniforms.cutPlaneColor.value;
         this._cutPlaneColor.copy(color);
     }
     get cutPlaneColor() {
@@ -121,6 +125,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     }
 
     set aoMapMix(mix: Vector3) {
+        this._aoMapMix = this.userData.shader.uniforms.aoMapMix.value;
         this._aoMapMix.copy(mix);
     }
     get aoMapMix() {
@@ -128,8 +133,9 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     }
 
     set zoneMap(map) {
+        this._zoneMap = this.userData.shader.uniforms.zoneMap.value;
         this._zoneMap = map;
-        this.uniforms.zoneMap.value = map;
+        this.userData.shader.uniforms.zoneMap.value = map;
         this.needsUpdate = true;
     }
     get zoneMap() {

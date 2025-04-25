@@ -853,7 +853,7 @@ export default class CVModel2 extends CObject3D
                             hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
                             roughness: material.roughness,
                             metalness: material.metalness,
-                            occlusion: material.aoMapMix.x,
+                            occlusion: material.aoMapIntensity,
                             doubleSided: material.side == DoubleSide,
                             transparent: material.transparent
                         }
