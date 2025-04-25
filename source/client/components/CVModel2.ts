@@ -693,8 +693,10 @@ export default class CVModel2 extends CObject3D
                 object.material = object.userData.originalMaterial;
             }
 
+            if (this.ins.override.value) {
+                this.updateMaterial();
+            }
             this.outs.variant.setValue(this.ins.variant.value);
-            object.material.needUpdate = true;
         } );
         
         this.outs.updated.set();
