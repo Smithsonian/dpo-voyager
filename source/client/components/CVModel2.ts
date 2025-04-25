@@ -100,6 +100,7 @@ export default class CVModel2 extends CObject3D
         rotation: types.Vector3("Model.Rotation"),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
+        variant: types.Option("Material.Variant", [], 0),
         overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
         slicerEnabled: types.Boolean("Material.SlicerEnabled", true),
         override: types.Boolean("Material.Override", false),
@@ -117,7 +118,8 @@ export default class CVModel2 extends CObject3D
         unitScale: types.Number("UnitScale", { preset: 1, precision: 5 }),
         quality: types.Enum("LoadedQuality", EDerivativeQuality),
         updated: types.Event("Updated"),
-        overlayMap: types.Option("Material.OverlayMap", ["None"], 0)
+        overlayMap: types.Option("Material.OverlayMap", ["None"], 0),
+        variant: types.Option("Material.Variant", [], 0),
     };
 
     ins = this.addInputs<CObject3D, typeof CVModel2.ins>(CVModel2.ins);
@@ -133,6 +135,7 @@ export default class CVModel2 extends CObject3D
             this.ins.renderOrder,
             this.ins.shadowSide,
             this.ins.shader,
+            this.ins.variant,
             this.ins.overlayMap,
             this.ins.slicerEnabled,
             this.ins.override,
@@ -177,6 +180,7 @@ export default class CVModel2 extends CObject3D
             this.ins.overlayMap,
             this.ins.override,
             this.ins.opacity,
+            this.ins.variant,
             this.ins.roughness,
             this.ins.metalness,
             this.ins.color,
@@ -335,6 +339,10 @@ export default class CVModel2 extends CObject3D
 
         if (ins.overlayMap.changed) {
             this.updateOverlayMap();
+        }
+
+        if (ins.variant.changed) {
+            this.updateVariant();
         }
 
         if (ins.shadowSide.changed) {
@@ -632,6 +640,68 @@ export default class CVModel2 extends CObject3D
         }
     }
 
+    protected updateVariant()
+    {
+        if(!this.activeDerivative) {
+            return;
+        }
+
+        const variantName = this.ins.variant.getOptionText();
+        const variantIndex = this.activeDerivative.model["variants"].findIndex( ( v ) => v.name.includes( variantName ) );
+
+        if(variantIndex < 0) {
+            return;
+        }
+
+        const parser = this.assetReader.getGLTFParser(this.activeDerivative.model.uuid);
+
+        this.object3D.traverse( async ( subobject ) => {
+            var object = subobject as any;
+
+            if ( ! object.isMesh || ! object.userData.gltfExtensions ) return;
+            
+            const meshVariantDef = object.userData.gltfExtensions[ 'KHR_materials_variants' ];
+
+            if ( ! meshVariantDef ) return;
+
+            if ( ! object.userData.originalMaterial ) {
+                object.userData.originalMaterial = object.material;
+            }
+
+            const mapping = meshVariantDef.mappings
+                .find( ( mapping ) => mapping.variants.includes( variantIndex ) );
+
+            if ( mapping ) {
+                const variantMat = await parser.getDependency( 'material', mapping.material );
+                object.material.copy( variantMat);
+                //parser.assignFinalMaterial( object );
+                this.activeDerivative.model["variants"].variantMaterials[variantMat.uuid] = variantMat;
+
+                // cache variant
+                const material = object.material;
+                this._materialCache[material.uuid] = {
+                    color: material.color.toArray(),
+                    opacity: material.opacity,
+                    hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    occlusion: material.aoMapIntensity,
+                    doubleSided: material.side == DoubleSide,
+                    transparent: material.transparent
+                }
+            } else {
+                object.material = object.userData.originalMaterial;
+            }
+
+            if (this.ins.override.value) {
+                this.updateMaterial();
+            }
+            this.outs.variant.setValue(this.ins.variant.value);
+        } );
+        
+        this.outs.updated.set();
+    }
+
     // helper function to update overlay map state
     protected updateOverlayMaterial(texture: Texture, uri: string)
     {
@@ -880,6 +950,16 @@ export default class CVModel2 extends CObject3D
                     overlay.asset = image;
                     overlay.fromFile = true;
                 });
+
+                // load variants
+                const variants = derivative.model["variants"] ? derivative.model["variants"].map( ( variant ) => variant.name ) : null;
+                if(variants) {
+                    const variantSet = new Set(this.ins.variant.schema.options);
+                    variants.forEach(variantSet.add, variantSet);
+                    this.ins.variant.setOptions([...variantSet]);
+                    this.ins.variant.setOption(variants[0],true,true);
+                    this.updateVariant();
+                }
 
                 if(this.ins.overlayMap.value !== 0) {
                     this.ins.overlayMap.set();

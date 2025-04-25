@@ -75,6 +75,11 @@ export default class CVAssetReader extends Component
         return this.getMainComponent(CRenderer);
     }
 
+    getGLTFParser(uuid: string)
+    {
+        return this.modelLoader.getGLTFParser(uuid);
+    }
+
     setDracoPath(dracoPath: string)
     {
         this.modelLoader.dracoPath = dracoPath;

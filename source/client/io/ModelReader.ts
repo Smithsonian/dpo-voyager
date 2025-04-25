@@ -21,13 +21,14 @@ import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorS
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {GLTF, GLTFLoader, GLTFParser} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 import { disposeObject } from "@ff/three/helpers";
+import { Dictionary } from "@ff/core/types";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,12 +45,18 @@ export default class ModelReader
 
     protected customDracoPath = null;
 
+    private _gltfParserCache: Dictionary<GLTFParser> = {};
+
     set dracoPath(path: string) 
     {
         this.customDracoPath = path;
         if(this.gltfLoader.dracoLoader !== null) {
             this.gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
         }
+    }
+
+    getGLTFParser(uuid: string) {
+        return this._gltfParserCache[uuid];
     }
 
 
@@ -109,7 +116,17 @@ export default class ModelReader
         let resourcePath = LoaderUtils.extractUrlBase( url );
         return this.loadModel(url, {signal})
         .then(data=>this.gltfLoader.parseAsync(data, resourcePath))
-        .then(gltf=>this.createModelGroup(gltf, {signal}))
+        .then(gltf=> {
+            if(gltf.userData.gltfExtensions) {
+                const variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
+                if(variantsExtension) {
+                    gltf.scene["variants"] = variantsExtension.variants;
+                    gltf.scene["variants"].variantMaterials = {};
+                    this._gltfParserCache[gltf.scene.uuid] = gltf.parser;
+                }
+            }
+            return this.createModelGroup(gltf, {signal})
+        })
         .catch((e)=> {
             this.loadingManager.itemError(url);
             throw e;

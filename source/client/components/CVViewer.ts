@@ -52,6 +52,7 @@ export default class CVViewer extends Component
         sortedTags: types.String("Tags.Sorted"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
+        variant: types.Option("Renderer.Variant", [], 0),
         toneMapping: types.Boolean("Renderer.ToneMapping", false),
         exposure: types.Number("Renderer.Exposure", 1),
         gamma: types.Number("Renderer.Gamma", 2),
@@ -88,6 +89,7 @@ export default class CVViewer extends Component
             this.ins.activeAnnotation,
             this.ins.activeTags,
             this.ins.shader,
+            this.ins.variant,
             this.ins.exposure,
         ];
     }
@@ -132,6 +134,13 @@ export default class CVViewer extends Component
     {
         const ins = this.ins;
 
+        if (ins.variant.changed) {
+            const variant = ins.variant.getOptionText();
+            this.getGraphComponents(CVModel2).forEach(model => {
+                model.ins.variant.setOption(variant);
+            });
+            ins.shader.setValue(0);
+        }
         if (ins.shader.changed) {
             const shader = ins.shader.getValidatedValue();
             this.getGraphComponents(CVModel2).forEach(model => model.ins.shader.setValue(shader));
@@ -362,6 +371,13 @@ export default class CVViewer extends Component
     protected onModelLoad(event: IModelLoadEvent) {
         this.rootElement.dispatchEvent(new CustomEvent('model-load', { detail: EDerivativeQuality[event.quality] }));
         this.refreshTagCloud();
+
+        // update variant list
+        const variantSet = new Set(this.ins.variant.schema.options);
+        this.getGraphComponents(CVModel2).forEach(model => {
+            model.ins.variant.schema.options.forEach(variantSet.add, variantSet);
+        });
+        this.ins.variant.setOptions([...variantSet]);
     }
 
     protected focusTags() {
