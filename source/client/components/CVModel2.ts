@@ -326,7 +326,7 @@ export default class CVModel2 extends CObject3D
         }
 
         if(ins.renderOrder.changed) {
-            this.updateRenderOrder(this.object3D, ins.renderOrder.value);this.renderer.logInfo();
+            this.updateRenderOrder(this.object3D, ins.renderOrder.value);
         }
 
         if (ins.localUnits.changed || ins.globalUnits.changed) {
