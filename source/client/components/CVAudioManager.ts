@@ -360,15 +360,22 @@ export default class CVAudioManager extends Component
             const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
             if(this.audioPlayer.src != this._audioMap[uri]) {
                 this.audioPlayer.setAttribute("src", this._audioMap[uri]);
-                this.audioPlayer.load();
-            }
+                //this.audioPlayer.load();
 
-            // Set caption track source
-            const textTrack = this.audioPlayer.children[0];
-            textTrack.setAttribute("src", "");
-            const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
-            if(captionUri) {
-                textTrack.setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+                // Set caption track source
+                const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+                if(captionUri) {
+                    if(this.audioPlayer.children[0]) {
+                        this.audioPlayer.children[0].remove();
+                    }
+
+                    const textTrack = document.createElement('track');
+                    this.audioPlayer.append(textTrack);
+                    textTrack.setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+                    textTrack.track.mode = "showing";
+                    textTrack.addEventListener("cuechange", this.onCueChange);
+                    textTrack.addEventListener("load", this.onLoadTrack);
+                }
             }
         }
     }
@@ -389,13 +396,6 @@ export default class CVAudioManager extends Component
                   `Error ${audio.error.code}; details: ${audio.error.message}`,
                 );
             };
-
-            // add empty caption track
-            const track = document.createElement('track');
-            track.setAttribute("default", "");
-            this.audioPlayer.append(track);
-            track.addEventListener("cuechange", this.onCueChange);
-            track.addEventListener("load", this.onLoadTrack);
         }
     }
 
