@@ -15,14 +15,12 @@
  * limitations under the License.
  */
 
-import { Texture, EquirectangularReflectionMapping, SRGBColorSpace } from "three";
+import { Texture, EquirectangularReflectionMapping, MeshStandardMaterial } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
 import CVScene from "./CVScene";
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import { IEnvironment } from "client/schema/setup";
-import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
 
 const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
@@ -64,8 +62,8 @@ export default class CVEnvironment extends Component
             this.shouldUseEnvMap = false;
             scene.models.forEach(model => {
                 model.object3D.traverse(object => {
-                    const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-                    if(material && material.isUberPBRMaterial && (material.roughnessMap || material.metalnessMap)) {
+                    const material = object["material"] as MeshStandardMaterial;
+                    if(material && (material.roughnessMap || material.metalnessMap)) {
                         this.shouldUseEnvMap = true;
 
                         if(this._texture !== null) 

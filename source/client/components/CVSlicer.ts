@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-import { Box3, DoubleSide, FrontSide, Mesh, Plane, Vector3 } from "three";
+import { Box3, DoubleSide, FrontSide, Material, Mesh, Plane, Side, Vector3 } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 
 import { ISlicer, ESliceAxis, TSliceAxis } from "client/schema/setup";
-
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import CVScene from "./CVScene";
 import CVModel2 from "./CVModel2";
@@ -140,10 +138,8 @@ export default class CVSlicer extends Component
                 const object = model.object3D;
                 object.traverse((mesh: Mesh) => {
                     if (mesh.isMesh) {
-                        const material = mesh.material as UberPBRMaterial;
-                        if (material.isUberPBRMaterial) {
-                            this.updateMaterial(model, material);
-                        }
+                        const material = mesh.material as Material;
+                        this.updateMaterial(model, material);
                     }
                 });
             }
@@ -178,7 +174,7 @@ export default class CVSlicer extends Component
         };
     }
 
-    private updateMaterial(model: CVModel2, material: UberPBRMaterial)
+    private updateMaterial(model: CVModel2, material: Material)
     {
         const ins = this.ins;
 
@@ -189,14 +185,13 @@ export default class CVSlicer extends Component
 
             // configure material
             material.defines["CUT_PLANE"] = enabled;
-            const doubleSided = model.getOriginalMaterial(material.uuid).doubleSided;
-            material.side = enabled || doubleSided ? DoubleSide : FrontSide;
+            enabled ? material.userData["sideCache"] = material.side : null;
+            material.side = enabled ? DoubleSide : material.userData["sideCache"];
 
-            material.clippingPlanes = [localPlane];
-            material.needsUpdate = true;
+            enabled ? material.clippingPlanes = [localPlane] : null;
         }
 
-        material.userData.shader.uniforms.cutPlaneDirection.value.fromArray(this.plane);
-        material.userData.shader.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
+        const shader = material.userData.shader;
+        shader.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
     }
 }

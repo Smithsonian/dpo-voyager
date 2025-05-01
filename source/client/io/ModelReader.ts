@@ -15,21 +15,21 @@
  * limitations under the License.
  */
 
-//import resolvePathname from "resolve-pathname";
-import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorSpace, LoaderUtils, Material, UniformsUtils, ShaderLib, Vector4, Vector3, ShaderMaterial } from "three";
+import { LoadingManager, Object3D, Mesh, MeshStandardMaterial, SRGBColorSpace, LoaderUtils, Vector3, ObjectSpaceNormalMap } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 import { disposeObject } from "@ff/three/helpers";
+import { addCustomMaterialDefines, injectFragmentShaderCode, injectVertexShaderCode } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _vec3 = new Vector3( 1, 0, 0 );
 
 export default class ModelReader
 {
@@ -182,7 +182,25 @@ export default class ModelReader
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
-                const material = mesh.material as MeshStandardMaterial;
+                const uniforms = {
+                    cutPlaneColor: { value: _vec3 },
+                    zoneMap: { value: null }
+                };
+
+                // convert unlit glTFs to MeshStandardMaterial
+                if((mesh.material as MeshStandardMaterial).type === "MeshBasicMaterial") {
+                    const oldMaterial = mesh.material as MeshStandardMaterial;
+                    const newMaterial = new MeshStandardMaterial();
+                    newMaterial.color = oldMaterial.color;
+                    newMaterial.opacity = oldMaterial.opacity;
+                    newMaterial.transparent = oldMaterial.opacity < 1 || !!oldMaterial.alphaMap;
+                    newMaterial.map = oldMaterial.map;
+                    newMaterial.shadowSide = oldMaterial.shadowSide;
+
+                    mesh.material = newMaterial;
+                }
+
+                const material =  mesh.material as MeshStandardMaterial;
 
                 if (material.map) {
                    material.map.colorSpace = SRGBColorSpace;
@@ -190,41 +208,38 @@ export default class ModelReader
 
                 mesh.geometry.computeBoundingBox();
 
-                const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
-
                 // update default shaders for extended functionality
-                uberMat.onBeforeCompile = (shader) => {
-                    shader.vertexShader = this.injectVertexShaderCode(shader.vertexShader);
-                    shader.fragmentShader = this.injectFragmentShaderCode(shader.fragmentShader);
-console.log(shader);
-                    // add custom uniforms
-                    shader.uniforms.cutPlaneDirection = { value: new Vector4(0, 0, -1, 0) };
-                    shader.uniforms.cutPlaneColor = { value: new Vector3(1, 0, 0) };
-                    shader.uniforms.zoneMap = { value: null };
-                    uberMat.userData.shader = shader;
-                }
+                material.onBeforeCompile = (shader) => {
+                    shader.vertexShader = injectVertexShaderCode(shader.vertexShader);
+                    shader.fragmentShader = injectFragmentShaderCode(shader.fragmentShader);
 
+                    // add custom uniforms
+                    shader.uniforms.cutPlaneColor = uniforms.cutPlaneColor;
+                    shader.uniforms.zoneMap = uniforms.zoneMap;
+                    material.userData.shader = shader;
+                }
+                material.userData.paramCopy = {};
+
+                // add defines for shader customization
+                addCustomMaterialDefines(material);
+               
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
                     material.flatShading = false;
                     console.warn("Normals unavailable so they have been calculated. For best outcomes, please provide normals with geometry.");
                 }
 
-                // copy properties from previous material
-                if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial") {
-                    uberMat.copy(material);
-                }
-
                 // check if the material's normal map uses object space (indicated in glTF extras)
                 if (material.userData["objectSpaceNormals"]) {
-                    uberMat.enableObjectSpaceNormalMap(true);
+                    if (material.normalMap) {
+                        material.normalMapType = ObjectSpaceNormalMap;
+                        material.needsUpdate = true;
+                    }
 
                     if (ENV_DEVELOPMENT) {
                         console.log("ModelReader.createModelGroup - objectSpaceNormals: ", true);
                     }
                 }
-
-                mesh.material = uberMat;
             }
         });
 
@@ -242,98 +257,5 @@ console.log(shader);
             throw e;
         }
         return scene;
-    }
-
-    protected injectVertexShaderCode(shader: string) : string {
-        shader = '// Zone map support\n \
-            #if defined(USE_ZONEMAP)\n \
-                varying vec2 vZoneUv;\n \
-            #endif\n \
-            \n \
-            #ifdef MODE_XRAY\n \
-                varying float vIntensity;\n \
-            #endif\n \
-            \n'.concat(shader);
-
-        shader = shader.slice(0,shader.lastIndexOf('}')).concat(
-            '\n \
-            #ifdef MODE_NORMALS\n \
-                vNormal = normal;\n \
-            #endif\n \
-            \n \
-            #ifdef MODE_XRAY\n \
-                vIntensity = pow(abs(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)))), 3.0);\n \
-            #endif\n \
-            \n \
-            // Zone map support\n \
-            #if defined(USE_ZONEMAP)\n \
-                #if defined(USE_MAP)\n \
-                    vZoneUv = (mapTransform * vec3(vMapUv, 1)).xy;\n \
-                #else\n \
-                    vZoneUv = uv;\n \
-                #endif\n \
-            #endif\n \
-            }'
-        )
-
-        return shader;
-    }
-
-    protected injectFragmentShaderCode(shader: string) {
-        shader = shader.replace(
-            'void main() {',
-            '// Zone map support\n \
-            #if defined(USE_ZONEMAP)\n \
-                varying vec2 vZoneUv;\n \
-                uniform sampler2D zoneMap;\n \
-            #endif\n \
-            \n \
-            #ifdef MODE_XRAY\n \
-                varying float vIntensity;\n \
-            #endif\n \
-            \n \
-            #ifdef CUT_PLANE\n \
-                uniform vec3 cutPlaneColor;\n \
-            #endif\n \
-            \n \
-            void main() {'
-        )
-
-        shader = shader.replace(
-            '#include <opaque_fragment>',
-            '#include <opaque_fragment>\n \
-            \n \
-            #ifdef USE_ZONEMAP\n \
-                vec4 zoneColor = texture2D(zoneMap, vZoneUv);\n \
-            \n \
-                #ifdef OVERLAY_ALPHA\n \
-                    gl_FragColor += mix(vec4(0.0, 0.0, 0.0, 1.0), vec4(zoneColor.rgb, 1.0), zoneColor.a);\n \
-                #endif\n \
-                #ifndef OVERLAY_ALPHA\n \
-                    gl_FragColor = mix(gl_FragColor, vec4(zoneColor.rgb, 1.0), zoneColor.a);\n \
-                #endif\n \
-            #endif\n \
-            \n'
-        )
-
-        shader = shader.slice(0,shader.lastIndexOf('}')).concat(
-            '\n \
-            #ifdef CUT_PLANE\n \
-            if (!gl_FrontFacing) {\n \
-                gl_FragColor = vec4(cutPlaneColor.rgb, 1.0);\n \
-            }\n \
-            #endif\n \
-            \n \
-            #ifdef MODE_NORMALS\n \
-                gl_FragColor = vec4(vec3(normal * 0.5 + 0.5), 1.0);\n \
-            #endif\n \
-            \n \
-            #ifdef MODE_XRAY\n \
-                gl_FragColor = vec4(vec3(0.4, 0.7, 1.0) * vIntensity, 1.0);\n \
-            #endif\n \
-            }'
-        )
-
-        return shader;
     }
 }
