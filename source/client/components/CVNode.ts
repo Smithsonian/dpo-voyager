@@ -57,6 +57,7 @@ export default class CVNode extends CTransform
         const { position, rotation, order, scale } = this.ins;
 
         const orderTag = ERotationOrder[order.getValidatedValue()] as EulerOrder;
+        if(data.name) this.object3D.name = data.name;
 
         if (data.matrix) {
             _mat4.fromArray(data.matrix);
