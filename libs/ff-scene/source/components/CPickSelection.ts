@@ -43,13 +43,15 @@ const _inputs = {
 };
 
 type HelperClass = Object3D & {dispose: ()=>void, update: ()=>void};
+
 export default class CPickSelection extends CSelection
 {
     static readonly typeName: string = "CPickSelection";
 
     ins = this.addInputs<CSelection, typeof _inputs>(_inputs);
 
-    private _brackets = new Map<Component, HelperClass>();
+    private _brackets_map = new Map<Component, HelperClass>();
+    private _axes_map = new Map<Component, HelperClass>();
     private _axes :HelperClass;
 
 
@@ -71,7 +73,7 @@ export default class CPickSelection extends CSelection
     update()
     {
         if(this.ins.viewportBrackets.changed){
-            for(let bracket of this._brackets.values()){
+            for(let bracket of this._brackets_map.values()){
                 bracket.visible = this.ins.viewportBrackets.value;
             }
         }
@@ -107,7 +109,7 @@ export default class CPickSelection extends CSelection
     {
         super.onSelectNode(node, selected);
 
-        const transform = node.getComponent(CObject3D, true);
+        const transform = node.typeName === "NVScene" ? node.getComponent(CTransform, true) : node.getComponent(CObject3D, true);
         if (transform) {
             this.updateBracket(transform, selected);
         }
@@ -136,7 +138,7 @@ export default class CPickSelection extends CSelection
         }
     }
     tick(ctx:IUpdateContext) :boolean{
-        for(let b of this._brackets.values()){
+        for(let b of this._brackets_map.values()){
             b.update();
         }
         return false;
@@ -168,32 +170,30 @@ export default class CPickSelection extends CSelection
                     bracket = new Bracket(object3D);
                 }
                 object3D.add(bracket);
-                this._brackets.set(component, bracket);
+                this._brackets_map.set(component, bracket);
             }
             
-            if(transform){
+            if(transform && transform.object3D != object3D){
                 let o = new Axes(transform.object3D);
-                this._brackets.set(transform, o);
+                this._axes_map.set(transform, o);
                 transform.object3D.add(o);
-            }else{
-                console.warn("Component has no transform");
             }
         }
         else {
             if(object3D){
-                const bracket = this._brackets.get(component);
+                const bracket = this._brackets_map.get(component);
                 if (bracket) {
-                    this._brackets.delete(component);
+                    this._brackets_map.delete(component);
                     bracket.removeFromParent();
                     bracket.dispose();
                 }
             }
             if(transform){
-                const bracket = this._brackets.get(transform);
-                if (bracket) {
-                    this._brackets.delete(transform);
-                    bracket.removeFromParent();
-                    bracket.dispose();
+                const axes = this._axes_map.get(transform);
+                if (axes) {
+                    this._axes_map.delete(transform);
+                    axes.removeFromParent();
+                    axes.dispose();
                 }
             }
         }
