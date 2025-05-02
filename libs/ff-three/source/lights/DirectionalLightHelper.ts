@@ -1,4 +1,4 @@
-import { Vector3, BufferGeometry, Line, ColorRepresentation, SpotLight, DirectionalLight, Light, LightShadow } from "three";
+import { Vector3, BufferGeometry, Line, ColorRepresentation, SpotLight, DirectionalLight, Light, LightShadow, OrthographicCamera } from "three";
 import LightHelper from "./LightHelper";
 
 import {Line2} from "three/examples/jsm/lines/Line2";
@@ -37,16 +37,20 @@ export default class DirectionalLightHelper extends LightHelper {
     );
     this.target.scale.setScalar(10);
     this.target.matrixAutoUpdate = false;
+    this.target.renderOrder = 2;
     this.add(this.target);
 	}
 
   update(){
     super.update();
-    if(this.light.castShadow){
-      this.target.scale.setScalar(this.light.shadow.camera.far- this.light.shadow.camera.near);
-      this.target.position.set( 0, -this.light.shadow.camera.near, 0);
-      this.target.updateMatrix();
+
+    let parent = this.parent;
+    this.target.scale.setScalar(1);
+    while(parent){
+      this.target.scale.divide(parent.scale);
+      parent = parent.parent;
     }
+    this.target.updateMatrix();
   }
 
 	dispose() {
