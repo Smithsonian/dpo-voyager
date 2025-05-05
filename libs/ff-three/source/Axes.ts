@@ -54,16 +54,19 @@ export default class Axes extends LineSegments2
 
   private originPoint?:Points;
 
-  constructor(target: Object3D, props?: IAxesProps)
+  constructor(size: number, _props?: IAxesProps)
+  constructor(target: Object3D, _props?: IAxesProps)
+  constructor(target: Object3D|number, _props?: IAxesProps)
   {
-      props = Object.assign({}, Axes.defaultProps, props);
+      const props :Required<IAxesProps> = Object.assign({}, Axes.defaultProps, _props);
 
-      const box = new Box3();
-      box.makeEmpty();
-
-      computeLocalBoundingBox(target, box);
-
-      const size = (box.isEmpty()? 1: box.getBoundingSphere(new Sphere()).radius) * props.length;
+      let size = typeof target === "number"? target : (()=>{
+        const box = new Box3();
+        box.makeEmpty();
+  
+        computeLocalBoundingBox(target, box);
+        return (box.isEmpty()? 1: box.getBoundingSphere(new Sphere()).radius) * props.length;
+      })();
 
       const originColor :Color = props.colors.length === 4? props.colors[0]: null;
 

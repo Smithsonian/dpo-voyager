@@ -51,7 +51,8 @@ export default class CVGrid extends CObject3D
         color: types.ColorRGB("Grid.Color", [ 0.5, 0.7, 0.8 ]),
         opacity: types.Percent("Grid.Opacity", 1.0),
         boundingBox: types.Object("Scene.BoundingBox", Box3),
-        labelEnabled: types.Boolean("Grid.LabelEnabled", true)
+        labelEnabled: types.Boolean("Grid.LabelEnabled", true),
+        axesEnabled: types.Boolean("Grid.AxesEnabled", false)
     };
 
     protected static readonly gridOuts = {
@@ -86,7 +87,8 @@ export default class CVGrid extends CObject3D
         mainDivisions: 2,
         subDivisions: 10,
         mainColor: new Color(0.5, 0.7, 0.8),
-        subColor: new Color(0.25, 0.35, 0.4)
+        subColor: new Color(0.25, 0.35, 0.4),
+        axesEnabled: false,
     };
 
     create()
@@ -110,11 +112,17 @@ export default class CVGrid extends CObject3D
         scene.outs.boundingBox.linkTo(this.ins.boundingBox);
     }
 
+    deactivate(): void
+    {
+        const scene = this.getGraphComponent(CVScene);
+        scene.outs.boundingBox.unlinkTo(this.ins.boundingBox);
+    }
+
     update(): boolean
     {
         const ins = this.ins;
 
-        if (ins.color.changed || ins.boundingBox.changed) {
+        if (ins.color.changed || ins.boundingBox.changed || ins.axesEnabled.changed) {
             const props = this._gridProps;
 
             if (ins.color.changed) {
@@ -158,6 +166,8 @@ export default class CVGrid extends CObject3D
                 this.tape.ins.startPosition.setValue([-size/2, box.min.y+(size/100), -size/2-(size/100)]);
                 this.tape.ins.endPosition.setValue([(-size/2)+(size/props.mainDivisions), box.min.y+(size/100), -size/2-(size/100)]);
             }
+
+            props.axesEnabled = ins.axesEnabled.value;
 
             if (!this.object3D) {
                 this.object3D = new ThreeGrid(props);

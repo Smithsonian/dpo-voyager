@@ -112,11 +112,6 @@ export default class CVTask extends CVNodeObserver
             savedConfig.bracketsVisible = prop.value;
             prop.setValue(!!configuration.bracketsVisible);
         }
-        if(typeof configuration.axesVisible !== "undefined"){
-            const prop = this.selection.ins.viewportAxes;
-            savedConfig.axesVisible = prop.value;
-            prop.setValue(!!configuration.bracketsVisible);
-        }
     }
 
     /**
@@ -128,9 +123,6 @@ export default class CVTask extends CVNodeObserver
 
         if (typeof savedConfig.bracketsVisible !== "undefined") {
             this.selection.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
-        }
-        if(typeof savedConfig.axesVisible !== "undefined"){
-            this.selection.ins.viewportAxes.setValue(savedConfig.axesVisible);
         }
 
         this._isActiveTask = false;
@@ -156,6 +148,9 @@ export default class CVTask extends CVNodeObserver
             if (savedConfig.interfaceVisible !== undefined) {
                 previous.setup.interface.ins.visible.setValue(savedConfig.interfaceVisible);
             }
+            if(savedConfig.axesVisible !== undefined){
+                previous.setup.grid.ins.axesEnabled.setValue(savedConfig.axesVisible);
+            }
         }
         if (next) {
             if (configuration.gridVisible !== undefined) {
@@ -172,6 +167,11 @@ export default class CVTask extends CVNodeObserver
                 const prop = next.setup.interface.ins.visible;
                 savedConfig.interfaceVisible = prop.value;
                 prop.setValue(!!configuration.interfaceVisible);
+            }
+            if(configuration.axesVisible !== undefined){
+                const prop = next.setup.grid.ins.axesEnabled;
+                savedConfig.axesVisible = prop.value;
+                prop.setValue(!!configuration.axesVisible);
             }
         }
     }

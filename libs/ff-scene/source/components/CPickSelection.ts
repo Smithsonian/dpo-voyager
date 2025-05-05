@@ -39,7 +39,6 @@ const helpers = [
 const _inputs = {
     viewportPicking: types.Boolean("Viewport.Picking", true),
     viewportBrackets: types.Boolean("Viewport.Brackets", true),
-    viewportAxes: types.Boolean("Viewport.Axes", false),
 };
 
 type HelperClass = Object3D & {dispose: ()=>void, update: ()=>void};
@@ -52,8 +51,6 @@ export default class CPickSelection extends CSelection
 
     private _brackets_map = new Map<Component, HelperClass>();
     private _axes_map = new Map<Component, HelperClass>();
-    private _axes :HelperClass;
-
 
     create()
     {
@@ -75,31 +72,6 @@ export default class CPickSelection extends CSelection
         if(this.ins.viewportBrackets.changed){
             for(let bracket of this._brackets_map.values()){
                 bracket.visible = this.ins.viewportBrackets.value;
-            }
-        }
-        if(this.ins.viewportAxes.changed){
-            //FIXME : add axes helper to scene
-            if(this._axes){
-                console.debug("Remove scene axes");
-                this._axes.removeFromParent();
-                this._axes.dispose();
-            }
-            if(this.ins.viewportAxes.value){
-                console.debug("Create scene axes : ", this.ins.viewportAxes.value);
-                //Length should be half CVGrid's size.
-                const scene = this.system.getMainComponent(CScene);
-                let bbox = new Box3();
-                bbox.expandByObject(scene.scene);
-                let length = Math.max(bbox.max.x, bbox.max.y, bbox.max.z);
-                let f = 1;
-
-                while (length / f > 5) {
-                    f = f * 10;
-                }
-
-                length = Math.ceil(length / f) * f/2;
-                this._axes = new Axes(scene.scene, {length: length, width: 3, colors: [new Color(0x9a3c4a), new Color(0x628928), new Color(0x3d5e8b)], depthTest: true});
-                scene.scene.add(this._axes);
             }
         }
         return true;
