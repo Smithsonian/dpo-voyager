@@ -43,6 +43,10 @@ function light_has_shadowSize(l : CLight): l is (CLight & {ins: {shadowSize: Pro
     return "shadowSize" in l.ins;
 }
 
+function light_has_distance(l :CLight): l is (CLight & {ins: {distance: Property<number>}}){
+    return "distance" in l.ins;
+}
+
 /**
  * Manages the scene and the nodes in the scene tree.
  *
@@ -242,16 +246,26 @@ export default class CVScene extends CVNode
                         _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2);
                         lightNode.transform.ins.scale.setValue(_vec3.toArray());
                         lightNode.light.updateMatrix();
+                    }else{
+                        _vec3.fromArray(lightNode.transform.ins.position.value);
+                        _vec3.multiplyScalar(unitScale);
+                        lightNode.transform.ins.position.setValue(_vec3.toArray());
+                        lightNode.light.updateMatrix();
+                    }
+
+                    if(light_has_shadowSize(lightNode)){
+                        lightNode.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
+                    }else if(light_has_distance(lightNode)){
+                        if(lightNode.ins.distance.value ){
+                            lightNode.ins.distance.setValue(lightNode.ins.distance.value * unitScale);
+                        }else if("far" in lightNode.light.shadow?.camera ){
+                            //When distance is not set, shadow's far plane isn't updated on rescale
+                            (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far = (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far * unitScale;
+                        }
                     }
     
-                    if(lightNode.ins.shadowEnabled.value) {
-                        if(light_has_shadowSize(lightNode)){
-                            lightNode.ins.shadowSize.setValue(this.outs.boundingRadius.value*2.0);
-                        }
-                        (lightNode.light.shadow.camera as PerspectiveCamera|OrthographicCamera).far = this.outs.boundingRadius.value*4.0;
-                    }
                 }
-                
+
             });
         }
     }
