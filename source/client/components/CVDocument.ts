@@ -242,7 +242,7 @@ export default class CVDocument extends CRenderGraph
         if (this.isEmpty()) {
             throw new Error("empty document, can't append model");
         }
-console.log(assetPath);
+
         parent = parent || this.root;
         const modelNode = this.innerGraph.createCustomNode(NVNode);
         parent.transform.addChild(modelNode.transform);

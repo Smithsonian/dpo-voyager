@@ -21,7 +21,7 @@ import Notification from "@ff/ui/Notification";
 
 import System from "@ff/graph/System";
 
-import coreTypes from "./coreTypes";
+import coreTypes, { lightTypes } from "./coreTypes";
 import explorerTypes from "./explorerTypes";
 
 import documentTemplate from "client/templates/default.svx.json";
@@ -38,7 +38,7 @@ import NVDocuments from "../nodes/NVDocuments";
 import NVTools from "../nodes/NVTools";
 
 import MainView from "../ui/explorer/MainView";
-import { EDerivativeQuality } from "client/schema/model";
+import { EDerivativeQuality, IAnnotation } from "client/schema/model";
 import CVARManager from "client/components/CVARManager";
 import { EUIElements } from "client/components/CVInterface";
 import { EBackgroundStyle } from "client/schema/setup";
@@ -46,11 +46,20 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 
 import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";
-import CVAnnotationView from "client/components/CVAnnotationView";
+import CVAnnotationView, { Annotation } from "client/components/CVAnnotationView";
 import { ELanguageType, EUnitType } from "client/schema/common";
 import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource } from "@iiif/3d-manifesto-dev";
 import IIIFManifest from "client/io/IIIFManifestReader";
-import { Matrix4, Vector3, Euler } from "three";
+import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight } from "three";
+import CScene from "@ff/scene/components/CScene";
+import math from "@ff/three/math";
+import CVModel2 from "client/components/CVModel2";
+import CTransform from "@ff/scene/components/CTransform";
+import NVNode from "client/nodes/NVNode";
+import CVPointLight from "client/components/lights/CVPointLight";
+import CVDirectionalLight from "client/components/lights/CVDirectionalLight";
+import CVSpotLight from "client/components/lights/CVSpotLight";
+import CLight from "@ff/scene/components/CLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +108,10 @@ export interface IExplorerApplicationProps
 const _mat4a = new Matrix4();
 const _mat4b = new Matrix4();
 const _vec3a = new Vector3();
+const _vec3b = new Vector3();
 const _euler = new Euler();
+const _quat = new Quaternion();
+const _lightUp = new Vector3(0,1,0);
 
 /**
  * Voyager Explorer main application.
@@ -741,15 +753,22 @@ Version: ${ENV_VERSION}
     // load IIIF manifest
     protected loadIIIFManifest(data: any)
     {
+        const models: CVModel2[] = [];
         console.log("LOADING IIIF MANIFEST");
         const activeDoc = this.documentProvider.activeComponent;
-
         const iiifManifest = new IIIFManifest(data);
+
+        const vScene = activeDoc.getComponent(CScene);
+        const activeCamera = vScene.activeCamera;
 
         iiifManifest.loadManifest().then(() => {
         activeDoc.ins.title.setValue(iiifManifest.manifest.__jsonld.label["en"][0]);
         const scenes = iiifManifest.scenes;
         scenes.forEach(scene => {
+            const iiifModels = [];
+            const iiifCameras = [];
+            const iiifLights = [];
+            const iiifComments = [];
 
             const bgColor = scene.getBackgroundColor() as any;
             this.setBackgroundStyle("solid");
@@ -762,88 +781,216 @@ Version: ${ENV_VERSION}
 
             const annos = iiifManifest.annotationsFromScene(scene);
 console.log(annos);
-            const filteredAnnos = annos.filter((anno) => {
-                const body = anno.getBody()[0];
-                return (
-                    anno.getMotivation()?.[0] === "painting" &&
-                    (body.isSpecificResource() || body?.getType() === "model")
-                );
+            annos.forEach((anno) => {
+                const obj = anno.getBody()[0];
+                const body = obj.isSpecificResource() ? obj.getSource() : obj;
+                
+                console.log(body.getType());
+                const type = body.getType();
+                switch(type) {
+                    case "model":
+                        iiifModels.push(anno);
+                        break;
+                    case "perspectivecamera":
+                    case "orthographiccamera":
+                        iiifCameras.push(anno);
+                        break;
+                    case "directionallight":
+                    case "spotlight":
+                    case "pointlight":
+                        iiifLights.push(anno);
+                        break;
+                    case "textualbody":
+                        iiifComments.push(anno);
+                        break;
+                    default:
+                        console.log("Unsupported IIIF annotation type: "+type);
+                }
             });
 
-            filteredAnnos.forEach((annotation) => {
+            // handle models
+            iiifModels.forEach((annotation) => {
                 const model = annotation.getBody()[0];
-                const modelTarget = annotation.getTarget();
+                
                 const newModel = activeDoc.appendModel(model.isSpecificResource() ? model.getSource()?.id : model.id);
-                const nodeTransform = newModel.transform;
+                models.push(newModel);
                 newModel.ins.localUnits.setValue(EUnitType.mm);
 
-                if (model.isSpecificResource()) {
-                    const transforms = (model as SpecificResource).getTransform() || [];
+                newModel.setFromMatrix(this.getIIIFBodyTransform(model,annotation));
+            });
 
-                    _mat4a.identity();
-                    transforms.forEach((transform) => {
-                        _mat4b.identity();
-                        if(transform.isTranslateTransform) {
-                            const translation = (transform as TranslateTransform).getTranslation() as any;
-                            if (translation) {
-                                _vec3a.set(translation.x,translation.y,translation.z);
-                                _mat4b.setPosition(_vec3a);
-                            }
-                        }
-                        else if (transform.isRotateTransform) {
-                            const rotation = (transform as RotateTransform).getRotation() as any;
-                            _euler.set(rotation.x,rotation.y,rotation.z);
-                            _mat4b.makeRotationFromEuler(_euler);
-                        }
-                        else if(transform.isScaleTransform) {
-                            const scale = (transform as ScaleTransform).getScale() as any;
-                            _mat4b.makeScale(scale.x,scale.y,scale.z);
-                        }
-                        _mat4a.premultiply(_mat4b);
-                    });
-                    newModel.setFromMatrix(_mat4a);                 
+            // handle lights
+            if(iiifLights.length > 0) {
+                // clear default lights
+                const lights = activeDoc.innerGraph.findNodeByName("Lights");
+                const defaultLights = lights.getComponent(CTransform).children;
+                while(defaultLights.length > 0) {
+                    defaultLights[0].dispose();
                 }
-                
-                /*if (typeof modelTarget !== "string") {
-                    const selector = modelTarget.getSelector();
-                    if (selector && selector.isPointSelector) {
-                      const position = selector.getLocation();
-                      nodeTransform.ins.position.setValue([position.x, position.y, position.z]);
+
+                iiifLights.forEach((light) => {
+                    const lightBody = light.getBody()[0];console.log(lightBody);
+                    const lightLabel = light.getLabel()?.getValue();
+                    let newLight = null;
+                    const lightNode = activeDoc.innerGraph.createCustomNode(NVNode);
+                    lights.getComponent(CTransform).addChild(lightNode.transform);
+                    
+                    if(lightBody.isPointLight()) {  
+                        newLight = lightNode.createComponent(CVPointLight);
                     }
-                }*/
-            });
+                    else if(lightBody.isDirectionalLight()) {
+                        newLight = lightNode.createComponent(CVDirectionalLight);
+                    }
+                    else if(lightBody.isSpotLight()) {
+                        newLight = lightNode.createComponent(CVSpotLight);
+                    }
 
+                    if(newLight) {console.log(newLight);console.log(lightLabel);
+                        // Set properties
+                        lightNode.name = lightLabel ?? newLight.typeName;
+                        (newLight as CLight).ins.intensity.setValue(lightBody.getIntensity());
+                        const lightColor = lightBody.getColor().value;
+                        (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);
 
-            const cameraSources = annos.filter((anno) => {
-                const body = anno.getBody()[0];
-                return (body.isOrthographicCamera || body.isPerspectiveCamera);
-            });
+                        // TODO: Fix manifesto bug to fix this hack
+                        try {
+                            const transform = this.getIIIFBodyTransform(lightBody, light);
+                            _vec3a.setFromMatrixPosition(transform);
+                            newLight.transform.object3D.matrix.copy(transform);
+                            const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _lightUp);
+                            if(lookAtTransform) {        
+                                newLight.transform.object3D.matrix.multiply(lookAtTransform);
+                            
+                                // lookAt orients z-axis, so need to compensate for lights
+                                newLight.transform.object3D.matrix.multiply(_mat4a.makeRotationX(90*math.DEG2RAD));
+                            }
+                            newLight.transform.setPropertiesFromMatrix();
+                        }
+                        catch(e){
+                            const transform = this.getIIIFBodyTransform(lightBody, light);
+                            newLight.transform.setPropertiesFromMatrix(transform);
+                        }
+                    }
+                    else {
+                        console.warn("Unhandled IIIF light type: "+lightBody.getType());
+                    }
+                });
+            }
 
             // only handle one camera for now
-            if(cameraSources.length > 0) {
+            if(iiifCameras.length > 0) {
+                const camera = iiifCameras[0];
                 const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+                orbitNavIns.autoZoom.setValue(false);
+                orbitNavIns.minOffset.setValue([-Infinity,-Infinity,-Infinity]);
 
-                // disable autozoom
-                activeDoc.setup.navigation.ins.autoZoom.setValue(false);
-                // look for translation
-                /*const translation = cameraSources[0].getTarget().map((elem) => {
-                    const selector = elem.selector.filter(e => e.type == "PointSelector");
-                    if(selector.length > 0) {
-                        return selector[0];
-                    }
-                });*/
-                const translation = cameraSources[0].getTarget().getSelector().getLocation();
-                _vec3a.set(translation.x, translation.y, translation.z);
-                const orbit = orbitNavIns.orbit.value;
-                _vec3a.applyEuler(_euler.set(orbit[0], orbit[1], orbit[2]));
-                // add translation
-                if(translation) {
-                    //this.setCameraOffset(_vec3a.x.toString(), _vec3a.y.toString(), _vec3a.z.toString());
-                    orbitNavIns.offset.setValue([_vec3a.x, _vec3a.y, _vec3a.z])
-                }
+                const cameraBody = camera.getBody()[0];
+
+                _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
+
+                _vec3a.setFromMatrixPosition(_mat4b);
+                const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, activeCamera.up);
+
+                _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
+                _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
+                _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
+
+                orbitNavIns.offset.setValue(_vec3a.toArray());
+                orbitNavIns.orbit.setValue(_vec3b.toArray());
             }
+
+            // handle comments
+            iiifComments.forEach((comment) => {
+                const target = comment.getTarget();
+                if(target.isSpecificResource) {
+                    _vec3a.set(0,0,0);
+                    const selector = (target as SpecificResource).getSelector();
+
+                    const annotation = new Annotation(undefined);
+
+                    const data = annotation.data;
+
+                    // position
+                    if (selector && selector.isPointSelector) {
+                        const position = selector.getLocation();
+                        data.position = [position.x, position.y, position.z];
+                        _vec3a.fromArray(data.position);
+                    }
+
+                    // direction
+                    models[0].localBoundingBox.getCenter(_vec3b);
+                    data.direction = _vec3a.sub(_vec3b).toArray();
+
+                    // additional attributes
+                    data.title = comment.getProperty("bodyValue");
+                    data.scale = 0.0;
+
+                    const view = models[0].getGraphComponent(CVAnnotationView);
+                    view.addAnnotation(annotation);
+                }
+            });
         });
-    });
+        });
+    }
+
+    private getIIIFBodyTransform(body: any, annotation: any) : Matrix4
+    {
+        _mat4a.identity();
+        if (body.isSpecificResource()) {
+            const transforms = (body as SpecificResource).getTransform() || [];
+
+            transforms.forEach((transform) => {
+                _mat4b.identity();
+                if(transform.isTranslateTransform) {
+                    const translation = (transform as TranslateTransform).getTranslation() as any;
+                    if (translation) {
+                        _vec3a.set(translation.x,translation.y,translation.z);
+                        _mat4b.setPosition(_vec3a);
+                    }
+                }
+                else if (transform.isRotateTransform) {
+                    const rotation = (transform as RotateTransform).getRotation() as any;
+                    _euler.set(rotation.x*math.DEG2RAD,rotation.y*math.DEG2RAD,rotation.z*math.DEG2RAD);
+                    _mat4b.makeRotationFromEuler(_euler);
+                }
+                else if(transform.isScaleTransform) {
+                    const scale = (transform as ScaleTransform).getScale() as any;
+                    _mat4b.makeScale(scale.x,scale.y,scale.z);
+                }
+                _mat4a.premultiply(_mat4b);
+            });                        
+        }
+
+        const target = annotation.getTarget();
+        if(target && target.isSpecificResource) {
+            const selector = target.getSelector();
+            if(selector && selector.isPointSelector) {
+                _mat4b.identity();
+                _mat4b.setPosition(selector.Location.x, selector.Location.y, selector.Location.z);
+                _mat4a.premultiply(_mat4b);
+            }
+        }
+
+        return _mat4a;
+    }
+
+    private getIIIFLookAtTransform(body: any, scene: any, eye: Vector3, up: Vector3) : Matrix4
+    {
+        _mat4a.identity();
+        if (body.LookAt?.isPointSelector) {
+            const lookAt = body.LookAt?.Location;
+
+            _mat4a.lookAt(eye,lookAt,up);
+            return _mat4a;
+        }
+        else if(body.LookAt?.id) {
+            const anno = scene.getAnnotationById(body.LookAt.id);
+            _vec3b.set(anno.LookAtLocation.x,anno.LookAtLocation.y,anno.LookAtLocation.z);
+
+            _mat4a.lookAt(eye,_vec3b,up);
+            return _mat4a;
+        }
+        return null;
     }
 }
 
