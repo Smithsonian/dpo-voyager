@@ -148,7 +148,7 @@ export default class CVDerivativesController extends Component{
   }
 
   protected static readonly ins = {
-    enabled: types.Boolean("Settings.Enabled", true),
+    enabled: types.Boolean("LOD.Enabled", true),
   }
 
 

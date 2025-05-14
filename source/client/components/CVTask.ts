@@ -64,6 +64,7 @@ export default class CVTask extends CVNodeObserver
         interfaceVisible: undefined,
         gridVisible: undefined,
         annotationsVisible: undefined,
+        lodEnabled: undefined,
     };
 
     private _savedConfig = {
@@ -71,6 +72,7 @@ export default class CVTask extends CVNodeObserver
         interfaceVisible: undefined,
         gridVisible: undefined,
         annotationsVisible: undefined,
+        lodEnabled: undefined,
     };
 
     dispose()
@@ -140,6 +142,9 @@ export default class CVTask extends CVNodeObserver
             if (savedConfig.interfaceVisible !== undefined) {
                 previous.setup.interface.ins.visible.setValue(savedConfig.interfaceVisible);
             }
+            if(savedConfig.lodEnabled !== undefined) {
+                previous.setup.derivatives.ins.enabled.setValue(savedConfig.lodEnabled);
+            }
         }
         if (next) {
             if (configuration.gridVisible !== undefined) {
@@ -156,6 +161,11 @@ export default class CVTask extends CVNodeObserver
                 const prop = next.setup.interface.ins.visible;
                 savedConfig.interfaceVisible = prop.value;
                 prop.setValue(!!configuration.interfaceVisible);
+            }
+            if(configuration.lodEnabled !== undefined) {
+                const prop = next.setup.derivatives.ins.enabled;
+                savedConfig.lodEnabled = prop.value;
+                prop.setValue(!!configuration.lodEnabled);
             }
         }
     }
