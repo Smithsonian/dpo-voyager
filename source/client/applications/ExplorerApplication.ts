@@ -50,7 +50,7 @@ import CVAnnotationView, { Annotation } from "client/components/CVAnnotationView
 import { ELanguageType, EUnitType } from "client/schema/common";
 import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource } from "@iiif/3d-manifesto-dev";
 import IIIFManifest from "client/io/IIIFManifestReader";
-import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight } from "three";
+import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight, PlaneGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, BufferGeometry, BufferAttribute } from "three";
 import CScene from "@ff/scene/components/CScene";
 import math from "@ff/three/math";
 import CVModel2 from "client/components/CVModel2";
@@ -60,6 +60,7 @@ import CVPointLight from "client/components/lights/CVPointLight";
 import CVDirectionalLight from "client/components/lights/CVDirectionalLight";
 import CVSpotLight from "client/components/lights/CVSpotLight";
 import CLight from "@ff/scene/components/CLight";
+import { EProjection } from "@ff/three/UniversalCamera";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +111,6 @@ const _mat4b = new Matrix4();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
 const _euler = new Euler();
-const _quat = new Quaternion();
 const _lightUp = new Vector3(0,1,0);
 
 /**
@@ -758,6 +758,7 @@ Version: ${ENV_VERSION}
         const activeDoc = this.documentProvider.activeComponent;
         const iiifManifest = new IIIFManifest(data);
 
+        const cvScene = activeDoc.getInnerComponent(CVScene);
         const vScene = activeDoc.getComponent(CScene);
         const activeCamera = vScene.activeCamera;
 
@@ -769,6 +770,7 @@ Version: ${ENV_VERSION}
             const iiifCameras = [];
             const iiifLights = [];
             const iiifComments = [];
+            const iiifCanvases = [];
 
             const bgColor = scene.getBackgroundColor() as any;
             this.setBackgroundStyle("solid");
@@ -780,7 +782,7 @@ Version: ${ENV_VERSION}
             }
 
             const annos = iiifManifest.annotationsFromScene(scene);
-console.log(annos);
+
             annos.forEach((anno) => {
                 const obj = anno.getBody()[0];
                 const body = obj.isSpecificResource() ? obj.getSource() : obj;
@@ -802,6 +804,9 @@ console.log(annos);
                         break;
                     case "textualbody":
                         iiifComments.push(anno);
+                        break;
+                    case "canvas":
+                        iiifCanvases.push(anno);
                         break;
                     default:
                         console.log("Unsupported IIIF annotation type: "+type);
@@ -829,8 +834,8 @@ console.log(annos);
                 }
 
                 iiifLights.forEach((light) => {
-                    const lightBody = light.getBody()[0];console.log(lightBody);
-                    const lightLabel = light.getLabel()?.getValue();
+                    const lightBody = light.getBody()[0];
+                    const lightLabel = lightBody.getLabel()?.getValue();
                     let newLight = null;
                     const lightNode = activeDoc.innerGraph.createCustomNode(NVNode);
                     lights.getComponent(CTransform).addChild(lightNode.transform);
@@ -852,24 +857,19 @@ console.log(annos);
                         const lightColor = lightBody.getColor().value;
                         (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);
 
-                        // TODO: Fix manifesto bug to fix this hack
-                        try {
-                            const transform = this.getIIIFBodyTransform(lightBody, light);
-                            _vec3a.setFromMatrixPosition(transform);
-                            newLight.transform.object3D.matrix.copy(transform);
-                            const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _lightUp);
-                            if(lookAtTransform) {        
-                                newLight.transform.object3D.matrix.multiply(lookAtTransform);
-                            
-                                // lookAt orients z-axis, so need to compensate for lights
-                                newLight.transform.object3D.matrix.multiply(_mat4a.makeRotationX(90*math.DEG2RAD));
-                            }
-                            newLight.transform.setPropertiesFromMatrix();
+
+                        // Handle transform
+                        const transform = this.getIIIFBodyTransform(lightBody, light);
+                        _vec3a.setFromMatrixPosition(transform);
+                        newLight.transform.object3D.matrix.copy(transform);
+                        const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _lightUp);
+                        if(lookAtTransform) {        
+                            newLight.transform.object3D.matrix.multiply(lookAtTransform);
+                        
+                            // lookAt orients z-axis, so need to compensate for lights
+                            newLight.transform.object3D.matrix.multiply(_mat4a.makeRotationX(90*math.DEG2RAD));
                         }
-                        catch(e){
-                            const transform = this.getIIIFBodyTransform(lightBody, light);
-                            newLight.transform.setPropertiesFromMatrix(transform);
-                        }
+                        newLight.transform.setPropertiesFromMatrix();
                     }
                     else {
                         console.warn("Unhandled IIIF light type: "+lightBody.getType());
@@ -880,11 +880,16 @@ console.log(annos);
             // only handle one camera for now
             if(iiifCameras.length > 0) {
                 const camera = iiifCameras[0];
+                const vCamera = cvScene.cameras[0];
                 const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
                 orbitNavIns.autoZoom.setValue(false);
                 orbitNavIns.minOffset.setValue([-Infinity,-Infinity,-Infinity]);
 
                 const cameraBody = camera.getBody()[0];
+
+                // needs 'SelfOrSource' for labels
+                //const cameraLabel = cameraBody.getPropertyFromSelfOrSource("label");
+                //vCamera.node.name = cameraLabel ?? "Camera";
 
                 _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
 
@@ -897,11 +902,27 @@ console.log(annos);
 
                 orbitNavIns.offset.setValue(_vec3a.toArray());
                 orbitNavIns.orbit.setValue(_vec3b.toArray());
+
+                // set properties if defined
+                const fov = cameraBody.FieldOfView;
+                if(fov) {
+                    vCamera.ins.fov.setValue(fov);
+                }
+                const near = cameraBody.Near;
+                const far = cameraBody.Far;
+                if(near || far) {
+                    vCamera.addIns.autoNearFar.setValue(false);
+                    near ? vCamera.ins.near.setValue(near) : null;
+                    far ? vCamera.ins.far.setValue(far) : null;
+                }
+                vCamera.ins.projection.setValue(cameraBody.isPerspectiveCamera() ? 
+                    EProjection.Perspective : EProjection.Orthographic);
             }
 
             // handle comments
             iiifComments.forEach((comment) => {
                 const target = comment.getTarget();
+                const commentBody = comment.getBody()[0];
                 if(target.isSpecificResource) {
                     _vec3a.set(0,0,0);
                     const selector = (target as SpecificResource).getSelector();
@@ -912,21 +933,70 @@ console.log(annos);
 
                     // position
                     if (selector && selector.isPointSelector) {
-                        const position = selector.getLocation();
+                        const position = selector.Location;
                         data.position = [position.x, position.y, position.z];
                         _vec3a.fromArray(data.position);
                     }
 
                     // direction
-                    models[0].localBoundingBox.getCenter(_vec3b);
-                    data.direction = _vec3a.sub(_vec3b).toArray();
+                    const endPosition = commentBody.Position;
+                    if(endPosition) {
+                        const labelSelector = (endPosition as SpecificResource).getSelector();
+                        const labelPos = labelSelector.Location;
+                        _vec3b.set(labelPos.x, labelPos.y, labelPos.z);
+                        const labelDir = _vec3b.sub(_vec3a);
+                        data.direction = labelDir.toArray();
+                        data.scale = labelDir.length();
+                    }
+                    else {
+                        models[0].localBoundingBox.getCenter(_vec3b);
+                        data.direction = _vec3a.sub(_vec3b).toArray();
+                        data.scale = 0.0;
+                    }
 
                     // additional attributes
-                    data.title = comment.getProperty("bodyValue");
-                    data.scale = 0.0;
+                    data.title = commentBody.Value;                  
 
                     const view = models[0].getGraphComponent(CVAnnotationView);
                     view.addAnnotation(annotation);
+                }
+            });
+
+            // handle canvases
+            iiifCanvases.forEach((canvas) => {
+                const target = canvas.getTarget();
+                if(target.isSpecificResource) {
+                    const selector = (target as SpecificResource).__jsonld.selector[0];
+                    
+                    if(selector.type === "PolygonZSelector") {
+                        const polygon = selector.value;
+                        const startIdx = polygon.lastIndexOf("(") + 1;
+                        const values = polygon.slice(startIdx, polygon.indexOf(")"));
+                        const valueArray = values.split(" ");
+                        const corners : Vector3[] = [];
+                        for(let i=0; i<valueArray.length; i+=3) {
+                            corners.push(new Vector3(parseFloat(valueArray[i]), parseFloat(valueArray[i+1]), parseFloat(valueArray[i+2])));
+                        }
+
+                        const geometry = new BufferGeometry().setFromPoints(corners);
+                        geometry.setIndex([0, 1, 2, 2, 3, 0]);
+                        geometry.setAttribute( 'uv', new BufferAttribute( new Float32Array( [0,1,0,0,1,0,1,1] ), 2 ) );
+                        geometry.computeVertexNormals();
+
+                        // load image
+                        const canvasId = canvas.getBody()[0].id;
+                        const canvasObj = iiifManifest.manifest?.getSequences()[0]?.getCanvasById(canvasId);
+                        const uri = canvasObj.getCanonicalImageUri();
+                        
+                        this.assetReader.getTexture(uri).then(map => {
+                            const canvasMesh = new Mesh(
+                                //new PlaneGeometry(width, height, 1, 1),
+                                geometry,
+                                new MeshStandardMaterial({map: map})
+                            );
+                            cvScene.object3D.add(canvasMesh);
+                        });
+                    }
                 }
             });
         });
