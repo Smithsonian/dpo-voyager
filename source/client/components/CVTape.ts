@@ -47,9 +47,9 @@ export default class CVTape extends CObject3D
     static readonly icon: string = "";
     static readonly axisColors = //: Array<Color> = [new Color(1,0,0), new Color(0,1,0), new Color(0,0,1)];
     {
-        x: new Color(1,0,0),
-        y: new Color(0,1,0),
-        z: new Color(0,0,1),
+        x: new Color(0x9a3c4a),
+        y: new Color(0x628928),
+        z: new Color(0x3d5e8b) ,
     }
 
     protected static readonly tapeIns = {
