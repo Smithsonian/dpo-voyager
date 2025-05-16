@@ -191,20 +191,21 @@ export default class CVDerivativesController extends Component{
     //  2. This is total available space and any object can have any number of textures (we'd be able to refine this exact number if we wanted)
     //      to which we need to add lightmaps, environment, etc. We just simplify to 1/4 the texture space
     let budget = Math.pow(this.renderer.outs.maxTextureSize.value/2, 2);
+    let reasons :string[] = [];
     if(typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency < 4){
-      console.debug("Reduce budget because of low CPU count");
+      reasons.push("low CPU");
       budget = budget/2;
     }
     if(IS_MOBILE){
-      console.debug("Reduce budget because of mobile device");
+      reasons.push("mobile device");
       budget = budget/2;
     }
     if(typeof (navigator as any).deviceMemory === "number" && (navigator as any).deviceMemory < 8){
-      console.debug("Reduce budget because of low RAM");
+      reasons.push("low RAM");
       budget = Math.min(budget, sizes[EDerivativeQuality.High]*4);
     }
     this._budget = Math.max(MIN_BUDGET, budget);
-    console.debug("Performance budget: ", Math.sqrt(this._budget));
+    if(reasons.length) console.debug(`Lowered Performance budget: ${Math.sqrt(this._budget)} (${reasons.join(", ")})`);
   }
 
   tock(context :IPulseContext) :boolean{
@@ -498,7 +499,7 @@ export default class CVDerivativesController extends Component{
       }
     }
 
-    if(currently_loading != 0){
+    if(currently_loading != 0 && ENV_DEVELOPMENT){
       const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
       console.debug(`models quality: [%d, %d, %d, %d]. loading %d models with %d/%d downgrades %s`, 
         countQ(EDerivativeQuality.High),
