@@ -10,6 +10,7 @@ import { Vector2, Vector3, Box3, Matrix4, Quaternion, Spherical, Plane, Euler } 
 import CTransform from "@ff/scene/components/CTransform";
 import CVNode from "./CVNode";
 import * as helpers from "@ff/three/helpers";
+import { IS_MOBILE } from "client/constants";
 
 interface ILOD{
   enabled?:boolean;
@@ -194,9 +195,9 @@ export default class CVDerivativesController extends Component{
       console.debug("Reduce budget because of low CPU count");
       budget = budget/2;
     }
-    if((navigator as any).userAgentData?.mobile){
+    if(IS_MOBILE){
       console.debug("Reduce budget because of mobile device");
-      budget = budget/1.5; //
+      budget = budget/2;
     }
     if(typeof (navigator as any).deviceMemory === "number" && (navigator as any).deviceMemory < 8){
       console.debug("Reduce budget because of low RAM");
