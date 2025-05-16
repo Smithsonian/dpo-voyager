@@ -148,6 +148,9 @@ export default class CVDerivativesController extends Component{
 
   private _budget = sizes[EDerivativeQuality.High]*2;
 
+  private _last_updated: number = 0;
+  private _should_update: boolean = false;
+
   threshold(q :EDerivativeQuality){
     return this._budget - sizes[q]*2;
   }
@@ -213,18 +216,16 @@ export default class CVDerivativesController extends Component{
     if (!this.ins.enabled.value || !cameraComponent) {
         return false;
     }
-    //LOD is recomputed every 20 frames
-    if((context.frameNumber % 20) != 0){
+
+    if(!context.tickUpdated && !context.tockUpdated && !this._should_update) return false;
+    
+    //LOD is recomputed every half seconds max
+    if(context.secondsElapsed < this._last_updated + 0.5){
+      this._should_update = true;
       return false;
     }
-    if((context.frameNumber % 120) == 0){
-      if(this._fps.push(context.secondsElapsed, 120) < 40 && MIN_BUDGET < this._budget){
-        this._budget = Math.max(MIN_BUDGET, this._budget - sizes[EDerivativeQuality.Low]);
-        console.debug("Reducing performance budget to %d (%d average fps)", Math.sqrt(this._budget), this._fps.get());
-        //Prevent this from triggering too much : artificially reset our fps average to 60
-        this._fps.reset(60);
-      }
-    }
+    //We are updating now, so set this to false.
+    this._should_update = false
 
     cameraComponent.camera.getWorldDirection(_cam_fwd);
 
