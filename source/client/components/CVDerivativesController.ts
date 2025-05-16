@@ -89,7 +89,6 @@ const _vec3b = new Vector3();
 const _vecSphericalb = new Spherical();
 const _quat = new Quaternion();
 const _mat4 = new Matrix4();
-const _cam_fwd = new Vector3(0, 0, 1);
 const quaternion90AroundZ = new Quaternion().setFromEuler(new Euler(0,0,Math.PI/2));
 const quaternionMinus90AroundZ = quaternion90AroundZ.clone().conjugate();
 
@@ -227,7 +226,6 @@ export default class CVDerivativesController extends Component{
     //We are updating now, so set this to false.
     this._should_update = false
 
-    cameraComponent.camera.getWorldDirection(_cam_fwd);
 
     let currently_loading = 0;
 //    const weights :Array<[string, any]>= [];
