@@ -38,10 +38,10 @@ class AnnotationList extends List<Annotation>
     selectedItem: Annotation = null;
 
     @property({type: ELanguageType})
-    currentLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    activeLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
 
     @property({type: ELanguageType})
-    defaultLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
 
     protected firstConnected()
     {
@@ -51,7 +51,7 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.defaultLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.currentLanguage]}</div></div>`
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.activeLanguage]}</div></div>`
     }
 
     protected isItemSelected(item: Annotation)

@@ -87,12 +87,12 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         </div>` : null;
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!audioElement} @click=${this.onClickDelete}></ff-button>  
+            <ff-button text="${languageManager.getUILocalizedString("Create")}" icon="create" @click=${this.onClickCreate}></ff-button>       
+            <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!audioElement} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item sv-task-item-full">Audio Elements</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item sv-task-item-full">${languageManager.getUILocalizedString("Audio Elements")}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-audio-list .data=${audioList} .selectedItem=${audioElement} @select=${this.onSelectAudio}></sv-annotation-list>

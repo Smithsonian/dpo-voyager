@@ -154,7 +154,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                 <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .currentLanguage=${activeLanguage} .defaultLanguage=${sceneSetupLanguage} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .activeLanguage=${activeLanguage} .sceneSetupLanguage=${sceneSetupLanguage} @select=${this.onSelectAnnotation}></sv-annotation-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
