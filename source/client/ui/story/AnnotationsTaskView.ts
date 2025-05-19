@@ -32,7 +32,7 @@ import { ISelectAnnotationEvent } from "./AnnotationList";
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageStringType, ELanguageType } from "client/schema/common";
 
 import sanitizeHtml from 'sanitize-html';
 import CVMediaManager from "client/components/CVMediaManager";
@@ -58,12 +58,14 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         this.sceneview = explorer.shadowRoot.querySelector(".sv-scene-view") as HTMLElement;
         
         this.task.on("update", this.onUpdate, this);
-        this.activeDocument.setup.language.ins.language.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.activeLanguage.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        this.activeDocument.setup.language.ins.language.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.activeLanguage.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.uiLanguage.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
 
         // set cursor to grab when leaving
@@ -81,12 +83,14 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const node = this.activeNode;
         const annotations = node && node.getComponent(CVAnnotationView, true);
         const languageManager = this.activeDocument.setup.language;
+        const sceneSetupLanguage = languageManager.sceneSetupLanguage;
+        const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
 
         if (!annotations) {
             // set cursor to grab
             this.sceneview.style.cursor = "grab";
 
-            return html`<div class="sv-placeholder">Please select a model to edit its annotations</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a model to edit its annotations")}</div>`;
         }
 
         this.sceneview.style.cursor = this.task.ins.mode.value > 0 ? "default" : "grab";
@@ -123,34 +127,34 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             ${imagePropView}
             <sv-property-view .property=${audioProp}></sv-property-view>
             <sv-property-view .property=${inProps.marker}></sv-property-view>
-            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view .property=${inProps.article}></sv-property-view>
                 <sv-property-view .property=${inProps.tags}></sv-property-view>
                 <sv-property-view .property=${inProps.title}></sv-property-view>
                 <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
-                <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
+                <ff-text-edit name="lead" text=${inProps.lead.value} maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
             </div>
-            <div class="sv-label">View Point</div>
+            <div class="sv-label">${languageManager.getUILocalizedString("View Point")}</div>
             <div class="sv-commands">
-                <ff-button text="Save" icon="camera" @click=${this.onSaveView}></ff-button>
-                <ff-button text="View" ?disabled=${!annotation.data.viewId.length} icon="document" @click=${this.onRestoreView}></ff-button>
-                <ff-button text="Delete" ?disabled=${!annotation.data.viewId.length} icon="trash" @click=${this.onDeleteView}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Save")}" icon="camera" @click=${this.onSaveView}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("View")}" ?disabled=${!annotation.data.viewId.length} icon="document" @click=${this.onRestoreView}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Delete")}" ?disabled=${!annotation.data.viewId.length} icon="trash" @click=${this.onDeleteView}></ff-button>
             </div>
         </div>` : null;
 
         return html`<div class="sv-commands">
-            <ff-button text="Select" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Move" icon="move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Create" icon="create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
-            <ff-button text="Delete" icon="trash" ?disabled=${!annotation} @click=${this.onClickDelete}></ff-button>  
+            <ff-button text="${languageManager.getUILocalizedString("Select")}" icon="select" index=${EAnnotationsTaskMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="${languageManager.getUILocalizedString("Move")}" icon="move" index=${EAnnotationsTaskMode.Move} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="${languageManager.getUILocalizedString("Create")}" icon="create" index=${EAnnotationsTaskMode.Create} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>       
+            <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!annotation} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .currentLanguage=${activeLanguage} .defaultLanguage=${sceneSetupLanguage} @select=${this.onSelectAnnotation}></sv-annotation-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>

@@ -60,7 +60,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         }
 
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <sv-property-view class="sv-property-block" .property=${task.ins.title}></sv-property-view>
             <sv-property-view class="sv-property-block" .property=${task.ins.tags}></sv-property-view>
             <div class="sv-label">Lead</div>

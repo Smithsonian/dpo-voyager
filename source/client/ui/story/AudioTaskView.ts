@@ -72,7 +72,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
 
         const detailView = audioElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${ins.title}></sv-property-view>
-            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view id="filename" .property=${ins.filepath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>
                 <sv-property-view id="captionfile" .property=${ins.captionPath} @drop=${this.onDropFile} @dragenter=${this.onDragEnter} @dragover=${this.onDragOver} @dragleave=${this.onDragLeave}></sv-property-view>

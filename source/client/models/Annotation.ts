@@ -31,7 +31,7 @@ export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
     static readonly defaultColor = [ 0, 0.61, 0.87 ];
-    private _language : ELanguageType = ELanguageType.EN;
+    private _language : ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
     private _leadChanged : boolean = false;
 
     get title() {

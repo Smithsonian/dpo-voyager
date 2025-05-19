@@ -19,7 +19,7 @@ import { customElement, property, html } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
 import Annotation from "../../models/Annotation";
-import { DEFAULT_LANGUAGE } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +37,12 @@ class AnnotationList extends List<Annotation>
     @property({ attribute: false })
     selectedItem: Annotation = null;
 
+    @property({type: ELanguageType})
+    currentLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+
+    @property({type: ELanguageType})
+    defaultLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -45,7 +51,7 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[DEFAULT_LANGUAGE]}</div><div class="sv-task-item sv-item-border-l">${item.title}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.defaultLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.currentLanguage]}</div></div>`
     }
 
     protected isItemSelected(item: Annotation)

@@ -209,7 +209,7 @@ export default class CVToursTask extends CVTask
             tourList[tourIndex + 1].titles[DEFAULT_LANGUAGE] = "New Tour #" + _nextTourIndex++;
             tours.ins.tourIndex.setValue(tourIndex + 1);
             tours.outs.count.setValue(tourList.length);
-            languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
+            languageManager.ins.activeLanguage.setValue(ELanguageType[DEFAULT_LANGUAGE]);
             return true;
         }
 
@@ -248,7 +248,7 @@ export default class CVToursTask extends CVTask
 
             this.tours.outs.tourIndex.off("value", this.onTourChange, this);
             this.tours.outs.stepIndex.off("value", this.onStepChange, this);
-            previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
+            previous.setup.language.outs.activeLanguage.off("value", this.onDocumentLanguageChange, this);
 
             this.tours = null;
             this.machine = null;
@@ -259,7 +259,7 @@ export default class CVToursTask extends CVTask
 
             this.tours.outs.tourIndex.on("value", this.onTourChange, this);
             this.tours.outs.stepIndex.on("value", this.onStepChange, this);
-            next.setup.language.outs.language.on("value", this.onDocumentLanguageChange, this);
+            next.setup.language.outs.activeLanguage.on("value", this.onDocumentLanguageChange, this);
 
             if (this.isActiveTask) {
                 this.tours.ins.enabled.setValue(true);

@@ -68,7 +68,7 @@ export default class MainMenu extends DocumentView
         super.connected();
         this.fullscreen.outs.fullscreenActive.on("value", this.onUpdate, this);
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationEnabled.on("value", this.onUpdate, this);
         this.activeDocument.setup.tours.ins.closed.on("value", this.setTourFocus, this);
         this.activeDocument.setup.reader.ins.closed.on("value", this.setReaderFocus, this);
@@ -90,7 +90,7 @@ export default class MainMenu extends DocumentView
         this.activeDocument.setup.reader.ins.closed.off("value", this.setReaderFocus, this);
         this.activeDocument.setup.tours.ins.closed.off("value", this.setTourFocus, this);
         this.activeDocument.setup.audio.outs.narrationEnabled.off("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         this.fullscreen.outs.fullscreenActive.off("value", this.onUpdate, this);
         super.disconnected();

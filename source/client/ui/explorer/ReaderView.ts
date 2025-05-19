@@ -126,7 +126,7 @@ export default class ReaderView extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.setup.language.outs.language.off("value", this.onUpdate, this);
+            previous.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
             this.reader.outs.content.off("value", this.onUpdate, this);
             this.reader.outs.article.off("value", this.onUpdate, this);
             this.tours = null;
@@ -139,7 +139,7 @@ export default class ReaderView extends DocumentView
             this.tours = next.setup.tours;
             this.reader.outs.content.on("value", this.onUpdate, this);
             this.reader.outs.article.on("value", this.onUpdate, this);
-            next.setup.language.outs.language.on("value", this.onUpdate, this);
+            next.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         }
     }
 

@@ -85,7 +85,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const languageManager = this.activeDocument.setup.language;
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${props.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Tags</div>
@@ -106,7 +106,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
                 <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .language=${languageManager.ins.language.value} @select=${this.onSelectTour}></sv-tour-list>
+                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .language=${languageManager.ins.activeLanguage.value} @select=${this.onSelectTour}></sv-tour-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>

@@ -213,7 +213,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.on<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.on("value", this.handleARStateChange, this);
-        this.language.outs.language.on("value", this.updateLanguage, this);
+        this.language.outs.activeLanguage.on("value", this.updateLanguage, this);
 
         this.object3D = new HTMLSpriteGroup();
     }
@@ -360,7 +360,7 @@ export default class CVAnnotationView extends CObject3D
         this.system.off<IPointerEvent>("pointer-up", this.onSystemPointerUp, this);
 
         this.arManager.outs.isPresenting.off("value", this.handleARStateChange, this);
-        this.language.outs.language.off("value", this.updateLanguage, this);
+        this.language.outs.activeLanguage.off("value", this.updateLanguage, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -453,7 +453,7 @@ export default class CVAnnotationView extends CObject3D
 
     fromData(data: IAnnotation[])
     {
-        const language = this.language.outs.language.value;
+        const language = this.language.outs.activeLanguage.value;
         data.forEach(annotationJson => {
             let a = new Annotation(annotationJson);
             a.language = language;
@@ -594,7 +594,7 @@ export default class CVAnnotationView extends CObject3D
         const language = this.language;
 
         this.getAnnotations().forEach( annotation => {
-            annotation.language = language.outs.language.value;
+            annotation.language = language.outs.activeLanguage.value;
         });
         ins.activeTags.set();
 

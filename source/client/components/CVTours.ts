@@ -95,11 +95,11 @@ export default class CVTours extends Component
             tour.titles[DEFAULT_LANGUAGE] = tour.title;
         }
 
-        return tour.titles[ELanguageType[this.language.outs.language.value]] || "undefined";
+        return tour.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "undefined";
     }
     set title(inTitle: string) {
         const tour = this.activeTour;
-        tour.titles[ELanguageType[this.language.outs.language.value]] = inTitle; 
+        tour.titles[ELanguageType[this.language.outs.activeLanguage.value]] = inTitle; 
     }
     get lead() {
         const tour = this.activeTour;
@@ -108,11 +108,11 @@ export default class CVTours extends Component
             tour.leads[DEFAULT_LANGUAGE] = tour.lead;
         }
 
-        return tour.leads[ELanguageType[this.language.outs.language.value]] || "";
+        return tour.leads[ELanguageType[this.language.outs.activeLanguage.value]] || "";
     }
     set lead(inLead: string) {
         const tour = this.activeTour;
-        tour.leads[ELanguageType[this.language.outs.language.value]] = inLead;
+        tour.leads[ELanguageType[this.language.outs.activeLanguage.value]] = inLead;
     }
     get taglist() {
         const tour = this.activeTour;
@@ -123,11 +123,11 @@ export default class CVTours extends Component
             }
         }
 
-        return tour.taglist[ELanguageType[this.language.outs.language.value]] || [];
+        return tour.taglist[ELanguageType[this.language.outs.activeLanguage.value]] || [];
     }
     set taglist(inTags: string[]) {
         const tour = this.activeTour;
-        tour.taglist[ELanguageType[this.language.outs.language.value]] = inTags;
+        tour.taglist[ELanguageType[this.language.outs.activeLanguage.value]] = inTags;
     }
     get stepTitle() {
         const step = this.activeStep;
@@ -138,7 +138,7 @@ export default class CVTours extends Component
                 step.titles[DEFAULT_LANGUAGE] = step.title;
             }
 
-            return step.titles[ELanguageType[this.language.outs.language.value]] || "undefined";
+            return step.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "undefined";
         }
         else {
             return null;
@@ -147,14 +147,14 @@ export default class CVTours extends Component
     set stepTitle(inTitle: string) {
         const step = this.activeStep;
         if(step) {
-            step.titles[ELanguageType[this.language.outs.language.value]] = inTitle;
+            step.titles[ELanguageType[this.language.outs.activeLanguage.value]] = inTitle;
         }
     }
     get stepAltText() {
         const step = this.activeStep;
 
         if(step) {
-            return step.altTexts[ELanguageType[this.language.outs.language.value]] || "undefined";
+            return step.altTexts[ELanguageType[this.language.outs.activeLanguage.value]] || "undefined";
         }
         else {
             return null;
@@ -163,19 +163,19 @@ export default class CVTours extends Component
     set stepAltText(inText: string) {
         const step = this.activeStep;
         if(step) {
-            step.altTexts[ELanguageType[this.language.outs.language.value]] = inText;
+            step.altTexts[ELanguageType[this.language.outs.activeLanguage.value]] = inText;
         }
     }
 
     create()
     {
         super.create();
-        this.language.outs.language.on("value", this.update, this);
+        this.language.outs.activeLanguage.on("value", this.update, this);
     }
 
     dispose()
     {
-        this.language.outs.language.off("value", this.update, this);
+        this.language.outs.activeLanguage.off("value", this.update, this);
         super.dispose();
     }
 
