@@ -129,9 +129,7 @@ export default class CVLanguageManager extends Component
             console.log("New ui language :" , ins.uiLanguage);
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.uiLanguage.value].toLowerCase() + ".json").then( json => {
                 this._uiLanguageTranslations = json;
-                console.log("Bloup: ", this.getUILocalizedString("Download"));
-                this.updateUILanguage(ins.uiLanguage.value); //REALLY necessary ?
-                //this.updateLanguage(newLanguage);
+                this.updateUILanguage(ins.uiLanguage.value);
             });
         }
 

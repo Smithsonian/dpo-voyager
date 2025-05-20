@@ -23,7 +23,7 @@ import ToursTaskView from "../ui/story/ToursTaskView";
 import CVDocument from "./CVDocument";
 import CVTours from "./CVTours";
 import CVSnapshots, { EEasingCurve } from "./CVSnapshots";
-import { ELanguageStringType, ELanguageType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -123,7 +123,7 @@ export default class CVToursTask extends CVTask
                     altTexts: {},
                     id
                 });
-                stepList[stepIndex + 1].titles[DEFAULT_LANGUAGE] = "New Step #" + _nextStepIndex++;
+                stepList[stepIndex + 1].titles[languageManager.sceneSetupLanguage] = languageManager.getSceneSetupLocalizedString("New Step #") + _nextStepIndex++;
 
                 tours.ins.stepIndex.setValue(stepIndex + 1);
                 return true;
