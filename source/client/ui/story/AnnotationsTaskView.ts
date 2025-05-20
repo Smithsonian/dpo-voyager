@@ -59,13 +59,11 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         
         this.task.on("update", this.onUpdate, this);
         this.activeDocument.setup.language.ins.activeLanguage.on("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.activeDocument.setup.language.ins.activeLanguage.off("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.uiLanguage.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
 
         // set cursor to grab when leaving
