@@ -171,7 +171,7 @@ export default class CVLanguageManager extends Component
 
     getLocalizedString(text: string): string
     {
-        return  this.getLocalizedStringIn (text, this._activeSeneLanguageTranslations, ELanguageType[this.outs.uiLanguage.value]);
+        return  this.getLocalizedStringIn (text, this._activeSeneLanguageTranslations, ELanguageType[this.outs.activeLanguage.value]);
     }
 
     getUILocalizedString(text: string): string

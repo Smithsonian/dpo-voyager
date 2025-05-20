@@ -44,6 +44,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
     {
         const features = this.snapshots.targetFeatures;
         const keys = Object.keys(features);
+        const languageManager = this.activeDocument.setup.language;
 
         const buttons = keys.map(key => {
             const title = key[0].toUpperCase() + key.substr(1);
@@ -52,8 +53,8 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         });
 
         return html`<div class="sv-commands">
-            <ff-button text="OK" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
-            <ff-button text="Cancel" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
         </div><div class="ff-flex-item-stretch sv-tour-feature-menu">${buttons}</div>`;
     }
 
@@ -83,30 +84,32 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const activeTour = tours.activeTour;
         const props = task.ins;
         const languageManager = this.activeDocument.setup.language;
+        const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
+        const sceneSetupLanguage = languageManager.sceneSetupLanguage;
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
-            <div class="sv-label">Title</div>
+            <div class="sv-label">${languageManager.getUILocalizedString("Title")}</div>
             <ff-line-edit name="title" text=${props.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
-            <div class="sv-label">Tags</div>
+            <div class="sv-label">${languageManager.getUILocalizedString("Tags")}</div>
             <ff-line-edit name="tags" text=${props.tourTags.value} @change=${this.onTextEdit}></ff-line-edit>
-            <div class="sv-label">Lead</div>
+            <div class="sv-label">${languageManager.getUILocalizedString("Lead")}</div>
             <ff-text-edit name="lead" text=${props.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
 
         return html`<div class="sv-commands">
-            <ff-button title="Create Tour" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button title="Move Tour Up" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
-            <ff-button title="Move Tour Down" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
-            <ff-button title="Delete Tour" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
-            <ff-button title="Snapshot Configuration" icon="bars" @click=${this.onClickConfig}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Create Tour")}" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Move Tour Up")}" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Move Tour Down")}" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Delete Tour")}" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Snapshot Configuration")}" icon="bars" @click=${this.onClickConfig}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .language=${languageManager.ins.activeLanguage.value} @select=${this.onSelectTour}></sv-tour-list>
+                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .activeLanguage=${activeLanguage} .sceneSetupLanguage=${sceneSetupLanguage} @select=${this.onSelectTour}></sv-tour-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -224,7 +227,10 @@ export class TourList extends List<ITour>
     selectedItem: ITour = null;
 
     @property({ attribute: false })
-    language: ELanguageType = null;
+    activeLanguage: ELanguageType = null;
+
+    @property({type: ELanguageType})
+    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
 
     protected firstConnected()
     {
@@ -234,13 +240,12 @@ export class TourList extends List<ITour>
 
     protected renderItem(item: ITour)
     {
-        const language = this.language; 
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(item.titles).length === 0) { 
-            item.titles[DEFAULT_LANGUAGE] = item.title;
+            item.titles[this.sceneSetupLanguage] = item.title;
         }
 
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[DEFAULT_LANGUAGE]}</div><div class="sv-task-item sv-item-border-l">${item.titles[ELanguageType[language]] || "undefined"}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "undefined"}</div></div>`;
     }
 
     protected isItemSelected(item: ITour)
