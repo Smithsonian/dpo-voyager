@@ -25,7 +25,7 @@ import Article from "../../models/Article";
 
 import CVArticlesTask from "../../components/CVArticlesTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, DEFAULT_LANGUAGE } from "client/schema/common";
+import { ELanguageStringType, DEFAULT_LANGUAGE, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -54,9 +54,11 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const articles = task.articles;
         const activeArticle = task.activeArticle;
         const languageManager = this.activeDocument.setup.language;
+        const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
+        const sceneSetupLanguage = languageManager.sceneSetupLanguage;
 
         if (!articles) {
-            return html`<div class="sv-placeholder">Please select a scene or model node to edit its articles.</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a scene or model node to edit its articles.")}</div>`;
         }
 
         const detailView = activeArticle ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
@@ -74,17 +76,17 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         //<ff-button text="Edit" icon="pen" ?disabled=${!uri} @click=${this.onClickEdit}></ff-button>
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button title="Move Article Up" icon="up" ?disabled=${!activeArticle} @click=${this.onClickUp}></ff-button>
-            <ff-button title="Move Article Down" icon="down" ?disabled=${!activeArticle} @click=${this.onClickDown}></ff-button>          
-            <ff-button text="Delete" icon="trash" ?disabled=${!activeArticle} @click=${this.onClickDelete}></ff-button>  
+            <ff-button text="${languageManager.getUILocalizedString("Create")}" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Move Article Up")}" icon="up" ?disabled=${!activeArticle} @click=${this.onClickUp}></ff-button>
+            <ff-button title="${languageManager.getUILocalizedString("Move Article Down")}" icon="down" ?disabled=${!activeArticle} @click=${this.onClickDown}></ff-button>          
+            <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!activeArticle} @click=${this.onClickDelete}></ff-button>  
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[DEFAULT_LANGUAGE]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
+                        <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} .activeLanguage=${activeLanguage} .sceneSetupLanguage=${sceneSetupLanguage} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -177,6 +179,12 @@ export class ArticleList extends List<Article>
     @property({ attribute: false })
     selectedItem: Article = null;
 
+    @property({type: ELanguageType})
+    activeLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    
+    @property({type: ELanguageType})
+    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    
     protected firstConnected()
     {
         super.firstConnected();
@@ -185,7 +193,7 @@ export class ArticleList extends List<Article>
 
     protected renderItem(item: Article)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.defaultTitle}</div><div class="sv-task-item sv-item-border-l">${item.title}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.activeLanguage]}</div></div>`;
     }
 
     protected isItemSelected(item: Article)

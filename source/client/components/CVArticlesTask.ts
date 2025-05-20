@@ -122,8 +122,10 @@ export default class CVArticlesTask extends CVTask
 
         if (meta && ins.create.changed) {
             const article = new Article();
+            article.language = ELanguageType[languageManager.sceneSetupLanguage];
+
             const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}-${DEFAULT_LANGUAGE}.html`;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[languageManager.sceneSetupLanguage]}.html`;
 
             const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
             if(standaloneFiles) {
@@ -134,7 +136,7 @@ export default class CVArticlesTask extends CVTask
             
             meta.articles.append(article);
             this.reader.outs.count.setValue(meta.articles.length);
-            languageManager.ins.activeLanguage.setValue(ELanguageType[DEFAULT_LANGUAGE]);
+            languageManager.ins.activeLanguage.setValue(ELanguageType[languageManager.sceneSetupLanguage]);
         }
         else if(activeArticle && ins.version.changed) {
             this.createEditArticle(activeArticle);
