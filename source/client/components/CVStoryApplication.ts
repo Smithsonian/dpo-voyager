@@ -33,9 +33,18 @@ import { ETaskMode } from "../applications/taskSets";
 import CVMediaManager from "./CVMediaManager";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
+import CVModel2 from "./CVModel2";
+import { Vector3, Euler, Quaternion, Color } from "three";
+import math from "@ff/core/math";
+import CVBackground from "./CVBackground";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _quat = new Quaternion();
+const _euler = new Euler();
+const _color = new Color();
 
 export default class CVStoryApplication extends Component
 {
@@ -139,10 +148,63 @@ export default class CVStoryApplication extends Component
             }
 
             if (ins.download.changed) {
-                const data = cvDocument.deflateDocument(components);
-                const json = JSON.stringify(data, null, 2);
+                const models = cvDocument.getInnerComponents(CVModel2);
+                const background = cvDocument.getInnerComponents(CVBackground)[0];
+                _color.setRGB(background.ins.color0.value[0],background.ins.color0.value[1],background.ins.color0.value[2]);
 
-                const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
+                const jsonObj = JSON.parse(cvDocument.object3D.userData["IIIFManifest"].manifestJson);
+
+                jsonObj.items[0].backgroundColor = "#"+_color.getHexString();
+                
+                jsonObj.items[0].items[0].items.forEach(item => {
+                    const type = item.body.type === "SpecificResource" ? item.body.source[0].type : item.body.type;
+                    if(type === "Model") {
+
+                        if(item.body.type != "SpecificResource") {
+                            item.body.source = [JSON.parse(JSON.stringify(item.body))];
+                            item.body.type = "SpecificResource";
+                            delete item.body.format;
+                            delete item.body.id;
+                        }
+
+                        const model = models.find((model) => model.object3D.userData["IIIFid"] === item.id);
+                        const transformMatrix = model.object3D.matrix;
+                        transformMatrix.decompose(_vec3a, _quat, _vec3b);
+                        _euler.setFromQuaternion(_quat);
+
+                        const transform = item.body.transform = [];
+                        transform.push({
+                            "type": "ScaleTransform",
+                            "x": _vec3b.x,
+                            "y": _vec3b.y,
+                            "z": _vec3b.z
+                        });
+                        transform.push({
+                            "type": "RotateTransform",
+                            "x": _euler.x*math.RAD2DEG,
+                            "y": _euler.y*math.RAD2DEG,
+                            "z": _euler.z*math.RAD2DEG
+                        });
+                        transform.push({
+                            "type": "TranslateTransform",
+                            "x": _vec3a.x,
+                            "y": _vec3a.y,
+                            "z": _vec3a.z
+                        });
+
+                        if(item.target && item.target.selector && item.target.selector[0].type === "PointSelector") {
+                            item.target.selector = [{
+                                "type": "PointSelector",
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }];
+                        }
+                    }
+                });
+
+                const json = JSON.stringify(jsonObj, null, 2);
+                const fileName = "voyager_iiif.json";//this.assetManager.getAssetName(cvDocument.assetPath);
                 download.json(json, fileName);
             }
         }
