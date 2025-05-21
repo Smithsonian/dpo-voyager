@@ -50,7 +50,7 @@ import CVAnnotationView, { Annotation } from "client/components/CVAnnotationView
 import { ELanguageType, EUnitType } from "client/schema/common";
 import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource } from "@iiif/3d-manifesto-dev";
 import IIIFManifest from "client/io/IIIFManifestReader";
-import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight, PlaneGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, BufferGeometry, BufferAttribute } from "three";
+import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight, PlaneGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, BufferGeometry, BufferAttribute, DoubleSide, Color } from "three";
 import CScene from "@ff/scene/components/CScene";
 import math from "@ff/three/math";
 import CVModel2 from "client/components/CVModel2";
@@ -61,6 +61,7 @@ import CVDirectionalLight from "client/components/lights/CVDirectionalLight";
 import CVSpotLight from "client/components/lights/CVSpotLight";
 import CLight from "@ff/scene/components/CLight";
 import { EProjection } from "@ff/three/UniversalCamera";
+import CPulse from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -111,7 +112,8 @@ const _mat4b = new Matrix4();
 const _vec3a = new Vector3();
 const _vec3b = new Vector3();
 const _euler = new Euler();
-const _lightUp = new Vector3(0,1,0);
+const _color = new Color();
+const _upVector = new Vector3(0,1,0);
 
 /**
  * Voyager Explorer main application.
@@ -757,10 +759,12 @@ Version: ${ENV_VERSION}
         console.log("LOADING IIIF MANIFEST");
         const activeDoc = this.documentProvider.activeComponent;
         const iiifManifest = new IIIFManifest(data);
+        activeDoc.object3D.userData["IIIFManifest"] = iiifManifest;
 
         const cvScene = activeDoc.getInnerComponent(CVScene);
         const vScene = activeDoc.getComponent(CScene);
         const activeCamera = vScene.activeCamera;
+        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
 
         iiifManifest.loadManifest().then(() => {
         activeDoc.ins.title.setValue(iiifManifest.manifest.__jsonld.label["en"][0]);
@@ -772,13 +776,10 @@ Version: ${ENV_VERSION}
             const iiifComments = [];
             const iiifCanvases = [];
 
-            const bgColor = scene.getBackgroundColor() as any;
-            this.setBackgroundStyle("solid");
+            const bgColor = scene.getBackgroundColor() as any;      
             if(bgColor) {
+                this.setBackgroundStyle("solid");
                 this.setBackgroundColor("rgb("+bgColor.red+","+bgColor.green+","+bgColor.blue+")");
-            }
-            else {
-                this.setBackgroundColor("#000000");
             }
 
             const annos = iiifManifest.annotationsFromScene(scene);
@@ -787,7 +788,6 @@ Version: ${ENV_VERSION}
                 const obj = anno.getBody()[0];
                 const body = obj.isSpecificResource() ? obj.getSource() : obj;
                 
-                console.log(body.getType());
                 const type = body.getType();
                 switch(type) {
                     case "model":
@@ -820,6 +820,7 @@ Version: ${ENV_VERSION}
                 const newModel = activeDoc.appendModel(model.isSpecificResource() ? model.getSource()?.id : model.id);
                 models.push(newModel);
                 newModel.ins.localUnits.setValue(EUnitType.mm);
+                newModel.object3D.userData["IIIFid"] = annotation.id;
 
                 newModel.setFromMatrix(this.getIIIFBodyTransform(model,annotation));
             });
@@ -850,19 +851,19 @@ Version: ${ENV_VERSION}
                         newLight = lightNode.createComponent(CVSpotLight);
                     }
 
-                    if(newLight) {console.log(newLight);console.log(lightLabel);
+                    if(newLight) {
                         // Set properties
                         lightNode.name = lightLabel ?? newLight.typeName;
                         (newLight as CLight).ins.intensity.setValue(lightBody.getIntensity());
                         const lightColor = lightBody.getColor().value;
                         (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);
-
+                        newLight.object3D.userData["IIIFid"] = light.id;
 
                         // Handle transform
                         const transform = this.getIIIFBodyTransform(lightBody, light);
                         _vec3a.setFromMatrixPosition(transform);
                         newLight.transform.object3D.matrix.copy(transform);
-                        const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _lightUp);
+                        const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _upVector);
                         if(lookAtTransform) {        
                             newLight.transform.object3D.matrix.multiply(lookAtTransform);
                         
@@ -881,7 +882,7 @@ Version: ${ENV_VERSION}
             if(iiifCameras.length > 0) {
                 const camera = iiifCameras[0];
                 const vCamera = cvScene.cameras[0];
-                const orbitNavIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins;
+                const orbitNavIns = setup.navigation.ins;
                 orbitNavIns.autoZoom.setValue(false);
                 orbitNavIns.minOffset.setValue([-Infinity,-Infinity,-Infinity]);
 
@@ -894,7 +895,7 @@ Version: ${ENV_VERSION}
                 _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
 
                 _vec3a.setFromMatrixPosition(_mat4b);
-                const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, activeCamera.up);
+                const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
 
                 _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
                 _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
@@ -917,6 +918,8 @@ Version: ${ENV_VERSION}
                 }
                 vCamera.ins.projection.setValue(cameraBody.isPerspectiveCamera() ? 
                     EProjection.Perspective : EProjection.Orthographic);
+
+                vCamera.object3D.userData["IIIFid"] = camera.id;
             }
 
             // handle comments
@@ -961,6 +964,7 @@ Version: ${ENV_VERSION}
                     view.addAnnotation(annotation);
                 }
             });
+            setup.viewer.ins.annotationsVisible.setValue(iiifComments.length > 0);
 
             // handle canvases
             iiifCanvases.forEach((canvas) => {
@@ -987,20 +991,37 @@ Version: ${ENV_VERSION}
                         const canvasId = canvas.getBody()[0].id;
                         const canvasObj = iiifManifest.manifest?.getSequences()[0]?.getCanvasById(canvasId);
                         const uri = canvasObj.getCanonicalImageUri();
+                        const bgColor = canvasObj.getProperty("backgroundColor");
                         
                         this.assetReader.getTexture(uri).then(map => {
                             const canvasMesh = new Mesh(
-                                //new PlaneGeometry(width, height, 1, 1),
                                 geometry,
-                                new MeshStandardMaterial({map: map})
+                                new MeshStandardMaterial({map: map, side: DoubleSide})
                             );
                             cvScene.object3D.add(canvasMesh);
+
+                            if(bgColor) {
+                                _color.set(bgColor);
+                                canvasMesh.material.onBeforeCompile = (shader) => {
+                                    shader.fragmentShader = shader.fragmentShader.slice(0,shader.fragmentShader.lastIndexOf('}')).concat(
+                                        '\n \
+                                        if (!gl_FrontFacing) {\n \
+                                            gl_FragColor = vec4('
+                                        + _color.toArray().toString() + 
+                                        ', 1.0);\n \
+                                        }\n \
+                                        }'
+                                    )
+                                }
+                            }
                         });
                     }
                 }
             });
         });
         });
+        
+        setup.ins.saveState.set();
     }
 
     private getIIIFBodyTransform(body: any, annotation: any) : Matrix4
@@ -1020,7 +1041,7 @@ Version: ${ENV_VERSION}
                 }
                 else if (transform.isRotateTransform) {
                     const rotation = (transform as RotateTransform).getRotation() as any;
-                    _euler.set(rotation.x*math.DEG2RAD,rotation.y*math.DEG2RAD,rotation.z*math.DEG2RAD);
+                    _euler.set(rotation.x*math.DEG2RAD,rotation.y*math.DEG2RAD,rotation.z*math.DEG2RAD, "XYZ");
                     _mat4b.makeRotationFromEuler(_euler);
                 }
                 else if(transform.isScaleTransform) {
