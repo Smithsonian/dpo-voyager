@@ -85,7 +85,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const props = task.ins;
         const languageManager = this.activeDocument.setup.language;
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
-        const sceneSetupLanguage = languageManager.sceneSetupLanguage;
+        const sceneSetupLanguage = ELanguageType[languageManager.ins.sceneSetupLanguage.value];
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>

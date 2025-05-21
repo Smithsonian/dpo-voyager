@@ -59,11 +59,13 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         
         this.task.on("update", this.onUpdate, this);
         this.activeDocument.setup.language.ins.activeLanguage.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.sceneSetupLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.activeDocument.setup.language.ins.activeLanguage.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.sceneSetupLanguage.on("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
 
         // set cursor to grab when leaving
@@ -81,7 +83,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const node = this.activeNode;
         const annotations = node && node.getComponent(CVAnnotationView, true);
         const languageManager = this.activeDocument.setup.language;
-        const sceneSetupLanguage = languageManager.sceneSetupLanguage;
+        const sceneSetupLanguage = ELanguageType[languageManager.ins.sceneSetupLanguage.value];
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
 
         if (!annotations) {

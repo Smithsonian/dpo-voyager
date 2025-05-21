@@ -36,11 +36,13 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     {
         super.connected();
         this.task.outs.article.on("value", this.onArticleChange, this);
+        this.activeDocument.setup.language.ins.sceneSetupLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.task.outs.article.off("value", this.onArticleChange, this);
+        this.activeDocument.setup.language.ins.sceneSetupLanguage.off("value", this.onUpdate, this);
         super.disconnected();
     }
 
@@ -55,7 +57,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const activeArticle = task.activeArticle;
         const languageManager = this.activeDocument.setup.language;
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
-        const sceneSetupLanguage = languageManager.sceneSetupLanguage;
+        const sceneSetupLanguage = ELanguageType[languageManager.ins.sceneSetupLanguage.value];
 
         if (!articles) {
             return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a scene or model node to edit its articles.")}</div>`;
