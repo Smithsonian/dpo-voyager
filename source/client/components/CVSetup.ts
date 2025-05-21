@@ -129,7 +129,8 @@ export default class CVSetup extends Component
             throw new Error("setup property missing in node");
         }
 
-        const setupData = this._savedSetupData = document.setups[scene.setup];
+        const setupData = document.setups[scene.setup];
+        this._savedSetupData = JSON.parse(JSON.stringify(setupData));
         const features = CVSetup.featureMap;
 
         for (const name in features) {
