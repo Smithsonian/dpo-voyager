@@ -19,6 +19,8 @@ export interface IPulseContext extends IUpdateContext
     secondsElapsed: number;
     secondsDelta: number;
     frameNumber: number;
+    tickUpdated: boolean;
+    tockUpdated: boolean;
 }
 
 /**
@@ -53,7 +55,6 @@ export default class CPulse extends Component
     private _secondsStopped: number;
     private _animHandler: number;
     private _pulseEvent: IPulseEvent;
-    private _tockUpdated = false;
 
     constructor(node: Node, id: string)
     {
@@ -66,7 +67,9 @@ export default class CPulse extends Component
             time: new Date(),
             secondsElapsed: 0,
             secondsDelta: 0,
-            frameNumber: 0
+            frameNumber: 0,
+            tickUpdated: false,
+            tockUpdated: false,
         };
 
         this._secondsStarted = Date.now() * 0.001;
@@ -118,14 +121,14 @@ export default class CPulse extends Component
         outs.frame.setValue(context.frameNumber);
 
         // execute tick
-        const tickUpdated = this.system.graph.tick(context);
+        context.tickUpdated = this.system.graph.tick(context);
 
         // emit pulse event
-        _pulseEvent.systemUpdated = tickUpdated || this._tockUpdated;
+        _pulseEvent.systemUpdated = context.tickUpdated || context.tockUpdated;
         this.emit<IPulseEvent>(_pulseEvent);
 
         // execute tock
-        this._tockUpdated = this.system.graph.tock(context);
+        context.tockUpdated = this.system.graph.tock(context);
     }
 
     protected onAnimationFrame()

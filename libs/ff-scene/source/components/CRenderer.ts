@@ -6,7 +6,7 @@
  */
 
 import { Mesh } from "three";
-import * as constants from "three/src/constants";
+import * as constants from "three/src/constants.js";
 
 import Component, { Node, ITypedEvent, types } from "@ff/graph/Component";
 import CPulse, { IPulseEvent } from "@ff/graph/components/CPulse";
@@ -66,6 +66,7 @@ export default class CRenderer extends Component
     static readonly outs = {
         maxTextureSize: types.Integer("Caps.MaxTextureSize"),
         maxCubemapSize: types.Integer("Caps.MaxCubemapSize"),
+        framerate: types.Integer("Renderer.Framerate"),
     };
 
     ins = this.addInputs(CRenderer.ins);
@@ -221,7 +222,9 @@ export default class CRenderer extends Component
 
             this.views.forEach(view => {
                 if(!view.renderer.xr.isPresenting) {
+                    const start = (performance || Date).now();
                     view.render();
+                    this.outs.framerate.value = this.outs.framerate.value *0.9 + 0.1*1000/((performance || Date).now() -start);
                 }
             });
 

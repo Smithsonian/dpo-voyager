@@ -78,8 +78,8 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         }
 
         if(this.abortControl){
-            console.warn("Aborting inflight derivative load");
-            this.abortControl.abort("Derivative load cancelled"); //This should not happen, but if in doubt, cancel duplicates
+            ENV_DEVELOPMENT && console.warn("Aborting inflight derivative load");
+            this.abortControl.abort(new Error("Derivative load cancelled")); //This should not happen, but if in doubt, cancel duplicates
         }
         this.abortControl = new AbortController();
         const modelAsset = this.findAsset(EAssetType.Model);

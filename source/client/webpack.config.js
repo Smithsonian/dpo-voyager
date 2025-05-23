@@ -167,7 +167,7 @@ module.exports = function(env, argv)
         plugins: [
             new webpack.DefinePlugin({
                 ENV_PRODUCTION: JSON.stringify(!isDevMode),
-                ENV_DEVELOPMENT: JSON.stringify(isDevMode),
+                ENV_DEVELOPMENT: false,
                 ENV_OFFLINE: JSON.stringify(isOffline),
                 ENV_VERSION: JSON.stringify(`Voyager ${version} ${isDevMode ? " DEV" : " PROD"}`),
             }),

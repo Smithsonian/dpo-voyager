@@ -24,7 +24,7 @@ import { ISlicer, ESliceAxis, TSliceAxis } from "client/schema/setup";
 import UberPBRMaterial from "../shaders/UberPBRMaterial";
 
 import CVScene from "./CVScene";
-import CVModel2 from "./CVModel2";
+import CVModel2, { IModelLoadEvent } from "./CVModel2";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -197,15 +197,17 @@ export default class CVSlicer extends Component
         const component = event.object;
 
         if (event.add) {
-            component.outs.variant.on("value", this.variantUpdate, this);
+            component.outs.variant.on("value", this.refreshMaterial, this);
+            component.on<IModelLoadEvent>("model-load", this.refreshMaterial, this);
         }
         else if (event.remove) {
-            component.outs.variant.off("value", this.variantUpdate, this);
+            component.off<IModelLoadEvent>("model-load", this.refreshMaterial, this);
+            component.outs.variant.off("value", this.refreshMaterial, this);
         }
     }
 
-    // variant update helper
-    protected variantUpdate() {
+    // material refresh helper
+    protected refreshMaterial() {
         this.ins.enabled.set(); // trigger refresh of material
     }
 }
