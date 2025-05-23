@@ -510,6 +510,7 @@ export default class CVDerivativesController extends Component{
         hard_downgrades,
         (hard_downgrades != downgrades.size?`(${downgrades.size - normal_downgrades - hard_downgrades} forced downgrades)`:"")
       );
+      //collection.forEach(c=>console.log(c.model.node.name,c.model.ins.quality.value));
     }
     return 0 < downgrades.size;
   }
