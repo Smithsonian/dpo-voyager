@@ -85,7 +85,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const props = task.ins;
         const languageManager = this.activeDocument.setup.language;
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
-        const sceneSetupLanguage = ELanguageType[languageManager.ins.sceneSetupLanguage.value];
+        const primarySceneLanguage = ELanguageType[languageManager.ins.primarySceneLanguage.value];
 
         const detailView = activeTour ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
@@ -106,10 +106,10 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[primarySceneLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .activeLanguage=${activeLanguage} .sceneSetupLanguage=${sceneSetupLanguage} @select=${this.onSelectTour}></sv-tour-list>
+                        <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .activeLanguage=${activeLanguage} .primarySceneLanguage=${primarySceneLanguage} @select=${this.onSelectTour}></sv-tour-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -230,7 +230,7 @@ export class TourList extends List<ITour>
     activeLanguage: ELanguageType = null;
 
     @property({type: ELanguageType})
-    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    primarySceneLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
 
     protected firstConnected()
     {
@@ -242,10 +242,10 @@ export class TourList extends List<ITour>
     {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(item.titles).length === 0) { 
-            item.titles[this.sceneSetupLanguage] = item.title;
+            item.titles[this.primarySceneLanguage] = item.title;
         }
 
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "undefined"}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.primarySceneLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "undefined"}</div></div>`;
     }
 
     protected isItemSelected(item: ITour)

@@ -123,7 +123,7 @@ export default class CVToursTask extends CVTask
                     altTexts: {},
                     id
                 });
-                stepList[stepIndex + 1].titles[languageManager.ins.sceneSetupLanguage.value] = languageManager.getSceneSetupLocalizedString("New Step #") + _nextStepIndex++;
+                stepList[stepIndex + 1].titles[languageManager.ins.primarySceneLanguage.value] = languageManager.getSceneSetupLocalizedString("New Step #") + _nextStepIndex++;
 
                 tours.ins.stepIndex.setValue(stepIndex + 1);
                 return true;
@@ -206,10 +206,10 @@ export default class CVToursTask extends CVTask
                 taglist: {},
                 steps: []
             });
-            tourList[tourIndex + 1].titles[languageManager.ins.sceneSetupLanguage.value] = "New Tour #" + _nextTourIndex++;
+            tourList[tourIndex + 1].titles[languageManager.ins.primarySceneLanguage.value] = "New Tour #" + _nextTourIndex++;
             tours.ins.tourIndex.setValue(tourIndex + 1);
             tours.outs.count.setValue(tourList.length);
-            languageManager.ins.activeLanguage.setValue(languageManager.ins.sceneSetupLanguage.value);
+            languageManager.ins.activeLanguage.setValue(languageManager.ins.primarySceneLanguage.value);
             return true;
         }
 

@@ -36,13 +36,13 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
     {
         super.connected();
         this.task.outs.article.on("value", this.onArticleChange, this);
-        this.activeDocument.setup.language.ins.sceneSetupLanguage.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.primarySceneLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.task.outs.article.off("value", this.onArticleChange, this);
-        this.activeDocument.setup.language.ins.sceneSetupLanguage.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.primarySceneLanguage.off("value", this.onUpdate, this);
         super.disconnected();
     }
 
@@ -57,7 +57,7 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         const activeArticle = task.activeArticle;
         const languageManager = this.activeDocument.setup.language;
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
-        const sceneSetupLanguage = ELanguageType[languageManager.ins.sceneSetupLanguage.value];
+        const primarySceneLanguage = ELanguageType[languageManager.ins.primarySceneLanguage.value];
 
         if (!articles) {
             return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a scene or model node to edit its articles.")}</div>`;
@@ -85,10 +85,10 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[primarySceneLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} .activeLanguage=${activeLanguage} .sceneSetupLanguage=${sceneSetupLanguage} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
+                        <sv-article-list .data=${articles.slice()} .selectedItem=${activeArticle} .activeLanguage=${activeLanguage} .primarySceneLanguage=${primarySceneLanguage} @select=${this.onSelectArticle} @edit=${this.onEditArticle}></sv-article-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>
@@ -185,7 +185,7 @@ export class ArticleList extends List<Article>
     activeLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
     
     @property({type: ELanguageType})
-    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    primarySceneLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
     
     protected firstConnected()
     {
@@ -195,7 +195,7 @@ export class ArticleList extends List<Article>
 
     protected renderItem(item: Article)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.activeLanguage]}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.primarySceneLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.activeLanguage]}</div></div>`;
     }
 
     protected isItemSelected(item: Article)

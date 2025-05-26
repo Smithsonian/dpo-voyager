@@ -57,7 +57,7 @@ export default class CVLanguageManager extends Component
             enum: ELanguageType,
             options: enumToArray(ELanguageStringType).map(key => ELanguageStringType[key])
         }),
-        sceneSetupLanguage: types.Enum("Interface.Language", ELanguageType, {
+        primarySceneLanguage: types.Enum("Interface.Language", ELanguageType, {
             preset: ELanguageType[DEFAULT_LANGUAGE],
             enum: ELanguageType,
             options: enumToArray(ELanguageStringType).map(key => ELanguageStringType[key])
@@ -142,9 +142,9 @@ export default class CVLanguageManager extends Component
         data = data || {} as ILanguage;
 
         const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
-        this.ins.sceneSetupLanguage.value = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
+        this.ins.primarySceneLanguage.value = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
 
-        this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.sceneSetupLanguage.value].toLowerCase() + ".json").then(json => 
+        this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.primarySceneLanguage.value].toLowerCase() + ".json").then(json => 
             {this._sceneSetupTranslations = json});
         
         this.assetReader.getSystemJSON("language/string.resources." + DEFAULT_LANGUAGE.toLowerCase() + ".json").then(json => 
@@ -179,7 +179,7 @@ export default class CVLanguageManager extends Component
 
     getSceneSetupLocalizedString(text: string): string
     {   
-        return this.getLocalizedStringIn(text, this._sceneSetupTranslations, this.ins.sceneSetupLanguage.value.toString());
+        return this.getLocalizedStringIn(text, this._sceneSetupTranslations, this.ins.primarySceneLanguage.value.toString());
     }
 
     protected getLocalizedStringIn(text: string, dictionary :ITranslation = {}, languageString: string): string {

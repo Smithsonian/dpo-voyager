@@ -59,13 +59,13 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         
         this.task.on("update", this.onUpdate, this);
         this.activeDocument.setup.language.ins.activeLanguage.on("value", this.onUpdate, this);
-        this.activeDocument.setup.language.ins.sceneSetupLanguage.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.primarySceneLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.activeDocument.setup.language.ins.activeLanguage.off("value", this.onUpdate, this);
-        this.activeDocument.setup.language.ins.sceneSetupLanguage.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.ins.primarySceneLanguage.on("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
 
         // set cursor to grab when leaving
@@ -83,7 +83,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         const node = this.activeNode;
         const annotations = node && node.getComponent(CVAnnotationView, true);
         const languageManager = this.activeDocument.setup.language;
-        const sceneSetupLanguage = ELanguageType[languageManager.ins.sceneSetupLanguage.value];
+        const primarySceneLanguage = ELanguageType[languageManager.ins.primarySceneLanguage.value];
         const activeLanguage = ELanguageType[languageManager.ins.activeLanguage.value];
 
         if (!annotations) {
@@ -151,10 +151,10 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[sceneSetupLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[primarySceneLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
-                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .activeLanguage=${activeLanguage} .sceneSetupLanguage=${sceneSetupLanguage} @select=${this.onSelectAnnotation}></sv-annotation-list>
+                        <sv-annotation-list .data=${annotationList} .selectedItem=${annotation} .activeLanguage=${activeLanguage} .primarySceneLanguage=${primarySceneLanguage} @select=${this.onSelectAnnotation}></sv-annotation-list>
                     </div>
                 </div>
                 <ff-splitter direction="vertical"></ff-splitter>

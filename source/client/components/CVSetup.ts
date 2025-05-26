@@ -185,7 +185,7 @@ export default class CVSetup extends Component
                 this._savedSetupData[name] = featureData;
             }
         }
-        this.language.ins.sceneSetupLanguage.setValue(ELanguageType[this._savedSetupData.language.language]);
+        this.language.ins.primarySceneLanguage.setValue(ELanguageType[this._savedSetupData.language.language]);
     }
 
     // Restores cached setup state for future saving.
