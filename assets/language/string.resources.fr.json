@@ -1,4 +1,5 @@
 {
+  "Active:": "Actif :",
   "Add New Model": "Ajouter un Modèle",
   "Add Note": "Ajouter une note",
   "Audio Elements": "Éléments sonores",
@@ -21,6 +22,7 @@
   "Create or select a tour step to edit.": "Créer ou sélectionner une étape de visite pour l'éditer",
   "Created on": "Créée le ",
   "Default": "Defaut",
+  "Default:": "Défaut :",
   "Delete": "Supprimer",
   "Delete Tour": "Supprimer la visite",
   "Delete Note": "Supprimer la note",

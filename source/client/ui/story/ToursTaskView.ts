@@ -106,7 +106,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
-                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${ELanguageStringType[primarySceneLanguage]}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.nameString()}</div></div>
+                <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">${languageManager.getUILocalizedString("Default:") + " " + primarySceneLanguage}</div><div class="sv-panel-header sv-task-item sv-item-border-l">${languageManager.getUILocalizedString("Active:") + " " + activeLanguage}</div></div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     <div class="ff-scroll-y ff-flex-column">
                         <sv-tour-list .data=${tourList.slice()} .selectedItem=${activeTour} .activeLanguage=${activeLanguage} .primarySceneLanguage=${primarySceneLanguage} @select=${this.onSelectTour}></sv-tour-list>
@@ -230,7 +230,7 @@ export class TourList extends List<ITour>
     activeLanguage: ELanguageType = null;
 
     @property({type: ELanguageType})
-    primarySceneLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
 
     protected firstConnected()
     {
@@ -242,10 +242,10 @@ export class TourList extends List<ITour>
     {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(item.titles).length === 0) { 
-            item.titles[this.primarySceneLanguage] = item.title;
+            item.titles[this.sceneSetupLanguage] = item.title;
         }
 
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.primarySceneLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "undefined"}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "undefined"}</div></div>`;
     }
 
     protected isItemSelected(item: ITour)
