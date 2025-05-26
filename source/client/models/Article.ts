@@ -44,7 +44,7 @@ export default class Article extends Document<IArticle>
     get title() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.titles).length === 0) {
-            this.data.titles[ELanguageType[this._language]] = this.data.title;
+            this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
         return this.data.titles[ELanguageType[this.language]] || "undefined";
@@ -56,15 +56,15 @@ export default class Article extends Document<IArticle>
     get defaultTitle() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.titles).length === 0) {
-            this.data.titles[ELanguageType[this._language]] = this.data.title;
+            this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this._language]] || "undefined";
+        return this.data.titles[ELanguageType[this.language]] || "undefined";
     }
     get uri() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.uris).length === 0) {
-            this.data.uris[ELanguageType[this._language]] = this.data.uri;
+            this.data.uris[ELanguageType[this.language]] = this.data.uri;
         }
 
         return this.data.uris[ELanguageType[this.language]];
@@ -76,7 +76,7 @@ export default class Article extends Document<IArticle>
     get lead() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.leads).length === 0) {
-            this.data.leads[this._language] = this.data.lead;
+            this.data.leads[this.language] = this.data.lead;
         }
 
         return this.data.leads[ELanguageType[this.language]] || "";
@@ -89,7 +89,7 @@ export default class Article extends Document<IArticle>
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.taglist).length === 0) {
             if(this.data.tags.length > 0) {
-                this.data.taglist[ELanguageType[this._language]] = this.data.tags;
+                this.data.taglist[ELanguageType[this.language]] = this.data.tags;
             }
         }
 

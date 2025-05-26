@@ -125,7 +125,7 @@ export default class CVArticlesTask extends CVTask
             article.language = languageManager.ins.primarySceneLanguage.value;
 
             const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}-${languageManager.ins.primarySceneLanguage}.html`;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[article.language]}.html`;
 
             const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
             if(standaloneFiles) {
