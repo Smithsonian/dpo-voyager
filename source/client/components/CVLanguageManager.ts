@@ -150,7 +150,6 @@ export default class CVLanguageManager extends Component
             {this._uiLanguageTranslations = json});
 
         ins.activeLanguage.setValue(language);
-        ins.uiLanguage.setValue(ELanguageType[DEFAULT_LANGUAGE]);
     }
 
     toData(): ILanguage

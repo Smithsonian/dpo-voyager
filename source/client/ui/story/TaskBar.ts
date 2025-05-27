@@ -84,8 +84,6 @@ export default class TaskBar extends SystemView
         return html`
             <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
             <div class="sv-mode ff-text">${taskModeText}</div>
-            <sv-property-view .property=${languageManager.ins.uiLanguage} .label=${languageManager.getUILocalizedString("UI Language")}></sv-property-view>
-            
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
