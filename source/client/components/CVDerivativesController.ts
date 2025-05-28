@@ -389,7 +389,9 @@ export default class CVDerivativesController extends Component{
     let downgrades = new Map<CVModel2, EDerivativeQuality>();
     /** Separate upgrade path. We compute uprgades first but apply them last */
     let upgrades = new Map<CVModel2, EDerivativeQuality>();
+    let upgradesWeights = new Array<[CVModel2, number]>();
     let textureSize = 0;
+    let textureSizeBeforeUpgrades = 0;
     //Now we have a list of  best-fit quality requests.
     //We first compute how much texture space upgrading this would use
     //to know whether or not we'd want to downgrade some models
@@ -397,21 +399,35 @@ export default class CVDerivativesController extends Component{
     for(let item of collection){
       let current_quality = item.model.ins.quality.value;
       if(item.model.isLoading() && current_quality != item.qualityRequest && item.model.activeDerivative){
-        // Opportunistically cancel any derivative we no longer want
+        // Opportunistically cancel any derivative we no longer want.
+        // We only want to authorize to cancel upsizing here, otherwise it cancels priority downsizing
         // Additionally, set the quality to the current derivative's value
-        item.model.ins.quality.setValue(item.model.activeDerivative.data.quality);
-        current_quality = item.model.activeDerivative.data.quality;
-        currently_loading --;
+        if (item.qualityRequest < current_quality){
+          item.model.ins.quality.setValue(item.model.activeDerivative.data.quality);
+          current_quality = item.model.activeDerivative.data.quality;
+          currently_loading --;
+        }
       }
+      textureSizeBeforeUpgrades += getSize(item.model, current_quality);
       
       if(current_quality < item.qualityRequest){
         //Upgrade models as requested
         upgrades.set(item.model, item.qualityRequest);
+        upgradesWeights.push([item.model, item.weight]);
         current_quality = item.qualityRequest;
       }else if(item.qualityRequest < item.model.ins.quality.value){
         downgradable.push(item);
       }
       textureSize += getSize(item.model, current_quality);
+    }
+    
+    // We cancel downsizing only if target textures are not over the allowed budget
+    if (textureSize < this._budget){
+      collection.filter((item)=> (item.model.isLoading() && item.model.ins.quality.value != item.qualityRequest && item.model.activeDerivative)).forEach((item)=> {
+        console.log("Cancelling loading model for :" , item.model.node.name, "in quality ", item.model.ins.quality.value, "to keep ", item.qualityRequest)
+          item.model.ins.quality.setValue(item.model.activeDerivative.data.quality);
+          currently_loading --;
+      })
     }
 
 
@@ -441,6 +457,7 @@ export default class CVDerivativesController extends Component{
       ){
         downgrades.set(item.model, item.qualityRequest);
         textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+        textureSizeBeforeUpgrades += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
       }
     }
 
@@ -455,6 +472,7 @@ export default class CVDerivativesController extends Component{
       if(downgrades.has(item.model)) continue;
       downgrades.set(item.model, item.qualityRequest);
       textureSize += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
+      textureSizeBeforeUpgrades += getSize(item.model, item.qualityRequest) - getSize(item.model, item.model.ins.quality.value);
     }
     let hard_downgrades = downgrades.size - normal_downgrades;
 
@@ -463,23 +481,46 @@ export default class CVDerivativesController extends Component{
      * In some cases too many upgrades are scheduled at once (similarly sized items)
      * We want to prevent that if that would overload the system
      */
-    for(let [item, q] of upgrades){
-      if(textureSize < this._budget) break; //Run only if overbudget
+    // upgradesWeights is reordered to deal with highest priorities first.
+    upgradesWeights.reverse();
+    for (let [item, w] of upgradesWeights){
+      if(textureSize < this._budget) {
+        break; //Run only if overbudget
+      }
+      // We see if there are models with lower weights that could be downsize to allow to upgrade this item
+      const q = upgrades.get(item); // quality requested
+      let toDowngrade = new Map<CVModel2, EDerivativeQuality>();
+      // texture size if we take into the currently downgraded textures and upgrade the one of "item"
+      let textureSizeWithDowngrade = textureSizeBeforeUpgrades + getSize(item, q) - getSize(item, item.ins.quality.value);
+      // Identifying models with lower weights (<1.5*weight of item) that could be downgraded. Lower weights are first.
+      const downgradables = collection.filter(i => (!(i.model.ins.quality.changed) && i.model.ins.quality.value >= q && i.weight*1.5< w && !downgrades.has(i.model)));
+      // Check for a quality one level lower and calculate the amount of texture saved.
+      // Stop once it is enough to fit the current "item" upgrade
+      let i = 0;
+      while (i<downgradables.length && !(textureSizeWithDowngrade < this._budget)){   
+        const newQuality = downgradables[i].model.derivatives.select(EDerivativeUsage.Web3D, Math.max(downgradables[i].qualityRequest - 1, 0)).data.quality;
+        if (newQuality < downgradables[i].model.ins.quality.value) {
+          toDowngrade.set( downgradables[i].model, newQuality);
+          textureSizeWithDowngrade += getSize( downgradables[i].model, newQuality) - getSize( downgradables[i].model,  downgradables[i].model.ins.quality.value);
+        }
+        i++;
+      }
+      // If enough textures can be downgraded, dowgrade them.
+      if (textureSizeWithDowngrade < this._budget && toDowngrade.size > 0 ){
+        for (const [itemToDowngrade, newQuality] of toDowngrade){
+          //console.log("Downgrading ", itemToDowngrade.node.name, " to ", newQuality , " to upgrade ", item.node.name)
+          downgrades.set(itemToDowngrade, newQuality);
+          textureSize += getSize(itemToDowngrade, newQuality) - getSize(item, item.ins.quality.value);
+          textureSizeBeforeUpgrades += getSize(itemToDowngrade, newQuality) - getSize(item, item.ins.quality.value);
+        }
+        // otherwise cancel the upgrade
+      } else {
       //We are SURE `q != 0` because otherwise it wouldn't have been pushed to the upgrades queue
-      upgrades.delete(item);
-      textureSize += getSize(item, q-1) - getSize(item, q);
+        upgrades.delete(item);
+        textureSize += getSize(item, q-1) - getSize(item, q);
+      }
     }
-
-    /**"contingency" downgrades. 
-     * Downgrade everything starting from the lower weights to one level _below_ what was requested
-     * A well-made scene shouldn't get there but we _have_ to be able to handle this
-     */
-    for(let item of downgradable){
-      if(textureSize < this._budget ) break;
-      const q = item.model.derivatives.select(EDerivativeUsage.Web3D, Math.max(item.qualityRequest - 1, 0)).data.quality;
-      downgrades.set(item.model, q);
-      textureSize += getSize(item.model, q) - getSize(item.model, item.model.ins.quality.value);
-    }
+    const priority_downgrades = downgrades.size - normal_downgrades - hard_downgrades;
     
     /**
      * Apply the changes. 
@@ -508,7 +549,7 @@ export default class CVDerivativesController extends Component{
         currently_loading,
         normal_downgrades,
         hard_downgrades,
-        (hard_downgrades != downgrades.size?`(${downgrades.size - normal_downgrades - hard_downgrades} forced downgrades)`:"")
+        (priority_downgrades != 0?`(${priority_downgrades} priority downgrades)`:"")
       );
     }
     return 0 < downgrades.size;
