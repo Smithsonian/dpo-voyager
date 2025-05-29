@@ -209,10 +209,18 @@ export default class CVGrid extends CObject3D
             const vpCamera = context.viewport.camera;
 
             if (vpCamera) {
+                if(this._gridProps.axesEnabled != false) {
+                    this._gridProps.axesEnabled = false;
+                    this.grid.update(this._gridProps);
+                }
+                
                 gridObject.matrix.extractRotation(vpCamera.matrixWorld).multiply(_matRotationOffset);
             }
             else {
                 gridObject.matrix.extractRotation(_matIdentity);
+
+                this._gridProps.axesEnabled = true;
+                this.grid.update(this._gridProps);
             }
 
             gridObject.updateMatrixWorld(true);

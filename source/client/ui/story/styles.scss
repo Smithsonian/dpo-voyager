@@ -501,6 +501,8 @@ $color-component-meta-light: #d9d998;
   }
 
   //Special styling for named properties
+  &[data-path="Model.Position"],
+  &[data-path="Model.Rotation"],
   &[data-path="Transform.Position"],
   &[data-path="Transform.Rotation"],
   &[data-path="Transform.Scale"]{
