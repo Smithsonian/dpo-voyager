@@ -798,8 +798,11 @@ export default class CVModel2 extends CObject3D
 
     protected updateRenderOrder(model: Object3D, value: number)
     {
+ 
+
+        const delta = value - model.renderOrder;
         model.renderOrder = value;
-        model.children.forEach(child => this.updateRenderOrder(child, value));
+        model.children.forEach(child => this.updateRenderOrder(child, delta));
     }
 
     /**

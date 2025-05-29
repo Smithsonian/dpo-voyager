@@ -22,10 +22,20 @@ import CVNodeObserver from "./CVNodeObserver";
 import CVDocument from "./CVDocument";
 
 import NodeView, { customElement, property, html } from "../ui/explorer/NodeView";
+import Property from "@ff/graph/Property";
+import CVDocumentProvider from "./CVDocumentProvider";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { types, customElement, property, html };
+
+export interface CVTaskConfiguration{
+    bracketsVisible?: boolean,
+    interfaceVisible?: boolean,
+    gridVisible?: boolean,
+    annotationsVisible?: boolean,
+    axesVisible?: boolean,
+}
 
 /**
  * Base class for tasks in the Voyager Story authoring environment. A task provides a number of tools. The tools operate
@@ -59,14 +69,14 @@ export default class CVTask extends CVNodeObserver
 
     private _isActiveTask = false;
 
-    protected configuration = {
+    protected configuration :CVTaskConfiguration = {
         bracketsVisible: undefined,
         interfaceVisible: undefined,
         gridVisible: undefined,
         annotationsVisible: undefined,
     };
 
-    private _savedConfig = {
+    private _savedConfig :CVTaskConfiguration = {
         bracketsVisible: undefined,
         interfaceVisible: undefined,
         gridVisible: undefined,
@@ -95,11 +105,9 @@ export default class CVTask extends CVNodeObserver
         this._isActiveTask = true;
 
         this.outs.isActive.setValue(true);
-
         const configuration = this.configuration;
         const savedConfig = this._savedConfig;
-
-        if (configuration.bracketsVisible !== undefined) {
+        if (typeof configuration.bracketsVisible !== "undefined") {
             const prop = this.selection.ins.viewportBrackets;
             savedConfig.bracketsVisible = prop.value;
             prop.setValue(!!configuration.bracketsVisible);
@@ -113,7 +121,7 @@ export default class CVTask extends CVNodeObserver
     {
         const savedConfig = this._savedConfig;
 
-        if (savedConfig.bracketsVisible !== undefined) {
+        if (typeof savedConfig.bracketsVisible !== "undefined") {
             this.selection.ins.viewportBrackets.setValue(savedConfig.bracketsVisible);
         }
 
@@ -140,6 +148,9 @@ export default class CVTask extends CVNodeObserver
             if (savedConfig.interfaceVisible !== undefined) {
                 previous.setup.interface.ins.visible.setValue(savedConfig.interfaceVisible);
             }
+            if(savedConfig.axesVisible !== undefined){
+                previous.setup.grid.ins.axesEnabled.setValue(savedConfig.axesVisible);
+            }
         }
         if (next) {
             if (configuration.gridVisible !== undefined) {
@@ -156,6 +167,11 @@ export default class CVTask extends CVNodeObserver
                 const prop = next.setup.interface.ins.visible;
                 savedConfig.interfaceVisible = prop.value;
                 prop.setValue(!!configuration.interfaceVisible);
+            }
+            if(configuration.axesVisible !== undefined){
+                const prop = next.setup.grid.ins.axesEnabled;
+                savedConfig.axesVisible = prop.value;
+                prop.setValue(!!configuration.axesVisible);
             }
         }
     }

@@ -5,28 +5,35 @@
  * License: MIT
  */
 
-import Component, { types } from "@ff/graph/Component";
+import Component, { IUpdateContext, types } from "@ff/graph/Component";
 import ComponentTracker from "@ff/graph/ComponentTracker";
 import Node from "@ff/graph/Node";
 import CSelection from "@ff/graph/components/CSelection";
 
 import Bracket from "@ff/three/Bracket";
+import Axes from "@ff/three/Axes";
 
 import { IPointerEvent } from "../RenderView";
+
+import SpotLightHelper from "@ff/three/lights/SpotLightHelper";
+import DirectionalLightHelper from "@ff/three/lights/DirectionalLightHelper";
+import PointLightHelper from "@ff/three/lights/PointLightHelper";
+import AmbientLightHelper from "@ff/three/lights/AmbientLightHelper";
+import RectLightHelper from "@ff/three/lights/RectLightHelper";
 
 import CObject3D from "./CObject3D";
 import CTransform from "./CTransform";
 import CScene, { ISceneAfterRenderEvent } from "./CScene";
-import { DirectionalLight, DirectionalLightHelper, HemisphereLight, HemisphereLightHelper, Object3D, PointLight, PointLightHelper, RectAreaLight, SpotLight, SpotLightHelper } from "three";
-
+import { Box3, Color, Object3D } from "three";
 ////////////////////////////////////////////////////////////////////////////////
 
 const helpers = [
-    [DirectionalLightHelper, DirectionalLight],
-    [PointLightHelper, PointLight],
-    [SpotLightHelper, SpotLight],
-    [HemisphereLightHelper, HemisphereLight],
-    [PointLightHelper, RectAreaLight],
+    [DirectionalLightHelper, "DirectionalLight"],
+    [PointLightHelper, "PointLight"],
+    [SpotLightHelper, "SpotLight"],
+    [AmbientLightHelper, "HemisphereLight"],
+    [AmbientLightHelper, "AmbientLight"],
+    [RectLightHelper, "RectAreaLight"],
 ] as const;
 
 const _inputs = {
@@ -34,41 +41,42 @@ const _inputs = {
     viewportBrackets: types.Boolean("Viewport.Brackets", true),
 };
 
+type HelperClass = Object3D & {dispose: ()=>void, update: ()=>void};
+
 export default class CPickSelection extends CSelection
 {
     static readonly typeName: string = "CPickSelection";
 
     ins = this.addInputs<CSelection, typeof _inputs>(_inputs);
 
-    private _brackets = new Map<Component, any>();
-    private _sceneTracker: ComponentTracker<CScene> = null;
-
+    private _brackets_map = new Map<Component, HelperClass>();
+    private _axes_map = new Map<Component, HelperClass>();
 
     create()
     {
         super.create();
 
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-
-        this._sceneTracker = new ComponentTracker(this.system.components, CScene, component => {
-            component.on<ISceneAfterRenderEvent>("after-render", this.onSceneAfterRender, this);
-        }, component => {
-            component.off<ISceneAfterRenderEvent>("after-render", this.onSceneAfterRender, this);
-        });
     }
 
     dispose()
     {
-        this._sceneTracker.dispose();
 
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        this._sceneTracker.dispose();
 
         super.dispose();
     }
 
     update()
     {
+        if(this.ins.viewportBrackets.changed){
+            for(let bracket of this._brackets_map.values()){
+                bracket.visible = this.ins.viewportBrackets.value;
+            }
+            for(let axes of this._axes_map.values()){
+                axes.visible = this.ins.viewportBrackets.value;
+            }
+        }
         return true;
     }
 
@@ -76,7 +84,7 @@ export default class CPickSelection extends CSelection
     {
         super.onSelectNode(node, selected);
 
-        const transform = node.getComponent(CTransform, true);
+        const transform = node.typeName === "NVScene" ? node.getComponent(CTransform, true) : node.getComponent(CObject3D, true);
         if (transform) {
             this.updateBracket(transform, selected);
         }
@@ -87,24 +95,9 @@ export default class CPickSelection extends CSelection
         super.onSelectComponent(component, selected);
 
         if (component instanceof CObject3D || component instanceof CTransform) {
-            this.updateBracket(component, selected);
+            this.updateBracket(component, selected);    
         }
     }
-
-    // protected onActiveGraph(graph: Graph)
-    // {
-    //     if (this._sceneTracker) {
-    //         this._sceneTracker.dispose();
-    //     }
-    //
-    //     if (graph) {
-    //         this._sceneTracker = new ComponentTracker(graph.components, CScene, component => {
-    //             component.on<ISceneAfterRenderEvent>("after-render", this.onSceneAfterRender, this);
-    //         }, component => {
-    //             component.off<ISceneAfterRenderEvent>("after-render", this.onSceneAfterRender, this);
-    //         });
-    //     }
-    // }
 
     protected onPointerUp(event: IPointerEvent)
     {
@@ -119,24 +112,11 @@ export default class CPickSelection extends CSelection
             this.clearSelection();
         }
     }
-
-    protected onSceneAfterRender(event: ISceneAfterRenderEvent)
-    {
-        if (!this.ins.viewportBrackets.value) {
-            return;
+    tick(ctx:IUpdateContext) :boolean{
+        for(let b of this._brackets_map.values()){
+            b.update();
         }
-
-        const renderer = event.context.renderer;
-        const camera = event.context.camera;
-
-        for (let bracket of this._brackets.values()) {
-            if(helpers.some(([HelperCl])=> bracket instanceof HelperCl)){
-                bracket.update();
-                /** @bug PointLightHelper doesn't call it internally in  its update() method. */ 
-                bracket.updateWorldMatrix( true, false );
-            }
-            renderer.render(bracket as any, camera);
-        }
+        return false;
     }
 
     protected updateBracket(component: CTransform | CObject3D, selected: boolean)
@@ -144,30 +124,56 @@ export default class CPickSelection extends CSelection
         if (!component) {
             return;
         }
-
+        //if(!this.ins.viewportBrackets.value) return; //Don't create brackets to be hidden
+        const object3D = component.object3D;
+        const transform = component.transform;
         if (selected) {
-            const object3D = component.object3D;
             if (object3D) {
-                let bracket;
-                for(let [HelperCl, Cl] of helpers){
-                    if(object3D.children[0] instanceof Cl){
-                        bracket = new HelperCl(object3D.children[0] as any, 1.0);
+                let bracket :HelperClass;
+                if((object3D as any).isLight){
+                    
+                    let HelperCl = helpers.find(([h,type])=>type === object3D.type)?.[0];
+                    if(HelperCl){
+                        object3D.updateMatrix();
+                        bracket = new HelperCl(object3D as any);
                         /** @bug PointLightHelper doesn't call it internally in  its update() method. */ 
                         bracket.updateWorldMatrix( true, false );
                     }
                 }
-                if(!bracket){
-                    bracket = new Bracket(component.object3D);
 
+                if(!bracket){
+                    bracket = new Bracket(object3D);
                 }
-                this._brackets.set(component, bracket);
+                object3D.add(bracket);
+                this._brackets_map.set(component, bracket);
+
+                bracket.visible = this.ins.viewportBrackets.value;
+            }
+            
+            if(transform && transform.object3D != object3D){
+                let o = new Axes(transform.object3D);
+                this._axes_map.set(transform, o);
+                transform.object3D.add(o);
+
+                o.visible = this.ins.viewportBrackets.value;
             }
         }
         else {
-            const bracket = this._brackets.get(component);
-            if (bracket) {
-                this._brackets.delete(component);
-                bracket.dispose();
+            if(object3D){
+                const bracket = this._brackets_map.get(component);
+                if (bracket) {
+                    this._brackets_map.delete(component);
+                    bracket.removeFromParent();
+                    bracket.dispose();
+                }
+            }
+            if(transform){
+                const axes = this._axes_map.get(transform);
+                if (axes) {
+                    this._axes_map.delete(transform);
+                    axes.removeFromParent();
+                    axes.dispose();
+                }
             }
         }
 

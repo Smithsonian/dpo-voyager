@@ -57,7 +57,7 @@ export default class PropertyView extends CustomElement
         if (!this.property) {
             throw new Error("property not set");
         }
-
+        this.dataset.path = this.property.path;
         this.classList.add("sv-property-view");
     }
 

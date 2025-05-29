@@ -102,6 +102,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
             return assetReader.getGeometry(geoAsset.data.uri)
             .then(geometry => {
                 this.model = new Mesh(geometry, new UberPBRMaterial());
+                this.model.castShadow = true;
 
                 return Promise.all(imageAssets.map(asset => assetReader.getTexture(asset.data.uri)))
                 .catch(error => {

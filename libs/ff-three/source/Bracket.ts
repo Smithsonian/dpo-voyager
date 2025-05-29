@@ -15,6 +15,7 @@ import {
     Matrix4,
     Box3,
     Color,
+    Material,
 } from "three";
 
 import { computeLocalBoundingBox } from "./helpers";
@@ -30,6 +31,7 @@ export interface IBracketProps
     color?: Color;
     /** Length of the bracket lines relative to the size of the object. Default is 0.25. */
     length?: number;
+    axes?:boolean;
 }
 
 /**
@@ -39,7 +41,8 @@ export default class Bracket extends LineSegments
 {
     static readonly defaultProps = {
         color: new Color("#ffd633"),
-        length: 0.25
+        length: 0.25,
+        axes: false,
     };
 
     constructor(target: Object3D, props?: IBracketProps)
@@ -55,9 +58,22 @@ export default class Bracket extends LineSegments
         const min = [ box.min.x, box.min.y, box.min.z ];
         const max = [ box.max.x, box.max.y, box.max.z ];
         const size = [ (max[0] - min[0]) * length, (max[1] - min[1]) * length, (max[2] - min[2]) * length ];
-        let vertices;
+        let vertices :number[];
+        let colors :number[];
+        let has_volume = isFinite(size[0]) && isFinite(size[1]) && isFinite(size[2])
+        if ( has_volume && props.axes){
+            vertices = [
+                0, 0, 0,	length, 0, 0,   0, 0, 0,
+                0, 0, 0,	0, length, 0,   0, 0, 0,
+                0, 0, 0,	0, 0, length,   0, 0, 0,
+            ];
+            colors = [
+                .65, .23, .29,	.65, .23, .29, .65, .23, .29, 
+                .43, .63, .11,	.43, .63, .11,	.43, .63, .11,
+                .25, .3, .88,	.25, .3, .88,	.25, .3, .88,
 
-        if (isFinite(size[0]) && isFinite(size[1]) && isFinite(size[2])) {
+            ];
+        }else if(has_volume) {
             vertices = [
                 min[0], min[1], min[2], min[0] + size[0], min[1], min[2],
                 min[0], min[1], min[2], min[0], min[1] + size[1], min[2],
@@ -91,8 +107,7 @@ export default class Bracket extends LineSegments
                 max[0], max[1], max[2], max[0], max[1] - size[1], max[2],
                 max[0], max[1], max[2], max[0], max[1], max[2] - size[2],
             ];
-        }
-        else {
+        }else {
             vertices = [
                 -1, 0, 0, 1, 0, 0,
                 0, -1, 0, 0, 1, 0,
@@ -102,29 +117,28 @@ export default class Bracket extends LineSegments
 
         const geometry = new BufferGeometry();
         geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-
+        if(colors) geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
         const material = new LineBasicMaterial({
             color: props.color,
+            vertexColors: !!colors,
+            toneMapped: false,
             depthTest: false
         });
 
         super(geometry, material);
 
         this.renderOrder = 1;
+    }
 
-        this.onBeforeRender = () => {
-            target.updateMatrixWorld(false);
-            this.matrixWorld.copy(target.matrixWorld);
-        }
+    update(){
+        
     }
 
     dispose()
     {
-        if (this.parent) {
-            this.parent.remove(this);
-        }
 
         this.geometry.dispose();
+        (this.material as Material).dispose();
     }
 
     protected static expandBoundingBox(object: Object3D, root: Object3D, box: Box3)
