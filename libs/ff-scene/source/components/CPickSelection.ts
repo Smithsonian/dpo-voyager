@@ -73,6 +73,9 @@ export default class CPickSelection extends CSelection
             for(let bracket of this._brackets_map.values()){
                 bracket.visible = this.ins.viewportBrackets.value;
             }
+            for(let axes of this._axes_map.values()){
+                axes.visible = this.ins.viewportBrackets.value;
+            }
         }
         return true;
     }
@@ -121,7 +124,7 @@ export default class CPickSelection extends CSelection
         if (!component) {
             return;
         }
-        if(!this.ins.viewportBrackets.value) return; //Don't create brackets to be hidden
+        //if(!this.ins.viewportBrackets.value) return; //Don't create brackets to be hidden
         const object3D = component.object3D;
         const transform = component.transform;
         if (selected) {
@@ -143,12 +146,16 @@ export default class CPickSelection extends CSelection
                 }
                 object3D.add(bracket);
                 this._brackets_map.set(component, bracket);
+
+                bracket.visible = this.ins.viewportBrackets.value;
             }
             
             if(transform && transform.object3D != object3D){
                 let o = new Axes(transform.object3D);
                 this._axes_map.set(transform, o);
                 transform.object3D.add(o);
+
+                o.visible = this.ins.viewportBrackets.value;
             }
         }
         else {
