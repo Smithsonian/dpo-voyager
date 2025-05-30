@@ -35,9 +35,10 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
 {
     protected render()
     {
+        const languageManager = this.activeDocument.setup.language;
         const node = this.activeNode;
         if (!node) {
-            return html`<div class="sv-placeholder">Please select a node to display its properties.</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a node to display its properties.")}</div>`;
         }
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y">

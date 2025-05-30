@@ -71,7 +71,7 @@ export default class ImportMenu extends Popup
     confirm()
     {
         if(this.qualitySelection === null) {
-            this.errorString = "Please select derivative quality.";
+            this.errorString = this.language.getUILocalizedString("Please select derivative quality.");
             this.requestUpdate();
         }
         else {
@@ -108,11 +108,11 @@ export default class ImportMenu extends Popup
         <div>
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-title">${"File: "}<i>${this.filename}</i></div>
-                    <ff-button icon="close" transparent class="ff-close-button" title=${language.getLocalizedString("Close")} @click=${this.close}></ff-button>
+                    <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("File:")} <i>${this.filename}</i></div>
+                    <ff-button icon="close" transparent class="ff-close-button" title=${language.getUILocalizedString("Close")} @click=${this.close}></ff-button>
                 </div>
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Select Derivative Quality")}:</div>
+                    <div class="ff-flex-spacer ff-header">${language.getUILocalizedString("Select Derivative Quality:")}</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 70%">
                     <div class="ff-scroll-y">
@@ -120,22 +120,22 @@ export default class ImportMenu extends Popup
                     </div>
                 </div>
                 <div class="ff-flex-row">
-                    <div class="ff-flex-spacer ff-header">${language.getLocalizedString("Select Model")}:</div>
+                    <div class="ff-flex-spacer ff-header">${language.getUILocalizedString("Select Model:")}</div>
                 </div>
                 <div class="ff-splitter-section" style="flex-basis: 30%">
                     ${this.modelOptions.length > 0 ? html`<div class="ff-scroll-y">
                         ${this.modelOptions.map((option, index) => this.renderParentEntry(option.name, index))}
-                    </div>` : html`<div class="ff-flex-row sv-centered sv-notification" style="height:100%; align-items:center">No Models In Scene</div>`}
+                    </div>` : html`<div class="ff-flex-row sv-centered sv-notification" style="height:100%; align-items:center">${language.getUILocalizedString("No Models In Scene")}</div>`}
                 </div>
                 <div class="sv-entry" @click=${e => this.onClickParent(e, -1)} ?selected=${ "-1" === this.parentSelection.id }>
                     <div class="ff-flex-row">
-                        <label class="ff-label ff-off">${language.getLocalizedString("Add New Model")}:</label>
+                        <label class="ff-label ff-off">${language.getUILocalizedString("Add New Model")}:</label>
                         <div class="ff-flex-spacer"></div>
                         <input id="modelName" tabindex="0" class="ff-property-field ff-input" @change=${this.onNameChange} value=${"Model"+this.modelOptions.length.toString()} touch-action="none" style="touch-action: none;" title="Parent.Name [string]"><div class="ff-fullsize ff-off ff-content"></div></input>
                     </div>
                 </div>
                 <div class="ff-flex-row sv-centered">
-                    <ff-button icon="upload" class="ff-button ff-control" text=${language.getLocalizedString("Import Model")} title=${language.getLocalizedString("Import Model")} @click=${this.confirm}></ff-button>
+                    <ff-button icon="upload" class="ff-button ff-control" text=${language.getUILocalizedString("Import Model")} title=${language.getUILocalizedString("Import Model")} @click=${this.confirm}></ff-button>
                 </div>
                 <div class="ff-flex-row sv-centered sv-import-error-msg">
                     <div>${this.errorString}</div>

@@ -122,8 +122,10 @@ export default class CVArticlesTask extends CVTask
 
         if (meta && ins.create.changed) {
             const article = new Article();
+            article.language = languageManager.ins.primarySceneLanguage.value;
+
             const defaultFolder = CVMediaManager.articleFolder;
-            article.uri = `${defaultFolder}/new-article-${article.id}-${DEFAULT_LANGUAGE}.html`;
+            article.uri = `${defaultFolder}/new-article-${article.id}-${ELanguageType[article.language]}.html`;
 
             const standaloneFiles = this.getGraphComponent(CVStandaloneFileManager, true);
             if(standaloneFiles) {
@@ -134,7 +136,7 @@ export default class CVArticlesTask extends CVTask
             
             meta.articles.append(article);
             this.reader.outs.count.setValue(meta.articles.length);
-            languageManager.ins.language.setValue(ELanguageType[DEFAULT_LANGUAGE]);
+            languageManager.ins.activeLanguage.setValue(languageManager.ins.primarySceneLanguage.value);
         }
         else if(activeArticle && ins.version.changed) {
             this.createEditArticle(activeArticle);
@@ -265,7 +267,7 @@ export default class CVArticlesTask extends CVTask
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
+            previous.setup.language.outs.activeLanguage.off("value", this.onDocumentLanguageChange, this);
             this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
             this.reader.outs.article.off("value", this.onArticleChange, this);
             this.reader = null;
@@ -274,7 +276,7 @@ export default class CVArticlesTask extends CVTask
             this.reader = next.setup.reader;
             this.reader.outs.article.on("value", this.onArticleChange, this);
             this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onAssetRename, this);
-            next.setup.language.outs.language.on("value", this.onDocumentLanguageChange, this);
+            next.setup.language.outs.activeLanguage.on("value", this.onDocumentLanguageChange, this);
         }
     }
 

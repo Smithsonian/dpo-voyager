@@ -35,6 +35,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAudioManager from "./CVAudioManager";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -185,6 +186,7 @@ export default class CVSetup extends Component
                 this._savedSetupData[name] = featureData;
             }
         }
+        this.language.ins.primarySceneLanguage.setValue(ELanguageType[this._savedSetupData.language.language]);
     }
 
     // Restores cached setup state for future saving.

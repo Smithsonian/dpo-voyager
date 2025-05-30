@@ -56,9 +56,10 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
     {
         const node = this.activeNode;
         const model = node && node.model;
+        const languageManager = this.activeDocument.setup.language;
 
         if (!model) {
-            return html`<div class="sv-placeholder">Please select a model to edit its pose</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a model to edit its pose")}</div>`;
         }
 
         const size = this.task.outs.size.value;
@@ -73,11 +74,11 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
         return html`
             <div class="sv-commands">
-                <ff-button icon="select" text="Select" index=${EPoseManipMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
-                <ff-button icon="rotate" text="Rotate" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
-                <ff-button icon="move" text="Move" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
-                <ff-button icon="compress" text="Center" @click=${this.onClickCenter}></ff-button>
-                <ff-button icon="expand" text="Zoom Extents" @click=${this.onClickZoomExtents}></ff-button>
+                <ff-button icon="select" text="${languageManager.getUILocalizedString("Select")}" index=${EPoseManipMode.Off} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
+                <ff-button icon="rotate" text="${languageManager.getUILocalizedString("Rotate")}" index=${EPoseManipMode.Rotate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
+                <ff-button icon="move" text="${languageManager.getUILocalizedString("Move")}" index=${EPoseManipMode.Translate} selectedIndex=${modeProp.value} @click=${this.onClickMode}></ff-button>
+                <ff-button icon="compress" text="${languageManager.getUILocalizedString("Center")}" @click=${this.onClickCenter}></ff-button>
+                <ff-button icon="expand" text="${languageManager.getUILocalizedString("Zoom Extents")}" @click=${this.onClickZoomExtents}></ff-button>
             </div>
             <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
                 <div class="sv-label-right">${dimensions}</div>

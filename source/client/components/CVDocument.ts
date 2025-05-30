@@ -119,12 +119,12 @@ export default class CVDocument extends CRenderGraph
     {
         super.create();
         this.innerGraph.components.on(CVMeta, this.onMetaComponent, this);
-        this.setup.language.outs.language.on("value", this.onLanguageUpdate, this);
+        this.setup.language.outs.activeLanguage.on("value", this.onLanguageUpdate, this);
     }
 
     dispose()
     {
-        this.setup.language.outs.language.off("value", this.onLanguageUpdate, this);
+        this.setup.language.outs.activeLanguage.off("value", this.onLanguageUpdate, this);
         this.innerGraph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
@@ -157,7 +157,7 @@ export default class CVDocument extends CRenderGraph
             outs.title.setValue(ins.title.value);
 
             if(ins.title.value) {
-                this.titles[ELanguageType[language.outs.language.value]] = ins.title.value;     
+                this.titles[ELanguageType[language.outs.activeLanguage.value]] = ins.title.value;     
                 this.updateMeta();
             }
         }
@@ -166,7 +166,7 @@ export default class CVDocument extends CRenderGraph
             const language = this.setup.language;
             outs.intro.setValue(ins.intro.value);
 
-            this.intros[ELanguageType[language.outs.language.value]] = ins.intro.value;     
+            this.intros[ELanguageType[language.outs.activeLanguage.value]] = ins.intro.value;     
             this.updateMeta();
         }
 
@@ -318,13 +318,13 @@ export default class CVDocument extends CRenderGraph
 
                 // TODO: Temporary - remove when single string properties are phased out
                 if(Object.keys(this.titles).length === 0) {
-                    this.titles[ELanguageType[language.outs.language.value]] = meta.collection.get("title") || "";
+                    this.titles[ELanguageType[language.outs.activeLanguage.value]] = meta.collection.get("title") || "";
                     meta.collection.dictionary["titles"] = this.titles;
                 }
 
-                const title = this.titles[ELanguageType[language.outs.language.value]];
+                const title = this.titles[ELanguageType[language.outs.activeLanguage.value]];
                 propTitle.setValue(title);
-                const intro = this.intros[ELanguageType[language.outs.language.value]] || "";
+                const intro = this.intros[ELanguageType[language.outs.activeLanguage.value]] || "";
                 propIntro.setValue(intro);
                 this.analytics.setTitle(title);
                 this._meta = meta;
@@ -335,9 +335,9 @@ export default class CVDocument extends CRenderGraph
     protected onLanguageUpdate() {
         const language = this.setup.language;
 
-        const newTitle = this.titles[ELanguageType[language.outs.language.value]];
+        const newTitle = this.titles[ELanguageType[language.outs.activeLanguage.value]];
         this.ins.title.setValue(newTitle);
-        const newIntro = this.intros[ELanguageType[language.outs.language.value]] || "";
+        const newIntro = this.intros[ELanguageType[language.outs.activeLanguage.value]] || "";
         this.ins.intro.setValue(newIntro);
     }
 

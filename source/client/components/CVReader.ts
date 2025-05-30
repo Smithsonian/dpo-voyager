@@ -198,10 +198,10 @@ export default class CVReader extends Component
     protected onLanguageComponent(event: IComponentEvent<CVLanguageManager>)
     {
         if (event.add) {
-            event.object.outs.language.on("value", this.updateLanguage, this);
+            event.object.outs.activeLanguage.on("value", this.updateLanguage, this);
         }
         if (event.remove) {
-            event.object.outs.language.off("value", this.updateLanguage, this);
+            event.object.outs.activeLanguage.off("value", this.updateLanguage, this);
         }
     }
 
@@ -235,7 +235,7 @@ export default class CVReader extends Component
         const ins = this.ins;
         // update articles
         this.articles.forEach( entry => {
-            entry.article.language = this.language.outs.language.value;
+            entry.article.language = this.language.outs.activeLanguage.value;
         });
 
         // reader active article update

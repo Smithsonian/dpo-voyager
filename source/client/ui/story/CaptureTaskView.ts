@@ -45,9 +45,10 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
         /*if (!this.task.activeMeta && !this.task.activeModel) {
             return html`<div class="sv-placeholder">Please select a model or scene to take a picture</div>`;
         }*/
+        const languageManager = this.activeDocument.setup.language;
 
         if (!this.task.isActiveScene) {
-            return html`<div class="sv-placeholder">Please select a scene to take a picture</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a scene to take a picture")}</div>`;
         }
 
         const ins = this.task.ins;
@@ -57,15 +58,15 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
         const image = imageElement ? html`<div class="sv-label">Preview</div>
             <div class="sv-image">${imageElement}</div>` : null;
 
-        return html`<div class="sv-label">Scene State</div>
+        return html`<div class="sv-label">${languageManager.getUILocalizedString("Scene State")}</div>
             <div class="sv-commands">
-                <ff-button text="Capture" icon="camera" @click=${this.onClickTake}></ff-button>
-                <ff-button text="View" icon="document" @click=${this.onClickRestore}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Capture")}" icon="camera" @click=${this.onClickTake}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("View")}" icon="document" @click=${this.onClickRestore}></ff-button>
             </div>
-            <div class="sv-label">Thumbnail Images</div>
+            <div class="sv-label">${languageManager.getUILocalizedString("Thumbnail Images")}</div>
             <div class="sv-commands">
-                <ff-button text="Save" icon="save" ?disabled=${!ready} @click=${this.onClickSave}></ff-button>
-                <ff-button text="Download" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Save")}" icon="save" ?disabled=${!ready} @click=${this.onClickSave}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Download")}" icon="download" ?disabled=${!ready} @click=${this.onClickDownload}></ff-button>
             </div>
             <div class="ff-flex-item-stretch"><div class="ff-scroll-y ff-flex-column sv-detail-view">
                 <sv-property-view .property=${ins.type}></sv-property-view>

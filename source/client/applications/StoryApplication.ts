@@ -40,6 +40,7 @@ import NVoyagerStory from "../nodes/NVoyagerStory";
 import MainView from "../ui/story/MainView";
 import CVTaskProvider, { ETaskMode } from "../components/CVTaskProvider";
 import CVStandaloneFileManager from "client/components/CVStandaloneFileManager";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,6 +57,8 @@ export interface IStoryApplicationProps extends IExplorerApplicationProps
     expert?: boolean;
     /** When set to true, application supports dragging and dropping files. */
     dragdrop?: boolean;
+    /** ISO 639-1 language code to change ui language */
+    uiLang?: string;
 }
 
 /**
@@ -148,6 +151,7 @@ export default class StoryApplication
         props.mode = props.mode || qs.get("mode") || "prep";
         props.expert = props.expert !== undefined ? props.expert : qs.get("expert") !== "false";
         props.dragdrop = props.dragdrop || false; 
+        props.uiLang = props.uiLang || qs.get("uiLang");
 
         // If in standalone mode, remove root and document params that may be present
         const modeText = props.mode.toLowerCase();
@@ -160,6 +164,10 @@ export default class StoryApplication
             this.explorer.props.document = null;
         }
 
+        if (props.uiLang) {
+            this.setUILanguage(props.uiLang);
+        }
+ 
         this.explorer.evaluateProps();
 
         const app = this.system.getMainComponent(CVStoryApplication);
@@ -192,6 +200,21 @@ export default class StoryApplication
         const tasks = this.system.getMainComponent(CVTaskProvider);
         tasks.ins.mode.setValue(mode);
     }
+
+    // set ui language
+    setUILanguage(languageID: string)
+    {
+        const languageIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.language.ins;
+        const id = languageID.toUpperCase();
+
+        if(id in ELanguageType) {
+            languageIns.uiLanguage.setValue(ELanguageType[id]);
+        }
+        else {
+            console.error("Error: setUILanguage param is not a valid language id.");
+        }
+    }
+    
 }
 
 window["VoyagerStory"] = StoryApplication;
