@@ -43,6 +43,15 @@
   color: $color-text;
 }
 
+.text-to-translate {
+  background-color: #272727;
+  font-style: italic;
+  color: #a0a0a0;
+  border-left: #a0a0a0 solid 1px;
+  padding-left: 4px;
+  margin-bottom: 4px;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EXPLORER OVERRIDES
 

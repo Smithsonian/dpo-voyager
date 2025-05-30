@@ -31,7 +31,7 @@ export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
     static readonly defaultColor = [ 0, 0.61, 0.87 ];
-    private _language : ELanguageType = ELanguageType.EN;
+    private _language : ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
     private _leadChanged : boolean = false;
 
     get title() {
@@ -46,6 +46,12 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         this.data.titles[ELanguageType[this.language]] = inTitle;
         this.update();
     }
+    
+    titleInLanguage(inTitle: string, language: ELanguageType) {
+        this.data.titles[ELanguageType[language]] = inTitle;
+        this.update();
+    }
+
     get lead() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.leads).length === 0) {

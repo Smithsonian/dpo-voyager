@@ -19,7 +19,7 @@ import { customElement, property, html } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
 import Annotation from "../../models/Annotation";
-import { DEFAULT_LANGUAGE } from "client/schema/common";
+import {ELanguageType} from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +37,12 @@ class AnnotationList extends List<Annotation>
     @property({ attribute: false })
     selectedItem: Annotation = null;
 
+    @property({type: ELanguageType})
+    currentLanguage: ELanguageType = ELanguageType.EN;
+
+    @property({type: ELanguageType})
+    defaultLanguage: ELanguageType = ELanguageType.EN;
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -45,7 +51,14 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[DEFAULT_LANGUAGE]}</div><div class="sv-task-item sv-item-border-l">${item.title}</div></div>`;
+        let renderedItem;
+        
+        if (this.currentLanguage!=this.defaultLanguage){
+            renderedItem = html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[this.defaultLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.data.titles[this.currentLanguage]}</div></div>`
+        } else {
+            renderedItem = html`<div class="ff-flex-row ff-group"><div class="sv-task-item-full">${item.data.titles[this.defaultLanguage]}</div></div>`
+        }
+        return renderedItem;
     }
 
     protected isItemSelected(item: Annotation)
