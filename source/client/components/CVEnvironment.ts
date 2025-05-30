@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-import { Texture, EquirectangularReflectionMapping, SRGBColorSpace } from "three";
+import { Texture, EquirectangularReflectionMapping, SRGBColorSpace, PMREMGenerator, Euler } from "three";
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 import Component, { types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
@@ -24,8 +25,10 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import { IEnvironment } from "client/schema/setup";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
+import CRenderer from "@ff/scene/components/CRenderer";
+import { DEG2RAD } from "three/src/math/MathUtils";
 
-const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
+const images = ["spruit_sunrise_1k_HDR.hdr","Two Umbrellas For Charts.hdr","Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +46,8 @@ export default class CVEnvironment extends Component
 
     private _texture: Texture = null;
     private _currentIdx = 0;
+    private _pmremGenerator: PMREMGenerator = null;
+    private _hdriLoader: RGBELoader = null;
 
     protected shouldUseEnvMap = false;
 
@@ -51,6 +56,22 @@ export default class CVEnvironment extends Component
     }
     protected get sceneNode() {
         return this.getSystemComponent(CScene);
+    }
+    protected get renderer(){
+        return this.getSystemComponent(CRenderer);
+    }
+
+    create()
+    {
+        super.create();
+        console.log(JSON.stringify(this.node.system.components));
+        this._hdriLoader = new RGBELoader();
+    }
+
+    dispose()
+    {
+        this._pmremGenerator ? this._pmremGenerator.dispose() : null;
+        super.dispose();
     }
 
     update()
@@ -61,8 +82,9 @@ export default class CVEnvironment extends Component
         if(ins.dirty.changed)
         {
             // currently only doing env reflection if we have a rougness or metalness map defined
-            this.shouldUseEnvMap = false;
-            scene.models.forEach(model => {
+            this.shouldUseEnvMap = true;
+            ins.imageIndex.set();
+            /*scene.models.forEach(model => {
                 model.object3D.traverse(object => {
                     const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
                     if(material && material.isUberPBRMaterial && (material.roughnessMap || material.metalnessMap)) {
@@ -76,7 +98,7 @@ export default class CVEnvironment extends Component
                         ins.imageIndex.set();
                     }
                 });
-            });
+            });*/
         }
         if(ins.imageIndex.changed && this.shouldUseEnvMap)
         {
@@ -87,14 +109,29 @@ export default class CVEnvironment extends Component
                     this._texture.dispose();   
                 }
 
-                this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
-                    if(this.node) {
-                        this._texture = texture; 
-                        this._texture.mapping = EquirectangularReflectionMapping;
-                        //this._texture.colorSpace = SRGBColorSpace;
-                        this.sceneNode.scene.environment = this._texture;
+                const mapName = images[ins.imageIndex.value];
+                if(mapName.endsWith(".hdr")) {
+                    if(this._pmremGenerator === null) {
+                        this._pmremGenerator = new PMREMGenerator(this.renderer.views[0].renderer); 
                     }
-                });
+                    this._hdriLoader.load( "images/"+mapName, (texture) => {
+                        this._texture = this._pmremGenerator.fromEquirectangular(texture).texture;
+                        texture.dispose(); 
+                        this.sceneNode.scene.environment = this._texture;
+                        //this.sceneNode.scene.environmentRotation = new Euler(0, 90*DEG2RAD, 0);
+                        this.renderer.forceRender();
+                    });
+                }
+                else {
+                    this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
+                        if(this.node) { 
+                            this._texture = texture; 
+                            this._texture.mapping = EquirectangularReflectionMapping;
+                            //this._texture.colorSpace = SRGBColorSpace;
+                            this.sceneNode.scene.environment = this._texture;
+                        }
+                    });
+                }
                 this._currentIdx = ins.imageIndex.value;
             }
         }
