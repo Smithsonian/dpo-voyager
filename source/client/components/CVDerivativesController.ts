@@ -424,7 +424,6 @@ export default class CVDerivativesController extends Component{
     // We cancel downsizing only if target textures are not over the allowed budget
     if (textureSize < this._budget){
       collection.filter((item)=> (item.model.isLoading() && item.model.ins.quality.value != item.qualityRequest && item.model.activeDerivative)).forEach((item)=> {
-        console.log("Cancelling loading model for :" , item.model.node.name, "in quality ", item.model.ins.quality.value, "to keep ", item.qualityRequest)
           item.model.ins.quality.setValue(item.model.activeDerivative.data.quality);
           currently_loading --;
       })
