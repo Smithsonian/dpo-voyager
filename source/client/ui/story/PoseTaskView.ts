@@ -54,6 +54,9 @@ export default class PoseTaskView extends TaskView<CVPoseTask>
 
     protected render()
     {
+        if(!this.activeDocument) {
+            return;
+        }
         const node = this.activeNode;
         const model = node && node.model;
         const languageManager = this.activeDocument.setup.language;

@@ -45,6 +45,9 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
         /*if (!this.task.activeMeta && !this.task.activeModel) {
             return html`<div class="sv-placeholder">Please select a model or scene to take a picture</div>`;
         }*/
+        if(!this.activeDocument) {
+            return;
+        }
         const languageManager = this.activeDocument.setup.language;
 
         if (!this.task.isActiveScene) {

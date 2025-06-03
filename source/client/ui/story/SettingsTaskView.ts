@@ -35,6 +35,9 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
 {
     protected render()
     {
+        if(!this.activeDocument) {
+            return;
+        }
         const languageManager = this.activeDocument.setup.language;
         const node = this.activeNode;
         if (!node) {

@@ -36,6 +36,9 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 {
     protected render()
     {
+        if(!this.activeDocument) {
+            return;
+        }
 
         const node = this.activeNode;
         const model = node && node.model;
