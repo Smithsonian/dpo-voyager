@@ -93,6 +93,10 @@ export default class TourPanel extends DocumentView
     {
         //console.log("TourPanel.render");
 
+        if(!this.activeDocument) {
+            return;
+        }
+
         const task = this.toursTask;
         const tours = this.tours;
         const machine = tours.snapshots;
