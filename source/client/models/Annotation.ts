@@ -40,12 +40,21 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "undefined";
+        return this.data.titles[ELanguageType[this.language]] || "New Annotation";
     }
     set title(inTitle: string) {
         this.data.titles[ELanguageType[this.language]] = inTitle;
         this.update();
     }
+    
+    titleIn(language: ELanguageType){
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.titles).length === 0) {
+            this.data.titles[ELanguageType[this.language]] = this.data.title;
+        }
+        return this.data.titles[language] || "New Annotation";
+    }
+    
     get lead() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.leads).length === 0) {

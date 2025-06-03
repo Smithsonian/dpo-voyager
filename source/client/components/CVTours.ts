@@ -95,7 +95,7 @@ export default class CVTours extends Component
             tour.titles[DEFAULT_LANGUAGE] = tour.title;
         }
 
-        return tour.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "undefined";
+        return tour.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "New Tour";
     }
     set title(inTitle: string) {
         const tour = this.activeTour;

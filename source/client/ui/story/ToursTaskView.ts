@@ -229,8 +229,8 @@ export class TourList extends List<ITour>
     @property({ attribute: false })
     activeLanguage: ELanguageType = null;
 
-    @property({type: ELanguageType})
-    sceneSetupLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+    @property({ attribute: false })
+    primarySceneLanguage: ELanguageType = null;
 
     protected firstConnected()
     {
@@ -242,10 +242,9 @@ export class TourList extends List<ITour>
     {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(item.titles).length === 0) { 
-            item.titles[this.sceneSetupLanguage] = item.title;
+            item.titles[this.primarySceneLanguage] = item.title;
         }
-
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.sceneSetupLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "undefined"}</div></div>`;
+        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.primarySceneLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "New Tour"}</div></div>`;
     }
 
     protected isItemSelected(item: ITour)
