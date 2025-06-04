@@ -878,10 +878,9 @@ export default class CVModel2 extends CObject3D
                     this._boxFrame = null;
                 }
 
-                // // update bounding box based on loaded derivative
-                // @fixme add back once sure it's not causing dynamic LOD flickering
-                // this._localBoundingBox.makeEmpty();
-                // helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
+                // update bounding box based on loaded derivative
+                this._localBoundingBox.makeEmpty();
+                helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
                 this.outs.updated.set();
 
                 if (ENV_DEVELOPMENT) {
