@@ -85,7 +85,7 @@ export default class LanguageMenu extends Popup
             </div>
             <div class="ff-flex-row">
                 <div class="ff-scroll-y sv-scroll-offset" role="listbox">
-                    ${language.activeLanguages.map((language, index) => this.renderEntry(language, index))}
+                    ${language.sceneLanguages.map((language, index) => this.renderEntry(language, index))}
                 </div>
             </div>
         </div>
@@ -104,7 +104,7 @@ export default class LanguageMenu extends Popup
 
         e.stopPropagation();
 
-        language.ins.language.setValue(language.activeLanguages[index].id);  
+        language.ins.activeLanguage.setValue(language.sceneLanguages[index].id);  
         this.close();  
     }
 
@@ -114,7 +114,7 @@ export default class LanguageMenu extends Popup
         if (e.code === "Space" || e.code === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            language.ins.language.setValue(language.activeLanguages[index].id);
+            language.ins.activeLanguage.setValue(language.sceneLanguages[index].id);
             this.close();
         }
         else if(e.code === "ArrowUp" || e.code === "ArrowDown") {

@@ -121,6 +121,7 @@ export default class MainView extends CustomElement
                 dragdrop: this.hasAttribute("dragdrop"),
 
                 uiMode: this.getAttribute("uiMode"),
+                uiLang: this.getAttribute("uiLang")
             };
 
             this.application = new StoryApplication(null, props);

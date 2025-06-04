@@ -688,7 +688,7 @@ Version: ${ENV_VERSION}
         const id = languageID.toUpperCase();
 
         if(id in ELanguageType) {
-            languageIns.language.setValue(ELanguageType[id]);
+            languageIns.activeLanguage.setValue(ELanguageType[id]);
         }
         else {
             console.error("Error: setLanguage param is not a valid language id.");

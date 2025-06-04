@@ -71,31 +71,47 @@ export default class NotesPanel extends NodeView
         this.classList.add("sv-scrollable", "sv-panel", "sv-notes-panel");
     }
 
+
+    protected connected()
+    {
+        super.connected();
+        this.activeDocument.setup.language.outs.uiLanguage.on("value", this.onUpdate, this);
+    }
+    
+    protected disconnected()
+    {
+        this.activeDocument.setup.language.outs.uiLanguage.off("value", this.onUpdate, this);
+        super.disconnected();
+    }
+    
     protected renderNote(note: INote)
     {
+        const languageManager = this.activeDocument.setup.language;
+
         if (!note) {
             return html`<div class="ff-placeholder">
-                <div>Select or create a note to edit it.</div>
+                <div>${languageManager.getUILocalizedString("Select or create a note to edit it.")}</div>
             </div>`;
         }
 
         const date = moment(note.date).format("YYYY-MM-DD HH:mm:ss");
 
         return html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <div class="sv-note-field">Created on ${date}</div>
-            <ff-line-edit text=${note.user} placeholder="User" @change=${this.onEditUser}></ff-line-edit>
-            <ff-text-edit text=${note.text} placeholder="Comment" @change=${this.onEditText}></ff-text-edit>
+            <div class="sv-note-field">${languageManager.getUILocalizedString("Created on")} ${date}</div>
+            <ff-line-edit text=${note.user} placeholder="${languageManager.getUILocalizedString("User")}" @change=${this.onEditUser}></ff-line-edit>
+            <ff-text-edit text=${note.text} placeholder="${languageManager.getUILocalizedString("Comment")}" @change=${this.onEditText}></ff-text-edit>
             </div>
         </div>`;
     }
 
     protected render()
     {
+        const languageManager = this.activeDocument.setup.language;
         const node = this.activeNode;
 
         if (!node || !(node.scene || node.model)) {
             return html`<div class="ff-placeholder">
-                <div>Please select a scene or model to display its notes.</div>
+                <div>${languageManager.getUILocalizedString("Please select a scene or model to display its notes.")}</div>
             </div>`;
         }
 
@@ -108,8 +124,8 @@ export default class NotesPanel extends NodeView
         noteTable.requestUpdate();
 
         return html`<div class="sv-panel-header">
-            <ff-button text="Add Note" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button text="Delete Note" icon="trash" ?disabled=${!activeNote} @click=${this.onClickDelete}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Add Note")}" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Delete Note")}" icon="trash" ?disabled=${!activeNote} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch ff-flex-row">
             <div class="ff-splitter-section" style="flex-basis: 60%">

@@ -146,7 +146,7 @@ export default class CVAudioTask extends CVTask
 
         if (previous) {
             this.ins.activeId.off("value", this.onAudioChange, this);
-            previous.setup.language.outs.language.off("value", this.onDocumentLanguageChange, this);
+            previous.setup.language.outs.activeLanguage.off("value", this.onDocumentLanguageChange, this);
 
             this.audioManager = null;
         }
@@ -154,7 +154,7 @@ export default class CVAudioTask extends CVTask
             this.audioManager = next.setup.audio;
 
             this.ins.activeId.on("value", this.onAudioChange, this);
-            next.setup.language.outs.language.on("value", this.onDocumentLanguageChange, this);
+            next.setup.language.outs.activeLanguage.on("value", this.onDocumentLanguageChange, this);
         }
     }
 

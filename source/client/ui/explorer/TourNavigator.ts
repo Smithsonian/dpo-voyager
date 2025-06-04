@@ -163,7 +163,7 @@ export default class TourNavigator extends DocumentView
         if (previous) {
             this.tours.outs.tourIndex.off("value", this.onUpdate, this);
             this.tours.outs.stepIndex.off("value", this.onUpdate, this);
-            this.language.outs.language.off("value", this.onUpdate, this);
+            this.language.outs.activeLanguage.off("value", this.onUpdate, this);
         }
         if (next) {
             this.tours = next.setup.tours;
@@ -171,7 +171,7 @@ export default class TourNavigator extends DocumentView
             this.interface = next.setup.interface;
             this.tours.outs.tourIndex.on("value", this.onUpdate, this);
             this.tours.outs.stepIndex.on("value", this.onUpdate, this);
-            this.language.outs.language.on("value", this.onUpdate, this);
+            this.language.outs.activeLanguage.on("value", this.onUpdate, this);
         }
 
         this.requestUpdate();
