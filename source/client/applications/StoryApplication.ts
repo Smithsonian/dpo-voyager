@@ -162,6 +162,7 @@ export default class StoryApplication
             window.history.replaceState(null,null,revisedUrl);
             this.explorer.props.root = null;
             this.explorer.props.document = null;
+            this.explorer.props.lang = props.lang || qs.get("lang") || qs.get("l") || props.uiLang;
         }
 
         if (props.uiLang) {

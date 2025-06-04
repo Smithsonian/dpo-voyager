@@ -125,7 +125,6 @@ export default class CVLanguageManager extends Component
         }
 
         if (ins.uiLanguage.changed) {
-            console.log("New ui language :" , ins.uiLanguage);
             this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.uiLanguage.value].toLowerCase() + ".json").then( json => {
                 this._uiLanguageTranslations = json;
                 this.updateUILanguage(ins.uiLanguage.value);
@@ -141,13 +140,10 @@ export default class CVLanguageManager extends Component
         data = data || {} as ILanguage;
 
         const language = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
-        this.ins.primarySceneLanguage.value = ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE];
+        this.ins.primarySceneLanguage.setValue(ELanguageType[data.language || "EN"] ?? ELanguageType[DEFAULT_LANGUAGE]);
 
         this.assetReader.getSystemJSON("language/string.resources." + ELanguageType[this.ins.primarySceneLanguage.value].toLowerCase() + ".json").then(json => 
             {this._sceneSetupTranslations = json});
-        
-        this.assetReader.getSystemJSON("language/string.resources." + DEFAULT_LANGUAGE.toLowerCase() + ".json").then(json => 
-            {this._uiLanguageTranslations = json});
 
         ins.activeLanguage.setValue(language);
     }

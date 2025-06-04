@@ -85,7 +85,7 @@ export default class Article extends Document<IArticle>
     get lead() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.leads).length === 0) {
-            this.data.leads[this.language] = this.data.lead;
+            this.data.leads[ELanguageType[this.language]] = this.data.lead;
         }
 
         return this.data.leads[ELanguageType[this.language]] || "";
