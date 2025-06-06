@@ -17,7 +17,7 @@
 
 import { Box3, DoubleSide, FrontSide, Material, Mesh, Plane, Side, Vector3 } from "three";
 
-import Component, { types } from "@ff/graph/Component";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
 
 import { ISlicer, ESliceAxis, TSliceAxis } from "client/schema/setup";
 
@@ -88,6 +88,14 @@ export default class CVSlicer extends Component
 
         const scene = this.getGraphComponent(CVScene);
         this.ins.boundingBox.linkFrom(scene.outs.boundingBox);
+
+        this.graph.components.on(CVModel2, this.onModelComponent, this);
+    }
+
+    dispose()
+    {
+        this.graph.components.off(CVModel2, this.onModelComponent, this);
+        super.dispose();
     }
 
     update(context)
@@ -193,5 +201,22 @@ export default class CVSlicer extends Component
 
         const shader = material.userData.shader;
         shader.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
+    }
+
+    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.outs.variant.on("value", this.variantUpdate, this);
+        }
+        else if (event.remove) {
+            component.outs.variant.off("value", this.variantUpdate, this);
+        }
+    }
+
+    // variant update helper
+    protected variantUpdate() {
+        this.ins.enabled.set(); // trigger refresh of material
     }
 }

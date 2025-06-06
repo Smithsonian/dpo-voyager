@@ -26,7 +26,10 @@ export default class CLight extends CObject3D
 
     protected static readonly lightIns = {
         color: types.ColorRGB("Light.Color"),
-        intensity: types.Number("Light.Intensity", 1),
+        intensity: types.Number("Light.Intensity", {
+            preset:1,
+            min: 0,
+        }),
         shadowEnabled: types.Boolean("Shadow.Enabled"),
         shadowResolution: types.Enum("Shadow.Resolution", EShadowMapResolution, EShadowMapResolution.Medium),
         shadowBlur: types.Number("Shadow.Blur", 1),
