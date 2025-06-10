@@ -107,6 +107,7 @@ export class LightToolView extends ToolView<CVLightTool>
 
         const activeLight = tool.outs.light.value;
         const navigation = document.setup.navigation;
+        const environment = document.setup.environment;
         const language = document.setup.language;
 
         const lightDetails = activeLight ? html`<div class="sv-section">
@@ -122,6 +123,7 @@ export class LightToolView extends ToolView<CVLightTool>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${navigation.ins.lightsFollowCamera} name="Follow Camera"></sv-property-boolean> -->
                 <sv-property-options .property=${tool.ins.light} .language=${language} name=${language.getLocalizedString("Select Scene Light")}></sv-property-options>
+                <sv-property-slider .property=${environment.ins.intensity} .language=${language} name=${language.getLocalizedString("Env. Light Intensity")} min="0" max="2"></sv-property-slider>
             </div>
         </div>`;
     }

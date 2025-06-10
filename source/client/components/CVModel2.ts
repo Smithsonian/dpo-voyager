@@ -948,9 +948,6 @@ export default class CVModel2 extends CObject3D
                     this.updateShadowSide();
                 }
 
-                // flag environment map to update if needed
-                //this.getGraphComponent(CVEnvironment).ins.dirty.set(); 
-
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
                     this.updateRenderOrder(this.object3D, this.ins.renderOrder.value);

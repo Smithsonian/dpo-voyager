@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-import { Texture, EquirectangularReflectionMapping, SRGBColorSpace, PMREMGenerator, Euler, MeshStandardMaterial } from "three";
+import { Texture, SRGBColorSpace, PMREMGenerator, Euler } from "three";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 import Component, { types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
-import CVScene from "./CVScene";
 import { IEnvironment } from "client/schema/setup";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEG2RAD } from "three/src/math/MathUtils";
 import CVBackground from "./CVBackground";
 
-const images = ["spruit_sunrise_1k_HDR.hdr","Two Umbrellas For Charts.hdr","Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
+const images = ["spruit_sunrise_1k_HDR.hdr","Two Umbrellas For Charts.hdr","studio_small_08_1k.hdr","campbell_env.jpg"];  
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,29 +90,7 @@ export default class CVEnvironment extends Component
     update()
     {
         const ins = this.ins;
-        const scene = this.getGraphComponent(CVScene);
 
-        if(ins.dirty.changed)
-        {
-            // currently only doing env reflection if we have a rougness or metalness map defined
-            this.shouldUseEnvMap = true;
-            ins.imageIndex.set();
-            /*scene.models.forEach(model => {
-                model.object3D.traverse(object => {
-                    const material = object["material"] as MeshStandardMaterial;
-                    if(material && (material.roughnessMap || material.metalnessMap)) {
-                        this.shouldUseEnvMap = true;
-
-                        if(this._texture !== null) 
-                        {
-                            this._texture.dispose(); 
-                            this._texture = null;   
-                        }
-                        ins.imageIndex.set();
-                    }
-                });
-            });*/
-        }
         if(ins.imageIndex.changed)
         {
             if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
