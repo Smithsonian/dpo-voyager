@@ -56,7 +56,7 @@ export default class CollectionPanel extends DocumentView
                 <ff-icon name="document"></ff-icon>
                 <div class="ff-text">Collection</div>
             </div>
-            <sv-property-view .property=${languageManager.ins.language}></sv-property-view>
+            <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-indent">
                 <div class="sv-label">Title</div>
                 <ff-line-edit name="title" text=${this.activeDocument.ins.title.value || "Missing Title"} @change=${this.onTextEdit}></ff-line-edit>
@@ -109,14 +109,14 @@ export default class CollectionPanel extends DocumentView
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
-            previous.setup.language.outs.language.off("value", this.onUpdate, this);
+            previous.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
             previous.outs.title.off("value", this.onUpdate, this);
             previous.outs.intro.off("value", this.onUpdate, this);
         }
         if (next) {
             next.outs.title.on("value", this.onUpdate, this);
             next.outs.intro.on("value", this.onUpdate, this);
-            next.setup.language.outs.language.on("value", this.onUpdate, this);
+            next.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         }
     }
 }

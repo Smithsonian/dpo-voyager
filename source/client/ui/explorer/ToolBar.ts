@@ -52,14 +52,14 @@ export default class ToolBar extends SystemView
     {
         super.connected();
         this.toolProvider.on<IActiveToolEvent>("active-component", this.onUpdate, this);
-        this.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         this.setup.navigation.ins.mode.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.setup.navigation.ins.mode.off("value", this.onUpdate, this);
-        this.setup.language.outs.language.off("value", this.onUpdate, this);
+        this.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
         this.toolProvider.off<IActiveToolEvent>("active-component", this.onUpdate, this);
         super.disconnected();
     }

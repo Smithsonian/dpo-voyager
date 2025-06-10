@@ -25,15 +25,14 @@ import CVDocument from "../../components/CVDocument";
 import CVTours from "../../components/CVTours";
 import CVToursTask from "../../components/CVToursTask";
 
-import DocumentView, { customElement, html } from "../explorer/DocumentView";
-import { ELanguageType } from "client/schema/common";
+import DocumentView, { customElement, html, TemplateResult } from "../explorer/DocumentView";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 interface IStepEntry
 {
-    title: string;
+    title: string | TemplateResult;
     curve: string;
     duration: string;
     threshold: string;
@@ -78,6 +77,7 @@ export default class TourPanel extends DocumentView
 
         const task = this.toursTask;
         task && task.outs.isActive.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
@@ -86,6 +86,7 @@ export default class TourPanel extends DocumentView
         task && task.outs.isActive.off("value", this.onUpdate, this);
 
         this.system.components.off(CVToursTask, this.onToursTask, this);
+        this.activeDocument.setup.language.outs.uiLanguage.off("value", this.onUpdate, this);
         super.disconnected();
     }
 
@@ -99,7 +100,7 @@ export default class TourPanel extends DocumentView
         const languageManager = this.activeDocument.setup.language;
 
         if (!task || !tours.ins.enabled.value) {
-            return html`<div class="ff-placeholder">Tour edit task not available.</div>`;
+            return html`<div class="ff-placeholder">${languageManager.getUILocalizedString("Tour edit task not available.")}</div>`;
         }
 
         //if (!task.outs.isActive.value) {
@@ -109,11 +110,12 @@ export default class TourPanel extends DocumentView
         const tour = tours.activeTour;
 
         if (!tour) {
-            return html`<div class="ff-placeholder">Please create or select a tour to edit.</div>`;
+            return html`<div class="ff-placeholder">${languageManager.getUILocalizedString("Please create or select a tour to edit.")}</div>`;
         }
 
         const activeStep = tours.activeStep;
-
+        const missingTitle = html `<span class="sv-missing-translation">Missing translation</span>`
+     
         const stepDetailView = activeStep ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${task.ins.stepTitle}></sv-property-view>
             <sv-property-view .property=${task.ins.stepCurve}></sv-property-view>
@@ -121,12 +123,12 @@ export default class TourPanel extends DocumentView
             <sv-property-view .property=${task.ins.stepThreshold} commitonly></sv-property-view>
             <div class="sv-label">Alt Text</div>
             <ff-text-edit name="altText" text=${task.ins.stepAltText.value} @change=${this.onTextEdit}></ff-text-edit>
-        </div>` : html`<div class="ff-placeholder"><div>Create or select a tour step to edit.</div></div>`;
+        </div>` : html`<div class="ff-placeholder"><div>${languageManager.getUILocalizedString("Create or select a tour step to edit.")}</div></div>`;
 
         this.stateTable.rows = tours.activeSteps.map(step => {
             const state = machine.getState(step.id);
             return {
-                title: step.titles[languageManager.codeString()] || "undefined",
+                title: step.titles[languageManager.codeString()] || missingTitle,
                 curve: EEasingCurve[state.curve],
                 duration: state.duration.toFixed(1) + "s",
                 threshold: (state.threshold * 100).toFixed(0) + "%",
@@ -136,11 +138,11 @@ export default class TourPanel extends DocumentView
         this.stateTable.selectedRows = this.stateTable.rows[tours.outs.stepIndex.value];
 
         return html`<div class="sv-panel-header">
-            <ff-button text="Update" icon="camera" @click=${this.onClickUpdate}></ff-button>
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button text="Up" icon="up" ?disabled=${!activeStep} @click=${this.onClickUp}></ff-button>
-            <ff-button text="Down" icon="down" ?disabled=${!activeStep} @click=${this.onClickDown}></ff-button>
-            <ff-button text="Delete" icon="trash" ?disabled=${!activeStep} @click=${this.onClickDelete}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Update")}" icon="camera" @click=${this.onClickUpdate}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Create")}" icon="create" @click=${this.onClickCreate}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Move Up")}" icon="up" ?disabled=${!activeStep} @click=${this.onClickUp}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Move Down")}" icon="down" ?disabled=${!activeStep} @click=${this.onClickDown}></ff-button>
+            <ff-button text="${languageManager.getUILocalizedString("Delete")}" icon="trash" ?disabled=${!activeStep} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch ff-flex-row">
             <div class="ff-splitter-section" style="flex-basis: 60%">

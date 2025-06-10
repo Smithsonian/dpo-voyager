@@ -36,11 +36,16 @@ export default class DerivativesTaskView extends TaskView<CVDerivativesTask>
 {
     protected render()
     {
+        if(!this.activeDocument) {
+            return;
+        }
+
         const node = this.activeNode;
         const model = node && node.model;
+        const languageManager = this.activeDocument.setup.language;
 
         if (!model) {
-            return html`<div class="sv-placeholder">Please select a model node to inspect its derivatives</div>`;
+            return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a model node to inspect its derivatives")}</div>`;
         }
 
         const derivatives = model.derivatives.getByUsage(EDerivativeUsage.Web3D);

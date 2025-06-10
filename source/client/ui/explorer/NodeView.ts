@@ -54,7 +54,7 @@ export default class NodeView extends DocumentView
 
         if (provider.activeNode) {
             this.activeNode = null;
-            this.onActiveNode(provider.activeNode, null);
+            this.onActiveNode(provider.activeNode, null); 
         }
 
         super.disconnected();

@@ -61,14 +61,14 @@ export default class TaskBar extends SystemView
     {
         this.taskProvider.on<ITaskSetEvent>("scoped-components", this.onUpdate, this);
         this.taskProvider.on<IActiveTaskEvent>("active-component", this.onUpdate, this);
-        this.language.outs.language.on("value", this.onUpdate, this);
+        this.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
         this.taskProvider.off<ITaskSetEvent>("scoped-components", this.onUpdate, this);
         this.taskProvider.off<IActiveTaskEvent>("active-component", this.onUpdate, this);
-        this.language.outs.language.off("value", this.onUpdate, this);
+        this.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected render()
@@ -79,23 +79,23 @@ export default class TaskBar extends SystemView
         const taskModeText = this.taskProvider.ins.mode.getOptionText();
         const downloadButtonVisible = taskMode !== ETaskMode.Standalone;
         const exitButtonVisible = taskMode !== ETaskMode.Standalone;
-        const language = this.language;
-        const saveName = language.getLocalizedString(taskMode !== ETaskMode.Standalone ? "Save" : "Download");
+        const languageManager = this.language;
+        const saveName = languageManager.getUILocalizedString(taskMode !== ETaskMode.Standalone ? "Save" : "Download");
         return html`
             <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
             <div class="sv-mode ff-text">${taskModeText}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
-                ${tasks.map((task, index) => html`<ff-button text=${language.getLocalizedString(task.text)} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
+                ${tasks.map((task, index) => html`<ff-button text=${languageManager.getUILocalizedString(task.text)} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
             </div>
             <div class="sv-divider"></div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group">
                 <ff-button text=${saveName} icon="save" @click=${this.onClickSave}></ff-button>
-                ${downloadButtonVisible ? html`<ff-button text="${language.getLocalizedString("Download")}" icon="download" @click=${this.onClickDownload}></ff-button>` : null}
-                ${exitButtonVisible ? html`<ff-button text="${language.getLocalizedString("Exit")}" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
+                ${downloadButtonVisible ? html`<ff-button text="${languageManager.getUILocalizedString("Download")}" icon="download" @click=${this.onClickDownload}></ff-button>` : null}
+                ${exitButtonVisible ? html`<ff-button text="${languageManager.getUILocalizedString("Exit")}" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
             </div>
         `;
     }
