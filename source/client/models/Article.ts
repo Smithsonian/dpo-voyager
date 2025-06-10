@@ -47,7 +47,7 @@ export default class Article extends Document<IArticle>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "New Article";
+        return this.data.titles[ELanguageType[this.language]] || "Missing translation";
     }
     set title(inTitle: string) {
         this.data.titles[ELanguageType[this.language]] = inTitle;
@@ -59,7 +59,7 @@ export default class Article extends Document<IArticle>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "New Article";
+        return this.data.titles[ELanguageType[this.language]] || "Missing translation";
     }
     
     titleIn(language: ELanguageType){
@@ -67,7 +67,7 @@ export default class Article extends Document<IArticle>
         if(Object.keys(this.data.titles).length === 0) {
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
-        return this.data.titles[language] || "New Article";
+        return this.data.titles[language];
     }
     
     get uri() {

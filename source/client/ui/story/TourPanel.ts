@@ -25,15 +25,14 @@ import CVDocument from "../../components/CVDocument";
 import CVTours from "../../components/CVTours";
 import CVToursTask from "../../components/CVToursTask";
 
-import DocumentView, { customElement, html } from "../explorer/DocumentView";
-import { ELanguageType } from "client/schema/common";
+import DocumentView, { customElement, html, TemplateResult } from "../explorer/DocumentView";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 interface IStepEntry
 {
-    title: string;
+    title: string | TemplateResult;
     curve: string;
     duration: string;
     threshold: string;
@@ -115,7 +114,8 @@ export default class TourPanel extends DocumentView
         }
 
         const activeStep = tours.activeStep;
-
+        const missingTitle = html `<span class="sv-missing-translation">Missing translation</span>`
+     
         const stepDetailView = activeStep ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${task.ins.stepTitle}></sv-property-view>
             <sv-property-view .property=${task.ins.stepCurve}></sv-property-view>
@@ -128,7 +128,7 @@ export default class TourPanel extends DocumentView
         this.stateTable.rows = tours.activeSteps.map(step => {
             const state = machine.getState(step.id);
             return {
-                title: step.titles[languageManager.codeString()] || "undefined",
+                title: step.titles[languageManager.codeString()] || missingTitle,
                 curve: EEasingCurve[state.curve],
                 duration: state.duration.toFixed(1) + "s",
                 threshold: (state.threshold * 100).toFixed(0) + "%",

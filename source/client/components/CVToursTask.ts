@@ -169,9 +169,15 @@ export default class CVToursTask extends CVTask
 
             // tour actions
             if (ins.tourTitle.changed || ins.tourLead.changed || ins.tourTags.changed) {
-                tours.title = ins.tourTitle.value;
-                tours.lead = ins.tourLead.value;
-                tours.taglist = ins.tourTags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                if (ins.tourTitle.changed) {
+                    tours.title = ins.tourTitle.value;
+                }
+                if (ins.tourLead.changed) {
+                    tours.lead = ins.tourLead.value;
+                }
+                if (ins.tourTags.changed) {
+                    tours.taglist = ins.tourTags.value.split(",").map(tag => tag.trim()).filter(tag => !!tag);
+                }
                 tours.ins.tourIndex.set();
                 return true;
             }

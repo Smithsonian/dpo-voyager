@@ -40,8 +40,9 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "New Annotation";
+        return this.data.titles[ELanguageType[this.language]] || "Missing translation";
     }
+
     set title(inTitle: string) {
         this.data.titles[ELanguageType[this.language]] = inTitle;
         this.update();
@@ -52,7 +53,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if(Object.keys(this.data.titles).length === 0) {
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
-        return this.data.titles[language] || "New Annotation";
+        return this.data.titles[language];
     }
     
     get lead() {

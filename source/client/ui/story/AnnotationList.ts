@@ -51,7 +51,13 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titleIn(this.primarySceneLanguage)}</div><div class="sv-task-item sv-item-border-l">${item.titleIn(this.activeLanguage)}</div></div>`
+        const primaryTitle = item.titleIn(this.primarySceneLanguage);
+        const activeTitle = item.titleIn(this.activeLanguage);
+        const missingTitle = html `<span class="sv-missing-translation">Missing translation</span>`
+        return html`<div class="ff-flex-row ff-group">
+            <div class="sv-task-item">${ primaryTitle? primaryTitle : missingTitle}</div>
+            <div class="sv-task-item sv-item-border-l">${activeTitle ? activeTitle : missingTitle}
+            </div></div>`
     }
 
     protected isItemSelected(item: Annotation)

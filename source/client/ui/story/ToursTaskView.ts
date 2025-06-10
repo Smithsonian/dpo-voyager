@@ -244,7 +244,14 @@ export class TourList extends List<ITour>
         if(Object.keys(item.titles).length === 0) { 
             item.titles[this.primarySceneLanguage] = item.title;
         }
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.titles[this.primarySceneLanguage]}</div><div class="sv-task-item sv-item-border-l">${item.titles[this.activeLanguage] || "New Tour"}</div></div>`;
+        const primaryTitle = item.titles[this.primarySceneLanguage];
+        const activeTitle = item.titles[this.activeLanguage];
+        const missingTitle = html `<span class="sv-missing-translation">Missing translation</span>`
+        
+        return html`<div class="ff-flex-row ff-group">
+        <div class="sv-task-item">${primaryTitle? primaryTitle : missingTitle}</div>
+        <div class="sv-task-item sv-item-border-l">${activeTitle ? activeTitle : missingTitle}</div>
+        </div>`;
     }
 
     protected isItemSelected(item: ITour)
