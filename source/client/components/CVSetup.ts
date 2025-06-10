@@ -20,6 +20,7 @@ import CTransform from "@ff/scene/components/CTransform";
 
 import { IDocument } from "client/schema/document";
 import { ISetup } from "client/schema/setup";
+import { ELanguageType } from "client/schema/common";
 
 import CVInterface from "./CVInterface";
 import CVViewer from "./CVViewer";
@@ -35,7 +36,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAudioManager from "./CVAudioManager";
-import { ELanguageType } from "client/schema/common";
+import CVDerivativesController from "./CVDerivativesController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,6 +62,7 @@ export default class CVSetup extends Component
         "reader": CVReader,
         "viewer": CVViewer,
         "navigation": CVOrbitNavigation,
+        "derivatives": CVDerivativesController, 
         "background": CVBackground,
         "environment": CVEnvironment,
         "language": CVLanguageManager,
@@ -83,6 +85,7 @@ export default class CVSetup extends Component
     reader: CVReader;
     viewer: CVViewer;
     navigation: CVOrbitNavigation;
+    derivatives: CVDerivativesController;
     background: CVBackground;
     floor: CVFloor;
     grid: CVGrid;

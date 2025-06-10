@@ -35,6 +35,7 @@ export interface CVTaskConfiguration{
     gridVisible?: boolean,
     annotationsVisible?: boolean,
     axesVisible?: boolean,
+    lodEnabled?: boolean
 }
 
 /**
@@ -74,6 +75,7 @@ export default class CVTask extends CVNodeObserver
         interfaceVisible: undefined,
         gridVisible: undefined,
         annotationsVisible: undefined,
+        lodEnabled: undefined,
     };
 
     private _savedConfig :CVTaskConfiguration = {
@@ -81,6 +83,7 @@ export default class CVTask extends CVNodeObserver
         interfaceVisible: undefined,
         gridVisible: undefined,
         annotationsVisible: undefined,
+        lodEnabled: undefined,
     };
 
     dispose()
@@ -148,8 +151,11 @@ export default class CVTask extends CVNodeObserver
             if (savedConfig.interfaceVisible !== undefined) {
                 previous.setup.interface.ins.visible.setValue(savedConfig.interfaceVisible);
             }
-            if(savedConfig.axesVisible !== undefined){
+            if(savedConfig.axesVisible !== undefined) {
                 previous.setup.grid.ins.axesEnabled.setValue(savedConfig.axesVisible);
+            }
+            if(savedConfig.lodEnabled !== undefined) {
+                previous.setup.derivatives.ins.enabled.setValue(savedConfig.lodEnabled);
             }
         }
         if (next) {
@@ -168,10 +174,15 @@ export default class CVTask extends CVNodeObserver
                 savedConfig.interfaceVisible = prop.value;
                 prop.setValue(!!configuration.interfaceVisible);
             }
-            if(configuration.axesVisible !== undefined){
+            if(configuration.axesVisible !== undefined) {
                 const prop = next.setup.grid.ins.axesEnabled;
                 savedConfig.axesVisible = prop.value;
                 prop.setValue(!!configuration.axesVisible);
+            }
+            if(configuration.lodEnabled !== undefined) {
+                const prop = next.setup.derivatives.ins.enabled;
+                savedConfig.lodEnabled = prop.value;
+                prop.setValue(!!configuration.lodEnabled);
             }
         }
     }
