@@ -68,7 +68,7 @@ export default class ChromeView extends DocumentView
     {
         super.connected();
         this.toolProvider.ins.visible.on("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.language.on("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.activeLanguage.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
@@ -82,7 +82,7 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.off("value", this.onUpdate, this);
-        this.activeDocument.setup.language.outs.language.off("value", this.onUpdate, this);
+        this.activeDocument.setup.language.outs.activeLanguage.off("value", this.onUpdate, this);
         this.toolProvider.ins.visible.off("value", this.onUpdate, this);
         super.disconnected();
     }
@@ -110,9 +110,9 @@ export default class ChromeView extends DocumentView
         const toursEnabled = setup.tours.ins.enabled.value;
         const tourActive = setup.tours.outs.tourIndex.value >= 0;
 
-        const language = setup.language;
-        const languages = language.activeLanguages;
-        const activeLanguage = language.outs.language.value;
+        const languageManager = setup.language;
+        const languages = languageManager.sceneLanguages;
+        const activeLanguage = languageManager.outs.activeLanguage.value;
         const languagesVisible = languages.length > 1 && setup.interface.isShowing(EUIElements.language);
 
         const captionsVisible = setup.audio.outs.isPlaying.value && setup.audio.getClipCaptionUri(setup.audio.activeId);
@@ -147,10 +147,10 @@ export default class ChromeView extends DocumentView
 
         if (toursEnabled) {
             if (!tourActive) {
-                title = language.getLocalizedString("Interactive Tours");
+                title = languageManager.getLocalizedString("Interactive Tours");
             }
             else {
-                title = language.getLocalizedString("Tour") + ": " + setup.tours.outs.tourTitle.value;
+                title = languageManager.getLocalizedString("Tour") + ": " + setup.tours.outs.tourTitle.value;
             }
         }
         else {
@@ -177,11 +177,11 @@ export default class ChromeView extends DocumentView
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
-                    ${interfaceVisible ? html`<ff-button icon="undo" id="main-reset" title=${language.getLocalizedString("Reset")} ?selected=${false} @click=${this.resetViewer} class="sv-text-icon"></ff-button>` : ""}
-                    ${captionsVisible ? html`<ff-button icon="caption" id="main-caption" title=${language.getLocalizedString("Captions")} ?selected=${captionsEnabled} @click=${this.updateCaptions} class="sv-text-icon"></ff-button>` : ""}
+                    ${interfaceVisible ? html`<ff-button icon="undo" id="main-reset" title=${languageManager.getLocalizedString("Reset")} ?selected=${false} @click=${this.resetViewer} class="sv-text-icon"></ff-button>` : ""}
+                    ${captionsVisible ? html`<ff-button icon="caption" id="main-caption" title=${languageManager.getLocalizedString("Captions")} ?selected=${captionsEnabled} @click=${this.updateCaptions} class="sv-text-icon"></ff-button>` : ""}
                     ${languagesVisible ? html`<ff-button id="language" style=${setup.language.codeString().length > 2 ? "font-size:0.9em"
-                         : ""} text=${setup.language.codeString()} title=${language.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
-                    ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${language.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
+                         : ""} text=${setup.language.codeString()} title=${languageManager.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
+                    ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${languageManager.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
             </div>`;
     }
