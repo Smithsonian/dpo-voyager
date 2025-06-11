@@ -213,7 +213,19 @@ export default class CVDerivativesController extends Component{
   tock(context :IPulseContext) :boolean{
     const cameraComponent = this._scene?.activeCameraComponent;
     if (!this.ins.enabled.value || !cameraComponent) {
-        return false;
+      let modifiedAModel = false;
+      this.getGraphComponents(CVModel2).map(model=>{
+        // Wait for thumb quality to load
+        if (!model.isLoading()){
+          // Load the highest quality derivative available
+          const highestQualityDerivative = model.derivatives.select(EDerivativeUsage.Web3D, 4);
+          if(highestQualityDerivative && highestQualityDerivative.data.quality != model.ins.quality.value){
+            model.ins.quality.setValue(highestQualityDerivative.data.quality);
+            modifiedAModel = true;
+          }
+        }
+      })
+      return modifiedAModel;
     }
 
     if(!context.tickUpdated && !context.tockUpdated && !this._should_update) return false;
