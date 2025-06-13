@@ -98,6 +98,8 @@ export default class CVMeta extends Component
         if (data.actions) {
             const actionDict = {};
             data.actions.forEach(action => {
+                action.animation ??= "";
+                action.audioId ??= "";
                 actionDict[action.id] = action;
             });
             this.actions.dictionary = actionDict;

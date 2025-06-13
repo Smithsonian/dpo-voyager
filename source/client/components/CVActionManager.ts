@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
-import Component from "@ff/graph/Component";
+import Component, { IComponentEvent } from "@ff/graph/Component";
 import CVMeta from "./CVMeta";
-import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle } from "client/schema/meta";
+import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVAssetManager from "./CVAssetManager";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAnalytics from "./CVAnalytics";
-import CVModel2 from "./CVModel2";
+import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CVAudioManager from "./CVAudioManager";
-import { AnimationAction, AnimationClip, AnimationMixer, Clock, LoopOnce } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, Clock, LoopOnce, LoopRepeat } from "three";
 import { Dictionary } from "@ff/core/types";
+import { AnnotationElement } from "client/annotations/AnnotationSprite";
+import SceneView from "client/ui/SceneView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,21 +48,16 @@ export default class CVActionManager extends Component
     private _activeClip: AnimationAction = null;
     private _direction: Dictionary<number> = {};
 
-    protected static readonly ins = {
-        //playNarration: types.Event("Audio.PlayNarration"),
-        //activeCaption: types.String("Audio.ActiveCaption"),
-        //captionsEnabled: types.Boolean("Audio.CaptionsEnabled", true),
+    /*protected static readonly ins = {
+        //playAnimation: types.Event("ActionManager.PlayAnimation")
     };
 
     protected static readonly outs = {
-        //narrationEnabled: types.Boolean("Audio.NarrationEnabled", false),
-        //narrationPlaying: types.Boolean("Audio.NarrationPlaying", false),
-        //isPlaying: types.Boolean("Audio.IsPlaying", false),
-        //updated: types.Event("Audio.Updated")
+        //animationPlaying: types.Boolean("ActionManager.AnimationPlaying", false)
     };
 
     ins = this.addInputs(CVActionManager.ins);
-    outs = this.addOutputs(CVActionManager.outs);
+    outs = this.addOutputs(CVActionManager.outs);*/
 
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
@@ -84,12 +81,14 @@ export default class CVActionManager extends Component
             e.action.stop();
         });
 
+        this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
     }
 
     dispose()
     {
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.graph.components.off(CVModel2, this.onModelComponent, this);
 
         super.dispose();
     }
@@ -109,6 +108,12 @@ export default class CVActionManager extends Component
         }
 
         if (event.component && event.component.is(CVModel2)) {
+            // Don't allow triggering events through an annotation
+            const annotationClick = event.originalEvent.composedPath().slice(0,5).some((elem) => elem instanceof AnnotationElement);
+            if(annotationClick) {
+                return;
+            }
+            
             const meta = event.component.node.getComponent(CVMeta);
             if(meta) { 
                 const clickActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger);
@@ -118,32 +123,7 @@ export default class CVActionManager extends Component
                             this.audio.play(action.audioId);
                         }
                         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
-                            const mesh = (event.component as CVModel2).object3D.children[0].children[0];
-                            const meshParent = (event.component as CVModel2).object3D.parent;
-
-                            // move animation target to parent so annotations are also affected
-                            meshParent.name = mesh.name;
-                            mesh.matrixAutoUpdate = false;
-                            meshParent.matrixAutoUpdate = true;
-                            const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), meshParent);
-                            
-                            if(!clip.isRunning()) {
-                                // handle ping-pong directions
-                                if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
-                                    const clipName = clip.getClip().name;
-                                    if(Object.keys(this._direction).includes(clipName)) {
-                                        this._direction[clipName] *= -1;
-                                        clip.timeScale = this._direction[clipName];
-                                        clip.time = clip.timeScale > 0 ? 0 : clip.getClip().duration;
-                                    }
-                                    else {
-                                        this._direction[clipName] = 1;
-                                    }
-                                }
-
-                                clip.setLoop(LoopOnce, 1);
-                                clip.play();
-                            }
+                            this.playAnimation(event.component as CVModel2, action);
                         }
                     });
                 }
@@ -161,5 +141,62 @@ export default class CVActionManager extends Component
         }
 
         return false;
+    }
+
+    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
+        }
+        else if (event.remove) {
+            component.off<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
+        }
+    }
+
+    protected onModelLoad(event: IModelLoadEvent, component: CVModel2)
+    {
+        const meta = component.node.getComponent(CVMeta);
+        if(meta) {
+            const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
+            if(loadActions.length > 0) {
+                loadActions.forEach((action) => {
+                    this.playAnimation(component as CVModel2, action);
+                });
+            }
+        }
+    }
+
+    protected playAnimation(component: CVModel2, action: IAction) 
+    {
+        const mesh = component.object3D.children[0].children[0];
+        const meshParent = component.object3D.parent;
+
+        // move animation target to parent so annotations are also affected
+        meshParent.name = mesh.name;
+        mesh.matrixAutoUpdate = false;
+        meshParent.matrixAutoUpdate = true;
+        const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), meshParent);
+        
+        if(clip && !clip.isRunning()) {
+            // handle ping-pong directions
+            if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
+                const clipName = clip.getClip().name;
+                if(Object.keys(this._direction).includes(clipName)) {
+                    this._direction[clipName] *= -1;
+                    clip.timeScale = this._direction[clipName];
+                    clip.time = clip.timeScale > 0 ? 0 : clip.getClip().duration;
+                }
+                else {
+                    this._direction[clipName] = 1;
+                }
+            }
+
+            const isLooping = (action.style == EActionPlayStyle[EActionPlayStyle.Loop] as TActionPlayStyle)
+
+            isLooping ? clip.setLoop(LoopRepeat, Infinity) : clip.setLoop(LoopOnce, 1);
+            clip.play();
+        }
     }
 }

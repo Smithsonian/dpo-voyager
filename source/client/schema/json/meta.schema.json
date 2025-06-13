@@ -151,7 +151,7 @@
                 },
                 "trigger": {
                     "type": "string",
-                    "enum": [ "OnClick" ]
+                    "enum": [ "OnClick", "OnLoad" ]
                 },
                 "audioId": {
                     "type": "string",
@@ -163,7 +163,7 @@
                 },
                 "style": {
                     "type": "string",
-                    "enum": [ "Single", "PingPong" ]
+                    "enum": [ "Single", "PingPong", "Loop" ]
                 }
             },
             "required": [
