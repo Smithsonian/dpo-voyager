@@ -296,7 +296,13 @@ export default class CVModel2 extends CObject3D
         }
 
         if (!this.activeDerivative && ins.autoLoad.changed && ins.autoLoad.value) {
-            this.autoLoad();
+            this.autoLoad().then(()=> {
+                let setup = this.getGraphComponent(CVSetup);
+                 if (!setup.derivatives.ins.enabled.value){
+                    const derivative = this.derivatives.select(EDerivativeUsage.Web3D, EDerivativeQuality.Highest);
+                    this.ins.quality.setValue(derivative.data.quality);
+                 }
+            });
         }
         else if (ins.quality.changed) {
             const derivative = this.derivatives.select(EDerivativeUsage.Web3D, ins.quality.value);
