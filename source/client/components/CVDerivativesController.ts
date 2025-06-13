@@ -213,7 +213,7 @@ export default class CVDerivativesController extends Component{
   tock(context :IPulseContext) :boolean{
     const cameraComponent = this._scene?.activeCameraComponent;
     if (!this.ins.enabled.value || !cameraComponent) {
-        return false;
+      return false
     }
 
     if(!context.tickUpdated && !context.tockUpdated && !this._should_update) return false;
