@@ -316,7 +316,8 @@ Version: ${ENV_VERSION}
         props.lang = props.lang || qs.get("lang") || qs.get("l");
 
         const url = props.root || props.document || props.model || props.geometry;
-        this.setBaseUrl(new URL(url || ".", window.location as any).href);
+        const isDataURL = props.document && props.document.startsWith("data:");
+        this.setBaseUrl(isDataURL ? "" : new URL(url || ".", window.location as any).href);
 
         // Config custom UI layout
         if (props.uiMode) {
@@ -354,7 +355,7 @@ Version: ${ENV_VERSION}
 
         if (props.document) {
             // first loading priority: document
-            props.document = manager.getAssetName(props.document);
+            props.document = isDataURL ? props.document : manager.getAssetName(props.document);
             this.loadDocument(props.document, undefined, props.quality)
             .then(() => this.postLoadHandler(props))
             .catch(error => Notification.show(`Failed to load document: ${error.message}`, "error"));
@@ -767,7 +768,7 @@ Version: ${ENV_VERSION}
         const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
 
         iiifManifest.loadManifest().then(() => {
-        activeDoc.ins.title.setValue(iiifManifest.manifest.__jsonld.label["en"][0]);
+        activeDoc.ins.title.setValue(iiifManifest.manifest.getLabel().getValue());
         const scenes = iiifManifest.scenes;
         scenes.forEach(scene => {
             const iiifModels = [];
