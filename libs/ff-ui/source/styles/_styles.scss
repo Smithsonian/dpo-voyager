@@ -273,6 +273,10 @@ button, input {
   overflow-y: auto;
 }
 
+.ff-scroll-x{
+  overflow-x: auto;
+}
+
 .ff-position-above {
   position: absolute;
   bottom: 0;
@@ -482,6 +486,9 @@ button, input {
     justify-content: flex-start;
     margin: 0;
     padding: 4px 4px;
+    &.ff-control{
+      flex-wrap: nowrap;
+    }
 
     .ff-icon {
       height: 1.2em;
