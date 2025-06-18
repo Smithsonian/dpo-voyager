@@ -151,9 +151,13 @@
                 },
                 "trigger": {
                     "type": "string",
-                    "enum": [ "OnClick", "OnLoad" ]
+                    "enum": [ "OnClick", "OnLoad", "OnAnnotation" ]
                 },
                 "audioId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "annotationId": {
                     "type": "string",
                     "minLength": 1
                 },

@@ -23,7 +23,7 @@ import "./PropertyView";
 import CVActionsTask from "../../components/CVActionsTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
 import List from "client/../../libs/ff-ui/source/List";
-import { EActionType, IAction, IAudioClip, TActionType } from "client/schema/meta";
+import { EActionTrigger, EActionType, IAction, IAudioClip, TActionType } from "client/schema/meta";
 import Notification from "@ff/ui/Notification";
 import CVAnnotationView from "client/components/CVAnnotationView";
 
@@ -72,9 +72,13 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             <sv-property-view .property=${ins.style}></sv-property-view>
             <sv-property-view .property=${ins.animation}></sv-property-view>
         ` : null;
+        const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`
+            <sv-property-view .property=${ins.annotation}></sv-property-view>
+        ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${ins.trigger}></sv-property-view>
+            ${annoView}
             <sv-property-view .property=${ins.type}></sv-property-view>
             ${audioActionView}
             ${animActionView}

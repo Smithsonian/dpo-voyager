@@ -24,12 +24,20 @@ import CVAnalytics from "./CVAnalytics";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CVAudioManager from "./CVAudioManager";
-import { AnimationAction, AnimationClip, AnimationMixer, Clock, LoopOnce, LoopRepeat } from "three";
+import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
 import { AnnotationElement } from "client/annotations/AnnotationSprite";
 import SceneView from "client/ui/SceneView";
+import CVViewer from "./CVViewer";
+import CVAnnotationView from "./CVAnnotationView";
+import * as helpers from "@ff/three/helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _vec3a = new Vector3();
+const _vec3b = new Vector3();
+const _quat = new Quaternion();
+const _mat4 = new Matrix4();
 
 /**
  * Component that manages scene actions.
@@ -47,6 +55,7 @@ export default class CVActionManager extends Component
     private _mixer: AnimationMixer = null;
     private _activeClip: AnimationAction = null;
     private _direction: Dictionary<number> = {};
+    private _annoActions: Dictionary<CVModel2> = {};
 
     /*protected static readonly ins = {
         //playAnimation: types.Event("ActionManager.PlayAnimation")
@@ -71,6 +80,9 @@ export default class CVActionManager extends Component
     protected get audio() {
         return this.getGraphComponent(CVAudioManager);
     }
+    protected get viewer() {
+        return this.getGraphComponent(CVViewer);
+    }
 
     create()
     {
@@ -83,10 +95,12 @@ export default class CVActionManager extends Component
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.viewer.ins.activeAnnotation.on("value", this.onAnnotationChange, this);
     }
 
     dispose()
     {
+        this.viewer.ins.activeAnnotation.off("value", this.onAnnotationChange, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
 
@@ -157,7 +171,7 @@ export default class CVActionManager extends Component
 
     protected onModelLoad(event: IModelLoadEvent, component: CVModel2)
     {
-        const meta = component.node.getComponent(CVMeta);
+        const meta = component.node.getComponent(CVMeta, true);
         if(meta) {
             const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
             if(loadActions.length > 0) {
@@ -168,21 +182,59 @@ export default class CVActionManager extends Component
         }
     }
 
+    protected onAnnotationChange() {
+        const id = this.viewer.ins.activeAnnotation.value;
+
+        this.getGraphComponents(CVMeta).forEach((meta) => {
+            const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id});
+            if(actions.length > 0) {
+                actions.forEach((action) => {
+                    if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+                        this.playAnimation(meta.node.getComponent(CVModel2), action);
+                    }
+                });
+            }
+        });
+    }
+
     protected playAnimation(component: CVModel2, action: IAction) 
     {
         const mesh = component.object3D.children[0].children[0];
-        const meshParent = component.object3D.parent;
+        const meshParent = component.object3D;
+        const annotations = component.node.getComponent(CVAnnotationView).object3D;
 
-        // move animation target to parent so annotations are also affected
-        meshParent.name = mesh.name;
-        mesh.matrixAutoUpdate = false;
-        meshParent.matrixAutoUpdate = true;
-        const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), meshParent);
+        //** This is very hacky, but necessary due to the baked nature of annotation transforms.    */
+        //** Fixing this would likely mean breaking any backwards compatibility with annotations... */
+        {
+            // insert new annotation offset nodes
+            if(annotations.parent.name !== mesh.name) {
+                annotations.parent.add(new Object3D().add(new Object3D().add(annotations)));
+                annotations.parent.name = mesh.name;
+                annotations.parent.parent.matrixAutoUpdate = false;
+                
+            } 
+            mesh.matrixAutoUpdate = true;   
+            // add offset to remove baked transforms
+            meshParent.matrix.decompose(_vec3a, _quat, _vec3b);
+            _vec3a.multiplyScalar(1/_vec3b.x);
+            _vec3b.setScalar(1);
+            annotations.matrix.compose(_vec3a, _quat, _vec3b).invert();
+            annotations.matrix.multiply(_mat4.copy(mesh.matrix).invert()); // include potential base mesh offset
+
+            // re-add transforms
+            annotations.parent.parent.matrix.copy(meshParent.matrix);
+            annotations.parent.parent.matrixWorldNeedsUpdate = true;
+        }
+        
+        const animGroup: AnimationObjectGroup = new AnimationObjectGroup(mesh, annotations.parent);
+ 
+        const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), animGroup);
         
         if(clip && !clip.isRunning()) {
             // handle ping-pong directions
             if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
                 const clipName = clip.getClip().name;
+                clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;
                     clip.timeScale = this._direction[clipName];

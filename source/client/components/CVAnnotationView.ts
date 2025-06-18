@@ -232,7 +232,7 @@ export default class CVAnnotationView extends CObject3D
         const annotation = this.activeAnnotation;
 
         if (ins.unitScale.changed) {
-            object3D.scale.setScalar(ins.unitScale.value);
+            object3D.scale.setScalar(ins.unitScale.value);console.log(ins.unitScale.value[0]);
             object3D.updateMatrix();
         }
         if (ins.activeTags.changed) {

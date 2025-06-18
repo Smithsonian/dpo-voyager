@@ -27,6 +27,7 @@ import { EActionTrigger, EActionType, EActionPlayStyle, TActionTrigger, TActionT
 import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVModel2 from "./CVModel2";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +47,7 @@ export default class CVActionsTask extends CVTask
         style: types.Enum("Action.Style", EActionPlayStyle, EActionPlayStyle.Single),
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
+        annotation: types.Option("Action.Annotation", ["None"], 0),
     };
 
     protected static readonly outs = {
@@ -130,6 +132,10 @@ export default class CVActionsTask extends CVTask
                 const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
                 action.audioId = id;
             }
+            if(ins.annotation.changed) {
+                const id = ins.annotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.annotation.value - 1].id : "";
+                action.annotationId = id;
+            }
             // handle action types UI update
             if(ins.type.changed) {
                 if(EActionType[action.type] == EActionType.PlayAnimation) {
@@ -155,6 +161,7 @@ export default class CVActionsTask extends CVTask
             ins.trigger.setValue(EActionTrigger[action.trigger], true);
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : null);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : null);
+            ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
         }
     }
@@ -181,6 +188,12 @@ export default class CVActionsTask extends CVTask
                 }
             });
             this.ins.animation.setOptions(animOptions);
+
+            const annoOptions = ["None"];
+            model.getComponent(CVAnnotationView).getAnnotations().forEach((anno) => {
+                annoOptions.push(anno.title);
+            });
+            this.ins.annotation.setOptions(annoOptions);
 
             this.meta = next.meta;
         }
