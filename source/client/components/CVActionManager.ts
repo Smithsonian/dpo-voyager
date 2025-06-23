@@ -55,6 +55,8 @@ export default class CVActionManager extends Component
     private _mixer: AnimationMixer = null;
     private _activeClip: AnimationAction = null;
     private _direction: Dictionary<number> = {};
+    private _initialOffset: Dictionary<Matrix4> = {};
+    private _animGroups: Dictionary<AnimationObjectGroup> = {};
     private _annoActions: Dictionary<CVModel2> = {};
 
     /*protected static readonly ins = {
@@ -89,9 +91,9 @@ export default class CVActionManager extends Component
         super.create();
 
         this._mixer = new AnimationMixer(null);
-        this._mixer.addEventListener( 'finished', function(e) {
+        /*this._mixer.addEventListener( 'finished', function(e) {
             e.action.stop();
-        });
+        });*/
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -211,7 +213,9 @@ export default class CVActionManager extends Component
                 annotations.parent.add(new Object3D().add(new Object3D().add(annotations)));
                 annotations.parent.name = mesh.name;
                 annotations.parent.parent.matrixAutoUpdate = false;
-                
+
+                this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);
+                this._animGroups[mesh.id] = new AnimationObjectGroup(mesh, annotations.parent);
             } 
             mesh.matrixAutoUpdate = true;   
             // add offset to remove baked transforms
@@ -219,18 +223,17 @@ export default class CVActionManager extends Component
             _vec3a.multiplyScalar(1/_vec3b.x);
             _vec3b.setScalar(1);
             annotations.matrix.compose(_vec3a, _quat, _vec3b).invert();
-            annotations.matrix.multiply(_mat4.copy(mesh.matrix).invert()); // include potential base mesh offset
+            annotations.matrix.multiply(_mat4.copy(this._initialOffset[mesh.id]).invert()) // include potential base mesh offset
 
             // re-add transforms
             annotations.parent.parent.matrix.copy(meshParent.matrix);
             annotations.parent.parent.matrixWorldNeedsUpdate = true;
         }
         
-        const animGroup: AnimationObjectGroup = new AnimationObjectGroup(mesh, annotations.parent);
- 
-        const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), animGroup);
-        
+        const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[mesh.id]);
+
         if(clip && !clip.isRunning()) {
+            clip.reset();
             // handle ping-pong directions
             if(action.style == EActionPlayStyle[EActionPlayStyle.PingPong] as TActionPlayStyle) {
                 const clipName = clip.getClip().name;
