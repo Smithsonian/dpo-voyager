@@ -88,6 +88,7 @@ export default class CVActionsTask extends CVTask
     activateTask()
     {   
         super.activateTask();
+        this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
     }
 
     deactivateTask()
@@ -190,11 +191,7 @@ export default class CVActionsTask extends CVTask
             });
             this.ins.animation.setOptions(animOptions);
 
-            const annoOptions = ["None"];
-            model.getComponent(CVAnnotationView).getAnnotations().forEach((anno) => {
-                annoOptions.push(anno.title);
-            });
-            this.ins.annotation.setOptions(annoOptions);
+            this.synchAnnotationOptions(model);
             this.ins.activeId.setValue("");
 
             this.meta = next.meta;
@@ -223,5 +220,14 @@ export default class CVActionsTask extends CVTask
         const options = ["None"];
         options.push(...audioManager.getAudioList().map(clip => clip.name));
         this.ins.audio.setOptions(options);
+    }
+
+    // Update annotation options
+    protected synchAnnotationOptions(model: CVModel2) {
+        const annoOptions = ["None"];
+        model.getComponent(CVAnnotationView).getAnnotations().forEach((anno) => {
+            annoOptions.push(anno.title);
+        });
+        this.ins.annotation.setOptions(annoOptions);
     }
 }
