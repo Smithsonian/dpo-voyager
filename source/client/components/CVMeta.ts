@@ -145,9 +145,9 @@ export default class CVMeta extends Component
             data = data || {};
             data.actions = this.actions.items;
             data.actions.forEach(action => {
-                action.animation.length < 1 ? delete action.animation : null;
-                action.audioId.length < 1 ? delete action.audioId : null;
-                action.annotationId.length < 1 ? delete action.annotationId : null;
+                action.animation?.length < 1 ? delete action.animation : null;
+                action.audioId?.length < 1 ? delete action.audioId : null;
+                action.annotationId?.length < 1 ? delete action.annotationId : null;
             });
         }
 
