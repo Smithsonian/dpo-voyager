@@ -112,6 +112,7 @@ export default class CVActionsTask extends CVTask
                     animation: ""
                 };
                 meta.actions.items = [action];
+                ins.activeId.setValue(action.id);
                 return true;
             }
             if (ins.delete.changed) {
@@ -153,14 +154,14 @@ export default class CVActionsTask extends CVTask
     protected onActionChange()
     {
         const ins = this.ins;
-        const action = this.meta.actions.get(ins.activeId.value);
+        const action = this.meta && this.meta.actions.get(ins.activeId.value);
         const audioManager = this.activeDocument.setup.audio;
 
         if(action) {
             ins.type.setValue(EActionType[action.type], true);
             ins.trigger.setValue(EActionTrigger[action.trigger], true);
-            ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : null);
-            ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : null);
+            ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
+            ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
         }
@@ -194,6 +195,7 @@ export default class CVActionsTask extends CVTask
                 annoOptions.push(anno.title);
             });
             this.ins.annotation.setOptions(annoOptions);
+            this.ins.activeId.setValue("");
 
             this.meta = next.meta;
         }

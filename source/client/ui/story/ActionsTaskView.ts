@@ -32,18 +32,14 @@ import CVAnnotationView from "client/components/CVAnnotationView";
 @customElement("sv-actions-task-view")
 export default class ActionsTaskView extends TaskView<CVActionsTask>
 {
-    protected selectedIndex = -1;
-
     protected connected()
     {
         super.connected();
         this.task.on("update", this.onUpdate, this);
-        //this.activeDocument.setup.audio.outs.narrationPlaying.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
     {
-        //this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
         this.task.off("update", this.onUpdate, this);
         super.disconnected();
     }
@@ -63,7 +59,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             return html`<div class="sv-placeholder">Please select a model node to edit its actions.</div>`;
         }
 
-        const actionElement = actionList[this.selectedIndex];
+        const actionElement = actionList.find((action) => action.id === ins.activeId.value);
 
         const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
             <sv-property-view .property=${ins.audio}></sv-property-view>
@@ -116,7 +112,6 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
 
     protected onSelectAction(event: ISelectActionEvent)
     {
-        this.selectedIndex = event.detail.index;
         this.task.ins.activeId.setValue(event.detail.action ? event.detail.action.id : "");
         this.onUpdate();
     }
