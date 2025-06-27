@@ -27,10 +27,9 @@ import CVAudioManager from "./CVAudioManager";
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
 import { AnnotationElement } from "client/annotations/AnnotationSprite";
-import SceneView from "client/ui/SceneView";
 import CVViewer from "./CVViewer";
 import CVAnnotationView from "./CVAnnotationView";
-import * as helpers from "@ff/three/helpers";
+import CVSnapshots from "./CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,18 +56,7 @@ export default class CVActionManager extends Component
     private _direction: Dictionary<number> = {};
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
-    private _annoActions: Dictionary<CVModel2> = {};
-
-    /*protected static readonly ins = {
-        //playAnimation: types.Event("ActionManager.PlayAnimation")
-    };
-
-    protected static readonly outs = {
-        //animationPlaying: types.Boolean("ActionManager.AnimationPlaying", false)
-    };
-
-    ins = this.addInputs(CVActionManager.ins);
-    outs = this.addOutputs(CVActionManager.outs);*/
+    private _animQueue = [];
 
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
@@ -85,6 +73,9 @@ export default class CVActionManager extends Component
     protected get viewer() {
         return this.getGraphComponent(CVViewer);
     }
+    protected get snapshots() {
+        return this.getGraphComponent(CVSnapshots, true);
+    }
 
     create()
     {
@@ -97,12 +88,14 @@ export default class CVActionManager extends Component
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
-        this.viewer.ins.activeAnnotation.on("value", this.onAnnotationChange, this);
+        this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
+        this.snapshots.outs.end.on("value", this.onTransitionEnd, this);
     }
 
     dispose()
     {
-        this.viewer.ins.activeAnnotation.off("value", this.onAnnotationChange, this);
+        this.snapshots.outs.end.off("value", this.onTransitionEnd, this);
+        this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
 
@@ -184,7 +177,7 @@ export default class CVActionManager extends Component
         }
     }
 
-    protected onAnnotationChange() {
+    protected onAnnotationActivate() {
         const id = this.viewer.ins.activeAnnotation.value;
 
         this.getGraphComponents(CVMeta).forEach((meta) => {
@@ -192,11 +185,27 @@ export default class CVActionManager extends Component
             if(actions.length > 0) {
                 actions.forEach((action) => {
                     if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
-                        this.playAnimation(meta.node.getComponent(CVModel2), action);
+                        const model = meta.node.getComponent(CVModel2);
+                        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
+                        if(annotation.data.viewId) {
+                            // Queue up animations for annos that haveviews so we can chain the transitions
+                            this._animQueue.push({model: model, action: action});
+                        }
+                        else {
+                            this.playAnimation(model, action);
+                        }
                     }
                 });
             }
         });
+    }
+
+    protected onTransitionEnd() {
+        // Handle playing animations queued up during snapshot tweens
+        while(this._animQueue.length > 0) {
+            const action = this._animQueue.pop();
+            this.playAnimation(action.model, action.action);
+        }
     }
 
     protected playAnimation(component: CVModel2, action: IAction) 

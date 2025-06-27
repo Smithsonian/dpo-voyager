@@ -103,11 +103,11 @@ export default class CVSetup extends Component
         const node = this.node;
         const features = CVSetup.featureMap;
 
+        this.snapshots = node.createComponent(CVSnapshots);
+
         for (const name in features) {
             this[name] = node.createComponent(features[name]);
-        }
-
-        this.snapshots = node.createComponent(CVSnapshots);
+        }    
     }
 
     update()

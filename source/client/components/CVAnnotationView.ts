@@ -373,10 +373,10 @@ export default class CVAnnotationView extends CObject3D
         return Object.keys(this._annotations).map(key => this._annotations[key]);
     }
 
-    // getAnnotationById(id: string)
-    // {
-    //     return this._annotations[id];
-    // }
+    getAnnotationById(id: string)
+    {
+        return this._annotations[id];
+    }
 
     addAnnotation(annotation: Annotation)
     {
