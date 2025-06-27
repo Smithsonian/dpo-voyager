@@ -72,6 +72,8 @@ export default class CVActionsTask extends CVTask
     {
         super.create();
         this.startObserving();
+
+        this.ins.type.schema.options.pop(); // **REMOVE when audio actions implemented
     }
 
     dispose()

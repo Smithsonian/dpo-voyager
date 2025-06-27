@@ -24,7 +24,7 @@ import CVActionsTask from "../../components/CVActionsTask";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
 import List from "client/../../libs/ff-ui/source/List";
 import { EActionTrigger, EActionType, IAction, IAudioClip, TActionType } from "client/schema/meta";
-import Notification from "@ff/ui/Notification";
+//import Notification from "@ff/ui/Notification";
 import CVAnnotationView from "client/components/CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////

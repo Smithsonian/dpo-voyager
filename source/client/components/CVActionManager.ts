@@ -188,7 +188,7 @@ export default class CVActionManager extends Component
                         const model = meta.node.getComponent(CVModel2);
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
                         if(annotation.data.viewId) {
-                            // Queue up animations for annos that haveviews so we can chain the transitions
+                            // Queue up animations for annos that have views so we can chain the transitions
                             this._animQueue.push({model: model, action: action});
                         }
                         else {
