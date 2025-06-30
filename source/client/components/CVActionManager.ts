@@ -123,7 +123,7 @@ export default class CVActionManager extends Component
                 return;
             }
             
-            const meta = event.component.node.getComponent(CVMeta);
+            const meta = event.component.node.getComponent(CVMeta, true);
             if(meta) { 
                 const clickActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger);
                 if(clickActions.length > 0) {

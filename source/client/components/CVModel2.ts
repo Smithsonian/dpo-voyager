@@ -508,6 +508,8 @@ export default class CVModel2 extends CObject3D
         // trigger automatic loading of derivatives if active
         this.ins.autoLoad.set();
 
+        this.assetManager.initialLoad = true;
+
         return node.model;
     }
 
