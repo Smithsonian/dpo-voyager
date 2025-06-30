@@ -25,7 +25,7 @@ import ExplorerApplication from "client/applications/ExplorerApplication";
 import MainView from "client/ui/explorer/MainView";
 import CVDocumentProvider from "./CVDocumentProvider";
 import ImportMenu from "client/ui/story/ImportMenu";
-import CVModel2 from "./CVModel2";
+import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { EDerivativeUsage } from "client/schema/model";
 import CSelection from "@ff/graph/components/CSelection";
 import CVMeta from "./CVMeta";
@@ -182,7 +182,7 @@ export default class CVMediaManager extends CAssetManager
                 newModel.node.name = name;
                 newModel.ins.name.setValue(name);
                 newModel.ins.quality.setValue(quality);
-                selection.selectNode(newModel.node);
+                newModel.once<IModelLoadEvent>("model-load", () => selection.selectNode(newModel.node), this);
             }
             else {
                 model.derivatives.remove(EDerivativeUsage.Web3D, quality);
