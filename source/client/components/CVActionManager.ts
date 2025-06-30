@@ -87,16 +87,16 @@ export default class CVActionManager extends Component
         });*/
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
+        this.graph.components.on(CVSnapshots, this.onSnapshotsComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
-        this.snapshots.outs.end.on("value", this.onTransitionEnd, this);
     }
 
     dispose()
     {
-        this.snapshots.outs.end.off("value", this.onTransitionEnd, this);
         this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
+        this.graph.components.off(CVSnapshots, this.onSnapshotsComponent, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
 
         super.dispose();
@@ -161,6 +161,18 @@ export default class CVActionManager extends Component
         }
         else if (event.remove) {
             component.off<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
+        }
+    }
+
+    protected onSnapshotsComponent(event: IComponentEvent<CVSnapshots>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.outs.end.on("value", this.onTransitionEnd, this);
+        }
+        else if (event.remove) {
+            component.outs.end.off("value", this.onTransitionEnd, this);
         }
     }
 
