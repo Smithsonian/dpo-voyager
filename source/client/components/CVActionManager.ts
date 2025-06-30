@@ -263,4 +263,8 @@ export default class CVActionManager extends Component
             clip.play();
         }
     }
+
+    // To save/load future configuration options
+    fromData() {}
+    toData() { return null; }
 }
