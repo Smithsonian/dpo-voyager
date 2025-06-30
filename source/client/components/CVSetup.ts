@@ -37,6 +37,7 @@ import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAudioManager from "./CVAudioManager";
 import CVDerivativesController from "./CVDerivativesController";
+import CVActionManager from "./CVActionManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,7 +72,8 @@ export default class CVSetup extends Component
         "tape": CVTape,
         "slicer": CVSlicer,
         "tours": CVTours,
-        "audio": CVAudioManager
+        "audio": CVAudioManager,
+        "actions": CVActionManager
     };
 
     get featureMap() {
@@ -96,6 +98,7 @@ export default class CVSetup extends Component
     environment: CVEnvironment;
     language: CVLanguageManager;
     audio: CVAudioManager;
+    actions: CVActionManager;
 
     create()
     {
@@ -104,11 +107,11 @@ export default class CVSetup extends Component
         const node = this.node;
         const features = CVSetup.featureMap;
 
+        this.snapshots = node.createComponent(CVSnapshots);
+
         for (const name in features) {
             this[name] = node.createComponent(features[name]);
-        }
-
-        this.snapshots = node.createComponent(CVSnapshots);
+        }    
     }
 
     update()

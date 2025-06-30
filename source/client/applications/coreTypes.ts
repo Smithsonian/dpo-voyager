@@ -70,6 +70,7 @@ import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
 import CVLanguageManager from "../components/CVLanguageManager";
 import CVAudioManager from "client/components/CVAudioManager";
+import CVActionManager from "client/components/CVActionManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -141,6 +142,7 @@ const types = [
     CVEnvironment,
     CVLanguageManager,
     CVAudioManager,
+    CVActionManager,
 
     NVEngine,
     NVDocuments,

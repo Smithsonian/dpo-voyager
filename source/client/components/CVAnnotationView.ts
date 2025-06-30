@@ -232,7 +232,7 @@ export default class CVAnnotationView extends CObject3D
         const annotation = this.activeAnnotation;
 
         if (ins.unitScale.changed) {
-            object3D.scale.setScalar(ins.unitScale.value);
+            object3D.scale.setScalar(ins.unitScale.value);console.log(ins.unitScale.value[0]);
             object3D.updateMatrix();
         }
         if (ins.activeTags.changed) {
@@ -373,10 +373,10 @@ export default class CVAnnotationView extends CObject3D
         return Object.keys(this._annotations).map(key => this._annotations[key]);
     }
 
-    // getAnnotationById(id: string)
-    // {
-    //     return this._annotations[id];
-    // }
+    getAnnotationById(id: string)
+    {
+        return this._annotations[id];
+    }
 
     addAnnotation(annotation: Annotation)
     {
