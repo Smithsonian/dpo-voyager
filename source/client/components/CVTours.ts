@@ -95,7 +95,7 @@ export default class CVTours extends Component
             tour.titles[DEFAULT_LANGUAGE] = tour.title;
         }
 
-        return tour.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "Missing translation";
+        return tour.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "Missing content";
     }
     set title(inTitle: string) {
         const tour = this.activeTour;
@@ -138,7 +138,7 @@ export default class CVTours extends Component
                 step.titles[DEFAULT_LANGUAGE] = step.title;
             }
 
-            return step.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "Missing translation";
+            return step.titles[ELanguageType[this.language.outs.activeLanguage.value]] || "Missing content";
         }
         else {
             return null;
@@ -154,7 +154,7 @@ export default class CVTours extends Component
         const step = this.activeStep;
 
         if(step) {
-            return step.altTexts[ELanguageType[this.language.outs.activeLanguage.value]] || "Missing translation";
+            return step.altTexts[ELanguageType[this.language.outs.activeLanguage.value]] || "Missing content";
         }
         else {
             return null;
@@ -279,10 +279,10 @@ export default class CVTours extends Component
             // tween to the next step
             const step = tour.steps[nextStepIndex];
             outs.stepIndex.setValue(nextStepIndex);
-            outs.stepTitle.setValue(this.stepTitle || "Missing translation");
+            outs.stepTitle.setValue(this.stepTitle || "Missing content");
             machine.ins.id.setValue(step.id);
             tween ? machine.ins.tween.set() : machine.ins.recall.set();
-            srElement.textContent = this.stepAltText != "Missing translation" ? "Alt text: " + this.stepAltText : "";
+            srElement.textContent = this.stepAltText != "Missing content" ? "Alt text: " + this.stepAltText : "";
         }
 
         return true;

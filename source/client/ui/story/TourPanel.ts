@@ -118,7 +118,7 @@ export default class TourPanel extends DocumentView
         }
 
         const activeStep = tours.activeStep;
-        const missingTitle = html `<span class="sv-missing-translation">Missing translation</span>`
+        const missingTitle = html `<span class="sv-missing-translation">Missing content</span>`
      
         const stepDetailView = activeStep ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${task.ins.stepTitle}></sv-property-view>

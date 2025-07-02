@@ -246,7 +246,7 @@ export class TourList extends List<ITour>
         }
         const primaryTitle = item.titles[this.primarySceneLanguage];
         const activeTitle = item.titles[this.activeLanguage];
-        const missingTitle = html `<span class="sv-missing-translation">Missing translation</span>`
+        const missingTitle = html `<span class="sv-missing-translation">Missing content</span>`
         
         return html`<div class="ff-flex-row ff-group">
         <div class="sv-task-item">${primaryTitle? primaryTitle : missingTitle}</div>

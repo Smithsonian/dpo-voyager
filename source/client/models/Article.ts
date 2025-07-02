@@ -47,7 +47,7 @@ export default class Article extends Document<IArticle>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "Missing translation";
+        return this.data.titles[ELanguageType[this.language]] || "Missing content";
     }
     set title(inTitle: string) {
         this.data.titles[ELanguageType[this.language]] = inTitle;
@@ -59,7 +59,7 @@ export default class Article extends Document<IArticle>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "Missing translation";
+        return this.data.titles[ELanguageType[this.language]] || "Missing content";
     }
     
     titleIn(language: ELanguageType){

@@ -40,7 +40,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "Missing translation";
+        return this.data.titles[ELanguageType[this.language]] || "Missing content";
     }
 
     set title(inTitle: string) {
