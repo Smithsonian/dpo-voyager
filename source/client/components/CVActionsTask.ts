@@ -105,6 +105,12 @@ export default class CVActionsTask extends CVTask
         const meta = this.meta;
 
         if(meta) {
+
+            if(ins.activeId.changed) {
+                this.onActionChange();
+                return true;
+            }
+
             if (ins.create.changed) {
                 const action = { 
                     id: Document.generateId(), 
@@ -210,12 +216,10 @@ export default class CVActionsTask extends CVTask
 
         if (previous) {
             previous.setup.audio.outs.updated.off("value", this.synchAudioOptions, this);
-            this.ins.activeId.off("value", this.onActionChange, this);
             this.actionManager = null;
         }
         if (next) {
             this.actionManager = next.setup.actions;
-            this.ins.activeId.on("value", this.onActionChange, this);
             next.setup.audio.outs.updated.on("value", this.synchAudioOptions, this);
         }
     }
