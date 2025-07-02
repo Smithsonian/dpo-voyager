@@ -211,6 +211,13 @@ export default class ModelReader
 
                 const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
 
+                uberMat.onBeforeCompile = (shader) => {
+                    shader.vertexShader = uberMat.vertexShader;
+                    shader.fragmentShader = uberMat.fragmentShader;
+
+                    shader.uniforms = uberMat.uniforms;
+                }
+
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
                     material.flatShading = false;

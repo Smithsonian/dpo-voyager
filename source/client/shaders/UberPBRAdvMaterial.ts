@@ -64,7 +64,7 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
     {
         super();
 
-        this.type = "UberPBRAdvMaterial";
+        this.type = "MeshPhysicalMaterial";
 
 
         this.defines = {

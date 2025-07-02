@@ -64,7 +64,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     {
         super();
 
-        this.type = "UberPBRMaterial";
+        this.type = "MeshStandardMaterial";
 
         this.defines = {
             "STANDARD": true,

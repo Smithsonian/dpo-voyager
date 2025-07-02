@@ -53,6 +53,12 @@ export default class CVEnvironment extends Component
         return this.getSystemComponent(CScene);
     }
 
+    dispose()
+    {
+        this._texture ? this._texture.dispose() : null;
+        super.dispose();
+    }
+
     update()
     {
         const ins = this.ins;
