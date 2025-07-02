@@ -149,6 +149,10 @@ export default class CVActionsTask extends CVTask
                     ins.animation.setValue(null , true, true);
                 }
             }
+
+            if(action) {
+                this.actionManager.stopAction(action);
+            }
         }
 
         return true;

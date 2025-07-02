@@ -52,7 +52,7 @@ export default class CVActionManager extends Component
 
     private _clock: Clock = new Clock();
     private _mixer: AnimationMixer = null;
-    private _activeClip: AnimationAction = null;
+    private _activeClips: {id: string, clip: AnimationAction}[] = [];
     private _direction: Dictionary<number> = {};
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
@@ -82,9 +82,12 @@ export default class CVActionManager extends Component
         super.create();
 
         this._mixer = new AnimationMixer(null);
-        /*this._mixer.addEventListener( 'finished', function(e) {
-            e.action.stop();
-        });*/
+        this._mixer.addEventListener( 'finished', (e) => {
+            const idx = this._activeClips.findIndex((element) => element.clip === e.action);
+            if(idx > -1) {
+                this._activeClips.splice(idx,1);
+            }
+        });
 
         this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVSnapshots, this.onSnapshotsComponent, this);
@@ -106,8 +109,17 @@ export default class CVActionManager extends Component
     {
         const { ins, outs } = this;
 
-        
         return true;
+    }
+
+    stopAction(action: IAction) {
+        if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+            const idx = this._activeClips.findIndex((element) => element.id === action.id);    
+            if(idx > -1) {
+                this._activeClips[idx].clip.stop();
+                this._activeClips.splice(idx,1);
+            }
+        }
     }
 
     protected onPointerUp(event: IPointerEvent)
@@ -144,7 +156,7 @@ export default class CVActionManager extends Component
     {   
         const delta = this._clock.getDelta();
 
-        if(this._activeClip && this._activeClip.isRunning()) {
+        if(this._activeClips.length > 0) {
             this._mixer.update(delta);
             return true;
         }
@@ -251,7 +263,7 @@ export default class CVActionManager extends Component
             annotations.parent.parent.matrixWorldNeedsUpdate = true;
         }
         
-        const clip = this._activeClip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[mesh.id]);
+        const clip = this._mixer.clipAction(AnimationClip.findByName(mesh.animations, action.animation), this._animGroups[mesh.id]);
 
         if(clip && !clip.isRunning()) {
             clip.reset();
@@ -268,11 +280,17 @@ export default class CVActionManager extends Component
                     this._direction[clipName] = 1;
                 }
             }
+            else {
+                clip.time = 0;
+                clip.timeScale = 1;
+                clip.clampWhenFinished = false;
+            }
 
             const isLooping = (action.style == EActionPlayStyle[EActionPlayStyle.Loop] as TActionPlayStyle)
 
             isLooping ? clip.setLoop(LoopRepeat, Infinity) : clip.setLoop(LoopOnce, 1);
             clip.play();
+            this._activeClips.some((element) => element.id === action.id) ? null : this._activeClips.push({id: action.id, clip: clip});
         }
     }
 
