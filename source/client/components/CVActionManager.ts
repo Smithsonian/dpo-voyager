@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import Component, { IComponentEvent } from "@ff/graph/Component";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVAssetManager from "./CVAssetManager";
@@ -57,6 +57,12 @@ export default class CVActionManager extends Component
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
     private _animQueue = [];
+
+    protected static readonly ins = {
+        reset: types.Event("Actions.Reset")
+    };
+
+    ins = this.addInputs(CVActionManager.ins);
 
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
@@ -109,6 +115,11 @@ export default class CVActionManager extends Component
     {
         const { ins, outs } = this;
 
+        if (ins.reset.changed) {
+            this._mixer.stopAllAction();
+            Object.keys(this._direction).forEach(key => delete this._direction[key]);
+            this._activeClips.length = 0;
+        }
         return true;
     }
 

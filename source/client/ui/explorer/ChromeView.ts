@@ -228,6 +228,7 @@ export default class ChromeView extends DocumentView
     }
 
     protected resetViewer() {
+        this.activeDocument.setup.actions.ins.reset.set();
         this.activeDocument.setup.ins.restoreState.set();
     }
 

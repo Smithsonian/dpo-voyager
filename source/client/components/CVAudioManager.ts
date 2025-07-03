@@ -266,7 +266,7 @@ export default class CVAudioManager extends Component
         this._narrationId = data.narrationId || null;
         outs.narrationEnabled.setValue(this._narrationId != null);
 
-        if(!this.audioClips[this._narrationId]) {
+        if(this._narrationId && !this.audioClips[this._narrationId]) {
             outs.narrationEnabled.setValue(false);
             console.warn("Invalid narration audio ID");
         }
