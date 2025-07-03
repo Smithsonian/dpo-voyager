@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>API Overview - Voyager Documentation</title>
+  <title>Action Task - Voyager Documentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
   <link rel="icon" href="https://smithsonian.github.io/dpo-voyager/favicon.ico">
@@ -20,7 +20,7 @@
 
 </head>
 
-<body class='page page-default-list'>
+<body class='page page-default-single'>
   <div id="main-menu-mobile" class="main-menu-mobile">
   <ul>
     
@@ -134,9 +134,9 @@
       
     
       
-        
-      
     
+      
+        
       
     
       
@@ -210,7 +210,7 @@
     </li>
 		
     
-    <li class="active ">
+    <li class="">
       <a href="/dpo-voyager/explorer/api/">API Overview</a>
     </li>
 		
@@ -313,7 +313,7 @@
 		  <a href="/dpo-voyager/story/usage/audio-task/">Audio Task</a>
 		</li>
 		
-		<li style="padding-left: 15px" class="">
+		<li style="padding-left: 15px" class="active ">
 		  <a href="/dpo-voyager/story/usage/action-task/">Action Task</a>
 		</li>
 		
@@ -351,275 +351,28 @@
         </div>
         <div class="col-12 col-md-9">
           
+<h1 class="title">Action Task</h1>
+<div class="content">
+  <p>Use the Action Task to link triggers with actions like animation, audio (coming soon), etc, to create more dynamic and interactive scenes.</p>
+<ol>
+<li>Select the <!-- raw HTML omitted -->Action<!-- raw HTML omitted -->
+Task in the task bar.</li>
+<li>Select the model that this action will be attached to.</li>
+<li>Click Create in the task panel to make a new action element or select an existing one to edit.</li>
+<li>Set the action details as follows:
+<ul>
+<li><strong>Trigger</strong> - What triggers this action? Options include &ldquo;OnClick&rdquo; (model click), &ldquo;OnLoad&rdquo; (scene load), or &ldquo;OnAnnotation&rdquo; (annotation activate).</li>
+<li><strong>Type</strong> - Options include &ldquo;PlayAnimation&rdquo; (starts a top-level object animation).</li>
+<li><strong>Style</strong> - How the action plays. Options include &ldquo;Single&rdquo;, &ldquo;Loop&rdquo;, or &ldquo;PingPong&rdquo; (alternating forward and backward on consecutive plays).</li>
+<li><strong>Animation</strong> - For action type &ldquo;PlayAnimation&rdquo;, select the animation to play from the dropdown list.</li>
+<li><strong>Annotation</strong> - For trigger type &ldquo;OnAnnotation&rdquo;, select the triggering annotation from the dropdown list.</li>
+</ul>
+</li>
+</ol>
+<p>Test the action by performing the designated trigger in the Explorer preview pane.</p>
+<p><img src="action-task-new.jpg" alt="Numbered image showing location of action steps in UI"></p>
 
-  
-  <h1 class="title">API Overview</h1>
-  <div class="content">
-    <p>The Voyager Explorer component has attributes and methods that help you to externally configure and control it. This makes it easier to integrate into your own custom application.</p>
-<h3 id="loading-attributes">Loading Attributes</h3>
-<p>These attributes configure the initial object load of the component.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Options</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>root</td>
-<td>Valid URL</td>
-<td>Path to the root folder (base folder for all assets)</td>
-</tr>
-<tr>
-<td>document</td>
-<td>Valid URL</td>
-<td>Path to the <a href="https://smithsonian.github.io/dpo-voyager/document/">SVX scene descriptor JSON document</a> to load (relative to the root folder).</td>
-</tr>
-<tr>
-<td>model</td>
-<td>Valid URL</td>
-<td>URL of a model (supported formats: gltf, glb) to load and display at startup (relative to the root folder). <strong>Note:</strong> Uncommon - Used when loading a model with no SVX &lsquo;document&rsquo; specified.</td>
-</tr>
-<tr>
-<td>geometry</td>
-<td>Valid URL</td>
-<td>URL of a geometry (supported formats: obj, ply) to load and display at startup (relative to the root folder). <strong>Note:</strong> Uncommon - Used when loading a model with no SVX &lsquo;document&rsquo; specified.</td>
-</tr>
-<tr>
-<td>texture</td>
-<td>Valid URL</td>
-<td>If a geometry URL is given, optional URL of a color texture to use with the geometry (relative to the root folder).</td>
-</tr>
-<tr>
-<td>dracoRoot</td>
-<td>Valid URL</td>
-<td>Path to the Draco compression libraries used for glTF models. Defaults to Google CDN.</td>
-</tr>
-<tr>
-<td>resourceRoot</td>
-<td>Valid URL</td>
-<td>Path to root folder where the Voyager assets are stored (fonts,images,language). Defaults to jsDelivr CDN.</td>
-</tr>
-<tr>
-<td>bgColor</td>
-<td>Valid CSS colors</td>
-<td>Sets the color of the component background. Optional second color for gradient styles. Ex: &ldquo;red&rdquo; or &ldquo;red rgb(0,255,0)&rdquo;</td>
-</tr>
-<tr>
-<td>bgStyle</td>
-<td>Solid, LinearGradient, RadialGradient</td>
-<td>Sets the style of the component background.</td>
-</tr>
-<tr>
-<td>controls</td>
-<td>True, False</td>
-<td>Enables/Disables user-driven camera controls. Defaults to &lsquo;True&rsquo;. Useful if driving navigation from external code.</td>
-</tr>
-<tr>
-<td>prompt</td>
-<td>True, False</td>
-<td>Enables/Disables user interaction prompt. Defaults to &lsquo;True&rsquo;. Always false if &lsquo;controls&rsquo; is false.</td>
-</tr>
-<tr>
-<td>reader</td>
-<td>True, False</td>
-<td>Enables/Disables visibility of reader UI. Defaults to &lsquo;True&rsquo;. Overrides activation triggers like toggleReader()</td>
-</tr>
-<tr>
-<td>lang</td>
-<td>valid <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1</a> code</td>
-<td>Sets the active language of the component (where available)</td>
-</tr>
-<tr>
-<td>dragdrop</td>
-<td></td>
-<td>If present, enables dragging and dropping files into Story. Enabled by default in Standalone mode. <strong>Note:</strong> Voyager does <em>not</em> handle access control. Enabling this feature increases the importance of securing your server-side I/O.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ui-attributes">UI Attributes</h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Options</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>uiMode</td>
-<td>Any combination of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/components/CVInterface.ts">EUIElements</a> . Use &ldquo;|&rdquo; to concatenate multiple options. E.g. &ldquo;none|title&rdquo; to show just the scene title.</td>
-<td>Configures what UI elements should be visible on initial component render. By default all elements are shown.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ui-methods">UI Methods</h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Parameters</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>setBackgroundStyle( style )</td>
-<td>style: Solid, LinearGradient, RadialGradient</td>
-<td>Sets the style of the component background.</td>
-</tr>
-<tr>
-<td>setBackgroundColor( color0, color1[optional] )</td>
-<td>color0, color1: any valid css color</td>
-<td>Sets the color of the component background. Optional second color for gradient styles.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="feature-methods">Feature Methods</h3>
-<p>These methods engage Voyager functionality without the native UI.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Parameters</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>toggleAnnotations()</td>
-<td>None</td>
-<td>On/off toggle for visibility of model annotations (if available)</td>
-</tr>
-<tr>
-<td>toggleReader()</td>
-<td>None</td>
-<td>On/off toggle for the article reader.</td>
-</tr>
-<tr>
-<td>toggleTours()</td>
-<td>None</td>
-<td>On/off toggle for the tour functionality UI.</td>
-</tr>
-<tr>
-<td>toggleTools()</td>
-<td>None</td>
-<td>On/off toggle for the extended tools panel at the bottom of the UI</td>
-</tr>
-<tr>
-<td>toggleMeasurement()</td>
-<td>None</td>
-<td>On/off toggle for visibility of the object measurement tool.</td>
-</tr>
-<tr>
-<td>enableAR()</td>
-<td>None</td>
-<td>Requests an AR session (if available, outcome depends on platform) <strong>*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe</strong></td>
-</tr>
-<tr>
-<td>setActiveAnnotation( id )</td>
-<td>id: unique id string</td>
-<td>Activates the annotation with the provided id. Opens annotation content where style permits.</td>
-</tr>
-<tr>
-<td>setActiveArticle( id )</td>
-<td>id: unique id string</td>
-<td>Activates the article with the provided id. Bad/missing id opens article list.</td>
-</tr>
-<tr>
-<td>setTourStep( tourIdx, stepIdx, interpolate[optional] )</td>
-<td>tourIdx, stepIdx: valid integer - interpolate: boolean</td>
-<td>Activates the scene state found at the provided tour and step index. Optional &lsquo;interpolate&rsquo; parameter to control if transition is animated. Defaults to true.</td>
-</tr>
-<tr>
-<td>setLanguage( id )</td>
-<td>id: valid <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1</a> code string</td>
-<td>Changes the active Voyager language to the supplied id if available in the current scene.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="navigation-methods">Navigation Methods</h3>
-<p>Methods for external control over camera properties and navigation.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Parameters</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>setCameraOrbit( yaw, pitch )</td>
-<td>yaw, pitch: angle in degrees</td>
-<td>Sets yaw and pitch of orbit navigation.</td>
-</tr>
-<tr>
-<td>getCameraOrbit( type[optional] )</td>
-<td>type: min, max, active (default)</td>
-<td>Returns an array [yaw, pitch] in radians.</td>
-</tr>
-<tr>
-<td>setCameraOffset( x, y, z )</td>
-<td>x, y, z: coordinate in scene units</td>
-<td>Sets offset of orbit navigation.</td>
-</tr>
-<tr>
-<td>getCameraOffset( type[optional] )</td>
-<td>type: min, max, active (default)</td>
-<td>Returns an array [x, y, z] in scene units.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="misc-methods">Misc Methods</h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Parameters</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>getArticles()</td>
-<td>None</td>
-<td>Returns an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts">Article data objects</a> with properties of each article associated with the current scene.</td>
-</tr>
-<tr>
-<td>getAnnotations()</td>
-<td>None</td>
-<td>Returns an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63">Annotation data objects</a> for the current scene.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="events">Events</h3>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>annotation-active</td>
-<td>This event is fired when the active state of an annotation changes. event.detail will contain the ID of the activated annotation, or will be empty if no annotation is active.</td>
-</tr>
-<tr>
-<td>model-load</td>
-<td>This event fires every time a model finishes loading. event.detail will contain the quality <a href="https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/schema/model.ts">(EDerivativeQuality)</a> of the loaded model. This will likely fire multiple times depending on the number of derivatives loaded and unloaded.</td>
-</tr>
-</tbody>
-</table>
-
-  </div>
-
-  
-
+</div>
 
         </div>
       </div>

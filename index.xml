@@ -133,6 +133,24 @@
     </item>
     
     <item>
+      <title>Audio Task</title>
+      <link>https://smithsonian.github.io/dpo-voyager/story/usage/audio-task/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://smithsonian.github.io/dpo-voyager/story/usage/audio-task/</guid>
+      <description>Load audio clips for use in your scene.</description>
+    </item>
+    
+    <item>
+      <title>Action Task</title>
+      <link>https://smithsonian.github.io/dpo-voyager/story/usage/action-task/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://smithsonian.github.io/dpo-voyager/story/usage/action-task/</guid>
+      <description>Link triggers with actions for more dynamic scenes.</description>
+    </item>
+    
+    <item>
       <title>Multilingual Support</title>
       <link>https://smithsonian.github.io/dpo-voyager/story/usage/language-support/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
