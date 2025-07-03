@@ -19,7 +19,7 @@ import { customElement, property, html } from "@ff/ui/CustomElement";
 import List from "@ff/ui/List";
 
 import Annotation from "../../models/Annotation";
-import { DEFAULT_LANGUAGE } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +37,12 @@ class AnnotationList extends List<Annotation>
     @property({ attribute: false })
     selectedItem: Annotation = null;
 
+    @property({type: ELanguageType})
+    activeLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+
+    @property({type: ELanguageType})
+    primarySceneLanguage: ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -45,7 +51,13 @@ class AnnotationList extends List<Annotation>
 
     protected renderItem(item: Annotation)
     {
-        return html`<div class="ff-flex-row ff-group"><div class="sv-task-item">${item.data.titles[DEFAULT_LANGUAGE]}</div><div class="sv-task-item sv-item-border-l">${item.title}</div></div>`;
+        const primaryTitle = item.titleIn(this.primarySceneLanguage);
+        const activeTitle = item.titleIn(this.activeLanguage);
+        const missingTitle = html `<span class="sv-missing-translation">Missing content</span>`
+        return html`<div class="ff-flex-row ff-group">
+            <div class="sv-task-item">${ primaryTitle? primaryTitle : missingTitle}</div>
+            <div class="sv-task-item sv-item-border-l">${activeTitle ? activeTitle : missingTitle}
+            </div></div>`
     }
 
     protected isItemSelected(item: Annotation)

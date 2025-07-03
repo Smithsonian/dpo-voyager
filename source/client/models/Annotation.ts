@@ -31,25 +31,35 @@ export type IAnnotationDisposeEvent = IDocumentDisposeEvent<Annotation>;
 export default class Annotation extends Document<IAnnotation, IAnnotation>
 {
     static readonly defaultColor = [ 0, 0.61, 0.87 ];
-    private _language : ELanguageType = ELanguageType.EN;
+    private _language : ELanguageType = ELanguageType[DEFAULT_LANGUAGE];
     private _leadChanged : boolean = false;
 
     get title() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.titles).length === 0) {
-            this.data.titles[DEFAULT_LANGUAGE] = this.data.title;
+            this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
 
-        return this.data.titles[ELanguageType[this.language]] || "undefined";
+        return this.data.titles[ELanguageType[this.language]] || "Missing content";
     }
+
     set title(inTitle: string) {
         this.data.titles[ELanguageType[this.language]] = inTitle;
         this.update();
     }
+    
+    titleIn(language: ELanguageType){
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.titles).length === 0) {
+            this.data.titles[ELanguageType[this.language]] = this.data.title;
+        }
+        return this.data.titles[language];
+    }
+    
     get lead() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.leads).length === 0) {
-            this.data.leads[DEFAULT_LANGUAGE] = this.data.lead;
+            this.data.leads[ELanguageType[this.language]] = this.data.lead;
         }
 
         return this.data.leads[ELanguageType[this.language]] || "";
@@ -62,7 +72,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.taglist).length === 0) {
             if(this.data.tags.length > 0) {
-                this.data.taglist[DEFAULT_LANGUAGE] = this.data.tags;
+                this.data.taglist[ELanguageType[this.language]] = this.data.tags;
             }
         }
 

@@ -70,6 +70,7 @@ import CVEnvironment from "../components/CVEnvironment";
 import CVARManager from "../components/CVARManager";
 import CVLanguageManager from "../components/CVLanguageManager";
 import CVAudioManager from "client/components/CVAudioManager";
+import CVActionManager from "client/components/CVActionManager";
 
 // PROJECT NODES ///////////////////////////////////////////////////////////////
 
@@ -81,6 +82,7 @@ import NVNode from "../nodes/NVNode";
 import CVAmbientLight from "client/components/lights/CVAmbientLight";
 import CVHemisphereLight from "client/components/lights/CVHemisphereLight";
 import CVRectLight from "client/components/lights/CVRectLight";
+import CVDerivativesController from "client/components/CVDerivativesController";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +131,7 @@ const types = [
     CVViewer,
     CVReader,
     CVOrbitNavigation,
+    CVDerivativesController,
     CVBackground,
     CVFloor,
     CVGrid,
@@ -139,6 +142,7 @@ const types = [
     CVEnvironment,
     CVLanguageManager,
     CVAudioManager,
+    CVActionManager,
 
     NVEngine,
     NVDocuments,

@@ -96,7 +96,7 @@ export default class CVAudioManager extends Component
         super.create();
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
 
-        this.language.outs.language.on("value", this.onLanguageChange, this);
+        this.language.outs.activeLanguage.on("value", this.onLanguageChange, this);
     }
 
     dispose()
@@ -104,7 +104,7 @@ export default class CVAudioManager extends Component
         // Clean up cached audio files
         Object.keys(this._audioMap).forEach(( key ) => URL.revokeObjectURL( this._audioMap[key] ));
 
-        this.language.outs.language.off("value", this.onLanguageChange, this);
+        this.language.outs.activeLanguage.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
         super.dispose();
     }
@@ -149,17 +149,17 @@ export default class CVAudioManager extends Component
 
     getAudioClipUri(id: string) {
         const clip = this.audioClips[id];
-        return clip ? clip.uris[ELanguageType[this.language.outs.language.value]] : null;
+        return clip ? clip.uris[ELanguageType[this.language.outs.activeLanguage.value]] : null;
     }
 
     getClipCaptionUri(id: string) {
         const clip = this.audioClips[id];
-        return clip ? clip.captionUris[ELanguageType[this.language.outs.language.value]] : null;
+        return clip ? clip.captionUris[ELanguageType[this.language.outs.activeLanguage.value]] : null;
     }
 
     getDuration(id: string) {
         const clip = this.audioClips[id];
-        const language = ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType;
+        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
         const cachedDuration = clip.durations[language];
         if(cachedDuration) {
             return cachedDuration;
@@ -251,7 +251,6 @@ export default class CVAudioManager extends Component
             this.audioClips = meta.audio.dictionary;  // needed to support initially empty meta nodes
             meta.once("load", () => {
                 this.audioClips = meta.audio.dictionary;
-                this.outs.updated.set();
                 Object.keys(this.audioClips).forEach(key => {
                     this.updateAudioClip(this.audioClips[key].id);
                 });
@@ -267,7 +266,7 @@ export default class CVAudioManager extends Component
         this._narrationId = data.narrationId || null;
         outs.narrationEnabled.setValue(this._narrationId != null);
 
-        if(!this.audioClips[this._narrationId]) {
+        if(this._narrationId && !this.audioClips[this._narrationId]) {
             outs.narrationEnabled.setValue(false);
             console.warn("Invalid narration audio ID");
         }
@@ -286,7 +285,7 @@ export default class CVAudioManager extends Component
         return data;
     }
 
-    play(id: string)
+    play(id: string, useDefaultPlayer: boolean = false)
     {
         const { outs } = this;
         const uri = this.getAudioClipUri(id);
@@ -357,13 +356,13 @@ export default class CVAudioManager extends Component
 
         const clip = this.audioClips[id];
         if(clip) {
-            const uri = clip.uris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+            const uri = clip.uris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
             if(this.audioPlayer.src != this._audioMap[uri]) {
                 this.audioPlayer.setAttribute("src", this._audioMap[uri]);
                 //this.audioPlayer.load();
 
                 // Set caption track source
-                const captionUri = clip.captionUris[ELanguageType[this.language.outs.language.getValidatedValue()] as TLanguageType];
+                const captionUri = clip.captionUris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
                 if(captionUri) {
                     if(this.audioPlayer.children[0]) {
                         this.audioPlayer.children[0].remove();

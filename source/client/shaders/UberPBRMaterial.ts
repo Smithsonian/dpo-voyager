@@ -64,7 +64,7 @@ export default class UberPBRMaterial extends MeshStandardMaterial
     {
         super();
 
-        this.type = "UberPBRMaterial";
+        this.type = "MeshStandardMaterial";
 
         this.defines = {
             "STANDARD": true,
@@ -224,6 +224,10 @@ export default class UberPBRMaterial extends MeshStandardMaterial
 
     enableCutPlane(enabled: boolean)
     {
+        if(this.defines["CUT_PLANE"] === undefined) {
+            this._sideCopy = this.side;
+        }
+
         this.defines["CUT_PLANE"] = enabled;
 
         if (enabled) {

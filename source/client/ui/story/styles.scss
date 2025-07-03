@@ -138,6 +138,12 @@ ff-tab-header, ff-dock-panel-header {
       }
     }
   }
+
+  .sv-property-view .sv-property {
+    font-size: 0.85em;
+    display: block;
+    align-self: flex-end;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -390,6 +396,10 @@ $color-component-meta-light: #d9d998;
   border-left: solid;
   border-left-width: 2px;
   border-left-color: #343434;
+}
+
+.sv-missing-translation {
+  color: #cc3d3d;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

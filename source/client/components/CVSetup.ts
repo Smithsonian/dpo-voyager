@@ -20,6 +20,7 @@ import CTransform from "@ff/scene/components/CTransform";
 
 import { IDocument } from "client/schema/document";
 import { ISetup } from "client/schema/setup";
+import { ELanguageType } from "client/schema/common";
 
 import CVInterface from "./CVInterface";
 import CVViewer from "./CVViewer";
@@ -35,6 +36,8 @@ import CVSnapshots from "./CVSnapshots";
 import CVEnvironment from "./CVEnvironment";
 import CVLanguageManager from "./CVLanguageManager";
 import CVAudioManager from "./CVAudioManager";
+import CVDerivativesController from "./CVDerivativesController";
+import CVActionManager from "./CVActionManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -60,6 +63,7 @@ export default class CVSetup extends Component
         "reader": CVReader,
         "viewer": CVViewer,
         "navigation": CVOrbitNavigation,
+        "derivatives": CVDerivativesController, 
         "background": CVBackground,
         "environment": CVEnvironment,
         "language": CVLanguageManager,
@@ -68,7 +72,8 @@ export default class CVSetup extends Component
         "tape": CVTape,
         "slicer": CVSlicer,
         "tours": CVTours,
-        "audio": CVAudioManager
+        "audio": CVAudioManager,
+        "actions": CVActionManager
     };
 
     get featureMap() {
@@ -82,6 +87,7 @@ export default class CVSetup extends Component
     reader: CVReader;
     viewer: CVViewer;
     navigation: CVOrbitNavigation;
+    derivatives: CVDerivativesController;
     background: CVBackground;
     floor: CVFloor;
     grid: CVGrid;
@@ -92,6 +98,7 @@ export default class CVSetup extends Component
     environment: CVEnvironment;
     language: CVLanguageManager;
     audio: CVAudioManager;
+    actions: CVActionManager;
 
     create()
     {
@@ -185,6 +192,7 @@ export default class CVSetup extends Component
                 this._savedSetupData[name] = featureData;
             }
         }
+        this.language.ins.primarySceneLanguage.setValue(ELanguageType[this._savedSetupData.language.language]);
     }
 
     // Restores cached setup state for future saving.
