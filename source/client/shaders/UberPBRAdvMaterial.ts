@@ -229,6 +229,10 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
 
     enableCutPlane(enabled: boolean)
     {
+        if(this.defines["CUT_PLANE"] === undefined) {
+            this._sideCopy = this.side;
+        }
+        
         this.defines["CUT_PLANE"] = enabled;
 
         if (enabled) {
