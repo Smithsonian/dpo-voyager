@@ -55,6 +55,7 @@ export default class TaskBar extends SystemView
     protected firstConnected()
     {
         this.classList.add("sv-task-bar");
+        this.setAttribute("role", "navigation");
     }
 
     protected connected()
