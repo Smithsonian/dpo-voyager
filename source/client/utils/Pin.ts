@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
-import { Group, MeshStandardMaterial, Mesh, Vector2, LatheGeometry } from "three";
+import { Group, MeshStandardMaterial, Mesh, Vector2, LatheGeometry, Material } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class Pin extends Group
 {
+    protected needle: Mesh;
+    protected handle: Mesh;
+
     constructor()
     {
         super();
@@ -51,7 +54,7 @@ export default class Pin extends Group
         const needleMaterial = new MeshStandardMaterial({ color: "white", metalness: 1 });
         needleMaterial.transparent = true;
 
-        const needle = new Mesh(
+        this.needle = new Mesh(
             this.createLatheGeometry(needlePoints),
             needleMaterial
         );
@@ -59,21 +62,26 @@ export default class Pin extends Group
         const handleMaterial = new MeshStandardMaterial(({ color: "#ffcd00", roughness: 0.8, metalness: 0.1 }));
         handleMaterial.transparent = true;
 
-        const handle = new Mesh(
+        this.handle = new Mesh(
             this.createLatheGeometry(handlePoints),
             handleMaterial
         );
 
-        needle.matrixAutoUpdate = false;
-        this.add(needle);
+        this.needle.matrixAutoUpdate = false;
+        this.add(this.needle);
 
-        handle.matrixAutoUpdate = false;
-        this.add(handle);
+        this.handle.matrixAutoUpdate = false;
+        this.add(this.handle);
     }
 
     dispose()
     {
+        this.remove(this.handle, this.needle);
 
+        (this.needle.material as Material).dispose();
+        (this.handle.material as Material).dispose();
+        this.needle.geometry.dispose();
+        this.handle.geometry.dispose();
     }
 
     protected createLatheGeometry(points: number[])
