@@ -20,6 +20,10 @@ body {
   height: auto;
 }
 
+.mce-content-body figure.align-center {
+  text-align: center;
+}
+
 .mce-content-body p {
   font-size: 0.9775em;
   margin: 0.8em 0;
