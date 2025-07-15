@@ -1,7 +1,27 @@
 /*
  * CSS Rules overrides over tinymce's default styles
  */
+html {
+  display: flex;
+  justify-content: center;
+}
+
+body {
+  font-family:"Hind Siliguri",sans-serif;
+}
+
+.mce-content-body {
+  flex: 0 2 720px;
+  word-wrap: normal;
+}
+
 .mce-content-body img {
   max-width: 100%;
   height: auto;
 }
+
+.mce-content-body p {
+  font-size: 0.9775em;
+  margin: 0.8em 0;
+}
+

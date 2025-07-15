@@ -223,6 +223,7 @@ export default class ArticleEditor extends SystemView
             link_assume_external_targets: 'https',
             paste_as_text: true,
             content_css: false,
+            font_css: this.assetReader.getSystemAssetUrl("fonts/fonts.css"),
             content_style: [contentCss, contentUiCss, contentOverrides].join('\n'),
             convert_urls: false,
             image_caption: true,
