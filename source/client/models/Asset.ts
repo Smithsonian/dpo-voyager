@@ -122,7 +122,7 @@ export default class Asset extends Document<IAsset, IAssetJSON>
     protected inflate(json: IAssetJSON, data: IAsset)
     {
         data.uri = json.uri;
-        data.mimeType = json.mimeType || "";
+        data.mimeType = json.mimeType;
         data.type = EAssetType[json.type];
         data.mapType = EMapType[json.mapType];
         data.byteSize = json.byteSize || 0;
@@ -134,6 +134,10 @@ export default class Asset extends Document<IAsset, IAssetJSON>
             if (data.type === undefined) {
                 console.warn(`failed to determine asset type from asset: ${data.uri}`);
             }
+        }
+
+        if (data.mimeType === undefined) {
+            data.mimeType = this.guessAssetMimeType();
         }
     }
 
