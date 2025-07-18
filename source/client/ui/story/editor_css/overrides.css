@@ -13,6 +13,7 @@ body {
 .mce-content-body {
   flex: 0 2 720px;
   word-wrap: normal;
+  font-size: 0.85em;
 }
 
 .mce-content-body img {
@@ -24,8 +25,12 @@ body {
   text-align: center;
 }
 
-.mce-content-body p {
-  font-size: 0.9775em;
+.mce-content-body p, ul, ol {
+  font-size: 1.15em;
   margin: 0.8em 0;
+}
+
+.mce-content-body figcaption {
+  font-size: 1.15em;
 }
 
