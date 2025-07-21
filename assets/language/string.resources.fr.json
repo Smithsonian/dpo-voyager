@@ -126,5 +126,8 @@
   "View Point" : "Point de vue",
   "Wireframe": "Fil de fer",
   "XRay": "Rayons X",
-  "Zoom Extents": "Recadrer"
+  "Zoom Extents": "Recadrer",
+  "X axis": "Axe X",
+	"Y axis": "Axe Y",
+	"Z axis": "Axe Z"
 }
