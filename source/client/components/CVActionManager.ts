@@ -18,9 +18,6 @@
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
-import CVAssetManager from "./CVAssetManager";
-import CVLanguageManager from "./CVLanguageManager";
-import CVAnalytics from "./CVAnalytics";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import CVAudioManager from "./CVAudioManager";
@@ -30,6 +27,8 @@ import { AnnotationElement } from "client/annotations/AnnotationSprite";
 import CVViewer from "./CVViewer";
 import CVAnnotationView from "./CVAnnotationView";
 import CVSnapshots from "./CVSnapshots";
+import CVTape from "./CVTape";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,23 +63,11 @@ export default class CVActionManager extends Component
 
     ins = this.addInputs(CVActionManager.ins);
 
-    protected get assetManager() {
-        return this.getMainComponent(CVAssetManager);
-    }
-    protected get language() {
-        return this.getGraphComponent(CVLanguageManager, true);
-    }
-    protected get analytics() {
-        return this.system.getMainComponent(CVAnalytics);
-    }
-    protected get audio() {
-        return this.getGraphComponent(CVAudioManager);
+    protected get setup() {
+        return this.getGraphComponent(CVSetup);
     }
     protected get viewer() {
         return this.getGraphComponent(CVViewer);
-    }
-    protected get snapshots() {
-        return this.getGraphComponent(CVSnapshots, true);
     }
 
     create()
@@ -135,7 +122,7 @@ export default class CVActionManager extends Component
 
     protected onPointerUp(event: IPointerEvent)
     {
-        if (!event.isPrimary || event.isDragging) {
+        if (!event.isPrimary || event.isDragging || this.setup.tape.ins.enabled.value) {
             return;
         }
 
@@ -152,7 +139,7 @@ export default class CVActionManager extends Component
                 if(clickActions.length > 0) {
                     clickActions.forEach((action) => {
                         if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
-                            this.audio.play(action.audioId);
+                            this.setup.audio.play(action.audioId);
                         }
                         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
                             this.playAnimation(event.component as CVModel2, action);
