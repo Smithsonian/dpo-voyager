@@ -229,7 +229,7 @@ export default class CVAnnotationsTask extends CVTask
             // get click position and normal in annotation space = pose transform * model space
             _position.fromArray(model.ins.position.value);
             helpers.degreesToQuaternion(model.ins.rotation.value, CVModel2.rotationOrder, _quat);
-            _scaling.setScalar(1);
+            _scaling.setScalar(model.ins.scale.value);
             _mat4.compose(_position, _quat, _scaling);
 
             const meshTransform = getMeshTransform(model.object3D, event.object3D);
@@ -242,7 +242,7 @@ export default class CVAnnotationsTask extends CVTask
 
             const position = event.view.pickPosition(event, bounds).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
-
+console.log(position);
             const mode = this.ins.mode.getValidatedValue();
 
             if (mode === EAnnotationsTaskMode.Create) {

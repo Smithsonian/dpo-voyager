@@ -26,7 +26,7 @@ import CVAssetManager from "./CVAssetManager";
 import CVAssetWriter from "./CVAssetWriter";
 import CVTaskProvider from "./CVTaskProvider";
 import CVDocumentProvider from "./CVDocumentProvider";
-import { INodeComponents } from "./CVDocument";
+import CVDocument, { INodeComponents } from "./CVDocument";
 
 import { ETaskMode } from "../applications/taskSets";
 
@@ -40,6 +40,8 @@ import CVBackground from "./CVBackground";
 import NVNode from "client/nodes/NVNode";
 import { EAssetType } from "client/schema/model";
 import { EProjection } from "./CVOrbitNavigation";
+import CVAnnotationView from "./CVAnnotationView";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -132,7 +134,7 @@ export default class CVStoryApplication extends Component
                 }
                 else {
                     // Standalone save
-                    const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
+                    /*const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
                     const saveFiles = [];
 
                     const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
@@ -146,92 +148,24 @@ export default class CVStoryApplication extends Component
                     downloadZip(saveFiles).blob().then(blob => { // await for async
                         const bloburl = URL.createObjectURL(blob);
                         download.url(bloburl, "voyager-scene.zip");
-                    });
+                    });*/
+
+                    const json = this.constructIIIFManifest(cvDocument);//console.log(json);
+                    const fileName = "voyager_iiif.json";
+                    download.json(json, fileName);
                 }
             }
 
             if (ins.download.changed) {
-                const models = cvDocument.getInnerComponents(CVModel2);
-                const background = cvDocument.getInnerComponents(CVBackground)[0];
-                _color.setRGB(background.ins.color0.value[0],background.ins.color0.value[1],background.ins.color0.value[2]);
+                /*const data = cvDocument.deflateDocument(components);
+                const json = JSON.stringify(data, null, 2);
 
-                /*const jsonObj = JSON.parse(cvDocument.object3D.userData["IIIFManifest"].manifestJson);
-
-                jsonObj.items[0].backgroundColor = "#"+_color.getHexString();
-                
-                jsonObj.items[0].items[0].items.forEach(item => {
-                    const type = item.body.type === "SpecificResource" ? item.body.source[0].type : item.body.type;
-                    if(type === "Model") {
-
-                        if(item.body.type != "SpecificResource") {
-                            item.body.source = [JSON.parse(JSON.stringify(item.body))];
-                            item.body.type = "SpecificResource";
-                            delete item.body.format;
-                            delete item.body.id;
-                        }
-
-                        const model = models.find((model) => model.object3D.userData["IIIFid"] === item.id);
-                        const transformMatrix = model.object3D.matrix;
-                        transformMatrix.decompose(_vec3a, _quat, _vec3b);
-                        _euler.setFromQuaternion(_quat);
-
-                        const transform = item.body.transform = [];
-                        transform.push({
-                            "type": "ScaleTransform",
-                            "x": _vec3b.x,
-                            "y": _vec3b.y,
-                            "z": _vec3b.z
-                        });
-                        transform.push({
-                            "type": "RotateTransform",
-                            "x": _euler.x*math.RAD2DEG,
-                            "y": _euler.y*math.RAD2DEG,
-                            "z": _euler.z*math.RAD2DEG
-                        });
-                        transform.push({
-                            "type": "TranslateTransform",
-                            "x": _vec3a.x,
-                            "y": _vec3a.y,
-                            "z": _vec3a.z
-                        });
-
-                        if(item.target && item.target.selector && item.target.selector[0].type === "PointSelector") {
-                            item.target.selector = [{
-                                "type": "PointSelector",
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }];
-                        }
-                    }
-                });
-                */
-
-                const jsonObj = {};
-                jsonObj["@context"] = "http://iiif.io/api/presentation/4/context.json";
-                jsonObj["id"] = "https://example.org/iiif/3d/model_origin.json";
-                jsonObj["type"] = "Manifest";
-                jsonObj["label"] = { "en": [cvDocument.ins.title.value] };
-                //jsonObj["summary"] = { "en": ["Viewer should render the model at the scene origin, and then viewer should add default lighting and camera"] };
-                jsonObj["items"] = [{}];
-
-                const iiifScene = jsonObj["items"][0];
-                iiifScene["id"] = "https://example.org/iiif/scene1/page/p1/1";
-                iiifScene["type"] = "Scene";
-                iiifScene["label"] = { "en": [cvDocument.ins.title.value] };
-                iiifScene["items"] = [{}];
-
-                const annotationPage = iiifScene["items"][0];
-                annotationPage["id"] = "https://example.org/iiif/scene1/page/p1/1";
-                annotationPage["type"] = "Scene";
-                annotationPage["items"] = [];
-
-                // serialize node tree
-                this.parseChildNodes(cvDocument.root.transform.children, annotationPage);
+                const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
+                download.json(json, fileName);*/
                 
 
-                const json = JSON.stringify(jsonObj, null, 2);console.log(json);
-                const fileName = "voyager_iiif.json";//this.assetManager.getAssetName(cvDocument.assetPath);
+                const json = this.constructIIIFManifest(cvDocument);//console.log(json);
+                const fileName = "voyager_iiif.json";
                 download.json(json, fileName);
             }
         }
@@ -240,7 +174,102 @@ export default class CVStoryApplication extends Component
         return false;
     }
 
-    protected parseChildNodes(nodes, annotationPage) {
+    protected constructIIIFManifest(cvDocument: CVDocument) : string {
+        const models = cvDocument.getInnerComponents(CVModel2);
+        const background = cvDocument.getInnerComponents(CVBackground)[0];
+        _color.setRGB(background.ins.color0.value[0],background.ins.color0.value[1],background.ins.color0.value[2]);
+
+        /*const jsonObj = JSON.parse(cvDocument.object3D.userData["IIIFManifest"].manifestJson);
+
+        jsonObj.items[0].backgroundColor = "#"+_color.getHexString();
+        
+        jsonObj.items[0].items[0].items.forEach(item => {
+            const type = item.body.type === "SpecificResource" ? item.body.source[0].type : item.body.type;
+            if(type === "Model") {
+
+                if(item.body.type != "SpecificResource") {
+                    item.body.source = [JSON.parse(JSON.stringify(item.body))];
+                    item.body.type = "SpecificResource";
+                    delete item.body.format;
+                    delete item.body.id;
+                }
+
+                const model = models.find((model) => model.object3D.userData["IIIFid"] === item.id);
+                const transformMatrix = model.object3D.matrix;
+                transformMatrix.decompose(_vec3a, _quat, _vec3b);
+                _euler.setFromQuaternion(_quat);
+
+                const transform = item.body.transform = [];
+                transform.push({
+                    "type": "ScaleTransform",
+                    "x": _vec3b.x,
+                    "y": _vec3b.y,
+                    "z": _vec3b.z
+                });
+                transform.push({
+                    "type": "RotateTransform",
+                    "x": _euler.x*math.RAD2DEG,
+                    "y": _euler.y*math.RAD2DEG,
+                    "z": _euler.z*math.RAD2DEG
+                });
+                transform.push({
+                    "type": "TranslateTransform",
+                    "x": _vec3a.x,
+                    "y": _vec3a.y,
+                    "z": _vec3a.z
+                });
+
+                if(item.target && item.target.selector && item.target.selector[0].type === "PointSelector") {
+                    item.target.selector = [{
+                        "type": "PointSelector",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }];
+                }
+            }
+        });
+        */
+
+        const sceneTitle = cvDocument.ins.title.value;
+
+        const jsonObj = {};
+        jsonObj["@context"] = "http://iiif.io/api/presentation/4/context.json";
+        jsonObj["id"] = "https://example.org/iiif/3d/model_origin.json";
+        jsonObj["type"] = "Manifest";
+        jsonObj["label"] = { "en": [sceneTitle ? sceneTitle : "Untitled"] };
+        //jsonObj["summary"] = { "en": ["Viewer should render the model at the scene origin, and then viewer should add default lighting and camera"] };
+        jsonObj["items"] = [{}];
+
+        const iiifScene = jsonObj["items"][0];
+        iiifScene["id"] = "https://example.org/iiif/scene1/page/p1/1";
+        iiifScene["type"] = "Scene";
+        iiifScene["label"] = { "en": [sceneTitle ? sceneTitle : "Untitled"] };
+        iiifScene["items"] = [{}];
+        iiifScene["annotations"] = [{}];
+
+        const annotationPage = iiifScene["items"][0];
+        annotationPage["id"] = "https://example.org/iiif/scene1/page/p1/1";
+        annotationPage["type"] = "AnnotationPage";
+        annotationPage["items"] = [];
+
+        const commentPage = iiifScene["annotations"][0];
+        commentPage["id"] = "https://example.org/iiif/scene1/page/p2/1";
+        commentPage["type"] = "AnnotationPage";
+        commentPage["items"] = [];
+
+        // serialize node tree
+        this.parseChildNodes(cvDocument.root.transform.children, annotationPage, commentPage);
+
+        // remove comment page element if items are empty
+        if(commentPage["items"].length == 0) {
+            delete iiifScene["annotations"];
+        }
+
+        return JSON.stringify(jsonObj, null, 2);
+    }
+
+    protected parseChildNodes(nodes, annotationPage, commentPage) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
 
         children.forEach(child => {console.log(child);
@@ -253,17 +282,18 @@ export default class CVStoryApplication extends Component
                     type: "SpecificResource",
                     source: [{
                         id: annotationPage.id,
-                        type: annotationPage.type
+                        type: "Scene"
                     }]
                 }                            
             };
 
             if (child.model) {
                 const asset = child.model.activeDerivative.findAsset(EAssetType.Model)
+                const url = this.assetManager.getAssetUrl(asset.data.uri);
 
                 // add source
                 const source = {
-                    id: this.assetManager.getAssetUrl(asset.data.uri),
+                    id: this.standaloneFileManager ? this.standaloneFileManager.blobUrlToFileUrl(url) : url,
                     type: "Model",
                     format: asset.data.mimeType
                 }
@@ -271,6 +301,38 @@ export default class CVStoryApplication extends Component
 
                 // add transform
                 this.setTransform(annotation, child.model.object3D.matrix);
+
+                // process annotations
+                const annotations = child.model.getComponent(CVAnnotationView);
+                annotations.getAnnotations().forEach(anno => {console.log(anno);
+                    const title = (anno.title.length > 0 ? anno.title : "Untitled") + (anno.lead.length > 0 ? "\n"+anno.lead : "");
+                    _vec3a.fromArray(anno.data.position).multiplyScalar(child.model.outs.unitScale.value);  // _vec3b = scale from setTransform
+
+                    const comment = {
+                        "id": "https://example.org/iiif/3d/anno2",
+                        "type": "Annotation",
+                        "motivation": ["commenting"],
+                        "bodyValue": title,
+                        "target": {
+                            "type": "SpecificResource",
+                            "source": [
+                            {
+                                "id": annotationPage["id"],
+                                "type": "Scene"
+                            }
+                            ],
+                            "selector": [
+                            {
+                                "type": "PointSelector",
+                                "x": _vec3a.x,
+                                "y": _vec3a.y,
+                                "z": _vec3a.z,
+                            }
+                            ]
+                        }
+                    }
+                    commentPage["items"].push(comment);
+                });
             }
 
             if (child.camera) {
@@ -302,7 +364,7 @@ export default class CVStoryApplication extends Component
             }
 
             if (child.transform.children) {
-                this.parseChildNodes(child.transform.children, annotationPage);
+                this.parseChildNodes(child.transform.children, annotationPage, commentPage);
             }
         });
     }
@@ -313,24 +375,35 @@ export default class CVStoryApplication extends Component
         _euler.setFromQuaternion(_quat);
 
         const transform = annotation.body["transform"] = [];
-        transform.push({
-            "type": "ScaleTransform",
-            "x": _vec3b.x,
-            "y": _vec3b.y,
-            "z": _vec3b.z
-        });
-        transform.push({
-            "type": "RotateTransform",
-            "x": _euler.x*math.RAD2DEG,
-            "y": _euler.y*math.RAD2DEG,
-            "z": _euler.z*math.RAD2DEG
-        });
-        transform.push({
-            "type": "TranslateTransform",
-            "x": _vec3a.x,
-            "y": _vec3a.y,
-            "z": _vec3a.z
-        });
+        if(_vec3b.x != 1 || _vec3b.y != 1 || _vec3b.z != 1) {
+            transform.push({
+                "type": "ScaleTransform",
+                "x": _vec3b.x,
+                "y": _vec3b.y,
+                "z": _vec3b.z
+            });
+        }
+        if(_euler.x != 0 || _euler.y != 0 || _euler.z != 0) {
+            transform.push({
+                "type": "RotateTransform",
+                "x": _euler.x*math.RAD2DEG,
+                "y": _euler.y*math.RAD2DEG,
+                "z": _euler.z*math.RAD2DEG
+            });
+        }
+        if(_vec3a.length() != 0) {
+            transform.push({
+                "type": "TranslateTransform",
+                "x": _vec3a.x,
+                "y": _vec3a.y,
+                "z": _vec3a.z
+            });
+        }
+
+        // remove transform element if empty
+        if(transform.length == 0) {
+            delete annotation.body["transform"];
+        }
     }
 
     /**

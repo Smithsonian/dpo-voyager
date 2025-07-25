@@ -113,7 +113,31 @@ export default class CVMediaManager extends CAssetManager
         }
     }
 
-    ingestFiles(files: Map<string, File>)
+    async ingestURI(uri: string)
+    {
+        const loadingManager = this.assetManager.loadingManager;
+        loadingManager.itemStart(uri);
+        await fetch(uri).then(result => {
+            if (!result.ok) {
+                loadingManager.itemError(uri);
+                loadingManager.itemEnd(uri);
+                console.error(`failed to fetch from '${uri}', status: ${result.status} ${result.statusText}`);
+                Notification.show(`failed to fetch from '${uri}', status: ${result.status} ${result.statusText}`);
+            }
+
+            result.blob().then( blobFile => {
+                loadingManager.itemEnd(uri);
+                this.ingestFiles(new Map([[uri, blobFile]]));
+            });
+        }).catch(error => {
+            loadingManager.itemError(uri);
+            loadingManager.itemEnd(uri);
+            console.error(error);
+            Notification.show(`Failed to fetch from '${uri}': ${error.message}`);
+        });
+    }
+
+    ingestFiles(files: Map<string, Blob>)
     {
         // If a scene file has been dropped, push to end
         const fileArray = Array.from(files);
@@ -128,10 +152,10 @@ export default class CVMediaManager extends CAssetManager
             }
         }
 
-        const documentRoot = documentProvided ? fileArray[fileArray.length-1][0].replace(fileArray[fileArray.length-1][1].name, '') : "";
+        const documentRoot = documentProvided ? fileArray[fileArray.length-1][0].slice(0,fileArray[fileArray.length-1][0].lastIndexOf('/')) : "";
 
         fileArray.forEach(([path, file]) => {
-            const cleanfileName = decodeURI(file.name);
+            const cleanfileName = decodeURI(path).slice(path.lastIndexOf('/') + 1);
             const filenameLower = cleanfileName.toLowerCase();
             
             if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
