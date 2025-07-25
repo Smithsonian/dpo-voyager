@@ -48,7 +48,7 @@ import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";
 import CVAnnotationView, { Annotation } from "client/components/CVAnnotationView";
 import { ELanguageType, EUnitType } from "client/schema/common";
-import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource } from "@iiif/3d-manifesto-dev";
+import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, AnnotationBody } from "@iiif/3d-manifesto-dev";
 import IIIFManifest from "client/io/IIIFManifestReader";
 import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight, PlaneGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, BufferGeometry, BufferAttribute, DoubleSide, Color } from "three";
 import CScene from "@ff/scene/components/CScene";
@@ -789,7 +789,7 @@ Version: ${ENV_VERSION}
                 const obj = anno.getBody()[0];
                 const body = obj.isSpecificResource() ? obj.getSource() : obj;
                 
-                const type = body.getType();
+                const type = (body as any).getType();
                 switch(type) {
                     case "model":
                         iiifModels.push(anno);
@@ -955,11 +955,11 @@ Version: ${ENV_VERSION}
                     else {
                         models[0].localBoundingBox.getCenter(_vec3b);
                         data.direction = _vec3a.sub(_vec3b).toArray();
-                        data.scale = 0.0;
+                        data.scale = 0.001;
                     }
 
                     // additional attributes
-                    data.title = commentBody.Value;                  
+                    annotation.title = commentBody.Value;                  
 
                     const view = models[0].getGraphComponent(CVAnnotationView);
                     view.addAnnotation(annotation);

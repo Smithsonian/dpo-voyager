@@ -168,6 +168,7 @@ export default class CVModel2 extends CObject3D
     private _wireColor = new Color("#004966").convertLinearToSRGB();
     private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _overlays: Dictionary<IOverlay> = {};
+    private _needsInit: boolean = true;
 
     constructor(node: Node, id: string)
     {
@@ -426,13 +427,13 @@ export default class CVModel2 extends CObject3D
 
         matrix.decompose(_vec3a, _quat, _vec3b);
 
-        _vec3a.multiplyScalar(1 / (this.outs.unitScale.value * _vec3b.x)).toArray(ins.position.value);
+        _vec3a.multiplyScalar(1 / this.outs.unitScale.value).toArray(ins.position.value);
         ins.position.set();
 
         helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
         ins.rotation.set();
 
-        ins.scale.setValue(_vec3b.x);
+        ins.scale.setValue(_vec3b.x / this.outs.unitScale.value);
     }
 
     fromDocument(document: IDocument, node: INode): number
@@ -463,6 +464,7 @@ export default class CVModel2 extends CObject3D
         if (data.translation) {
             ins.position.copyValue(data.translation);
             this._prevPosition.fromArray(data.translation);
+            this._needsInit = false;
         }
 
         if (data.rotation) {
@@ -470,6 +472,7 @@ export default class CVModel2 extends CObject3D
             helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
             this._prevRotation.fromArray(ins.rotation.value);
             ins.rotation.set();
+            this._needsInit = false;
         }
 
         if (data.boundingBox) {
@@ -771,12 +774,18 @@ export default class CVModel2 extends CObject3D
     protected updateMatrixFromProps()
     {
         const ins = this.ins;
-        const unitScale = this.outs.unitScale.value * ins.scale.value;
+        const unitScale = this.outs.unitScale.value;
         const object3D = this.object3D;
+
+        if(this._needsInit) {
+            this._prevPosition.copy(_vec3a.fromArray(ins.position.value));
+            this._prevRotation.copy(_vec3a.fromArray(ins.rotation.value));
+            this._needsInit = false;
+        }
 
         _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);
         helpers.degreesToQuaternion(ins.rotation.value, CVModel2.rotationOrder, _quat);
-        _vec3b.setScalar(unitScale);
+        _vec3b.setScalar(ins.scale.value).multiplyScalar(unitScale);
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;
 
