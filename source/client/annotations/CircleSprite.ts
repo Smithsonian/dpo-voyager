@@ -71,6 +71,8 @@ export default class CircleSprite extends AnnotationSprite
     dispose()
     {
         this.offset = null;
+        this.anchorMesh?.geometry.dispose();
+        (this.anchorMesh?.material as MeshBasicMaterial).dispose();
         this.anchorMesh = null;
 
         super.dispose();

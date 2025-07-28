@@ -171,6 +171,7 @@ export default class CVModel2 extends CObject3D
         super(node, id);
 
         this.object3D = new Group();
+        this.object3D.name = "Model";
     }
 
     get snapshotProperties() {

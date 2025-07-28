@@ -93,6 +93,7 @@ export default class CVTape extends CObject3D
         super(node, id);
 
         this.object3D = new Group();
+        this.object3D.name = "Tape";
 
         this.startPin = new Pin();
         this.startPin.matrixAutoUpdate = false;

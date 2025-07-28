@@ -64,6 +64,12 @@ export default class ExtendedSprite extends AnnotationSprite
         this.update();
     }
 
+    dispose(){
+        this.stemLine.geometry.dispose();
+        (this.stemLine.material as LineBasicMaterial).dispose();
+        super.dispose();
+    }
+
     update()
     {
         const annotation = this.annotation.data;
