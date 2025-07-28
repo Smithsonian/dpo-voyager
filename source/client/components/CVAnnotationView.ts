@@ -216,6 +216,7 @@ export default class CVAnnotationView extends CObject3D
         this.language.outs.activeLanguage.on("value", this.updateLanguage, this);
 
         this.object3D = new HTMLSpriteGroup();
+        this.object3D.name = "AnnotationView";
     }
 
     setActiveAnnotationById(id: string)
