@@ -245,6 +245,7 @@ export default class CVStoryApplication extends Component
         iiifScene["id"] = "https://example.org/iiif/scene1/page/p1/1";
         iiifScene["type"] = "Scene";
         iiifScene["label"] = { "en": [sceneTitle ? sceneTitle : "Untitled"] };
+        //iiifScene["backgroundColor"] = "#"+_color.getHexString();
         iiifScene["items"] = [{}];
         iiifScene["annotations"] = [{}];
 
