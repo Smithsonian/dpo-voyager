@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Texture, EquirectangularReflectionMapping, SRGBColorSpace } from "three";
+import { PMREMGenerator, WebGLRenderTarget } from "three";
 
 import Component, { types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
@@ -24,6 +24,7 @@ import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import { IEnvironment } from "client/schema/setup";
 import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 const images = ["Footprint_Court_1k_TMap.jpg", "spruit_sunrise_1k_LDR.jpg","campbell_env.jpg"];  
 
@@ -41,7 +42,8 @@ export default class CVEnvironment extends Component
 
     ins = this.addInputs(CVEnvironment.envIns);
 
-    private _texture: Texture = null;
+    private _target: WebGLRenderTarget = null;
+    private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
 
     protected shouldUseEnvMap = false;
@@ -55,7 +57,15 @@ export default class CVEnvironment extends Component
 
     dispose()
     {
-        this._texture ? this._texture.dispose() : null;
+        if(this.sceneNode.scene.environment){
+            //Ensure scene does not keep a reference to our texture
+            //Because otherwise it would get re-uploaded and possibly leak
+            this.sceneNode.scene.environment = null;
+        }
+        this._target?.dispose();
+        this._target = null;
+        this._pmremGenerator?.dispose();
+        this._pmremGenerator = null;
         super.dispose();
     }
 
@@ -73,36 +83,37 @@ export default class CVEnvironment extends Component
                     const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
                     if(material && material.isUberPBRMaterial && (material.roughnessMap || material.metalnessMap)) {
                         this.shouldUseEnvMap = true;
-
-                        if(this._texture !== null) 
-                        {
-                            this._texture.dispose(); 
-                            this._texture = null;   
-                        }
-                        ins.imageIndex.set();
                     }
                 });
             });
         }
-        if(ins.imageIndex.changed && this.shouldUseEnvMap)
+        if((ins.imageIndex.changed || ins.dirty.changed) && this.shouldUseEnvMap)
         {
-            if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
+            if(ins.imageIndex.value != this._currentIdx || this._target === null) 
             {
-                if(this._texture !== null) 
-                {
-                    this._texture.dispose();   
-                }
-
                 this.assetReader.getSystemTexture("images/"+images[ins.imageIndex.value]).then(texture => {
-                    if(this.node) {
-                        this._texture = texture; 
-                        this._texture.mapping = EquirectangularReflectionMapping;
-                        //this._texture.colorSpace = SRGBColorSpace;
-                        this.sceneNode.scene.environment = this._texture;
+                    if(!this.node) return;
+                    try{
+                        if(!this._pmremGenerator){
+                            let renderer = scene.getMainComponent(CRenderer).views[0].renderer;
+                            if(!renderer) throw new Error(`No renderer found : can't generate environment`);
+                            this._pmremGenerator = new PMREMGenerator(renderer);
+                            this._pmremGenerator.compileEquirectangularShader();
+                        }
+                        this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+                        this.sceneNode.scene.environment = this._target.texture;
+                    }catch(e){
+                        console.error("Failed to compile environment map : ", e);
+                    }finally{
+                        texture.dispose();
                     }
                 });
                 this._currentIdx = ins.imageIndex.value;
             }
+        }else if(this._target && !this.shouldUseEnvMap){
+            this._target.dispose();
+            this._target = null;
+            this.sceneNode.scene.environment = null;            
         }
 
         return true;
