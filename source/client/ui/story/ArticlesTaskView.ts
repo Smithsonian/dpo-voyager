@@ -68,7 +68,8 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-label">Title</div>
             <ff-line-edit name="title" text=${task.ins.title.value} @change=${this.onTextEdit}></ff-line-edit>
-            <sv-property-view class="sv-property-block" .property=${task.ins.tags}></sv-property-view>
+            <div class="sv-label">Tags</div>
+            <ff-line-edit name="tags" text=${task.ins.tags.value} @change=${this.onTextEdit}></ff-line-edit>
             <div class="sv-label">Lead</div>
             <ff-text-edit name="lead" text=${task.ins.lead.value} @change=${this.onTextEdit}></ff-text-edit>
             <sv-property-view class="sv-property-block" disabled .property=${task.ins.uri}></sv-property-view>
@@ -138,6 +139,9 @@ export default class ArticlesTaskView extends TaskView<CVArticlesTask>
 
         if (target.name === "lead") {
             task.ins.lead.setValue(text);
+        }
+        else if (target.name === "tags") {
+            task.ins.tags.setValue(text);
         }
         else if (target.name === "title") {
             task.ins.title.setValue(sanitizeHtml(text,
