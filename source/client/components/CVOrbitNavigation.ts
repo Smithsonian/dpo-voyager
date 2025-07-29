@@ -178,6 +178,12 @@ export default class CVOrbitNavigation extends CObject3D
         if (cameraComponent && projection.changed) {
             camera.setProjection(projection.getValidatedValue());
             cameraComponent.ins.projection.setValue(projection.value, true);
+
+            if (!camera.isOrthographicCamera) {
+                camera.size = cameraComponent.ins.size.value;
+                camera.far = cameraComponent.ins.far.value;
+                camera.updateProjectionMatrix();
+            }
         }
 
         // camera preset
@@ -250,7 +256,7 @@ export default class CVOrbitNavigation extends CObject3D
                 controller.camera = cameraComponent.camera;
             
                 controller.zoomExtents(this._modelBoundingBox);
-                cameraComponent.ins.zoom.set();
+                //cameraComponent.ins.zoom.set();
                 this._hasZoomed = true;
             }
             this._isAutoZooming = false;

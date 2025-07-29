@@ -213,6 +213,11 @@ Version: ${ENV_VERSION}
         // Clean up assuming a component disconnect means it won't be reconnected
         // TODO: More complete clean up that doesn't interfere with component disconnect
         this.assetReader.dispose();
+
+        this.documentProvider.activeComponent.setup.floor.dispose();
+        this.documentProvider.activeComponent.setup.tape.dispose();
+        this.documentProvider.activeComponent.setup.grid.dispose();
+        
         this.documentProvider.activeComponent.clearNodeTree();
         this.system.getMainComponent(CRenderer).views.forEach(view => view.dispose());
     }

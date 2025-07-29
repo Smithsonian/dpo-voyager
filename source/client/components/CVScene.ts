@@ -298,6 +298,7 @@ export default class CVScene extends CVNode
                 if(far < camera.ins.far.value || camera.ins.far.value < 2*this.setup.navigation.ins.maxOffset.value[2]) {
                     camera.ins.far.setValue(far);
                     camera.ins.near.setValue(near);
+                    this.setup.navigation.ins.projection.set(); // trigger projection update
                 }
             }
         });

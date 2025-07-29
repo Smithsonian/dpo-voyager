@@ -87,6 +87,8 @@
   figure {
     display: table;
     margin: 1rem auto;
+    font-family: "Hind Siliguri", sans-serif;
+    font-size: 1.15em;
   }
   
   figure.align-left {
@@ -95,6 +97,10 @@
   
   figure.align-right {
     float: right;
+  }
+
+  figure.align-center {
+    text-align: center;
   }
   
   figure.image figcaption {

@@ -114,6 +114,11 @@ export default class CVSetup extends Component
         this.snapshots = node.createComponent(CVSnapshots);
     }
 
+    dispose()
+    {
+        this._savedSetupData = null;
+    }
+
     update()
     {
         const ins = this.ins;

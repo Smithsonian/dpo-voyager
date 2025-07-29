@@ -78,6 +78,7 @@ export default {
         CVToursTask,
         //CVOverlayTask,
         CVAudioTask,
+        CVActionsTask,
         CVSettingsTask,
     ]
 }
