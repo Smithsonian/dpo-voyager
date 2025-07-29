@@ -27,7 +27,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import CVDocument from "../../components/CVDocument";
 import { IButtonClickEvent } from "@ff/ui/Button";
-import { ELanguageType, DEFAULT_LANGUAGE, ELanguageStringType } from "client/schema/common";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +182,11 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         const text = event.detail.text;
 
         if (target.name === "title") {
-            task.ins.tourTitle.setValue(sanitizeHtml(text));
+            task.ins.tourTitle.setValue(sanitizeHtml(text,
+                {
+                    allowedTags: [ 'i' ],
+                }
+            ));
         }
         else if (target.name === "lead") {
             task.ins.tourLead.setValue(sanitizeHtml(text, 
