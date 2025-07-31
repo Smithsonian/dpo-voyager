@@ -228,8 +228,11 @@ export default class ChromeView extends DocumentView
     }
 
     protected resetViewer() {
-        this.activeDocument.setup.actions.ins.reset.set();
-        this.activeDocument.setup.ins.restoreState.set();
+        const setup = this.activeDocument.setup;
+        setup.actions.ins.reset.set();
+        setup.audio.ins.reset.set();
+        setup.navigation.ins.projection.reset();  // projection not currently included in scene state
+        setup.ins.restoreState.set();
     }
 
     protected closeTools()

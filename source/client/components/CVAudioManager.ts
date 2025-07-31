@@ -53,6 +53,7 @@ export default class CVAudioManager extends Component
 
     protected static readonly ins = {
         playNarration: types.Event("Audio.PlayNarration"),
+        reset: types.Event("Audio.Reset"),
         activeCaption: types.String("Audio.ActiveCaption"),
         captionsEnabled: types.Boolean("Audio.CaptionsEnabled", true),
     };
@@ -124,6 +125,11 @@ export default class CVAudioManager extends Component
                 }
             }
         }
+        if (ins.reset.changed) {
+            this.stop();
+            outs.narrationPlaying.setValue(false);
+        }
+
         return true;
     }
 
