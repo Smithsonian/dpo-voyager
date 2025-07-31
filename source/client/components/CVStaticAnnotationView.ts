@@ -84,6 +84,7 @@ export default class CVStaticAnnotationView extends CObject3D
 
         this.object3D = new HTMLSpriteGroup();
         (this.object3D as HTMLSpriteGroup).setVisible(false);
+        this.object3D.name ="StaticAnnotationView"
     }
 
 

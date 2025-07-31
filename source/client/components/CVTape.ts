@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute, Material } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
@@ -93,6 +93,7 @@ export default class CVTape extends CObject3D
         super(node, id);
 
         this.object3D = new Group();
+        this.object3D.name = "Tape";
 
         this.startPin = new Pin();
         this.startPin.matrixAutoUpdate = false;
@@ -137,6 +138,13 @@ export default class CVTape extends CObject3D
 
     dispose()
     {
+        this.object3D.remove(this.startPin, this.endPin, this.line);
+
+        this.startPin.dispose();
+        this.endPin.dispose();
+        this.line.geometry.dispose();
+        (this.line.material as Material).dispose();
+
         this.startPin = null;
         this.endPin = null;
         this.line = null;

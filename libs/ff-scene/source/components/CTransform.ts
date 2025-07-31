@@ -164,6 +164,8 @@ export default class CTransform extends CHierarchy implements ICObject3D
 
     protected createObject3D()
     {
-        return new Object3D();
+        let obj = new Object3D();
+        obj.name = "Transform";
+        return obj;
     }
 }

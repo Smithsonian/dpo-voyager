@@ -111,6 +111,12 @@ export default class StandardSprite extends AnnotationSprite
     {
         return new StandardAnnotation(this);
     }
+
+    dispose(){
+        super.dispose();
+        this.stemLine.geometry.dispose();
+        (this.stemLine.material as LineBasicMaterial).dispose();
+    }
 }
 
 AnnotationFactory.registerDefaultType(StandardSprite);

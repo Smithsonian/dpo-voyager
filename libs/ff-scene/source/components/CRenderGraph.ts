@@ -36,6 +36,7 @@ export default class CRenderGraph extends CGraph implements ICObject3D
         super(node, id);
 
         this._object3D = new Object3D();
+        this._object3D.name ="Graph";
         this._object3D.matrixAutoUpdate = false;
     }
 

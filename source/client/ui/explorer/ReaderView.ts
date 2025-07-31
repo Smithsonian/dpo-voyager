@@ -24,6 +24,7 @@ import CVReader, { IArticleEntry } from "../../components/CVReader";
 import CVLanguageManager from "../../components/CVLanguageManager";
 import {getFocusableElements, focusTrap} from "../../utils/focusHelpers";
 import CVTours from "client/components/CVTours";
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +48,7 @@ export default class ReaderView extends DocumentView
 
         return html`<div role="option" title="article" tabindex=${index === 0 ? "0" : "-1"} @keydown=${e =>this.onKeyDown(e, article.id)} class="sv-entry" @click=${e => this.onClickArticle(e, article.id)}>      
             <div class="sv-titlebar">              
-                <h1>${article.title}</h1>
+                <h1>${unsafeHTML(article.title)}</h1>
                 <ff-icon class="ff-off" name="triangle-right">
             </div>
             <p>${article.lead}</p>

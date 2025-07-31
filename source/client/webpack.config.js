@@ -236,7 +236,6 @@ module.exports = function(env, argv)
                     test: /\.css$/,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        //"style-loader",
                         "css-loader",
                     ]
                 },
@@ -251,13 +250,6 @@ module.exports = function(env, argv)
                     loader: "handlebars-loader"
                 },
             ]
-        },
-
-        // When importing a module whose path matches one of the following, just
-        // assume a corresponding global variable exists and use that instead.
-        externals: {
-            //"three": "THREE",
-            //"../../../build/three.module.js": "THREE",  // patch to handle three jsm modules until there is a better routing option
         },
 
         stats: {chunkModules: true, excludeModules: false }

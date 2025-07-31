@@ -174,6 +174,7 @@ export default class CVMediaManager extends CAssetManager
         const selection = this.getMainComponent(CSelection);
 
         ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentName]) => {
+            this.assetManager.initialLoad = true;
             const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
             if(model === undefined) {
                 // converting path to relative (TODO: check if all browsers will have leading slash here)
