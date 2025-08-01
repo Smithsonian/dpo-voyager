@@ -199,7 +199,7 @@ module.exports = function(env, argv)
                 {
                     // Raw text and shader files
                     test: /\.(txt|glsl|hlsl|frag|vert|fs|vs)$/,
-                    loader: "raw-loader"
+                    type: "asset/source",
                 },
                 {
                     // Enforce source maps for all javascript files
@@ -210,7 +210,8 @@ module.exports = function(env, argv)
                 {
                     // Transpile SCSS to CSS and concatenate (to string)
                     test: /\.scss$/,
-                    use: ["raw-loader","sass-loader"],
+                    use: ["sass-loader"],
+                    type: "asset/source",
                     issuer: {
                         //include: /source\/client\/ui\/explorer/     // currently only inlining explorer css
                         and: [/source\/client\/ui\/explorer/]     // currently only inlining explorer css
@@ -219,19 +220,19 @@ module.exports = function(env, argv)
                 {
                     // Transpile SCSS to CSS and concatenate
                     test: /\.scss$/,
-                    use: /*appName === 'voyager-explorer' ? ["raw-loader","sass-loader"] :*/
-                        [         
-                            MiniCssExtractPlugin.loader,
-                            "css-loader",
-                            "sass-loader"
-                        ],
+                    use: [         
+                        MiniCssExtractPlugin.loader,
+                        "css-loader",
+                        "sass-loader"
+                    ],
+                    type: "javascript/auto",
                     issuer: {
                         not: [/source\/client\/ui\/explorer/]     // currently only inlining explorer css
                     }
                 },
                 {
-                    test: /content\.css$/i,
-                    use: ['css-loader'],
+                    resourceQuery: /raw/,
+                    type: "asset/source",
                 },
                 {
                     // Concatenate CSS
