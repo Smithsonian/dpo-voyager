@@ -79,7 +79,14 @@ const apps = {
     },
 };
 
-const version = childProcess.execSync("git describe --tags").toString().trim();
+let version;
+try{
+    version = childProcess.execSync("git describe --tags").toString().trim();
+}catch(e){
+    //Fallback if git is not present or tags have not been fetched
+    version = require(path.resolve(project, "./package.json")).version;
+}
+
 const analyticsId = process.env["VOYAGER_ANALYTICS_ID"];
 
 ////////////////////////////////////////////////////////////////////////////////
