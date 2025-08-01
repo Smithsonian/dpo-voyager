@@ -540,7 +540,7 @@ export default class CVDerivativesController extends Component{
       }
     }
 
-    if(currently_loading != 0 && ENV_DEVELOPMENT){
+    if(ENV_DEVELOPMENT && currently_loading != 0){
       const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
       console.debug(`models quality: [%d, %d, %d, %d]. loading %d models with %d/%d downgrades %s`, 
         countQ(EDerivativeQuality.High),
