@@ -129,9 +129,6 @@ module.exports = function(env, argv)
         },
 
         resolve: {
-            modules: [
-                dirs.modules
-            ],
             // Aliases for FF Foundation Library components
             alias: {
                 "client": path.resolve(dirs.source, "client"),
@@ -141,8 +138,6 @@ module.exports = function(env, argv)
                 "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
                 "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
                 "@ff/scene": path.resolve(dirs.libs, "ff-scene/source"),
-                "three$": path.resolve(dirs.modules, "three/src/Three"),
-                "../../../build/three.module.js": path.resolve(dirs.modules, "three/src/Three")
             },
             // Resolvable extensions
             extensions: [".ts", ".tsx", ".js", ".json"],
