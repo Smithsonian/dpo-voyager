@@ -247,7 +247,7 @@ module.exports = function(env, argv)
                 },
             ]
         },
-
+        performance: {hints: false},
         stats: {chunkModules: true, excludeModules: false }
 
     };
