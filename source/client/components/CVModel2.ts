@@ -683,7 +683,9 @@ export default class CVModel2 extends CObject3D
 
             if ( mapping ) {
                 const variantMat = await parser.getDependency( 'material', mapping.material );
-                object.material.copy( variantMat);
+                const shader = object.material.userData.shader;
+                object.material.copy( variantMat );
+                object.material.userData.shader = shader; // add back shader reference that's lost
                 //parser.assignFinalMaterial( object );
                 this.activeDerivative.model["variants"].variantMaterials[variantMat.uuid] = variantMat;
 
