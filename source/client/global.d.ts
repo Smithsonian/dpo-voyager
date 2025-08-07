@@ -1,10 +1,13 @@
-declare module '!raw-loader!*' {
+declare module '*?raw' {
     const contents: string;
     export = contents;
 }
 
 declare module "*.scss";
 declare module "*.css";
+declare module "*.css";
+declare module "*.frag";
+declare module "*.vert";
 
 // Webpack constant: build version
 declare const ENV_VERSION: string;

@@ -36,9 +36,9 @@ import 'tinymce/plugins/image';
 import 'tinymce/plugins/media';
 
 /* Import content css */
-import contentUiCss from '!!raw-loader!./editor_css/content.ui.min.css';
-import contentCss from '!!raw-loader!./editor_css/content.min.css';
-import contentOverrides from '!!raw-loader!./editor_css/overrides.css';
+import contentUiCss from './editor_css/content.ui.min.css?raw';
+import contentCss from './editor_css/content.min.css?raw';
+import contentOverrides from './editor_css/overrides.css?raw';
 
 import Notification from "@ff/ui/Notification";
 import MessageBox from "@ff/ui/MessageBox";

@@ -16,9 +16,10 @@ import {
 } from "three";
 
 import { Dictionary } from "@ff/core/types";
-
-const fragmentShader = require("./shaders/floorPhongShader.frag").default;
-const vertexShader = require("./shaders/floorPhongShader.vert").default;
+//@ts-ignore
+import fragmentShader from "./shaders/floorPhongShader.frag";
+//@ts-ignore
+import vertexShader from "./shaders/floorPhongShader.vert";
 
 ////////////////////////////////////////////////////////////////////////////////
 
