@@ -105,6 +105,13 @@ export default class UberPBRMaterial extends MeshPhysicalMaterial
         if (params) {
             this.setValues(params);
         }
+
+        this.onBeforeCompile = function(shader) {
+            shader.vertexShader = this.vertexShader;
+            shader.fragmentShader = this.fragmentShader;
+
+            shader.uniforms = this.uniforms;
+        }
     }
 
     set cutPlaneDirection(direction: Vector4) {

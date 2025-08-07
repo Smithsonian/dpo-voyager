@@ -106,13 +106,6 @@ export default class CVGrid extends CObject3D
         super.create();
     }
 
-    dispose()
-    {
-        this.tape.dispose();
-
-        super.dispose();
-    }
-
     activate()
     {
         const scene = this.getGraphComponent(CVScene);
