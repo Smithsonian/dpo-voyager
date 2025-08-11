@@ -33,6 +33,10 @@ export default class CLight extends CObject3D
         shadowEnabled: types.Boolean("Shadow.Enabled"),
         shadowResolution: types.Enum("Shadow.Resolution", EShadowMapResolution, EShadowMapResolution.Medium),
         shadowBlur: types.Number("Shadow.Blur", 1),
+        shadowIntensity: types.Number("Shadow.Intensity", {
+            preset:1,
+            min: 0,
+        })
     };
 
     ins = this.addInputs<CObject3D, typeof CLight["lightIns"]>(CLight.lightIns);
@@ -62,6 +66,10 @@ export default class CLight extends CObject3D
 
             if(ins.shadowBlur.changed){
                 light.shadow.radius = ins.shadowBlur.value;
+            }
+
+            if(ins.shadowIntensity.changed){
+                light.shadow.intensity = ins.shadowIntensity.value;
             }
                 
             if (ins.shadowResolution.changed) {

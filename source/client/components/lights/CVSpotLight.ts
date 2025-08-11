@@ -43,6 +43,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             this.ins.shadowEnabled,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
+            this.ins.shadowIntensity
         ];
     }
 
@@ -91,6 +92,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             shadowEnabled: data.shadowEnabled || false,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
+            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
 
         return node.light;
@@ -121,6 +123,9 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             }
             if (!ins.shadowResolution.isDefault()) {
                 data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+            if (!ins.shadowIntensity.isDefault()) {
+                data.shadowIntensity = ins.shadowIntensity.value;
             }
         }
 

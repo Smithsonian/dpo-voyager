@@ -42,6 +42,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             this.ins.shadowSize,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
+            this.ins.shadowIntensity
         ];
     }
 
@@ -84,6 +85,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
+            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
 
         return node.light;
@@ -111,6 +113,9 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             }
             if (!ins.shadowResolution.isDefault()) {
                 data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+            if (!ins.shadowIntensity.isDefault()) {
+                data.shadowIntensity = ins.shadowIntensity.value;
             }
         }
 

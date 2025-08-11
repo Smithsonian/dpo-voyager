@@ -129,6 +129,7 @@ export interface ILight
     shadowSize?: number;
     shadowResolution?: string;
     shadowBlur?: number;
+    shadowIntensity?: number;
 
     point?: IPointLightProps;
     spot?: ISpotLightProps;

@@ -60,8 +60,6 @@ export default class CVEnvironment extends Component
     private _pmremGenerator: PMREMGenerator = null;
     private _hdriLoader: RGBELoader = null;
 
-    protected shouldUseEnvMap = false;
-
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
     }
@@ -83,7 +81,11 @@ export default class CVEnvironment extends Component
 
     dispose()
     {
-        this._pmremGenerator ? this._pmremGenerator.dispose() : null;
+        this._pmremGenerator?.dispose();
+        this._pmremGenerator = null;
+        this._texture?.dispose();
+        this._texture = null;
+        this._hdriLoader = null;
         super.dispose();
     }
 
@@ -158,7 +160,8 @@ export default class CVEnvironment extends Component
         const ins = this.ins;
 
         this._texture = this._pmremGenerator.fromEquirectangular(texture).texture;
-        texture.dispose(); 
+        texture.dispose();
+        texture = null;
         this.sceneNode.scene.environment = this._texture;
         this.sceneNode.scene.environmentRotation = _euler;
         this.sceneNode.scene.backgroundRotation = _euler;
