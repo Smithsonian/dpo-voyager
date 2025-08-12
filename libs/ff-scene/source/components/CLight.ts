@@ -9,6 +9,7 @@ import { Light } from "three";
 
 import { Node, types } from "@ff/graph/Component";
 import CObject3D from "./CObject3D";
+import { INodeChangeEvent } from "@ff/graph/Node";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +26,7 @@ export default class CLight extends CObject3D
     static readonly typeName: string = "CLight";
 
     protected static readonly lightIns = {
+        enabled: types.Boolean("Light.Enabled", true),
         color: types.ColorRGB("Light.Color"),
         intensity: types.Number("Light.Intensity", {
             preset:1,
@@ -52,6 +54,11 @@ export default class CLight extends CObject3D
 
         const light = this.light;
         const ins = this.ins;
+
+        if(ins.enabled.changed) {
+            light.visible = ins.enabled.value;
+            this.node.emit<INodeChangeEvent>({ type: "change", what: "enabled", node: this.node });
+        }
 
         if (ins.color.changed || ins.intensity.changed) {
             light.color.fromArray(ins.color.value);

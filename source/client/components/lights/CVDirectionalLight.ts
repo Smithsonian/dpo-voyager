@@ -36,6 +36,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
     get settingProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
             this.ins.shadowEnabled,
@@ -75,6 +76,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         }
 
         ins.copyValues({
+            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
 
@@ -96,6 +98,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const ins = this.ins;
 
         const data = {
+            enabled: ins.enabled.value,
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value
         } as ILight;

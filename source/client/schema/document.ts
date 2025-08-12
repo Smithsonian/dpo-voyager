@@ -122,6 +122,7 @@ export interface IOrthographicCameraProps
 export interface ILight
 {
     type: TLightType;
+    enabled?: boolean;
     color?: ColorRGB;
     intensity?: number;
 
