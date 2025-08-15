@@ -40,7 +40,7 @@ export default class CVEnvironment extends Component
     protected static readonly envIns = {
         imageIndex: types.Integer("Environment.Index", { preset: 0, options: images.map( function(item, index) {return index.toString();}) }),
         dirty: types.Event("Environment.Dirty"),
-        intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
+        intensity: types.Number("Light.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
         visible: types.Boolean("Environment.Visible", false)
     };

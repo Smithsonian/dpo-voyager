@@ -57,11 +57,11 @@ export default class CVSetup extends Component
 
     protected static readonly featureMap = {
         "interface": CVInterface,
+        "environment": CVEnvironment,
         "reader": CVReader,
         "viewer": CVViewer,
         "navigation": CVOrbitNavigation,
         "background": CVBackground,
-        "environment": CVEnvironment,
         "language": CVLanguageManager,
         "floor": CVFloor,
         "grid": CVGrid,

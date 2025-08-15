@@ -85,7 +85,7 @@ class NodeTree extends Tree<NVNode>
     {
         let icons = [];
         if (node.scene) {
-            icons.push(html`<ff-icon class="sv-icon-scene" name=${node.scene.icon}></ff-icon>`);
+            icons.push(html`<ff-icon class="sv-icon-scene" name=${node.scene.icon}></ff-icon><ff-icon class="sv-icon-light" name="globe"></ff-icon>`);
         }
         if (node.model) {
             icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
