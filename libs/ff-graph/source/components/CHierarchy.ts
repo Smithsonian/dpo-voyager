@@ -394,7 +394,7 @@ export default class CHierarchy extends Component
      * Emits a hierarchy event at this component, its node and all their parents.
      * @param {CHierarchy} component
      */
-    addChild(component: CHierarchy)
+    addChild(component: CHierarchy, index?: number)
     {
         if (component === this) {
             throw new Error("can't add self as child");
@@ -407,7 +407,14 @@ export default class CHierarchy extends Component
         }
 
         component._parent = this;
-        this._children.push(component);
+
+        if(index == undefined || index > this._children.length) {
+            this._children.push(component);
+        }
+        else {
+            index = Math.max(index, 0);
+            this._children.splice(index, 0, component);
+        }
 
         this.graph._removeRoot(component);
 

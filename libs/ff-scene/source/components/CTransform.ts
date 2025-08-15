@@ -153,6 +153,16 @@ export default class CTransform extends CHierarchy implements ICObject3D
     }
 
     /**
+     * Inserts the given transform component as a child to this.
+     * @param component
+     */
+    insertChild(component: CTransform, index: number)
+    {
+        super.addChild(component, index);
+        this._object3D.add(component._object3D);
+    }
+
+    /**
      * Removes the given transform component from the list of children of this.
      * @param component
      */

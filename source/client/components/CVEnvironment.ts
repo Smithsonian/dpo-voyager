@@ -194,6 +194,6 @@ export default class CVEnvironment extends Component
         const lightNode = this.graph.findNodeByName("Lights") as NVNode;
         const childNode = lightNode.graph.createCustomNode(lightNode as NVNode) as NVNode;
         childNode.transform.createComponent(CVEnvironmentLight);
-        lightNode.transform.addChild(childNode.transform);
+        (this.node as NVNode).transform.insertChild(childNode.transform, 0);
     }
 }
