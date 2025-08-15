@@ -62,12 +62,7 @@ export default class CVLightsTask extends CVTask {
             if (ins.create.changed) {
                 console.log("create light", ins.type.value);
             } else if (ins.delete.changed) {
-                light.dispose();
-                let transform = this.system.getComponents("CTransform").find(transform => {
-                    return (transform.node === light.node);
-                });
-                transform?.dispose();
-                // TODO delete navigation panel entry
+                light.node.dispose();
             }
         }
         return true;

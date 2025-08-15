@@ -33,11 +33,6 @@ export default class LightHelper extends Object3D {
   }
 
   update(){
-        if (!this.light.parent) {
-          console.debug("Light has been deleted.")
-          this.dispose();
-          this.source.geometry.dispose(); // FIXME: this does not remove the visible indicator
-        }
   }
 
 	dispose() {
