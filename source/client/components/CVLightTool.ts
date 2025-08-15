@@ -50,7 +50,6 @@ export default class CVLightTool extends CVTool
 
     update(context)
     {
-
         this.outs.light.setValue(this.lights[this.ins.light.getValidatedValue()]);
         return true;
     }
@@ -62,7 +61,7 @@ export default class CVLightTool extends CVTool
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        this.lights = next ? next.getInnerComponents(CLight) : [];
+        this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
         this.ins.light.setOptions(this.lights.map(light => light.node.name));
         this.outs.light.setValue(this.lights[0]);
 
