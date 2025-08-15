@@ -250,7 +250,7 @@ export default class CVScene extends CVNode
                         _vec3.fromArray(lightNode.transform.ins.position.value);
                         _vec3.multiplyScalar(unitScale);
                         lightNode.transform.ins.position.setValue(_vec3.toArray());
-                        lightNode.light.updateMatrix();
+                        lightNode.light?.updateMatrix();
                     }
 
                     if(light_has_shadowSize(lightNode)){

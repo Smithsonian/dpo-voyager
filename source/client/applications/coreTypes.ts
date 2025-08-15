@@ -54,6 +54,7 @@ import CVCamera from "../components/CVCamera";
 import CVDirectionalLight from "../components/lights/CVDirectionalLight";
 import CVPointLight from "../components/lights/CVPointLight";
 import CVSpotLight from "../components/lights/CVSpotLight";
+import CVEnvironmentLight from "../components/lights/CVEnvironmentLight";
 
 import CVInterface from "../components/CVInterface";
 import CVViewer from "../components/CVViewer";
@@ -92,6 +93,7 @@ export const lightTypes = [
     CVAmbientLight,
     CVHemisphereLight,
     CVRectLight,
+    CVEnvironmentLight,
 ] as const;
 
 const types = [
