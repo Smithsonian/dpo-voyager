@@ -25,6 +25,7 @@ import "../ui/properties/PropertyColor";
 import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
+import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -107,15 +108,16 @@ export class LightToolView extends ToolView<CVLightTool>
 
         const activeLight = tool.outs.light.value;
         const navigation = document.setup.navigation;
-        const environment = document.setup.environment;
         const language = document.setup.language;
+
+        const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
 
         const lightDetails = activeLight ? html`<div class="sv-section">
             <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                 <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
-                <sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>
+                ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
             </div>
         </div>` : null;
 
@@ -123,7 +125,6 @@ export class LightToolView extends ToolView<CVLightTool>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${navigation.ins.lightsFollowCamera} name="Follow Camera"></sv-property-boolean> -->
                 <sv-property-options .property=${tool.ins.light} .language=${language} name=${language.getLocalizedString("Select Scene Light")}></sv-property-options>
-                <sv-property-slider .property=${environment.ins.intensity} .language=${language} name=${language.getLocalizedString("Env. Light Intensity")} min="0" max="2"></sv-property-slider>
             </div>
         </div>`;
     }
