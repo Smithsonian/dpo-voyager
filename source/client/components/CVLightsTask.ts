@@ -56,12 +56,18 @@ export default class CVLightsTask extends CVTask {
 
     update() {
         const { ins } = this;
-        const light = this.lightById(ins.activeId.value);
 
+        if (ins.create.changed) {
+            console.log("create light", ins.type.value);
+            return true;
+        } 
+
+        const light = this.lightById(ins.activeId.value);
         if (light) {
-            if (ins.create.changed) {
-                console.log("create light", ins.type.value);
-            } else if (ins.delete.changed) {
+            if (ins.name.changed) {
+                light.node.name = ins.name.value;
+            }
+            if (ins.delete.changed) {
                 light.node.dispose();
             }
         }
