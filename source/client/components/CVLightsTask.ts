@@ -1,8 +1,9 @@
 
+import { lightTypes } from "client/applications/coreTypes";
 import NVNode from "client/nodes/NVNode";
 import LightsTaskView from "client/ui/story/LightsTaskView";
 import CVTask, { types } from "./CVTask";
-import { CLight, ELightType } from "./lights/CVLight";
+import { CLight, ELightType, ICVLight } from "./lights/CVLight";
 
 export default class CVLightsTask extends CVTask {
     static readonly typeName: string = "CVLightsTask";
@@ -59,15 +60,18 @@ export default class CVLightsTask extends CVTask {
 
         if (ins.create.changed) {
             console.log("create light", ins.type.value);
+            const lightType = lightTypes.find(type => type.type === ELightType[ins.type.value]);
+            const light = this.createComponent<ICVLight>(lightType)//.fromDocument(document,  this.system.getComponent("CLight").parentComponent.parent.node );
+            // FIXME: how to add to document/parent node?
+            light.node.name = lightType.text;   // TODO set reasonable default name
             return true;
-        } 
+        }
 
         const light = this.lightById(ins.activeId.value);
         if (light) {
             if (ins.name.changed) {
                 light.node.name = ins.name.value;
-            }
-            if (ins.delete.changed) {
+            } else if (ins.delete.changed) {
                 light.node.dispose();
             }
         }
