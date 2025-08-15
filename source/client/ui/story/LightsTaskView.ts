@@ -5,6 +5,7 @@ import { ILight, TLightType } from "client/schema/document";
 import { TaskView, customElement, html, property } from "../../components/CVTask";
 import CLight from "@ff/scene/components/CLight";
 import { ELightType } from "client/components/lights/CVLight";
+import { lightTypes } from "client/applications/coreTypes";
 
 @customElement("sv-light-task-view")
 export default class LightsTaskView extends TaskView<CVLightsTask> {
@@ -34,7 +35,8 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
             lightElement = lightsList.find((light) => light.node.name === selectedNode.name);
             if (lightElement) {
                 ins.name.setValue(selectedNode.name);
-                // ins.type.setValue(lightElement.constructor.type); // FIXME as ELightType
+                const lightType = lightTypes.find(lightType => lightType.typeName === lightElement.typeName);
+                ins.type.setValue(ELightType[lightType.type]);
                 ins.activeId.setValue(lightElement.id);
             } else {
                 throw new Error("Light not found for selected node");
