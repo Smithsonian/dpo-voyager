@@ -100,8 +100,8 @@ export class LightToolView extends ToolView<CVLightTool>
         const lights = tool.lights;
         const document = this.activeDocument;
 
-        if (!lights || !document) {
-            return html`No editable lights in this scene.`;
+        if (!lights || !document || lights.length == 0) {
+            return html`<div class="sv-section sv-centered">No editable lights in this scene.</div>`;
         }
 
         const activeLight = tool.outs.light.value;
@@ -143,7 +143,7 @@ export class LightToolView extends ToolView<CVLightTool>
     {
         await this.updateComplete;
         const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
-        focusElement.focus();
+        focusElement?.focus();
     }
 
     protected onClose(event: MouseEvent)
