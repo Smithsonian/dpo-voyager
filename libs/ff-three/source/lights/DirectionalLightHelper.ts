@@ -48,7 +48,7 @@ export default class DirectionalLightHelper extends LightHelper {
       this.target.updateMatrix();
     } else {
       console.debug("DirectionalLightHelper: Light has been deleted.");
-      // this.dispose();  // this.dispose() is run in the super.update() method
+      this.dispose();
     }
 
   }
