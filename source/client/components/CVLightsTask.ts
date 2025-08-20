@@ -59,11 +59,14 @@ export default class CVLightsTask extends CVTask {
         const { ins } = this;
 
         if (ins.create.changed) {
-            console.log("create light", ins.type.value);
             const lightType = lightTypes.find(type => type.type === ELightType[ins.type.value]);
-            const light = this.createComponent<ICVLight>(lightType)//.fromDocument(document,  this.system.getComponent("CLight").parentComponent.parent.node );
-            // FIXME: how to add to document/parent node?
-            light.node.name = lightType.text;   // TODO set reasonable default name
+            
+            const lightNode = this.system.findNodeByName("Lights") as NVNode;
+            const childNode = lightNode.graph.createCustomNode(lightNode);
+            childNode.transform.createComponent<ICVLight>(lightType);
+            lightNode.transform.addChild(childNode.transform);
+
+            childNode.name = lightType.text;   // TODO set reasonable default name
             return true;
         }
 
@@ -71,7 +74,7 @@ export default class CVLightsTask extends CVTask {
         if (light) {
             if (ins.name.changed) {
                 light.node.name = ins.name.value;
-            } else if (ins.delete.changed) {
+            } if (ins.delete.changed) {
                 light.node.dispose();
             }
         }
