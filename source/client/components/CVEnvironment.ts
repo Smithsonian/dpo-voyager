@@ -16,15 +16,15 @@
  */
 
 import { Texture, SRGBColorSpace, PMREMGenerator, Euler } from "three";
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
-import Component, { types } from "@ff/graph/Component";
+import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CVAssetReader from "./CVAssetReader";
 import { IEnvironment } from "client/schema/setup";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEG2RAD } from "three/src/math/MathUtils";
 import CVBackground from "./CVBackground";
+import CVMeta from "./CVMeta";
 
 const images = ["spruit_sunrise_1k_HDR.hdr","Two Umbrellas For Charts.hdr","studio_small_08_1k.hdr","campbell_env.jpg"];  
 
@@ -38,7 +38,7 @@ export default class CVEnvironment extends Component
     static readonly text: string = "Environment";
 
     protected static readonly envIns = {
-        imageIndex: types.Integer("Environment.Index", { preset: 0, options: images.map( function(item, index) {return index.toString();}) }),
+        imageIndex: types.Integer("Environment.MapIndex", { preset: 0, options: images.map( function(item, index) {return index.toString();}) }),
         dirty: types.Event("Environment.Dirty"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
@@ -51,6 +51,7 @@ export default class CVEnvironment extends Component
         return [
             this.ins.intensity,
             this.ins.rotation,
+            this.ins.imageIndex,
             this.ins.visible
         ];
     }
@@ -58,7 +59,7 @@ export default class CVEnvironment extends Component
     private _texture: Texture = null;
     private _currentIdx = 0;
     private _pmremGenerator: PMREMGenerator = null;
-    private _hdriLoader: RGBELoader = null;
+    private _imageOptions: string[] = images;
 
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
@@ -76,16 +77,16 @@ export default class CVEnvironment extends Component
     create()
     {
         super.create();
-        this._hdriLoader = new RGBELoader();
+        this.system.components.on(CVMeta, this.onMetaComponent, this);
     }
 
     dispose()
     {
+        this.system.components.off(CVMeta, this.onMetaComponent, this);
         this._pmremGenerator?.dispose();
         this._pmremGenerator = null;
         this._texture?.dispose();
         this._texture = null;
-        this._hdriLoader = null;
         super.dispose();
     }
 
@@ -105,14 +106,15 @@ export default class CVEnvironment extends Component
                     this._pmremGenerator = new PMREMGenerator(this.renderer.views[0].renderer); 
                 }
 
-                const mapName = images[ins.imageIndex.value];
-                if(mapName.endsWith(".hdr")) {
-                    this._hdriLoader.load( "images/"+mapName, (texture) => {
+                const mapName = this._imageOptions[ins.imageIndex.value];
+
+                if(images.includes(mapName)) {
+                    this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
                         this.updateEnvironmentMap(texture);
                     });
                 }
                 else {
-                    this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
+                    this.assetReader.getTexture(mapName).then(texture => {
                         this.updateEnvironmentMap(texture);
                     });
                 }
@@ -167,5 +169,23 @@ export default class CVEnvironment extends Component
         this.sceneNode.scene.backgroundRotation = _euler;
         this.renderer.forceRender();
         ins.visible.set();
+    }
+
+    protected onMetaComponent(event: IComponentEvent<CVMeta>)
+    {
+        const meta = event.object;
+
+        if (event.add) {
+            meta.once("load", () => {
+                const images = meta.images.dictionary;
+                Object.keys(images).forEach(key => {
+                    const image =  images[key];
+                    if(image.usage && image.usage === "Environment") {
+                        this._imageOptions.push(image.uri);
+                        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+                    }
+                });
+            });
+        }
     }
 }
