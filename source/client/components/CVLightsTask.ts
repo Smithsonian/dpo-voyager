@@ -1,7 +1,9 @@
-
 import { lightTypes } from "client/applications/coreTypes";
 import NVNode from "client/nodes/NVNode";
+import MainView from "client/ui/explorer/MainView";
+import CreateLightMenu from "client/ui/story/CreateLightMenu";
 import LightsTaskView from "client/ui/story/LightsTaskView";
+import CVDocumentProvider from "./CVDocumentProvider";
 import CVTask, { types } from "./CVTask";
 import { CLight, ELightType, ICVLight } from "./lights/CVLight";
 
@@ -59,15 +61,19 @@ export default class CVLightsTask extends CVTask {
         const { ins } = this;
 
         if (ins.create.changed) {
-            const lightType = lightTypes.find(type => type.type === ELightType[ins.type.value]);
-            
-            const lightNode = this.system.findNodeByName("Lights") as NVNode;
-            const childNode = lightNode.graph.createCustomNode(lightNode);
-            childNode.transform.createComponent<ICVLight>(lightType);
-            lightNode.transform.addChild(childNode.transform);
+            const mainView: MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
+            const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
 
-            childNode.name = lightType.text;   // TODO set reasonable default name
-            return true;
+            CreateLightMenu.show(mainView, activeDoc.setup.language).then(([selectedType, name]) => {
+                const lightType = lightTypes.find(lt => lt.type === ELightType[selectedType].toString());
+
+                const lightNode = this.system.findNodeByName("Lights") as NVNode;
+                const childNode = lightNode.graph.createCustomNode(lightNode);
+                childNode.transform.createComponent<ICVLight>(lightType);
+                childNode.name = name;
+
+                lightNode.transform.addChild(childNode.transform);
+            }).catch(e => console.error("Error creating light:", e));
         }
 
         const light = this.lightById(ins.activeId.value);
