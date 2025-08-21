@@ -58,6 +58,7 @@ export default class CVLightsTask extends CVTask {
     }
 
     update() {
+        var changed: boolean = false;        
         const { ins } = this;
 
         if (ins.create.changed) {
@@ -73,6 +74,7 @@ export default class CVLightsTask extends CVTask {
                 childNode.name = name;
 
                 lightNode.transform.addChild(childNode.transform);
+                changed = true;
             }).catch(e => console.error("Error creating light:", e));
         }
 
@@ -80,11 +82,13 @@ export default class CVLightsTask extends CVTask {
         if (light) {
             if (ins.name.changed) {
                 light.node.name = ins.name.value;
+                changed = true;
             } if (ins.delete.changed) {
                 light.node.dispose();
+                changed = true;
             }
         }
-        return true;
+        return changed;
     }
 
     protected onActiveNode(previous: NVNode, next: NVNode) {
