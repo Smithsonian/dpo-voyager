@@ -21,9 +21,7 @@ export default class CVLightsTask extends CVTask {
         create: types.Event("Light.Create"),
         delete: types.Event("Light.Delete"),
         name: types.String("Light.Name", ""),
-        activeId: types.String("Light.ActiveId", ""),
         type: types.Enum("Light.Type", ELightType, ELightType.directional),
-        // TODO: set color/intensity defaults
     };
     protected static readonly outs = {
     };
@@ -129,9 +127,5 @@ export default class CVLightsTask extends CVTask {
                 _target.setValue(prop.value);
             }
         }
-    }
-
-    protected onActiveNode(previous: NVNode, next: NVNode) {
-        this.ins.activeId.setValue("");
     }
 }
