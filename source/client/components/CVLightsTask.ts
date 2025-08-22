@@ -58,67 +58,66 @@ export default class CVLightsTask extends CVTask {
             const mainView: MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
             const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
 
-            CreateLightMenu.show(mainView, activeDoc.setup.language).then(([selectedType, name]) => {
-                this.createLight(selectedType, name);
-                return true;
-            }).catch(e => console.error("Error creating light:", e));
+            CreateLightMenu.show(mainView, activeDoc.setup.language)
+                .then(([selectedType, name]) => {
+                    this.createLightNode(selectedType, name);
+                    return true;
+                }).catch(e => console.error("Error creating light:", e));
         }
 
-        const light: CLight | undefined = this.nodeProvider.activeNode?.light;
-        if (light) {
-            if (ins.name.changed && light.node.name !== ins.name.value) {
-                light.node.name = ins.name.value;
+        const activeNode: NVNode | undefined = this.nodeProvider.activeNode;
+        if (activeNode?.light) {
+            if (ins.name.changed && activeNode.name !== ins.name.value) {
+                activeNode.name = ins.name.value;
                 return true;
             }
             if (ins.delete.changed) {
-                this.deleteLight(light);
+                activeNode.dispose();
                 return true;
             }
 
-            const lightType: string = ELightType[(light.constructor as any).type];
+            const lightType: string = ELightType[(activeNode.light.constructor as any).type];
             if (ins.type.changed && ins.type.value !== lightType as unknown) {
-                const newLight: NVNode = this.createLight(ins.type.value, light.node.name);
-                CVLightsTask.copyAllProperties(light, newLight);
-                this.deleteLight(light);
-                this.nodeProvider.activeNode = newLight;
+                const newNode: NVNode = this.createLightNode(ins.type.value, activeNode.name);
+                CVLightsTask.copyLightProperties(activeNode, newNode);
+                activeNode.dispose();
+                this.nodeProvider.activeNode = newNode;
                 return true;
             }
         }
         return false;
     }
 
-    protected createLight(selectedType: ELightType, name: string): NVNode {
-        const lightType = lightTypes.find(lt => lt.type === ELightType[selectedType].toString());
+    protected createLightNode(newType: ELightType, newName: string): NVNode {
+        const lightType = lightTypes.find(lt => lt.type === ELightType[newType].toString());
 
-        const lightNode = this.system.findNodeByName("Lights") as NVNode;
-        const childNode = lightNode.graph.createCustomNode(lightNode);
-        childNode.transform.createComponent<ICVLight>(lightType);
-        childNode.name = name;
+        const parentNode: NVNode = this.system.findNodeByName("Lights");
+        const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
+        lightNode.transform.createComponent<ICVLight>(lightType);
+        lightNode.name = newName;
 
-        lightNode.transform.addChild(childNode.transform);
+        parentNode.transform.addChild(lightNode.transform);
 
-        return childNode;
+        return lightNode;
     }
 
-    protected deleteLight(light: CLight) {
-        light.node.dispose();
-    }
+    protected static copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
+        const sourceLight: CLight = sourceNode.light;
+        const targetLight: CLight = targetNode.light;
 
-    protected static copyAllProperties(source: CLight, target: NVNode) {
-        CVLightsTask.copyProperties((source as any).settingProperties, target.light.ins.properties);
-        if (source instanceof CDirectionalLight) {
-            // CDirectionalLight multiplies intensity by PI, so it needs to be compensated (divide by PI)
-            target.light.ins.setValues({ "intensity": source.light.intensity / Math.PI });
+        // Copy light properties
+        (sourceLight as any).settingProperties.forEach((sourceProp: Property) => {
+            targetLight.ins.properties.find(targetProp => targetProp.key === sourceProp.key)?.setValue(sourceProp.value);
+        });
+
+        // CDirectionalLight multiplies intensity by PI, so it needs to be compensated (divide by PI)
+        if (sourceLight instanceof CDirectionalLight) {
+            targetLight.ins.setValues({ "intensity": sourceLight.light.intensity / Math.PI });
         }
 
-        CVLightsTask.copyProperties((source.transform as CVNode).settingProperties, target.transform.ins.properties);
-        // TODO: copy shadow properties?
-        // TODO: should this be a method NVNode.copyProperties(source)?
-
-    }
-    protected static copyProperties(sourceProperties: Property[], targetProperties: Property[]) {
-        sourceProperties.forEach(sourceProp => {
-            targetProperties.find(targetProp => targetProp.key === sourceProp.key)?.setValue(sourceProp.value);
+        // Copy transform properties
+        (sourceLight.transform as CVNode).settingProperties.forEach((sourceProp: Property) => {
+            targetNode.transform.ins.properties.find(targetProp => targetProp.key === sourceProp.key)?.setValue(sourceProp.value);
         });
     }
 }
