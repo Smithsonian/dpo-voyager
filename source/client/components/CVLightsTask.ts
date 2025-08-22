@@ -31,14 +31,6 @@ export default class CVLightsTask extends CVTask {
     ins = this.addInputs<CVTask, typeof CVLightsTask.ins>(CVLightsTask.ins);
     outs = this.addOutputs<CVTask, typeof CVLightsTask.outs>(CVLightsTask.outs);
 
-    get lightsList() {
-        return this.system.getComponents(CLight);
-    }
-
-    lightById(id: string): CLight | undefined {
-        return this.lightsList.find(light => light.id === id);
-    }
-
     create(): void {
         super.create();
         this.startObserving();
@@ -70,12 +62,11 @@ export default class CVLightsTask extends CVTask {
 
             CreateLightMenu.show(mainView, activeDoc.setup.language).then(([selectedType, name]) => {
                 this.createLight(selectedType, name);
-                // changed = true;
                 return true;
             }).catch(e => console.error("Error creating light:", e));
         }
 
-        const light = this.lightById(ins.activeId.value);
+        const light: CLight | undefined = this.nodeProvider.activeNode?.light;
         if (light) {
             if (ins.name.changed && light.node.name !== ins.name.value) {
                 light.node.name = ins.name.value;
@@ -126,7 +117,7 @@ export default class CVLightsTask extends CVTask {
         }
 
         CVLightsTask.copyProperties((source.transform as CVNode).settingProperties, target.transform.ins.properties);
-        // TODO: copy shadow properties
+        // TODO: copy shadow properties?
         // TODO: should this be a method NVNode.copyProperties(source)?
 
     }

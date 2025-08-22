@@ -1,11 +1,9 @@
 import List from "client/../../libs/ff-ui/source/List";
-import CVAnnotationView from "client/components/CVAnnotationView";
-import CVLightsTask from "../../components/CVLightsTask";
-import { ILight, TLightType } from "client/schema/document";
-import { TaskView, customElement, html, property } from "../../components/CVTask";
-import CLight from "@ff/scene/components/CLight";
-import { ELightType } from "client/components/lights/CVLight";
 import { lightTypes } from "client/applications/coreTypes";
+import { ELightType } from "client/components/lights/CVLight";
+import { ILight } from "client/schema/document";
+import CVLightsTask from "../../components/CVLightsTask";
+import { TaskView, customElement, html, property } from "../../components/CVTask";
 
 @customElement("sv-light-task-view")
 export default class LightsTaskView extends TaskView<CVLightsTask> {
@@ -20,37 +18,18 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
     }
 
     protected render() {
-        // if (!this.task.lightManager) {
-        //     return html`<div class="sv-placeholder">No lights available in this scene.</div>`;
-        // }
-
         const ins = this.task.ins;
-        const lightsList = this.task.lightsList;
-
-
         const selectedNode = this.nodeProvider.activeNode;
-        let lightElement = this.task.lightById(ins.activeId.value);
 
-        if (selectedNode && selectedNode.light) {
-            lightElement = lightsList.find((light) => light.node.name === selectedNode.name);
-            if (lightElement) {
-                ins.name.setValue(selectedNode.name);
-                const lightType = lightTypes.find(lightType => lightType.typeName === lightElement.typeName);
-                ins.type.setValue(ELightType[lightType.type]);
-                ins.activeId.setValue(lightElement.id);
-            } else {
-                throw new Error("Light not found for selected node");
-            }
+        if (selectedNode?.light) {
+            ins.name.setValue(selectedNode.name);
+            const lightType = lightTypes.find(lightType => lightType.typeName === selectedNode.light.typeName);
+            ins.type.setValue(ELightType[lightType.type]);
+            ins.activeId.setValue(selectedNode.light.id);
         }
 
-
-        // <sv-property-view .property=${selectedNode.name}></sv-property-view>    
-
-        // <ff-splitter direction="vertical"></ff-splitter>
-        // <div class="ff-flex-row ff-group"><div class="sv-panel-header sv-task-item">Type</div><div class="sv-panel-header sv-task-item sv-item-border-l">Trigger</div></div>
-
         // TODO add color/intensity properties
-        const detailView = lightElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+        const detailView = selectedNode?.light ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${ins.activeId}></sv-property-view>    
             <sv-property-view .property=${ins.name}></sv-property-view>    
             <sv-property-view .property=${ins.type}></sv-property-view>
@@ -58,7 +37,7 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
 
         return html`<div class="sv-commands">
             <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
-            <ff-button text="Delete" icon="trash" ?disabled=${!lightElement} @click=${this.onClickDelete}></ff-button>
+            <ff-button text="Delete" icon="trash" ?disabled=${!selectedNode?.light} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">

@@ -72,9 +72,10 @@ export default class CreateLightMenu extends Popup {
         this.lightType = parseInt(target.value);
 
         if (Object.values(ELightType).includes(this.name)) {
-            // update name to light type, unless it was changed
+            // adapt name to new light type, unless it was customized before
             this.name = ELightType[this.lightType];
         }
+        
         this.requestUpdate();
     }
 
