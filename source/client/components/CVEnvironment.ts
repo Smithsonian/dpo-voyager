@@ -45,7 +45,8 @@ export default class CVEnvironment extends Component
         dirty: types.Event("Environment.Dirty"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
-        visible: types.Boolean("Environment.Visible", false)
+        visible: types.Boolean("Environment.Visible", false),
+        enabled: types.Boolean("Environment.Enabled", true)
     };
 
     ins = this.addInputs(CVEnvironment.envIns);
@@ -101,7 +102,12 @@ export default class CVEnvironment extends Component
             this.addLightComponent();
         }
 
-        if(ins.imageIndex.changed)
+        if(ins.enabled.changed) {
+            this.sceneNode.scene.environment = ins.enabled.value && ins.imageIndex.value == this._currentIdx ? this._texture : null;
+            ins.imageIndex.set();
+        }
+
+        if(ins.imageIndex.changed && ins.enabled.value)
         {
             if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
             {

@@ -21,8 +21,8 @@ import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/do
 
 import { ICVLight } from "./CVLight";
 import CVEnvironment from "../CVEnvironment";
-import { types } from "@ff/graph/Component";
 import NVNode from "client/nodes/NVNode";
+import { INodeChangeEvent } from "@ff/graph/Node";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,6 +36,7 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
 
     get settingProperties() {
         return [
+            this.ins.enabled,
             this.ins.intensity,
         ];
     }
@@ -50,12 +51,17 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         this.environment = this.getSystemComponent(CVEnvironment);
         const envIns = this.environment.ins;
         envIns.intensity.linkFrom(this.ins.intensity);
+        envIns.enabled.linkFrom(this.ins.enabled);
 
         this.node.name = "Environment";
         (this.node as NVNode).transform.addTag("no_settings");
     }
 
     update() {
+        if(this.ins.enabled.changed) {
+            this.node.emit<INodeChangeEvent>({ type: "change", what: "enabled", node: this.node });
+        }
+
         return true;
     }
 
@@ -79,6 +85,7 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         data.point = data.point || {} as any;
 
         ins.copyValues({
+            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
         });
 
@@ -90,6 +97,7 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         const ins = this.ins;
 
         const data = {
+            enabled: ins.enabled.value,
             intensity: ins.intensity.value,
         } as ILight;
 
