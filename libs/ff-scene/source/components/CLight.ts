@@ -25,7 +25,6 @@ export default class CLight extends CObject3D
     static readonly typeName: string = "CLight";
 
     protected static readonly lightIns = {
-        id: types.String("Light.Id", ""),
         color: types.ColorRGB("Light.Color"),
         intensity: types.Number("Light.Intensity", {
             preset:1,
