@@ -25,12 +25,10 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
             ins.name.setValue(selectedNode.name);
             const lightType = lightTypes.find(lightType => lightType.typeName === selectedNode.light.typeName);
             ins.type.setValue(ELightType[lightType.type]);
-            ins.activeId.setValue(selectedNode.light.id);
         }
 
-        // TODO add color/intensity properties
+        // TODO move light properties from Settings Task here?
         const detailView = selectedNode?.light ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${ins.activeId}></sv-property-view>    
             <sv-property-view .property=${ins.name}></sv-property-view>    
             <sv-property-view .property=${ins.type}></sv-property-view>
         </div>` : null;
@@ -54,10 +52,6 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
 
     protected onClickDelete() {
         this.task.ins.delete.set();
-    }
-    protected onSelectAction(event: ISelectLightEvent) {
-        this.task.ins.activeId.setValue(event.detail.light ? event.detail.light.id : "");
-        this.onUpdate();
     }
 }
 
