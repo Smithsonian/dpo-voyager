@@ -76,14 +76,11 @@ export default class CVLightsTask extends CVTask {
             }
 
             const lightType: string = ELightType[(light.constructor as any).type];
-            if (ins.type.changed && ins.type.value !== (lightType as any)) {
+            if (ins.type.changed && ins.type.value !== lightType as unknown) {
                 const newLight: NVNode = this.createLight(ins.type.value, light.node.name);
-
                 CVLightsTask.copyAllProperties(light, newLight);
-
                 this.deleteLight(light);
-                // TODO: select newLight node in UI navigation panel
-
+                this.nodeProvider.activeNode = newLight;
                 return true;
             }
         }
