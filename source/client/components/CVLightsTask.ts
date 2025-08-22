@@ -117,12 +117,8 @@ export default class CVLightsTask extends CVTask {
 
     }
     protected static copyProperties(sourceProperties: Property[], targetProperties: Property[]) {
-        for (const prop of sourceProperties) {
-            const _target: Property | undefined = targetProperties.find(p => p.key === prop.key);
-            if (_target) {
-
-                _target.setValue(prop.value);
-            }
-        }
+        sourceProperties.forEach(sourceProp => {
+            targetProperties.find(targetProp => targetProp.key === sourceProp.key)?.setValue(sourceProp.value);
+        });
     }
 }
