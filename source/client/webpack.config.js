@@ -79,7 +79,14 @@ const apps = {
     },
 };
 
-const version = require(path.resolve(project, "./package.json")).version;
+let version;
+try{
+    version = childProcess.execSync("git describe --tags").toString().trim();
+}catch(e){
+    //Fallback if git is not present or tags have not been fetched
+    version = require(path.resolve(project, "./package.json")).version;
+}
+
 const analyticsId = process.env["VOYAGER_ANALYTICS_ID"];
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,7 +254,7 @@ module.exports = function(env, argv)
                 },
             ]
         },
-
+        performance: {hints: false},
         stats: {chunkModules: true, excludeModules: false }
 
     };

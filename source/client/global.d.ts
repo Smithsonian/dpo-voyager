@@ -5,7 +5,6 @@ declare module '*?raw' {
 
 declare module "*.scss";
 declare module "*.css";
-declare module "*.css";
 declare module "*.frag";
 declare module "*.vert";
 
