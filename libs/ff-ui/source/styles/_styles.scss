@@ -5,7 +5,8 @@
  * License: MIT
  */
 
-@import "./normalize";
+@use "sass:color";
+@use "normalize";
 
 ////////////////////////////////////////////////////////////////////////////////
 // FONTS
@@ -26,19 +27,19 @@ $font-ui: "Segoe UI", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-
 // COLORS
 
 $color-background: #343434 !default;
-$color-background-dark: darken($color-background, 5%) !default;
-$color-background-darker: darken($color-background, 10%) !default;
-$color-background-light: lighten($color-background, 10%) !default;
-$color-background-lighter: lighten($color-background, 20%) !default;
+$color-background-dark: color.adjust($color-background, $lightness: -5%) !default;
+$color-background-darker: color.adjust($color-background, $lightness: -10%) !default;
+$color-background-light: color.adjust($color-background, $lightness: 10%) !default;
+$color-background-lighter: color.adjust($color-background, $lightness: 20%) !default;
 $color-background-hover: $color-background-lighter !default;
 
 $color-primary: #1f6699 !default; // blue
-$color-primary-light: lighten($color-primary, 8%) !default;
-$color-primary-dark: darken($color-primary, 8%) !default;
+$color-primary-light: color.adjust($color-primary, $lightness: 8%) !default;
+$color-primary-dark: color.adjust($color-primary, $lightness: -8%) !default;
 
 $color-secondary: #E64A19 !default; // orange
-$color-secondary-light: lighten($color-secondary, 15%) !default;
-$color-secondary-dark: darken($color-secondary, 15%) !default;
+$color-secondary-light: color.adjust($color-secondary, $lightness: 15%) !default;
+$color-secondary-dark: color.adjust($color-secondary, $lightness: -15%) !default;
 
 $color-text: #c8c8c8 !default;
 $color-text-light: #e8e8e8 !default;
@@ -501,7 +502,7 @@ button, input {
 
 .ff-modal-plane {
   @include fullscreen;
-  background-color: transparentize(black, 0.4);
+  background-color: color.adjust(black, $alpha: -0.4);
   opacity: 0;
   transition: opacity $tx-medium;
   z-index: 990;
@@ -839,8 +840,8 @@ ff-popup-button {
 
   .ff-tree-node-container {
     margin-left: -501px;
-    border-top: 1px solid lighten($color-background, 4%);
-    border-bottom: 1px solid lighten($color-background, 4%);
+    border-top: 1px solid color.adjust($color-background, $lightness: 4%);
+    border-bottom: 1px solid color.adjust($color-background, $lightness: 4%);
     margin-bottom: -1px;
   }
 
@@ -848,10 +849,10 @@ ff-popup-button {
     margin-left: 500px;
 
     &.ff-inner {
-      background-color: darken($color-background, 2%);
+      background-color: color.adjust($color-background, $lightness: -2%);
     }
     &.ff-leaf {
-      background-color: lighten($color-background, 3%);
+      background-color: color.adjust($color-background, $lightness: 3%);
     }
     &.ff-root {
       background-color: $color-background-dark;
@@ -924,7 +925,7 @@ ff-tab-header, ff-dock-panel-header {
   padding: 1px 3px 2px 2px;
 
   &[active] {
-    background: linear-gradient(lighten($color-background, 18%), $color-background);
+    background: linear-gradient(color.adjust($color-background, $lightness: 18%), $color-background);
     color: $color-text;
   }
 
@@ -944,7 +945,7 @@ ff-tab-header, ff-dock-panel-header {
 
 .ff-dock-drop-marker {
   box-sizing: border-box;
-  background: transparentize($color-primary, 0.7);
+  background: color.adjust($color-primary, $alpha: -0.7);
   border: 1px solid $color-primary;
 }
 

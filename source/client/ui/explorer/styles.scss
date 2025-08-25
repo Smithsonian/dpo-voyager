@@ -18,21 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 // COLOR
 
+@use "sass:color";
+
 $color-primary: #0089bf; // Smithsonian primary blue
-$color-secondary: #ffcd00; // Smithsonian secondary yellow
+ // Smithsonian secondary yellow
 $color-tertiary: #1b2226; // Smithsonian dark blue
 
 $menu-color-text: #f0f0f0;
 $menu-color-text-dim: #a0a0a0;
-$menu-color-background: transparentize(#363d40, 0.4);
-$menu-color-background-dark: transparentize(#1f2426, 0.2);
-$menu-color-background-darker: transparentize(#050708, 0.15);
-$menu-color-background-hover: transparentize(#4a5257, 0.5);
+$menu-color-background: color.adjust(#363d40, $alpha: -0.4);
+$menu-color-background-dark: color.adjust(#1f2426, $alpha: -0.2);
+$menu-color-background-darker: color.adjust(#050708, $alpha: -0.15);
+$menu-color-background-hover: color.adjust(#4a5257, $alpha: -0.5);
 
-$color-paragraph-background: transparentize($color-tertiary, 0.5);
-$color-paragraph-hover: transparentize(#333b40, 0.5);
+$color-paragraph-background: color.adjust($color-tertiary, $alpha: -0.5);
+$color-paragraph-hover: color.adjust(#333b40, $alpha: -0.5);
 
-$section-border: 1px solid transparentize($color-primary, 0.5);
+$section-border: 1px solid color.adjust($color-primary, $alpha: -0.5);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Geometry
@@ -42,20 +44,23 @@ $main-menu-button-size: 38px;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../styles";
+@use "../styles" as common with (
+  $color-primary: $color-primary,
+  $color-secondary: #ffcd00
+);
 
 * {
-  scrollbar-color: $color-background-lighter $color-background-darker;
+  scrollbar-color: common.$color-background-lighter common.$color-background-darker;
   scrollbar-width: thin;
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background-color: $color-background-darker;
+    background-color: common.$color-background-darker;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: $color-background-lighter;
+    background-color: common.$color-background-lighter;
     border-radius: 8px;
   }
 }
@@ -68,17 +73,17 @@ $main-menu-button-size: 38px;
   background-color: $menu-color-background-dark;
   border-radius: 20px;
   font-size: 17px;
-  transition: all $tx-short;
+  transition: all common.$tx-short;
   pointer-events: auto;
 
   .ff-text {
-    color: $color-icon;
+    color: common.$color-icon;
   }
 
   &:focus {
     outline: none;
     background-color: $menu-color-background-dark;
-    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
   }
 
   &:focus:not(:focus-visible) {
@@ -89,29 +94,29 @@ $main-menu-button-size: 38px;
   &:focus-visible {
     outline: none;
     background-color: $menu-color-background-dark;
-    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
   }
 
   &:hover {
     background-color: $menu-color-background-hover;
-    fill: $color-text;
+    fill: common.$color-text;
 
     & > .ff-text {
-      color: $color-text;
+      color: common.$color-text;
     }
   }
 
   &[selected] {
-    background-color: $color-primary;
+    background-color: common.$color-primary;
     color: $menu-color-text;
 
     & > .ff-icon {
-      filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-      fill: $color-text;
+      filter: drop-shadow(1px 1px 6px color.adjust(common.$color-primary, $lightness: -10%));
+      fill: common.$color-text;
     }
 
     &:hover, &:focus {
-      background-color: $color-primary-light;
+      background-color: common.$color-primary-light;
     }
   }
 }
@@ -130,10 +135,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-content-only, .sv-content-stack {
   .sv-scene-view {
-    @include fullsize;
+    @include common.fullsize;
 
     &:focus {
-      border: 2px solid lighten($color-primary, 50%);
+      border: 2px solid color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -142,7 +147,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     }
 
     &:focus-visible {
-      border: 2px solid lighten($color-primary, 50%);
+      border: 2px solid color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     cursor: grab;
@@ -155,7 +160,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-content-stack {
   .sv-reader-container {
-    @include fullsize;
+    @include common.fullsize;
     margin-top: $pad;
   }
 
@@ -183,7 +188,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   display: flex;
 
   .sv-reader-container {
-    @include fullsize;
+    @include common.fullsize;
     margin-top: $pad;
   }
 
@@ -227,7 +232,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-scene-view {
-  @include fullsize;
+  @include common.fullsize;
   overflow: hidden;
 
   &.sv-blur {
@@ -245,7 +250,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   z-index: 1;
 
   a:link, a:visited, a:hover, a:active {
-    color: $color-primary;
+    color: common.$color-primary;
   }
 
   img {
@@ -261,7 +266,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     opacity: 1 !important;
   }
   
-  @include noselect;
+  @include common.noselect;
 }
 
 .sv-annotation-img {
@@ -294,7 +299,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus-visible {
       outline: none;
       background-color: $menu-color-background-dark;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
   }
 
@@ -308,7 +313,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:has(:focus-visible) {
       outline: none;
       background-color: $menu-color-background-dark;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     .sv-title {
@@ -316,10 +321,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       font-weight: bold;
     }
     p {
-      @include font-ui-normal;
+      @include common.font-ui-normal;
       font-size: 0.88em;
       line-height: 1.35;
-      color: $color-text;
+      color: common.$color-text;
       margin: 0.5em 0;
     }
     .ff-button {
@@ -339,8 +344,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-pin-annotation {
   padding: 0 4px;
-  background-color: transparentize(black, 0.5);
-  color: $color-text;
+  background-color: color.adjust(black, $alpha: -0.5);
+  color: common.$color-text;
   transform: translate(-50%, -100%);
 }
 
@@ -364,21 +369,21 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   max-width: 20%;
   min-width: min-content;
   padding: 0 4px;
-  background-color: transparentize(black, 0.5);
-  color: $color-text;
+  background-color: color.adjust(black, $alpha: -0.5);
+  color: common.$color-text;
   pointer-events: auto;
   overflow-wrap: normal;
 
   &:has(:focus-visible) {
     outline: none;
     background-color: $menu-color-background-dark;
-    box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+    box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
   }
 
   &.sv-expanded {
     width: 20%;
     min-width: 180px;
-    background-color: transparentize(black, 0.2);
+    background-color: color.adjust(black, $alpha: -0.2);
     z-index: 2;
   }
 
@@ -434,17 +439,17 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   }
 
   p {
-    @include font-ui-normal;
+    @include common.font-ui-normal;
     font-size: 0.88em;
     line-height: 1.35;
-    color: $color-text;
+    color: common.$color-text;
     margin: 0.5em 0;
   }
   .ff-button {
     background: rgba(0, 0, 0, 0.01); // hack to get click events
 
     .ff-icon {
-      fill: $color-icon;
+      fill: common.$color-icon;
     }
 
     &:hover {
@@ -535,26 +540,26 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     background-color: $menu-color-background-hover;
     border-radius: 20px;
     font-size: 17px;
-    transition: all $tx-short;
+    transition: all common.$tx-short;
     pointer-events: auto;
 
     &:hover, &:focus {
       outline: none;
       background-color: $menu-color-background-hover;
-      fill: $color-text;
+      fill: common.$color-text;
     }
 
     &[selected] {
-      background-color: $color-primary;
+      background-color: common.$color-primary;
       color: $menu-color-text;
 
       & > .ff-icon {
-        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-        fill: $color-text;
+        filter: drop-shadow(1px 1px 6px color.adjust(common.$color-primary, $lightness: -10%));
+        fill: common.$color-text;
       }
 
       &:hover, &:focus {
-        background-color: $color-primary-light;
+        background-color: common.$color-primary-light;
       }
     }
   }
@@ -566,7 +571,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   max-width: 85%;
   max-height: 90%;
   padding: 8px;
-  background: $color-background;
+  background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
   pointer-events: auto;
 
@@ -592,15 +597,15 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 // CHROME VIEW
 
 .sv-chrome-view {
-  @include font-ui-normal;
+  @include common.font-ui-normal;
   font-size: 0.85em;
   line-height: 1.35;
-  color: $color-text;
-  @include fullsize;
+  color: common.$color-text;
+  @include common.fullsize;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to bottom, transparentize(black, 0.7), transparentize(black, 0.85) 10%, transparent 25%);
+  background: linear-gradient(to bottom, color.adjust(black, $alpha: -0.7), color.adjust(black, $alpha: -0.85) 10%, transparent 25%);
 
   z-index: 3;
 
@@ -610,7 +615,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -620,27 +625,27 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
     &:focus-visible {
       outline: none;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:hover {
       outline: none;
 
       & > .ff-icon {
-        fill: $color-text;
+        fill: common.$color-text;
       }
     }
 
     &[selected] {
-      background-color: $color-primary;
+      background-color: common.$color-primary;
 
       &[disabled] {
-        background-color: $color-background-light;
+        background-color: common.$color-background-light;
       }
 
       & > .ff-icon {
-        filter: drop-shadow(1px 1px 6px darken($color-primary, 10%));
-        fill: $color-text;
+        filter: drop-shadow(1px 1px 6px color.adjust(common.$color-primary, $lightness: -10%));
+        fill: common.$color-text;
       }
 
       &:hover {
@@ -676,8 +681,8 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     font-weight: normal;
     font-size: 1.412em;
     white-space: pre;
-    color: $color-text-light;
-    @include noselect;
+    color: common.$color-text-light;
+    @include common.noselect;
 
     span {
       color: transparent;
@@ -752,7 +757,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   width: 450px;
   max-width: 85%;
   padding: 8px;
-  background: $color-background;
+  background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
   pointer-events: auto;
 
@@ -786,7 +791,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus {
       outline: none;
       background-color: #00aced;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -797,10 +802,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus-visible {
       outline: none;
       background: #00aced;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
-    &:hover { background-color: lighten(#00aced, 10%) }
+    &:hover { background-color: color.adjust(#00aced, $lightness: 10%) }
   }
   .sv-share-button-facebook {
     background-color: #3c5a99;
@@ -808,7 +813,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus {
       outline: none;
       background-color: #3c5a99;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -819,10 +824,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus-visible {
       outline: none;
       background: #3c5a99;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
-    &:hover { background-color: lighten(#3c5a99, 10%) }
+    &:hover { background-color: color.adjust(#3c5a99, $lightness: 10%) }
   }
   .sv-share-button-linkedin {
     background-color: #0077B5;
@@ -830,7 +835,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus {
       outline: none;
       background-color: #0077B5;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -841,10 +846,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus-visible {
       outline: none;
       background: #0077B5;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
-    &:hover { background-color: lighten(#0077B5, 10%) }
+    &:hover { background-color: color.adjust(#0077B5, $lightness: 10%) }
   }
   .sv-share-button-email {
     background-color: #d28842;
@@ -852,7 +857,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus {
       outline: none;
       background-color: #d28842;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -863,10 +868,10 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
     &:focus-visible {
       outline: none;
       background: #d28842;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
-    &:hover { background-color: lighten(#d28842, 10%) }
+    &:hover { background-color: color.adjust(#d28842, $lightness: 10%) }
   }
 }
 
@@ -938,7 +943,7 @@ $tour-entry-indent: 12px;
   height: 200px;
   max-height: 85%;
   padding: 8px;
-  background: $color-background;
+  background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
   pointer-events: auto;
 
@@ -968,10 +973,10 @@ $tour-entry-indent: 12px;
     margin-bottom: 2px;
     max-width: 960px;
     background-color: $color-paragraph-background;
-    @include noselect;
+    @include common.noselect;
 
     &:focus {
-      outline: 2px solid lighten($color-primary, 50%);
+      outline: 2px solid color.adjust(common.$color-primary, $lightness: 50%);
       outline-offset: -2px;
       background-color: $color-paragraph-background;
     }
@@ -981,22 +986,22 @@ $tour-entry-indent: 12px;
     }
 
     &:focus-visible {
-      outline: 2px solid lighten($color-primary, 50%);
+      outline: 2px solid color.adjust(common.$color-primary, $lightness: 50%);
       outline-offset: -2px;
       background-color: $color-paragraph-background;
     }
 
     &:hover {
       background-color: $color-paragraph-hover;
-      fill: $color-text;
+      fill: common.$color-text;
     }
 
     &[selected] {
-      background-color: $color-primary;
+      background-color: common.$color-primary;
       color: $menu-color-text;
 
       &:hover, &:focus {
-        background-color: $color-primary-light;
+        background-color: common.$color-primary-light;
       }
     }
   }
@@ -1010,7 +1015,7 @@ $tour-entry-indent: 12px;
   width: 90%;
   height: 90%;
   padding: 8px;
-  background: $color-background;
+  background: common.$color-background;
   pointer-events: auto;
 
   .sv-help-section {
@@ -1074,7 +1079,7 @@ $tour-entry-indent: 12px;
   position: relative;
   display: flex;
   justify-content: center;
-  transition: transform $tx-medium ease-out, opacity $tx-short ease-out;
+  transition: transform common.$tx-medium ease-out, opacity common.$tx-short ease-out;
   z-index: 1;
 
   &.sv-transition {
@@ -1083,7 +1088,7 @@ $tour-entry-indent: 12px;
   }
 
   .ff-button {
-    transition: all $tx-short;
+    transition: all common.$tx-short;
   }
 }
 
@@ -1098,7 +1103,7 @@ $tour-entry-indent: 12px;
   min-width: 0px;
 
   pointer-events: auto;
-  @include noselect;
+  @include common.noselect;
 
   .sv-group {
     display: flex;
@@ -1151,7 +1156,7 @@ $tour-entry-indent: 12px;
 // TOUR NAVIGATOR
 
 .sv-tour-navigator {
-  color: $color-text;
+  color: common.$color-text;
 
   .sv-content {
     flex: 1;
@@ -1210,7 +1215,7 @@ $tour-entry-indent: 12px;
       background-color: $menu-color-background-hover;
     }
     &[selected] {
-      background-color: $color-primary;
+      background-color: common.$color-primary;
     }
 
     .ff-text {
@@ -1266,7 +1271,7 @@ $tour-entry-indent: 12px;
       height: 180px;
       right: 0px;
       top: -188px;
-      background: $color-background-dark;
+      background: common.$color-background-dark;
       padding: 8px;
       border-radius: 2px;
     }
@@ -1278,13 +1283,13 @@ $tour-entry-indent: 12px;
       touch-action: none;
       display: inline-flex;
       .ff-bar{
-        background: $color-background-dark;
+        background: common.$color-background-dark;
         position: absolute;
         inset: 0;
         margin: 0;
         width: 0;
         box-sizing: border-box;
-        border: 2px solid $color-background-darker;
+        border: 2px solid common.$color-background-darker;
       }
       .ff-input, .ff-unit{
         position: relative;
@@ -1308,14 +1313,14 @@ $tour-entry-indent: 12px;
       margin: 12px 2px;
       padding-right: 16px;
       border-radius: 2px;
-      background-color: $color-background-light;
+      background-color: common.$color-background-light;
 
       .ff-knob {
         width: 16px;
         height: 26px;
         margin: -10px 0 0 0;
         border-radius: 2px;
-        background-color: $color-primary;
+        background-color: common.$color-primary;
         box-shadow: 0 0 6px black;
       }
     }
@@ -1340,7 +1345,7 @@ $tour-entry-indent: 12px;
 // TOOL BAR
 
 .sv-tool-bar {
-  color: $color-text;
+  color: common.$color-text;
   pointer-events: auto;
   
   .sv-tool-buttons {
@@ -1429,13 +1434,13 @@ $tour-entry-indent: 12px;
     height: 26px;
     margin: 2px;
     padding: 0 4px;
-    background: $color-background;
+    background: common.$color-background;
     border-radius: 2px;
 
     &:focus {
       outline: none;
-      background: $color-background;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      background: common.$color-background;
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:focus:not(:focus-visible) {
@@ -1445,13 +1450,13 @@ $tour-entry-indent: 12px;
 
     &:focus-visible {
       outline: none;
-      background: $color-background;
-      box-shadow: 0 0 3pt 2pt lighten($color-primary, 50%);
+      background: common.$color-background;
+      box-shadow: 0 0 3pt 2pt color.adjust(common.$color-primary, $lightness: 50%);
     }
 
     &:hover {
-      background-color: $color-background-lighter;
-      fill: $color-text;
+      background-color: common.$color-background-lighter;
+      fill: common.$color-text;
     }
   }
 }
@@ -1543,7 +1548,7 @@ $tour-entry-indent: 12px;
     }
 
     &:hover {
-      background-color: darken($menu-color-text, 30%);
+      background-color: color.adjust($menu-color-text, $lightness: -30%);
 
       & > .ff-icon {
         fill: black;
