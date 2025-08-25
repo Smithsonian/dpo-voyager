@@ -330,6 +330,7 @@ export default class CVArticlesTask extends CVTask
             ins.tags.setValue("", true);
             ins.uri.setValue("", true);
             outs.article.setValue(null);
+            ins.edit.set();
         }
     }
 
