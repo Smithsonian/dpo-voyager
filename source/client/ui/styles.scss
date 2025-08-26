@@ -17,10 +17,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//@import "../../../libs/ff-ui/source/styles/dark";
-@import "../../../libs/ff-ui/source/styles/styles";
-//@import "../../../libs/ff-scene/source/ui/styles";
-@import "../../../libs/ff-three/source/ui/styles";
+@forward "../../../libs/ff-ui/source/styles/styles";
+@use "../../../libs/ff-ui/source/styles/styles";
+@use "../../../libs/ff-three/source/ui/styles" as threeStyle;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TYPOGRAPHY
@@ -38,19 +37,19 @@
       left: 0;
       width: 75px; // width of top blue bar
       height: 5px; // height of top blue bar
-      background-color: $color-primary;
+      background-color: styles.$color-primary;
     }
 
     margin: 0.3em 0;
     font-family: "Amiri", serif;
     font-size: 2.3em;
     font-weight: normal;
-    color: $color-text-light;
+    color: styles.$color-text-light;
   }
 
   p, h2, h3, h4, h5, h6, ul, ol, li {
     font-family: "Hind Siliguri", sans-serif;
-    color: $color-text;
+    color: styles.$color-text;
   }
 
   //h2, h3, h4, h5, h6 {
@@ -76,7 +75,7 @@
     list-style: decimal outside;
   }
   a:link, a:visited, a:hover, a:active {
-    color: $color-primary;
+    color: styles.$color-primary;
   }
 
   iframe, video {
@@ -122,14 +121,14 @@
 // GLOBAL
 
 .sv-content-view {
-  @include font-ui-normal;
+  @include styles.font-ui-normal;
   font-size: 0.85em;
   line-height: 1.35;
-  color: $color-text;
-  background-color: $color-background;
-  @include fullsize;
+  color: styles.$color-text;
+  background-color: styles.$color-background;
+  @include styles.fullsize;
   overflow: hidden;
-  @include noselect;
+  @include styles.noselect;
 }
 
 .sv-logo {
@@ -167,7 +166,7 @@
 }
 
 .ff-flex-spacer {
-  @include noselect;
+  @include styles.noselect;
 }
 
 // Screen reader only elements
@@ -182,7 +181,7 @@
 @keyframes spin { 100% { transform:rotate(360deg); } }
 
 .sv-prompt, .sv-spinner {
-  @include fullsize;
+  @include styles.fullsize;
   display: flex;
   justify-content: center;
   align-items: center;
