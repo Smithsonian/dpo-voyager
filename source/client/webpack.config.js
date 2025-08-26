@@ -237,6 +237,7 @@ module.exports = function(env, argv)
                 {
                     // Concatenate CSS
                     test: /\.css$/,
+                    resourceQuery: { not: [/raw/] },
                     use: [
                         MiniCssExtractPlugin.loader,
                         "css-loader",
