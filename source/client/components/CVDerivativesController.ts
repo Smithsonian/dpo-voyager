@@ -140,7 +140,7 @@ export default class CVDerivativesController extends Component{
   static readonly typeName: string = "CVDerivativesController";
   static readonly isSystemSingleton: boolean = true;
 
-  static readonly text: string = "Derivatives selection";
+  static readonly text: string = "Derivatives Selection";
   static readonly icon: string = "";
 
   private _fps = new PerfCounter(10, 60);
