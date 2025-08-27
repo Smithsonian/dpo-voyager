@@ -21,6 +21,10 @@ body {
   height: auto;
 }
 
+.mce-content-body iframe, video {
+  max-width: 100%;
+}
+
 .mce-content-body figure.align-center {
   text-align: center;
 }

@@ -140,7 +140,7 @@ export default class CVDerivativesController extends Component{
   static readonly typeName: string = "CVDerivativesController";
   static readonly isSystemSingleton: boolean = true;
 
-  static readonly text: string = "Derivatives selection";
+  static readonly text: string = "Derivatives Selection";
   static readonly icon: string = "";
 
   private _fps = new PerfCounter(10, 60);
@@ -540,7 +540,7 @@ export default class CVDerivativesController extends Component{
       }
     }
 
-    if(currently_loading != 0 && ENV_DEVELOPMENT){
+    if(ENV_DEVELOPMENT && currently_loading != 0){
       const countQ = (q :EDerivativeQuality)=>collection.reduce((s, m)=>(s+((m.model.ins.quality.value === q)?1:0)), 0);
       console.debug(`models quality: [%d, %d, %d, %d]. loading %d models with %d/%d downgrades %s`, 
         countQ(EDerivativeQuality.High),

@@ -644,13 +644,13 @@ export default class CVModel2 extends CObject3D
         }
 
         const variantName = this.ins.variant.getOptionText();
-        const variantIndex = this.activeDerivative.model["variants"].findIndex( ( v ) => v.name.includes( variantName ) );
+        const variantIndex = this.activeDerivative.model.userData["variants"].findIndex( ( v ) => v.name.includes( variantName ) );
 
         if(variantIndex < 0) {
             return;
         }
 
-        const parser = this.assetReader.getGLTFParser(this.activeDerivative.model.uuid);
+        const parser = this.activeDerivative.model.userData["parser"];
 
         this.object3D.traverse( async ( subobject ) => {
             var object = subobject as any;
@@ -669,23 +669,24 @@ export default class CVModel2 extends CObject3D
                 .find( ( mapping ) => mapping.variants.includes( variantIndex ) );
 
             if ( mapping ) {
-                const variantMat = await parser.getDependency( 'material', mapping.material );
-                object.material.copy( variantMat);
-                //parser.assignFinalMaterial( object );
-                this.activeDerivative.model["variants"].variantMaterials[variantMat.uuid] = variantMat;
+                parser.getDependency( 'material', mapping.material ).then((variantMat) => {
+                    object.material.copy( variantMat);
+                    //parser.assignFinalMaterial( object );
+                    this.activeDerivative.model.userData["variants"].variantMaterials[variantMat.uuid] = variantMat;
 
-                // cache variant
-                const material = object.material;
-                this._materialCache[material.uuid] = {
-                    color: material.color.toArray(),
-                    opacity: material.opacity,
-                    hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
-                    roughness: material.roughness,
-                    metalness: material.metalness,
-                    occlusion: material.aoMapIntensity,
-                    doubleSided: material.side == DoubleSide,
-                    transparent: material.transparent
-                }
+                    // cache variant
+                    const material = object.material;
+                    this._materialCache[material.uuid] = {
+                        color: material.color.toArray(),
+                        opacity: material.opacity,
+                        hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
+                        roughness: material.roughness,
+                        metalness: material.metalness,
+                        occlusion: material.aoMapIntensity,
+                        doubleSided: material.side == DoubleSide,
+                        transparent: material.transparent
+                    }
+                });
             } else {
                 object.material = object.userData.originalMaterial;
             }
@@ -948,7 +949,7 @@ export default class CVModel2 extends CObject3D
                 });
 
                 // load variants
-                const variants = derivative.model["variants"] ? derivative.model["variants"].map( ( variant ) => variant.name ) : null;
+                const variants = derivative.model.userData["variants"] ? derivative.model.userData["variants"].map( ( variant ) => variant.name ) : null;
                 if(variants) {
                     const variantSet = new Set(this.ins.variant.schema.options);
                     variants.forEach(variantSet.add, variantSet);

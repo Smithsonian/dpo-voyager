@@ -84,6 +84,7 @@ export default class CVMeta extends Component
                 Object.keys(article.data.titles).forEach( key => {
                    this.language.addLanguage(ELanguageType[key]);
                 });
+                article.language = this.language.outs.activeLanguage.value;
             });
         }
         if (data.audio) {

@@ -45,8 +45,6 @@ export default class ModelReader
 
     protected customDracoPath = null;
 
-    private _gltfParserCache: Dictionary<GLTFParser> = {};
-
     set dracoPath(path: string) 
     {
         this.customDracoPath = path;
@@ -54,11 +52,6 @@ export default class ModelReader
             this.gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
         }
     }
-
-    getGLTFParser(uuid: string) {
-        return this._gltfParserCache[uuid];
-    }
-
 
     setAssetPath(path: string){
         path = path.endsWith("/")? path.slice(0, -1):path;
@@ -120,9 +113,10 @@ export default class ModelReader
             if(gltf.userData.gltfExtensions) {
                 const variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
                 if(variantsExtension) {
-                    gltf.scene["variants"] = variantsExtension.variants;
-                    gltf.scene["variants"].variantMaterials = {};
-                    this._gltfParserCache[gltf.scene.uuid] = gltf.parser;
+                    const parser = gltf.parser;
+                    gltf.scene.userData["variants"] = variantsExtension.variants;
+                    gltf.scene.userData["variants"].variantMaterials = {};
+                    gltf.scene.userData["parser"] = parser;
                 }
             }
             return this.createModelGroup(gltf, {signal})
