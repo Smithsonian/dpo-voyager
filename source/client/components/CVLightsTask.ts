@@ -60,14 +60,6 @@ export default class CVLightsTask extends CVTask {
         return new LightsTaskView(this);
     }
 
-    activateTask(): void {
-        super.activateTask();
-    }
-
-    deactivateTask(): void {
-        super.deactivateTask();
-    }
-
     update(context: IUpdateContext) {
         const { ins } = this;
 
