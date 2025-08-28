@@ -67,11 +67,13 @@ export default class CVLightsTask extends CVTask {
             const mainView: MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
             const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
 
-            CreateLightMenu.show(mainView, activeDoc.setup.language)
+            CreateLightMenu
+                .show(mainView, activeDoc.setup.language)
                 .then(([selectedType, name]) => {
                     this.createLightNode(selectedType, name);
                     return true;
-                }).catch(e => console.error("Error creating light:", e));
+                })
+                .catch(e => console.error("Error creating light:", e));
         }
 
         const activeNode: NVNode | undefined = this.nodeProvider.activeNode;
@@ -99,6 +101,7 @@ export default class CVLightsTask extends CVTask {
 
     protected createLightNode(newType: ELightType, newName: string): NVNode {
         const lightType = lightTypes.find(lt => lt.type === ELightType[newType].toString());
+        if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
 
         const parentNode: NVNode = this.system.findNodeByName("Lights");
         const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
@@ -115,9 +118,13 @@ export default class CVLightsTask extends CVTask {
         const targetLight: CLight = targetNode.light;
 
         // Copy light properties
-        (sourceLight as any).settingProperties.forEach((sourceProp: Property) => {
-            targetLight.ins.properties.find(targetProp => targetProp.key === sourceProp.key)?.setValue(sourceProp.value);
-        });
+        (sourceLight as any).settingProperties
+            .forEach((sourceProp: Property) => {
+                targetLight.ins.properties
+                    .find(targetProp => targetProp.key === sourceProp.key)
+                    ?.setValue(sourceProp.value);
+            }
+            );
 
         // CDirectionalLight multiplies intensity by PI, so it needs to be compensated (divide by PI)
         if (sourceLight instanceof CDirectionalLight) {
@@ -125,8 +132,12 @@ export default class CVLightsTask extends CVTask {
         }
 
         // Copy transform properties
-        (sourceLight.transform as CVNode).settingProperties.forEach((sourceProp: Property) => {
-            targetNode.transform.ins.properties.find(targetProp => targetProp.key === sourceProp.key)?.setValue(sourceProp.value);
-        });
+        (sourceLight.transform as CVNode).settingProperties
+            .forEach((sourceProp: Property) => {
+                targetNode.transform.ins.properties
+                    .find(targetProp => targetProp.key === sourceProp.key)
+                    ?.setValue(sourceProp.value);
+            }
+            );
     }
 }
