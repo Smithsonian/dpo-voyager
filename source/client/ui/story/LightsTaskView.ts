@@ -39,6 +39,8 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
         if (selectedNode?.light) {
             ins.name.setValue(selectedNode.name);
             const lightType = lightTypes.find(lightType => lightType.typeName === selectedNode.light.typeName);
+            if (!lightType) throw new Error(`Unsupported light type: '${lightType.typeName}'`);
+
             ins.type.setValue(ELightType[lightType.type]);
         }
 
