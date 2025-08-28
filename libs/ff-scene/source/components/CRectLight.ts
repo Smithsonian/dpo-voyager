@@ -54,7 +54,7 @@ export default class CRectLight extends CLight
     }
 
     dispose(){
-        super.dispose();
         this.transform.ins.scale.removeEventListener("value",this.update);
+        super.dispose();
     }
 }
