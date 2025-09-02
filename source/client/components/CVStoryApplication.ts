@@ -139,11 +139,12 @@ export default class CVStoryApplication extends Component
             }
 
             if (ins.download.changed) {
+                console.debug("Modified:", cvDocument.isModified());
                 const data = cvDocument.deflateDocument(components);
                 const json = JSON.stringify(data, null, 2);
 
                 const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
-                download.json(json, fileName);
+                //download.json(json, fileName);
             }
         }
 
