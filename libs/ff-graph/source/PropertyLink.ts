@@ -47,8 +47,8 @@ export default class PropertyLink
         this.fnCopy = getMultiCopyFunction(source.isMulti(), destination.isMulti(), fnElementCopy);
     }
 
-    push()
+    push(silent?:boolean)
     {
-        this.destination.setValue(this.fnCopy(this.source.value, this.destination.value, this.fnConvert));
+        this.destination.setValue(this.fnCopy(this.source.value, this.destination.value, this.fnConvert), silent);
     }
 }
