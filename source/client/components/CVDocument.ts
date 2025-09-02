@@ -60,6 +60,8 @@ export default class CVDocument extends CRenderGraph
     protected intros: Dictionary<string> = {};
     protected _meta: CVMeta = null;
 
+    protected _data: IDocument;
+
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
         dumpTree: types.Event("Document.DumpTree"),
@@ -232,6 +234,7 @@ export default class CVDocument extends CRenderGraph
             this.outs.assetPath.setValue(assetPath);
             this.name = this.getMainComponent(CVAssetManager).getAssetName(assetPath);
         }
+        this._data = this.deflateDocument();
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene) : CVModel2
@@ -298,6 +301,42 @@ export default class CVDocument extends CRenderGraph
         //pathMap.forEach((path, comp) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
 
         return document;
+    }
+
+
+    isModified(components?: INodeComponents) :boolean{
+        const current = this.deflateDocument(components);
+        const deepEqual = function (path:string, x: any, y: any) {
+            if (x === y) {
+                return true;
+            }
+            else if ((typeof x == "object" && x != null) && (typeof y == "object" && y != null)) {
+                if (Object.keys(x).length != Object.keys(y).length){
+                    console.debug(`keys mismatch at ${path}: current has keys: [${Object.keys(x).join(", ")}] but source had: [${Object.keys(y).join(", ")}]`);
+                    return false;
+                }
+
+                for (var prop in x) {
+                    if (y.hasOwnProperty(prop))
+                    {  
+                        if (! deepEqual(`${path}/${prop}`, x[prop], y[prop])){
+                            return false;
+                        }
+                        
+                    }
+                    else{
+                        console.debug(`keys mismatch at ${path}: Property ${prop} is in current but not in origin`);
+                        return false;
+                    }
+                }
+                
+                return true;
+            } else {
+                console.debug(`value mismatch at ${path}: ${x} ${y}`);
+                return false;
+            }
+        }
+        return !Object.keys(current).every(k=> deepEqual("/"+k, current[k], this._data[k]));
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
