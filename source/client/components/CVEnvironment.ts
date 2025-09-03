@@ -25,6 +25,9 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { DEG2RAD } from "three/src/math/MathUtils";
 import CVBackground from "./CVBackground";
 import CVMeta from "./CVMeta";
+import NVNode from "client/nodes/NVNode";
+import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+
 
 const images = ["spruit_sunrise_1k_HDR.hdr","Two Umbrellas For Charts.hdr","studio_small_08_1k.hdr","campbell_env.jpg"];  
 
@@ -42,7 +45,8 @@ export default class CVEnvironment extends Component
         dirty: types.Event("Environment.Dirty"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
-        visible: types.Boolean("Environment.Visible", false)
+        visible: types.Boolean("Environment.Visible", false),
+        enabled: types.Boolean("Environment.Enabled", true)
     };
 
     ins = this.addInputs(CVEnvironment.envIns);
@@ -60,6 +64,7 @@ export default class CVEnvironment extends Component
     private _currentIdx = 0;
     private _pmremGenerator: PMREMGenerator = null;
     private _imageOptions: string[] = images;
+    private _loadingCount = 0;
 
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
@@ -94,7 +99,16 @@ export default class CVEnvironment extends Component
     {
         const ins = this.ins;
 
-        if(ins.imageIndex.changed)
+        if(!this.graph.hasComponent(CVEnvironmentLight)) {
+            this.addLightComponent();
+        }
+
+        if(ins.enabled.changed) {
+            this.sceneNode.scene.environment = ins.enabled.value && ins.imageIndex.value == this._currentIdx ? this._texture : null;
+            ins.imageIndex.set();
+        }
+
+        if(ins.imageIndex.changed && ins.enabled.value)
         {
             if(ins.imageIndex.value != this._currentIdx || this._texture === null) 
             {
@@ -109,11 +123,13 @@ export default class CVEnvironment extends Component
                 const mapName = this._imageOptions[ins.imageIndex.value];
 
                 if(images.includes(mapName)) {
+                    this._loadingCount++;
                     this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
                         this.updateEnvironmentMap(texture);
                     });
                 }
                 else {
+                    this._loadingCount++;
                     this.assetReader.getTexture(mapName).then(texture => {
                         this.updateEnvironmentMap(texture);
                     });
@@ -131,11 +147,11 @@ export default class CVEnvironment extends Component
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
         }
-        if(ins.visible.changed)
-        {
-            this.background.ins.visible.setValue(!ins.visible.value);
+        if(ins.visible.changed && this._loadingCount == 0)
+        { 
             this.sceneNode.scene.background = ins.visible.value ? this._texture : null;
-            ins.visible.value ? this.sceneNode.scene.background.needsUpdate = true : null;
+            ins.visible.value && this.sceneNode.scene.background ? this.sceneNode.scene.background.needsUpdate = true : null;
+            this.background.ins.visible.setValue(!ins.visible.value);
         }
 
         return true;
@@ -143,9 +159,17 @@ export default class CVEnvironment extends Component
 
     fromData(data: IEnvironment)
     {
-        this.ins.copyValues({
-            imageIndex: data.index
-        });
+        const ins = this.ins;
+
+        if (data.rotation) {
+            ins.rotation.setValue(data.rotation);
+        }
+        if (data.index) {
+            ins.imageIndex.setValue(data.index);
+        }
+        if (data.visible) {
+            ins.visible.setValue(data.visible);
+        }
     }
 
     toData(): IEnvironment
@@ -153,7 +177,9 @@ export default class CVEnvironment extends Component
         const ins = this.ins;
 
         return {
-            index: ins.imageIndex.cloneValue()
+            index: ins.imageIndex.value,
+            visible: ins.visible.value,
+            rotation: ins.rotation.cloneValue()
         };
     }
 
@@ -168,6 +194,7 @@ export default class CVEnvironment extends Component
         this.sceneNode.scene.environmentRotation = _euler;
         this.sceneNode.scene.backgroundRotation = _euler;
         this.renderer.forceRender();
+        this._loadingCount--;
         ins.visible.set();
     }
 
@@ -187,5 +214,12 @@ export default class CVEnvironment extends Component
                 });
             });
         }
+    }
+    
+    protected addLightComponent() {
+        const lightNode = this.graph.findNodeByName("Lights") as NVNode;
+        const childNode = lightNode.graph.createCustomNode(lightNode as NVNode) as NVNode;
+        childNode.transform.createComponent(CVEnvironmentLight);
+        lightNode.transform.addChild(childNode.transform);
     }
 }
