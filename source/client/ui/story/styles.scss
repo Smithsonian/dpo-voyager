@@ -190,6 +190,10 @@ $color-component-meta-light: #d9d998;
     &.sv-node-light {
       background-color: $color-component-light-dark;
       border-left: 1px solid $color-component-light;
+
+      &.disabled {
+        color: gray;
+      }
     }
     &[selected] {
       background-color: common.$color-primary;
@@ -216,6 +220,9 @@ $color-component-meta-light: #d9d998;
       }
       .sv-icon-meta {
         fill: $color-component-meta-light;
+      }
+      .sv-icon-disabled {
+        fill: gray;
       }
     }
     .ff-content {

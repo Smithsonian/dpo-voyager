@@ -360,7 +360,7 @@ export default class CVARManager extends Component
             cameraParent.remove(this.camera);
         } 
 
-        this.setup.background.hide();
+        this.setup.background.ins.visible.setValue(false);;
 
         // Disable navigation so we don't get duplicate events with dom overlay
         //this.pulse.stop();
@@ -476,7 +476,7 @@ export default class CVARManager extends Component
         });
         this.lightsToReset.length = 0;
         
-        setup.background.show();
+        setup.background.ins.visible.setValue(true);
 
         // Reset quality
         const models = this.sceneNode.getGraphComponents(CVModel2);

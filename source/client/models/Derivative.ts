@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Object3D, Mesh, Texture, Material } from "three";
+import { Object3D, Mesh, Texture, MeshStandardMaterial, Vector3, Material } from "three";
 
 import { disposeObject } from "@ff/three/helpers";
 
@@ -29,10 +29,12 @@ import {
     TDerivativeUsage,
 } from "client/schema/model";
 
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CVAssetReader from "../components/CVAssetReader";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
+import { addCustomMaterialDefines, injectFragmentShaderCode, injectVertexShaderCode } from "client/utils/Helpers";
+
+const _vec3 = new Vector3( 1, 0, 0 );
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +103,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         if (geoAsset) {
             return assetReader.getGeometry(geoAsset.data.uri)
             .then(geometry => {
-                this.model = new Mesh(geometry, new UberPBRMaterial());
+                this.model = new Mesh(geometry, new MeshStandardMaterial());
                 this.model.castShadow = true;
 
                 return Promise.all(imageAssets.map(asset => assetReader.getTexture(asset.data.uri)))
@@ -111,8 +113,28 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                 });
             })
             .then(textures => {
-                const material = (this.model as Mesh).material as UberPBRMaterial;
+                const material = (this.model as Mesh).material as MeshStandardMaterial;
                 this.assignTextures(imageAssets, textures, material);
+
+                const uniforms = {
+                    cutPlaneColor: { value: _vec3 },
+                    zoneMap: { value: null }
+                };
+
+                // update default shaders for extended functionality
+                material.onBeforeCompile = (shader) => {
+                    shader.vertexShader = injectVertexShaderCode(shader.vertexShader);
+                    shader.fragmentShader = injectFragmentShaderCode(shader.fragmentShader);
+
+                    // add custom uniforms
+                    shader.uniforms.cutPlaneColor = uniforms.cutPlaneColor;
+                    shader.uniforms.zoneMap = uniforms.zoneMap;
+                    material.userData.shader = shader;
+                }
+                material.userData.paramCopy = {};
+
+                // add defines for shader customization
+                addCustomMaterialDefines(material);
 
                 if (!material.map) {
                     material.color.setScalar(0.5);
@@ -234,7 +256,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         data.assets = json.assets.map(assetJson => new Asset(assetJson));
     }
 
-    protected assignTextures(assets: Asset[], textures: Texture[], material: UberPBRMaterial)
+    protected assignTextures(assets: Asset[], textures: Texture[], material: MeshStandardMaterial)
     {
         for (let i = 0; i < assets.length; ++i) {
             const asset = assets[i];

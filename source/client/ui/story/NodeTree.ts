@@ -23,6 +23,8 @@ import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDoc
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
+import CLight from "@ff/scene/components/CLight";
+import CVEnvironment from "client/components/CVEnvironment";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -89,7 +91,7 @@ class NodeTree extends Tree<NVNode>
             icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
         }
         if (node.light) {
-            icons.push(html`<ff-icon class="sv-icon-light" name=${node.light.icon}></ff-icon>`);
+            icons.push(html`<ff-icon class="${node.light.ins.enabled.value ? "sv-icon-light ff-icon": "sv-icon-disabled ff-icon"}" name=${node.light.icon}></ff-icon>`);
         }
         if (node.camera) {
             icons.push(html`<ff-icon class="sv-icon-camera" name=${node.camera.icon}></ff-icon>`);
@@ -116,7 +118,8 @@ class NodeTree extends Tree<NVNode>
             return "sv-node-model";
         }
         if (treeNode.light) {
-            return "sv-node-light";
+            const light = treeNode.transform.getComponent(CLight);
+            return light.ins.enabled.value ? "sv-node-light" : "sv-node-light disabled";
         }
         if (treeNode.camera) {
             return "sv-node-camera";
