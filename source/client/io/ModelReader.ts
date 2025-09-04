@@ -25,7 +25,7 @@ import {KTX2Loader} from 'three/examples/jsm/loaders/KTX2Loader.js';
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 import { disposeObject } from "@ff/three/helpers";
-import { addCustomMaterialDefines, extendShaders } from "client/utils/Helpers";
+import { addCustomMaterialDefines, extendShaders } from "client/shaders/ShaderExtension";
 
 ////////////////////////////////////////////////////////////////////////////////
 

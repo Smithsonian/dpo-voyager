@@ -32,9 +32,7 @@ import {
 import CVAssetReader from "../components/CVAssetReader";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
-import { addCustomMaterialDefines, injectFragmentShaderCode, injectVertexShaderCode } from "client/utils/Helpers";
-
-const _vec3 = new Vector3( 1, 0, 0 );
+import { addCustomMaterialDefines, extendShaders, } from "client/shaders/ShaderExtension";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -116,21 +114,8 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                 const material = (this.model as Mesh).material as MeshStandardMaterial;
                 this.assignTextures(imageAssets, textures, material);
 
-                const uniforms = {
-                    cutPlaneColor: { value: _vec3 },
-                    zoneMap: { value: null }
-                };
-
                 // update default shaders for extended functionality
-                material.onBeforeCompile = (shader) => {
-                    shader.vertexShader = injectVertexShaderCode(shader.vertexShader);
-                    shader.fragmentShader = injectFragmentShaderCode(shader.fragmentShader);
-
-                    // add custom uniforms
-                    shader.uniforms.cutPlaneColor = uniforms.cutPlaneColor;
-                    shader.uniforms.zoneMap = uniforms.zoneMap;
-                    material.userData.shader = shader;
-                }
+                extendShaders(material);
                 material.userData.paramCopy = {};
 
                 // add defines for shader customization

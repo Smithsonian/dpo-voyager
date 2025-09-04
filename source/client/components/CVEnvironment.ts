@@ -29,7 +29,7 @@ import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 
 
-const images = ["spruit_sunrise_1k_HDR.hdr","Two Umbrellas For Charts.hdr","studio_small_08_1k.hdr","campbell_env.jpg"];  
+const images = ["studio_small_08_1k.hdr","spruit_sunrise_1k_HDR.hdr"];
 
 ////////////////////////////////////////////////////////////////////////////////
 
