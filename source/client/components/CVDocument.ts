@@ -181,7 +181,10 @@ export default class CVDocument extends CRenderGraph
     async validateDocument(documentData: IDocument){
         /** Workers are a "baseline" feature since 2015 so this shouldn't happen much */
         if(!window.Worker) return console.warn("Couldn't validate document: web workers are not supported");
-        let worker = _worker ??= new Worker(new URL("../io/validateDocument.ts", import.meta.url));
+        let worker = _worker ??= new Worker(
+             /* webpackChunkName: "validateDocument" */ 
+            new URL("../io/validateDocument.ts", import.meta.url)
+        );
         worker.postMessage(documentData);
         return new Promise<void>((resolve, reject)=>{
             worker.onmessage = ((ev:MessageEvent<boolean>)=>{
