@@ -25,8 +25,6 @@ import { Dictionary } from "@ff/core/types";
 import { IDocument } from "client/schema/document";
 import { EDerivativeQuality } from "client/schema/model";
 
-import DocumentValidator from "../io/DocumentValidator";
-
 import NVNode, { INodeComponents } from "../nodes/NVNode";
 import NVScene from "../nodes/NVScene";
 
@@ -54,7 +52,6 @@ export default class CVDocument extends CRenderGraph
     static readonly mimeType = "application/si-dpo-3d.document+json";
     static readonly version = "1.0";
 
-    protected static readonly validator = new DocumentValidator();
 
     protected titles: Dictionary<string> = {};
     protected intros: Dictionary<string> = {};
@@ -190,10 +187,6 @@ export default class CVDocument extends CRenderGraph
     {
         if (ENV_DEVELOPMENT) {
             console.log("CVDocument.openDocument - assetPath: %s, mergeParent: %s", assetPath, mergeParent);
-        }
-
-        if (!CVDocument.validator.validate(documentData)) {
-            throw new Error("document schema validation failed");
         }
 
         if (!mergeParent) {
