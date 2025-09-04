@@ -234,7 +234,9 @@ export default class CVDocument extends CRenderGraph
             this.outs.assetPath.setValue(assetPath);
             this.name = this.getMainComponent(CVAssetManager).getAssetName(assetPath);
         }
-        this._data = this.deflateDocument();
+        this._data = documentData;
+        delete (this._data.asset as any).id;
+        console.debug("navigation :", this._data.setups[0].navigation);
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene) : CVModel2
@@ -338,6 +340,7 @@ export default class CVDocument extends CRenderGraph
                 return false;
             }
         }
+        console.debug("Current navigation :", current.setups[0].navigation, this._data.setups[0].navigation);
         return !Object.keys(current).every(k=> deepEqual("/"+k, current[k], this._data[k]));
     }
 
