@@ -23,45 +23,33 @@ import metaSchema from "client/schema/json/meta.schema.json";
 import modelSchema from "client/schema/json/model.schema.json";
 import setupSchema from "client/schema/json/setup.schema.json";
 
-import { IDocument } from "client/schema/document";
+import type { IDocument } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default class DocumentValidator
-{
-    private _schemaValidator;
-    private _validateDocument;
+/**
+ * Web worker that validates a document data against the JSON-schema
+ */
+onmessage = ({data}:MessageEvent<IDocument>) => {
+    console.debug("Message received from main script");
+    const schemaValidator = new AjvCore({
+        schemas: [
+            documentSchema,
+            commonSchema,
+            metaSchema,
+            modelSchema,
+            setupSchema,
+        ],
+        allErrors: true
+    });
 
-    constructor()
-    {
-        this._schemaValidator = new AjvCore({
-            schemas: [
-                documentSchema,
-                commonSchema,
-                metaSchema,
-                modelSchema,
-                setupSchema,
-            ],
-            allErrors: true
-        });
+    const validateDocument = schemaValidator.getSchema(
+        "https://schemas.3d.si.edu/voyager/document.schema.json"
+    );
 
-        this._validateDocument = this._schemaValidator.getSchema(
-            "https://schemas.3d.si.edu/voyager/document.schema.json"
-        );
+    if (!validateDocument(data)) {
+        throw new Error(schemaValidator.errorsText(
+            validateDocument.errors, { separator: ", ", dataVar: "document" }));
     }
-
-    validate(document: IDocument): boolean
-    {
-        if (!this._validateDocument(document)) {
-            console.warn(this._schemaValidator.errorsText(
-                this._validateDocument.errors, { separator: ", ", dataVar: "document" }));
-            return false;
-        }
-
-        if (ENV_DEVELOPMENT) {
-            console.log("JSONValidator.validateDocument - OK");
-        }
-
-        return true;
-    }
-}
+    postMessage(true);
+};

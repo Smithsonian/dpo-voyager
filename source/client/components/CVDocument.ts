@@ -34,12 +34,14 @@ import CVAssetManager from "./CVAssetManager";
 import CVAnalytics from "client/components/CVAnalytics";
 import { ELanguageType } from "client/schema/common";
 import CVModel2 from "./CVModel2";
+import Notification from "@ff/ui/Notification";
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IDocument, INodeComponents };
 
+let _worker:Worker;
 
 /**
  * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
@@ -176,6 +178,21 @@ export default class CVDocument extends CRenderGraph
         children.forEach(child => child.node.dispose());
     }
 
+    async validateDocument(documentData: IDocument){
+        /** Workers are a "baseline" feature since 2015 so this shouldn't happen much */
+        if(!window.Worker) return console.warn("Couldn't validate document: web workers are not supported");
+        let worker = _worker ??= new Worker(new URL("../io/validateDocument.ts", import.meta.url));
+        worker.postMessage(documentData);
+        return new Promise<void>((resolve, reject)=>{
+            worker.onmessage = ((ev:MessageEvent<boolean>)=>{
+                resolve();
+            });
+            worker.onerror = (ev:ErrorEvent)=>{
+                reject(new Error(ev.message));
+            }
+        });
+    }
+
     /**
      * Loads the document from the given document data. The data is validated first.
      * If a parent node/scene is given, the data is attached to the given parent.
@@ -188,6 +205,14 @@ export default class CVDocument extends CRenderGraph
         if (ENV_DEVELOPMENT) {
             console.log("CVDocument.openDocument - assetPath: %s, mergeParent: %s", assetPath, mergeParent);
         }
+        this.validateDocument(documentData).then(()=>{
+            if (ENV_DEVELOPMENT) {
+                console.log(`JSONValidator.validateDocument - OK${assetPath?` (${assetPath})`:""}`);
+            }
+        },(err)=>{
+            console.error(err);
+            Notification.show(`Document validation failed : ${err.message}`, "error");
+        });
 
         if (!mergeParent) {
             this.clearNodeTree();
