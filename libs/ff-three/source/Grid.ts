@@ -41,6 +41,7 @@ export default class Grid extends LineSegments
     set opacity(value: number) {
         this.material["opacity"] = value;
         this.material["transparent"] = value < 1;
+        this.material["needsUpdate"] = true;
     }
 
     update(props: IGridProps)
