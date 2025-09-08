@@ -35,13 +35,14 @@ import CVAnalytics from "client/components/CVAnalytics";
 import { ELanguageType } from "client/schema/common";
 import CVModel2 from "./CVModel2";
 import Notification from "@ff/ui/Notification";
+import { CORSWorker as Worker } from "client/io/Worker";
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { IDocument, INodeComponents };
 
-let _worker:Worker;
+let _worker: globalThis.Worker;
 
 /**
  * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
@@ -181,18 +182,29 @@ export default class CVDocument extends CRenderGraph
     async validateDocument(documentData: IDocument){
         /** Workers are a "baseline" feature since 2015 so this shouldn't happen much */
         if(!window.Worker) return console.warn("Couldn't validate document: web workers are not supported");
-        let worker = _worker ??= new Worker(
-             /* webpackChunkName: "validateDocument" */ 
-            new URL("../io/validateDocument.ts", import.meta.url)
-        );
-        worker.postMessage(documentData);
+        if(!_worker){            
+            _worker = await new Worker(
+                /* webpackChunkName: "validateDocument" */ 
+                new URL("../io/validateDocument.ts", import.meta.url),
+            ).createWorker();
+        }
+
         return new Promise<void>((resolve, reject)=>{
-            worker.onmessage = ((ev:MessageEvent<boolean>)=>{
-                resolve();
-            });
-            worker.onerror = (ev:ErrorEvent)=>{
-                reject(new Error(ev.message));
+            const clean = ()=>{
+                _worker.removeEventListener("message", onMessage);
+                _worker.removeEventListener("error", onError);
             }
+            const onMessage = (ev:MessageEvent<boolean>)=>{
+                resolve();
+                clean();
+            }
+            const onError = (ev:ErrorEvent) =>{
+                reject(ev.message)
+                clean();
+            }
+            _worker.postMessage(documentData);
+            _worker.addEventListener("message", onMessage);
+            _worker.addEventListener("error", onError);
         });
     }
 
