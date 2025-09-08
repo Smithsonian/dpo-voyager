@@ -26,30 +26,28 @@ import setupSchema from "client/schema/json/setup.schema.json";
 import type { IDocument } from "client/schema/document";
 
 ////////////////////////////////////////////////////////////////////////////////
+const schemaValidator = new AjvCore({
+    schemas: [
+        documentSchema,
+        commonSchema,
+        metaSchema,
+        modelSchema,
+        setupSchema,
+    ],
+    allErrors: true
+});
 
 /**
  * Web worker that validates a document data against the JSON-schema
  */
-onmessage = ({data}:MessageEvent<IDocument>) => {
-    console.debug("Message received from main script");
-    const schemaValidator = new AjvCore({
-        schemas: [
-            documentSchema,
-            commonSchema,
-            metaSchema,
-            modelSchema,
-            setupSchema,
-        ],
-        allErrors: true
-    });
-
+onmessage = ({data}:MessageEvent<IDocument|undefined>) => {
     const validateDocument = schemaValidator.getSchema(
         "https://schemas.3d.si.edu/voyager/document.schema.json"
     );
-
     if (!validateDocument(data)) {
-        throw new Error(schemaValidator.errorsText(
+        postMessage(schemaValidator.errorsText(
             validateDocument.errors, { separator: ", ", dataVar: "document" }));
+    }else{
+        postMessage(undefined);
     }
-    postMessage(true);
 };

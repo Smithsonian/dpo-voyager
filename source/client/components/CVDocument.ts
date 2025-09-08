@@ -42,7 +42,7 @@ import { CORSWorker as Worker } from "client/io/Worker";
 
 export { IDocument, INodeComponents };
 
-let _worker: globalThis.Worker;
+let _worker: Worker;
 
 /**
  * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
@@ -183,29 +183,13 @@ export default class CVDocument extends CRenderGraph
         /** Workers are a "baseline" feature since 2015 so this shouldn't happen much */
         if(!window.Worker) return console.warn("Couldn't validate document: web workers are not supported");
         if(!_worker){            
-            _worker = await new Worker(
+            _worker = new Worker(
                 /* webpackChunkName: "validateDocument" */ 
                 new URL("../io/validateDocument.ts", import.meta.url),
-            ).createWorker();
+            );
         }
-
-        return new Promise<void>((resolve, reject)=>{
-            const clean = ()=>{
-                _worker.removeEventListener("message", onMessage);
-                _worker.removeEventListener("error", onError);
-            }
-            const onMessage = (ev:MessageEvent<boolean>)=>{
-                resolve();
-                clean();
-            }
-            const onError = (ev:ErrorEvent) =>{
-                reject(ev.message)
-                clean();
-            }
-            _worker.postMessage(documentData);
-            _worker.addEventListener("message", onMessage);
-            _worker.addEventListener("error", onError);
-        });
+        let errString = await _worker.send(documentData);
+        if(errString) throw new Error(errString);
     }
 
     /**
@@ -225,7 +209,7 @@ export default class CVDocument extends CRenderGraph
                 console.log(`JSONValidator.validateDocument - OK${assetPath?` (${assetPath})`:""}`);
             }
         },(err)=>{
-            console.error(err);
+            console.error("Document validation failed :", err);
             Notification.show(`Document validation failed : ${err.message}`, "error");
         });
 
