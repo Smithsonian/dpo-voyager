@@ -49,7 +49,7 @@ export default class CreateLightMenu extends Popup {
 
     protected firstConnected() {
         super.firstConnected();
-        this.classList.add("sv-option-menu", "sv-light-menu");
+        this.classList.add("sv-option-menu", "sv-create-light-menu");
     }
 
     protected renderLightTypeEntry(lightType: ELightType, index: number) {
