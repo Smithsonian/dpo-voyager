@@ -247,12 +247,12 @@ $color-component-meta-light: #d9d998;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: flex-start;
-  align-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
   padding: 12px;
 
   .ff-button {
-    flex-grow: 0;
+    flex: 0 0 120px;
     margin: 4px;
     padding: 6px 16px;
     background-color: common.$color-background;

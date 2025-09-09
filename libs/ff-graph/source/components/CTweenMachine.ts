@@ -246,6 +246,7 @@ export default class CTweenMachine extends Component
 
     addTargetProperty(property: Property)
     {
+        console.debug("Add target property :", property.path);
         if (property.type === "object" || property.schema.event) {
             throw new Error("can't add object or event properties");
         }
@@ -273,6 +274,7 @@ export default class CTweenMachine extends Component
 
     removeTargetProperty(property: Property)
     {
+        console.debug("Remove target property :", property.path);
         const target = this.getTarget(property);
 
         if (!target) {

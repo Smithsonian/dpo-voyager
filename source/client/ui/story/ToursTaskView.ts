@@ -28,6 +28,7 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import CVDocument from "../../components/CVDocument";
 import { IButtonClickEvent } from "@ff/ui/Button";
 import { ELanguageType } from "client/schema/common";
+import Component from "@ff/graph/Component";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -40,22 +41,42 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         return this.activeDocument.setup.snapshots;
     }
 
+    /**
+     * @fixme use a Tree like everywhere else
+     */
+    protected *listProperties(){
+        let currentGroup: string = "";
+        for(let {property,  enabled} of this.snapshots.snapshotProperties()){
+            const group = property.group.linkable as Component;
+            if(currentGroup != group.displayName){
+                currentGroup = group.displayName;
+                yield html`<div class="ff-flex-row ff-flex-item-stretch">
+                    <span class="ff-flex-item-stretch">${currentGroup}</span>
+                </div>`
+            }
+
+            yield html`<div class="ff-flex-row ff-flex-item-stretch">
+                <span class="ff-flex-item-stretch">${property.path}</span>
+                <ff-button text=${enabled?"tracked":"not tracked"} name="${group.id}.${property.key}" ?selected=${enabled} @click=${this.onClickProperty}></ff-button>
+            </div>`;
+        }
+
+    }
+
     protected renderFeatureMenu()
     {
-        const features = this.snapshots.targetFeatures;
-        const keys = Object.keys(features);
+
         const languageManager = this.activeDocument.setup.language;
 
-        const buttons = keys.map(key => {
-            const title = key[0].toUpperCase() + key.substr(1);
-            const selected = !!features[key];
-            return html`<ff-button text=${title} name=${key} ?selected=${selected} @click=${this.onClickFeature}></ff-button>`;
-        });
+        console.debug("Render feature menu", [...this.snapshots.snapshotProperties()].length);
 
-        return html`<div class="sv-commands">
-            <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
-            <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
-        </div><div class="ff-flex-item-stretch sv-tour-feature-menu">${buttons}</div>`;
+        return html`<div class="ff-scroll-y">
+            <div class="sv-commands">
+                <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
+            </div>
+            <div class="ff-flex-column sv-tour-feature-menu">${[...this.listProperties()]}</div>
+        </div>`;
     }
 
     protected render()
@@ -154,7 +175,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
     protected onFeatureMenuConfirm()
     {
-        this.snapshots.updateTargets();
+        //this.snapshots.updateTargets();
 
         this.featureConfigMode = false;
         this.requestUpdate();
@@ -166,12 +187,12 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         this.requestUpdate();
     }
 
-    protected onClickFeature(event: IButtonClickEvent)
+    protected onClickProperty(event: IButtonClickEvent)
     {
-        const features = this.snapshots.targetFeatures;
-        const key = event.target.name;
+        const [componentId, propertyKey] = event.target.name.split(".");
+        this.snapshots.toggleTargetName(componentId, propertyKey);
 
-        features[key] = !features[key];
+
         this.requestUpdate();
     }
 

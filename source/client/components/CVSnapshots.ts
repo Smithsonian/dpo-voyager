@@ -35,60 +35,56 @@ export default class CVSnapshots extends CTweenMachine
 {
     static readonly typeName: string = "CVSnapshots";
 
-    targetFeatures: Dictionary<boolean> = {};
-
     create()
     {
         super.create();
 
         const setup = this.getGraphComponent(CVSetup);
 
-        Object.keys(setup.featureMap).forEach(name => {
-            this.targetFeatures[name] = false;
-        });
-
-        this.targetFeatures["models"] = false;
-        this.targetFeatures["lights"] = false;
-
-        this.initializeTargetFeatures();
     }
-
-    initializeTargetFeatures()
-    {
-        const features = this.targetFeatures;
-        Object.keys(features).forEach(key => features[key] = false);
-        features["navigation"] = true;
-        features["reader"] = true;
-        features["viewer"] = true;
-
-        this.updateTargets();
+    /**
+     * Iterates over all snapshot-ready properties
+     */
+    *snapshotProperties(): Generator<{property: Property<any>, enabled: boolean}, void, unknown>{
+        const setup = this.getGraphComponent(CVSetup);
+        for(let name in setup.featureMap){
+            const component = setup[name] as Component;
+            if(!component) continue;
+            for(let property of (component["snapshotProperties"] ?? []) as Property[]){
+                const schema = property.schema;
+                if (schema.event || property.type === "object"){
+                    //We are not expecting to have an invalid property listed in snapshotProperties
+                    console.warn("Invalid snapshot property specified : ", property.path);
+                    continue;
+                }
+                yield {property, enabled: this.hasTargetProperty(property)};
+            }
+        }
     }
 
     updateTargets()
     {
-        const features = this.targetFeatures;
-        const setup = this.getGraphComponent(CVSetup);
+        throw new Error("Shouldn't be called")
+        // const setup = this.getGraphComponent(CVSetup);
 
-        Object.keys(features).forEach(name => {
-            const component = setup[name];
-            const shouldInclude = features[name];
+        // Object.keys(setup.featureMap).forEach((name) => {
+        //     const component = setup[name] as Component;
+        //     if (component) {
+        //         this.updateComponentTarget(component);
+        //     }
+        // });
 
-            if (component) {
-                this.updateComponentTarget(component, shouldInclude);
-            }
-        });
+        // const models = this.getGraphComponents(CVModel2);
+        // models.forEach(model => {
+        //     this.updateComponentTarget(model.transform);
+        //     this.updateComponentTarget(model);
+        // });
 
-        const models = this.getGraphComponents(CVModel2);
-        models.forEach(model => {
-            this.updateComponentTarget(model.transform, !!features["models"]);
-            this.updateComponentTarget(model, !!features["models"]);
-        });
-
-        const lights = this.getGraphComponents(CLight);
-        lights.forEach(light => {
-            this.updateComponentTarget(light.transform, !!features["lights"]);
-            this.updateComponentTarget(light, !!features["lights"])
-        });
+        // const lights = this.getGraphComponents(CLight);
+        // lights.forEach(light => {
+        //     this.updateComponentTarget(light.transform);
+        //     this.updateComponentTarget(light);
+        // });
 
         /*
         this.targets.forEach((target, index) => {
@@ -99,7 +95,18 @@ export default class CVSnapshots extends CTweenMachine
          */
     }
 
-    protected updateComponentTarget(component: Component, include: boolean)
+    public toggleTargetName(componentId:string, propertyKey: string){
+        const component = this.graph.getComponentById(componentId);
+        const property = component.ins.getProperty(propertyKey);
+        console.log("Toggle target", component, property);
+        if(this.hasTargetProperty(property)){
+            this.removeTargetProperty(property);
+        }else{
+            this.addTargetProperty(property);
+        }
+    }
+
+    protected updateComponentTarget(component: Component, include: string)
     {
         const snapshotProperties = component["snapshotProperties"] as Property[];
         if (!snapshotProperties) {
@@ -124,25 +131,15 @@ export default class CVSnapshots extends CTweenMachine
     {
         this.clear();
 
-        const features = this.targetFeatures;
-        const keys = Object.keys(features);
-
-        if (data.features) {
-            keys.forEach(key => features[key] = data.features.indexOf(key) >= 0);
-        }
-        else {
-            this.initializeTargetFeatures();
-        }
 
         const missingTargets = new Set<number>();
-
         data.targets.forEach((target, index) => {
             const slashIndex = target.lastIndexOf("/");
             const componentPath = target.substr(0, slashIndex);
             const propertyKey = target.substr(slashIndex + 1);
 
             const component = pathMap.get(componentPath);
-            const property = component ? component.ins[propertyKey] : null;
+            const property = (component ? component.ins[propertyKey] : null) as Property<any>|null|undefined;
 
             if (!property) {
                 console.warn(`missing snapshot target property for '${target}'`);
@@ -168,11 +165,8 @@ export default class CVSnapshots extends CTweenMachine
 
     toData(pathMap: Map<Component, string>): ISnapshots | null
     {
-        const features = this.targetFeatures;
 
         const data: ISnapshots = {
-            features: Object.keys(features).filter(key => features[key]),
-
             targets: this.targets.map(target => {
                 const component = target.property.group.linkable as Component;
                 const key = target.property.key;
