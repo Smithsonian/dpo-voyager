@@ -245,7 +245,10 @@ $color-component-meta-light: #d9d998;
 
 .sv-tour-feature-menu {
   padding: 12px;
-
+  .ff-header{
+    display: flex;
+    justify-content: space-between;
+  }
   .ff-button {
     flex: 0 0 80px;
     margin: 4px;

@@ -26,10 +26,12 @@ import { TaskView, customElement, property, html } from "../../components/CVTask
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import CVDocument from "../../components/CVDocument";
-import { IButtonClickEvent } from "@ff/ui/Button";
+import Button, { IButtonClickEvent } from "@ff/ui/Button";
 import { ELanguageType } from "client/schema/common";
-import { IPropertyTreeNode } from "client/components/CVSnapshots";
+import CVSnapshots, { IPropertyTreeNode } from "client/components/CVSnapshots";
 
+import "@ff/ui/Tree";
+import Tree, { PropertyValues, TemplateResult } from "@ff/ui/Tree";
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -42,22 +44,6 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         return this.activeDocument.setup.snapshots;
     }
 
-    protected renderPropertyTreeNode(node: IPropertyTreeNode){
-
-        return html `<div class="ff-tree-node-container" id=${node.id}>
-            <div class="ff-tree-node ${node.children?.length?"ff-inner ff-component":"ff-leaf"} ff-even" expanded>
-                <div class="ff-header">
-                    <span class="ff-flex-item-stretch" style="${node.children?.length?`font-weight: bold; padding: 0 .5rem;`:""}">${node.text}</span>
-                    ${typeof node.selected === "boolean"?html`<ff-button role="switch" text=${node.selected?"tracked":"not tracked"} name="${node.id}" ?selected=${node.selected} @click=${this.onClickProperty}></ff-button>`:null}
-                </div>
-                ${node.children?.length?html`<div class="ff-content">
-                    ${node.children.map(c=> this.renderPropertyTreeNode(c))}
-                </div>`: null}
-            </div>
-        </div>`
-    }
-
-
     protected renderFeatureMenu()
     {
 
@@ -68,8 +54,11 @@ export default class ToursTaskView extends TaskView<CVToursTask>
                 <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
                 <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
             </div>
-            <div class="sv-tour-feature-menu ff-tree ff-property-tree">
-                ${this.snapshots.getSnapshotPropertyTree().children.map((c)=>this.renderPropertyTreeNode(c))}
+            <p>
+                TODO: put a nice explanation here?
+            </p>
+            <div class="sv-tour-feature-menu">
+                <sv-tour-property-tree .snapshots=${this.snapshots}></sv-tour-property-tree>
             </div>
         </div>`;
     }
@@ -186,15 +175,6 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         this.requestUpdate();
     }
 
-    protected onClickProperty(event: IButtonClickEvent)
-    {
-        const [componentId, propertyKey] = event.target.name.split(".");
-        this.snapshots.toggleTargetName(componentId, propertyKey);
-
-
-        this.requestUpdate();
-    }
-
     protected onTextEdit(event: ILineEditChangeEvent)
     {
         const task = this.task;
@@ -296,4 +276,79 @@ export class TourList extends List<ITour>
             detail: { tour: null, index: -1 }
         }));
     }
+}
+
+@customElement("sv-tour-property-tree")
+export class TourPropertyTree extends Tree<IPropertyTreeNode>{
+    @property({attribute: false, type: Object})
+    snapshots: CVSnapshots;
+
+    protected update(changedProperties: PropertyValues): void {
+        this.root = this.snapshots?.getSnapshotPropertyTree();
+        super.update(changedProperties);
+    }
+    protected renderNodeHeader(node: IPropertyTreeNode): TemplateResult
+    {
+        const withButton = 0 < node.children?.length;
+        const buttonSelected = withButton && this.isRecursiveSelected(node);
+        return html`
+            <span class="ff-flex-item-stretch">${node.text}</span>
+            ${withButton?
+                html`<ff-button role="switch" text=${buttonSelected?"deselect all":"select all"} name="${node.id}" ?selected=${buttonSelected} @click=${this.onToggleGroupSelection}></ff-button>`
+                :html`<ff-icon class="ff-off" name="${node.selected?"lock":"unlock"}"></ff-icon>`}
+        `;
+    }
+
+    /**
+     * Returns true if a node is explicitly selected or "selected" is undefined and all of its children are.
+     */
+    protected isRecursiveSelected = (n:IPropertyTreeNode):boolean =>{
+        if("selected" in n) return n.selected;
+        else if(Array.isArray(n.children)) return n.children?.every(this.isRecursiveSelected);
+        else return false;
+    }
+
+    protected onToggleGroupSelection(ev: MouseEvent){
+        const treeNode = this.getNodeFromEventTarget(ev);
+        if(!treeNode?.children?.length) return;
+
+
+        const isSelected = this.isRecursiveSelected(treeNode);
+        console.log("Toggle :", treeNode.id, !isSelected);
+        treeNode.children.forEach((child)=>{
+            if(! ("property" in child)) return;
+            if(isSelected){
+                this.snapshots.removeTargetProperty(child.property, true);
+            }else{
+                this.snapshots.addTargetProperty(child.property, true);
+            }
+        });
+        this.requestUpdate("root");
+        ev.stopPropagation();
+    }
+
+    protected onNodeClick(ev: MouseEvent, node: IPropertyTreeNode){
+        if(node.children?.length){
+            return super.onNodeClick(ev, node);
+        }
+        console.log("Toggle select :", node.id);
+        const prop = node.property;
+        if(this.snapshots.hasTargetProperty(prop)){
+            this.snapshots.removeTargetProperty(prop);
+        }else{
+            this.snapshots.addTargetProperty(prop);
+        }
+        this.requestUpdate("root");
+        ev.stopPropagation();
+    }
+    //Recursively check if the node or some of its children is selected
+    public isNodeExpanded(n:IPropertyTreeNode){
+        return n.selected || (n.children?.length && n.children.some(c=>this.isNodeExpanded(c)));
+    }
+
+    public isNodeSelected(treeNode: IPropertyTreeNode): boolean {
+        //No recursive check here because we don't want to highlight the whole node when all its children are selected
+        return !!treeNode.selected;
+    }
+
 }

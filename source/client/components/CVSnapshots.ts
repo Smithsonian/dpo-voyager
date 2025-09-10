@@ -26,7 +26,8 @@ import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
-import { ITreeNode } from "@ff/ui/Tree";
+import { html, ITreeNode } from "@ff/ui/Tree";
+import Button from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +37,7 @@ export interface IPropertyTreeNode{
     id: string;
     text: string;
     selected ?:boolean;
-    expanded?: boolean;
+    property?: Property;
     children?: IPropertyTreeNode[];
 }
 
@@ -77,15 +78,17 @@ export default class CVSnapshots extends CTweenMachine
 
         const extractProperties = (c: Component):IPropertyTreeNode[] =>{
             return (c["snapshotProperties"] ??[]).map((prop)=> ({
-                id: c.id+"."+prop.key, 
-                text: prop.name,
+                id: c.id+"."+prop.key,
+                text: `${prop.name}`,
                 selected: this.hasTargetProperty(prop),
+                property: prop
             } satisfies IPropertyTreeNode))
         }
 
         children.push({
             id:"setup",
-            text: "Setup",
+
+            text: `Setup`,
             children: Object.keys(setup.featureMap).map(key=> ({
                 id: setup[key].id,
                 text: key,
@@ -94,10 +97,10 @@ export default class CVSnapshots extends CTweenMachine
         });
         
         const models = this.getGraphComponents(CVModel2);
-        models.forEach((model, index) => {
-            children.push({
+        children.push(...models.map((model, index) => {
+            return {
                 id: model.id,
-                text:"Model."+index,
+                text: `${model.ins.name.value} (Model#${index})`,
                 children: [
                     {
                         id: model.transform.id,
@@ -106,19 +109,30 @@ export default class CVSnapshots extends CTweenMachine
                     },
                     ...extractProperties(model),
                 ]
-            });
-        });
+            };
+        }));
 
-        // const lights = this.getGraphComponents(CLight);
-        // lights.forEach(light => {
-        //     this.updateComponentTarget(light.transform);
-        //     this.updateComponentTarget(light);
-        // });
+        const lights = this.getGraphComponents(CLight);
+        children.push(...lights.map((light, index )=> {
+            return {
+                id: light.id,
+                text: `${light.node.displayName} (Light#${index})`,
+                children: [
+                    {
+                        id: light.transform.id,
+                        text: "Transform",
+                        children: extractProperties(light.transform)
+                    },
+                    ...extractProperties(light),
+                ]
+            };
+        }));
+
         return {
             id: "root",
-            text: "root",
             children,
-        }
+            text: `root`,
+        };
     }
 
     updateTargets()
@@ -152,17 +166,6 @@ export default class CVSnapshots extends CTweenMachine
                 index, component.displayName, target.property.path);
         });
          */
-    }
-
-    public toggleTargetName(componentId:string, propertyKey: string){
-        const component = this.graph.getComponentById(componentId);
-        const property = component.ins.getProperty(propertyKey);
-        console.log("Toggle target", component, property);
-        if(this.hasTargetProperty(property)){
-            this.removeTargetProperty(property);
-        }else{
-            this.addTargetProperty(property);
-        }
     }
 
     protected updateComponentTarget(component: Component, include: string)
