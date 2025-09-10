@@ -26,10 +26,19 @@ import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
+import { ITreeNode } from "@ff/ui/Tree";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EEasingCurve };
+
+export interface IPropertyTreeNode{
+    id: string;
+    text: string;
+    selected ?:boolean;
+    expanded?: boolean;
+    children?: IPropertyTreeNode[];
+}
 
 export default class CVSnapshots extends CTweenMachine
 {
@@ -59,6 +68,56 @@ export default class CVSnapshots extends CTweenMachine
                 }
                 yield {property, enabled: this.hasTargetProperty(property)};
             }
+        }
+    }
+
+    getSnapshotPropertyTree():IPropertyTreeNode{
+        let children :IPropertyTreeNode[] = [];
+        const setup = this.getGraphComponent(CVSetup);
+
+        const extractProperties = (c: Component):IPropertyTreeNode[] =>{
+            return (c["snapshotProperties"] ??[]).map((prop)=> ({
+                id: c.id+"."+prop.key, 
+                text: prop.name,
+                selected: this.hasTargetProperty(prop),
+            } satisfies IPropertyTreeNode))
+        }
+
+        children.push({
+            id:"setup",
+            text: "Setup",
+            children: Object.keys(setup.featureMap).map(key=> ({
+                id: setup[key].id,
+                text: key,
+                children: extractProperties(setup[key] as Component),
+            })).filter(c=>c.children.length),
+        });
+        
+        const models = this.getGraphComponents(CVModel2);
+        models.forEach((model, index) => {
+            children.push({
+                id: model.id,
+                text:"Model."+index,
+                children: [
+                    {
+                        id: model.transform.id,
+                        text: "Transform",
+                        children: extractProperties(model.transform)
+                    },
+                    ...extractProperties(model),
+                ]
+            });
+        });
+
+        // const lights = this.getGraphComponents(CLight);
+        // lights.forEach(light => {
+        //     this.updateComponentTarget(light.transform);
+        //     this.updateComponentTarget(light);
+        // });
+        return {
+            id: "root",
+            text: "root",
+            children,
         }
     }
 

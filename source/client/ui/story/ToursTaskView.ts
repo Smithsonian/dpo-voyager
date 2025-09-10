@@ -28,9 +28,10 @@ import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 import CVDocument from "../../components/CVDocument";
 import { IButtonClickEvent } from "@ff/ui/Button";
 import { ELanguageType } from "client/schema/common";
-import Component from "@ff/graph/Component";
+import { IPropertyTreeNode } from "client/components/CVSnapshots";
 
 ////////////////////////////////////////////////////////////////////////////////
+
 
 @customElement("sv-tours-task-view")
 export default class ToursTaskView extends TaskView<CVToursTask>
@@ -41,41 +42,35 @@ export default class ToursTaskView extends TaskView<CVToursTask>
         return this.activeDocument.setup.snapshots;
     }
 
-    /**
-     * @fixme use a Tree like everywhere else
-     */
-    protected *listProperties(){
-        let currentGroup: string = "";
-        for(let {property,  enabled} of this.snapshots.snapshotProperties()){
-            const group = property.group.linkable as Component;
-            if(currentGroup != group.displayName){
-                currentGroup = group.displayName;
-                yield html`<div class="ff-flex-row ff-flex-item-stretch">
-                    <span class="ff-flex-item-stretch">${currentGroup}</span>
-                </div>`
-            }
+    protected renderPropertyTreeNode(node: IPropertyTreeNode){
 
-            yield html`<div class="ff-flex-row ff-flex-item-stretch">
-                <span class="ff-flex-item-stretch">${property.path}</span>
-                <ff-button text=${enabled?"tracked":"not tracked"} name="${group.id}.${property.key}" ?selected=${enabled} @click=${this.onClickProperty}></ff-button>
-            </div>`;
-        }
-
+        return html `<div class="ff-tree-node-container" id=${node.id}>
+            <div class="ff-tree-node ${node.children?.length?"ff-inner ff-component":"ff-leaf"} ff-even" expanded>
+                <div class="ff-header">
+                    <span class="ff-flex-item-stretch" style="${node.children?.length?`font-weight: bold; padding: 0 .5rem;`:""}">${node.text}</span>
+                    ${typeof node.selected === "boolean"?html`<ff-button role="switch" text=${node.selected?"tracked":"not tracked"} name="${node.id}" ?selected=${node.selected} @click=${this.onClickProperty}></ff-button>`:null}
+                </div>
+                ${node.children?.length?html`<div class="ff-content">
+                    ${node.children.map(c=> this.renderPropertyTreeNode(c))}
+                </div>`: null}
+            </div>
+        </div>`
     }
+
 
     protected renderFeatureMenu()
     {
 
         const languageManager = this.activeDocument.setup.language;
 
-        console.debug("Render feature menu", [...this.snapshots.snapshotProperties()].length);
-
         return html`<div class="ff-scroll-y">
             <div class="sv-commands">
                 <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
                 <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
             </div>
-            <div class="ff-flex-column sv-tour-feature-menu">${[...this.listProperties()]}</div>
+            <div class="sv-tour-feature-menu ff-tree ff-property-tree">
+                ${this.snapshots.getSnapshotPropertyTree().children.map((c)=>this.renderPropertyTreeNode(c))}
+            </div>
         </div>`;
     }
 
@@ -118,12 +113,16 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             <ff-text-edit name="lead" text=${props.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
 
-        return html`<div class="sv-commands">
+        return html`
+        <div class="sv-commands">
+            <ff-button title="${languageManager.getUILocalizedString("Snapshot Configuration")}" text="${languageManager.getUILocalizedString("Snapshot Configuration")}" icon="key" @click=${this.onClickConfig}></ff-button>
+        </div>
+        <div class="sv-commands">
             <ff-button title="${languageManager.getUILocalizedString("Create Tour")}" icon="create" @click=${this.onClickCreate}></ff-button>
             <ff-button title="${languageManager.getUILocalizedString("Move Tour Up")}" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
             <ff-button title="${languageManager.getUILocalizedString("Move Tour Down")}" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
             <ff-button title="${languageManager.getUILocalizedString("Delete Tour")}" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
-            <ff-button title="${languageManager.getUILocalizedString("Snapshot Configuration")}" icon="bars" @click=${this.onClickConfig}></ff-button>
+
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
