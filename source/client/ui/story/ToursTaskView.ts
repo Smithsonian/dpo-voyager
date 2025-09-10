@@ -51,8 +51,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
         return html`<div class="ff-scroll-y">
             <div class="sv-commands">
-                <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
-                <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Go Back")}" icon="triangle-left" @click=${this.onFeatureMenuConfirm}></ff-button>
             </div>
             <p>
                 TODO: put a nice explanation here?
@@ -283,18 +282,35 @@ export class TourPropertyTree extends Tree<IPropertyTreeNode>{
     @property({attribute: false, type: Object})
     snapshots: CVSnapshots;
 
+    private expanded = new Set<string>();
+
     protected update(changedProperties: PropertyValues): void {
         this.root = this.snapshots?.getSnapshotPropertyTree();
+        if(this.expanded.size === 0){
+            this.root.children.forEach(c=>{
+                if(!this.isRecursiveDeselected(c)){
+                    this.expanded.add(c.id);
+                }
+            });
+        }
         super.update(changedProperties);
     }
     protected renderNodeHeader(node: IPropertyTreeNode): TemplateResult
     {
         const withButton = 0 < node.children?.length;
-        const buttonSelected = withButton && this.isRecursiveSelected(node);
+        let buttonText = "mixed";
+        let className ="partial-selected";
+        if(withButton &&this.isRecursiveDeselected(node)){
+            buttonText = "all untracked";
+            className = "";
+        }else if(withButton && this.isRecursiveSelected(node)){
+            buttonText = "all tracked";
+            className = "selected";
+        }
         return html`
             <span class="ff-flex-item-stretch">${node.text}</span>
             ${withButton?
-                html`<ff-button role="switch" text=${buttonSelected?"deselect all":"select all"} name="${node.id}" ?selected=${buttonSelected} @click=${this.onToggleGroupSelection}></ff-button>`
+                html`<ff-button role="switch" class="ff-button ff-control ${className}" text=${buttonText} name="${node.id}" @click=${this.onToggleGroupSelection}></ff-button>`
                 :html`<ff-icon class="ff-off" name="${node.selected?"lock":"unlock"}"></ff-icon>`}
         `;
     }
@@ -308,21 +324,29 @@ export class TourPropertyTree extends Tree<IPropertyTreeNode>{
         else return false;
     }
 
+    protected isRecursiveDeselected = (n: IPropertyTreeNode):boolean =>{
+        if("selected" in n) return !n.selected;
+        else if(Array.isArray(n.children)) return n.children?.every(this.isRecursiveDeselected);
+        else return true;
+    }
+
+    protected recursiveSetSelected = (treeNode: IPropertyTreeNode, state?:boolean): boolean=>{
+        if(typeof state === "undefined") state = !this.isRecursiveSelected(treeNode);
+        if("property" in treeNode){
+            if(state){
+                this.snapshots.addTargetProperty(treeNode.property, true);
+            }else{
+                this.snapshots.removeTargetProperty(treeNode.property, true);
+            }
+        }
+        treeNode.children?.forEach((c)=>this.recursiveSetSelected(c, state));
+        return state;
+    }
+
     protected onToggleGroupSelection(ev: MouseEvent){
         const treeNode = this.getNodeFromEventTarget(ev);
-        if(!treeNode?.children?.length) return;
 
-
-        const isSelected = this.isRecursiveSelected(treeNode);
-        console.log("Toggle :", treeNode.id, !isSelected);
-        treeNode.children.forEach((child)=>{
-            if(! ("property" in child)) return;
-            if(isSelected){
-                this.snapshots.removeTargetProperty(child.property, true);
-            }else{
-                this.snapshots.addTargetProperty(child.property, true);
-            }
-        });
+        this.recursiveSetSelected(treeNode);
         this.requestUpdate("root");
         ev.stopPropagation();
     }
@@ -341,9 +365,22 @@ export class TourPropertyTree extends Tree<IPropertyTreeNode>{
         this.requestUpdate("root");
         ev.stopPropagation();
     }
+
+    public setExpanded(treeNode: IPropertyTreeNode, state?:boolean): void {
+        console.log("set expanded");
+        if(typeof state === "undefined"){
+            this.expanded.delete(treeNode.id) || this.expanded.add(treeNode.id);
+        }else if (state){
+            this.expanded.add(treeNode.id);
+        }else{
+            this.expanded.delete(treeNode.id);
+        }
+        super.setExpanded(treeNode, state);
+    }
+
     //Recursively check if the node or some of its children is selected
-    public isNodeExpanded(n:IPropertyTreeNode){
-        return n.selected || (n.children?.length && n.children.some(c=>this.isNodeExpanded(c)));
+    public isNodeExpanded(n:IPropertyTreeNode): boolean{
+        return this.expanded.has(n.id);
     }
 
     public isNodeSelected(treeNode: IPropertyTreeNode): boolean {

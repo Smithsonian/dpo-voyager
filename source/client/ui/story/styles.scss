@@ -254,6 +254,35 @@ $color-component-meta-light: #d9d998;
     margin: 4px;
     padding: 2px 10px;
     background-color: common.$color-background;
+
+    &.partial-selected{
+      transition: background-color 1s linear;
+      background: repeating-linear-gradient(
+        45deg,
+        common.$color-background,
+        common.$color-background 5px,
+        common.$color-primary 5px,
+        common.$color-primary 15px
+      );
+      &:hover, &:focus {
+        background: repeating-linear-gradient(
+          45deg,
+          common.$color-primary-light,
+          common.$color-primary-light 10px,
+          common.$color-background-light 10px,
+          common.$color-background-light 20px,
+        );
+      }
+    }
+
+    &.selected{
+      background-color: common.$color-primary;
+
+      &:hover, &:focus {
+        background-color: common.$color-primary-light;
+      }
+    }
+
   }
 }
 
