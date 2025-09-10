@@ -244,7 +244,7 @@ export default class CTweenMachine extends Component
         return true;
     }
 
-    addTargetProperty(property: Property)
+    addTargetProperty(property: Property, noThrow: boolean = false)
     {
         console.debug("Add target property :", property.path);
         if (property.type === "object" || property.schema.event) {
@@ -252,7 +252,8 @@ export default class CTweenMachine extends Component
         }
 
         if (this.getTarget(property)) {
-            throw new Error("can't add, target already exists");
+            if(noThrow) return;
+            else throw new Error("can't add, target already exists");
         }
 
         property.on<IPropertyDisposeEvent>("dispose", this.onPropertyDispose, this);
@@ -272,13 +273,14 @@ export default class CTweenMachine extends Component
         }
     }
 
-    removeTargetProperty(property: Property)
+    removeTargetProperty(property: Property, noThrow: boolean = false)
     {
         console.debug("Remove target property :", property.path);
         const target = this.getTarget(property);
 
         if (!target) {
-            throw new Error("can't remove, target doesn't exist");
+            if(noThrow) return;
+            else throw new Error("can't remove, target doesn't exist");
         }
 
         this.removeTarget(target);
