@@ -2,6 +2,7 @@ import Popup, { customElement, html } from "@ff/ui/Popup";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { ELightType } from "client/components/lights/CVLight";
 import { TLightType } from "client/schema/document";
+import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
 
 @customElement("sv-create-light-menu")
 export default class CreateLightMenu extends Popup {
@@ -75,39 +76,51 @@ export default class CreateLightMenu extends Popup {
             // adapt name to new light type, unless it was customized before
             this.name = ELightType[this.lightType];
         }
-        
+
         this.requestUpdate();
+    }
+
+    protected firstUpdated(changedProperties) {
+        super.firstUpdated(changedProperties);
+
+        (this.getElementsByClassName("ff-input")[0] as HTMLElement).focus();
+    }
+
+    protected onKeyDownMain(e: KeyboardEvent) {
+        if (e.code === "Escape") {
+            this.close();
+        }
+        else if (e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
+        }
     }
 
     protected render() {
         const language = this.language;
 
         return html`
-        <div>
+        <div class="sv-create-light-menu" role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
             <div class="ff-flex-column ff-fullsize">
-            <div class="ff-flex-row">
-                <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("Create Light")}</div>
-            </div>
-            <div class="ff-flex-row">
-                <div class="ff-dropdown">
-                <select class="ff-input" .value=${this.lightType} @change=${this.onChange}>
-                    ${Object.keys(ELightType).filter(key => typeof ELightType[key] === 'number').map((key) => html`<option value=${ELightType[key]}>${key}</option>`)}
-                </select>
+                <div class="ff-flex-row">
+                    <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("Create Light")}</div>
                 </div>
-            </div>
-            <div class="ff-flex-row">
-                <label class="ff-label">${language.getUILocalizedString("Name")}</label>
-                <div class="ff-flex-spacer"></div>
-                <input class="ff-input" type="text" style="text-align:right;" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
-            </div>
-            <div class="ff-flex-row sv-centered">
-                <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create Light")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
-                <div class="ff-flex-spacer"></div>
-                <ff-button icon="close" class="ff-close-button ff-control" text=${language.getUILocalizedString("Cancel")} title=${language.getUILocalizedString("Cancel")} @click=${this.close}></ff-button>
-            </div>                
-            <div class="ff-flex-row sv-centered sv-import-error-msg">
-                <div>${this.errorString}</div>
-            </div>            
+                <div class="ff-flex-row">
+                    <div class="ff-dropdown">
+                    <select class="ff-input" .value=${this.lightType} @change=${this.onChange}>
+                        ${Object.keys(ELightType).filter(key => typeof ELightType[key] === 'number').map((key) => html`<option value=${ELightType[key]}>${key}</option>`)}
+                    </select>
+                    </div>
+                </div>
+                <div class="ff-flex-row">
+                    <label class="ff-label">${language.getUILocalizedString("Name")}</label>
+                    <div class="ff-flex-spacer"></div>
+                    <input class="ff-input" type="text" style="text-align:right;" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
+                </div>
+                <div class="ff-flex-row">
+                    <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create Light")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
+                    <div class="ff-flex-spacer"></div>
+                    <ff-button icon="close" class="ff-close-button ff-control" text=${language.getUILocalizedString("Cancel")} title=${language.getUILocalizedString("Cancel")} @click=${this.close}></ff-button>
+                </div>
             </div>
         </div>
         `;
