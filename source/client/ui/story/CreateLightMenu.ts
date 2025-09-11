@@ -1,7 +1,6 @@
 import Popup, { customElement, html } from "@ff/ui/Popup";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { ELightType } from "client/components/lights/CVLight";
-import { TLightType } from "client/schema/document";
 import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
 
 @customElement("sv-create-light-menu")
