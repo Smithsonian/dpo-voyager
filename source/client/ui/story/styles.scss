@@ -67,9 +67,17 @@ ff-dock-view {
 }
 
 ff-tab-header, ff-dock-panel-header {
-  .ff-text { display: inline; }
-  .ff-icon { height: 0.94em; }
-  label { font-weight: normal; }
+  .ff-text {
+    display: inline;
+  }
+
+  .ff-icon {
+    height: 0.94em;
+  }
+
+  label {
+    font-weight: normal;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -254,7 +262,6 @@ $color-component-meta-light: #d9d998;
   }
 }
 
-// Light name input styling in Settings panel
 .sv-light-name-input {
   flex: 1 1 auto;
   background: #000;

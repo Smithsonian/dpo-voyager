@@ -83,11 +83,9 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
             return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a node to display its properties.")}</div>`;
         }
 
-        const light = node.light as CLight;
-
         let currentType: ELightType = null;
         if (node.light) {
-            const lt = lightTypes.find(lt => lt.typeName === light.typeName);
+            const lt = lightTypes.find(lt => lt.typeName === node.light.typeName);
             if (lt) {
                 currentType = ELightType[lt.type];
             }
@@ -217,6 +215,9 @@ export class SettingsTree extends Tree<ITreeNode>
 }
 
 function copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
+    // TODO: handle different intesity effects per light
+    // TODO: memorize properties that are not in the target light for reference when reverting a light type change
+
     const sourceLight: CLight = sourceNode.light;
     const targetLight: CLight = targetNode.light;
 
@@ -238,5 +239,3 @@ function copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
                 ?.setValue(sourceProp.value);
         });
 }
-
-declare module './SettingsTaskView' { } // avoid isolatedModules complaint if any
