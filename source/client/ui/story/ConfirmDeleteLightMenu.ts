@@ -26,6 +26,8 @@ export default class ConfirmDeleteLightMenu extends Popup {
     protected firstConnected() {
         super.firstConnected();
         this.classList.add("sv-option-menu", "sv-confirm-delete-light");
+        this.setAttribute("tabindex", "-1");
+        requestAnimationFrame(() => this.focus());
     }
 
     protected closeDialog() {
@@ -38,7 +40,15 @@ export default class ConfirmDeleteLightMenu extends Popup {
     }
 
     protected onKeyDownMain(e: KeyboardEvent) {
-        if (e.code === "Escape") this.closeDialog();
+        if (e.code === "Escape" || e.key === "Escape") {
+            e.stopPropagation();
+            this.closeDialog();
+        }
+        else if (e.code === "Enter" || e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.confirm();
+        }
     }
 
     protected render() {
@@ -56,7 +66,7 @@ export default class ConfirmDeleteLightMenu extends Popup {
                     <div class="ff-text">${language.getUILocalizedString("Delete light")} '${this.lightName}'?</div>
                 </div>
                 <div class="ff-flex-row">
-                    <ff-button icon="trash" class="ff-button ff-control" text=${del} title=${del} @click=${this.confirm}></ff-button>
+                    <ff-button icon="trash" class="ff-button ff-control" text=${del} title=${del} @click=${this.confirm} autofocus></ff-button>
                     <div class="ff-flex-spacer"></div>
                     <ff-button icon="close" class="ff-close-button ff-control" text=${cancel} title=${cancel} @click=${this.closeDialog}></ff-button>
                 </div>
