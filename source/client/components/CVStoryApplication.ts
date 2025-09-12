@@ -115,7 +115,10 @@ export default class CVStoryApplication extends Component
 
                 if(storyMode !== ETaskMode.Standalone) {
                     this.assetWriter.putJSON(json, cvDocument.assetPath)
-                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
+                    .then(() =>{
+                        cvDocument.updateDocumentData(data);
+                        new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000)
+                    })
                     .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
                 }
                 else {

@@ -131,6 +131,10 @@ export default class CVDocument extends CRenderGraph
         super.dispose();
     }
 
+    public updateDocumentData(data: IDocument){
+        this._data = data;
+    }
+
     update(context)
     {
         super.update(context);
@@ -234,7 +238,7 @@ export default class CVDocument extends CRenderGraph
             this.outs.assetPath.setValue(assetPath);
             this.name = this.getMainComponent(CVAssetManager).getAssetName(assetPath);
         }
-        this._data = documentData;
+        this.updateDocumentData(documentData);
         delete (this._data.asset as any).id;
         console.debug("navigation :", this._data.setups[0].navigation);
     }
