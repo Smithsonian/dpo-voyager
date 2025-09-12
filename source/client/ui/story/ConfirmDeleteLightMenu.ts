@@ -25,7 +25,7 @@ export default class ConfirmDeleteLightMenu extends Popup {
 
     protected firstConnected() {
         super.firstConnected();
-        this.classList.add("sv-option-menu", "sv-confirm-delete-light");
+        this.classList.add("sv-option-menu", "sv-light-menu");
         this.setAttribute("tabindex", "-1");
         requestAnimationFrame(() => this.focus());
     }
@@ -57,7 +57,7 @@ export default class ConfirmDeleteLightMenu extends Popup {
         const cancel = language.getUILocalizedString("Cancel");
         const del = language.getUILocalizedString("Delete");
 
-        return html`<div class="sv-confirm-delete-light" role="dialog" aria-label=${title} @keydown=${(e: KeyboardEvent) => this.onKeyDownMain(e)}>
+        return html`<div class="sv-light-menu" role="dialog" aria-label=${title} @keydown=${(e: KeyboardEvent) => this.onKeyDownMain(e)}>
             <div class="ff-flex-column ff-fullsize" style="min-width:260px;">
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-title">${title}</div>

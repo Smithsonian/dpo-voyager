@@ -49,7 +49,7 @@ export default class CreateLightMenu extends Popup {
 
     protected firstConnected() {
         super.firstConnected();
-        this.classList.add("sv-option-menu", "sv-create-light-menu");
+        this.classList.add("sv-option-menu", "sv-light-menu");
     }
 
     protected renderLightTypeEntry(lightType: ELightType, index: number) {
@@ -98,7 +98,7 @@ export default class CreateLightMenu extends Popup {
         const language = this.language;
 
         return html`
-        <div class="sv-create-light-menu" role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
+        <div class="sv-light-menu" role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("Create Light")}</div>
