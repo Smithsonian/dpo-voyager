@@ -94,6 +94,10 @@ export default class CVEnvironment extends Component
             this.sceneNode.scene.environment = null;
         }
 
+        if(this.sceneNode.scene.background) {
+            this.sceneNode.scene.background = null;
+        }
+
         if(this._target) {
             this._target.texture?.dispose();
             this._target.texture = null;
@@ -113,48 +117,11 @@ export default class CVEnvironment extends Component
             this.addLightComponent();
         }
 
-        if(ins.enabled.changed) {
-            this.sceneNode.scene.environment = ins.enabled.value && ins.imageIndex.value == this._currentIdx ? this._target?.texture : null;
-            ins.imageIndex.set();
-        }
-
-        if(ins.imageIndex.changed && ins.enabled.value)
+        if(ins.imageIndex.changed && (ins.enabled.value || ins.visible.value))
         {
-            if(ins.imageIndex.value != this._currentIdx || this._target === null) 
-            {
-                try {
-                    if(this._pmremGenerator === null) {
-                        let renderer = this.renderer.views[0].renderer;
-                        if(!renderer) throw new Error(`No renderer found : can't generate environment`);
-                        this._pmremGenerator = new PMREMGenerator(this.renderer.views[0].renderer);
-                    }
-                }
-                catch(e) {
-                    console.error("Failed to compile environment map : ", e);
-                }
-
-                const mapName = this._imageOptions[ins.imageIndex.value];
-
-                if(images.includes(mapName)) {
-                    this._loadingCount++;
-                    this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                        this.updateEnvironmentMap(texture);
-                    });
-                }
-                else {
-                    this._loadingCount++;
-                    this.assetReader.getTexture(mapName).then(texture => {
-                        this.updateEnvironmentMap(texture);
-                    });
-                }
-                this._currentIdx = ins.imageIndex.value;
-            }
+            this.loadEnvironmentMap();
         }
-        else if(this._target && !ins.enabled.value){
-            this._target.dispose();
-            this._target = null;
-            this.sceneNode.scene.environment = null;            
-        }
+
         if(ins.intensity.changed) 
         {
             this.sceneNode.scene.environmentIntensity = ins.intensity.value;
@@ -165,11 +132,30 @@ export default class CVEnvironment extends Component
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
         }
+        if(ins.enabled.changed) {
+            if(ins.enabled.value) 
+            {
+                this.loadEnvironmentMap();
+            }
+            this.sceneNode.scene.environment = ins.enabled.value ? this._target?.texture : null;
+        }
         if(ins.visible.changed && this._loadingCount == 0)
         { 
-            this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
-            ins.visible.value && this.sceneNode.scene.background ? this.sceneNode.scene.background.needsUpdate = true : null;
+            if(ins.visible.value) 
+            {
+                this.loadEnvironmentMap();
+            }
+            this.sceneNode.scene.background = ins.visible.value ? this._target?.texture : null;
+            ins.visible.value && this.sceneNode.scene.background ? (this.sceneNode.scene.background as Texture).needsUpdate = true : null;
             this.background.ins.visible.setValue(!ins.visible.value);
+        }
+
+        // Optimization to dispose when map is not being used at all
+        if(this._target && !ins.enabled.value && !ins.visible.value){
+            this._target.dispose();
+            this._target = null;
+            this.sceneNode.scene.environment = null;
+            this.sceneNode.scene.background = null;           
         }
 
         return true;
@@ -201,6 +187,40 @@ export default class CVEnvironment extends Component
         };
     }
 
+    protected loadEnvironmentMap() {
+        const ins = this.ins;
+
+        if(ins.imageIndex.value != this._currentIdx || this._target === null) 
+        {
+            try {
+                if(this._pmremGenerator === null) {
+                    let renderer = this.renderer.views[0].renderer;
+                    if(!renderer) throw new Error(`No renderer found : can't generate environment`);
+                    this._pmremGenerator = new PMREMGenerator(this.renderer.views[0].renderer);
+                }
+            }
+            catch(e) {
+                console.error("Failed to compile environment map : ", e);
+            }
+
+            const mapName = this._imageOptions[ins.imageIndex.value];
+
+            if(images.includes(mapName)) {
+                this._loadingCount++;
+                this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
+                    this.updateEnvironmentMap(texture);
+                });
+            }
+            else {
+                this._loadingCount++;
+                this.assetReader.getTexture(mapName).then(texture => {
+                    this.updateEnvironmentMap(texture);
+                });
+            }
+            this._currentIdx = ins.imageIndex.value;
+        }
+    }
+
     protected updateEnvironmentMap(texture: Texture)
     {
         const ins = this.ins;
@@ -208,12 +228,12 @@ export default class CVEnvironment extends Component
         this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
         texture.dispose();
         texture = null;
-        this.sceneNode.scene.environment = this._target.texture;
+        this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
+        this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
         this.sceneNode.scene.environmentRotation = _euler;
         this.sceneNode.scene.backgroundRotation = _euler;
         this.renderer.forceRender();
         this._loadingCount--;
-        ins.visible.set();
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
