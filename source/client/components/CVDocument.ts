@@ -308,12 +308,14 @@ export default class CVDocument extends CRenderGraph
 
     isModified(components?: INodeComponents) :boolean{
         const current = this.deflateDocument(components);
+        
         const deepEqual = function (path:string, x: any, y: any) {
             if(typeof x === "number" && typeof y === "number" && Math.abs(x - y) <= 0.0000001){
                 return true;
             }else if (x === y) {
                 return true;
-            }
+            }else if(x == null) return y == null || typeof y === "number" && !Number.isFinite(y);
+            else if(y == null) return x == null || typeof x === "number" && !Number.isFinite(x);
             else if ((typeof x == "object" && x != null) && (typeof y == "object" && y != null)) {
                 if (Object.keys(x).length != Object.keys(y).length){
                     console.debug(`keys mismatch at ${path}: current${x.name?`(${x.name})`:""} has keys: [${Object.keys(x).join(", ")}] but source${x.name?`(${y.name})`:""} had: [${Object.keys(y).join(", ")}]`);
