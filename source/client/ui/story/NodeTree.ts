@@ -187,24 +187,24 @@ class NodeTree extends Tree<NVNode>
         CreateLightMenu
             .show(mainView, language)
             .then(([selectedType, name]) => {
-                this.createLightNode(parentNode, selectedType, name);
+                const lightNode = NodeTree.createLightNode(parentNode, selectedType, name);
+                parentNode.transform.addChild(lightNode.transform);
+                this.nodeProvider.activeNode = lightNode;
+
                 this.setExpanded(parentNode, true);
                 this.requestUpdate();
             })
             .catch(e => console.error("Error creating light:", e));
     }
 
-    protected createLightNode(parentNode: NVNode, newType: ELightType, newName: string): NVNode
-    {
+    static createLightNode(parentNode: NVNode, newType: ELightType, name: string): NVNode {
         const lightType = lightTypes.find(lt => lt.type === ELightType[newType].toString());
         if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
 
         const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
         lightNode.transform.createComponent<ICVLight>(lightType);
-        lightNode.name = newName;
+        lightNode.name = name;
 
-        parentNode.transform.addChild(lightNode.transform);
-        this.nodeProvider.activeNode = lightNode;
         return lightNode;
     }
 
@@ -226,3 +226,5 @@ class NodeTree extends Tree<NVNode>
             });
     }
 }
+
+export default NodeTree;

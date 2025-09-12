@@ -32,6 +32,7 @@ import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
 import { CLight, ELightType, ICVLight } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
+import NodeTree from "./NodeTree";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,8 +48,6 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
     }
 
     protected onLightTypeChange(e: Event) {
-        // TODO: extract and reuse NodeTree.createLightNode
-
         const select = e.target as HTMLSelectElement;
         const newType = parseInt(select.value) as ELightType;
         const oldNode: NVNode = this.activeNode as NVNode;
@@ -57,13 +56,9 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
         const oldType: string = ELightType[(oldNode.light.constructor as any).type];
         if (newType === (ELightType as any)[oldType]) return;
 
-        const lt = lightTypes.find(lt => lt.type === ELightType[newType].toString());
-        if (!lt) throw new Error(`unknown light type: ${ELightType[newType]}`);
-        
         const parent: NVNode = (oldNode.transform.parent as any)?.node as NVNode;
-        const newNode: NVNode = parent.graph.createCustomNode(parent);
-        newNode.transform.createComponent<ICVLight>(lt);
-        newNode.name = oldNode.name;
+        const newNode: NVNode = NodeTree.createLightNode(parent, newType, oldNode.name);
+
         copyLightProperties(oldNode, newNode);
 
         // Reconstruct original order of light nodes
