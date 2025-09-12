@@ -1,5 +1,6 @@
 import Popup, { customElement, html } from "@ff/ui/Popup";
 import CVLanguageManager from "../../components/CVLanguageManager";
+import { focusTrap, getFocusableElements } from "../../utils/focusHelpers";
 
 @customElement("sv-confirm-delete-light")
 export default class ConfirmDeleteLightMenu extends Popup {
@@ -26,28 +27,30 @@ export default class ConfirmDeleteLightMenu extends Popup {
     protected firstConnected() {
         super.firstConnected();
         this.classList.add("sv-option-menu", "sv-light-menu");
-        this.setAttribute("tabindex", "-1");
-        requestAnimationFrame(() => this.focus());
     }
 
-    protected closeDialog() {
+    protected firstUpdated(changedProperties) {
+        super.firstUpdated(changedProperties);
+
+        (this.getElementsByClassName("ff-button")[1] as HTMLElement).focus();
+    }
+    
+    close() {
         this.dispatchEvent(new CustomEvent("close"));
         this.remove();
     }
+
     protected confirm() {
         this.dispatchEvent(new CustomEvent("confirm"));
         this.remove();
     }
 
     protected onKeyDownMain(e: KeyboardEvent) {
-        if (e.code === "Escape" || e.key === "Escape") {
-            e.stopPropagation();
-            this.closeDialog();
+        if (e.code === "Escape") {
+            this.close();
         }
-        else if (e.code === "Enter" || e.key === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-            this.confirm();
+        else if (e.code === "Tab") {
+            focusTrap(getFocusableElements(this) as HTMLElement[], e);
         }
     }
 
@@ -68,7 +71,7 @@ export default class ConfirmDeleteLightMenu extends Popup {
                 <div class="ff-flex-row">
                     <ff-button icon="trash" class="ff-button ff-control" text=${del} title=${del} @click=${this.confirm} autofocus></ff-button>
                     <div class="ff-flex-spacer"></div>
-                    <ff-button icon="close" class="ff-close-button ff-control" text=${cancel} title=${cancel} @click=${this.closeDialog}></ff-button>
+                    <ff-button icon="close" class="ff-close-button ff-control" text=${cancel} title=${cancel} @click=${this.close}></ff-button>
                 </div>
             </div>
         </div>`;
