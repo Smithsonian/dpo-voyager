@@ -278,6 +278,107 @@ $color-component-meta-light: #d9d998;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// CREATE LIGHT MENU
+
+.sv-create-light-menu {
+  width: 300px;
+  max-width: 90%;
+  min-height: 180px;
+  padding: 12px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+
+  .ff-title {
+    padding: 0.4em 0 0.6em 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: $color-text-light;
+  }
+
+  .ff-flex-row {
+    margin-bottom: 12px;
+    align-items: center;
+    gap: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+      margin-top: 16px;
+      justify-content: space-between;
+    }
+  }
+
+  .ff-dropdown {
+    flex: 1 1 auto;
+    
+    select.ff-input {
+      width: 100%;
+      background: $color-background-darker;
+      color: $color-text-light;
+      border: 1px solid rgba($color-component-light-light, 0.4);
+      border-radius: 3px;
+      padding: 6px 8px;
+      font-size: 0.95em;
+
+      &:focus {
+        outline: none;
+        border-color: $color-component-light-light;
+        box-shadow: 0 0 0 1px rgba($color-component-light-light, 0.6);
+      }
+    }
+  }
+
+  .ff-label {
+    color: $color-text-light;
+    font-weight: 500;
+    min-width: 45px;
+  }
+
+  input.ff-input {
+    flex: 1 1 auto;
+    background: $color-background-darker;
+    color: $color-text-light;
+    border: 1px solid rgba($color-component-light-light, 0.4);
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 0.95em;
+
+    &:focus {
+      outline: none;
+      border-color: $color-component-light-light;
+      box-shadow: 0 0 0 1px rgba($color-component-light-light, 0.6);
+    }
+  }
+
+  .ff-button {
+    padding: 8px 16px;
+    border-radius: 3px;
+    font-size: 0.9em;
+
+    &.ff-control {
+      background: $color-component-light;
+      color: $color-background;
+      border: none;
+
+      &:hover {
+        background: lighten($color-component-light, 10%);
+      }
+    }
+
+    &.ff-close-button {
+      background: transparent;
+      color: $color-text;
+      border: 1px solid rgba($color-text, 0.3);
+
+      &:hover {
+        background: rgba($color-text, 0.1);
+        border-color: rgba($color-text, 0.5);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PANELS
 
 .sv-detail-view {
