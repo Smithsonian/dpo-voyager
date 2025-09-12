@@ -1,7 +1,7 @@
 import Popup, { customElement, html } from "@ff/ui/Popup";
-import CVLanguageManager from "client/components/CVLanguageManager";
-import { ELightType } from "client/components/lights/CVLight";
-import { focusTrap, getFocusableElements } from "client/utils/focusHelpers";
+import CVLanguageManager from "../../components/CVLanguageManager";
+import { ELightType } from "../../components/lights/CVLight";
+import { focusTrap, getFocusableElements } from "../../utils/focusHelpers";
 
 @customElement("sv-create-light-menu")
 export default class CreateLightMenu extends Popup {
