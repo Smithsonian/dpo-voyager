@@ -161,7 +161,7 @@ export default class CVStoryApplication extends Component
      */
     protected beforeUnload(event)
     {
-        event.returnValue = "x";
+        if(this.documentProvider.activeComponent.isModified()) event.returnValue = "x";
         //return "x";
     }
 }
