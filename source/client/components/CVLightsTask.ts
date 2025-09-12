@@ -35,10 +35,7 @@ export default class CVLightsTask extends CVTask {
     static readonly icon: string = "bulb";
 
     protected static readonly ins = {
-        create: types.Event("Light.Create"),
         delete: types.Event("Light.Delete"),
-        name: types.String("Light.Name", ""),
-        type: types.Enum("Light.Type", ELightType, ELightType.directional),
     };
     protected static readonly outs = {
     };
@@ -63,55 +60,19 @@ export default class CVLightsTask extends CVTask {
     update(context: IUpdateContext) {
         const { ins } = this;
 
-        if (ins.create.changed) {
-            const mainView: MainView = document.getElementsByTagName('voyager-story')[0] as MainView;
-            const activeDoc = this.getMainComponent(CVDocumentProvider).activeComponent;
-
-            CreateLightMenu
-                .show(mainView, activeDoc.setup.language)
-                .then(([selectedType, name]) => {
-                    this.createLightNode(selectedType, name);
-                    return true;
-                })
-                .catch(e => console.error("Error creating light:", e));
-        }
+    // Light creation handled via Navigator (Plus button on Lights node). Remove create event handling here.
 
         const activeNode: NVNode | undefined = this.nodeProvider.activeNode;
-        if (activeNode?.light) {
-            if (ins.name.changed && activeNode.name !== ins.name.value) {
-                activeNode.name = ins.name.value;
-                return true;
-            }
+    if (activeNode?.light) {
             if (ins.delete.changed) {
                 activeNode.dispose();
-                return true;
-            }
-
-            const lightType: string = ELightType[(activeNode.light.constructor as any).type];
-            if (ins.type.changed && ins.type.value !== lightType as unknown) {
-                const newNode: NVNode = this.createLightNode(ins.type.value, activeNode.name);
-                CVLightsTask.copyLightProperties(activeNode, newNode);
-                activeNode.dispose();
-                this.nodeProvider.activeNode = newNode;
                 return true;
             }
         }
         return false;
     }
 
-    protected createLightNode(newType: ELightType, newName: string): NVNode {
-        const lightType = lightTypes.find(lt => lt.type === ELightType[newType].toString());
-        if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
-
-        const parentNode: NVNode = this.system.findNodeByName("Lights");
-        const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
-        lightNode.transform.createComponent<ICVLight>(lightType);
-        lightNode.name = newName;
-
-        parentNode.transform.addChild(lightNode.transform);
-
-        return lightNode;
-    }
+    // createLightNode moved to NodeTree (Navigator) for Plus button creation workflow
 
     protected static copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
         const sourceLight: CLight = sourceNode.light;

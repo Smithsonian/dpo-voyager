@@ -25,7 +25,6 @@ import CVToursTask from "../components/CVToursTask";
 import CVOverlayTask from "../components/CVOverlayTask";
 import CVAudioTask from "../components/CVAudioTask";
 import CVActionsTask from "client/components/CVActionsTask";
-import CVLightsTask from "client/components/CVLightsTask";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +42,6 @@ export default {
         CVAudioTask,
         CVActionsTask,
         CVSettingsTask,
-        CVLightsTask,
     ],
     [ETaskMode.QC]: [
         CVPoseTask,
@@ -58,7 +56,6 @@ export default {
         CVAudioTask,
         CVActionsTask,
         CVSettingsTask,
-        CVLightsTask,
     ],
     [ETaskMode.Expert]: [
         CVPoseTask,
@@ -71,7 +68,6 @@ export default {
         CVAudioTask,
         CVActionsTask,
         CVSettingsTask,
-        CVLightsTask,
     ],
     [ETaskMode.Standalone]: [
         CVPoseTask,
@@ -84,6 +80,5 @@ export default {
         CVAudioTask,
         CVActionsTask,
         CVSettingsTask,
-        CVLightsTask,
     ]
 }

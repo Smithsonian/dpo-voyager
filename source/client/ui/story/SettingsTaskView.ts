@@ -24,8 +24,13 @@ import "@ff/scene/ui/PropertyView";
 import { customElement, property, html } from "@ff/ui/CustomElement";
 import Tree from "@ff/ui/Tree";
 
+import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
+import CTransform from "@ff/scene/components/CTransform";
+import { Property as SceneUIProperty } from "@ff/scene/ui/PropertyField";
+import { lightTypes } from "../../applications/coreTypes";
 import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
+import { CLight, ELightType, ICVLight } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +38,45 @@ import NVNode from "../../nodes/NVNode";
 @customElement("sv-settings-task-view")
 export default class SettingsTaskView extends TaskView<CVSettingsTask>
 {
+    protected onLightNameInput(e: InputEvent) {
+        const input = e.target as HTMLInputElement;
+        if (this.activeNode) {
+            this.activeNode.name = input.value;
+            this.requestUpdate();
+        }
+    }
+
+    protected onLightTypeChange(e: Event) {
+        // TODO: extract and reuse NodeTree.createLightNode
+
+        const select = e.target as HTMLSelectElement;
+        const newType = parseInt(select.value) as ELightType;
+        const oldNode: NVNode = this.activeNode as NVNode;
+        if (!oldNode || !oldNode.light) return;
+
+        const oldType: string = ELightType[(oldNode.light.constructor as any).type];
+        if (newType === (ELightType as any)[oldType]) return;
+
+        const lt = lightTypes.find(lt => lt.type === ELightType[newType].toString());
+        if (!lt) throw new Error(`unknown light type: ${ELightType[newType]}`);
+        
+        const parent: NVNode = (oldNode.transform.parent as any)?.node as NVNode;
+        const newNode: NVNode = parent.graph.createCustomNode(parent);
+        newNode.transform.createComponent<ICVLight>(lt);
+        newNode.name = oldNode.name;
+        copyLightProperties(oldNode, newNode);
+
+        // Reconstruct original order of light nodes
+        const transforms: CTransform[] = parent.transform.children.slice();
+        const reordered: CTransform[] = transforms.map(t => t === oldNode.transform ? newNode.transform : t);
+        transforms.forEach(t => { parent.transform.removeChild(t); });        
+        reordered.forEach(t => { parent.transform.addChild(t); });
+
+        oldNode.dispose();
+        this.nodeProvider.activeNode = newNode;
+        this.requestUpdate();
+    }
+
     protected render()
     {
         if(!this.activeDocument) {
@@ -44,8 +88,28 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
             return html`<div class="sv-placeholder">${languageManager.getUILocalizedString("Please select a node to display its properties.")}</div>`;
         }
 
-        return html`<div class="ff-flex-item-stretch ff-scroll-y">
-            <sv-settings-tree .node=${node}></sv-settings-tree>
+        const light = node.light as CLight;
+
+        let currentType: ELightType = null;
+        if (node.light) {
+            const lt = lightTypes.find(lt => lt.typeName === light.typeName);
+            if (lt) {
+                currentType = ELightType[lt.type];
+            }
+        }
+
+        return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
+            ${node.light ? html`<div class="ff-group" style="padding:4px 8px;">
+                <div class="ff-flex-row" style="align-items:center; gap:6px;">
+                    <label class="ff-label">${languageManager.getUILocalizedString("Name")}</label>
+                    <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
+                    <label class="ff-label">${languageManager.getUILocalizedString("Type")}</label>
+                    <select class="ff-input" .value=${currentType ?? 0} @change=${(e: Event) => this.onLightTypeChange(e)}>
+                        ${Object.keys(ELightType).filter(key => typeof (ELightType as any)[key] === "number").map(key => html`<option value=${(ELightType as any)[key]}>${key}</option>`)}
+                    </select>
+                </div>
+            </div>` : null}
+            <sv-settings-tree class="ff-flex-item-stretch" .node=${node}></sv-settings-tree>
         </div>`;
     }
 
@@ -156,3 +220,28 @@ export class SettingsTree extends Tree<ITreeNode>
         return root.children;
     }
 }
+
+function copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
+    const sourceLight: CLight = sourceNode.light;
+    const targetLight: CLight = targetNode.light;
+
+    (sourceLight as any).settingProperties
+        .forEach((sourceProp: SceneUIProperty) => {
+            targetLight.ins.properties
+                .find(targetProp => targetProp.key === sourceProp.key)
+                ?.setValue(sourceProp.value);
+        });
+
+    if (sourceLight instanceof CDirectionalLight) {
+        targetLight.ins.setValues({ "intensity": sourceLight.light.intensity / Math.PI });
+    }
+
+    (sourceLight.transform as any).settingProperties
+        .forEach((sourceProp: SceneUIProperty) => {
+            targetNode.transform.ins.properties
+                .find(targetProp => targetProp.key === sourceProp.key)
+                ?.setValue(sourceProp.value);
+        });
+}
+
+declare module './SettingsTaskView' { } // avoid isolatedModules complaint if any

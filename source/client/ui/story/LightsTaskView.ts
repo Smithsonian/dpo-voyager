@@ -33,25 +33,10 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
     }
 
     protected render() {
-        const ins = this.task.ins;
-        const selectedNode = this.nodeProvider.activeNode;
-
-        if (selectedNode?.light) {
-            ins.name.setValue(selectedNode.name);
-            const lightType = lightTypes.find(lightType => lightType.typeName === selectedNode.light.typeName);
-            if (!lightType) throw new Error(`Unsupported light type: '${lightType.typeName}'`);
-
-            ins.type.setValue(ELightType[lightType.type]);
-        }
-
-        // TODO move light properties from Settings Task here?
-        const detailView = selectedNode?.light ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
-            <sv-property-view .property=${ins.name}></sv-property-view>    
-            <sv-property-view .property=${ins.type}></sv-property-view>
-        </div>` : null;
+    const selectedNode = this.nodeProvider.activeNode;
+    const detailView = null; // Name & type moved to Settings task
 
         return html`<div class="sv-commands">
-            <ff-button text="Create" icon="create" @click=${this.onClickCreate}></ff-button>
             <ff-button text="Delete" icon="trash" ?disabled=${!selectedNode?.light} @click=${this.onClickDelete}></ff-button>
         </div>
         <div class="ff-flex-item-stretch">
@@ -63,11 +48,5 @@ export default class LightsTaskView extends TaskView<CVLightsTask> {
         </div>`;
     }
 
-    protected onClickCreate() {
-        this.task.ins.create.set();
-    }
-
-    protected onClickDelete() {
-        this.task.ins.delete.set();
-    }
+    protected onClickDelete() { this.task.ins.delete.set(); }
 }
