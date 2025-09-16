@@ -92,18 +92,20 @@ export default class CVNode extends CTransform
 
     toData(): INode
     {
-        this.object3D.matrix.decompose(_vec3a, _quat, _vec3b);
-
         const data: Partial<INode> = {};
-
-        if (_vec3a.x !== 0 || _vec3a.y !== 0 || _vec3a.z !== 0) {
-            data.translation = _vec3a.toArray();
+        const {position, rotation, scale} = this.ins;
+        if (!position.hasInLinks() && position.value.findIndex(n=> n != 0) !==-1) {
+            data.translation = position.value.slice();
         }
-        if (_quat.x !== 0 || _quat.y !== 0 || _quat.z !== 0 || _quat.w !== 1) {
+        if (!rotation.hasInLinks() && rotation.value.findIndex(n=> n != 0) !==-1) {
+            _vec3a.fromArray(rotation.value as any);
+            _vec3a.multiplyScalar(MathUtils.DEG2RAD);
+            _euler.setFromVector3(_vec3a);
+            _quat.setFromEuler(_euler);
             data.rotation = _quat.toArray();
         }
-        if (_vec3b.x !== 1 || _vec3b.y !== 1 || _vec3b.z !== 1) {
-            data.scale = _vec3b.toArray();
+        if (!scale.hasInLinks() && scale.value.findIndex(n=> n != 1) !==-1) {
+            data.scale = scale.value.slice();
         }
 
         return data as INode;

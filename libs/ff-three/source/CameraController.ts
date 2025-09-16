@@ -246,9 +246,6 @@ export default class CameraController implements IManip
             camera.updateProjectionMatrix();
         }
 
-        threeMath.composeOrbitMatrix(_vec3a, _vec3b, object.matrix);
-        object.matrixWorldNeedsUpdate = true;
-
         return true;
     }
 

@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three";
+import { Box3, Euler, Matrix4, Vector3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
 import CameraController, { EControllerMode } from "@ff/three/CameraController";
 import { IKeyboardEvent, IPointerEvent, ITriggerEvent } from "@ff/scene/RenderView";
-import CScene, { IRenderContext } from "@ff/scene/components/CScene";
+import CScene, { IActiveCameraEvent, IRenderContext } from "@ff/scene/components/CScene";
 import CTransform, { ERotationOrder } from "@ff/scene/components/CTransform";
 import { EProjection } from "@ff/three/UniversalCamera";
+import math from "@ff/core/math";
+import threeMath from "@ff/three/math";
 
 import { ENavigationType, TNavigationType, INavigation } from "client/schema/setup";
 
@@ -46,6 +48,10 @@ _orientationPresets[EViewPreset.Back] = [ 0, 180, 0 ];
 _orientationPresets[EViewPreset.Top] = [ -90, 0, 0 ];
 _orientationPresets[EViewPreset.Bottom] = [ 90, 0, 0 ];
 
+
+const _matrix = new Matrix4();
+const _vec3a = new Vector3();
+const _eul = new Euler();
 
 const _replaceNull = function(vector: number[], replacement: number)
 {
@@ -89,7 +95,13 @@ export default class CVOrbitNavigation extends CObject3D
         promptActive: types.Boolean("Navigation.PromptActive", false)
     };
 
+    protected static readonly outs = {
+        position: types.Vector3("Current.Position"),
+        rotation: types.Vector3("Current.Rotation"),
+    }
+
     ins = this.addInputs<CObject3D, typeof CVOrbitNavigation.ins>(CVOrbitNavigation.ins);
+    outs = this.addOutputs<CObject3D, typeof CVOrbitNavigation.outs>(CVOrbitNavigation.outs);
 
     private _controller = new CameraController();
     private _scene: CScene = null;
@@ -150,6 +162,8 @@ export default class CVOrbitNavigation extends CObject3D
 
         this.assetManager.outs.completed.on("value", this.onLoadingCompleted, this);
         this.sceneNode.outs.boundingRadius.on("value", this.onBoundsChange, this);
+
+        this.scene.on<IActiveCameraEvent>("active-camera", this.onActiveCamera, this);
     }
 
     dispose()
@@ -160,6 +174,9 @@ export default class CVOrbitNavigation extends CObject3D
         this.system.off<IPointerEvent>(["pointer-down", "pointer-up", "pointer-move"], this.onPointer, this);
         this.system.off<ITriggerEvent>("wheel", this.onTrigger, this);
         this.system.off<IKeyboardEvent>("keydown", this.onKeyboard, this);
+
+
+        this.scene.off<IActiveCameraEvent>("active-camera", this.onActiveCamera, this);
 
         super.dispose();
     }
@@ -337,14 +354,16 @@ export default class CVOrbitNavigation extends CObject3D
             if(!ins.isInUse.value && this._hasChanged) {
                 ins.isInUse.setValue(true);
             }
+            _vec3a.copy(controller.orbit).multiplyScalar(math.DEG2RAD);
+            threeMath.composeOrbitMatrix(_vec3a, controller.offset, _matrix);
+            _vec3a.setFromMatrixPosition(_matrix);
+            _vec3a.toArray(this.outs.position.value);
+            this.outs.position.set();
 
-            if (transform) {
-                transform.setPropertiesFromMatrix();
-            }
-            else {
-                cameraComponent.setPropertiesFromMatrix();
-            }
-
+            _eul.setFromRotationMatrix(_matrix);
+            _vec3a.setFromEuler(_eul);
+            _vec3a.multiplyScalar(math.RAD2DEG).toArray(this.outs.rotation.value);
+            this.outs.rotation.set();
             return true;
         }
 
@@ -508,5 +527,19 @@ export default class CVOrbitNavigation extends CObject3D
     protected onBoundsChange()
     {
         this._controller.boundsRadius = this.sceneNode.outs.boundingRadius.value;
+    }
+
+
+    protected onActiveCamera({previous, next}: IActiveCameraEvent)
+    {
+        if(previous){
+            previous.transform.ins.position.unlinkFrom(this.outs.position);
+            previous.transform.ins.rotation.unlinkFrom(this.outs.rotation);
+        }
+
+        if(next){
+            next.transform.ins.position.linkFrom(this.outs.position);
+            next.transform.ins.rotation.linkFrom(this.outs.rotation);
+        }
     }
 }
