@@ -126,6 +126,13 @@ ff-tab-header, ff-dock-panel-header {
     padding: 4px 10px;
     font-size: 13px;
 
+    &.ff-info,  &.ff-success, &.ff-warning , &.ff-error {
+      .ff-icon{
+        fill: currentColor;
+      }
+    }
+    
+
     .ff-icon {
       height: 20px;
       fill: common.$color-icon;

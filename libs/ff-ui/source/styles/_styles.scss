@@ -465,6 +465,11 @@ button, input {
       fill: $color-icon-disabled;
     }
   }
+
+  &.ff-info { color: $color-info; }
+  &.ff-success { color: $color-success; }
+  &.ff-warning { color: $color-warning; }
+  &.ff-error { color: $color-error; }
 }
 
 .ff-menu {

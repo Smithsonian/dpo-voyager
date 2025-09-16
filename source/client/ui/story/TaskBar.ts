@@ -26,6 +26,7 @@ import CVStoryApplication from "../../components/CVStoryApplication";
 import CVTaskProvider, { ETaskMode, IActiveTaskEvent, ITaskSetEvent } from "../../components/CVTaskProvider";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVLanguageManager from "client/components/CVLanguageManager";
+import CVDocumentProvider, { IActiveDocumentEvent } from "client/components/CVDocumentProvider";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +53,10 @@ export default class TaskBar extends SystemView
         return this.system.getComponent(CVLanguageManager);
     }
 
+    protected get documentProvider() {
+        return this.system.getMainComponent(CVDocumentProvider);
+    }
+
     protected firstConnected()
     {
         this.classList.add("sv-task-bar");
@@ -62,6 +67,8 @@ export default class TaskBar extends SystemView
         this.taskProvider.on<ITaskSetEvent>("scoped-components", this.onUpdate, this);
         this.taskProvider.on<IActiveTaskEvent>("active-component", this.onUpdate, this);
         this.language.outs.uiLanguage.on("value", this.onUpdate, this);
+        this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
+        this.onActiveDocument({type: "active-component", next: this.documentProvider.activeComponent, previous: undefined})
     }
 
     protected disconnected()
@@ -69,6 +76,7 @@ export default class TaskBar extends SystemView
         this.taskProvider.off<ITaskSetEvent>("scoped-components", this.onUpdate, this);
         this.taskProvider.off<IActiveTaskEvent>("active-component", this.onUpdate, this);
         this.language.outs.uiLanguage.on("value", this.onUpdate, this);
+        this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onActiveDocument, this);
     }
 
     protected render()
@@ -81,6 +89,8 @@ export default class TaskBar extends SystemView
         const exitButtonVisible = taskMode !== ETaskMode.Standalone;
         const languageManager = this.language;
         const saveName = languageManager.getUILocalizedString(taskMode !== ETaskMode.Standalone ? "Save" : "Download");
+        //Another option would be to put the check on a timer and then just listen to value changes on CVDocument.outs.dirty
+        const documentIsDirty = this.documentProvider.activeComponent.isModified();
         return html`
             <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
             <div class="sv-mode ff-text">${taskModeText}</div>
@@ -93,11 +103,22 @@ export default class TaskBar extends SystemView
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
             <div class="ff-flex-row ff-group">
-                <ff-button text=${saveName} icon="save" @click=${this.onClickSave}></ff-button>
+                <ff-button class="ff-button ff-control${documentIsDirty?" ff-warning":""}" text=${saveName} title="${languageManager.getUILocalizedString(documentIsDirty?"Document has pending changes":"Document has no pending changes")}" icon="save" @click=${this.onClickSave}></ff-button>
                 ${downloadButtonVisible ? html`<ff-button text="${languageManager.getUILocalizedString("Download")}" icon="download" @click=${this.onClickDownload}></ff-button>` : null}
                 ${exitButtonVisible ? html`<ff-button text="${languageManager.getUILocalizedString("Exit")}" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
             </div>
         `;
+    }
+
+    protected onActiveDocument({previous, next}: IActiveDocumentEvent)
+    {
+        console.debug("On Active Document");
+        if (previous) {
+            previous.outs.dirty.off("value", this.onUpdate, this);
+        }
+        if (next) {
+            next.outs.dirty.on("value", this.onUpdate, this);
+        }
     }
 
     protected onClickTask(event: IButtonClickEvent)
