@@ -202,6 +202,46 @@ $color-component-meta-light: #d9d998;
         height: 1.1em;
         margin: 2px 4px 0 0;
       }
+      .sv-add-light-btn.ff-button {
+        width: 1.6em; // square button roughly same height as line-height
+        height: 1.6em;
+        padding: 0;
+        margin-left: 4px;
+        display: inline-flex;
+        align-items: center;
+  justify-content: center;
+        background: transparent;
+        border: 1px solid transparent;
+        --ff-button-bg: transparent;
+        --ff-button-color: $color-component-light-light;
+        .ff-icon {
+          margin: 0;
+          height: 1em;
+        }
+        &:hover {
+          background: rgba($color-component-light-light, 0.15);
+          border-color: rgba($color-component-light-light, 0.3);
+        }
+        &:active {
+          background: rgba($color-component-light-light, 0.25);
+        }
+      }
+      .sv-delete-light-btn.ff-button {
+        width: 1.6em;
+        height: 1.6em;
+        padding: 0;
+        margin-left: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: inherit;
+        border: none;
+        --ff-button-bg: transparent;
+        --ff-button-color: $color-component-light-light;
+        .ff-icon { margin: 0; height: 1em; }
+        &:hover { filter: brightness(1.15); }
+        &:active { filter: brightness(0.9); }
+      }
       .sv-icon-scene {
         fill: $color-component-scene-light;
       }
@@ -220,6 +260,122 @@ $color-component-meta-light: #d9d998;
     }
     .ff-content {
       margin-left: 14px; // indent
+    }
+  }
+}
+
+.sv-light-name-input {
+  flex: 1 1 auto;
+  background: #000;
+  color: $color-text-light;
+  text-align: right;
+  padding: 2px 6px;
+  font-weight: 500;
+  &::placeholder { color: rgba($color-text-light, 0.35); }
+  &:focus {
+    outline: none;
+    border-color: $color-component-light-light;
+    box-shadow: 0 0 0 1px rgba($color-component-light-light, 0.6);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Style for Light menus
+
+.sv-light-menu {
+  width: 300px;
+  max-width: 90%;
+  min-height: 180px;
+  padding: 12px;
+  background: $color-background;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+
+  .ff-title {
+    padding: 0.4em 0 0.6em 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: $color-text-light;
+  }
+
+  .ff-flex-row {
+    margin-bottom: 12px;
+    align-items: center;
+    gap: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+      margin-top: 16px;
+      justify-content: space-between;
+    }
+  }
+
+  .ff-dropdown {
+    flex: 1 1 auto;
+    
+    select.ff-input {
+      width: 100%;
+      background: $color-background-darker;
+      color: $color-text-light;
+      border: 1px solid rgba($color-component-light-light, 0.4);
+      border-radius: 3px;
+      padding: 6px 8px;
+      font-size: 0.95em;
+
+      &:focus {
+        outline: none;
+        border-color: $color-component-light-light;
+        box-shadow: 0 0 0 1px rgba($color-component-light-light, 0.6);
+      }
+    }
+  }
+
+  .ff-label {
+    color: $color-text-light;
+    font-weight: 500;
+    min-width: 45px;
+  }
+
+  input.ff-input {
+    flex: 1 1 auto;
+    background: $color-background-darker;
+    color: $color-text-light;
+    border: 1px solid rgba($color-component-light-light, 0.4);
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 0.95em;
+
+    &:focus {
+      outline: none;
+      border-color: $color-component-light-light;
+      box-shadow: 0 0 0 1px rgba($color-component-light-light, 0.6);
+    }
+  }
+
+  .ff-button {
+    padding: 8px 16px;
+    border-radius: 3px;
+    font-size: 0.9em;
+
+    &.ff-control {
+      background: $color-component-light;
+      color: $color-background;
+      border: none;
+
+      &:hover {
+        background: lighten($color-component-light, 10%);
+      }
+    }
+
+    &.ff-close-button {
+      background: transparent;
+      color: $color-text;
+      border: 1px solid rgba($color-text, 0.3);
+
+      &:hover {
+        background: rgba($color-text, 0.1);
+        border-color: rgba($color-text, 0.5);
+      }
     }
   }
 }
