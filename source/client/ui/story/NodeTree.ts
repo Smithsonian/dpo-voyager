@@ -19,10 +19,15 @@ import System from "@ff/graph/System";
 
 import Tree, { customElement, property, PropertyValues, html } from "@ff/ui/Tree";
 
+import { lightTypes } from "../../applications/coreTypes";
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
+import CVLanguageManager from "../../components/CVLanguageManager";
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
+import { ELightType, ICVLight } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
+import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
+import CreateLightMenu from "./CreateLightMenu";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,14 +87,20 @@ class NodeTree extends Tree<NVNode>
     protected renderNodeHeader(node: NVNode)
     {
         let icons = [];
+        let buttons = [];
+
         if (node.scene) {
             icons.push(html`<ff-icon class="sv-icon-scene" name=${node.scene.icon}></ff-icon>`);
         }
         if (node.model) {
             icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
         }
-        if (node.light) {
+        if (node.name === "Lights") {
+            buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
+        } else if (node.light) {
+            // TODO: check this is NOT an environment light (which should not be deletable)
             icons.push(html`<ff-icon class="sv-icon-light" name=${node.light.icon}></ff-icon>`);
+            buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
         }
         if (node.camera) {
             icons.push(html`<ff-icon class="sv-icon-camera" name=${node.camera.icon}></ff-icon>`);
@@ -97,9 +108,8 @@ class NodeTree extends Tree<NVNode>
         if (node.meta) {
             icons.push(html`<ff-icon class="sv-icon-meta" name=${node.meta.icon}></ff-icon>`);
         }
-
-
-        return html`${icons}<div class="ff-text ff-ellipsis">${node.displayName}</div>`;
+        
+        return html`${icons}<div class="ff-text ff-ellipsis sv-node-label" style="flex:1 1 auto;">${node.displayName}</div>${buttons}`;
     }
 
     protected isNodeSelected(node: NVNode): boolean
@@ -164,4 +174,55 @@ class NodeTree extends Tree<NVNode>
             event.next.on("change", this.onUpdate, this);
         }
     }
+
+    protected onClickAddLight(event: MouseEvent, parentNode: NVNode)
+    {
+        event.stopPropagation();
+
+        const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
+        const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
+
+        CreateLightMenu
+            .show(mainView, language)
+            .then(([selectedType, name]) => {
+                const lightNode = NodeTree.createLightNode(parentNode, selectedType, name);
+                parentNode.transform.addChild(lightNode.transform);
+                this.nodeProvider.activeNode = lightNode;
+
+                this.setExpanded(parentNode, true);
+                this.requestUpdate();
+            })
+            .catch(e => console.error("Error creating light:", e));
+    }
+
+    static createLightNode(parentNode: NVNode, newType: ELightType, name: string): NVNode {
+        const lightType = lightTypes.find(lt => lt.type === ELightType[newType].toString());
+        if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
+
+        const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
+        lightNode.transform.createComponent<ICVLight>(lightType);
+        lightNode.name = name;
+
+        return lightNode;
+    }
+
+    protected onClickDeleteLight(event: MouseEvent, node: NVNode) {
+        event.stopPropagation();
+        if (!node.light) return;
+        const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
+        const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
+
+        ConfirmDeleteLightMenu.show(mainView, language, node.name)
+            .then(confirmed => {
+                if (confirmed) {
+                    if (this.nodeProvider.activeNode === node) {
+                        this.nodeProvider.activeNode = node.transform.parent?.node as NVNode;
+                    }
+                    node.dispose();
+                    this.requestUpdate();
+                }
+            });
+    }
 }
+
+export default NodeTree;
