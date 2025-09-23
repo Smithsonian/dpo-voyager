@@ -87,14 +87,20 @@ class NodeTree extends Tree<NVNode>
     protected renderNodeHeader(node: NVNode)
     {
         let icons = [];
+        let buttons = [];
+
         if (node.scene) {
             icons.push(html`<ff-icon class="sv-icon-scene" name=${node.scene.icon}></ff-icon>`);
         }
         if (node.model) {
             icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
         }
-        if (node.light) {
+        if (node.name === "Lights") {
+            buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
+        } else if (node.light) {
+            // TODO: check this is NOT an environment light (which should not be deletable)
             icons.push(html`<ff-icon class="sv-icon-light" name=${node.light.icon}></ff-icon>`);
+            buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
         }
         if (node.camera) {
             icons.push(html`<ff-icon class="sv-icon-camera" name=${node.camera.icon}></ff-icon>`);
@@ -102,16 +108,8 @@ class NodeTree extends Tree<NVNode>
         if (node.meta) {
             icons.push(html`<ff-icon class="sv-icon-meta" name=${node.meta.icon}></ff-icon>`);
         }
-
-        var addButton = null;
-        var deleteButton = null;
-        if (node.name === "Lights") {
-            addButton = html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`;
-        } else if (node.light) {
-            deleteButton = html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`;
-        }
         
-        return html`${icons}<div class="ff-text ff-ellipsis sv-node-label" style="flex:1 1 auto;">${node.displayName}</div>${addButton}${deleteButton}`;
+        return html`${icons}<div class="ff-text ff-ellipsis sv-node-label" style="flex:1 1 auto;">${node.displayName}</div>${buttons}`;
     }
 
     protected isNodeSelected(node: NVNode): boolean
