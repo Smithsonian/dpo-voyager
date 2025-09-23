@@ -24,7 +24,6 @@ import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
 import CLight from "@ff/scene/components/CLight";
-import CVEnvironment from "client/components/CVEnvironment";
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -27,6 +27,7 @@ import CVBackground from "./CVBackground";
 import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import CVModel2, { IModelLoadEvent } from "./CVModel2";
 
 
 const images = ["studio_small_08_1k.hdr","spruit_sunrise_1k_HDR.hdr"];
@@ -42,7 +43,7 @@ export default class CVEnvironment extends Component
 
     protected static readonly envIns = {
         imageIndex: types.Integer("Environment.MapIndex", { preset: 0, options: images.map( function(item, index) {return index.toString();}) }),
-        dirty: types.Event("Environment.Dirty"),
+        initialize: types.Event("Environment.Init"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
         visible: types.Boolean("Environment.Visible", false),
@@ -56,6 +57,8 @@ export default class CVEnvironment extends Component
     private _currentIdx = 0;
     private _imageOptions: string[] = images;
     private _loadingCount = 0;
+    private _isLegacy = false;      // flag if scene is legacy (no loaded env light)
+    private _isLegacyRefl = false;  // fkag if scene is legacy and has reflective material
 
     get settingProperties() {
         return [
@@ -83,10 +86,12 @@ export default class CVEnvironment extends Component
     {
         super.create();
         this.system.components.on(CVMeta, this.onMetaComponent, this);
+        this.graph.components.on(CVModel2, this.onModelComponent, this);
     }
 
     dispose()
     {
+        this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.system.components.off(CVMeta, this.onMetaComponent, this);
         if(this.sceneNode.scene.environment){
             //Ensure scene does not keep a reference to our texture
@@ -113,8 +118,12 @@ export default class CVEnvironment extends Component
     {
         const ins = this.ins;
 
-        if(!this.graph.hasComponent(CVEnvironmentLight)) {
-            this.addLightComponent();
+        if(ins.initialize.changed) {
+            this._isLegacy = false;
+            this._isLegacyRefl = false;
+            if(!this.graph.hasComponent(CVEnvironmentLight)) {
+                this.addLightComponent(false);
+            }
         }
 
         if(ins.imageIndex.changed && (ins.enabled.value || ins.visible.value))
@@ -254,11 +263,44 @@ export default class CVEnvironment extends Component
         }
     }
     
-    protected addLightComponent() {
+    protected addLightComponent(enabled: boolean) {
         const lightNode = this.graph.findNodeByName("Lights") as NVNode;
         const childNode = lightNode.graph.createCustomNode(lightNode as NVNode) as NVNode;
         const envLight = childNode.transform.createComponent(CVEnvironmentLight);
-        envLight.ins.enabled.setValue(false);
+        envLight.ins.enabled.setValue(enabled);
         lightNode.transform.addChild(childNode.transform);
+        this._isLegacy = true;
+    }
+
+    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<IModelLoadEvent>("model-load", () => this.legacyCheck(component), this);
+        }
+        else if (event.remove) {
+            component.off<IModelLoadEvent>("model-load", () => this.legacyCheck(component), this);
+        }
+    }
+
+    protected legacyCheck(model: CVModel2)
+    {
+        if(!this._isLegacy || this._isLegacyRefl) {
+            return;
+        }
+
+        // For backwards compatibility, always enable env light if a roughness or metalness map is present 
+        model.object3D.traverse(object => {
+            const material = object["material"];
+            if(material && (material.roughnessMap || material.metalnessMap)) {
+                // Hack to make sure UI updates appropriately
+                const envLight = this.graph.getComponent(CVEnvironmentLight);
+                envLight.transform.dispose();
+                
+                this.addLightComponent(true);
+                this._isLegacyRefl = true;
+            }
+        });
     }
 }
