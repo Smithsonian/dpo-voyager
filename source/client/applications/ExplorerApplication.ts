@@ -386,6 +386,9 @@ Version: ${ENV_VERSION}
         if(props.lang) {
             this.setLanguage(props.lang);
         }
+
+        // Make sure environment is properly initialized
+        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.environment.ins.initialize.set();
     }
 
     ////////////////////////////////////////////

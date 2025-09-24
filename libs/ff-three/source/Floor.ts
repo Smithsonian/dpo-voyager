@@ -7,35 +7,53 @@
 
 import {
     Mesh,
-    MeshPhongMaterial,
-    MeshPhongMaterialParameters,
     PlaneGeometry,
     MathUtils,
-    UniformsUtils,
-    ShaderLib,
+    MeshStandardMaterial,
 } from "three";
-
-import { Dictionary } from "@ff/core/types";
-//@ts-ignore
-import fragmentShader from "./shaders/floorPhongShader.frag";
-//@ts-ignore
-import vertexShader from "./shaders/floorPhongShader.vert";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default class Floor extends Mesh
 {
     geometry: PlaneGeometry;
-    material: FloorMaterial;
+    material: MeshStandardMaterial;
 
     constructor()
     {
         super(
             new PlaneGeometry(2, 2, 1, 1),
-            new FloorMaterial()
+            new MeshStandardMaterial({transparent: true})
         );
 
         this.geometry.rotateX(-90 * MathUtils.DEG2RAD);
+
+        this.material.onBeforeCompile = (shader) => {
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <uv_pars_vertex>',
+                'varying vec2 vUv;\n \
+                uniform mat3 uvTransform;'
+            )
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <uv_vertex>',
+                '#include <uv_vertex>\n \
+                vUv = ( vec3( uv, 1 ) ).xy;'
+            )
+
+            shader.fragmentShader = shader.fragmentShader.replace(
+                '#include <uv_pars_fragment>',
+                'varying vec2 vUv;'
+            )
+            shader.fragmentShader = shader.fragmentShader.replace(
+                '#include <opaque_fragment>',
+                '#include <opaque_fragment>\n \
+                \n \
+                vec2 coords = vUv * 2.0 - 1.0;\n \
+                float f = dot(coords, coords);\n \
+	            gl_FragColor = vec4(outgoingLight, mix(diffuseColor.a, 0.0, f));\n \
+                \n'
+            )
+        }
 
         this.receiveShadow = true;
     }
@@ -44,42 +62,6 @@ export default class Floor extends Mesh
     {
         this.geometry.dispose();
         this.material.dispose();
-    }
-}
-
-export interface IFloorMaterialParameters extends MeshPhongMaterialParameters
-{
-}
-
-export class FloorMaterial extends MeshPhongMaterial
-{
-    readonly isMeshPhongMaterial = true;
-    readonly isFloorMaterial = true;
-
-    uniforms: {
-    };
-
-    defines: Dictionary<any> = {};
-
-    vertexShader: string;
-    fragmentShader: string;
-
-    constructor(params?: IFloorMaterialParameters)
-    {
-        super(params);
-
-        this.type = "FloorMaterial";
-
-        this.defines = {};
-        this.uniforms = UniformsUtils.merge([
-            ShaderLib.phong.uniforms
-        ]);
-
-        this.vertexShader = vertexShader;
-        this.fragmentShader = fragmentShader;
-
-        this.transparent = true;
-        this.shininess = 0;
     }
 }
 

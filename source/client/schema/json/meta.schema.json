@@ -8,7 +8,7 @@
     "definitions": {
         "image": {
             "$id": "image",
-            "description": "Reference to a preview image",
+            "description": "Reference to a scene supplementing image",
             "type": "object",
             "properties": {
                 "uri": {
@@ -34,7 +34,7 @@
                 },
                 "usage": {
                     "type": "string",
-                    "enum": [ "Render", "ARCode" ]
+                    "enum": [ "Render", "Environment", "ARCode" ]
                 }
             },
             "required": [

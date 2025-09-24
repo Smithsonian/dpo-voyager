@@ -137,6 +137,8 @@ export interface IGrid
 export interface IEnvironment
 {
     index: number;
+    visible: boolean;
+    rotation: number[];
 }
 
 export interface ILanguage
