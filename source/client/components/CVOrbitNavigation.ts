@@ -283,6 +283,11 @@ export default class CVOrbitNavigation extends CObject3D
             return;
         }
 
+        // catch projection mismatch
+        if(cameraComponent.ins.projection.value != ins.projection.value) {
+            ins.projection.setValue(cameraComponent.ins.projection.value);
+        }
+
         const controller = this._controller;
         controller.camera = cameraComponent.camera;
 
