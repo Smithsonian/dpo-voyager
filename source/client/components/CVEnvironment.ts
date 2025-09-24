@@ -30,7 +30,7 @@ import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 
 
-const images = ["studio_small_08_1k.hdr","spruit_sunrise_1k_HDR.hdr"];
+const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
 
 ////////////////////////////////////////////////////////////////////////////////
 
