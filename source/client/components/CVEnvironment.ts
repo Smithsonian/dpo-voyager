@@ -55,7 +55,7 @@ export default class CVEnvironment extends Component
     private _target: WebGLRenderTarget = null;
     private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
-    private _imageOptions: string[] = images;
+    private _imageOptions: string[] = images.slice();
     private _loadingCount = 0;
     private _isLegacy = false;      // flag if scene is legacy (no loaded env light)
     private _isLegacyRefl = false;  // fkag if scene is legacy and has reflective material
