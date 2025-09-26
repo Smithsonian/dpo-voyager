@@ -217,31 +217,35 @@ export default class CVEnvironment extends Component
             if(images.includes(mapName)) {
                 this._loadingCount++;
                 this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture);
+                    this.updateEnvironmentMap(texture, mapName);
                 });
             }
             else {
                 this._loadingCount++;
                 this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture);
+                    this.updateEnvironmentMap(texture, mapName);
                 });
             }
             this._currentIdx = ins.imageIndex.value;
         }
     }
 
-    protected updateEnvironmentMap(texture: Texture)
+    protected updateEnvironmentMap(texture: Texture, name: string)
     {
         const ins = this.ins;
+        const mapIdx = this._imageOptions.indexOf(name);
 
-        this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+        if(mapIdx == ins.imageIndex.value) {
+            this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+            this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
+            this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
+            this.sceneNode.scene.environmentRotation = _euler;
+            this.sceneNode.scene.backgroundRotation = _euler;
+            this.renderer.forceRender();
+        }
+
         texture.dispose();
         texture = null;
-        this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
-        this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
-        this.sceneNode.scene.environmentRotation = _euler;
-        this.sceneNode.scene.backgroundRotation = _euler;
-        this.renderer.forceRender();
         this._loadingCount--;
     }
 
