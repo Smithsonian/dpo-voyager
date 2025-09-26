@@ -113,6 +113,20 @@ export function injectFragmentShaderCode(shader: string) {
         }'
     )
 
+    // For backwards compatibility with previous ambient occlusion hack. 
+    // Only applies when AO map and no indirect diffuse light present.
+    shader = shader.replace(
+        '#include <aomap_fragment>',
+        '#include <aomap_fragment>\n \
+        \n \
+        #ifdef USE_AOMAP\n \
+            if(length(reflectedLight.indirectDiffuse) == 0.0) {\n \
+                reflectedLight.directDiffuse *= ambientOcclusion;\n \
+            }\n \
+        #endif\n \
+        \n'
+    )
+
     return shader;
 }
 
