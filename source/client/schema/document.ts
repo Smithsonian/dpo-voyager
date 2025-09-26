@@ -28,7 +28,7 @@ import { QuaternionTuple } from "three";
 export { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB };
 
 export type TCameraType = "perspective" | "orthographic";
-export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere"| "rect";
+export type TLightType = "ambient" | "directional" | "point" | "spot" | "hemisphere" | "rect" | "environment";
 
 /**
  * Encapsulates a node tree representing a renderable scene.
@@ -122,6 +122,7 @@ export interface IOrthographicCameraProps
 export interface ILight
 {
     type: TLightType;
+    enabled?: boolean;
     color?: ColorRGB;
     intensity?: number;
 
@@ -129,6 +130,7 @@ export interface ILight
     shadowSize?: number;
     shadowResolution?: string;
     shadowBlur?: number;
+    shadowIntensity?: number;
 
     point?: IPointLightProps;
     spot?: ISpotLightProps;

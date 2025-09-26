@@ -36,12 +36,14 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
     get settingProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
             this.ins.shadowEnabled,
             this.ins.shadowSize,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
+            this.ins.shadowIntensity
         ];
     }
 
@@ -74,6 +76,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         }
 
         ins.copyValues({
+            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
 
@@ -84,6 +87,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
+            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
 
         return node.light;
@@ -94,6 +98,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const ins = this.ins;
 
         const data = {
+            enabled: ins.enabled.value,
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value
         } as ILight;
@@ -111,6 +116,9 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             }
             if (!ins.shadowResolution.isDefault()) {
                 data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+            if (!ins.shadowIntensity.isDefault()) {
+                data.shadowIntensity = ins.shadowIntensity.value;
             }
         }
 

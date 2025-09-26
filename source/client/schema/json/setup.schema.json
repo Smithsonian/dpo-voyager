@@ -226,7 +226,7 @@
                 "language": {
                     "type": "string",
                     "enum": [
-                        "EN", "ES", "DE", "NL", "JA", "FR", "HAW", "IT"
+                        "EN", "ES", "DE", "NL", "JA", "FR", "HAW", "IT", "AR"
                     ]
                 }
             }

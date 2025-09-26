@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-import { Box3, Mesh } from "three";
+import { Box3, DoubleSide, FrontSide, Material, Mesh, Plane, Side, Vector3 } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 
 import { ISlicer, ESliceAxis, TSliceAxis } from "client/schema/setup";
 
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
-
 import CVScene from "./CVScene";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import CRenderer from "@ff/scene/components/CRenderer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +38,9 @@ const _planes = [
     [ 0, 1, 0, 0 ],
     [ 0, 0, 1, 0 ],
 ];
+
+const _vec3 = new Vector3( 0, - 1, 0 );
+const localPlane = new Plane( _vec3, 0.8 );
 
 /**
  * Component controlling global slicing parameters for all [[CVModel2]] components in a scene.
@@ -135,16 +137,17 @@ export default class CVSlicer extends Component
 
         const models = this.getGraphComponents(CVModel2);
 
+        _vec3.set(this.plane[0], this.plane[1], this.plane[2]);
+        localPlane.set(_vec3, this.plane[3]);
+
         // set the slicing plane in the Uber materials of each scene model
         models.forEach(model => {
             if(model.ins.slicerEnabled.value) {
                 const object = model.object3D;
                 object.traverse((mesh: Mesh) => {
                     if (mesh.isMesh) {
-                        const material = mesh.material as UberPBRMaterial;
-                        if (material.isUberPBRMaterial) {
-                            this.updateMaterial(material);
-                        }
+                        const material = mesh.material as Material;
+                        this.updateMaterial(model, material);
                     }
                 });
             }
@@ -179,17 +182,25 @@ export default class CVSlicer extends Component
         };
     }
 
-    private updateMaterial(material: UberPBRMaterial)
+    private updateMaterial(model: CVModel2, material: Material)
     {
         const ins = this.ins;
 
         if (ins.enabled.changed) {
-            material.enableCutPlane(ins.enabled.value);
-            material.needsUpdate = true;
+            const enabled = ins.enabled.value;
+            const renderer = this.getMainComponent(CRenderer);
+            renderer.views.forEach(view => view.renderer.localClippingEnabled = ins.enabled.value);
+
+            // configure material
+            material.defines["CUT_PLANE"] = enabled;
+            enabled ? material.userData["sideCache"] = material.side : null;
+            material.side = enabled ? DoubleSide : material.userData["sideCache"];
+
+            enabled ? material.clippingPlanes = [localPlane] : null;
         }
 
-        material.cutPlaneDirection.fromArray(this.plane);
-        material.cutPlaneColor.fromArray(ins.color.value);
+        const shader = material.userData.shader;
+        shader.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)

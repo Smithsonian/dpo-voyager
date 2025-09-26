@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-import { Matrix4, Object3D } from "three";
+import { Material, Matrix4, Object3D, Vector3 } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const _vec3 = new Vector3( 1, 0, 0 );
 
 export function clamp(value: number, min: number, max: number)
 {

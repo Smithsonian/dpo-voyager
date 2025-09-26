@@ -72,6 +72,7 @@ export default class CVPoseTask extends CVTask
     private _deltaY = 0;
     private _90degLock = false;
     private _accumulatedAngle = 0;
+    private _envVisibility = false;
 
     protected activeModel: CVModel2 = null;
 
@@ -121,6 +122,9 @@ export default class CVPoseTask extends CVTask
         setup.navigation.ins.zoomExtents.set();     // zoom all viewports
         setup.grid.ins.labelEnabled.setValue(false);// disable grid label
 
+        this._envVisibility = setup.environment.ins.visible.value;
+        setup.environment.ins.visible.setValue(false); // disable env map visualization
+
         super.activateTask();
     }
 
@@ -128,6 +132,7 @@ export default class CVPoseTask extends CVTask
     {
         const setup = this.activeDocument.setup;
         setup.grid.ins.labelEnabled.setValue(true);// enable grid label
+        setup.environment.ins.visible.setValue(this._envVisibility);
 
         super.deactivateTask();
 
