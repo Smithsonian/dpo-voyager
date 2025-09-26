@@ -293,7 +293,7 @@ export default class CVEnvironment extends Component
         // For backwards compatibility, always enable env light if a roughness or metalness map is present 
         model.object3D.traverse(object => {
             const material = object["material"];
-            if(material && (material.roughnessMap || material.metalnessMap)) {
+            if(material && !this._isLegacyRefl && (material.roughnessMap || material.metalnessMap)) {
                 // Hack to make sure UI updates appropriately
                 const envLight = this.graph.getComponent(CVEnvironmentLight);
                 envLight.transform.dispose();
