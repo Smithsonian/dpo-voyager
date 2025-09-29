@@ -18,7 +18,7 @@
                 },
                 "quality": {
                     "type": "string",
-                    "enum": [ "Thumb", "Low", "Medium", "High" ]
+                    "enum": [ "Thumb", "Low", "Medium", "High", "HDR" ]
                 },
                 "byteSize": {
                     "type": "integer",
