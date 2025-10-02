@@ -79,7 +79,14 @@ const apps = {
     },
 };
 
-const version = childProcess.execSync("git describe --tags").toString().trim();
+let version;
+try{
+    version = childProcess.execSync("git describe --tags").toString().trim();
+}catch(e){
+    //Fallback if git is not present or tags have not been fetched
+    version = require(path.resolve(project, "./package.json")).version;
+}
+
 const analyticsId = process.env["VOYAGER_ANALYTICS_ID"];
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,9 +136,6 @@ module.exports = function(env, argv)
         },
 
         resolve: {
-            modules: [
-                dirs.modules
-            ],
             // Aliases for FF Foundation Library components
             alias: {
                 "client": path.resolve(dirs.source, "client"),
@@ -141,8 +145,6 @@ module.exports = function(env, argv)
                 "@ff/browser": path.resolve(dirs.libs, "ff-browser/source"),
                 "@ff/three": path.resolve(dirs.libs, "ff-three/source"),
                 "@ff/scene": path.resolve(dirs.libs, "ff-scene/source"),
-                "three$": path.resolve(dirs.modules, "three/src/Three"),
-                "../../../build/three.module.js": path.resolve(dirs.modules, "three/src/Three")
             },
             // Resolvable extensions
             extensions: [".ts", ".tsx", ".js", ".json"],
@@ -183,7 +185,7 @@ module.exports = function(env, argv)
                         context: dirs.assets,
                     },
                     {
-                        from: "{LICENSE.md,3RD_PARTY_LICENSES.txt}",
+                        from: "{LICENSE.md,ATTRIBUTIONS.md,3RD_PARTY_LICENSES.txt}",
                         context: dirs.project,
                     }
                 ],
@@ -197,7 +199,7 @@ module.exports = function(env, argv)
                 {
                     // Raw text and shader files
                     test: /\.(txt|glsl|hlsl|frag|vert|fs|vs)$/,
-                    loader: "raw-loader"
+                    type: "asset/source",
                 },
                 {
                     // Enforce source maps for all javascript files
@@ -208,7 +210,8 @@ module.exports = function(env, argv)
                 {
                     // Transpile SCSS to CSS and concatenate (to string)
                     test: /\.scss$/,
-                    use: ["raw-loader","sass-loader"],
+                    use: ["sass-loader"],
+                    type: "asset/source",
                     issuer: {
                         //include: /source\/client\/ui\/explorer/     // currently only inlining explorer css
                         and: [/source\/client\/ui\/explorer/]     // currently only inlining explorer css
@@ -217,23 +220,24 @@ module.exports = function(env, argv)
                 {
                     // Transpile SCSS to CSS and concatenate
                     test: /\.scss$/,
-                    use: /*appName === 'voyager-explorer' ? ["raw-loader","sass-loader"] :*/
-                        [         
-                            MiniCssExtractPlugin.loader,
-                            "css-loader",
-                            "sass-loader"
-                        ],
+                    use: [         
+                        MiniCssExtractPlugin.loader,
+                        "css-loader",
+                        "sass-loader"
+                    ],
+                    type: "javascript/auto",
                     issuer: {
                         not: [/source\/client\/ui\/explorer/]     // currently only inlining explorer css
                     }
                 },
                 {
-                    test: /content\.css$/i,
-                    use: ['css-loader'],
+                    resourceQuery: /raw/,
+                    type: "asset/source",
                 },
                 {
                     // Concatenate CSS
                     test: /\.css$/,
+                    resourceQuery: { not: [/raw/] },
                     use: [
                         MiniCssExtractPlugin.loader,
                         "css-loader",
@@ -251,7 +255,7 @@ module.exports = function(env, argv)
                 },
             ]
         },
-
+        performance: {hints: false},
         stats: {chunkModules: true, excludeModules: false }
 
     };

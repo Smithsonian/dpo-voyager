@@ -48,13 +48,6 @@ export default class CVBackground extends CBackground
         this.background.layers.set(1);
     }
 
-    hide() {
-        this.background.visible = false;
-    }
-    show() {
-        this.background.visible = true;
-    }
-
     fromData(data: IBackground)
     {
         this.ins.copyValues({

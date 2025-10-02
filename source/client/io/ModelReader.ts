@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-//import resolvePathname from "resolve-pathname";
-import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
-import { LoadingManager, Object3D, Scene, Mesh, MeshStandardMaterial, SRGBColorSpace, LoaderUtils } from "three";
+import { LoadingManager, Object3D, Mesh, MeshStandardMaterial, SRGBColorSpace, LoaderUtils, ObjectSpaceNormalMap } from "three";
 
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {MeshoptDecoder} from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import {GLTF, GLTFLoader, GLTFParser} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {KTX2Loader} from 'three/examples/jsm/loaders/KTX2Loader.js';
 
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 import { disposeObject } from "@ff/three/helpers";
-import { Dictionary } from "@ff/core/types";
+import { addCustomMaterialDefines, extendShaders } from "client/shaders/ShaderExtension";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,8 +42,6 @@ export default class ModelReader
 
     protected customDracoPath = null;
 
-    private _gltfParserCache: Dictionary<GLTFParser> = {};
-
     set dracoPath(path: string) 
     {
         this.customDracoPath = path;
@@ -54,11 +49,6 @@ export default class ModelReader
             this.gltfLoader.dracoLoader.setDecoderPath(this.customDracoPath);
         }
     }
-
-    getGLTFParser(uuid: string) {
-        return this._gltfParserCache[uuid];
-    }
-
 
     setAssetPath(path: string){
         path = path.endsWith("/")? path.slice(0, -1):path;
@@ -120,9 +110,10 @@ export default class ModelReader
             if(gltf.userData.gltfExtensions) {
                 const variantsExtension = gltf.userData.gltfExtensions[ 'KHR_materials_variants' ];
                 if(variantsExtension) {
-                    gltf.scene["variants"] = variantsExtension.variants;
-                    gltf.scene["variants"].variantMaterials = {};
-                    this._gltfParserCache[gltf.scene.uuid] = gltf.parser;
+                    const parser = gltf.parser;
+                    gltf.scene.userData["variants"] = variantsExtension.variants;
+                    gltf.scene.userData["variants"].variantMaterials = {};
+                    gltf.scene.userData["parser"] = parser;
                 }
             }
             return this.createModelGroup(gltf, {signal})
@@ -201,7 +192,21 @@ export default class ModelReader
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
                 mesh.animations = gltf.animations;
-                const material = mesh.material as MeshStandardMaterial;
+
+                // convert unlit glTFs to MeshStandardMaterial
+                if((mesh.material as MeshStandardMaterial).type === "MeshBasicMaterial") {
+                    const oldMaterial = mesh.material as MeshStandardMaterial;
+                    const newMaterial = new MeshStandardMaterial();
+                    newMaterial.color = oldMaterial.color;
+                    newMaterial.opacity = oldMaterial.opacity;
+                    newMaterial.transparent = oldMaterial.opacity < 1 || !!oldMaterial.alphaMap;
+                    newMaterial.map = oldMaterial.map;
+                    newMaterial.shadowSide = oldMaterial.shadowSide;
+
+                    mesh.material = newMaterial;
+                }
+
+                const material =  mesh.material as MeshStandardMaterial;
 
                 if (material.map) {
                    material.map.colorSpace = SRGBColorSpace;
@@ -209,29 +214,30 @@ export default class ModelReader
 
                 mesh.geometry.computeBoundingBox();
 
-                const uberMat = material.type === "MeshPhysicalMaterial" ? new UberPBRAdvMaterial() : new UberPBRMaterial();
+                // update default shaders for extended functionality
+                extendShaders(material);
+                material.userData.paramCopy = {};
 
+                // add defines for shader customization
+                addCustomMaterialDefines(material);
+               
                 if (material.flatShading) {
                     mesh.geometry.computeVertexNormals();
                     material.flatShading = false;
                     console.warn("Normals unavailable so they have been calculated. For best outcomes, please provide normals with geometry.");
                 }
 
-                // copy properties from previous material
-                if (material.type === "MeshPhysicalMaterial" || material.type === "MeshStandardMaterial") {
-                    uberMat.copy(material);
-                }
-
                 // check if the material's normal map uses object space (indicated in glTF extras)
                 if (material.userData["objectSpaceNormals"]) {
-                    uberMat.enableObjectSpaceNormalMap(true);
+                    if (material.normalMap) {
+                        material.normalMapType = ObjectSpaceNormalMap;
+                        material.needsUpdate = true;
+                    }
 
                     if (ENV_DEVELOPMENT) {
                         console.log("ModelReader.createModelGroup - objectSpaceNormals: ", true);
                     }
                 }
-
-                mesh.material = uberMat;
             }
         });
 

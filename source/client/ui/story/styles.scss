@@ -17,8 +17,10 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@import "../explorer/styles";
-@import "../../../../libs/ff-scene/source/ui/styles";
+@use "sass:color";
+@use "../explorer/styles" as explorer;
+@use "../../../../libs/ff-scene/source/ui/styles" as scene;
+@use "../../../../libs/ff-ui/source/styles/styles" as common;
 
 ////////////////////////////////////////////////////////////////////////////////
 // COMPONENTS
@@ -38,9 +40,9 @@
 }
 
 .ff-popup {
-  @include font-ui-normal;
+  @include common.font-ui-normal;
   font-size: 16px;
-  color: $color-text;
+  color: common.$color-text;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,8 +57,8 @@
 // MAIN VIEW
 
 voyager-story {
-  @include fullsize;
-  @include font-ui-normal;
+  @include common.fullsize;
+  @include common.font-ui-normal;
   font-size: 16px; //0.85rem;
   line-height: 1.35;
 }
@@ -85,8 +87,8 @@ ff-tab-header, ff-dock-panel-header {
 
 .sv-task-bar {
   display: flex;
-  background-color: $color-background-dark;
-  border-bottom: 3px solid $color-background-darker;
+  background-color: common.$color-background-dark;
+  border-bottom: 3px solid common.$color-background-darker;
 
   overflow: auto;
 
@@ -106,8 +108,8 @@ ff-tab-header, ff-dock-panel-header {
     align-self: center;
     padding: 0 4px 2px 4px;
     margin: 4px;
-    background-color: darken($color-secondary, 5%);
-    color: $color-background-dark;
+    background-color: color.adjust(common.$color-secondary, $lightness: -5%);
+    color: common.$color-background-dark;
   }
 
   .sv-spacer {
@@ -116,7 +118,7 @@ ff-tab-header, ff-dock-panel-header {
 
   .sv-divider {
     width: 1px;
-    background-color: $color-background-light;
+    background-color: common.$color-background-light;
   }
 
   .ff-button {
@@ -126,15 +128,15 @@ ff-tab-header, ff-dock-panel-header {
 
     .ff-icon {
       height: 20px;
-      fill: $color-icon;
+      fill: common.$color-icon;
     }
 
     &[selected] {
-      background-color: $color-primary;
-      color: $color-text-light;
+      background-color: common.$color-primary;
+      color: common.$color-text-light;
 
       .ff-icon {
-        fill: $color-text-light;
+        fill: common.$color-text-light;
       }
     }
   }
@@ -165,12 +167,12 @@ $color-component-meta-light: #d9d998;
 
 .sv-node-tree {
   .ff-tree-node-container {
-    border-color: darken($color-background-light, 2%);
+    border-color: color.adjust(common.$color-background-light, $lightness: -2%);
   }
   .ff-tree-node {
     &.ff-inner, &.ff-leaf {
-      background-color: darken($color-background-dark, 2%);
-      border-left: 1px solid $color-background-light;
+      background-color: color.adjust(common.$color-background-dark, $lightness: -2%);
+      border-left: 1px solid common.$color-background-light;
     }
 
     &.sv-node-scene {
@@ -188,9 +190,13 @@ $color-component-meta-light: #d9d998;
     &.sv-node-light {
       background-color: $color-component-light-dark;
       border-left: 1px solid $color-component-light;
+
+      &.disabled {
+        color: gray;
+      }
     }
     &[selected] {
-      background-color: $color-primary;
+      background-color: common.$color-primary;
     }
 
     .ff-header {
@@ -254,6 +260,9 @@ $color-component-meta-light: #d9d998;
       }
       .sv-icon-meta {
         fill: $color-component-meta-light;
+      }
+      .sv-icon-disabled {
+        fill: gray;
       }
     }
     .ff-content {
@@ -409,7 +418,7 @@ $color-component-meta-light: #d9d998;
     flex-grow: 0;
     margin: 4px;
     padding: 6px 16px;
-    background-color: $color-background;
+    background-color: common.$color-background;
   }
 }
 
@@ -431,8 +440,8 @@ $color-component-meta-light: #d9d998;
   flex-wrap: wrap;
   align-items: center;
   padding: 3px 1px;
-  background-color: $color-background;
-  color: $color-icon;
+  background-color: common.$color-background;
+  color: common.$color-icon;
 
   .ff-button {
     flex: 0 0 auto;
@@ -470,7 +479,7 @@ $color-component-meta-light: #d9d998;
   flex-direction: column;
 
   &:first-child {
-    border-bottom: 2px solid $color-background-darker;
+    border-bottom: 2px solid common.$color-background-darker;
   }
 }
 
@@ -484,7 +493,7 @@ $color-component-meta-light: #d9d998;
 
   .ff-button {
     padding: 0 4px;
-    color: $color-text;
+    color: common.$color-text;
   }
 }
 
@@ -497,7 +506,7 @@ $color-component-meta-light: #d9d998;
 
 .sv-task-view {
   container-type: size;
-  @include fullsize;
+  @include common.fullsize;
   display: flex;
   flex-direction: column;
 
@@ -511,13 +520,13 @@ $color-component-meta-light: #d9d998;
   }
 
   .sv-label {
-    color: $color-text-dark;
+    color: common.$color-text-dark;
     margin: 8px 0 4px 0;
   }
 
   .sv-label-right {
     text-align: end;
-    color: $color-text-dark;
+    color: common.$color-text-dark;
     margin: 4px 0;
   }
 
@@ -572,7 +581,7 @@ $color-component-meta-light: #d9d998;
   padding: 0px;
   padding-left: 4px;
   padding-right: 4px;
-  background-color: $color-background-light;
+  background-color: common.$color-background-light;
 }
 
 .sv-target-colorbox {
@@ -598,7 +607,7 @@ $color-component-meta-light: #d9d998;
   .sv-property-name {
     flex: 0 1 25%;
     padding-top: 4px;
-    color: $color-text-dark;
+    color: common.$color-text-dark;
   }
 
   .sv-property{
@@ -620,7 +629,7 @@ $color-component-meta-light: #d9d998;
 
 
     .sv-property-field {
-      background-color: $color-background-darker;
+      background-color: common.$color-background-darker;
       flex: 1 1 auto;
       min-width: auto;
       max-width: 20ch;
@@ -705,7 +714,7 @@ $color-component-meta-light: #d9d998;
   .sv-notification {
     font-size: 0.85em;
     font-style: italic;
-    color: $menu-color-text-dim;
+    color: explorer.$menu-color-text-dim;
   }
 
   .ff-label {
@@ -719,7 +728,7 @@ $color-component-meta-light: #d9d998;
 // ARTICLE EDITOR
 
 .sv-article-editor {
-  @include fullsize;
+  @include common.fullsize;
   display: flex;
   flex-direction: column;
 
@@ -730,7 +739,7 @@ $color-component-meta-light: #d9d998;
   .sv-custom-buttons {
     float: left;
     padding-right: 1em;
-    border-right: 1px solid $color-icon;
+    border-right: 1px solid common.$color-icon;
 
     .ff-button.ff-transparent {
       float: left;
@@ -739,8 +748,8 @@ $color-component-meta-light: #d9d998;
   }
 
   .sv-overlay {
-    @include fullsize;
-    background-color: transparentize($color-background-dark, 0.5);
+    @include common.fullsize;
+    background-color: color.adjust(common.$color-background-dark, $alpha: -0.5);
     z-index: 0;
   }
 }

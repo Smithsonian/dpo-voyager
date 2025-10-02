@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Object3D, Mesh, Texture, Material } from "three";
+import { Object3D, Mesh, Texture, MeshStandardMaterial, Vector3, Material } from "three";
 
 import { disposeObject } from "@ff/three/helpers";
 
@@ -29,10 +29,10 @@ import {
     TDerivativeUsage,
 } from "client/schema/model";
 
-import UberPBRMaterial from "../shaders/UberPBRMaterial";
 import CVAssetReader from "../components/CVAssetReader";
 
 import Asset, { EAssetType, EMapType } from "./Asset";
+import { addCustomMaterialDefines, extendShaders, } from "client/shaders/ShaderExtension";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +101,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         if (geoAsset) {
             return assetReader.getGeometry(geoAsset.data.uri)
             .then(geometry => {
-                this.model = new Mesh(geometry, new UberPBRMaterial());
+                this.model = new Mesh(geometry, new MeshStandardMaterial());
                 this.model.castShadow = true;
 
                 return Promise.all(imageAssets.map(asset => assetReader.getTexture(asset.data.uri)))
@@ -111,8 +111,15 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                 });
             })
             .then(textures => {
-                const material = (this.model as Mesh).material as UberPBRMaterial;
+                const material = (this.model as Mesh).material as MeshStandardMaterial;
                 this.assignTextures(imageAssets, textures, material);
+
+                // update default shaders for extended functionality
+                extendShaders(material);
+                material.userData.paramCopy = {};
+
+                // add defines for shader customization
+                addCustomMaterialDefines(material);
 
                 if (!material.map) {
                     material.color.setScalar(0.5);
@@ -130,8 +137,8 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         this.abortControl?.abort();
         if (this.model) {
             // handle disposing variants
-            if(this.model["variants"]) {
-                const materials = this.model["variants"].variantMaterials;
+            if(this.model.userData["variants"]) {
+                const materials = this.model.userData["variants"].variantMaterials;
                 for (let key_a in materials) {
                     const material = materials[key_a] as Material;
                     if (material) {
@@ -144,7 +151,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                         material.dispose();
                     }
                 };
-                this.model["variants"].variantMaterials = null;
+                this.model.userData["variants"].variantMaterials = null;
             }
 
             disposeObject(this.model);
@@ -234,7 +241,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         data.assets = json.assets.map(assetJson => new Asset(assetJson));
     }
 
-    protected assignTextures(assets: Asset[], textures: Texture[], material: UberPBRMaterial)
+    protected assignTextures(assets: Asset[], textures: Texture[], material: MeshStandardMaterial)
     {
         for (let i = 0; i < assets.length; ++i) {
             const asset = assets[i];
