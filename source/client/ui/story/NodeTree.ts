@@ -98,8 +98,7 @@ class NodeTree extends Tree<NVNode>
         }
         if (node.name === "Lights") {
             buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
-        } else if (node.light) {
-            // TODO: check this is NOT an environment light (which should not be deletable)
+        } else if (node.light && !node.light.is("CVEnvironmentLight")) {
             icons.push(html`<ff-icon class="${node.light.ins.enabled.value ? "sv-icon-light ff-icon": "sv-icon-disabled ff-icon"}" name=${node.light.icon}></ff-icon>`);
             buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
         }
