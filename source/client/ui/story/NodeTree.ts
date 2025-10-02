@@ -108,8 +108,8 @@ class NodeTree extends Tree<NVNode>
         if (node.meta) {
             icons.push(html`<ff-icon class="sv-icon-meta" name=${node.meta.icon}></ff-icon>`);
         }
-        
-        return html`${icons}<div class="ff-text ff-ellipsis sv-node-label" style="flex:1 1 auto;">${node.displayName}</div>${buttons}`;
+
+        return html`${icons}<div class="ff-text ff-ellipsis">${node.displayName}</div>${buttons}`;
     }
 
     protected isNodeSelected(node: NVNode): boolean
