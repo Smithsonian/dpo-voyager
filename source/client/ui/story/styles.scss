@@ -206,6 +206,14 @@ $color-component-meta-light: #d9d998;
         height: 1.1em;
         margin: 2px 4px 0 0;
       }
+      
+      .ff-text {
+        flex: 0 0 80%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
       .sv-add-light-btn.ff-button {
         width: 1.6em; // square button roughly same height as line-height
         height: 1.6em;
@@ -213,7 +221,7 @@ $color-component-meta-light: #d9d998;
         margin-left: 4px;
         display: inline-flex;
         align-items: center;
-  justify-content: center;
+        justify-content: center;
         background: transparent;
         border: 1px solid transparent;
         --ff-button-bg: transparent;
@@ -234,15 +242,16 @@ $color-component-meta-light: #d9d998;
         width: 1.6em;
         height: 1.6em;
         padding: 0;
-        margin-left: 80%;
+        margin-left: 4px;
         margin-right: 4px;
         display: inline-flex;
-        align-items: right;
-        justify-content: right;
+        align-items: center;
+        justify-content: center;
         background: inherit;
         border: none;
         --ff-button-bg: transparent;
         --ff-button-color: $color-component-light-light;
+        flex-shrink: 0;
         .ff-icon { margin: 0; height: 1em; }
         &:hover {
           background: rgba($color-component-light-light, 0.15);
