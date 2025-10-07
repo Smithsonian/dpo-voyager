@@ -16,7 +16,6 @@
  */
 
 import Node from "@ff/graph/Node";
-import Component from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyView";
@@ -33,7 +32,7 @@ import { Property as SceneUIProperty } from "@ff/scene/ui/PropertyField";
 import { lightTypes } from "../../applications/coreTypes";
 import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
-import { CLight, ELightType, ICVLight } from "../../components/lights/CVLight";
+import { CLight, ELightType } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
 import NodeTree from "./NodeTree";
 
