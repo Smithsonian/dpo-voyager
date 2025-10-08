@@ -29,6 +29,7 @@ import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
 import CSpotLight from "@ff/scene/components/CSpotLight";
 import CTransform from "@ff/scene/components/CTransform";
 import { Property as SceneUIProperty } from "@ff/scene/ui/PropertyField";
+import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
 import { lightTypes } from "../../applications/coreTypes";
 import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
@@ -94,7 +95,7 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
         }
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
-            ${node.light ? html`<div class="ff-group" style="padding:4px 8px;">
+            ${(node.light && !(node.light instanceof CVEnvironmentLight)) ? html`<div class="ff-group" style="padding:4px 8px;">
                 <div class="ff-flex-row" style="align-items:center; gap:6px;">
                     <label class="ff-label">${languageManager.getUILocalizedString("Name")}</label>
                     <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
