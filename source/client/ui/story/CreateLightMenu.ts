@@ -6,15 +6,16 @@ import { focusTrap, getFocusableElements } from "../../utils/focusHelpers";
 @customElement("sv-create-light-menu")
 export default class CreateLightMenu extends Popup {
     protected language: CVLanguageManager = null;
+    protected allowSunLight: boolean = true;
 
     protected lightType: ELightType = ELightType.directional;
     protected name: string = ELightType[this.lightType];
 
     protected errorString: string = "";
 
-    static show(parent: HTMLElement, language: CVLanguageManager): Promise<[ELightType, string]> {
+    static show(parent: HTMLElement, language: CVLanguageManager, allowSunLight: boolean): Promise<[ELightType, string]> {
 
-        const menu = new CreateLightMenu(language);
+        const menu = new CreateLightMenu(language, allowSunLight);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -23,10 +24,11 @@ export default class CreateLightMenu extends Popup {
         });
     }
 
-    constructor(language: CVLanguageManager) {
+    constructor(language: CVLanguageManager, allowSunLight: boolean) {
         super();
 
         this.language = language;
+        this.allowSunLight = allowSunLight;
 
         this.position = "center";
         this.modal = true;
@@ -106,7 +108,9 @@ export default class CreateLightMenu extends Popup {
                 <div class="ff-flex-row">
                     <div class="ff-dropdown">
                     <select class="ff-input" .value=${this.lightType} @change=${this.onChange}>
-                        ${Object.keys(ELightType).filter(key => typeof ELightType[key] === 'number').map((key) => html`<option value=${ELightType[key]}>${key}</option>`)}
+                        ${Object.keys(ELightType)
+                            .filter(key => typeof ELightType[key] === 'number')
+                            .map((key) => html`<option value=${ELightType[key]} ?disabled=${key === "sun" && !this.allowSunLight}>${key}</option>`)}
                     </select>
                     </div>
                 </div>

@@ -20,7 +20,7 @@ import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyView";
 
-import { customElement, property, html } from "@ff/ui/CustomElement";
+import { customElement, html, property } from "@ff/ui/CustomElement";
 import Tree from "@ff/ui/Tree";
 
 import CAmbientLight from "@ff/scene/components/CAmbientLight";
@@ -34,6 +34,7 @@ import { lightTypes } from "../../applications/coreTypes";
 import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
 import { CLight, ELightType } from "../../components/lights/CVLight";
+import CVSunLight from "../../components/lights/CVSunLight";
 import NVNode from "../../nodes/NVNode";
 import NodeTree from "./NodeTree";
 
@@ -94,6 +95,11 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
                 currentType = ELightType[lt.type];
             }
         }
+        const sunExists: boolean = (node.transform.parent.node as NVNode).transform.children
+            .some(child => {
+                const light = (child.node as NVNode).light
+                return light && light instanceof CVSunLight;
+            });
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
             ${(node.light && !(node.light instanceof CVEnvironmentLight)) ? html`<div class="ff-group" style="padding:4px 8px;">
@@ -102,11 +108,15 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
                 <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
                 <label class="ff-label">${languageManager.getUILocalizedString("Type")}</label>
                 <select class="ff-input" .value=${currentType ?? 0} @change=${(e: Event) => this.onLightTypeChange(e)}>
-                ${Object.keys(ELightType).filter(key => typeof (ELightType as any)[key] === "number")
-                .map(key => {
-                    const value: ELightType = (ELightType as any)[key];
-                    return html`<option value=${value} ?selected=${value === currentType}>${key}</option>`;
-                })}
+                ${( () => {
+                    return Object.keys(ELightType)
+                        .filter(key => typeof (ELightType as any)[key] === "number")
+                        .map(key => {
+                            const value: ELightType = (ELightType as any)[key];
+                            const disabled = key === "sun" && sunExists && !(node.light && node.light.constructor && node.light.constructor["type"] === "sun");
+                            return html`<option value=${value} ?selected=${value === currentType} ?disabled=${disabled}>${key}</option>`;
+                        });
+                }) ()}
                 </select>
             </div>
             </div>` : null}

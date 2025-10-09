@@ -24,6 +24,7 @@ import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDoc
 import CVLanguageManager from "../../components/CVLanguageManager";
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
 import { ELightType, ICVLight } from "../../components/lights/CVLight";
+import CVSunLight from "../../components/lights/CVSunLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
 import CLight from "@ff/scene/components/CLight";
@@ -183,8 +184,12 @@ class NodeTree extends Tree<NVNode>
         const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
         const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
 
+        const sunExists: boolean = parentNode.transform.children.some(child => {
+            const light = (child.node as NVNode).light
+            return light && light instanceof CVSunLight;
+        });
         CreateLightMenu
-            .show(mainView, language)
+            .show(mainView, language, !sunExists)
             .then(([selectedType, name]) => {
                 const lightNode = NodeTree.createLightNode(parentNode, selectedType, name);
                 parentNode.transform.addChild(lightNode.transform);
