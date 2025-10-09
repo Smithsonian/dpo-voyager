@@ -16,6 +16,7 @@
  */
 
 import CLight from "@ff/scene/components/CLight";
+import { INodeChangeEvent } from "@ff/graph/Node";
 
 import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyOptions";
@@ -62,11 +63,42 @@ export default class CVLightTool extends CVTool
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
+        this.detachLightListeners();
+
         this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
-        this.ins.light.setOptions(this.lights.map(light => light.node.name));
-        this.outs.light.setValue(this.lights[0]);
+
+        this.attachLightListeners();
+        this.refreshLightOptions();
+
+        this.outs.light.setValue(this.lights[0] ?? null);
 
         super.onActiveDocument(previous, next);
+    }
+
+    protected refreshLightOptions()
+    {
+        this.ins.light.setOptions(this.lights.map(light => light.node.name));
+    }
+
+    protected attachLightListeners()
+    {
+        this.lights.forEach(light => light.node?.on("change", this.onLightNodeChange, this));
+    }
+
+    protected detachLightListeners()
+    {
+        if (!this.lights) {
+            return;
+        }
+
+        this.lights.forEach(light => light.node?.off("change", this.onLightNodeChange, this));
+    }
+
+    protected onLightNodeChange(event: INodeChangeEvent)
+    {
+        if (!event || event.what === "name") {
+            this.refreshLightOptions();
+        }
     }
 }
 
