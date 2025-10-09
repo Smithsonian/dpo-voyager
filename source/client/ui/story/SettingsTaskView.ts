@@ -97,17 +97,18 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
             ${(node.light && !(node.light instanceof CVEnvironmentLight)) ? html`<div class="ff-group" style="padding:4px 8px;">
-                <div class="ff-flex-row" style="align-items:center; gap:6px;">
-                    <label class="ff-label">${languageManager.getUILocalizedString("Name")}</label>
-                    <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
-                    <label class="ff-label">${languageManager.getUILocalizedString("Type")}</label>
-                    <select class="ff-input" .value=${currentType ?? 0} @change=${(e: Event) => this.onLightTypeChange(e)}>
-                        // FIXME: sets current value to sun at first immediately after create a new sun light
-                        ${Object.keys(ELightType)
-                            .filter(key => typeof (ELightType as any)[key] === "number")
-                            .map(key => html`<option value=${(ELightType as any)[key]}>${key}</option>`)}
-                    </select>
-                </div>
+            <div class="ff-flex-row" style="align-items:center; gap:6px;">
+                <label class="ff-label">${languageManager.getUILocalizedString("Name")}</label>
+                <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
+                <label class="ff-label">${languageManager.getUILocalizedString("Type")}</label>
+                <select class="ff-input" .value=${currentType ?? 0} @change=${(e: Event) => this.onLightTypeChange(e)}>
+                ${Object.keys(ELightType).filter(key => typeof (ELightType as any)[key] === "number")
+                .map(key => {
+                    const value: ELightType = (ELightType as any)[key];
+                    return html`<option value=${value} ?selected=${value === currentType}>${key}</option>`;
+                })}
+                </select>
+            </div>
             </div>` : null}
             <sv-settings-tree class="ff-flex-item-stretch" .node=${node}></sv-settings-tree>
         </div>`;
