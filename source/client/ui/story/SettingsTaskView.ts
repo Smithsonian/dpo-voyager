@@ -88,7 +88,8 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
 
         let currentType: ELightType = null;
         if (node.light) {
-            const lt = lightTypes.find(lt => lt.typeName === node.light.typeName);
+            // search in reverse order to find the most specific type first (e.g. CVSunLight which inherits from CVDirectionalLight)
+            const lt = [...lightTypes].reverse().find(lt => lt.typeName === node.light.typeName);
             if (lt) {
                 currentType = ELightType[lt.type];
             }
@@ -101,7 +102,10 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
                     <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
                     <label class="ff-label">${languageManager.getUILocalizedString("Type")}</label>
                     <select class="ff-input" .value=${currentType ?? 0} @change=${(e: Event) => this.onLightTypeChange(e)}>
-                        ${Object.keys(ELightType).filter(key => typeof (ELightType as any)[key] === "number").map(key => html`<option value=${(ELightType as any)[key]}>${key}</option>`)}
+                        // FIXME: sets current value to sun at first immediately after create a new sun light
+                        ${Object.keys(ELightType)
+                            .filter(key => typeof (ELightType as any)[key] === "number")
+                            .map(key => html`<option value=${(ELightType as any)[key]}>${key}</option>`)}
                     </select>
                 </div>
             </div>` : null}
@@ -234,6 +238,7 @@ function copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
     // Source: https://sbcode.net/threejs/lights/
     const legacyLightTypes = [CAmbientLight, CDirectionalLight, CHemisphereLight, CSpotLight];
 
+    // TODO: does this work correctly for CVSunLight which inherits from CVDirectionalLight?
     const sourceLightIsLegacy: boolean = legacyLightTypes.some(lt => sourceLight instanceof lt);
     const targetLightIsLegacy: boolean = legacyLightTypes.some(lt => targetLight instanceof lt);
     if (sourceLightIsLegacy && !targetLightIsLegacy) {

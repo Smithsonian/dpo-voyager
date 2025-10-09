@@ -52,6 +52,7 @@ import CVAnnotationView from "../components/CVAnnotationView";
 import CVStaticAnnotationView from "client/components/CVStaticAnnotationView";
 import CVCamera from "../components/CVCamera";
 import CVDirectionalLight from "../components/lights/CVDirectionalLight";
+import CVSunLight from "../components/lights/CVSunLight";
 import CVPointLight from "../components/lights/CVPointLight";
 import CVSpotLight from "../components/lights/CVSpotLight";
 import CVEnvironmentLight from "../components/lights/CVEnvironmentLight";
@@ -88,6 +89,7 @@ import CVDerivativesController from "client/components/CVDerivativesController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Order by class hierarchy, higher classes first
 export const lightTypes = [
     CVDirectionalLight,
     CVPointLight,
@@ -96,6 +98,7 @@ export const lightTypes = [
     CVHemisphereLight,
     CVRectLight,
     CVEnvironmentLight,
+    CVSunLight, // inherits from CVDirectionalLight, so place below
 ] as const;
 
 const types = [
