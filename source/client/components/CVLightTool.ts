@@ -22,11 +22,13 @@ import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyOptions";
 import "../ui/properties/PropertySlider";
 import "../ui/properties/PropertyColor";
+import "../ui/properties/PropertyString";
 
 import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import CVSunLight from "./lights/CVSunLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -143,12 +145,19 @@ export class LightToolView extends ToolView<CVLightTool>
 
         const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
 
+        const sunPropertyControls = activeLight instanceof CVSunLight ? html`
+            <sv-property-string .property=${(activeLight.ins as any).sunDate} name=${language.getLocalizedString("Date")}></sv-property-string>
+            <sv-property-string .property=${(activeLight.ins as any).sunTime} name=${language.getLocalizedString("Time")}></sv-property-string>
+            <sv-property-string .property=${(activeLight.ins as any).sunLocation} name=${language.getLocalizedString("Location")}></sv-property-string>
+        ` : null;
+
         const lightDetails = activeLight ? html`<div class="sv-section">
             <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                 <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
                 ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
+                ${sunPropertyControls}
             </div>
         </div>` : null;
 

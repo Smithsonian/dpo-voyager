@@ -16,6 +16,7 @@
  */
 
 import { Index } from "@ff/core/types";
+import Vector2 from "@ff/core/Vector2";
 
 import { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
 import { IMeta } from "./meta";
@@ -135,6 +136,7 @@ export interface ILight
     point?: IPointLightProps;
     spot?: ISpotLightProps;
     hemisphere?: IHemisphereLightProps;
+    sun?: ISunLightProps;
 }
 
 /**
@@ -157,4 +159,10 @@ export interface ISpotLightProps extends IPointLightProps
 
 export interface IHemisphereLightProps {
     ground :ColorRGB;
+}
+
+export interface ISunLightProps {
+    date?: string;
+    time?: string;
+    location?: Vector2;
 }
