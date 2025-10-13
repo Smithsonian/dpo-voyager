@@ -177,7 +177,7 @@ export default class ChromeView extends DocumentView
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
-                    ${interfaceVisible ? html`<ff-button icon="undo" id="main-reset" title=${languageManager.getLocalizedString("Reset")} ?selected=${false} @click=${setup.resetViewer} class="sv-text-icon"></ff-button>` : ""}
+                    ${interfaceVisible ? html`<ff-button icon="undo" id="main-reset" title=${languageManager.getLocalizedString("Reset")} ?selected=${false} @click=${this.resetViewer} class="sv-text-icon"></ff-button>` : ""}
                     ${captionsVisible ? html`<ff-button icon="caption" id="main-caption" title=${languageManager.getLocalizedString("Captions")} ?selected=${captionsEnabled} @click=${this.updateCaptions} class="sv-text-icon"></ff-button>` : ""}
                     ${languagesVisible ? html`<ff-button id="language" style=${setup.language.codeString().length > 2 ? "font-size:0.9em"
                          : ""} text=${setup.language.codeString()} title=${languageManager.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
@@ -225,6 +225,10 @@ export default class ChromeView extends DocumentView
         HelpMain.show(this, language, navMode).then(() => {
             (this.querySelector("#main-help") as HTMLElement).focus();
         });
+    }
+
+    protected resetViewer() {
+        this.activeDocument.setup.resetViewer();
     }
 
     protected closeTools()
