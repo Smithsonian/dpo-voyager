@@ -17,6 +17,7 @@
 
 import CLight from "@ff/scene/components/CLight";
 import { INodeChangeEvent } from "@ff/graph/Node";
+import { IComponentEvent } from "@ff/graph/Component";
 
 import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyOptions";
@@ -66,20 +67,40 @@ export default class CVLightTool extends CVTool
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         this.detachLightListeners();
-
-        this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
-
-        this.attachLightListeners();
-        this.refreshLightOptions();
-
-        this.outs.light.setValue(this.lights[0] ?? null);
-
+        if (previous) {
+            previous.innerGraph.components.off(CLight, this.onLightComponentChange, this);
+        }
+        this.rebuildLightList(next, next ? this.outs.light.value : null);
+        if (next) {
+            next.innerGraph.components.on(CLight, this.onLightComponentChange, this);
+        }
         super.onActiveDocument(previous, next);
     }
 
-    protected refreshLightOptions()
+    protected rebuildLightList(document: CVDocument, preferredLight: CLight = null)
+    {
+        this.detachLightListeners();
+        this.lights = document ? document.getInnerComponents(CLight).filter(light => light.ins.enabled.value) : [];
+        this.attachLightListeners();
+        this.refreshLightOptions(preferredLight);
+    }
+
+    protected refreshLightOptions(preferredLight: CLight = null)
     {
         this.ins.light.setOptions(this.lights.map(light => light.node.name));
+        if (this.lights.length === 0) {
+            this.ins.light.setValue(0, true);
+            this.outs.light.setValue(null);
+            return;
+        }
+        const currentSelection = preferredLight && this.lights.includes(preferredLight)
+            ? preferredLight
+            : (this.outs.light.value && this.lights.includes(this.outs.light.value)
+                ? this.outs.light.value
+                : this.lights[Math.min(this.ins.light.getValidatedValue(), this.lights.length - 1)]);
+        const index = this.lights.indexOf(currentSelection);
+        this.ins.light.setValue(index, true);
+        this.outs.light.setValue(currentSelection);
     }
 
     protected attachLightListeners()
@@ -96,10 +117,31 @@ export default class CVLightTool extends CVTool
         this.lights.forEach(light => light.node?.off("change", this.onLightNodeChange, this));
     }
 
+    protected onLightComponentChange(event: IComponentEvent<CLight>)
+    {
+        if (!event || !event.object) {
+            return;
+        }
+        const document = this.activeDocument;
+        if (!document || event.object.graph !== document.innerGraph) {
+            return;
+        }
+        let preferredLight = this.outs.light.value as CLight;
+        if (event.add && event.object.ins.enabled.value) {
+            preferredLight = event.object;
+        }
+        else if (event.remove && preferredLight === event.object) {
+            preferredLight = null;
+        }
+        this.rebuildLightList(document, preferredLight);
+    }
+
     protected onLightNodeChange(event: INodeChangeEvent)
     {
         if (!event || event.what === "name") {
-            this.refreshLightOptions();
+                this.refreshLightOptions(this.outs.light.value as CLight);
+        } else if (event.what === "enabled") {
+            this.rebuildLightList(this.activeDocument, this.outs.light.value as CLight);
         }
     }
 }
