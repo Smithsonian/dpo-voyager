@@ -711,6 +711,10 @@ Version: ${ENV_VERSION}
         reader.ins.articleId.setValue(id);
     }
 
+    resetViewer(){
+        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.resetViewer();
+    }
+
     // helper function to standardize parsing boolean string params
     protected isTrue(input: string)
     {
@@ -724,6 +728,7 @@ Version: ${ENV_VERSION}
         }
         return output;
     }
+
 }
 
 window["VoyagerExplorer"] = ExplorerApplication;
