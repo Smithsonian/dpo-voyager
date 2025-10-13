@@ -338,4 +338,18 @@ export default class MainView extends CustomElement
             this.application.setLanguage(languageID);
         }
     }
+
+    getLanguages()
+    {
+        if(this.application) {
+            return this.application.getLanguages();
+        }
+    }
+
+    getActiveLanguage()
+    {
+        if(this.application) {
+            return this.application.getActiveLanguage();
+        }
+    }
 }
