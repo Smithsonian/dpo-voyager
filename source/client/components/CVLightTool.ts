@@ -24,7 +24,7 @@ import "../ui/properties/PropertyOptions";
 import "../ui/properties/PropertySlider";
 import "../ui/properties/PropertyColor";
 import "../ui/properties/PropertyString";
-import "../ui/properties/PropertyDate";
+import "../ui/properties/PropertyDateTime";
 
 import CVDocument from "./CVDocument";
 
@@ -187,14 +187,13 @@ export class LightToolView extends ToolView<CVLightTool>
     const navigation = document.setup.navigation;
     const language = document.setup.language;
 
-        const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+    const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
 
-        const sunPropertyControls = activeLight instanceof CSunLight ? html`
-            <sv-property-date .property=${activeLight.ins.date} name=${language.getLocalizedString("Date")}></sv-property-date>
-            <sv-property-string .property=${activeLight.ins.time} name=${language.getLocalizedString("Time")}></sv-property-string>
-            <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
-            <sv-property-number .property=${activeLight.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
-        ` : null;
+    const sunPropertyControls = activeLight instanceof CSunLight ? html`
+      <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Date/Time (at Location)")}></sv-property-datetime>
+      <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
+      <sv-property-number .property=${activeLight.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
+    ` : null;
 
         const lightDetails = activeLight ? html`<div class="sv-section">
             <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>

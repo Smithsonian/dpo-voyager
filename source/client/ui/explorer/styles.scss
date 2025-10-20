@@ -1256,19 +1256,19 @@ $tour-entry-indent: 12px;
     }
   }
 
-  &.sv-property-date {
-    .sv-property-field {
-      position: relative;
-      touch-action: none;
-      display: inline-flex;
-    }
-
-    .ff-input[type="date"] {
-      position: relative;
-      touch-action: none;
-      width: auto;
-    }
+&.sv-property-datetime {
+  .sv-property-field {
+    position: relative;
+    touch-action: none;
+    display: inline-flex;
   }
+
+  .ff-input[type="datetime-local"] {
+    position: relative;
+    touch-action: none;
+    width: auto;
+  }
+}
 
   &.sv-property-color {
     position: relative;

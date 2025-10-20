@@ -97,7 +97,9 @@ export const schemas: Dictionary<IPropertySchema> = {
     ColorRGBA: { preset: [1, 1, 1, 1], semantic: "color", labels: labels.rgba, min: 0, max: 1, bar: true },
     Boolean: { preset: false },
     String: { preset: "" },
+    Time: { preset: "12:00", semantic: "time" },
     Date: { preset: new Date(Date.now()), semantic: "date" },
+        DateTime: { preset: new Date(Date.now()), semantic: "datetime" },
     AssetPath: { preset: "", semantic: "asset-path" },
     Object: { preset: null, objectType: Object },
     Event: { preset: 0, event: true }
@@ -125,7 +127,7 @@ export const types = {
     ColorRGBA: (path: string, props?: SchemaProps<Vector>) => makeType<Vector>(schemas.ColorRGBA, path, props),
     Boolean: (path: string, props?: SchemaProps<boolean>) => makeType<boolean>(schemas.Boolean, path, props),
     String: (path: string, props?: SchemaProps<string>) => makeType<string>(schemas.String, path, props),
-    Date: (path: string, props?: SchemaProps<Date>) => makeType<Date>(schemas.Date, path, props),
+    DateTime: (path: string, props?: SchemaProps<Date>) => makeType<Date>(schemas.DateTime, path, props),
     AssetPath: (path: string, props?: SchemaProps<string>) => makeType<string>(schemas.AssetPath, path, props),
     Enum: <T>(path: string, enumeration: T, props?: SchemaProps<PropOf<T>>) => makeEnumType(enumeration, path, props),
     Option: (path: string, options: string[], props?: SchemaProps<number>) => makeOptionType(options, path, props),

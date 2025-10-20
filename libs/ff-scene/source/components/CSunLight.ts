@@ -20,8 +20,7 @@ export default class CSunLight extends CLight {
             preset: 100,
             min: 0,
         }),
-        date: types.Date("Light.Date", { preset: new Date(Date.now()) }),
-        time: types.String("Light.Time", "12:00"),
+        datetime: types.DateTime("Light.DateTime", { preset: new Date(Date.now()) }),
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
     };

@@ -22,8 +22,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
-            this.ins.date,
-            this.ins.time,
+            this.ins.datetime,
             this.ins.latitude,
             this.ins.longitude,
             // shadow properties
@@ -39,8 +38,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
         return [
             this.ins.color,
             this.ins.intensity,
-            this.ins.date,
-            this.ins.time,
+            this.ins.datetime,
             this.ins.latitude,
             this.ins.longitude
         ];
@@ -62,8 +60,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            date: data.sun?.date !== undefined ? data.sun.date : ins.date.schema.preset,
-            time: data.sun?.time !== undefined ? data.sun.time : ins.time.schema.preset,
+            datetime: data.sun?.datetime !== undefined ? data.sun.datetime : ins.datetime.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
 
@@ -88,8 +85,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
             sun: {
-                date: ins.date.value,
-                time: ins.time.value,
+                datetime: ins.datetime.value,
                 latitude: ins.latitude.value,
                 longitude: ins.longitude.value,
             }
