@@ -1256,6 +1256,20 @@ $tour-entry-indent: 12px;
     }
   }
 
+  &.sv-property-date {
+    .sv-property-field {
+      position: relative;
+      touch-action: none;
+      display: inline-flex;
+    }
+
+    .ff-input[type="date"] {
+      position: relative;
+      touch-action: none;
+      width: auto;
+    }
+  }
+
   &.sv-property-color {
     position: relative;
     display: block;
@@ -1299,6 +1313,7 @@ $tour-entry-indent: 12px;
       .ff-input, .ff-unit{
         position: relative;
         touch-action: none;
+        width: auto;
       }
 
       .ff-bar, .ff-unit{

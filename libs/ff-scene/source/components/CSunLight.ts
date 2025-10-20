@@ -20,9 +20,10 @@ export default class CSunLight extends CLight {
             preset: 100,
             min: 0,
         }),
-        date: types.String("Light.Date", { preset: "2024-06-21" }),
-        time: types.String("Light.Time", { preset: "12:00" }),
-        location: types.Vector2("Light.Location", { preset: [52.356424, 4.956953] }),
+        date: types.Date("Light.Date", { preset: new Date(Date.now()) }),
+        time: types.String("Light.Time", "12:00"),
+        latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
+        longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
     };
 
     ins = this.addInputs<CLight, typeof CSunLight["sunLightIns"]>(CSunLight.sunLightIns);
@@ -34,7 +35,7 @@ export default class CSunLight extends CLight {
         this.object3D = new DirectionalLight();
         this.light.target.matrixAutoUpdate = false;
     }
-    
+
     get light(): DirectionalLight {
         return this.object3D as DirectionalLight;
     }

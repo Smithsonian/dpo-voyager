@@ -162,7 +162,8 @@ export interface IHemisphereLightProps {
 }
 
 export interface ISunLightProps {
-    date?: string;
+    date?: Date;
     time?: string;
-    location?: Vector2;
+    latitude?: number;
+    longitude?: number;
 }
