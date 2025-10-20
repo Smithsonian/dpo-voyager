@@ -7,6 +7,7 @@
 */
 
 import CSunLight from "@ff/scene/components/CSunLight";
+import { DateTime } from "luxon";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
@@ -60,7 +61,9 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined ? data.sun.datetime : ins.datetime.schema.preset,
+            datetime: data.sun?.datetime !== undefined 
+                ? (data.sun.datetime instanceof Date ? DateTime.fromJSDate(data.sun.datetime) : data.sun.datetime)
+                : ins.datetime.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
 

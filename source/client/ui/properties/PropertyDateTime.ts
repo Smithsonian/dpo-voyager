@@ -5,6 +5,7 @@
 
 import Property from "@ff/graph/Property";
 import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
+import { DateTime } from "luxon";
 
 import PropertyBase from "./PropertyBase";
 
@@ -54,26 +55,22 @@ export default class PropertyDateTime extends PropertyBase {
   protected onChange = (event: Event) => {
     const value = (event.target as HTMLInputElement).value; // yyyy-MM-ddTHH:mm
     if (value) {
-      this.property.setValue(new Date(value));
+      this.property.setValue(DateTime.fromISO(value));
     }
   };
 
-  private toInputValue(date?: Date): string {
-    if (!date || !(date instanceof Date)) {
+  private toInputValue(dt?: DateTime): string {
+    if (!dt || !DateTime.isDateTime(dt)) {
       return "";
     }
-    const yyyy = date.getFullYear();
-    const MM = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    const hh = String(date.getHours()).padStart(2, "0");
-    const mm = String(date.getMinutes()).padStart(2, "0");
-    return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+    // Format as yyyy-MM-ddTHH:mm for datetime-local input
+    return dt.toFormat("yyyy-MM-dd'T'HH:mm");
   }
 
   protected render() {
     const property = this.property;
     const name = this.name || property.name;
-    const value = property.value as Date;
+    const value = property.value as DateTime;
     const inputValue = this.toInputValue(value);
 
     return html`${name ? html`<label class="ff-label ff-off">${name}</label>` : null}
