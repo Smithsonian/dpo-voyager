@@ -53,18 +53,16 @@ export default class PropertyDateTime extends PropertyBase {
   }
 
   protected onChange = (event: Event) => {
-    const value = (event.target as HTMLInputElement).value; // yyyy-MM-ddTHH:mm
-    if (value) {
-      this.property.setValue(DateTime.fromISO(value));
+    const datetime: string = (event.target as HTMLInputElement).value; // yyyy-MM-ddTHH:mm
+    if (datetime) {
+      this.property.setValue(DateTime.fromISO(datetime));
     }
   };
 
   private toInputValue(dt?: DateTime): string {
-    if (!dt || !DateTime.isDateTime(dt)) {
-      return "";
-    }
-    // Format as yyyy-MM-ddTHH:mm for datetime-local input
-    return dt.toFormat("yyyy-MM-dd'T'HH:mm");
+    return (dt && DateTime.isDateTime(dt))
+      ? dt.toFormat("yyyy-MM-dd'T'HH:mm")
+      : "";
   }
 
   protected render() {
@@ -74,14 +72,6 @@ export default class PropertyDateTime extends PropertyBase {
     const inputValue = this.toInputValue(value);
 
     return html`${name ? html`<label class="ff-label ff-off">${name}</label>` : null}
-      <input
-        ?disabled=${this.ariaDisabled === "true"}
-        type="datetime-local"
-        class="sv-property-field ff-input"
-        .value=${inputValue}
-        @change=${this.onChange}
-        @focus=${(e) => { e.target.select(); }}
-        @keypress=${(e) => { if (e.key === "Enter") { e.target.blur(); } }}
-      />`;
+      <input ?disabled=${this.ariaDisabled === "true"} type="datetime-local" class="sv-property-field ff-input" .value=${inputValue} @change=${this.onChange} @focus=${(e) => { e.target.select(); }} @keypress=${(e) => { if (e.key === "Enter") { e.target.blur(); } }} />`;
   }
 }
