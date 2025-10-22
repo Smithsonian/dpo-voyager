@@ -183,7 +183,8 @@ export class LightToolView extends ToolView<CVLightTool>
         const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
 
         const sunPropertyControls = activeLight instanceof CSunLight ? html`
-          <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name="Date/Time (TZ: ${activeLight.ins.datetime.value.zone.name})"></sv-property-datetime>
+          <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
+          <sv-property-timezone .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
           <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
           <sv-property-number .property=${activeLight.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
         ` : null;

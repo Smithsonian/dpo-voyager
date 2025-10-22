@@ -1270,6 +1270,15 @@ $tour-entry-indent: 12px;
   }
 }
 
+&.sv-property-timezone {
+  .sv-property-field{
+    position: relative;
+    touch-action: none;
+    display: inline-flex;
+    width: auto;
+  }
+}
+
   &.sv-property-color {
     position: relative;
     display: block;
