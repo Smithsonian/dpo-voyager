@@ -55,6 +55,7 @@
     },
     "homepage": "https://github.com/Smithsonian/dpo-voyager#readme",
     "dependencies": {
+        "@takram/three-atmosphere": "^0.14.0",
         "ajv": "^8.7.1",
         "buffer": "^6.0.3",
         "client-zip": "^2.5.0",
