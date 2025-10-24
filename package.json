@@ -55,7 +55,7 @@
     },
     "homepage": "https://github.com/Smithsonian/dpo-voyager#readme",
     "dependencies": {
-        "ajv": "^8.6.2",
+        "ajv": "^8.7.1",
         "buffer": "^6.0.3",
         "client-zip": "^2.5.0",
         "clone-deep": "^4.0.1",
@@ -77,7 +77,7 @@
         "sanitize-html": "^2.13.1",
         "simple-dropzone": "^0.8.3",
         "stream-browserify": "^3.0.0",
-        "three": "^0.169.0",
+        "three": "^0.170.0",
         "tinymce": "^6.3.1",
         "toposort": "^2.0.2",
         "webdav": "^5.8.0",
