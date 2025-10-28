@@ -206,7 +206,7 @@ export class LightToolView extends ToolView<CVLightTool>
             </div>
         </div>`;
     }
-
+    
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
