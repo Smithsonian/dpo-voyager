@@ -180,24 +180,28 @@ export class LightToolView extends ToolView<CVLightTool>
         const navigation = document.setup.navigation;
         const language = document.setup.language;
 
-        const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+        var lightDetails = null;
 
-        const sunPropertyControls = activeLight instanceof CSunLight ? html`
-          <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
-          <sv-property-timezone .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
-          <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
-          <sv-property-number .property=${activeLight.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
-        ` : null;
+        if (activeLight) {
+          const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
 
-        const lightDetails = activeLight ? html`<div class="sv-section">
-            <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
-            <div class="sv-tool-controls">
-                <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
-                <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
-            ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
-            ${sunPropertyControls}
-            </div>
-        </div>` : null;
+          const sunPropertyControls = activeLight instanceof CSunLight ? html`
+            <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
+            <sv-property-timezone .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
+            <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
+            <sv-property-number .property=${activeLight.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
+          ` : null;
+
+          lightDetails = html`<div class="sv-section">
+              <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
+              <div class="sv-tool-controls">
+                  <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
+                  <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
+              ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
+              ${sunPropertyControls}
+              </div>
+          </div>`;
+        }
 
         return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
