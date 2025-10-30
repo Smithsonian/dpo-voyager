@@ -194,6 +194,33 @@
   animation:spin 5s linear infinite;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// COMPASS
+
+.sv-compass {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  pointer-events: auto;
+  user-select: none;
+  z-index: 100;
+}
+
+.sv-compass-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  svg {
+    display: block;
+  }
+}
 
 
 
