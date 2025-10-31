@@ -115,6 +115,7 @@ export default class SceneView extends SystemView
         this.overlay.addEventListener("keydown", this.onKeyDownOverlay);
 
         this.compass = document.createElement("sv-compass") as any;
+        this.compass.style.display = "none";
         this.appendChild(this.compass);
 
         this.splitter = this.appendElement(QuadSplitter, {
