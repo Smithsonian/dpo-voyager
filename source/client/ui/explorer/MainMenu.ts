@@ -160,7 +160,7 @@ export default class MainMenu extends DocumentView
                 ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
             ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} id="anno-btn" icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
                 ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-            <ff-button icon="globe" id="compass-btn" title=${language.getLocalizedString("Show/Hide Compass")}
+            <ff-button icon="compass" id="compass-btn" title=${language.getLocalizedString("Show/Hide Compass")}
                 ?selected=${compassActive} @click=${this.onToggleCompass}></ff-button>
             <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
                 ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
