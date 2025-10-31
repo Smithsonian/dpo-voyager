@@ -263,6 +263,24 @@ export default class SceneView extends SystemView
         }
     }
 
+    protected updateCompassRotation = () => {
+        if (this.compass) {
+            const orbit = this.system.getComponent(CVOrbitNavigation).ins.orbit.value;
+            const [pitch, yaw, roll] = orbit;
+            this.compass.cameraRotation = yaw;
+        }
+    };
+
+    toggleCompass() {
+        if (this.compass) {
+            this.compass.style.display = this.isCompassVisible() ? "none" : "block";
+        }
+    }
+
+    isCompassVisible(): boolean {
+        return this.compass && this.compass.style.display !== "none";
+    }
+
     /*protected onResize()
     {
         this.view.resize();
