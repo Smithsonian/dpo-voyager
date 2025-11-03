@@ -46,11 +46,9 @@ export default class CSunLight extends CLight {
         return this.object3D as DirectionalLight;
     }
 
-    protected calculateColor(altitude: number): [number, number, number] {
-        const degrees = altitude * (180 / Math.PI);
-
+    protected calculateColor(degrees: number): [number, number, number] {
         let r: number, g: number, b: number;
-        
+
         if (degrees < 0) {
             // deep orange to red (twilight/night)
             const factor = Math.max(0, 1 + degrees / 10);
@@ -76,8 +74,26 @@ export default class CSunLight extends CLight {
             g = 1.0 - 0.02 * factor;
             b = 0.9 + 0.1 * factor;
         }
-        
+
         return [r, g, b];
+    }
+
+    protected calculateIntensity(degrees: number): number {
+        if (degrees < -6) {
+            return 0;
+        } else if (degrees < 0) {
+            const factor = (degrees + 6) / 6;
+            return 0.3 * factor;
+        } else if (degrees < 10) {
+            const factor = degrees / 10;
+            return 0.3 + 0.7 * factor;
+        } else if (degrees < 30) {
+            const factor = (degrees - 10) / 20;
+            return 1.0 + 1.0 * factor;
+        } else {
+            const factor = Math.min(1, (degrees - 30) / 60);
+            return 2.0 + 0.5 * factor;
+        }
     }
 
     update(context: IUpdateContext) {
@@ -88,9 +104,14 @@ export default class CSunLight extends CLight {
         const sunPosition = SunCalc.getPosition(
             this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
         );
-        
-        const sunColor = this.calculateColor(sunPosition.altitude);
+
+        const sunDegrees = sunPosition.altitude * (180 / Math.PI);
+
+        const sunColor = this.calculateColor(sunDegrees);
         ins.color.setValue(sunColor);
+
+        const sunIntensity = this.calculateIntensity(sunDegrees);
+        ins.intensity.setValue(sunIntensity);
 
         if (ins.color.changed || ins.intensity.changed) {
             light.intensity = ins.intensity.value * Math.PI;  //TODO: Remove PI factor here and in CVLightsTask when we can support physically correct lighting units
