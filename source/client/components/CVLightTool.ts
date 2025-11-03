@@ -56,7 +56,6 @@ export default class CVLightTool extends CVTool
 
     update(context)
     {
-
         this.outs.light.setValue(this.lights[this.ins.light.getValidatedValue()]);
         return true;
     }

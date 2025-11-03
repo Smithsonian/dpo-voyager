@@ -89,7 +89,6 @@ import CVDerivativesController from "client/components/CVDerivativesController";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Order by class hierarchy, higher classes first
 export const lightTypes = [
     CVDirectionalLight,
     CVPointLight,
@@ -98,7 +97,7 @@ export const lightTypes = [
     CVHemisphereLight,
     CVRectLight,
     CVEnvironmentLight,
-    CVSunLight, // inherits from CVDirectionalLight, so place below
+    CVSunLight,
 ] as const;
 
 const types = [

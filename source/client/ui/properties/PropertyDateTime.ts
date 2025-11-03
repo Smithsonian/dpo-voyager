@@ -1,9 +1,10 @@
 /**
- * DateTime properties for both date/time and timezone selection.
- * 
- * @author Carsten Schnober <c.schnober@esciencecenter.nl>
- * @license Apache-2.0
- */
+* Funded by the Netherlands eScience Center in the context of the
+* [Dynamic 3D]{@link https://research-software-directory.org/projects/dynamic3d} project
+* and the "Paradata in 3D Scholarship" workshop {@link https://research-software-directory.org/projects/paradata-in-3d-scholarship}
+*
+* @author Carsten Schnober <c.schnober@esciencecenter.nl>
+*/
 
 import Property from "@ff/graph/Property";
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";

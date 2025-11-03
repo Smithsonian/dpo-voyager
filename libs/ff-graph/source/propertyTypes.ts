@@ -98,8 +98,6 @@ export const schemas: Dictionary<IPropertySchema> = {
     ColorRGBA: { preset: [1, 1, 1, 1], semantic: "color", labels: labels.rgba, min: 0, max: 1, bar: true },
     Boolean: { preset: false },
     String: { preset: "" },
-    Time: { preset: "12:00", semantic: "time" },
-    Date: { preset: new Date(Date.now()), semantic: "date" },
     DateTime: { preset: DateTime.now(), semantic: "datetime" },
     AssetPath: { preset: "", semantic: "asset-path" },
     Object: { preset: null, objectType: Object },

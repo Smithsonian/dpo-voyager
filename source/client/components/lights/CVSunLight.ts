@@ -3,14 +3,14 @@
 * [Dynamic 3D]{@link https://research-software-directory.org/projects/dynamic3d} project
 * and the "Paradata in 3D Scholarship" workshop {@link https://research-software-directory.org/projects/paradata-in-3d-scholarship}
 *
-* @author c.schnober@esciencecenter.nl
+* @author Carsten Schnober <c.schnober@esciencecenter.nl>
 */
 
+import { EShadowMapResolution } from "@ff/scene/components/CLight";
 import CSunLight from "@ff/scene/components/CSunLight";
 import { DateTime } from "luxon";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
-import { EShadowMapResolution } from "@ff/scene/components/CLight";
 
 export default class CVSunLight extends CSunLight implements ICVLight {
     static readonly typeName: string = "CVSunLight";
