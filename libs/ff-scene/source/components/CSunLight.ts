@@ -46,18 +46,56 @@ export default class CSunLight extends CLight {
         return this.object3D as DirectionalLight;
     }
 
+    protected calculateColor(altitude: number): [number, number, number] {
+        const degrees = altitude * (180 / Math.PI);
+
+        let r: number, g: number, b: number;
+        
+        if (degrees < 0) {
+            // deep orange to red (twilight/night)
+            const factor = Math.max(0, 1 + degrees / 10);
+            r = 1.0;
+            g = 0.3 + 0.3 * factor;
+            b = 0.1 * factor;
+        } else if (degrees < 10) {
+            // orange to yellow (sunrise/sunset)
+            const factor = degrees / 10;
+            r = 1.0;
+            g = 0.6 + 0.3 * factor;
+            b = 0.2 + 0.3 * factor;
+        } else if (degrees < 30) {
+            // warm white
+            const factor = (degrees - 10) / 20;
+            r = 1.0;
+            g = 0.9 + 0.1 * factor;
+            b = 0.5 + 0.4 * factor;
+        } else {
+            // cool white to slightly blue
+            const factor = Math.min(1, (degrees - 30) / 30);
+            r = 1.0 - 0.05 * factor;
+            g = 1.0 - 0.02 * factor;
+            b = 0.9 + 0.1 * factor;
+        }
+        
+        return [r, g, b];
+    }
+
     update(context: IUpdateContext) {
         super.update(context);
         const light = this.light;
         const ins = this.ins;
 
+        const sunPosition = SunCalc.getPosition(
+            this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
+        );
+        
+        const sunColor = this.calculateColor(sunPosition.altitude);
+        ins.color.setValue(sunColor);
+
         if (ins.color.changed || ins.intensity.changed) {
             light.intensity = ins.intensity.value * Math.PI;  //TODO: Remove PI factor here and in CVLightsTask when we can support physically correct lighting units
         }
 
-        const sunPosition = SunCalc.getPosition(
-            this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
-        );
         const distance = 5000;
 
         // See https://stackoverflow.com/a/71968928/1897839
