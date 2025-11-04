@@ -28,6 +28,7 @@ export default class CSunLight extends CLight {
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
+        sunDistance: types.Number("Light.SunDistance", { preset: 5000}),
     };
 
     ins = this.addInputs<CLight, typeof CSunLight["sunLightIns"]>(CSunLight.sunLightIns);
@@ -122,12 +123,10 @@ export default class CSunLight extends CLight {
             light.intensity = ins.intensity.value * Math.PI;  //TODO: Remove PI factor here and in CVLightsTask when we can support physically correct lighting units
         }
 
-        const distance = 5000;
-
         // See https://stackoverflow.com/a/71968928/1897839
-        const x = distance * Math.cos(sunPosition.altitude) * Math.sin(sunPosition.azimuth);
-        const y = distance * Math.cos(sunPosition.altitude) * Math.cos(sunPosition.azimuth);
-        const z = distance * Math.sin(sunPosition.altitude);
+        const x = this.ins.sunDistance.value * Math.cos(sunPosition.altitude) * Math.sin(sunPosition.azimuth);
+        const y = this.ins.sunDistance.value * Math.cos(sunPosition.altitude) * Math.cos(sunPosition.azimuth);
+        const z = this.ins.sunDistance.value * Math.sin(sunPosition.altitude);
 
         this.transform.ins.position.setValue([x, y, z]);
         ins.position.setValue([x, y, z]);
