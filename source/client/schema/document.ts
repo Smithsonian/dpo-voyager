@@ -166,4 +166,5 @@ export interface ISunLightProps {
     datetime?: DateTime;
     latitude?: number;
     longitude?: number;
+    intensityFactor?: number;
 }

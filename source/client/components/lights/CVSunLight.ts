@@ -26,6 +26,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.datetime,
             this.ins.latitude,
             this.ins.longitude,
+            this.ins.intensityFactor,
             // shadow properties
             this.ins.shadowEnabled,
             this.ins.shadowSize,
@@ -41,7 +42,8 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.intensity,
             this.ins.datetime,
             this.ins.latitude,
-            this.ins.longitude
+            this.ins.longitude,
+            this.ins.intensityFactor
         ];
     }
 
@@ -66,6 +68,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
                 : ins.datetime.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
+            intensityFactor: data.sun?.intensityFactor !== undefined ? data.sun.intensityFactor : ins.intensityFactor.schema.preset,
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
@@ -91,6 +94,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
                 datetime: ins.datetime.value,
                 latitude: ins.latitude.value,
                 longitude: ins.longitude.value,
+                intensityFactor: ins.intensityFactor.value,
             }
         } as ILight;
 

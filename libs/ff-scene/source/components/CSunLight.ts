@@ -27,6 +27,7 @@ export default class CSunLight extends CLight {
         }),
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
+        intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
     };
 
     ins = this.addInputs<CLight, typeof CSunLight["sunLightIns"]>(CSunLight.sunLightIns);
@@ -79,21 +80,25 @@ export default class CSunLight extends CLight {
     }
 
     protected calculateIntensity(degrees: number): number {
+        let intensity: number;
+
         if (degrees < -6) {
-            return 0;
+            intensity = 0;
         } else if (degrees < 0) {
             const factor = (degrees + 6) / 6;
-            return 0.3 * factor;
+            intensity = 0.3 * factor;
         } else if (degrees < 10) {
             const factor = degrees / 10;
-            return 0.3 + 0.7 * factor;
+            intensity = 0.3 + 0.7 * factor;
         } else if (degrees < 30) {
             const factor = (degrees - 10) / 20;
-            return 1.0 + 1.0 * factor;
+            intensity = 1.0 + 1.0 * factor;
         } else {
             const factor = Math.min(1, (degrees - 30) / 60);
-            return 2.0 + 0.5 * factor;
+            intensity = 2.0 + 0.5 * factor;
         }
+        return intensity * this.ins.intensityFactor.value;
+
     }
 
     update(context: IUpdateContext) {
