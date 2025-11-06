@@ -195,7 +195,7 @@ export class LightToolView extends ToolView<CVLightTool>
               <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
               <div class="sv-tool-controls">
                   <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
-                  <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
+                  <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="10"></sv-property-slider>
               ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
               ${sunPropertyControls}
               </div>
