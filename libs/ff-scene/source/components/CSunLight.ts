@@ -3,7 +3,7 @@
 * [Dynamic 3D]{@link https://research-software-directory.org/projects/dynamic3d} project
 * and the "Paradata in 3D Scholarship" workshop {@link https://research-software-directory.org/projects/paradata-in-3d-scholarship}
 *
-* @author c.schnober@esciencecenter.nl
+* @author Carsten Schnober <c.schnober@esciencecenter.nl>
 */
 
 import { IUpdateContext, Node, types } from "@ff/graph/Component";
@@ -28,7 +28,7 @@ export default class CSunLight extends CLight {
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
-        sunDistance: types.Number("Light.SunDistance", { preset: 5000}),
+        sunDistance: types.Number("Light.SunDistance", { preset: 500}),
     };
 
     ins = this.addInputs<CLight, typeof CSunLight["sunLightIns"]>(CSunLight.sunLightIns);
