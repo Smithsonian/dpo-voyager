@@ -95,11 +95,6 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
                 currentType = ELightType[lt.type];
             }
         }
-        const sunExists: boolean = (node.transform.parent.node as NVNode).transform.children
-            .some(child => {
-                const light = (child.node as NVNode).light
-                return light && light instanceof CVSunLight;
-            });
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
             ${(node.light && !(node.light instanceof CVEnvironmentLight)) ? html`<div class="ff-group" style="padding:4px 8px;">
