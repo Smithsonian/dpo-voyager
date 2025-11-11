@@ -28,7 +28,7 @@ export default class CSunLight extends CLight {
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
-        sunDistance: types.Number("Light.SunDistance", { preset: 500}),
+        sunDistance: types.Number("Light.SunDistance", { preset: 500 }),
     };
 
     ins = this.addInputs<CLight, typeof CSunLight["sunLightIns"]>(CSunLight.sunLightIns);
@@ -99,7 +99,15 @@ export default class CSunLight extends CLight {
             intensity = 2.0 + 0.5 * factor;
         }
         return intensity * this.ins.intensityFactor.value;
+    }
 
+    protected calculatePosition(altitude: number, azimuth: number): [number, number, number] {
+        // See https://stackoverflow.com/a/71968928/1897839
+        const x = this.ins.sunDistance.value * Math.cos(altitude) * Math.sin(azimuth);
+        const y = this.ins.sunDistance.value * Math.cos(altitude) * Math.cos(azimuth);
+        const z = this.ins.sunDistance.value * Math.sin(altitude);
+
+        return [x, y, z];
     }
 
     update(context: IUpdateContext) {
@@ -123,11 +131,7 @@ export default class CSunLight extends CLight {
             light.intensity = ins.intensity.value * Math.PI;  //TODO: Remove PI factor here and in CVLightsTask when we can support physically correct lighting units
         }
 
-        // See https://stackoverflow.com/a/71968928/1897839
-        const x = this.ins.sunDistance.value * Math.cos(sunPosition.altitude) * Math.sin(sunPosition.azimuth);
-        const y = this.ins.sunDistance.value * Math.cos(sunPosition.altitude) * Math.cos(sunPosition.azimuth);
-        const z = this.ins.sunDistance.value * Math.sin(sunPosition.altitude);
-
+        const [x, y, z] = this.calculatePosition(sunPosition.altitude, sunPosition.azimuth);
         this.transform.ins.position.setValue([x, y, z]);
         ins.position.setValue([x, y, z]);
 
