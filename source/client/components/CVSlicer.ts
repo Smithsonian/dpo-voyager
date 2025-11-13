@@ -193,7 +193,7 @@ export default class CVSlicer extends Component
 
             // configure material
             material.defines["CUT_PLANE"] = enabled;
-            enabled ? material.userData["sideCache"] = material.side : null;
+            enabled || material.userData["sideCache"] == undefined ? material.userData["sideCache"] = material.side : null;
             material.side = enabled ? DoubleSide : material.userData["sideCache"];
 
             enabled ? material.clippingPlanes = [localPlane] : null;
