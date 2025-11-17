@@ -17,6 +17,7 @@
 
 import { Dictionary } from "@ff/core/types";
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import Notification from "@ff/ui/Notification";
 
 import { IReader, EReaderPosition } from "client/schema/setup";
 
@@ -129,6 +130,12 @@ export default class CVReader extends Component
 
         if (ins.enabled.changed) {
             //this.analytics.sendProperty("Reader.Enabled", ins.enabled.value);
+        }
+        if (ins.position.changed) {
+            if(ins.position.value == EReaderPosition.Left) {
+                Notification.show(`Reader position not available. Using Overlay.`);
+                ins.position.setValue(EReaderPosition.Overlay);
+            }
         }
         if (ins.articleId.changed) {
             const entry = this._articles[ins.articleId.value] || null;
