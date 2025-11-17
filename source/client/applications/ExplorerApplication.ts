@@ -703,6 +703,19 @@ Version: ${ENV_VERSION}
         }
     }
 
+    // get active language
+    getActiveLanguage()
+    {
+        const activeLanguage = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.language.ins.activeLanguage;
+        return ELanguageType[activeLanguage.value];
+    }
+
+    // get available languages
+    getLanguages(){
+        const languages = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.language.sceneLanguages;
+        return languages.map((lang)=>{return ELanguageType[lang.id]});
+    }
+    
     // set the active article
     setActiveArticle(id: string)
     {
