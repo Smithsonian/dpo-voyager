@@ -352,4 +352,11 @@ export default class MainView extends CustomElement
             return this.application.getActiveLanguage();
         }
     }
+    
+    resetViewer()
+    {
+        if(this.application) {
+            this.application.resetViewer();        
+        }
+    }
 }
