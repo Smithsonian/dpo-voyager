@@ -29,11 +29,9 @@ import CVModel2 from "./CVModel2";
 import CVAssetManager from "./CVAssetManager";
 
 import NVNode from "../nodes/NVNode";
-import {Vector2, CanvasTexture, Mesh} from 'three';
+import {Vector2, CanvasTexture, Mesh, MeshStandardMaterial} from 'three';
 import VGPUPicker from "../utils/VGPUPicker";
-import { EDerivativeQuality, EDerivativeUsage, EAssetType, EMapType } from "client/schema/model";
-import UberPBRMaterial from "client/shaders/UberPBRMaterial";
-import UberPBRAdvMaterial from "client/shaders/UberPBRAdvMaterial";
+import { EDerivativeQuality, EAssetType, EMapType } from "client/schema/model";
 import CVAssetReader from "./CVAssetReader";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 
@@ -104,12 +102,12 @@ export default class CVOverlayTask extends CVTask
         let mat = null;
         if(this,this.activeModel.object3D.type === "Mesh") {
             const mesh = this.activeModel.object3D as Mesh;
-            mat = mesh.material as UberPBRMaterial | UberPBRAdvMaterial;
+            mat = mesh.material as MeshStandardMaterial;
         }
         else {
             const mesh = this.activeModel.object3D.getObjectByProperty("type", "Mesh") as Mesh;
             if(mesh) {
-                mat = mesh.material as UberPBRMaterial | UberPBRAdvMaterial;
+                mat = mesh.material as MeshStandardMaterial;
             }
         }
         return mat;
@@ -208,7 +206,7 @@ export default class CVOverlayTask extends CVTask
                 this.assetReader.getTexture(overlay.asset.data.uri).then((map) => {
                     map.flipY = false;
                     overlay.texture = map;
-                    this.material.zoneMap = map;
+                    this.material.userData.shader.uniforms.zoneMap.value = map;
                     this.onOverlayChange();
                 });
             }
@@ -372,9 +370,9 @@ export default class CVOverlayTask extends CVTask
         }
         
         if(this.material) {
-            this.material.zoneMap = this.activeTexture;
+            this.material.userData.shader.uniforms.zoneMap.value = this.activeTexture;
             this.material.transparent = isShowing;
-            this.material.enableZoneMap(isShowing);
+            this.material.defines["USE_ZONEMAP"] = isShowing;
         }
 
         if(this.activeTexture) {

@@ -16,7 +16,6 @@
  */
 
 import Node from "@ff/graph/Node";
-import Component from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyView";
@@ -24,13 +23,17 @@ import "@ff/scene/ui/PropertyView";
 import { customElement, property, html } from "@ff/ui/CustomElement";
 import Tree from "@ff/ui/Tree";
 
+import CAmbientLight from "@ff/scene/components/CAmbientLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
+import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
+import CSpotLight from "@ff/scene/components/CSpotLight";
 import CTransform from "@ff/scene/components/CTransform";
 import { Property as SceneUIProperty } from "@ff/scene/ui/PropertyField";
+import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
 import { lightTypes } from "../../applications/coreTypes";
 import CVSettingsTask from "../../components/CVSettingsTask";
 import { TaskView } from "../../components/CVTask";
-import { CLight, ELightType, ICVLight } from "../../components/lights/CVLight";
+import { CLight, ELightType } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
 import NodeTree from "./NodeTree";
 
@@ -92,7 +95,7 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
         }
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
-            ${node.light ? html`<div class="ff-group" style="padding:4px 8px;">
+            ${(node.light && !(node.light instanceof CVEnvironmentLight)) ? html`<div class="ff-group" style="padding:4px 8px;">
                 <div class="ff-flex-row" style="align-items:center; gap:6px;">
                     <label class="ff-label">${languageManager.getUILocalizedString("Name")}</label>
                     <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
@@ -215,7 +218,6 @@ export class SettingsTree extends Tree<ITreeNode>
 }
 
 function copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
-    // TODO: handle different intesity effects per light
     // TODO: memorize properties that are not in the target light for reference when reverting a light type change
 
     const sourceLight: CLight = sourceNode.light;
@@ -228,8 +230,16 @@ function copyLightProperties(sourceNode: NVNode, targetNode: NVNode) {
                 ?.setValue(sourceProp.value);
         });
 
-    if (sourceLight instanceof CDirectionalLight) {
-        targetLight.ins.setValues({ "intensity": sourceLight.light.intensity / Math.PI });
+    // Convert intensity to/from legacy light types
+    // Source: https://sbcode.net/threejs/lights/
+    const legacyLightTypes = [CAmbientLight, CDirectionalLight, CHemisphereLight, CSpotLight];
+
+    const sourceLightIsLegacy: boolean = legacyLightTypes.some(lt => sourceLight instanceof lt);
+    const targetLightIsLegacy: boolean = legacyLightTypes.some(lt => targetLight instanceof lt);
+    if (sourceLightIsLegacy && !targetLightIsLegacy) {
+        targetLight.ins.setValues({ "intensity": sourceLight.ins.intensity.value / Math.PI });
+    } else if (targetLightIsLegacy && !sourceLightIsLegacy) {
+        targetLight.ins.setValues({ "intensity": sourceLight.ins.intensity.value * Math.PI });
     }
 
     (sourceLight.transform as any).settingProperties

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Box3, Mesh, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, CanvasTexture } from "three";
+import { Vector3, Quaternion, Box3, Group, Matrix4, Box3Helper, Object3D, FrontSide, BackSide, DoubleSide, Texture, Material, MeshStandardMaterial, NoBlending, AdditiveBlending, Color, MeshPhysicalMaterial, ObjectSpaceNormalMap } from "three";
 
 import Notification from "@ff/ui/Notification";
 
@@ -25,11 +25,10 @@ import CObject3D from "@ff/scene/components/CObject3D";
 import * as helpers from "@ff/three/helpers";
 
 import { IDocument, INode } from "client/schema/document";
+import { EShaderMode } from "client/schema/setup";
 import { EDerivativeQuality, EDerivativeUsage, EUnitType, IModel, ESideType, TSideType, EAssetType, EMapType, IPBRMaterialSettings } from "client/schema/model";
 
 import unitScaleFactor from "../utils/unitScaleFactor";
-import UberPBRMaterial, { EShaderMode } from "../shaders/UberPBRMaterial";
-import UberPBRAdvMaterial from "../shaders/UberPBRAdvMaterial";
 import Derivative from "../models/Derivative";
 import DerivativeList from "../models/DerivativeList";
 
@@ -109,7 +108,7 @@ export default class CVModel2 extends CObject3D
         hiddenOpacity: types.Percent("Material.HiddenOpacity", 0.0),
         roughness: types.Percent("Material.Roughness", 0.8),
         metalness: types.Percent("Material.Metalness", 0.1),
-        occlusion: types.Percent("Material.Occlusion", 0.25),
+        occlusion: types.Percent("Material.Occlusion", { preset: 0.25, max: 2.0}),
         doubleSided: types.Boolean("Material.DoubleSided", false),
         dumpDerivatives: types.Event("Derivatives.Dump"),
     };
@@ -164,6 +163,9 @@ export default class CVModel2 extends CObject3D
     private _prevPosition: Vector3 = new Vector3(0.0,0.0,0.0);
     private _prevRotation: Vector3 = new Vector3(0.0,0.0,0.0);
     private _materialCache: Dictionary<IPBRMaterialSettings> = {};
+    private _clayColor = new Color("#a67a6c").convertLinearToSRGB();
+    private _wireColor = new Color("#004966").convertLinearToSRGB();
+    private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _overlays: Dictionary<IOverlay> = {};
 
     constructor(node: Node, id: string)
@@ -207,6 +209,10 @@ export default class CVModel2 extends CObject3D
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
+    }
+
+    getOriginalMaterial(id: string): Readonly<IPBRMaterialSettings> {
+        return this._materialCache[id];
     }
 
     getOverlay(key: string) : IOverlay {
@@ -351,17 +357,19 @@ export default class CVModel2 extends CObject3D
         }
         else if(ins.override.changed && !ins.override.value && ins.shader.value === EShaderMode.Default) {
             this.object3D.traverse(object => {
-                const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-                if (material && material.isUberPBRMaterial) {
+                const material = object["material"] as MeshStandardMaterial;
+                if (material) {
                     const cachedMat = this._materialCache[material.uuid];
-                    material.aoMapMix.setScalar(cachedMat.occlusion);
-                    material.color.fromArray(cachedMat.color);
-                    material.opacity = cachedMat.opacity;
-                    material.transparent = cachedMat.transparent;
-                    material.roughness = cachedMat.roughness;
-                    material.metalness = cachedMat.metalness;
-                    material.side = cachedMat.doubleSided ? DoubleSide : FrontSide;
-                    material.needsUpdate = true;
+                    if(cachedMat) {
+                        material.aoMapIntensity = cachedMat.occlusion;
+                        material.color.fromArray(cachedMat.color);
+                        material.opacity = cachedMat.opacity;
+                        material.transparent = cachedMat.transparent;
+                        material.roughness = cachedMat.roughness;
+                        material.metalness = cachedMat.metalness;
+                        material.side = cachedMat.doubleSided ? DoubleSide : FrontSide;
+                        material.needsUpdate = true;
+                    }
                 }
             });
         }
@@ -583,18 +591,20 @@ export default class CVModel2 extends CObject3D
     protected updateShader()
     {
         const shader = this.ins.shader.getValidatedValue();
+        const updateList = [];
         this.object3D.traverse(object => {
-            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-            if (material && material.isUberPBRMaterial) {
-                material.setShaderMode(shader);
+            const material = object["material"] as Material;
+            if (material && material.defines && !updateList.includes(material.uuid)) {
+                this.setShaderMode(shader, material);
+                updateList.push(material.uuid);
             }
         });
     }
 
     protected updateShadowSide() {
         this.object3D.traverse(object => {
-            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-            if (material && material.isUberPBRMaterial) {
+            const material = object["material"] as Material;
+            if (material) {
                 if(this.ins.shadowSide.value == ESideType.Front) {
                     material.shadowSide = FrontSide;
                 }
@@ -670,7 +680,9 @@ export default class CVModel2 extends CObject3D
 
             if ( mapping ) {
                 parser.getDependency( 'material', mapping.material ).then((variantMat) => {
+                    const shader = object.material.userData.shader;
                     object.material.copy( variantMat);
+                    object.material.userData.shader = shader; // add back shader reference that's lost
                     //parser.assignFinalMaterial( object );
                     this.activeDerivative.model.userData["variants"].variantMaterials[variantMat.uuid] = variantMat;
 
@@ -706,13 +718,14 @@ export default class CVModel2 extends CObject3D
         if(this.object3D) {
             this.object3D.traverse(object => {
                 const material = object["material"];
-                if (material && material.isUberPBRMaterial) {
+                if (material && material.defines) {
                     if(texture) {
                         texture.flipY = false;
-                        material.enableOverlayAlpha(uri.endsWith(".jpg"));
+                        material.defines["OVERLAY_ALPHA"] = uri.endsWith(".jpg");
                     }
-                    material.zoneMap = texture;
-                    material.enableZoneMap(texture != null);
+                    material.defines["USE_ZONEMAP"] = texture != null;
+                    material.userData.shader.uniforms.zoneMap.value = texture;
+                    material.needsUpdate = true;
                 }
             });
             this.outs.overlayMap.setValue(this.ins.overlayMap.value);
@@ -724,9 +737,9 @@ export default class CVModel2 extends CObject3D
         const ins = this.ins;
 
         this.object3D.traverse(object => {
-            const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-            if (material && material.isUberPBRMaterial) {
-                material.aoMapMix.setScalar(ins.occlusion.value);
+            const material = object["material"] as MeshStandardMaterial;
+            if (material && material.defines) {
+                material.aoMapIntensity = ins.occlusion.value;
                 material.color.fromArray(ins.color.value);
                 material.opacity = this._visible ? ins.opacity.value : ins.hiddenOpacity.value;
                 material.transparent = material.opacity < 1 || this._materialCache[material.uuid].transparent;
@@ -907,15 +920,15 @@ export default class CVModel2 extends CObject3D
 
                 // cache original material properties
                 this.object3D.traverse(object => {
-                    const material = object["material"] as UberPBRMaterial | UberPBRAdvMaterial;
-                    if (material && material.isUberPBRMaterial) {
+                    const material = object["material"] as MeshStandardMaterial;
+                    if (material) {
                         this._materialCache[material.uuid] = {
                             color: material.color.toArray(),
                             opacity: material.opacity,
                             hiddenOpacity: this.ins.hiddenOpacity.schema.preset,
                             roughness: material.roughness,
                             metalness: material.metalness,
-                            occlusion: material.aoMapMix.x,
+                            occlusion: material.aoMapIntensity,
                             doubleSided: material.side == DoubleSide,
                             transparent: material.transparent
                         }
@@ -930,9 +943,6 @@ export default class CVModel2 extends CObject3D
                 if(this.ins.shadowSide.value != ESideType.Back) {
                     this.updateShadowSide();
                 }
-
-                // flag environment map to update if needed
-                this.getGraphComponent(CVEnvironment).ins.dirty.set(); 
 
                 // make sure render order is correct
                 if(this.ins.renderOrder.value !== 0)
@@ -979,5 +989,101 @@ export default class CVModel2 extends CObject3D
                 this.registerPickableObject3D(node, true);
             }
         });
+    }
+
+    setShaderMode(mode: EShaderMode, inMaterial: Material)
+    {
+        const material = inMaterial as MeshStandardMaterial;
+        Object.assign(material, material.userData.paramCopy);
+
+        material.defines["MODE_NORMALS"] = false;
+        material.defines["MODE_XRAY"] = false;
+        material.defines["OBJECTSPACE_NORMALMAP"] = !!(material.normalMap && material.normalMapType === ObjectSpaceNormalMap);
+
+        material.side = material.defines["CUT_PLANE"] ? DoubleSide : material.side;
+
+        material.needsUpdate = true;
+
+        switch(mode) {
+            case EShaderMode.Clay:
+                material.userData.paramCopy = {
+                    color: material.color,
+                    map: material.map,
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    aoMapIntensity: material.aoMapIntensity,
+                    blending: material.blending,
+                    transparent: material.transparent,
+                    depthWrite: material.depthWrite,
+                    envMap: material.envMap
+                };
+
+                if(material.type == "MeshPhysicalMaterial") {
+                    const physMat = material as MeshPhysicalMaterial;
+                    material.userData.paramCopy["transmission"] = physMat.transmission;
+                    physMat.transmission = 0;
+                }
+
+                material.envMap = null;
+                material.color = this._clayColor;
+                material.map = null;
+                material.roughness = 1;
+                material.metalness = 0;
+                material.aoMapIntensity *= 1;
+                material.blending = NoBlending;
+                material.transparent = false;
+                material.depthWrite = true;
+                break;
+
+            case EShaderMode.Normals:
+                material.userData.paramCopy = {
+                    blending: material.blending,
+                    transparent: material.transparent,
+                    depthWrite: material.depthWrite,
+                };
+                material.defines["MODE_NORMALS"] = true;
+                material.blending = NoBlending;
+                material.transparent = false;
+                material.depthWrite = true;
+                break;
+
+            case EShaderMode.XRay:
+                material.userData.paramCopy = {
+                    side: material.side,
+                    blending: material.blending,
+                    transparent: material.transparent,
+                    depthWrite: material.depthWrite,
+                };
+                material.defines["MODE_XRAY"] = true;
+                material.side = DoubleSide;
+                material.blending = AdditiveBlending;
+                material.transparent = true;
+                material.depthWrite = false;
+                break;
+
+            case EShaderMode.Wireframe:
+                material.userData.paramCopy = {
+                    color: material.color,
+                    emissive: material.emissive,
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    wireframe: material.wireframe,
+                    map: material.map,
+                    aoMap: material.aoMap,
+                    emissiveMap: material.emissiveMap,
+                    normalMap: material.normalMap,
+                };
+                material.color = this._wireColor;
+                material.emissive = this._wireEmissiveColor;
+                material.roughness = 0.8;
+                material.metalness = 0.1;
+                material.wireframe = true;
+                material.map = null;
+                material.aoMap = null;
+                material.emissiveMap = null;
+                material.normalMap = null;
+                material.defines["OBJECTSPACE_NORMALMAP"] = false;
+                break;
+        }
     }
 }

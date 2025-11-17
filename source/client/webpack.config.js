@@ -185,7 +185,7 @@ module.exports = function(env, argv)
                         context: dirs.assets,
                     },
                     {
-                        from: "{LICENSE.md,3RD_PARTY_LICENSES.txt}",
+                        from: "{LICENSE.md,ATTRIBUTIONS.md,3RD_PARTY_LICENSES.txt}",
                         context: dirs.project,
                     }
                 ],

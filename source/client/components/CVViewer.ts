@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { ACESFilmicToneMapping, NoToneMapping, Mesh } from "three";
+import { ACESFilmicToneMapping, NeutralToneMapping, NoToneMapping, Mesh } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
@@ -149,7 +149,7 @@ export default class CVViewer extends Component
             this.renderer.ins.exposure.setValue(ins.exposure.value);
         }
         if (ins.toneMapping.changed) {
-            this.renderer.views.forEach(view => view.renderer.toneMapping = ins.toneMapping.value ? ACESFilmicToneMapping : NoToneMapping);
+            this.renderer.views.forEach(view => view.renderer.toneMapping = ins.toneMapping.value ? NeutralToneMapping : NoToneMapping);
 
             const scene = this.renderer.activeScene;
             if (scene) {

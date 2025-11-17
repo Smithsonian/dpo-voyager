@@ -26,6 +26,7 @@ import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/
 import { ELightType, ICVLight } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
+import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
 
@@ -97,9 +98,8 @@ class NodeTree extends Tree<NVNode>
         }
         if (node.name === "Lights") {
             buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
-        } else if (node.light) {
-            // TODO: check this is NOT an environment light (which should not be deletable)
-            icons.push(html`<ff-icon class="sv-icon-light" name=${node.light.icon}></ff-icon>`);
+        } else if (node.light && !node.light.is("CVEnvironmentLight")) {
+            icons.push(html`<ff-icon class="${node.light.ins.enabled.value ? "sv-icon-light ff-icon": "sv-icon-disabled ff-icon"}" name=${node.light.icon}></ff-icon>`);
             buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
         }
         if (node.camera) {
@@ -108,8 +108,8 @@ class NodeTree extends Tree<NVNode>
         if (node.meta) {
             icons.push(html`<ff-icon class="sv-icon-meta" name=${node.meta.icon}></ff-icon>`);
         }
-        
-        return html`${icons}<div class="ff-text ff-ellipsis sv-node-label" style="flex:1 1 auto;">${node.displayName}</div>${buttons}`;
+
+        return html`${icons}<div class="ff-text ff-ellipsis">${node.displayName}</div>${buttons}`;
     }
 
     protected isNodeSelected(node: NVNode): boolean
@@ -126,7 +126,8 @@ class NodeTree extends Tree<NVNode>
             return "sv-node-model";
         }
         if (treeNode.light) {
-            return "sv-node-light";
+            const light = treeNode.transform.getComponent(CLight);
+            return light.ins.enabled.value ? "sv-node-light" : "sv-node-light disabled";
         }
         if (treeNode.camera) {
             return "sv-node-camera";

@@ -190,6 +190,10 @@ $color-component-meta-light: #d9d998;
     &.sv-node-light {
       background-color: $color-component-light-dark;
       border-left: 1px solid $color-component-light;
+
+      &.disabled {
+        color: gray;
+      }
     }
     &[selected] {
       background-color: common.$color-primary;
@@ -202,6 +206,14 @@ $color-component-meta-light: #d9d998;
         height: 1.1em;
         margin: 2px 4px 0 0;
       }
+      
+      .ff-text {
+        flex: 0 0 80%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
       .sv-add-light-btn.ff-button {
         width: 1.6em; // square button roughly same height as line-height
         height: 1.6em;
@@ -209,7 +221,7 @@ $color-component-meta-light: #d9d998;
         margin-left: 4px;
         display: inline-flex;
         align-items: center;
-  justify-content: center;
+        justify-content: center;
         background: transparent;
         border: 1px solid transparent;
         --ff-button-bg: transparent;
@@ -231,6 +243,7 @@ $color-component-meta-light: #d9d998;
         height: 1.6em;
         padding: 0;
         margin-left: 4px;
+        margin-right: 4px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -238,9 +251,15 @@ $color-component-meta-light: #d9d998;
         border: none;
         --ff-button-bg: transparent;
         --ff-button-color: $color-component-light-light;
+        flex-shrink: 0;
         .ff-icon { margin: 0; height: 1em; }
-        &:hover { filter: brightness(1.15); }
-        &:active { filter: brightness(0.9); }
+        &:hover {
+          background: rgba($color-component-light-light, 0.15);
+          border-color: rgba($color-component-light-light, 0.3);
+        }
+        &:active {
+          background: rgba($color-component-light-light, 0.25);
+        }
       }
       .sv-icon-scene {
         fill: $color-component-scene-light;
@@ -257,6 +276,9 @@ $color-component-meta-light: #d9d998;
       .sv-icon-meta {
         fill: $color-component-meta-light;
       }
+      .sv-icon-disabled {
+        fill: gray;
+      }
     }
     .ff-content {
       margin-left: 14px; // indent
@@ -267,11 +289,11 @@ $color-component-meta-light: #d9d998;
 .sv-light-name-input {
   flex: 1 1 auto;
   background: #000;
-  color: $color-text-light;
+  color: common.$color-text-light;
   text-align: right;
   padding: 2px 6px;
   font-weight: 500;
-  &::placeholder { color: rgba($color-text-light, 0.35); }
+  &::placeholder { color: rgba(common.$color-text-light, 0.35); }
   &:focus {
     outline: none;
     border-color: $color-component-light-light;
@@ -287,7 +309,7 @@ $color-component-meta-light: #d9d998;
   max-width: 90%;
   min-height: 180px;
   padding: 12px;
-  background: $color-background;
+  background: common.$color-background;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
 
@@ -295,7 +317,7 @@ $color-component-meta-light: #d9d998;
     padding: 0.4em 0 0.6em 0;
     font-size: 1.1em;
     font-weight: 600;
-    color: $color-text-light;
+    color: common.$color-text-light;
   }
 
   .ff-flex-row {
@@ -315,8 +337,8 @@ $color-component-meta-light: #d9d998;
     
     select.ff-input {
       width: 100%;
-      background: $color-background-darker;
-      color: $color-text-light;
+      background: common.$color-background-darker;
+      color: common.$color-text-light;
       border: 1px solid rgba($color-component-light-light, 0.4);
       border-radius: 3px;
       padding: 6px 8px;
@@ -331,15 +353,15 @@ $color-component-meta-light: #d9d998;
   }
 
   .ff-label {
-    color: $color-text-light;
+    color: common.$color-text-light;
     font-weight: 500;
     min-width: 45px;
   }
 
   input.ff-input {
     flex: 1 1 auto;
-    background: $color-background-darker;
-    color: $color-text-light;
+    background: common.$color-background-darker;
+    color: common.$color-text-light;
     border: 1px solid rgba($color-component-light-light, 0.4);
     border-radius: 3px;
     padding: 6px 8px;
@@ -359,7 +381,7 @@ $color-component-meta-light: #d9d998;
 
     &.ff-control {
       background: $color-component-light;
-      color: $color-background;
+      color: common.$color-background;
       border: none;
 
       &:hover {
@@ -369,12 +391,12 @@ $color-component-meta-light: #d9d998;
 
     &.ff-close-button {
       background: transparent;
-      color: $color-text;
-      border: 1px solid rgba($color-text, 0.3);
+      color: common.$color-text;
+      border: 1px solid rgba(common.$color-text, 0.3);
 
       &:hover {
-        background: rgba($color-text, 0.1);
-        border-color: rgba($color-text, 0.5);
+        background: rgba(common.$color-text, 0.1);
+        border-color: rgba(common.$color-text, 0.5);
       }
     }
   }

@@ -16,6 +16,7 @@
  */
 
 import CLight from "@ff/scene/components/CLight";
+import { INodeChangeEvent } from "@ff/graph/Node";
 
 import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyOptions";
@@ -25,6 +26,7 @@ import "../ui/properties/PropertyColor";
 import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
+import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +52,6 @@ export default class CVLightTool extends CVTool
 
     update(context)
     {
-
         this.outs.light.setValue(this.lights[this.ins.light.getValidatedValue()]);
         return true;
     }
@@ -62,11 +63,42 @@ export default class CVLightTool extends CVTool
 
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
-        this.lights = next ? next.getInnerComponents(CLight) : [];
-        this.ins.light.setOptions(this.lights.map(light => light.node.name));
-        this.outs.light.setValue(this.lights[0]);
+        this.detachLightListeners();
+
+        this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
+
+        this.attachLightListeners();
+        this.refreshLightOptions();
+
+        this.outs.light.setValue(this.lights[0] ?? null);
 
         super.onActiveDocument(previous, next);
+    }
+
+    protected refreshLightOptions()
+    {
+        this.ins.light.setOptions(this.lights.map(light => light.node.name));
+    }
+
+    protected attachLightListeners()
+    {
+        this.lights.forEach(light => light.node?.on("change", this.onLightNodeChange, this));
+    }
+
+    protected detachLightListeners()
+    {
+        if (!this.lights) {
+            return;
+        }
+
+        this.lights.forEach(light => light.node?.off("change", this.onLightNodeChange, this));
+    }
+
+    protected onLightNodeChange(event: INodeChangeEvent)
+    {
+        if (!event || event.what === "name") {
+            this.refreshLightOptions();
+        }
     }
 }
 
@@ -101,20 +133,22 @@ export class LightToolView extends ToolView<CVLightTool>
         const lights = tool.lights;
         const document = this.activeDocument;
 
-        if (!lights || !document) {
-            return html`No editable lights in this scene.`;
+        if (!lights || !document || lights.length == 0) {
+            return html`<div class="sv-section sv-centered">No editable lights in this scene.</div>`;
         }
 
         const activeLight = tool.outs.light.value;
         const navigation = document.setup.navigation;
         const language = document.setup.language;
 
+        const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+
         const lightDetails = activeLight ? html`<div class="sv-section">
             <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
             <div class="sv-tool-controls">
                 <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                 <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
-                <sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>
+                ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
             </div>
         </div>` : null;
 
@@ -142,7 +176,7 @@ export class LightToolView extends ToolView<CVLightTool>
     {
         await this.updateComplete;
         const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
-        focusElement.focus();
+        focusElement?.focus();
     }
 
     protected onClose(event: MouseEvent)

@@ -34,6 +34,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
 
     get settingProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
             this.ins.distance,
@@ -41,6 +42,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
             this.ins.shadowEnabled,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
+            this.ins.shadowIntensity
         ];
     }
 
@@ -75,6 +77,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
         data.point = data.point || {} as any;
 
         ins.copyValues({
+            enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
 
@@ -86,6 +89,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
             shadowEnabled: data.shadowEnabled || false,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
+            shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
 
         return node.light;
@@ -96,6 +100,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
         const ins = this.ins;
 
         const data = {
+            enabled: ins.enabled.value,
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
             point: {
@@ -114,6 +119,9 @@ export default class CVPointLight extends CPointLight implements ICVLight
             }
             if (!ins.shadowResolution.isDefault()) {
                 data.shadowResolution = EShadowMapResolution[ins.shadowResolution.value];
+            }
+            if (!ins.shadowIntensity.isDefault()) {
+                data.shadowIntensity = ins.shadowIntensity.value;
             }
         }
 
