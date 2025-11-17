@@ -338,4 +338,11 @@ export default class MainView extends CustomElement
             this.application.setLanguage(languageID);
         }
     }
+
+    resetViewer()
+    {
+        if(this.application) {
+            this.application.resetViewer();        
+        }
+    }
 }
