@@ -332,6 +332,13 @@ export default class MainView extends CustomElement
         }
     }
 
+    getTours()
+    {
+        if(this.application) {
+            return this.application.getTours();
+        }
+    }
+
     setLanguage(languageID: string)
     {
         if(this.application) {
