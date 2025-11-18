@@ -42,15 +42,10 @@ export default class DirectionalLightHelper extends LightHelper {
 
   update(){
     super.update();
-    
     if (this.light.parent) {
-      this.target.scale.setScalar(this.light.parent.position.length()/this.light.parent.scale.y);
+      this.target.scale.setScalar(this.light.parent.position.length() / this.light.parent.scale.y);
       this.target.updateMatrix();
-    } else {
-      console.debug("DirectionalLightHelper: Light has been deleted.");
-      this.dispose();
     }
-
   }
 
 	dispose() {
