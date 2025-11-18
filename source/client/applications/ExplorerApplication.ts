@@ -647,6 +647,13 @@ Version: ${ENV_VERSION}
         }
     }
 
+    // Get Tours informations
+    getTours()
+    {
+        const toursIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.tours;
+        return toursIns;
+    }
+
     // enable/disable camera controls
     enableNavigation(enable: string)
     {
