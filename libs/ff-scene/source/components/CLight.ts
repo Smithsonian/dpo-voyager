@@ -24,6 +24,7 @@ const _mapResolution = {
 export default class CLight extends CObject3D
 {
     static readonly typeName: string = "CLight";
+    canDelete: boolean = true;
 
     protected static readonly lightIns = {
         enabled: types.Boolean("Light.Enabled", true),
