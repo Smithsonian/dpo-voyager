@@ -310,8 +310,11 @@ $color-component-meta-light: #d9d998;
   min-height: 180px;
   padding: 12px;
   background: common.$color-background;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
+
+  > .ff-flex-column {
+    padding: 1em;
+  }
 
   .ff-title {
     padding: 0.4em 0 0.6em 0;
