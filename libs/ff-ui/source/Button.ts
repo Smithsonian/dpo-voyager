@@ -131,7 +131,10 @@ export default class Button extends CustomElement
 
     protected render()
     {
-        return html`${this.renderIcon()}${this.renderText()}${this.renderCaret()}`;
+        //return html`${this.renderIcon()}${this.renderText()}${this.renderCaret()}`;
+
+        return this.caret ? html`${this.renderIcon()}<div class="ff-caret-container">${this.renderText()}${this.renderCaret()}</div>` :
+            html`${this.renderIcon()}${this.renderText()}`;
     }
 
     protected renderIcon()

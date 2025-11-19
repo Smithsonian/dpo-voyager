@@ -447,16 +447,21 @@ button, input {
     }
   }
 
-  & > .ff-text {
+  & .ff-text {
     margin: 3px;
     white-space: nowrap;
+    display: inline-block;
   }
   & > .ff-icon {
     margin: 3px;
     height: 1.3em;
   }
-  & > .ff-caret-down {
+  & .ff-caret-container {
+    white-space: nowrap;
+  }
+  & .ff-caret-down {
     margin: 3px;
+    display: inline-block;
   }
 
   &.ff-disabled {
