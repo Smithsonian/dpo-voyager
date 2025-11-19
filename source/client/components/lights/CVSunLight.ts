@@ -49,6 +49,14 @@ export default class CVSunLight extends CSunLight implements ICVLight {
         ];
     }
 
+    dispose(): void {
+        if (this.ins.shadowEnabled.value && this.light.shadow.map) {
+            this.light.shadow.map.dispose();
+        }
+
+        super.dispose()
+    }
+
     fromDocument(document: IDocument, node: INode): number {
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
@@ -65,7 +73,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined 
+            datetime: data.sun?.datetime !== undefined
                 ? (data.sun.datetime instanceof Date ? DateTime.fromJSDate(data.sun.datetime) : data.sun.datetime)
                 : ins.datetime.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,

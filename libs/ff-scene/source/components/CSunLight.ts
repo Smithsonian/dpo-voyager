@@ -118,6 +118,16 @@ export default class CSunLight extends CLight {
         const sunPosition = SunCalc.getPosition(
             this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
         );
+        
+        if (ins.shadowSize.changed) {
+            const camera = light.shadow.camera;
+            const halfSize = ins.shadowSize.value * 0.5;
+            camera.left = camera.bottom = -halfSize;
+            camera.right = camera.top = halfSize;
+            camera.near = 0.05*ins.shadowSize.value;
+            camera.far = 50*ins.shadowSize.value;
+            camera.updateProjectionMatrix();
+        }
 
         const sunDegrees = sunPosition.altitude * (180 / Math.PI);
 
