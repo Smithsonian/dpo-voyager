@@ -208,7 +208,7 @@ $color-component-meta-light: #d9d998;
       }
       
       .ff-text {
-        flex: 0 0 80%;
+        flex: 1 1 80%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -227,7 +227,7 @@ $color-component-meta-light: #d9d998;
         --ff-button-bg: transparent;
         --ff-button-color: $color-component-light-light;
         .ff-icon {
-          margin: 0;
+          margin: 0 0 5px 0;
           height: 1em;
         }
         &:hover {
@@ -239,20 +239,17 @@ $color-component-meta-light: #d9d998;
         }
       }
       .sv-delete-light-btn.ff-button {
-        width: 1.6em;
         height: 1.6em;
-        padding: 0;
+        padding: 0 5px 0 5px;
         margin-left: 4px;
         margin-right: 4px;
         display: inline-flex;
-        align-items: center;
-        justify-content: center;
         background: inherit;
         border: none;
         --ff-button-bg: transparent;
         --ff-button-color: $color-component-light-light;
-        flex-shrink: 0;
-        .ff-icon { margin: 0; height: 1em; }
+        flex: 0 0 1.6em;
+        .ff-icon { margin: 0 0 5px 0; height: 1em; }
         &:hover {
           background: rgba($color-component-light-light, 0.15);
           border-color: rgba($color-component-light-light, 0.3);
@@ -388,7 +385,7 @@ $color-component-meta-light: #d9d998;
       border: none;
 
       &:hover {
-        background: lighten($color-component-light, 10%);
+        background: color.adjust($color-component-light, $lightness: -10%);
       }
     }
 
