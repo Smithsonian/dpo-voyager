@@ -170,8 +170,9 @@ export class SettingsTree extends Tree<ITreeNode>
             return html`<div class="ff-text ff-label ff-ellipsis">${node.text}</div>`;
         }
 
-        return html`<sv-property-view .property=${node.property}></sv-property-view>`;
+        const disabled = this.node?.light instanceof CVSunLight && "Light.Intensity" == node.property.path;
 
+        return html`<sv-property-view .property=${node.property} ?disabled=${disabled}></sv-property-view>`;
     }
 
     protected createNodeTreeNode(node: Node): ITreeNode
