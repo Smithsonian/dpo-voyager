@@ -34,6 +34,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
@@ -74,6 +75,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
             throw new Error("light type mismatch: not a point light");
         }
 
+        ins.name.setValue(node.name);
         data.point = data.point || {} as any;
 
         ins.copyValues({

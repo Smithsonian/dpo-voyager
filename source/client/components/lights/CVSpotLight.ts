@@ -34,6 +34,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
@@ -76,6 +77,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             throw new Error("light type mismatch: not a spot light");
         }
 
+        ins.name.setValue(node.name);
         data.spot = data.spot || {} as any;
 
         ins.copyValues({

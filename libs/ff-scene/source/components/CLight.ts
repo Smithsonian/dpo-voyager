@@ -27,6 +27,7 @@ export default class CLight extends CObject3D
     canDelete: boolean = true;
 
     protected static readonly lightIns = {
+        name: types.String("Light.Name"), 
         enabled: types.Boolean("Light.Enabled", true),
         color: types.ColorRGB("Light.Color"),
         intensity: types.Number("Light.Intensity", {
@@ -55,6 +56,10 @@ export default class CLight extends CObject3D
 
         const light = this.light;
         const ins = this.ins;
+
+        if (ins.name.changed) {
+            this.node.name = ins.name.value;
+        }
 
         if(ins.enabled.changed) {
             light.visible = ins.enabled.value;
