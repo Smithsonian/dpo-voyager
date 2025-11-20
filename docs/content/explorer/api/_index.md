@@ -56,6 +56,7 @@ These methods engage Voyager functionality without the native UI.
 | setActiveArticle( id )| id: unique id string | Activates the article with the provided id. Bad/missing id opens article list.   |
 | setTourStep( tourIdx, stepIdx, interpolate[optional] ) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
 | setLanguage( id )		 | id: valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code string | Changes the active Voyager language to the supplied id if available in the current scene.  |
+| resetViewer()          | None              | Reset the scene (objects and camera positions). Same behavior as the reset button |
 
 ### Navigation Methods
 Methods for external control over camera properties and navigation.
@@ -73,6 +74,10 @@ Methods for external control over camera properties and navigation.
 |-------------------------------|----------------------|--------------------------------------------------|
 | getArticles()				    | None 			   	   | Returns an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts) with properties of each article associated with the current scene.      |
 | getAnnotations()				| None				   | Returns an array of [Annotation data objects](https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63) for the current scene.			|
+| getTours()                    | None                 | Returns a list of [Tours data objects](https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/setup.ts#L175). |
+| getActiveLanguage()			| None 			   	   | Returns the active language as valid ISO 639-1  |
+| getLanguages()			    | None 			   	   | Returns all languages available in the scene as valid ISO 639-1    |
+
 
 ### Events
 
