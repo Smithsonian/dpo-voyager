@@ -30,6 +30,7 @@ import NVScene from "../../nodes/NVScene";
 import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
+import CVScene from "client/components/CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -209,8 +210,11 @@ class NodeTree extends Tree<NVNode>
         if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
 
         const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
-        lightNode.transform.createComponent<ICVLight>(lightType);
-        lightNode.name = name;
+        const newLight: ICVLight = lightNode.transform.createComponent<ICVLight>(lightType);
+        newLight.ins.name.setValue(name);
+        newLight.update(this);  // trigger light update before helper creation to ensure proper init
+
+        newLight.getGraphComponent(CVScene).ins.lightUpdated.set();
 
         return lightNode;
     }

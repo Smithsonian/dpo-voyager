@@ -36,6 +36,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
@@ -74,6 +75,8 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         if (data.type !== "directional") {
             throw new Error("light type mismatch: not a directional light");
         }
+
+        ins.name.setValue(node.name);
 
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,

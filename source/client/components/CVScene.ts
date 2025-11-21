@@ -63,6 +63,7 @@ export default class CVScene extends CVNode
     protected static readonly ins = {
         units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
         modelUpdated: types.Event("Scene.ModelUpdated"),
+        lightUpdated: types.Event("Scene.LightUpdated"),
         sceneTransformed: types.Event("Scene.Transformed"),
     };
 
@@ -133,6 +134,9 @@ export default class CVScene extends CVNode
         }
         if (ins.sceneTransformed.changed) {
             this.updateModelBoundingBox();
+        }
+        if (ins.lightUpdated.changed) {
+            this.updateLights();
         }
 
         return true;

@@ -33,6 +33,7 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
@@ -63,6 +64,7 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
             throw new Error("light type mismatch: not an ambient light");
         }
 
+        ins.name.setValue(node.name);
         data.point = data.point || {} as any;
 
         ins.copyValues({
