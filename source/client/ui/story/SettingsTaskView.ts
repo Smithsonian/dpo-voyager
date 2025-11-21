@@ -42,14 +42,6 @@ import NodeTree from "./NodeTree";
 @customElement("sv-settings-task-view")
 export default class SettingsTaskView extends TaskView<CVSettingsTask>
 {
-    protected onLightNameInput(e: InputEvent) {
-        const input = e.target as HTMLInputElement;
-        if (this.activeNode) {
-            this.activeNode.name = input.value;
-            this.requestUpdate();
-        }
-    }
-
     protected onLightTypeChange(e: Event) {
         const select = e.target as HTMLSelectElement;
         const newType = parseInt(select.value) as ELightType;
@@ -97,8 +89,6 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
         return html`<div class="ff-flex-item-stretch ff-scroll-y ff-flex-column">
             ${(node.light && !(node.light instanceof CVEnvironmentLight)) ? html`<div class="ff-group" style="padding:4px 8px;">
                 <div class="ff-flex-row" style="align-items:center; gap:6px;">
-                    <label class="ff-label">${languageManager.getUILocalizedString("Name")}</label>
-                    <input class="ff-input sv-light-name-input" type="text" .value=${node.name} @input=${(e: InputEvent) => this.onLightNameInput(e)} />
                     <label class="ff-label">${languageManager.getUILocalizedString("Type")}</label>
                     <select class="ff-input" .value=${currentType ?? 0} @change=${(e: Event) => this.onLightTypeChange(e)}>
                         ${Object.keys(ELightType).filter(key => typeof (ELightType as any)[key] === "number").map(key => html`<option value=${(ELightType as any)[key]}>${key}</option>`)}
