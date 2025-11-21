@@ -121,7 +121,7 @@ export default class PropertyColor extends PropertyBase
                             }
                         }}
                     >`}
-                <ff-button style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
+                <ff-button ?disabled=${this.ariaDisabled === "true"} style="background-color: ${color}" title="${name} Color Picker" @click=${this.onButtonClick}></ff-button>
             </span>
             ${this.pickerActive ? (this.floating ? popupColorEdit : colorEdit) : null}
         `;

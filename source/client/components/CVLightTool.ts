@@ -182,9 +182,10 @@ export class LightToolView extends ToolView<CVLightTool>
         var lightDetails = null;
 
         if (activeLight) {
-          const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+          const isSunLight = activeLight instanceof CSunLight;
+          const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")} aria-disabled=${isSunLight ? "true" : "false"}></sv-property-color>`;
 
-          const sunPropertyControls = activeLight instanceof CSunLight ? html`
+          const sunPropertyControls = isSunLight ? html`
             <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
             <sv-property-timezone .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
             <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
@@ -196,7 +197,7 @@ export class LightToolView extends ToolView<CVLightTool>
               <div class="sv-tool-controls">
                   <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
                   <sv-property-slider
-                    .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} ?disabled=${!!sunPropertyControls} min="0" max="10">
+                    .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} ?disabled=${isSunLight} min="0" max="10">
                   </sv-property-slider>
               ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
               ${sunPropertyControls}
