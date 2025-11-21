@@ -1,50 +1,41 @@
 /**
- * 3D Foundation Project
- * Copyright 2025 Smithsonian Institution
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Funded by the Netherlands eScience Center in the context of the
+* [Dynamic 3D]{@link https://research-software-directory.org/projects/dynamic3d} project
+* and the "Paradata in 3D Scholarship" workshop {@link https://research-software-directory.org/projects/paradata-in-3d-scholarship}
+*
+* @author Carsten Schnober <c.schnober@esciencecenter.nl>
+*/
 
-import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
-import { Node } from "@ff/graph/Component";
-
-import { IDocument, INode, ILight, ColorRGB, TLightType } from "client/schema/document";
-
-import { ICVLight } from "./CVLight";
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
-import CVNode from "../CVNode";
+import CSunLight from "@ff/scene/components/CSunLight";
+import { DateTime } from "luxon";
+import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
+import { ICVLight } from "./CVLight";
 
-////////////////////////////////////////////////////////////////////////////////
-
-export default class CVDirectionalLight extends CDirectionalLight implements ICVLight
-{
-    static readonly typeName: string = "CVDirectionalLight";
-    static readonly type: TLightType = "directional";
-
-    static readonly text: string = "Directional Light";
+export default class CVSunLight extends CSunLight implements ICVLight {
+    static readonly typeName: string = "CVSunLight";
+    static readonly type: TLightType = "sun";
+    static readonly text: string = "Sun";
     static readonly icon: string = "sun";
+
+    public static readonly AUTO_PROPERTIES = ["Light.Intensity", "Light.Color"];
 
     get settingProperties() {
         return [
-            this.ins.name,
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.datetime,
+            this.ins.latitude,
+            this.ins.longitude,
+            this.ins.intensityFactor,
+            this.ins.sunDistance,
+            // shadow properties
             this.ins.shadowEnabled,
             this.ins.shadowSize,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
-            this.ins.shadowIntensity
+            this.ins.shadowIntensity,
         ];
     }
 
@@ -52,19 +43,23 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         return [
             this.ins.color,
             this.ins.intensity,
+            this.ins.datetime,
+            this.ins.latitude,
+            this.ins.longitude,
+            this.ins.intensityFactor,
+            this.ins.sunDistance,
         ];
     }
 
     dispose(): void {
-        if(this.ins.shadowEnabled.value && this.light.shadow.map) {
+        if (this.ins.shadowEnabled.value && this.light.shadow.map) {
             this.light.shadow.map.dispose();
         }
 
         super.dispose()
     }
 
-    fromDocument(document: IDocument, node: INode): number
-    {
+    fromDocument(document: IDocument, node: INode): number {
         if (!isFinite(node.light)) {
             throw new Error("light property missing in node");
         }
@@ -72,16 +67,20 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         const data = document.lights[node.light];
         const ins = this.ins;
 
-        if (data.type !== "directional") {
-            throw new Error("light type mismatch: not a directional light");
+        if (data.type !== "sun") {
+            throw new Error("light type mismatch: not a sun light");
         }
-
-        ins.name.setValue(node.name);
 
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            datetime: data.sun?.datetime !== undefined
+                ? (data.sun.datetime instanceof Date ? DateTime.fromJSDate(data.sun.datetime) : data.sun.datetime)
+                : ins.datetime.schema.preset,
+            latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
+            longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
+            intensityFactor: data.sun?.intensityFactor !== undefined ? data.sun.intensityFactor : ins.intensityFactor.schema.preset,
 
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
@@ -96,17 +95,22 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         return node.light;
     }
 
-    toDocument(document: IDocument, node: INode): number
-    {
+    toDocument(document: IDocument, node: INode): number {
         const ins = this.ins;
 
         const data = {
             enabled: ins.enabled.value,
             color: ins.color.cloneValue() as ColorRGB,
-            intensity: ins.intensity.value
+            intensity: ins.intensity.value,
+            sun: {
+                datetime: ins.datetime.value,
+                latitude: ins.latitude.value,
+                longitude: ins.longitude.value,
+                intensityFactor: ins.intensityFactor.value,
+            }
         } as ILight;
 
-        data.type = CVDirectionalLight.type;
+        data.type = CVSunLight.type;
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;

@@ -25,6 +25,7 @@ import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
 import CVSetup from "client/components/CVSetup";
 import {getFocusableElements, focusTrap} from "../utils/focusHelpers";
+import "./Compass";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,7 @@ export default class SceneView extends SystemView
     protected srAnnouncement: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
     protected resizeObserver: ResizeObserver = null;
+    protected compass: any = null;
 
     protected pointerEventsEnabled: boolean = false;
     protected measuring: boolean = false;
@@ -112,6 +114,10 @@ export default class SceneView extends SystemView
         this.overlay.classList.add("sv-content-overlay");
         this.overlay.addEventListener("keydown", this.onKeyDownOverlay);
 
+        this.compass = document.createElement("sv-compass") as any;
+        this.compass.style.display = "none";
+        this.appendChild(this.compass);
+
         this.splitter = this.appendElement(QuadSplitter, {
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0",
@@ -144,6 +150,7 @@ export default class SceneView extends SystemView
         
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.on("value", this.enablePointerEvents, this);
         this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.on("value", this.onKeyboardNavigation, this);
+        this.system.getComponent(CVOrbitNavigation).ins.orbit.on("value", this.updateCompassRotation, this);
         this.system.getComponent(CVSetup).tape.ins.enabled.on("value", this.onMeasure, this);
     }
 
@@ -153,6 +160,7 @@ export default class SceneView extends SystemView
 
         this.system.getComponent(CVSetup).tape.ins.enabled.off("value", this.onMeasure, this);
         this.system.getComponent(CVOrbitNavigation).ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
+        this.system.getComponent(CVOrbitNavigation).ins.orbit.off("value", this.updateCompassRotation, this);
         this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
 
         this.view.detach();
@@ -253,6 +261,24 @@ export default class SceneView extends SystemView
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e, true);
         }
+    }
+
+    protected updateCompassRotation = () => {
+        if (this.compass) {
+            const orbit = this.system.getComponent(CVOrbitNavigation).ins.orbit.value;
+            const [pitch, yaw, roll] = orbit;
+            this.compass.cameraRotation = yaw;
+        }
+    };
+
+    toggleCompass() {
+        if (this.compass) {
+            this.compass.style.display = this.isCompassVisible() ? "none" : "block";
+        }
+    }
+
+    isCompassVisible(): boolean {
+        return this.compass && this.compass.style.display !== "none";
     }
 
     /*protected onResize()

@@ -42,8 +42,10 @@ export default class DirectionalLightHelper extends LightHelper {
 
   update(){
     super.update();
-    this.target.scale.setScalar(this.light.parent.position.length()/this.light.parent.scale.y);
-    this.target.updateMatrix();
+    if (this.light.parent) {
+      this.target.scale.setScalar(this.light.parent.position.length() / this.light.parent.scale.y);
+      this.target.updateMatrix();
+    }
   }
 
 	dispose() {
