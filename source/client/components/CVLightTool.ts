@@ -26,6 +26,7 @@ import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import NVNode from "client/nodes/NVNode";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,8 +64,8 @@ export default class CVLightTool extends CVTool
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
-        this.ins.light.setOptions(this.lights.map(light => light.node.name));
-        this.outs.light.setValue(this.lights[0]);
+        this.ins.light.setOptions(this.lights.map(light => light.ins.name.value));
+        this.outs.light.setValue(this.lights[0] ?? null);
 
         super.onActiveDocument(previous, next);
     }
@@ -138,6 +139,27 @@ export class LightToolView extends ToolView<CVLightTool>
         }
 
         this.requestUpdate();
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+        if (previous && previous.light) {
+            previous.light.ins.name.off("value", this.refreshLightList, this);
+            previous.light.ins.enabled.off("value", this.refreshLights, this);
+        }
+        if (next && next.light) {
+            next.light.ins.enabled.on("value", this.refreshLights, this);
+            next.light.ins.name.on("value", this.refreshLightList, this);
+        }
+    }
+
+    protected refreshLights() {
+        this.tool.lights = this.activeDocument.getInnerComponents(CLight).filter((light) => light.ins.enabled.value);
+        this.refreshLightList();
+    }
+
+    protected refreshLightList() {
+        this.tool.ins.light.setOptions(this.tool.lights.map(light => light.ins.name.value)); 
     }
 
     protected async setFocus()

@@ -33,6 +33,8 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
 
     static readonly text: string = "Environment Light";
     static readonly icon: string = "globe";
+    
+    canDelete: boolean = false;
 
     get settingProperties() {
         return [
