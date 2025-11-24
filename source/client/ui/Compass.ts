@@ -9,8 +9,11 @@ import CustomElement, { customElement, html, property } from "@ff/ui/CustomEleme
 
 @customElement("sv-compass")
 export default class Compass extends CustomElement {
+    readonly BASE_SIZE = 80;
+    readonly MIN_SIZE = 40;
+
     @property({ type: Number })
-    size = 80; // compass size in pixels
+    size = this.BASE_SIZE; // compass size in pixels
 
     @property({ type: Number })
     cameraRotation = 0; // (0 = North, clockwise positive)
@@ -21,6 +24,29 @@ export default class Compass extends CustomElement {
         super.firstConnected();
         this.classList.add("sv-compass");
     }
+
+    protected connected() {
+        super.connected();
+        this.onResize();
+        window.addEventListener("resize", this.onResize);
+    }
+
+    protected disconnected() {
+        window.removeEventListener("resize", this.onResize);
+        super.disconnected();
+    }
+
+    protected onResize = () => {
+        const denominator = 900;
+
+        const windowSize = Math.min(window.innerWidth, window.innerHeight);
+        const scale = windowSize >= denominator ? 1 : windowSize / denominator;
+        const desired = Math.round(this.BASE_SIZE * scale);
+        const newSize = Math.max(this.MIN_SIZE, Math.min(this.BASE_SIZE, desired));
+        if (newSize !== this.size) {
+            this.size = newSize;
+        }
+    };
 
     protected render() {
         const size = this.size;
