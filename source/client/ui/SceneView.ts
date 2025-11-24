@@ -120,10 +120,6 @@ export default class SceneView extends SystemView
             throw new Error("WebGL2 unavailable. Try updating drivers and/or browser.");
         }
 
-        this.compass = document.createElement("sv-compass") as any;
-        this.compass.style.display = "none";
-        this.appendChild(this.compass);
-
         this.splitter = this.appendElement(QuadSplitter, {
             position: "absolute",
             top: "0", bottom: "0", left: "0", right: "0",
@@ -265,24 +261,6 @@ export default class SceneView extends SystemView
         else if(e.code === "Tab") {
             focusTrap(getFocusableElements(this.overlay) as HTMLElement[], e, true);
         }
-    }
-
-    protected updateCompassRotation = () => {
-        if (this.compass) {
-            const orbit = this.system.getComponent(CVOrbitNavigation).ins.orbit.value;
-            const [pitch, yaw, roll] = orbit;
-            this.compass.cameraRotation = yaw;
-        }
-    };
-
-    toggleCompass() {
-        if (this.compass) {
-            this.compass.style.display = this.isCompassVisible() ? "none" : "block";
-        }
-    }
-
-    isCompassVisible(): boolean {
-        return this.compass && this.compass.style.display !== "none";
     }
 
     /*protected onResize()
