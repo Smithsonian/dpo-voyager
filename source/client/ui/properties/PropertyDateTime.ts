@@ -9,9 +9,38 @@
 import Property from "@ff/graph/Property";
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import { DateTime } from "luxon";
-import moment from "moment-timezone";
 
 import PropertyBase from "./PropertyBase";
+
+const UTC_OFFSETS = [
+  { label: "UTC-12:00", offset: -12 },
+  { label: "UTC-11:00", offset: -11 },
+  { label: "UTC-10:00", offset: -10 },
+  { label: "UTC-09:00", offset: -9 },
+  { label: "UTC-08:00", offset: -8 },
+  { label: "UTC-07:00", offset: -7 },
+  { label: "UTC-06:00", offset: -6 },
+  { label: "UTC-05:00", offset: -5 },
+  { label: "UTC-04:00", offset: -4 },
+  { label: "UTC-03:00", offset: -3 },
+  { label: "UTC-02:00", offset: -2 },
+  { label: "UTC-01:00", offset: -1 },
+  { label: "UTC+00:00", offset: 0 },
+  { label: "UTC+01:00", offset: 1 },
+  { label: "UTC+02:00", offset: 2 },
+  { label: "UTC+03:00", offset: 3 },
+  { label: "UTC+04:00", offset: 4 },
+  { label: "UTC+05:00", offset: 5 },
+  { label: "UTC+06:00", offset: 6 },
+  { label: "UTC+07:00", offset: 7 },
+  { label: "UTC+08:00", offset: 8 },
+  { label: "UTC+09:00", offset: 9 },
+  { label: "UTC+10:00", offset: 10 },
+  { label: "UTC+11:00", offset: 11 },
+  { label: "UTC+12:00", offset: 12 },
+  { label: "UTC+13:00", offset: 13 },
+  { label: "UTC+14:00", offset: 14 },
+];
 
 @customElement("sv-property-datetime")
 export default class PropertyDateTime extends PropertyBase {
@@ -103,8 +132,10 @@ export class PropertyTimezone extends PropertyBase {
   }
 
   protected onChange = (event: Event) => {
-    const newZone = (event.target as HTMLSelectElement).value;
-    this.property.setValue(this.property.value.setZone(newZone));
+    const offsetStr = (event.target as HTMLSelectElement).value;
+    const offset: number = parseFloat(offsetStr);
+    const zoneLabel: string = `UTC${offset >= 0 ? '+' : ''}${offset}`;
+    this.property.setValue(this.property.value.setZone(zoneLabel));
   };
 
   protected render() {
@@ -112,12 +143,12 @@ export class PropertyTimezone extends PropertyBase {
     const name = this.name || property.name;
     const dateTimeValue = property.value as DateTime;
 
-    const currentZone: string = dateTimeValue?.zoneName || "UTC";
+    const currentOffset: number = dateTimeValue?.offset ? dateTimeValue.offset / 60 : 0;
 
     return html`
       <label class="ff-label ff-off">${name}</label>
-      <select ?disabled=${this.ariaDisabled === "true"} class="sv-property-field ff-input" .value=${currentZone} @change=${this.onChange} >
-        ${moment.tz.names().map((tz) => html`<option .value=${tz} ?selected=${tz === currentZone}>${tz}</option>`)}
+      <select ?disabled=${this.ariaDisabled === "true"} class="sv-property-field ff-input" .value=${currentOffset.toString()} @change=${this.onChange} >
+        ${UTC_OFFSETS.map((tz) => html`<option .value=${tz.offset.toString()} ?selected=${tz.offset === currentOffset}>${tz.label}</option>`)}
       </select>`;
   }
 }

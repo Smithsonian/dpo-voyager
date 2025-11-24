@@ -67,7 +67,6 @@
         "lit-html": "^1.4.1",
         "luxon": "^3.7.2",
         "moment": "^2.29.4",
-        "moment-timezone": "^0.6.0",
         "morgan": "^1.10.0",
         "nodemon": "^3.0.1",
         "postcss": "^8.5.6",
