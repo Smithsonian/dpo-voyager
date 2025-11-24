@@ -338,4 +338,23 @@ export default class MainView extends CustomElement
             this.application.setLanguage(languageID);
         }
     }
+
+
+    // get tags as displayed by the tag cloud
+    getTags()
+    {
+        if(this.application) {
+            const tags = this.viewer.outs.tagCloud.value;
+            return tags;
+        }    
+    }
+
+    // set active tags
+    setActiveTags(tags: string)
+    {
+        if(this.application) {
+            const viewerActiveTags = this.viewer.ins.activeTags;
+            viewerActiveTags.setValue(tags);
+        }
+    }
 }
