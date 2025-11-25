@@ -56,6 +56,7 @@ These methods engage Voyager functionality without the native UI.
 | setActiveArticle( id )| id: unique id string | Activates the article with the provided id. Bad/missing id opens article list.   |
 | setTourStep( tourIdx, stepIdx, interpolate[optional] ) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
 | setLanguage( id )		 | id: valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code string | Changes the active Voyager language to the supplied id if available in the current scene.  |
+| setActiveTags( tags )  | tags : string of comma-separated(",") tags | The provided tags are activated, others are deactivated (unless in "radio" style tags, where only the first tag in the list will be activated). Annotations and models with at least an active tag will be visible. Ex: "first tag, second tag" |
 
 ### Navigation Methods
 Methods for external control over camera properties and navigation.
@@ -73,6 +74,7 @@ Methods for external control over camera properties and navigation.
 |-------------------------------|----------------------|--------------------------------------------------|
 | getArticles()				    | None 			   	   | Returns an array of [Article data objects](https://github.com/Smithsonian/dpo-voyager/blob/master/source/client/models/Article.ts) with properties of each article associated with the current scene.      |
 | getAnnotations()				| None				   | Returns an array of [Annotation data objects](https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63) for the current scene.			|
+| getTags()                     | None                 | Returns the tags displayed in the tag cloud. Tags are separated by a comma (","). |
 
 ### Events
 
