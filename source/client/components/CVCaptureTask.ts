@@ -200,6 +200,10 @@ export default class CVCaptureTask extends CVTask
             return;
         }
 
+        // Make sure brackets are not visible
+        this.selection.ins.viewportBrackets.setValue(false);
+        this.selection.update();
+
         _qualityLevels.forEach(quality => {
             const dataURI = view.renderImage(_sizePresets[quality][0], _sizePresets[quality][1], type, compressionQuality);
             this._imageDataURIs[quality] = dataURI;
@@ -208,6 +212,8 @@ export default class CVCaptureTask extends CVTask
             imageElement.src = dataURI;
             this._imageElements[quality] = imageElement;
         });
+
+        this.selection.ins.viewportBrackets.setValue(true);
 
         this.outs.ready.setValue(true);
     }
