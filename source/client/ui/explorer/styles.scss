@@ -1257,25 +1257,14 @@ $tour-entry-indent: 12px;
   }
 
 &.sv-property-datetime {
-  .sv-property-field {
-    position: relative;
-    touch-action: none;
-    display: inline-flex;
-  }
-
   .ff-input[type="datetime-local"] {
-    position: relative;
-    touch-action: none;
     width: auto;
   }
 }
 
 &.sv-property-timezone {
   .sv-property-field{
-    position: relative;
-    touch-action: none;
-    display: inline-flex;
-    width: auto;
+    width: 10em;
   }
 }
 
@@ -1496,7 +1485,7 @@ $tour-entry-indent: 12px;
   }
 }
 
-.sv-tape-tool-view, .sv-slice-tool-view, .sv-environment-tool-view {
+.sv-tape-tool-view, .sv-slice-tool-view, .sv-environment-tool-view, .sv-light-tool-view {
   .sv-tool-controls {
     flex-wrap: wrap;
   }

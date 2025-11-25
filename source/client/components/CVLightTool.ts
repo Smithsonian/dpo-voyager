@@ -16,7 +16,6 @@
  */
 
 import CLight from "@ff/scene/components/CLight";
-import { INodeChangeEvent } from "@ff/graph/Node";
 import { IComponentEvent } from "@ff/graph/Component";
 
 import "../ui/properties/PropertyBoolean";
@@ -30,6 +29,7 @@ import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import NVNode from "client/nodes/NVNode";
 import CSunLight from "@ff/scene/components/CSunLight";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,78 +65,13 @@ export default class CVLightTool extends CVTool
         return new LightToolView(this);
     }
 
-    protected onActiveDocument(previous: CVDocument, next: CVDocument) {
-      this.detachLightListeners();
-      if (previous) {
-        previous.innerGraph.components.off(CLight, this.onLightComponentChange, this);
-      }
-      this.rebuildLightList(next, next ? this.outs.light.value : null);
-      if (next) {
-        next.innerGraph.components.on(CLight, this.onLightComponentChange, this);
-      }
-      super.onActiveDocument(previous, next);
-    }
+    protected onActiveDocument(previous: CVDocument, next: CVDocument)
+    {
+        this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
+        this.ins.light.setOptions(this.lights.map(light => light.ins.name.value));
+        this.outs.light.setValue(this.lights[0] ?? null);
 
-    protected rebuildLightList(document: CVDocument, preferredLight: CLight = null) {
-      this.detachLightListeners();
-      this.lights = document ? document.getInnerComponents(CLight).filter(light => light.ins.enabled.value) : [];
-      this.attachLightListeners();
-      this.refreshLightOptions(preferredLight);
-    }
-
-    protected refreshLightOptions(preferredLight: CLight = null) {
-      this.ins.light.setOptions(this.lights.map(light => light.node.name));
-      if (this.lights.length === 0) {
-        this.ins.light.setValue(0, true);
-        this.outs.light.setValue(null);
-        return;
-      }
-      const currentSelection = preferredLight && this.lights.includes(preferredLight)
-        ? preferredLight
-        : (this.outs.light.value && this.lights.includes(this.outs.light.value)
-          ? this.outs.light.value
-          : this.lights[Math.min(this.ins.light.getValidatedValue(), this.lights.length - 1)]);
-      const index = this.lights.indexOf(currentSelection);
-      this.ins.light.setValue(index, true);
-      this.outs.light.setValue(currentSelection);
-    }
-
-    protected attachLightListeners() {
-      this.lights.forEach(light => light.node?.on("change", this.onLightNodeChange, this));
-    }
-
-    protected detachLightListeners() {
-      if (!this.lights) {
-        return;
-      }
-
-      this.lights.forEach(light => light.node?.off("change", this.onLightNodeChange, this));
-    }
-
-    protected onLightComponentChange(event: IComponentEvent<CLight>) {
-      if (!event || !event.object) {
-        return;
-      }
-      const document = this.activeDocument;
-      if (!document || event.object.graph !== document.innerGraph) {
-        return;
-      }
-      let preferredLight = this.outs.light.value as CLight;
-      if (event.add && event.object.ins.enabled.value) {
-        preferredLight = event.object;
-      }
-      else if (event.remove && preferredLight === event.object) {
-        preferredLight = null;
-      }
-      this.rebuildLightList(document, preferredLight);
-    }
-
-    protected onLightNodeChange(event: INodeChangeEvent) {
-      if (!event || event.what === "name") {
-        this.refreshLightOptions(this.outs.light.value as CLight);
-      } else if (event.what === "enabled") {
-        this.rebuildLightList(this.activeDocument, this.outs.light.value as CLight);
-      }
+        super.onActiveDocument(previous, next);
     }
 }
 
@@ -195,12 +130,12 @@ export class LightToolView extends ToolView<CVLightTool>
           lightDetails = html`<div class="sv-section">
               <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
               <div class="sv-tool-controls">
-                  <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
-                  <sv-property-slider
+                ${sunPropertyControls}
+                <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
+                <sv-property-slider
                     .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} ?disabled=${isSunLight} min="0" max="10">
-                  </sv-property-slider>
-              ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
-              ${sunPropertyControls}
+                </sv-property-slider>
+                ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
               </div>
           </div>`;
         }
@@ -223,6 +158,27 @@ export class LightToolView extends ToolView<CVLightTool>
         }
 
         this.requestUpdate();
+    }
+
+    protected onActiveNode(previous: NVNode, next: NVNode)
+    {
+        if (previous && previous.light) {
+            previous.light.ins.name.off("value", this.refreshLightList, this);
+            previous.light.ins.enabled.off("value", this.refreshLights, this);
+        }
+        if (next && next.light) {
+            next.light.ins.enabled.on("value", this.refreshLights, this);
+            next.light.ins.name.on("value", this.refreshLightList, this);
+        }
+    }
+
+    protected refreshLights() {
+        this.tool.lights = this.activeDocument.getInnerComponents(CLight).filter((light) => light.ins.enabled.value);
+        this.refreshLightList();
+    }
+
+    protected refreshLightList() {
+        this.tool.ins.light.setOptions(this.tool.lights.map(light => light.ins.name.value)); 
     }
 
     protected async setFocus()
