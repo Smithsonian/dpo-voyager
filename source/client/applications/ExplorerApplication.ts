@@ -62,6 +62,7 @@ import CVSpotLight from "client/components/lights/CVSpotLight";
 import CLight from "@ff/scene/components/CLight";
 import { EProjection } from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
+import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -830,9 +831,11 @@ Version: ${ENV_VERSION}
             if(iiifLights.length > 0) {
                 // clear default lights
                 const lights = activeDoc.innerGraph.findNodeByName("Lights");
-                const defaultLights = lights.getComponent(CTransform).children;
+                const defaultLights = lights.getComponent(CTransform).children.slice();
                 while(defaultLights.length > 0) {
-                    defaultLights[0].dispose();
+                    const light = defaultLights.pop();
+                    light.hasComponent(CVEnvironmentLight) ? light.getComponent(CVEnvironmentLight).ins.enabled.setValue(false) :
+                        light.dispose();
                 }
 
                 iiifLights.forEach((light) => {
