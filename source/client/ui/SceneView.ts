@@ -18,7 +18,8 @@
 import ManipTarget from "@ff/browser/ManipTarget"
 import System from "@ff/graph/System";
 import RenderQuadView, { ILayoutChange } from "@ff/scene/RenderQuadView";
-import SystemView, { customElement } from "@ff/scene/ui/SystemView";
+import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
+import Notification from "@ff/ui/Notification";
 
 import QuadSplitter, { EQuadViewLayout, IQuadSplitterChangeMessage } from "@ff/ui/QuadSplitter";
 import CVDocumentProvider from "client/components/CVDocumentProvider";
@@ -111,6 +112,13 @@ export default class SceneView extends SystemView
 
         this.overlay.classList.add("sv-content-overlay");
         this.overlay.addEventListener("keydown", this.onKeyDownOverlay);
+
+        // Check that WebGL2 is enabled
+        if(!this.canvas.getContext('webgl2')) {
+            this.overlay.innerHTML = "<div class='error-msg'>WebGL2 is required and unavailable in your browser.<br>"
+                + "Please see <a href='https://get.webgl.org/webgl2/' target='_blank' rel='noopener noreferrer'>this WebGL2 test page</a> for more information.</div>";
+            throw new Error("WebGL2 unavailable. Try updating drivers and/or browser.");
+        }
 
         this.splitter = this.appendElement(QuadSplitter, {
             position: "absolute",
