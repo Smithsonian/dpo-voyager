@@ -53,7 +53,7 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         if(Object.keys(this.data.titles).length === 0) {
             this.data.titles[ELanguageType[this.language]] = this.data.title;
         }
-        return this.data.titles[language];
+        return this.data.titles[ELanguageType[language]];  // TODO: Rectify with other type uses
     }
     
     get lead() {
@@ -68,6 +68,15 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
         this.data.leads[ELanguageType[this.language]] = inLead;
         this.update();
     }
+    leadIn(language: ELanguageType){
+        // TODO: Temporary - remove when single string properties are phased out
+        if(Object.keys(this.data.leads).length === 0) {
+            this.data.leads[ELanguageType[this.language]] = this.data.lead;
+        }
+
+        return this.data.leads[ELanguageType[language]] || "";
+    }
+
     get tags() {
         // TODO: Temporary - remove when single string properties are phased out
         if(Object.keys(this.data.taglist).length === 0) {

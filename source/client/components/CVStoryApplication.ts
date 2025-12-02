@@ -42,6 +42,7 @@ import { EAssetType } from "client/schema/model";
 import { EProjection } from "./CVOrbitNavigation";
 import CVAnnotationView from "./CVAnnotationView";
 import { ELanguageType } from "client/schema/common";
+import CVLanguageManager from "./CVLanguageManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,6 +56,7 @@ export default class CVStoryApplication extends Component
 {
     static readonly typeName: string = "CVStoryApplication";
     static readonly isSystemSingleton = true;
+    static readonly iiifUnhandledLights = ["CVEnvironmentLight", "CVRectLight", "CVHemisphereLight"];
 
     protected static readonly ins = {
         exit: types.Event("Application.Exit"),
@@ -78,6 +80,9 @@ export default class CVStoryApplication extends Component
     }
     protected get assetWriter() {
         return this.getMainComponent(CVAssetWriter);
+    }
+    protected get languageManager() {
+        return this.getSystemComponent(CVLanguageManager);
     }
     protected get mediaManager() {
         return this.system.getMainComponent(CVMediaManager);
@@ -244,10 +249,15 @@ export default class CVStoryApplication extends Component
         const iiifScene = jsonObj["items"][0];
         iiifScene["id"] = "https://example.org/iiif/scene1/page/p1/1";
         iiifScene["type"] = "Scene";
-        iiifScene["label"] = { "en": [sceneTitle ? sceneTitle : "Untitled"] };
-        //iiifScene["backgroundColor"] = "#"+_color.getHexString();
+        iiifScene["label"] = {}; //{ "en": [sceneTitle ? sceneTitle : "Untitled"] };
+        iiifScene["backgroundColor"] = "#"+_color.getHexString("srgb-linear");
         iiifScene["items"] = [{}];
         iiifScene["annotations"] = [{}];
+
+        // add multilingual content
+        this.languageManager.sceneLanguages.forEach(language => {
+            iiifScene["label"][ELanguageType[language.id]] = [cvDocument.titleIn(language.id)];
+        });
 
         const annotationPage = iiifScene["items"][0];
         annotationPage["id"] = "https://example.org/iiif/scene1/page/p1/1";
@@ -273,7 +283,7 @@ export default class CVStoryApplication extends Component
     protected parseChildNodes(nodes, annotationPage, commentPage) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
 
-        children.forEach(child => {console.log(child);
+        children.forEach(child => {
             const annotation = {
                 id: "https://example.org/iiif/3d/anno"+(annotationPage["items"].length+1),
                 type: "Annotation",
@@ -305,15 +315,15 @@ export default class CVStoryApplication extends Component
 
                 // process annotations
                 const annotations = child.model.getComponent(CVAnnotationView);
-                annotations.getAnnotations().forEach(anno => {console.log(anno);
-                    const title = (anno.title.length > 0 ? anno.title : "Untitled") + (anno.lead.length > 0 ? "\n"+anno.lead : "");
+                annotations.getAnnotations().forEach(anno => {
+                    //const title = (anno.title.length > 0 ? anno.title : "Untitled") + (anno.lead.length > 0 ? "\n"+anno.lead : "");
                     _vec3a.fromArray(anno.data.position).multiplyScalar(child.model.outs.unitScale.value);  // _vec3b = scale from setTransform
 
                     const comment = {
                         "id": "https://example.org/iiif/3d/anno2",
                         "type": "Annotation",
                         "motivation": ["commenting"],
-                        "bodyValue": title,
+                        //"bodyValue": title,
                         "target": {
                             "type": "SpecificResource",
                             "source": [
@@ -332,6 +342,24 @@ export default class CVStoryApplication extends Component
                             ]
                         }
                     }
+                    comment["body"] = {
+                        "type": "Choice",
+                        "items": []
+                    }
+
+                    // add multilingual content
+                    this.languageManager.sceneLanguages.forEach(language => {
+                        const content = (anno.titleIn(language.id)?.length > 0 ? anno.titleIn(language.id) : "Untitled") + 
+                            (anno.leadIn(language.id)?.length > 0 ? "\n"+anno.leadIn(language.id) : "");
+                        const textBody = {
+                            "type": "TextualBody",
+                            "value": content,
+                            "language": ELanguageType[language.id],
+                            "format": "text/plain"
+                        }
+                        comment["body"]["items"].push(textBody);
+                    });
+
                     commentPage["items"].push(comment);
                 });
             }
@@ -349,10 +377,19 @@ export default class CVStoryApplication extends Component
             }
 
             if (child.light) {
+                // check unhandled light types
+                if(CVStoryApplication.iiifUnhandledLights.includes(child.light.typeName)) {
+                    return;
+                }
+
                 // add source
+                _color.setRGB(child.light.ins.color.value[0],child.light.ins.color.value[1],child.light.ins.color.value[2]);
                 const source = {
                     id: "https://example.org/iiif/3d/lights/1",
-                    type: child.light.typeName.substring(2)
+                    type: child.light.typeName.substring(2),
+                    label: {"EN": [child.light.node.name]},
+                    color: "#"+_color.getHexString("srgb-linear"),
+                    intensity: {"type": "Value", "value": child.light.ins.intensity.value, "unit": "relative"}
                 }
                 annotation.body["source"] = source;
 

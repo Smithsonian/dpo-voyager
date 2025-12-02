@@ -63,6 +63,7 @@ import CLight from "@ff/scene/components/CLight";
 import { EProjection } from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
 import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
+import CVAmbientLight from "client/components/lights/CVAmbientLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -802,6 +803,7 @@ Version: ${ENV_VERSION}
                     case "directionallight":
                     case "spotlight":
                     case "pointlight":
+                    case "ambientlight":
                         iiifLights.push(anno);
                         break;
                     case "textualbody":
@@ -841,6 +843,7 @@ Version: ${ENV_VERSION}
                 iiifLights.forEach((light) => {
                     const lightBody = light.getBody()[0];
                     const lightLabel = lightBody.getLabel()?.getValue();
+                    //const lightLabel = lightBody.getPropertyFromSelfOrSource("label")[0];
                     let newLight = null;
                     const lightNode = activeDoc.innerGraph.createCustomNode(NVNode);
                     lights.getComponent(CTransform).addChild(lightNode.transform);
@@ -853,6 +856,9 @@ Version: ${ENV_VERSION}
                     }
                     else if(lightBody.isSpotLight()) {
                         newLight = lightNode.createComponent(CVSpotLight);
+                    }
+                    else if(lightBody.isAmbientLight()) {
+                        newLight = lightNode.createComponent(CVAmbientLight);
                     }
 
                     if(newLight) {
@@ -961,8 +967,20 @@ Version: ${ENV_VERSION}
                         data.scale = 0.001;
                     }
 
-                    // additional attributes
-                    annotation.title = commentBody.Value;                  
+                    // parse annotation content
+                    comment.getBody().forEach(option => {
+                        const annoValue: string = option.Value;
+                        const langCode: string = option.getProperty("language");
+                        const newLine = annoValue.indexOf('\n');
+                        if(newLine >= 0) {
+                            annotation.data.titles[langCode] = annoValue.substring(0,newLine);
+                            annotation.data.leads[langCode] = annoValue.substring(newLine+1);
+                            data.style = "Extended";
+                        }
+                        else {
+                            annotation.data.titles[langCode] = annoValue;
+                        }
+                    });        
 
                     const view = models[0].getGraphComponent(CVAnnotationView);
                     view.addAnnotation(annotation);
