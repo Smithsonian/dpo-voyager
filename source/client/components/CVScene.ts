@@ -33,6 +33,7 @@ import CVSetup from "./CVSetup";
 import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import { CLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
+import CAmbientLight from "@ff/scene/components/CAmbientLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -223,7 +224,7 @@ export default class CVScene extends CVNode
     {
         const {ins, outs} = this; 
         const lightNode = this.graph.findNodeByName("Lights");
-
+console.log(ins.units.changed);
         if(lightNode) {
             const lightTransform = lightNode.getComponent(CTransform, true);       
             const unitScale = unitScaleFactor(outs.units.value, ins.units.value);
@@ -254,6 +255,16 @@ export default class CVScene extends CVNode
                         _vec3.fromArray(lightNode.transform.ins.position.value);
                         _vec3.multiplyScalar(unitScale);
                         lightNode.transform.ins.position.setValue(_vec3.toArray());
+
+                        // set appropriate light scaling
+                        if(lightNode instanceof CAmbientLight) {console.log(lightNode,unitScale);
+                            _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2); 
+                        }
+                        else {console.log(lightNode,unitScale);
+                            _vec3.fromArray(lightNode.transform.ins.scale.value);
+                            _vec3.multiplyScalar(unitScale);
+                        }
+                        lightNode.transform.ins.scale.setValue(_vec3.toArray());
                         lightNode.light?.updateMatrix();
                     }
 
