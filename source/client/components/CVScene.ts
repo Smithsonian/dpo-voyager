@@ -34,6 +34,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import { CLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 import CAmbientLight from "@ff/scene/components/CAmbientLight";
+import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -257,7 +258,7 @@ export default class CVScene extends CVNode
                         lightNode.transform.ins.position.setValue(_vec3.toArray());
 
                         // set appropriate light scaling
-                        if(lightNode instanceof CAmbientLight) {
+                        if(lightNode instanceof CAmbientLight || lightNode instanceof CHemisphereLight) {
                             _vec3.setScalar(this.outs.boundingRadius.value*unitScale*0.2); 
                         }
                         else {

@@ -30,6 +30,8 @@ import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
 import CVScene from "client/components/CVScene";
+import unitScaleFactor from "client/utils/unitScaleFactor";
+import { EUnitType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -203,9 +205,16 @@ class NodeTree extends Tree<NVNode>
     static createLightNode(parentNode: NVNode, newType: ELightType, name: string): NVNode {
         const lightType = lightTypes.find(lt => lt.type === ELightType[newType].toString());
         if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
-
+ 
         const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
         const newLight: ICVLight = lightNode.transform.createComponent<ICVLight>(lightType);
+
+        // Set reasonable initial size
+        const scene: CVScene = newLight.getGraphComponent(CVScene);
+        let scale = unitScaleFactor(EUnitType.m, scene.ins.units.value)*0.5;
+        scale *= newType === ELightType.rect ? 0.05 : 0.5;
+        newLight.transform.ins.scale.setValue([scale,scale,scale]);
+
         newLight.ins.name.setValue(name);
         newLight.update(this);  // trigger light update before helper creation to ensure proper init
 
