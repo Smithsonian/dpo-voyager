@@ -539,6 +539,16 @@
 <td>id: valid <a href="https://www.loc.gov/standards/iso639-2/php/code_list.php">ISO 639-1</a> code string</td>
 <td>Changes the active Voyager language to the supplied id if available in the current scene.</td>
 </tr>
+<tr>
+<td>setActiveTags( tags )</td>
+<td>tags : string of comma-separated(&quot;,&quot;) tags</td>
+<td>The provided tags are activated, others are deactivated (unless in &ldquo;radio&rdquo; style tags, where only the first tag in the list will be activated). Annotations and models with at least an active tag will be visible. Ex: &ldquo;first tag, second tag&rdquo;</td>
+</tr>
+<tr>
+<td>resetViewer()</td>
+<td>None</td>
+<td>Reset the scene (objects and camera positions). Same behavior as the reset button</td>
+</tr>
 </tbody>
 </table>
 <h3 id="navigation-methods">Navigation Methods</h3>
@@ -593,6 +603,26 @@
 <td>getAnnotations()</td>
 <td>None</td>
 <td>Returns an array of <a href="https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/model.ts#L63">Annotation data objects</a> for the current scene.</td>
+</tr>
+<tr>
+<td>getTags()</td>
+<td>None</td>
+<td>Returns the tags displayed in the tag cloud. Tags are separated by a comma (&quot;,&quot;).</td>
+</tr>
+<tr>
+<td>getTours()</td>
+<td>None</td>
+<td>Returns a list of <a href="https://github.com/Smithsonian/dpo-voyager/blob/d3d63fedeb595ac7b664a2b2e081b691bbdc3084/source/client/schema/setup.ts#L175">Tours data objects</a>.</td>
+</tr>
+<tr>
+<td>getActiveLanguage()</td>
+<td>None</td>
+<td>Returns the active language as valid ISO 639-1</td>
+</tr>
+<tr>
+<td>getLanguages()</td>
+<td>None</td>
+<td>Returns all languages available in the scene as valid ISO 639-1</td>
 </tr>
 </tbody>
 </table>
