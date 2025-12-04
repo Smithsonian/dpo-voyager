@@ -39,6 +39,7 @@ import CVNodeProvider from "./CVNodeProvider";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVDocument from "./CVDocument";
 import CVSetup from "./CVSetup";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -203,6 +204,8 @@ export default class CVCaptureTask extends CVTask
         // Make sure brackets are not visible
         this.selection.ins.viewportBrackets.setValue(false);
         this.selection.update();
+        const annotationsEnabled = this.setup.viewer.ins.annotationsVisible.value;
+        this.getSystemComponents(CVAnnotationView).forEach(view => view.object3D.visible = false);
 
         _qualityLevels.forEach(quality => {
             const dataURI = view.renderImage(_sizePresets[quality][0], _sizePresets[quality][1], type, compressionQuality);
@@ -214,6 +217,7 @@ export default class CVCaptureTask extends CVTask
         });
 
         this.selection.ins.viewportBrackets.setValue(true);
+        this.getSystemComponents(CVAnnotationView).forEach(view => view.object3D.visible = annotationsEnabled);
 
         this.outs.ready.setValue(true);
     }
