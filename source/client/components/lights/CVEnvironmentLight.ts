@@ -33,6 +33,8 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
 
     static readonly text: string = "Environment Light";
     static readonly icon: string = "globe";
+    
+    canDelete: boolean = false;
 
     get settingProperties() {
         return [
@@ -54,6 +56,7 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         envIns.enabled.linkFrom(this.ins.enabled);
 
         this.node.name = "Environment";
+        this.ins.name.setValue("Environment");
         (this.node as NVNode).transform.addTag("no_settings");
     }
 

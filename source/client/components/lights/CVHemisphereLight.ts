@@ -33,6 +33,7 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
 
     get settingProperties() {
         return [
+            this.ins.name,
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
@@ -65,6 +66,7 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
             throw new Error("light type mismatch: not an hemisphere light");
         }
 
+        ins.name.setValue(node.name);
         data.point = data.point || {} as any;
 
         ins.copyValues({
