@@ -100,6 +100,26 @@ export class LightToolView extends ToolView<CVLightTool>
         super.disconnected();
     }
 
+    private renderSunLightProperties(light: CSunLight, language): unknown {
+        return html`
+            <sv-property-datetime input="datetime-local" .property=${light.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
+            <sv-property-timezone .property=${light.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
+            <sv-property-number .property=${light.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
+            <sv-property-number .property=${light.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
+        `;
+    }
+
+    private renderCommonLightProperties(light: CLight, language): unknown {
+        return html`
+                <!-- <sv-property-boolean .property=${light.ins.visible} name="Switch"></sv-property-boolean> -->
+                <sv-property-slider .property=${light.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="10"></sv-property-slider>
+        `;
+    }
+
+    private renderColorInput(light: CLight, language): unknown {
+        return html`<sv-property-color .property=${light.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+    }
+    
     protected render()
     {
         const tool = this.tool;
@@ -117,26 +137,22 @@ export class LightToolView extends ToolView<CVLightTool>
         var lightDetails = null;
 
         if (activeLight) {
-          const isSunLight = activeLight instanceof CSunLight;
-          const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")} aria-disabled=${isSunLight ? "true" : "false"}></sv-property-color>`;
+            var lightControls = null;
 
-          const sunPropertyControls = isSunLight ? html`
-            <sv-property-datetime input="datetime-local" .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
-            <sv-property-timezone .property=${activeLight.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
-            <sv-property-number .property=${activeLight.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
-            <sv-property-number .property=${activeLight.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
-          ` : null;
+            if (activeLight.is(CSunLight)) {
+                lightControls = this.renderSunLightProperties(activeLight as CSunLight, language);
+            } else if (activeLight.is(CVEnvironmentLight)) {
+                lightControls = this.renderCommonLightProperties(activeLight, language);
+            } else {
+                lightControls = html`
+                    ${this.renderCommonLightProperties(activeLight, language)}
+                    ${this.renderColorInput(activeLight, language)}
+                `;
+            }
 
           lightDetails = html`<div class="sv-section">
               <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
-              <div class="sv-tool-controls">
-                ${sunPropertyControls}
-                <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
-                <sv-property-slider
-                    .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} ?disabled=${isSunLight} min="0" max="10">
-                </sv-property-slider>
-                ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
-              </div>
+              <div class="sv-tool-controls">${lightControls}</div>
           </div>`;
         }
 
