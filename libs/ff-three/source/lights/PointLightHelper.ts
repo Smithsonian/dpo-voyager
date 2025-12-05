@@ -26,7 +26,7 @@ export default class PointLightHelper extends LightHelper {
 
   update(){
     super.update();
-    this.distance.scale.setScalar(this.light.distance);
+    this.distance.scale.setScalar(this.light.distance/this.light.parent.scale.y);
     this.distance.updateMatrix()
 
   }
