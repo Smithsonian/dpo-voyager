@@ -25,8 +25,8 @@ export default class CSunLight extends CLight {
         datetime: types.DateTime("Light.DateTime", {
             preset: DateTime.now().set({ second: 0, millisecond: 0 })
         }),
-        latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90 }),
-        longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180 }),
+        latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
+        longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
         sunDistance: types.Number("Light.SunDistance", { preset: 500 }),
     };
