@@ -29,6 +29,7 @@ import "../properties/PropertyBoolean";
 import "../properties/PropertyString";
 import "../properties/PropertySlider";
 import "../properties/PropertyNumber";
+import "../properties/PropertyPercent";
 import "../properties/PropertyOptions";
 import "../properties/PropertyEvent";
 
@@ -98,7 +99,11 @@ export default class PropertyView extends CustomElement
         }else if(property.type === "string"){
             return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){
-            return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
+            if(schema.percent){
+                return html`<sv-property-percent aria-disabled=${disabled} name=${label} .property=${property}></sv-property-percent>`
+            }else{
+                return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
+            }
         }else{
             console.warn("Unhandled property :", property.name);
             return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;

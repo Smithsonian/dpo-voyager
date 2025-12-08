@@ -23,8 +23,8 @@ import PropertyBase from "./PropertyBase";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@customElement("sv-property-number")
-export default class PropertyNumber extends PropertyBase
+@customElement("sv-property-percent")
+export default class PropertyPercent extends PropertyBase
 {
     type = "number";
 
@@ -95,21 +95,25 @@ export default class PropertyNumber extends PropertyBase
         const max = schema.max;
         const bounded = isFinite(min) && isFinite(max);
         const value = this.value;
+        let text :string;
+        text = this.setPrecision(value);
 
         return html`
             <label class="ff-label ff-off">${name}</label>
             <div class="sv-property-field">
                 ${bounded? html`<span class="ff-off ff-bar" style="width:${ 100*(value - min) / (max - min)}%;"></span>`:null}
                 <input ?disabled=${this.ariaDisabled === "true"} class="ff-input"
-                    type="number"
+                    type="text"
+                    pattern="[+\\-]?([0-9.]+|inf)%?"
                     step=${schema.step ?? ""}
                     min=${min ?? ""}
                     max=${max ?? ""}
-                    .value=${value}
+                    .value=${text}
                     @change=${this.onChange}
                     @focus=${(e)=>{ e.target.select();}}
                     @keypress=${(e)=>{if(e.key === "Enter"){e.target.blur();}}}
                 >
+                <span class="ff-off ff-unit">%</span>
             </div>
         `;
     }
@@ -123,6 +127,22 @@ export default class PropertyNumber extends PropertyBase
         }
     }
 
+    protected setPrecision(value: number) : string {
+        const schema = this.property.schema;
+        let text :string;
+
+        if(!isFinite(value)){
+            text = value > 0 ? "inf" : "-inf";
+        }
+        else{
+            const precision = schema.precision !== undefined
+            ? schema.precision : PropertyField.defaultPrecision;
+
+            text = (value * 100).toFixed(precision - 2);
+        }
+        return text;
+    }
+
     protected onChange = (event: Event) => {
         let text = (event.target as HTMLInputElement).value;
 
@@ -130,7 +150,18 @@ export default class PropertyNumber extends PropertyBase
             this.setValue(text[0] === "-" ? -Infinity : Infinity);
             return;
         }
-        let value = parseFloat(text);
+        let value :number;
+        if(text.endsWith("%")) {
+            text = text.slice(0, -1);
+        }
+        value = +text / 100;
+
+        // Handle special case where precision-rounded number will match current widget text.
+        // Lit sees it as unchanged and will not re-render the widget.
+        const currentValueText = this.setPrecision(this.value);
+        if(this.setPrecision(value) == currentValueText) {
+            (event.target as HTMLInputElement).value = currentValueText;
+        }
 
         if(!isFinite(value)) {
             value = 0;
