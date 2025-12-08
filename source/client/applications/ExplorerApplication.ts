@@ -826,6 +826,9 @@ Version: ${ENV_VERSION}
                 newModel.ins.localUnits.setValue(EUnitType.mm);
                 newModel.object3D.userData["IIIFid"] = annotation.id;
 
+                const modelLabel = model.getLabelFromSelfOrSource().getValue();
+                newModel.node.name = modelLabel ?? "Model";
+
                 newModel.setFromMatrix(this.getIIIFBodyTransform(model,annotation));
             });
 
@@ -842,8 +845,7 @@ Version: ${ENV_VERSION}
 
                 iiifLights.forEach((light) => {
                     const lightBody = light.getBody()[0];
-                    const lightLabel = lightBody.getLabel()?.getValue();
-                    //const lightLabel = lightBody.getPropertyFromSelfOrSource("label")[0];
+                    const lightLabel = lightBody.getLabelFromSelfOrSource().getValue();
                     let newLight = null;
                     const lightNode = activeDoc.innerGraph.createCustomNode(NVNode);
                     lights.getComponent(CTransform).addChild(lightNode.transform);
@@ -898,9 +900,9 @@ Version: ${ENV_VERSION}
 
                 const cameraBody = camera.getBody()[0];
 
-                // needs 'SelfOrSource' for labels
-                //const cameraLabel = cameraBody.getPropertyFromSelfOrSource("label");
-                //vCamera.node.name = cameraLabel ?? "Camera";
+                // set name
+                const cameraLabel = cameraBody.getLabelFromSelfOrSource().getValue();
+                vCamera.node.name = cameraLabel ?? "Camera";
 
                 _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
 

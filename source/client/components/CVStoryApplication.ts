@@ -306,6 +306,7 @@ export default class CVStoryApplication extends Component
                 const source = {
                     id: this.standaloneFileManager ? this.standaloneFileManager.blobUrlToFileUrl(url) : url,
                     type: "Model",
+                    label: {"EN": [child.model.node.name]},
                     format: asset.data.mimeType
                 }
                 annotation.body["source"] = source;
@@ -349,8 +350,18 @@ export default class CVStoryApplication extends Component
 
                     // add multilingual content
                     this.languageManager.sceneLanguages.forEach(language => {
-                        const content = (anno.titleIn(language.id)?.length > 0 ? anno.titleIn(language.id) : "Untitled") + 
-                            (anno.leadIn(language.id)?.length > 0 ? "\n"+anno.leadIn(language.id) : "");
+                        let content = (anno.titleIn(language.id)?.length > 0 ? anno.titleIn(language.id) : "Untitled") + "\n";
+
+                        // add image if needed
+                        /*if(anno.data.imageUri) {
+                            content += "<img alt=" + anno.imageAltText + " src=" + anno.data.imageUri +">";
+                            if(anno.imageCredit) {
+                                content += "<div>" + anno.imageCredit + "</div>";
+                            }
+                        }*/
+
+                        content += (anno.leadIn(language.id)?.length > 0 ? anno.leadIn(language.id) : "");
+
                         const textBody = {
                             "type": "TextualBody",
                             "value": content,
