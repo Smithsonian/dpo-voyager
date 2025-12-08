@@ -33,13 +33,15 @@ export default class CLight extends CObject3D
         intensity: types.Number("Light.Intensity", {
             preset:1,
             min: 0,
+            step: 0.1
         }),
         shadowEnabled: types.Boolean("Shadow.Enabled"),
         shadowResolution: types.Enum("Shadow.Resolution", EShadowMapResolution, EShadowMapResolution.Medium),
-        shadowBlur: types.Number("Shadow.Blur", 1),
+        shadowBlur: types.Number("Shadow.Blur", {preset: 1, step: 0.1}),
         shadowIntensity: types.Number("Shadow.Intensity", {
             preset:1,
             min: 0,
+            step: 0.1
         })
     };
 
