@@ -22,7 +22,7 @@ export default class CPointLight extends CLight
     protected static readonly pointLightIns = {
         position: types.Vector3("Light.Position"),
         distance: types.Number("Light.Distance", {preset: 0, min: 0}),
-        decay: types.Number("Light.Decay", {preset: 1, min: 0}),
+        decay: types.Number("Light.Decay", {preset: 1, min: 0, step: 1}),
     };
 
     ins = this.addInputs<CLight, typeof CPointLight["pointLightIns"]>(CPointLight.pointLightIns);
