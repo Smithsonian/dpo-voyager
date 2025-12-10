@@ -71,6 +71,8 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             throw new Error("light type mismatch: not a sun light");
         }
 
+        ins.name.setValue(node.name);
+
         ins.copyValues({
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
