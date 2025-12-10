@@ -34,8 +34,8 @@ import CVMediaManager from "./CVMediaManager";
 import CVMeta from "./CVMeta";
 import CVStandaloneFileManager from "./CVStandaloneFileManager";
 import CVModel2 from "./CVModel2";
-import { Vector3, Euler, Quaternion, Color } from "three";
-import math from "@ff/core/math";
+import { Vector3, Euler, Quaternion, Color, Matrix4 } from "three";
+//import math from "@ff/core/math";
 import CVBackground from "./CVBackground";
 import NVNode from "client/nodes/NVNode";
 import { EAssetType } from "client/schema/model";
@@ -43,6 +43,8 @@ import { EProjection } from "./CVOrbitNavigation";
 import CVAnnotationView from "./CVAnnotationView";
 import { ELanguageType } from "client/schema/common";
 import CVLanguageManager from "./CVLanguageManager";
+import math from "@ff/three/math";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +53,7 @@ const _vec3b = new Vector3();
 const _quat = new Quaternion();
 const _euler = new Euler();
 const _color = new Color();
+const _mat4 = new Matrix4();
 
 export default class CVStoryApplication extends Component
 {
@@ -346,6 +349,61 @@ export default class CVStoryApplication extends Component
                     comment["body"] = {
                         "type": "Choice",
                         "items": []
+                    }
+
+                    // add anno view to content state if needed
+                    if(anno.data.viewId) {
+                        const contentAnno = {
+                            "id": "https://example.org/iiif/3d/anno2/scope1",
+                            "type": "Annotation",
+                            "motivation": ["contentState"],
+                            "target": {
+                                "id": "https://example.org/iiif/scene1/page/p1/1",
+                                "type": "Scene",
+                                "items": [
+                                    {
+                                        "id": "https://example.org/iiif/scene1/page/p3/1",
+                                        "type": "AnnotationPage",
+                                        "items": []
+                                    }
+                                ]
+                            }
+                        }
+                        const items = contentAnno["target"]["items"][0]["items"];
+                        const viewAnno = {
+                            id: "https://example.org/iiif/3d/anno"+(annotationPage["items"].length+1),
+                            type: "Annotation",
+                            motivation: ["painting"],
+                            body: { type: "SpecificResource"},
+                            target: {
+                                type: "SpecificResource",
+                                source: [{
+                                    id: annotationPage.id,
+                                    type: "Scene"
+                                }]
+                            }                            
+                        };
+
+                        // add camera
+                        const source = {
+                            id: "https://example.org/iiif/3d/cameras/1",
+                            type: "PerspectiveCamera"
+                        }
+                        viewAnno.body["source"] = source;
+                        // add transform
+                        const setup = this.getSystemComponent(CVSetup);
+                        const machine = setup.snapshots;
+                        const props = machine.getTargetProperties();
+                        const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+                        const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+                        const state = machine.getState(anno.data.viewId);
+                        _vec3a.fromArray(state.values[orbitIdx]);
+                        _vec3b.fromArray(state.values[offsetIdx]);
+                        math.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+                        this.setTransform(viewAnno, _mat4);
+
+                        items.push(viewAnno);
+                        comment["target"]["scope"] = contentAnno;
                     }
 
                     // add multilingual content

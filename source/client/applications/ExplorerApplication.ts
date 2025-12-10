@@ -47,7 +47,7 @@ import CRenderer from "client/../../libs/ff-scene/source/components/CRenderer";
 import { clamp } from "client/utils/Helpers"
 import CVScene from "client/components/CVScene";
 import CVAnnotationView, { Annotation } from "client/components/CVAnnotationView";
-import { ELanguageType, EUnitType } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageType, EUnitType } from "client/schema/common";
 import { TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, AnnotationBody } from "@iiif/3d-manifesto-dev";
 import IIIFManifest from "client/io/IIIFManifestReader";
 import { Matrix4, Vector3, Euler, Quaternion, DirectionalLight, PointLight, PlaneGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, BufferGeometry, BufferAttribute, DoubleSide, Color } from "three";
@@ -64,6 +64,9 @@ import { EProjection } from "@ff/three/UniversalCamera";
 import CPulse from "@ff/graph/components/CPulse";
 import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
 import CVAmbientLight from "client/components/lights/CVAmbientLight";
+import { AnnotationMotivation } from "@iiif/vocabulary";
+import { Annotation as IIIFAnnotation } from "@iiif/3d-manifesto-dev/dist-esmodule/";
+import { EEasingCurve } from "@ff/core/easing";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -903,7 +906,7 @@ Version: ${ENV_VERSION}
                 // set name
                 const cameraLabel = cameraBody.getLabelFromSelfOrSource().getValue();
                 vCamera.node.name = cameraLabel ?? "Camera";
-
+console.log(vCamera.node.name);
                 _mat4b.copy(this.getIIIFBodyTransform(cameraBody, camera));
 
                 _vec3a.setFromMatrixPosition(_mat4b);
@@ -935,6 +938,7 @@ Version: ${ENV_VERSION}
             }
 
             // handle comments
+            setup.viewer.ins.annotationsVisible.setValue(iiifComments.length > 0);
             iiifComments.forEach((comment) => {
                 const target = comment.getTarget();
                 const commentBody = comment.getBody()[0];
@@ -972,7 +976,7 @@ Version: ${ENV_VERSION}
                     // parse annotation content
                     comment.getBody().forEach(option => {
                         const annoValue: string = option.Value;
-                        const langCode: string = option.getProperty("language");
+                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
                         const newLine = annoValue.indexOf('\n');
                         if(newLine >= 0) {
                             annotation.data.titles[langCode] = annoValue.substring(0,newLine);
@@ -982,13 +986,57 @@ Version: ${ENV_VERSION}
                         else {
                             annotation.data.titles[langCode] = annoValue;
                         }
-                    });        
+                    });
+                    
+                    // handle scope
+                    const scopeAnnotations = comment.ScopeContent;
+                    //const scopeCameras = [];
+                    scopeAnnotations.forEach((anno) => {
+                        const obj = anno.getBody()[0];
+                        const body = obj.isSpecificResource() ? obj.getSource() : obj;
+                        
+                        const type = (body as any).getType();
+                        switch(type) {
+                            case "perspectivecamera":
+                            case "orthographiccamera":
+                                //scopeCameras.push(anno);
+                                const cameraBody = anno.getBody()[0];
+                                _mat4b.copy(this.getIIIFBodyTransform(cameraBody, anno));
+
+                                _vec3a.setFromMatrixPosition(_mat4b);
+                                const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
+
+                                _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
+                                _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
+                                _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
+
+                                // add view to annotation
+                                const machine = setup.snapshots;
+                                const props = machine.getTargetProperties();
+                                const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+                                const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+                                const values = machine.getCurrentValues();
+                                values[offsetIdx] = _vec3a.toArray();
+                                values[orbitIdx] = _vec3b.toArray();
+                                const id = machine.setState({
+                                    values: values,
+                                    curve: EEasingCurve.EaseOutQuad,
+                                    duration: 1.0,
+                                    threshold: 0.5,
+                                });
+                                annotation.set("viewId", id);
+                                break;
+                            default:
+                                console.log("Unsupported IIIF scope annotation type: "+type);
+                        }
+                    });
+
 
                     const view = models[0].getGraphComponent(CVAnnotationView);
                     view.addAnnotation(annotation);
                 }
             });
-            setup.viewer.ins.annotationsVisible.setValue(iiifComments.length > 0);
 
             // handle canvases
             iiifCanvases.forEach((canvas) => {
