@@ -93,13 +93,13 @@ export default class PropertyView extends CustomElement
                 return html`${headerElement}<div class="sv-property-group">${fields}</div>`;
             } else if (schema.percent){
                 return html`<sv-property-percent aria-disabled=${disabled} name=${label} .property=${property}></sv-property-percent>`
+            } else if (schema.options) {
+                return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
             } else {
                 return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
             }
         }else if (schema.event) {
             return html`<sv-property-event aria-disabled=${disabled} name=${label} .property=${property}></sv-property-event>`;
-        }else if (schema.options) {
-            return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
         }else if(property.type === "string"){
