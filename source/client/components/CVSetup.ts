@@ -81,6 +81,9 @@ export default class CVSetup extends Component
     }
     get transform() {
         return this.getComponent(CTransform);
+    } 
+    get setupCache() {
+        return this._savedSetupData;
     }
 
     interface: CVInterface;

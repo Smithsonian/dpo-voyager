@@ -45,6 +45,7 @@ import { ELanguageType } from "client/schema/common";
 import CVLanguageManager from "./CVLanguageManager";
 import math from "@ff/three/math";
 import CVSetup from "./CVSetup";
+import documentTemplate from "client/templates/default.svx.json";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -285,6 +286,7 @@ export default class CVStoryApplication extends Component
 
     protected parseChildNodes(nodes, annotationPage, commentPage) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
+        const setup = this.getSystemComponent(CVSetup);
 
         children.forEach(child => {
             const annotation = {
@@ -391,13 +393,12 @@ export default class CVStoryApplication extends Component
                         }
                         viewAnno.body["source"] = source;
                         // add transform
-                        const setup = this.getSystemComponent(CVSetup);
                         const machine = setup.snapshots;
                         const props = machine.getTargetProperties();
                         const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
                         const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
                         const state = machine.getState(anno.data.viewId);
-                        _vec3a.fromArray(state.values[orbitIdx]);
+                        _vec3a.fromArray(state.values[orbitIdx]).multiplyScalar(math.DEG2RAD);
                         _vec3b.fromArray(state.values[offsetIdx]);
                         math.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
                         this.setTransform(viewAnno, _mat4);
@@ -434,6 +435,11 @@ export default class CVStoryApplication extends Component
             }
 
             if (child.camera) {
+                // early out if no default camera has been saved
+                if(JSON.stringify(setup.setupCache.navigation.orbit) === JSON.stringify(documentTemplate.setups[0].navigation.orbit)) {
+                    return;
+                }
+
                 // add source
                 const source = {
                     id: "https://example.org/iiif/3d/cameras/1",
@@ -442,7 +448,10 @@ export default class CVStoryApplication extends Component
                 annotation.body["source"] = source;
 
                 // add transform
-                this.setTransform(annotation, child.transform.object3D.matrix);
+                _vec3a.fromArray(setup.setupCache.navigation.orbit.orbit).multiplyScalar(math.DEG2RAD);
+                _vec3b.fromArray(setup.setupCache.navigation.orbit.offset);
+                math.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
+                this.setTransform(annotation, _mat4);
             }
 
             if (child.light) {
