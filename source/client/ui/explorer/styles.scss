@@ -225,6 +225,16 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 }
 
 .sv-content-overlay {
+  .error-msg {
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: red;
+    background-color: silver;
+    padding: 8px;
+  }
 }
 
 .ff-viewport-overlay {
@@ -1321,7 +1331,9 @@ $tour-entry-indent: 12px;
     }
   }
 
-
+  &.sv-property-percent{
+    @extend .sv-property, .sv-property-number;
+  }
 
   &.sv-property-slider {
     flex: 0 2 180px;

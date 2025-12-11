@@ -332,10 +332,56 @@ export default class MainView extends CustomElement
         }
     }
 
+    getTours()
+    {
+        if(this.application) {
+            return this.application.getTours();
+        }
+    }
+
     setLanguage(languageID: string)
     {
         if(this.application) {
             this.application.setLanguage(languageID);
+        }
+    }
+
+    getLanguages()
+    {
+        if(this.application) {
+            return this.application.getLanguages();
+        }
+    }
+
+    getActiveLanguage()
+    {
+        if(this.application) {
+            return this.application.getActiveLanguage();
+        }
+    }
+    
+    resetViewer()
+    {
+        if(this.application) {
+            this.application.resetViewer();
+        }
+    }        
+
+    // get tags as displayed by the tag cloud
+    getTags()
+    {
+        if(this.application) {
+            const tags = this.viewer.outs.tagCloud.value;
+            return tags;
+        }    
+    }
+
+    // set active tags
+    setActiveTags(tags: string)
+    {
+        if(this.application) {
+            const viewerActiveTags = this.viewer.ins.activeTags;
+            viewerActiveTags.setValue(tags);
         }
     }
 }

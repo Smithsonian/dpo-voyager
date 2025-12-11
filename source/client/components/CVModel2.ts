@@ -905,7 +905,7 @@ export default class CVModel2 extends CObject3D
                 }
 
                 // update bounding box based on loaded derivative
-                this._localBoundingBox.makeEmpty();
+                this._localBoundingBox.setFromArray([0,0,0,0,0,0]);
                 helpers.computeLocalBoundingBox(derivative.model, this._localBoundingBox);
                 this.outs.updated.set();
 

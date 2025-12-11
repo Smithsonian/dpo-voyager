@@ -24,13 +24,13 @@ export default class CSpotLight extends CLight
             preset: 0,
             min: 0
         }),
-        decay: types.Number("Light.Decay", 1),
+        decay: types.Number("Light.Decay", {preset: 1, min: 0}),
         angle: types.Number("Light.Angle", {
             preset:45,
             min: 0,
             max: 89
         }),
-        penumbra: types.Percent("Light.Penumbra", 0.5),
+        penumbra: types.Percent("Light.Penumbra", {preset: 0.5, min: 0}),
     };
 
     ins = this.addInputs<CLight, typeof CSpotLight["spotLightIns"]>(CSpotLight.spotLightIns);

@@ -27,7 +27,7 @@ export default class SpotLightHelper extends DirectionalLightHelper {
 	}
 
   update(){
-    let length = this.light.distance || this.light.shadow.camera.far;
+    let length = this.light.distance/this.light.parent.scale.y || this.light.shadow.camera.far;
     let r = Math.min(Math.tan(this.light.angle), 1000)*length;
     this.cone.scale.set(r, length, r);
     this.cone.position.set(0, -0.5*length, 0);

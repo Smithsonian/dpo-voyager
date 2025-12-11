@@ -58,7 +58,7 @@ export default class RectLightHelper extends Object3D {
     boxMats[4].color = boxMats[5].color = light.color;
 
     this.area = new Mesh(
-      new BoxGeometry(light.width, light.height, 0),
+      new BoxGeometry(10, 10, 0),
       boxMats,
     )
     this.add(this.area)
