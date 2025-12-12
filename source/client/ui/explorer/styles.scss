@@ -1269,6 +1269,23 @@ $tour-entry-indent: 12px;
 &.sv-property-datetime {
   .ff-input[type="datetime-local"] {
     width: auto;
+    background-color: common.$color-background-lighter;
+    border: 1px solid common.$color-primary;
+    border-radius: 2px;
+    padding: 4px 6px;
+    cursor: pointer;
+    transition: all common.$tx-short;
+
+    &:hover {
+      background-color: color.adjust(common.$color-background-lighter, $lightness: 5%);
+      box-shadow: 0 0 4px color.adjust(common.$color-primary, $alpha: -0.5);
+    }
+
+    &:focus {
+      outline: none;
+      background-color: color.adjust(common.$color-background-lighter, $lightness: 8%);
+      box-shadow: 0 0 6px color.adjust(common.$color-primary, $alpha: -0.3);
+    }
   }
 }
 
@@ -1331,9 +1348,7 @@ $tour-entry-indent: 12px;
     }
   }
 
-  &.sv-property-percent{
-    @extend .sv-property, .sv-property-number;
-  }
+
 
   &.sv-property-slider {
     flex: 0 2 180px;

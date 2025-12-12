@@ -16,7 +16,7 @@ export default class CFloor extends CObject3D
 
     protected static readonly floorIns = {
         position: types.Vector3("Floor.Position", [ 0, -25, 0 ]),
-        radius: types.Number("Floor.Radius", {preset: 50, step: 1}),
+        radius: types.Number("Floor.Radius", 50),
         color: types.ColorRGB("Floor.Color", [ 0.6, 0.75, 0.8 ]),
         opacity: types.Percent("Floor.Opacity", 0.5),
         castShadow: types.Boolean("Shadow.Cast"),

@@ -34,11 +34,11 @@ export default class CCamera extends CObject3D
         rotation: types.Vector3("Transform.Rotation"),
         order: types.Enum("Transform.Order", ERotationOrder, ERotationOrder.ZYX),
         projection: types.Enum("Projection.Type", EProjection, EProjection.Perspective),
-        fov: types.Number("Projection.FovY", {preset: 52, step: 0.1}),
-        size: types.Number("Projection.Size", {preset: 20, step: 0.1}),
-        zoom: types.Number("Projection.Zoom", {preset: 1, step: 0.1}),
-        near: types.Number("Frustum.ZNear", {preset: 0.01, step: 0.01}),
-        far: types.Number("Frustum.ZFar", {preset: 10000, step: 1}),
+        fov: types.Number("Projection.FovY", 52),
+        size: types.Number("Projection.Size", 20),
+        zoom: types.Number("Projection.Zoom", 1),
+        near: types.Number("Frustum.ZNear", 0.01),
+        far: types.Number("Frustum.ZFar", 10000),
     };
 
     ins = this.addInputs<CObject3D, typeof CCamera.camIns>(CCamera.camIns);
