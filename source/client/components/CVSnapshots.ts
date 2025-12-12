@@ -107,8 +107,8 @@ export default class CVSnapshots extends CTweenMachine
         }
 
         snapshotProperties.forEach(property => {
-            const schema = property.schema;
-            if (!schema.event && property.type !== "object") {
+            const isSerializable = (property.type !== "object" && !property.schema.event) || property.schema.semantic === "datetime";
+            if (isSerializable) {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
                     this.addTargetProperty(property);
