@@ -111,6 +111,10 @@ export default class CVDocument extends CRenderGraph
         return this._meta;
     }
 
+    titleIn(language: ELanguageType) {
+        return this.titles[ELanguageType[language]] || ""; 
+    }
+
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }

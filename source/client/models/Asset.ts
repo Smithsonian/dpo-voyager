@@ -180,7 +180,7 @@ export default class Asset extends Document<IAsset, IAssetJSON>
         if (data.mimeType) {
             return data.mimeType;
         }
-
+        
         const extension = data.uri.split(".").pop().toLowerCase();
 
         if (extension === "gltf") {

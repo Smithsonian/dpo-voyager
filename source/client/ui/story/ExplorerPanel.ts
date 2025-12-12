@@ -34,6 +34,8 @@ export default class ExplorerPanel extends CustomElement
     @property({ attribute: false })
     application: ExplorerApplication;
 
+    private _mediaManager: CVMediaManager;
+
     constructor(application?: ExplorerApplication)
     {
         super();
@@ -52,8 +54,8 @@ export default class ExplorerPanel extends CustomElement
 
             const dropZone = new SimpleDropzone(this, fileInput);
 
-            const mediaManager = application.system.getComponent(CVMediaManager);
-            dropZone.on('drop', ({files}: any) => mediaManager.ingestFiles(files));
+            this._mediaManager = application.system.getComponent(CVMediaManager);
+            dropZone.on('drop', ({files}: any) => this._mediaManager.ingestFiles(files));
         }
     }
 
@@ -90,7 +92,13 @@ export default class ExplorerPanel extends CustomElement
         this.classList.remove("sv-drop-zone");
     }
 
-    protected onDragDrop(e: MouseEvent) {
+    protected onDragDrop(e: DragEvent) {
+        const uriDrop = e.dataTransfer.getData("text/uri-list");
+        if(uriDrop) {
+            e.stopPropagation();
+            this._mediaManager.ingestURI(uriDrop);
+        }
+
         e.preventDefault();
         this.classList.remove("sv-drop-zone");
     }

@@ -255,6 +255,7 @@ module.exports = function(env, argv)
                 },
             ]
         },
+        ignoreWarnings: [/Failed to parse source map/],
         performance: {hints: false},
         stats: {chunkModules: true, excludeModules: false }
 

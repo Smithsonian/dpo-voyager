@@ -97,6 +97,7 @@ export default class CVModel2 extends CObject3D
         autoLoad: types.Boolean("Model.AutoLoad", true),
         position: types.Vector3("Model.Position"),
         rotation: types.Vector3("Model.Rotation"),
+        scale: types.Number("Model.Scale", 1),
         center: types.Event("Model.Center"),
         shader: types.Enum("Material.Shader", EShaderMode, EShaderMode.Default),
         variant: types.Option("Material.Variant", [], 0),
@@ -167,6 +168,7 @@ export default class CVModel2 extends CObject3D
     private _wireColor = new Color("#004966").convertLinearToSRGB();
     private _wireEmissiveColor = new Color("#004966").convertLinearToSRGB();
     private _overlays: Dictionary<IOverlay> = {};
+    private _needsInit: boolean = true;
 
     constructor(node: Node, id: string)
     {
@@ -377,7 +379,7 @@ export default class CVModel2 extends CObject3D
         if (ins.center.changed) {
             this.center();
         }
-        if (ins.position.changed || ins.rotation.changed) {
+        if (ins.position.changed || ins.rotation.changed || ins.scale.changed) {
             this.updateMatrixFromProps();
         }
         if (ins.dumpDerivatives.changed) {
@@ -430,6 +432,8 @@ export default class CVModel2 extends CObject3D
 
         helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
         ins.rotation.set();
+
+        ins.scale.setValue(_vec3b.x / this.outs.unitScale.value);
     }
 
     fromDocument(document: IDocument, node: INode): number
@@ -460,6 +464,7 @@ export default class CVModel2 extends CObject3D
         if (data.translation) {
             ins.position.copyValue(data.translation);
             this._prevPosition.fromArray(data.translation);
+            this._needsInit = false;
         }
 
         if (data.rotation) {
@@ -467,6 +472,7 @@ export default class CVModel2 extends CObject3D
             helpers.quaternionToDegrees(_quat, CVModel2.rotationOrder, ins.rotation.value);
             this._prevRotation.fromArray(ins.rotation.value);
             ins.rotation.set();
+            this._needsInit = false;
         }
 
         if (data.boundingBox) {
@@ -771,9 +777,15 @@ export default class CVModel2 extends CObject3D
         const unitScale = this.outs.unitScale.value;
         const object3D = this.object3D;
 
+        if(this._needsInit) {
+            this._prevPosition.copy(_vec3a.fromArray(ins.position.value));
+            this._prevRotation.copy(_vec3a.fromArray(ins.rotation.value));
+            this._needsInit = false;
+        }
+
         _vec3a.fromArray(ins.position.value).multiplyScalar(unitScale);
         helpers.degreesToQuaternion(ins.rotation.value, CVModel2.rotationOrder, _quat);
-        _vec3b.setScalar(unitScale);
+        _vec3b.setScalar(ins.scale.value).multiplyScalar(unitScale);
         object3D.matrix.compose(_vec3a, _quat, _vec3b);
         object3D.matrixWorldNeedsUpdate = true;
 
