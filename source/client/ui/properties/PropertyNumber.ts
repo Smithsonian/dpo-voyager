@@ -94,7 +94,14 @@ export default class PropertyNumber extends PropertyBase
         const min = schema.min;
         const max = schema.max;
         const bounded = isFinite(min) && isFinite(max);
-        const value = this.value;
+        const value: number = this.value;
+        let display: string;
+        if (isFinite(value)) {
+            let s = value.toFixed(3);
+            display = s.replace(/\.?0+$/, "");
+        } else {
+            display = value > 0 ? "inf" : "-inf";
+        }
 
         return html`
             <label class="ff-label ff-off">${name}</label>
@@ -105,7 +112,7 @@ export default class PropertyNumber extends PropertyBase
                     step=${schema.step ?? ""}
                     min=${min ?? ""}
                     max=${max ?? ""}
-                    .value=${value}
+                    .value=${display}
                     @change=${this.onChange}
                     @focus=${(e)=>{ e.target.select();}}
                     @keypress=${(e)=>{if(e.key === "Enter"){e.target.blur();}}}
