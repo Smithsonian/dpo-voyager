@@ -885,6 +885,7 @@ Version: ${ENV_VERSION}
                     }
                     else if(lightBody.isSpotLight()) {
                         newLight = lightNode.createComponent(CVSpotLight);
+                        (newLight as CVSpotLight).ins.angle.setValue(lightBody.getAngle() || math.PI/3.0);
                     }
                     else if(lightBody.isAmbientLight()) {
                         newLight = lightNode.createComponent(CVAmbientLight);
@@ -893,6 +894,7 @@ Version: ${ENV_VERSION}
                     if(newLight) {
                         // Set properties
                         lightNode.name = lightLabel ?? newLight.typeName;
+                        (newLight as CLight).ins.name.setValue(lightNode.name);
                         (newLight as CLight).ins.intensity.setValue(lightBody.getIntensity());
                         const lightColor = lightBody.getColor().value;
                         (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);

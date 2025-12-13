@@ -46,6 +46,7 @@ import CVLanguageManager from "./CVLanguageManager";
 import math from "@ff/three/math";
 import CVSetup from "./CVSetup";
 import documentTemplate from "client/templates/default.svx.json";
+import CVSpotLight from "./lights/CVSpotLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -468,7 +469,8 @@ export default class CVStoryApplication extends Component
                     label: {"EN": [child.light.node.name]},
                     color: "#"+_color.getHexString("srgb-linear"),
                     intensity: {"type": "Value", "value": child.light.ins.intensity.value, "unit": "relative"}
-                }
+                };
+                child.light.typeName == "CVSpotLight" ? source["angle"] = (child.light as CVSpotLight).ins.angle.value : null;
                 annotation.body["source"] = source;
 
                 // add transform
