@@ -43,6 +43,38 @@ import CVModel2 from "./CVModel2";
 export { IDocument, INodeComponents };
 
 
+function deepEqual(path:string, x: any, y: any):boolean {
+    if (x === y) {
+        return true;
+    }else if(typeof x === "number" && typeof y === "number"){
+        return Math.abs(x - y) <= 0.0000001;
+    }else if(x == null){
+        return y == null || typeof y === "number" && !Number.isFinite(y);
+    }else if(y == null){
+        return x == null || typeof x === "number" && !Number.isFinite(x);
+    }else if ((typeof x == "object" && x != null) && (typeof y == "object" && y != null)) {
+        if (Object.keys(x).length != Object.keys(y).length){
+            console.debug(`keys mismatch at ${path}: current${x.name?`(${x.name})`:""} has keys: [${Object.keys(x).join(", ")}] but source${x.name?`(${y.name})`:""} had: [${Object.keys(y).join(", ")}]`);
+            return false;
+        }
+        for (var prop in x) {
+            if (y.hasOwnProperty(prop))
+            {
+                if (! deepEqual(`${path}/${prop}`, x[prop], y[prop])){
+                    return false;
+                }
+            }else{
+                console.debug(`keys mismatch at ${path}: Property ${prop} is in current but not in origin`);
+                return false;
+            }
+        }
+        return true;
+    } else {
+        console.debug(`value mismatch at ${path}: ${x} ${y}`);
+        return false;
+    }
+}
+
 /**
  * A Voyager document is a special kind of graph. Its inner graph has a standard structure, and it can
  * be serialized to and from an IDocument structure which is compatible with a glTF document.
@@ -60,6 +92,8 @@ export default class CVDocument extends CRenderGraph
     protected intros: Dictionary<string> = {};
     protected _meta: CVMeta = null;
 
+    protected _data: IDocument;
+
     protected static readonly ins = {
         dumpJson: types.Event("Document.DumpJSON"),
         dumpTree: types.Event("Document.DumpTree"),
@@ -73,6 +107,7 @@ export default class CVDocument extends CRenderGraph
         assetPath: types.AssetPath("Asset.Path", { preset: "scene.svx.json" }),
         title: types.String("Document.Title"),
         intro: types.String("Document.Intro", ""),
+        dirty: types.Boolean("Document.Dirty", false),
     };
 
     ins = this.addInputs<CRenderGraph, typeof CVDocument.ins>(CVDocument.ins);
@@ -120,13 +155,20 @@ export default class CVDocument extends CRenderGraph
         super.create();
         this.innerGraph.components.on(CVMeta, this.onMetaComponent, this);
         this.setup.language.outs.activeLanguage.on("value", this.onLanguageUpdate, this);
+        this.setup.ins.saveState.on("value", this.isModified, this);
     }
 
     dispose()
     {
         this.setup.language.outs.activeLanguage.off("value", this.onLanguageUpdate, this);
         this.innerGraph.components.off(CVMeta, this.onMetaComponent, this);
+        this.setup.ins.saveState.off("value", this.isModified, this);
         super.dispose();
+    }
+
+    public updateDocumentData(data: IDocument){
+        this._data = data;
+        this.outs.dirty.setValue(false);
     }
 
     update(context)
@@ -232,6 +274,9 @@ export default class CVDocument extends CRenderGraph
             this.outs.assetPath.setValue(assetPath);
             this.name = this.getMainComponent(CVAssetManager).getAssetName(assetPath);
         }
+        this.updateDocumentData(documentData);
+        delete (this._data.asset as any).id;
+        console.debug("navigation :", this._data.setups[0].navigation);
     }
 
     appendModel(assetPath: string, quality?: EDerivativeQuality | string, parent?: NVNode | NVScene) : CVModel2
@@ -298,6 +343,18 @@ export default class CVDocument extends CRenderGraph
         //pathMap.forEach((path, comp) => console.log("CVDocument - pathMap: %s - '%s'", path, comp.displayName));
 
         return document;
+    }
+
+
+    isModified(components?: INodeComponents) :boolean{
+        const current = this.deflateDocument(components);
+        
+        let dirty = !Object.keys(current).every(k=> deepEqual("/"+k, current[k], this._data[k]));
+        if(dirty !== this.outs.dirty.value){
+            console.debug("Set Document.Dirty", dirty);
+            this.outs.dirty.setValue(dirty);
+        }else console.debug("Document.Dirty is already", dirty);
+        return dirty;
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)

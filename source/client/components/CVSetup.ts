@@ -157,7 +157,7 @@ export default class CVSetup extends Component
 
     toDocument(document: IDocument, sceneIndex: number, pathMap: Map<Component, string>)
     {
-        const setupData: ISetup = this._savedSetupData;
+        const setupData: ISetup = JSON.parse(JSON.stringify(this._savedSetupData));
         const features = CVSetup.featureMap;
 
         for (const name in features) {

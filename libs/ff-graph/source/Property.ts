@@ -169,7 +169,7 @@ export default class Property<T = any> extends Publisher
 
         const outLinks = this.outLinks;
         for (let i = 0, n = outLinks.length; i < n; ++i) {
-            outLinks[i].push();
+            outLinks[i].push(silent);
         }
     }
 
@@ -209,7 +209,7 @@ export default class Property<T = any> extends Publisher
 
         const outLinks = this.outLinks;
         for (let i = 0, n = outLinks.length; i < n; ++i) {
-            outLinks[i].push();
+            outLinks[i].push(silent);
         }
     }
 
