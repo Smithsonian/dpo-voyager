@@ -242,7 +242,7 @@ export default class CVAnnotationsTask extends CVTask
 
             const position = event.view.pickPosition(event, bounds).applyMatrix4(_mat4).toArray();
             const normal = event.view.pickNormal(event).applyMatrix3(_mat3).toArray();
-console.log(position);
+
             const mode = this.ins.mode.getValidatedValue();
 
             if (mode === EAnnotationsTaskMode.Create) {

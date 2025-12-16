@@ -261,7 +261,7 @@ export default class CVStoryApplication extends Component
 
         // add multilingual content
         this.languageManager.sceneLanguages.forEach(language => {
-            iiifScene["label"][ELanguageType[language.id]] = [cvDocument.titleIn(language.id)];
+            iiifScene["label"][ELanguageType[language.id].toLowerCase()] = [cvDocument.titleIn(language.id)];
         });
 
         const annotationPage = iiifScene["items"][0];
@@ -312,7 +312,7 @@ export default class CVStoryApplication extends Component
                 const source = {
                     id: this.standaloneFileManager ? this.standaloneFileManager.blobUrlToFileUrl(url) : url,
                     type: "Model",
-                    label: {"EN": [child.model.node.name]},
+                    label: {"en": [child.model.ins.name.value]},
                     format: asset.data.mimeType
                 }
                 annotation.body["source"] = source;
@@ -425,7 +425,7 @@ export default class CVStoryApplication extends Component
                         const textBody = {
                             "type": "TextualBody",
                             "value": content,
-                            "language": ELanguageType[language.id],
+                            "language": ELanguageType[language.id].toLowerCase(),
                             "format": "text/plain"
                         }
                         comment["body"]["items"].push(textBody);
@@ -466,7 +466,7 @@ export default class CVStoryApplication extends Component
                 const source = {
                     id: "https://example.org/iiif/3d/lights/1",
                     type: child.light.typeName.substring(2),
-                    label: {"EN": [child.light.node.name]},
+                    label: {"en": [child.light.node.name]},
                     color: "#"+_color.getHexString("srgb-linear"),
                     intensity: {"type": "Value", "value": child.light.ins.intensity.value, "unit": "relative"}
                 };
@@ -504,9 +504,9 @@ export default class CVStoryApplication extends Component
         if(_euler.x != 0 || _euler.y != 0 || _euler.z != 0) {
             transform.push({
                 "type": "RotateTransform",
-                "x": _euler.x*math.RAD2DEG,
-                "y": _euler.y*math.RAD2DEG,
-                "z": _euler.z*math.RAD2DEG
+                "x": (_euler.x*math.RAD2DEG),
+                "y": (_euler.y*math.RAD2DEG),
+                "z": (_euler.z*math.RAD2DEG)
             });
         }
         if(_vec3a.length() != 0) {
