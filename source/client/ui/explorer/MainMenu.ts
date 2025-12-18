@@ -96,12 +96,6 @@ export default class MainMenu extends DocumentView
         super.disconnected();
     }
 
-    protected findSceneView() {
-        const rootNode = this.getRootNode() as ShadowRoot;
-        const contentView = rootNode.querySelector("sv-content-view") as any;
-        return contentView?.sceneView;
-    }
-    
     protected render()
     {
         const document = this.activeDocument;
@@ -129,8 +123,6 @@ export default class MainMenu extends DocumentView
         const fullscreen = this.fullscreen;
         const fullscreenButtonVisible = fullscreen.outs.fullscreenAvailable.value;
         const fullscreenActive = fullscreen.outs.fullscreenActive.value;
-
-        const compassActive = this.findSceneView()?.isCompassVisible() || false;
 
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
@@ -160,8 +152,6 @@ export default class MainMenu extends DocumentView
                 ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
             ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} id="anno-btn" icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
                 ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-            <ff-button icon="globe" id="compass-btn" title=${language.getLocalizedString("Show/Hide Compass")}
-                ?selected=${compassActive} @click=${this.onToggleCompass}></ff-button>
             <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
                 ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
             ${fullscreenButtonVisible ? html`<ff-button id="fullscreen-btn" aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
@@ -216,19 +206,6 @@ export default class MainMenu extends DocumentView
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
         viewerIns.annotationFocus.setValue(true);
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
-    }
-
-    protected onToggleCompass()
-    {
-        const sceneView = this.findSceneView();
-        
-        if (sceneView) {
-            sceneView.toggleCompass();
-            this.requestUpdate();
-            this.analytics.sendProperty("Compass_Visible", sceneView.isCompassVisible());
-        } else {
-            throw new Error("Failed to get SceneView during Compass toggling");            
-        }
     }
 
     protected onToggleShare()

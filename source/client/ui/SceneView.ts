@@ -278,16 +278,6 @@ export default class SceneView extends SystemView
         }
     };
 
-    toggleCompass() {
-        if (this.compass) {
-            this.compass.style.display = this.isCompassVisible() ? "none" : "block";
-        }
-    }
-
-    isCompassVisible(): boolean {
-        return this.compass && this.compass.style.display !== "none";
-    }
-
     /*protected onResize()
     {
         this.view.resize();
