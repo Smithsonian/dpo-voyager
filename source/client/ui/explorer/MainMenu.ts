@@ -96,9 +96,10 @@ export default class MainMenu extends DocumentView
         super.disconnected();
     }
 
-    protected findChromeView() {
+    protected findSceneView() {
         const rootNode = this.getRootNode() as ShadowRoot;
-        return rootNode.querySelector("sv-chrome-view") as any;
+        const contentView = rootNode.querySelector("sv-content-view") as any;
+        return contentView?.sceneView;
     }
     
     protected render()
@@ -129,7 +130,7 @@ export default class MainMenu extends DocumentView
         const fullscreenButtonVisible = fullscreen.outs.fullscreenAvailable.value;
         const fullscreenActive = fullscreen.outs.fullscreenActive.value;
 
-        const compassActive = this.findChromeView()?.isCompassVisible() || false;
+        const compassActive = this.findSceneView()?.isCompassVisible() || false;
 
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
@@ -219,14 +220,14 @@ export default class MainMenu extends DocumentView
 
     protected onToggleCompass()
     {
-        const chromeView = this.findChromeView();
+        const sceneView = this.findSceneView();
         
-        if (chromeView) {
-            chromeView.toggleCompass();
+        if (sceneView) {
+            sceneView.toggleCompass();
             this.requestUpdate();
-            this.analytics.sendProperty("Compass_Visible", chromeView.isCompassVisible());
+            this.analytics.sendProperty("Compass_Visible", sceneView.isCompassVisible());
         } else {
-            throw new Error("Failed to get ChromeView during Compass toggling");            
+            throw new Error("Failed to get SceneView during Compass toggling");            
         }
     }
 
