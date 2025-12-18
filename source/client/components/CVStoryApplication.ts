@@ -47,6 +47,7 @@ import math from "@ff/three/math";
 import CVSetup from "./CVSetup";
 import documentTemplate from "client/templates/default.svx.json";
 import CVSpotLight from "./lights/CVSpotLight";
+import CVAudioManager from "./CVAudioManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -241,28 +242,30 @@ export default class CVStoryApplication extends Component
         });
         */
 
-        const sceneTitle = cvDocument.ins.title.value;
-
         const jsonObj = {};
         jsonObj["@context"] = "http://iiif.io/api/presentation/4/context.json";
         jsonObj["id"] = "https://example.org/iiif/3d/model_origin.json";
         jsonObj["type"] = "Manifest";
-        jsonObj["label"] = { "en": [sceneTitle ? sceneTitle : "Untitled"] };
-        //jsonObj["summary"] = { "en": ["Viewer should render the model at the scene origin, and then viewer should add default lighting and camera"] };
+        jsonObj["label"] = {};
+        // add summary if available
+        const summary = cvDocument.meta.collection.get("IIIFManifestSummary");
+        if(summary !== undefined) {
+            jsonObj["summary"] = { "en": [summary] };
+        }
         jsonObj["items"] = [{}];
+
+        // add multilingual title
+        this.languageManager.sceneLanguages.forEach(language => {
+            jsonObj["label"][ELanguageType[language.id].toLowerCase()] = [cvDocument.titleIn(language.id)];
+        }); 
 
         const iiifScene = jsonObj["items"][0];
         iiifScene["id"] = "https://example.org/iiif/scene1/page/p1/1";
         iiifScene["type"] = "Scene";
-        iiifScene["label"] = {}; //{ "en": [sceneTitle ? sceneTitle : "Untitled"] };
+        iiifScene["label"] = { "en": [cvDocument.root.name] };
         iiifScene["backgroundColor"] = "#"+_color.getHexString("srgb-linear");
         iiifScene["items"] = [{}];
         iiifScene["annotations"] = [{}];
-
-        // add multilingual content
-        this.languageManager.sceneLanguages.forEach(language => {
-            iiifScene["label"][ELanguageType[language.id].toLowerCase()] = [cvDocument.titleIn(language.id)];
-        });
 
         const annotationPage = iiifScene["items"][0];
         annotationPage["id"] = "https://example.org/iiif/scene1/page/p1/1";
@@ -330,28 +333,24 @@ export default class CVStoryApplication extends Component
                         "id": "https://example.org/iiif/3d/anno2",
                         "type": "Annotation",
                         "motivation": ["commenting"],
-                        //"bodyValue": title,
+                        "body": [],
                         "target": {
                             "type": "SpecificResource",
                             "source": [
-                            {
-                                "id": annotationPage["id"],
-                                "type": "Scene"
-                            }
+                                {
+                                    "id": annotationPage["id"],
+                                    "type": "Scene"
+                                }
                             ],
                             "selector": [
-                            {
-                                "type": "PointSelector",
-                                "x": _vec3a.x,
-                                "y": _vec3a.y,
-                                "z": _vec3a.z,
-                            }
+                                {
+                                    "type": "PointSelector",
+                                    "x": _vec3a.x,
+                                    "y": _vec3a.y,
+                                    "z": _vec3a.z,
+                                }
                             ]
                         }
-                    }
-                    comment["body"] = {
-                        "type": "Choice",
-                        "items": []
                     }
 
                     // add anno view to content state if needed
@@ -408,9 +407,10 @@ export default class CVStoryApplication extends Component
                         comment["target"]["scope"] = contentAnno;
                     }
 
-                    // add multilingual content
+                    // add annotation text content
+                    const textChoice = { "type": "Choice", "items": [] };
                     this.languageManager.sceneLanguages.forEach(language => {
-                        let content = (anno.titleIn(language.id)?.length > 0 ? anno.titleIn(language.id) : "Untitled") + "\n";
+                        let content = (anno.titleIn(language.id)?.length > 0 ? anno.titleIn(language.id) : "Untitled");
 
                         // add image if needed
                         /*if(anno.data.imageUri) {
@@ -420,7 +420,7 @@ export default class CVStoryApplication extends Component
                             }
                         }*/
 
-                        content += (anno.leadIn(language.id)?.length > 0 ? anno.leadIn(language.id) : "");
+                        content += (anno.leadIn(language.id)?.length > 0 ? "\n" + anno.leadIn(language.id) : "");
 
                         const textBody = {
                             "type": "TextualBody",
@@ -428,8 +428,31 @@ export default class CVStoryApplication extends Component
                             "language": ELanguageType[language.id].toLowerCase(),
                             "format": "text/plain"
                         }
-                        comment["body"]["items"].push(textBody);
+                        textChoice["items"].push(textBody);
                     });
+                    comment["body"].push(textChoice);
+
+                    // add annotation audio content
+                    if(anno.data.audioId) {
+                        const audioChoice = { "type": "Choice", "items": [] };
+                        this.languageManager.sceneLanguages.forEach(language => {
+                            const audioManager = this.getSystemComponent(CVAudioManager);
+                            const clip = audioManager.getAudioClip(anno.data.audioId);
+                            const id = clip.uris[ELanguageType[language.id]];
+
+                            if(id) {
+                                const audioBody = {
+                                    "id": id,
+                                    "type": "Sound",
+                                    "language": ELanguageType[language.id].toLowerCase(),
+                                    "format": "audio/mp3",
+                                    "duration": clip.durations[ELanguageType[language.id]]
+                                }
+                                audioChoice["items"].push(audioBody);
+                            }
+                        });
+                        comment["body"].push(audioChoice);
+                    }
 
                     commentPage["items"].push(comment);
                 });

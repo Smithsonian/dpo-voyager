@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, AnnotationBody, parseManifest, loadManifest } from "@iiif/3d-manifesto-dev";
+import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, parseManifest, loadManifest } from "@iiif/3d-manifesto-dev";
 
 import CScene from "@ff/scene/components/CScene";
 import math from "@ff/three/math";
@@ -30,7 +30,7 @@ import { EProjection } from "@ff/three/UniversalCamera";
 import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
 import CVAmbientLight from "client/components/lights/CVAmbientLight";
 import { AnnotationMotivation } from "@iiif/vocabulary";
-import { Annotation as IIIFAnnotation } from "@iiif/3d-manifesto-dev/dist-esmodule/";
+import { Annotation as IIIFAnnotation } from "@iiif/3d-manifesto-dev";
 import { EEasingCurve } from "@ff/core/easing";
 import sanitizeHtml from 'sanitize-html';
 import { Matrix4, Vector3, Euler, Mesh, MeshStandardMaterial, BufferGeometry, BufferAttribute, DoubleSide, Color } from "three";
@@ -38,9 +38,10 @@ import ExplorerApplication from "client/applications/ExplorerApplication";
 import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVScene from "client/components/CVScene";
 import Annotation from "client/models/Annotation";
-import { DEFAULT_LANGUAGE, EUnitType } from "client/schema/common";
+import { DEFAULT_LANGUAGE, ELanguageType, EUnitType } from "client/schema/common";
 import CVAnnotationView from "client/components/CVAnnotationView";
 import CVAssetReader from "client/components/CVAssetReader";
+import Document from "@ff/core/Document";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -77,14 +78,27 @@ export default class IIIFManifestReader {
         const setup = activeDoc.setup;
 
         iiifManifest.loadManifest().then(() => {
-        activeDoc.ins.title.setValue(iiifManifest.manifest.getLabel().getValue());
         const scenes = iiifManifest.scenes;
+
+        // import and set titles
+        const titles = activeDoc.meta.collection.get("titles");
+        iiifManifest.manifest.getLabel().forEach(label => {
+            titles[label._locale.substring(0,2).toUpperCase()] = label._value;
+        });
+        activeDoc.ins.title.setValue(titles[ELanguageType[setup.language.outs.activeLanguage.value]]);
+
+        // add summary metadata
+        activeDoc.meta.collection.insert(iiifManifest.manifest.getSummary().getValue(), "IIIFManifestSummary");
+
         scenes.forEach(scene => {
             const iiifModels = [];
             const iiifCameras = [];
             const iiifLights = [];
             const iiifComments = [];
             const iiifCanvases = [];
+
+            // Set scene name
+            cvScene.node.name = scene.getLabel().getValue() ?? "Scene";
 
             const bgColor = scene.getBackgroundColor() as any;      
             if(bgColor) {
@@ -141,6 +155,7 @@ export default class IIIFManifestReader {
 
             // handle lights
             if(iiifLights.length > 0) {
+                setup.navigation.ins.lightsFollowCamera.setValue(false);
                 // clear default lights
                 const lights = activeDoc.innerGraph.findNodeByName("Lights");
                 const defaultLights = lights.getComponent(CTransform).children.slice();
@@ -281,17 +296,39 @@ export default class IIIFManifestReader {
 
                     // parse annotation content
                     comment.getBody().forEach(option => {
-                        const annoValue: string = option.Value;
-                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
-                        const newLine = annoValue.indexOf('\n');
-                        if(newLine >= 0) {
-                            annotation.data.titles[langCode] = sanitizeHtml(annoValue.substring(0,newLine), {allowedTags: []});
-                            annotation.data.leads[langCode] = annoValue.substring(newLine+1);
-                            data.style = "Extended";
+                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
+
+                        if(option.isSound()) {
+                            const clipId = annotation.data.audioId || Document.generateId();
+                            let clip = setup.audio.getAudioClip(clipId);
+                            if(clip === undefined) {
+                                clip = {
+                                    id: clipId,
+                                    name: "New Audio Element",
+                                    uris: {},
+                                    captionUris: {},
+                                    durations: {}
+                                };
+                                setup.audio.addAudioClip(clip);
+                                annotation.data.audioId = clipId;
+                                data.style = "Extended";
+                            }
+                            const uri: string = option.getProperty("id");
+                            clip.uris[langCode] = uri;
+                            setup.audio.updateAudioClip(clipId);
                         }
                         else {
-                            annotation.data.titles[langCode] = sanitizeHtml(annoValue, {allowedTags: []});
-                        }
+                            const annoValue: string = option.Value;
+                            const newLine = annoValue.indexOf('\n');
+                            if(newLine >= 0) {
+                                annotation.data.titles[langCode] = sanitizeHtml(annoValue.substring(0,newLine), {allowedTags: []});
+                                annotation.data.leads[langCode] = annoValue.substring(newLine+1);
+                                data.style = "Extended";
+                            }
+                            else {
+                                annotation.data.titles[langCode] = sanitizeHtml(annoValue, {allowedTags: []});
+                            }
+                          }
                     });
                     
                     // handle scope
