@@ -21,10 +21,8 @@ import "@ff/ui/ButtonGroup";
 
 import CVToolProvider from "../../components/CVToolProvider";
 import CVDocument from "../../components/CVDocument";
-import CVOrbitNavigation from "../../components/CVOrbitNavigation";
 
 import "../Logo";
-import "../Compass";
 import "./MainMenu";
 import "./ToolBar";
 import "./TourNavigator";
@@ -49,7 +47,6 @@ export default class ChromeView extends DocumentView
     protected titleElement: HTMLDivElement;
     protected assetPath: string = "";
     protected needsSplash: boolean = true;
-    protected compass: any = null;
 
     protected get toolProvider() {
         return this.system.getMainComponent(CVToolProvider);
@@ -65,10 +62,6 @@ export default class ChromeView extends DocumentView
         this.setAttribute("pointer-events", "none");
 
         this.classList.add("sv-chrome-view");
-        
-        this.compass = document.createElement("sv-compass") as any;
-        this.compass.style.display = "none";
-        this.appendChild(this.compass);
     }
 
     protected connected()
@@ -79,7 +72,6 @@ export default class ChromeView extends DocumentView
         this.activeDocument.setup.audio.outs.isPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationPlaying.on("value", this.onUpdate, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.on("value", this.onUpdate, this);
-        this.system.getComponent(CVOrbitNavigation).ins.orbit.on("value", this.updateCompassRotation, this);
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
         this.assetPath = this.assetReader.getSystemAssetUrl("");
@@ -87,7 +79,6 @@ export default class ChromeView extends DocumentView
 
     protected disconnected()
     {
-        this.system.getComponent(CVOrbitNavigation).ins.orbit.off("value", this.updateCompassRotation, this);
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.off("value", this.onUpdate, this);
@@ -192,9 +183,7 @@ export default class ChromeView extends DocumentView
                          : ""} text=${setup.language.codeString()} title=${languageManager.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
                     ${helpVisible ? html`<ff-button icon="help" id="main-help" title=${languageManager.getLocalizedString("Help")} ?selected=${false} @click=${this.openHelp} class="sv-text-icon"></ff-button>` : ""}
                 </div>
-            </div>
-            <div class=sv-compass-container>${this.compass}</div>
-            `;
+            </div>`;
     }
 
     protected onSelectTour(event: ITourMenuSelectEvent)
@@ -270,23 +259,5 @@ export default class ChromeView extends DocumentView
         }
 
         this.requestUpdate();
-    }
-
-    protected updateCompassRotation = () => {
-        if (this.compass) {
-            const orbit = this.system.getComponent(CVOrbitNavigation).ins.orbit.value;
-            const [pitch, yaw, roll] = orbit;
-            this.compass.cameraRotation = yaw;
-        }
-    };
-
-    toggleCompass() {
-        if (this.compass) {
-            this.compass.style.display = this.isCompassVisible() ? "none" : "block";
-        }
-    }
-
-    isCompassVisible(): boolean {
-        return this.compass && this.compass.style.display !== "none";
     }
 }

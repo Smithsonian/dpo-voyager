@@ -26,7 +26,6 @@ import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVOrbitNavigation, { EKeyNavMode } from "client/components/CVOrbitNavigation";
 import CVSetup from "client/components/CVSetup";
 import {getFocusableElements, focusTrap} from "../utils/focusHelpers";
-import "./Compass";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,7 +46,6 @@ export default class SceneView extends SystemView
     protected srAnnouncement: HTMLDivElement = null;
     protected splitter: QuadSplitter = null;
     protected resizeObserver: ResizeObserver = null;
-    protected compass: any = null;
 
     protected pointerEventsEnabled: boolean = false;
     protected measuring: boolean = false;

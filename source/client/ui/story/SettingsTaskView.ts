@@ -98,7 +98,7 @@ export class SettingsTree extends Tree<ITreeNode>
             return html`<div class="ff-text ff-label ff-ellipsis">${node.text}</div>`;
         }
 
-        const disabled = this.node?.light.hasOwnProperty("AUTO_PROPERTIES") && 
+        const disabled = this.node?.light?.hasOwnProperty("AUTO_PROPERTIES") && 
             (this.node.light as any).AUTO_PROPERTIES.includes(node.property.path);
 
         return html`<sv-property-view .property=${node.property} ?disabled=${disabled}></sv-property-view>`;

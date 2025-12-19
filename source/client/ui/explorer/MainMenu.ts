@@ -96,11 +96,6 @@ export default class MainMenu extends DocumentView
         super.disconnected();
     }
 
-    protected findChromeView() {
-        const rootNode = this.getRootNode() as ShadowRoot;
-        return rootNode.querySelector("sv-chrome-view") as any;
-    }
-    
     protected render()
     {
         const document = this.activeDocument;
@@ -128,8 +123,6 @@ export default class MainMenu extends DocumentView
         const fullscreen = this.fullscreen;
         const fullscreenButtonVisible = fullscreen.outs.fullscreenAvailable.value;
         const fullscreenActive = fullscreen.outs.fullscreenActive.value;
-
-        const compassActive = this.findChromeView()?.isCompassVisible() || false;
 
         const toolButtonVisible = setup.interface.ins.tools.value;
         const toolsActive = this.toolProvider.ins.visible.value;
@@ -159,8 +152,6 @@ export default class MainMenu extends DocumentView
                 ?selected=${readerActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleReader}></ff-button>` : null}
             ${annotationsButtonVisible ? html`<ff-button aria-pressed=${annotationsActive} id="anno-btn" icon="comment" title=${language.getLocalizedString("Show/Hide Annotations")}
                 ?selected=${annotationsActive} ?disabled=${modeButtonsDisabled} @click=${this.onToggleAnnotations}></ff-button>` : null}
-            <ff-button icon="compass" id="compass-btn" title=${language.getLocalizedString("Show/Hide Compass")}
-                ?selected=${compassActive} @click=${this.onToggleCompass}></ff-button>
             <ff-button icon="share" id="share-btn" title=${language.getLocalizedString("Share Experience")}
                 ?selected=${this.shareButtonSelected} @click=${this.onToggleShare}></ff-button>    
             ${fullscreenButtonVisible ? html`<ff-button id="fullscreen-btn" aria-pressed=${fullscreenActive} icon="expand" title=${language.getLocalizedString("Fullscreen")}
@@ -215,19 +206,6 @@ export default class MainMenu extends DocumentView
         viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
         viewerIns.annotationFocus.setValue(true);
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
-    }
-
-    protected onToggleCompass()
-    {
-        const chromeView = this.findChromeView();
-        
-        if (chromeView) {
-            chromeView.toggleCompass();
-            this.requestUpdate();
-            this.analytics.sendProperty("Compass_Visible", chromeView.isCompassVisible());
-        } else {
-            throw new Error("Failed to get ChromeView during Compass toggling");            
-        }
     }
 
     protected onToggleShare()
