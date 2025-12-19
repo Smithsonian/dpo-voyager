@@ -291,6 +291,7 @@ export default class CVStoryApplication extends Component
     protected parseChildNodes(nodes, annotationPage, commentPage) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
         const setup = this.getSystemComponent(CVSetup);
+        //const sceneDefaultLang = ELanguageType[setup.language.ins.primarySceneLanguage.value];
 
         children.forEach(child => {
             const annotation = {
@@ -435,23 +436,40 @@ export default class CVStoryApplication extends Component
                     // add annotation audio content
                     if(anno.data.audioId) {
                         const audioChoice = { "type": "Choice", "items": [] };
-                        this.languageManager.sceneLanguages.forEach(language => {
-                            const audioManager = this.getSystemComponent(CVAudioManager);
-                            const clip = audioManager.getAudioClip(anno.data.audioId);
-                            const id = clip.uris[ELanguageType[language.id]];
+                        const capChoice = { "type": "Choice", "items": [] };
+                        const audioManager = this.getSystemComponent(CVAudioManager);
+                        const clip = audioManager.getAudioClip(anno.data.audioId);
 
-                            if(id) {
-                                const audioBody = {
-                                    "id": id,
-                                    "type": "Sound",
-                                    "language": ELanguageType[language.id].toLowerCase(),
-                                    "format": "audio/mp3",
-                                    "duration": clip.durations[ELanguageType[language.id]]
+                        if(clip !== undefined) {
+                            this.languageManager.sceneLanguages.forEach(language => {
+                                const id = clip.uris[ELanguageType[language.id]];
+                                const capId = clip.captionUris[ELanguageType[language.id]];
+
+                                if(id) {
+                                    const audioBody = {
+                                        "id": id,
+                                        "type": "Sound",
+                                        "language": ELanguageType[language.id].toLowerCase(),
+                                        "format": "audio/mp3",
+                                        "duration": clip.durations[ELanguageType[language.id]]
+                                    }
+                                    audioChoice["items"].push(audioBody);
                                 }
-                                audioChoice["items"].push(audioBody);
-                            }
-                        });
-                        comment["body"].push(audioChoice);
+
+                                if(capId) {
+                                    const capBody = {
+                                        "id": capId,
+                                        "type": "Text",
+                                        "language": ELanguageType[language.id].toLowerCase(),
+                                        "format": "text/vtt",
+                                        "duration": clip.durations[ELanguageType[language.id]]
+                                    }
+                                    capChoice["items"].push(capBody);
+                                }
+                            });
+                            comment["body"].push(audioChoice);
+                            capChoice["items"].length > 0 ? comment["body"].push(capChoice) : null;
+                        }
                     }
 
                     commentPage["items"].push(comment);
