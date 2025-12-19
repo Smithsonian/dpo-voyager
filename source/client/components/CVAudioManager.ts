@@ -212,12 +212,11 @@ export default class CVAudioManager extends Component
     }
 
     setTimeElapsed(time: number) {
-        if(this.audioPlayer) { 
+        if(this.audioPlayer && this.audioView) { 
             if(this.audioPlayer.seekable.length === 0) {
                 this.audioPlayer.addEventListener("canplay",() => this.setTimeElapsed(time), {once: true});
             }      
             else {
-                //console.log(this.audioPlayer.seekable.start(0)+" "+this.audioPlayer.seekable.end(0));
                 this.audioPlayer.currentTime = time;
                 this.audioView.elapsed = time;
                 this.audioView.requestUpdate();
@@ -333,7 +332,7 @@ export default class CVAudioManager extends Component
         } 
         this.outs.isPlaying.setValue(false);
         this.audioPlayer.pause();
-        this.audioView.requestUpdate();
+        this.audioView?.requestUpdate();
     }
 
     stop()
@@ -351,7 +350,7 @@ export default class CVAudioManager extends Component
         
         this.isPlaying = false;
         outs.isPlaying.setValue(false);
-        this.audioView.requestUpdate();
+        this.audioView?.requestUpdate();
     }
 
     // Initialize player for a specific audio clip
@@ -366,21 +365,23 @@ export default class CVAudioManager extends Component
             if(this.audioPlayer.src != this._audioMap[uri]) {
                 this.audioPlayer.setAttribute("src", this._audioMap[uri]);
                 //this.audioPlayer.load();
+            }
 
-                // Set caption track source
-                const captionUri = clip.captionUris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
-                if(captionUri) {
-                    if(this.audioPlayer.children[0]) {
-                        this.audioPlayer.children[0].remove();
-                    }
+            // Set caption track source
+            const captionUri = clip.captionUris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
+            if(captionUri && (this.audioPlayer.children.length == 0 || 
+                (this.audioPlayer.children[0] as HTMLTrackElement).src != this.assetManager.getAssetUrl(captionUri))) {
 
-                    const textTrack = document.createElement('track');
-                    this.audioPlayer.append(textTrack);
-                    textTrack.setAttribute("src", this.assetManager.getAssetUrl(captionUri));
-                    textTrack.track.mode = "showing";
-                    textTrack.addEventListener("cuechange", this.onCueChange);
-                    textTrack.addEventListener("load", this.onLoadTrack);
+                if(this.audioPlayer.children[0]) {
+                    this.audioPlayer.children[0].remove();
                 }
+
+                const textTrack = document.createElement('track');
+                this.audioPlayer.append(textTrack);
+                textTrack.setAttribute("src", this.assetManager.getAssetUrl(captionUri));
+                textTrack.track.mode = "showing";
+                textTrack.addEventListener("cuechange", this.onCueChange);
+                textTrack.addEventListener("load", this.onLoadTrack);
             }
         }
     }
@@ -425,8 +426,10 @@ export default class CVAudioManager extends Component
     // Handle audio time elapsed updates
     protected onTimeChange = (event: Event) =>
     {
-        this.audioView.elapsed = this.getTimeElapsed();
-        this.audioView.requestUpdate();
+        if(this.audioView) {
+            this.audioView.elapsed = this.getTimeElapsed();
+            this.audioView.requestUpdate();
+        }
     }
 
     protected onLanguageChange() {
@@ -525,7 +528,7 @@ export class AudioView extends CustomElement
     protected formatSeconds(seconds: number) {
         var date = new Date(0);
         date.setSeconds(seconds);
-        var formatString = date.toISOString().substring(15, 19);
+        var formatString = date.toISOString().substring(14, 19);
         return formatString;
     }
 }
