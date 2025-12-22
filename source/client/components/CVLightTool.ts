@@ -24,6 +24,7 @@ import "../ui/properties/PropertySlider";
 import "../ui/properties/PropertyColor";
 import "../ui/properties/PropertyString";
 import "../ui/properties/PropertyDateTime";
+import "../ui/properties/PropertyNumber";
 
 import CVDocument from "./CVDocument";
 
