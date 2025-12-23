@@ -42,6 +42,9 @@ export default class CSunLight extends CLight {
         this.ins.intensity.setValue(2);
         this.object3D = sunlight;
         this.light.target.matrixAutoUpdate = false;
+
+        this.ins.intensity.schema.disabled = true;
+        this.ins.color.schema.disabled = true;
     }
 
     get light(): DirectionalLight {
