@@ -173,7 +173,6 @@ export type ITours = ITour[];
 
 export interface ISnapshots
 {
-    features: string[];
     targets: string[];
     states: {
         id: string;
