@@ -41,6 +41,8 @@ import CVDocument from "./CVDocument";
 import CVSetup from "./CVSetup";
 import CVAnnotationView from "./CVAnnotationView";
 
+import { DateTime } from "luxon";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 const _qualityLevels: EDerivativeQuality[] = [
@@ -85,6 +87,7 @@ export default class CVCaptureTask extends CVTask
         type: types.Enum("Picture.Type", EFileType),
         quality: types.Percent("Picture.Quality", 0.85),
         restore: types.Event("State.Restore"),
+        screenCapture: types.Event("Screen.Capture"),
     };
 
     protected static readonly outs = {
@@ -185,6 +188,9 @@ export default class CVCaptureTask extends CVTask
         }
         if (ins.restore.changed) {
             this.restoreState();
+        }
+        if (ins.screenCapture.changed) {
+            this.captureScreen();
         }
 
         return true;
@@ -374,5 +380,49 @@ export default class CVCaptureTask extends CVTask
     protected restoreState()
     {
         this.setup.ins.restoreState.set();
+    }
+
+    protected captureScreen()
+    {
+        const view = this.renderer.views[0];
+        if (!view) {
+            new Notification("Can't capture screen: no view attached", "error", 4000);
+            return;
+        }
+
+        const pictureType: number = this.ins.type.getValidatedValue();
+        const mimeType = _mimeTypes[pictureType];
+        const extension = _typeExtensions[pictureType];
+        
+        this.selection.ins.viewportBrackets.setValue(false);
+        this.selection.update();
+        const annotationsEnabled = this.setup.viewer.ins.annotationsVisible.value;
+        this.getSystemComponents(CVAnnotationView).forEach(view => view.object3D.visible = false);
+
+        const imageURL = view.renderImage(2560, 2560, mimeType, this.ins.quality.value);
+
+        this.selection.ins.viewportBrackets.setValue(true);
+        this.getSystemComponents(CVAnnotationView).forEach(view => view.object3D.visible = annotationsEnabled);
+
+        // Collect parameters
+        const setupData = {};
+        const featureMap = this.setup.featureMap;
+        for (const name in featureMap) {
+            const featureData = this.setup[name].toData();
+            if (featureData) {
+                setupData[name] = featureData;
+            }
+        }
+
+        // Download
+        const assetBaseName = this.activeDocument.assetBaseName || "capture";
+        const timestamp = DateTime.now().toFormat("yyyy-MM-dd-HH-mm-ss");
+        const imageFileName = `${assetBaseName}-screen-${timestamp}.${extension}`;
+        const jsonFileName = `${assetBaseName}-parameters-${timestamp}.json`;
+
+        download.url(imageURL, imageFileName);
+        download.json(setupData, jsonFileName);
+
+        new Notification(`Screen captured: ${imageFileName} and ${jsonFileName}`, "info", 4000);
     }
 }
