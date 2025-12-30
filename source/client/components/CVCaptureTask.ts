@@ -24,6 +24,7 @@ import { Node, types } from "@ff/graph/Component";
 
 import Notification from "@ff/ui/Notification";
 import CRenderer from "@ff/scene/components/CRenderer";
+import CLight from "@ff/scene/components/CLight";
 
 import { EAssetType, EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 
@@ -382,8 +383,72 @@ export default class CVCaptureTask extends CVTask
         this.setup.ins.restoreState.set();
     }
 
-    protected captureScreen()
-    {
+    protected collectSetup() {
+        const featureData: any = {};
+        const featureMap = this.setup.featureMap;
+        for (const name in featureMap) {
+            const data = this.setup[name].toData();
+            if (data) {
+                featureData[name] = data;
+            }
+        }
+        return featureData;
+    }
+
+    protected collectAsset() {
+        return {
+            baseUrl: this.assetManager.baseUrl,
+            assetPath: this.activeDocument.assetPath,
+            assetBaseName: this.activeDocument.assetBaseName,
+            version: CVDocument.version,
+            copyright: this.activeDocument.ins.copyright.value || undefined
+        };
+    }
+
+    protected collectLights() {
+        const lights = this.getSystemComponents(CLight);
+        if (lights && lights.length > 0) {
+            return lights.map((light, index) => {
+                const lightPath = `scenes/0/lights/${index}`;
+                return {
+                    name: light.displayName,
+                    path: lightPath,
+                    color: light.ins.color.value,
+                    intensity: light.ins.intensity.value,
+                    shadowEnabled: light.ins.shadowEnabled.value
+                };
+            });
+        }
+    }
+
+    protected collectModels() {
+        const models = this.getSystemComponents(CVModel2);
+        if (models && models.length > 0) {
+            return models.map((model, index) => {
+                const modelPath = `scenes/0/models/${index}`;
+                return {
+                    name: model.displayName,
+                    path: modelPath,
+                    visible: model.ins.visible.value
+                };
+            });
+        }
+    }
+
+    protected collectMetas() {
+        const metas = this.getSystemComponents(CVMeta);
+        if (metas && metas.length > 0) {
+            return metas.map((meta, index) => {
+                const metaPath = `scenes/0/metas/${index}`;
+                return {
+                    name: meta.displayName,
+                    path: metaPath
+                };
+            });
+        }
+    }
+
+    protected captureScreen() {
         const view = this.renderer.views[0];
         if (!view) {
             new Notification("Can't capture screen: no view attached", "error", 4000);
@@ -393,7 +458,7 @@ export default class CVCaptureTask extends CVTask
         const pictureType: number = this.ins.type.getValidatedValue();
         const mimeType = _mimeTypes[pictureType];
         const extension = _typeExtensions[pictureType];
-        
+
         this.selection.ins.viewportBrackets.setValue(false);
         this.selection.update();
         const annotationsEnabled = this.setup.viewer.ins.annotationsVisible.value;
@@ -404,24 +469,26 @@ export default class CVCaptureTask extends CVTask
         this.selection.ins.viewportBrackets.setValue(true);
         this.getSystemComponents(CVAnnotationView).forEach(view => view.object3D.visible = annotationsEnabled);
 
-        // Collect parameters
-        const setupData = {};
-        const featureMap = this.setup.featureMap;
-        for (const name in featureMap) {
-            const featureData = this.setup[name].toData();
-            if (featureData) {
-                setupData[name] = featureData;
+        const parameters: any = {};
+        // for each parameter name listed here, a corresponding method 'collect<ParamName>()' is called:
+        for (const paramName of ["Setup", "Asset", "Lights", "Models", "Metas"]) {
+            const funcName = `${`collect${paramName}`}()`;
+
+            const params = eval(`this.${funcName}`);
+            if (params) {
+                parameters[paramName.toLowerCase()] = params;
+            } else {
+                console.warn(`CVCaptureTask.captureScreen - no ${paramName.toLowerCase()} data found`);
             }
         }
 
-        // Download
         const assetBaseName = this.activeDocument.assetBaseName || "capture";
         const timestamp = DateTime.now().toFormat("yyyy-MM-dd-HH-mm-ss");
         const imageFileName = `${assetBaseName}-screen-${timestamp}.${extension}`;
         const jsonFileName = `${assetBaseName}-parameters-${timestamp}.json`;
 
         download.url(imageURL, imageFileName);
-        download.json(setupData, jsonFileName);
+        download.json(parameters, jsonFileName);
 
         new Notification(`Screen captured: ${imageFileName} and ${jsonFileName}`, "info", 4000);
     }
