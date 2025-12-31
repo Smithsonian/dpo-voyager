@@ -43,11 +43,13 @@ class NodeTree extends Tree<NVNode>
 
     protected documentProvider: CVDocumentProvider = null;
     protected nodeProvider: CVNodeProvider = null;
+    protected selectedLightNodes: Set<NVNode> = new Set();
 
     protected firstConnected()
     {
         super.firstConnected();
         this.classList.add("sv-node-tree");
+        this.selectedLightNodes = new Set();
 
         this.addEventListener("click", this.onContainerClick.bind(this));
 
@@ -103,6 +105,12 @@ class NodeTree extends Tree<NVNode>
             buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
         }
         if (node.light) {
+            const isSelected = this.selectedLightNodes.has(node);
+            icons.push(html`<input type="checkbox" 
+                class="sv-light-checkbox" 
+                .checked=${isSelected}
+                @click=${(e: MouseEvent) => this.onLightCheckboxClick(e, node)}
+                @change=${(e: Event) => e.stopPropagation()}>`);
             icons.push(html`<ff-icon class="${node.light.ins.enabled.value ? "sv-icon-light ff-icon": "sv-icon-disabled ff-icon"}" name=${node.light.icon}></ff-icon>`);
             if(node.light.canDelete) {
                 buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
@@ -239,6 +247,40 @@ class NodeTree extends Tree<NVNode>
                     this.requestUpdate();
                 }
             });
+    }
+
+    protected onLightCheckboxClick(event: MouseEvent, node: NVNode) {
+        event.stopPropagation();
+        
+        if (this.selectedLightNodes.has(node)) {
+            this.selectedLightNodes.delete(node);
+        } else {
+            this.selectedLightNodes.add(node);
+        }
+        
+        this.requestUpdate();
+        this.dispatchEvent(new CustomEvent('light-selection-changed', {
+            detail: { selectedCount: this.selectedLightNodes.size },
+            bubbles: true
+        }));
+    }
+
+    public getSelectedLightNodes(): NVNode[] {
+        return Array.from(this.selectedLightNodes);
+    }
+
+    public clearSelectedLights() {
+        this.selectedLightNodes.clear();
+        this.requestUpdate();
+    }
+
+    public enableSelectedLights(enabled: boolean) {
+        this.selectedLightNodes.forEach(node => {
+            if (node.light) {
+                node.light.ins.enabled.setValue(enabled);
+            }
+        });
+        this.requestUpdate();
     }
 }
 

@@ -27,6 +27,9 @@ import CVTaskProvider from "../../components/CVTaskProvider";
 @customElement("sv-navigator-panel")
 export default class NavigatorPanel extends SystemView
 {
+    private selectedLightCount: number = 0;
+    private nodeTree: any = null;
+
     protected get taskProvider() {
         return this.system.getMainComponent(CVTaskProvider);
     }
@@ -39,11 +42,13 @@ export default class NavigatorPanel extends SystemView
     protected connected()
     {
         this.taskProvider.ins.mode.on("value", this.performUpdate, this);
+        this.addEventListener('light-selection-changed', this.onLightSelectionChanged as EventListener);
     }
 
     protected disconnected()
     {
         this.taskProvider.ins.mode.off("value", this.performUpdate, this);
+        this.removeEventListener('light-selection-changed', this.onLightSelectionChanged as EventListener);
     }
 
     protected render()
@@ -62,13 +67,53 @@ export default class NavigatorPanel extends SystemView
             </div>
             <ff-splitter direction="vertical"></ff-splitter>` : null;
 
+        const lightControls = this.selectedLightCount > 0 ? html`
+            <div class="sv-light-controls">
+                <div class="sv-light-count">${this.selectedLightCount} light${this.selectedLightCount > 1 ? 's' : ''} selected</div>
+                <ff-button text="Enable" @click=${this.onEnableSelectedLights}></ff-button>
+                <ff-button text="Disable" @click=${this.onDisableSelectedLights}></ff-button>
+                <ff-button text="Clear" @click=${this.onClearSelection}></ff-button>
+            </div>` : null;
+
         return html`${documentList}
             <div class="ff-splitter-section ff-flex-column" style="flex-basis: 70%">
                 <div class="sv-panel-header">
                     <ff-icon name="hierarchy"></ff-icon>
                     <div class="ff-text">Nodes</div>
                 </div>
+                ${lightControls}
                 <sv-node-tree class="ff-flex-item-stretch" .system=${system}></sv-node-tree>
             </div>`;
+    }
+
+    protected onLightSelectionChanged(event: CustomEvent) {
+        this.selectedLightCount = event.detail.selectedCount;
+        this.requestUpdate();
+    }
+
+    protected async onEnableSelectedLights() {
+        await this.updateComplete;
+        const nodeTree = this.querySelector('sv-node-tree') as any;
+        if (nodeTree) {
+            nodeTree.enableSelectedLights(true);
+        }
+    }
+
+    protected async onDisableSelectedLights() {
+        await this.updateComplete;
+        const nodeTree = this.querySelector('sv-node-tree') as any;
+        if (nodeTree) {
+            nodeTree.enableSelectedLights(false);
+        }
+    }
+
+    protected async onClearSelection() {
+        await this.updateComplete;
+        const nodeTree = this.querySelector('sv-node-tree') as any;
+        if (nodeTree) {
+            nodeTree.clearSelectedLights();
+            this.selectedLightCount = 0;
+            this.requestUpdate();
+        }
     }
 }

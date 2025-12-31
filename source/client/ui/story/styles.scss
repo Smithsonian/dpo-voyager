@@ -214,6 +214,14 @@ $color-component-meta-light: #d9d998;
         white-space: nowrap;
       }
       
+      .sv-light-checkbox {
+        width: 16px;
+        height: 16px;
+        margin: 2px 6px 0 0;
+        cursor: pointer;
+        accent-color: $color-component-light;
+      }
+      
       .sv-add-light-btn.ff-button {
         width: 1.6em; // square button roughly same height as line-height
         height: 1.6em;
@@ -853,4 +861,25 @@ sv-property-tags {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// LIGHT CONTROLS
 
+.sv-light-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: color.adjust(common.$color-background-dark, $lightness: 2%);
+  border-bottom: 1px solid common.$color-background-darker;
+  
+  .sv-light-count {
+    flex: 1;
+    font-size: 0.9em;
+    color: common.$color-text-light;
+  }
+  
+  ff-button {
+    font-size: 0.85em;
+    padding: 4px 12px;
+  }
+}
