@@ -21,6 +21,7 @@ import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyOptions";
 import "../ui/properties/PropertySlider";
 import "../ui/properties/PropertyColor";
+import "../ui/properties/PropertyTags";
 
 import CVDocument from "./CVDocument";
 

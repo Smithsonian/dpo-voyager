@@ -31,6 +31,7 @@ import "../properties/PropertySlider";
 import "../properties/PropertyNumber";
 import "../properties/PropertyOptions";
 import "../properties/PropertyEvent";
+import "../properties/PropertyTags";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,6 +100,8 @@ export default class PropertyView extends CustomElement
             return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){
             return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
+        }else if(property.type === "object" && property.value instanceof Set){
+            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property}></sv-property-tags>`
         }else{
             console.warn("Unhandled property :", property.name);
             return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;

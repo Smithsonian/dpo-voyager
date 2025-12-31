@@ -715,6 +715,78 @@ $color-component-meta-light: #d9d998;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TAGS PROPERTY
+
+.sv-property-view:has(sv-property-tags) {
+  display: block;
+  max-height: unset;
+  padding-right: 6px;
+}
+
+sv-property-tags {
+  .sv-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: flex-start;
+    background-color: common.$color-background-darker;
+    padding: 4px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+
+  .sv-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .sv-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: common.$color-primary;
+    color: common.$color-text-light;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    white-space: nowrap;
+
+    .sv-tag-text {
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sv-tag-remove {
+      background: none;
+      border: none;
+      color: common.$color-text-light;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      font-size: 1.2em;
+      line-height: 1;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .sv-tags-input {
+    flex: 0 1 auto;
+    min-width: 120px;
+    padding: 2px 4px;
+    font-size: 0.9em;
+    margin-top: 4px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // STANDALONE UI
 
 .sv-import-menu {
