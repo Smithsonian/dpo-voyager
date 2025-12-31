@@ -182,12 +182,22 @@ class NodeTree extends Tree<NVNode>
     {
         if (event.previous) {
             event.previous.off("change", this.onUpdate, this);
+            if (event.previous.light && event.previous.light.ins.tags) {
+                event.previous.light.ins.tags.off("value", this.onLightTagsChanged, this);
+            }
             this.setSelected(event.previous, false);
         }
         if (event.next) {
             this.setSelected(event.next, true);
             event.next.on("change", this.onUpdate, this);
+            if (event.next.light && event.next.light.ins.tags) {
+                event.next.light.ins.tags.on("value", this.onLightTagsChanged, this);
+            }
         }
+    }
+
+    protected onLightTagsChanged() {
+        this.dispatchEvent(new CustomEvent('light-tags-changed', { bubbles: true }));
     }
 
     protected onClickAddLight(event: MouseEvent, parentNode: NVNode)
@@ -281,6 +291,56 @@ class NodeTree extends Tree<NVNode>
             }
         });
         this.requestUpdate();
+    }
+
+    public getAllLightTags(): string[] {
+        const tagSet = new Set<string>();
+        this.getAllLightNodes().forEach(node => {
+            if (node.light) {
+                const tags = node.light.ins.tags?.value as Set<string> | undefined;
+                if (tags) {
+                    tags.forEach(tag => tagSet.add(tag));
+                }
+            }
+        });
+        return Array.from(tagSet).sort();
+    }
+
+    public selectLightsByTag(tag: string) {
+        this.selectedLightNodes.clear();
+        this.getAllLightNodes().forEach(node => {
+            if (node.light) {
+                const tags = node.light.ins.tags?.value as Set<string> | undefined;
+                if (tags && tags.has(tag)) {
+                    this.selectedLightNodes.add(node);
+                }
+            }
+        });
+        this.requestUpdate();
+        this.dispatchEvent(new CustomEvent('light-selection-changed', {
+            detail: { selectedCount: this.selectedLightNodes.size },
+            bubbles: true
+        }));
+    }
+
+    private getAllLightNodes(): NVNode[] {
+        const allLightNodes: NVNode[] = [];
+        const collectLightNodes = (node: NVNode) => {
+            if (node.light) {
+                allLightNodes.push(node);
+            }
+            const children = this.getChildren(node);
+            if (children) {
+                children.forEach(child => collectLightNodes(child));
+            }
+        };
+        if (this.root) {
+            const rootChildren = this.getChildren(this.root);
+            if (rootChildren) {
+                rootChildren.forEach(child => collectLightNodes(child));
+            }
+        }
+        return allLightNodes;
     }
 }
 

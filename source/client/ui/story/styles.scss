@@ -871,11 +871,32 @@ sv-property-tags {
   padding: 8px 12px;
   background-color: color.adjust(common.$color-background-dark, $lightness: 2%);
   border-bottom: 1px solid common.$color-background-darker;
+  flex-wrap: wrap;
+  
+  .sv-tag-select {
+    padding: 4px 8px;
+    border: 1px solid common.$color-background-lighter;
+    background-color: common.$color-background-dark;
+    color: common.$color-text;
+    border-radius: 3px;
+    font-size: 0.85em;
+    cursor: pointer;
+    
+    &:hover {
+      border-color: common.$color-primary;
+    }
+    
+    option {
+      background-color: common.$color-background-dark;
+      color: common.$color-text;
+    }
+  }
   
   .sv-light-count {
     flex: 1;
     font-size: 0.9em;
     color: common.$color-text-light;
+    min-width: 120px;
   }
   
   ff-button {

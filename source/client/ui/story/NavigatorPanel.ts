@@ -29,6 +29,8 @@ export default class NavigatorPanel extends SystemView
 {
     private selectedLightCount: number = 0;
     private nodeTree: any = null;
+    private availableLightTags: string[] = [];
+    private selectedLightTag: string = "";
 
     protected get taskProvider() {
         return this.system.getMainComponent(CVTaskProvider);
@@ -43,12 +45,15 @@ export default class NavigatorPanel extends SystemView
     {
         this.taskProvider.ins.mode.on("value", this.performUpdate, this);
         this.addEventListener('light-selection-changed', this.onLightSelectionChanged as EventListener);
+        this.addEventListener('light-tags-changed', this.onLightTagsChanged as EventListener);
+        this.updateAvailableLightTags();
     }
 
     protected disconnected()
     {
         this.taskProvider.ins.mode.off("value", this.performUpdate, this);
         this.removeEventListener('light-selection-changed', this.onLightSelectionChanged as EventListener);
+        this.removeEventListener('light-tags-changed', this.onLightTagsChanged as EventListener);
     }
 
     protected render()
@@ -67,13 +72,21 @@ export default class NavigatorPanel extends SystemView
             </div>
             <ff-splitter direction="vertical"></ff-splitter>` : null;
 
-        const lightControls = this.selectedLightCount > 0 ? html`
+        const tagOptions = html`<select class="sv-tag-select" .value=${this.selectedLightTag} @change=${this.onLightTagSelected}>
+            <option value="">Select tag to filter...</option>
+            ${this.availableLightTags.map(tag => html`<option value=${tag}>${tag}</option>`)}
+        </select>`;
+
+        const lightControls = html`
             <div class="sv-light-controls">
+                ${tagOptions}
                 <div class="sv-light-count">${this.selectedLightCount} light${this.selectedLightCount > 1 ? 's' : ''} selected</div>
-                <ff-button text="Enable" @click=${this.onEnableSelectedLights}></ff-button>
-                <ff-button text="Disable" @click=${this.onDisableSelectedLights}></ff-button>
-                <ff-button text="Clear" @click=${this.onClearSelection}></ff-button>
-            </div>` : null;
+                ${this.selectedLightCount > 0 ? html`
+                    <ff-button text="Enable" @click=${this.onEnableSelectedLights}></ff-button>
+                    <ff-button text="Disable" @click=${this.onDisableSelectedLights}></ff-button>
+                    <ff-button text="Clear" @click=${this.onClearSelection}></ff-button>
+                ` : null}
+            </div>`;
 
         return html`${documentList}
             <div class="ff-splitter-section ff-flex-column" style="flex-basis: 70%">
@@ -88,6 +101,32 @@ export default class NavigatorPanel extends SystemView
 
     protected onLightSelectionChanged(event: CustomEvent) {
         this.selectedLightCount = event.detail.selectedCount;
+        this.updateAvailableLightTags();
+        this.requestUpdate();
+    }
+
+    protected async onLightTagSelected(event: Event) {
+        const select = event.target as HTMLSelectElement;
+        this.selectedLightTag = select.value;
+        await this.updateComplete;
+        const nodeTree = this.querySelector('sv-node-tree') as any;
+        if (nodeTree) {
+            nodeTree.selectLightsByTag(this.selectedLightTag);
+            this.selectedLightCount = this.selectedLightTag ? nodeTree.getSelectedLightNodes().length : 0;
+            this.requestUpdate();
+        }
+    }
+
+    protected updateAvailableLightTags() {
+        const nodeTree = this.querySelector('sv-node-tree') as any;
+        if (nodeTree) {
+            this.availableLightTags = nodeTree.getAllLightTags();
+        }
+    }
+
+    protected onLightTagsChanged() {
+        this.updateAvailableLightTags();
+        this.selectedLightTag = "";
         this.requestUpdate();
     }
 
