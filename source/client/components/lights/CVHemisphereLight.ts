@@ -38,6 +38,7 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
             this.ins.color,
             this.ins.intensity,
             this.ins.ground,
+            this.ins.tags,
         ];
     }
 
@@ -74,6 +75,7 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
             ground: data.hemisphere?.ground ?? ins.ground.schema.preset,
+            tags: data.tags ? new Set<string>(data.tags) : new Set<string>(),
         });
 
         return node.light;
@@ -93,6 +95,10 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
         } as ILight;
 
         data.type = CVHemisphereLight.type;
+
+        if (ins.tags.value && ins.tags.value.size > 0) {
+            data.tags = Array.from(ins.tags.value);
+        }
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

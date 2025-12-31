@@ -126,6 +126,8 @@ export interface ILight
     color?: ColorRGB;
     intensity?: number;
 
+    tags?: string[];
+
     shadowEnabled?: boolean;
     shadowSize?: number;
     shadowResolution?: string;

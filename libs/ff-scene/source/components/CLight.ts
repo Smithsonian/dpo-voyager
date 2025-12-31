@@ -40,7 +40,8 @@ export default class CLight extends CObject3D
         shadowIntensity: types.Number("Shadow.Intensity", {
             preset:1,
             min: 0,
-        })
+        }),
+        tags: types.Property("Light.Tags", { preset: new Set<string>() })
     };
 
     ins = this.addInputs<CObject3D, typeof CLight["lightIns"]>(CLight.lightIns);

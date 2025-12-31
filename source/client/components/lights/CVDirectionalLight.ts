@@ -40,6 +40,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
             this.ins.shadowEnabled,
             this.ins.shadowSize,
             this.ins.shadowResolution,
@@ -86,6 +87,8 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
 
+            tags: data.tags ? new Set<string>(data.tags) : new Set<string>(),
+
             shadowEnabled: data.shadowEnabled || false,
             shadowSize: data.shadowSize !== undefined ? data.shadowSize : ins.shadowSize.schema.preset,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 0 : ins.shadowResolution.schema.preset,
@@ -107,6 +110,10 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
         } as ILight;
 
         data.type = CVDirectionalLight.type;
+
+        if (ins.tags.value && ins.tags.value.size > 0) {
+            data.tags = Array.from(ins.tags.value);
+        }
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;

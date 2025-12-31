@@ -40,6 +40,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
             this.ins.intensity,
             this.ins.distance,
             this.ins.decay,
+            this.ins.tags,
             this.ins.shadowEnabled,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
@@ -88,6 +89,8 @@ export default class CVPointLight extends CPointLight implements ICVLight
             distance: data.point.distance || ins.distance.schema.preset,
             decay: data.point.decay !== undefined ? data.point.decay : ins.decay.schema.preset,
 
+            tags: data.tags ? new Set<string>(data.tags) : new Set<string>(),
+
             shadowEnabled: data.shadowEnabled || false,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
@@ -112,6 +115,10 @@ export default class CVPointLight extends CPointLight implements ICVLight
         } as ILight;
 
         data.type = CVPointLight.type;
+
+        if (ins.tags.value && ins.tags.value.size > 0) {
+            data.tags = Array.from(ins.tags.value);
+        }
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;

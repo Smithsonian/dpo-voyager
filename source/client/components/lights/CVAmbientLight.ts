@@ -37,6 +37,7 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
         ];
     }
 
@@ -71,6 +72,7 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
+            tags: data.tags ? new Set<string>(data.tags) : new Set<string>(),
         });
 
         return node.light;
@@ -87,6 +89,10 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
         } as ILight;
 
         data.type = CVAmbienLight.type;
+
+        if (ins.tags.value && ins.tags.value.size > 0) {
+            data.tags = Array.from(ins.tags.value);
+        }
 
         document.lights = document.lights || [];
         const lightIndex = document.lights.length;

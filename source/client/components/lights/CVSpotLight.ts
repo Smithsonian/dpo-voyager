@@ -42,6 +42,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             this.ins.decay,
             this.ins.angle,
             this.ins.penumbra,
+            this.ins.tags,
             this.ins.shadowEnabled,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
@@ -93,6 +94,8 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             angle: data.spot.angle !== undefined ? data.spot.angle : ins.angle.schema.preset,
             penumbra: data.spot.penumbra || ins.penumbra.schema.preset,
 
+            tags: data.tags ? new Set<string>(data.tags) : new Set<string>(),
+
             shadowEnabled: data.shadowEnabled || false,
             shadowResolution: data.shadowResolution !== undefined ? EShadowMapResolution[data.shadowResolution] || 1 : 1,
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
@@ -119,6 +122,10 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
         } as ILight;
 
         data.type = CVSpotLight.type;
+
+        if (ins.tags.value && ins.tags.value.size > 0) {
+            data.tags = Array.from(ins.tags.value);
+        }
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;
