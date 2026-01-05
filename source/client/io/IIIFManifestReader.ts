@@ -294,11 +294,12 @@ export default class IIIFManifestReader {
                         data.scale = 0.001;
                     }
 
-                    // parse annotation content
+                    // parse annotation audio and text content
                     comment.getBody().forEach(option => {
                         const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
 
                         if(option.isSound()) {
+                            // Add audio clip
                             const clipId = annotation.data.audioId || Document.generateId();
                             let clip = setup.audio.getAudioClip(clipId);
                             if(clip === undefined) {
@@ -317,6 +318,10 @@ export default class IIIFManifestReader {
                             clip.uris[langCode] = uri;
                             setup.audio.updateAudioClip(clipId);
                         }
+                        else if(option.isSoundCaption()) {
+                            // skip caption processing so all audio is parsed first
+                            return;
+                        }
                         else {
                             const annoValue: string = option.Value;
                             const newLine = annoValue.indexOf('\n');
@@ -329,6 +334,22 @@ export default class IIIFManifestReader {
                                 annotation.data.titles[langCode] = sanitizeHtml(annoValue, {allowedTags: []});
                             }
                           }
+                    });
+
+                    // parse audio captions
+                    comment.getBody().forEach(option => {
+                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+
+                        if(option.isSoundCaption()) {
+                            const clip = setup.audio.getAudioClip(annotation.data.audioId);
+
+                            if(clip) {
+                                clip.captionUris[langCode] = option.getProperty("id");
+                            }
+                            else {
+                                console.warn("Caption file not loaded - no corresponding audio clip.");
+                            }
+                        }
                     });
                     
                     // handle scope
