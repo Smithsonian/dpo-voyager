@@ -17,8 +17,6 @@
 
 import math from "@ff/three/math";
 import NVNode from "client/nodes/NVNode";
-import CVPointLight from "client/components/lights/CVPointLight";
-import CVDirectionalLight from "client/components/lights/CVDirectionalLight";
 import CVSpotLight from "client/components/lights/CVSpotLight";
 import { EProjection } from "@ff/three/UniversalCamera";
 import { Matrix4, Vector3, Euler, Color, Quaternion } from "three";
@@ -166,9 +164,9 @@ export default class IIIFManifestWriter {
                             "selector": [
                                 {
                                     "type": "PointSelector",
-                                    "x": _vec3a.x,
-                                    "y": _vec3a.y,
-                                    "z": _vec3a.z,
+                                    "x": this.roundNumber(_vec3a.x, 6),
+                                    "y": this.roundNumber(_vec3a.y, 6),
+                                    "z": this.roundNumber(_vec3a.z, 6),
                                 }
                             ]
                         }
@@ -234,20 +232,28 @@ export default class IIIFManifestWriter {
                         let content = (anno.titleIn(language.id)?.length > 0 ? anno.titleIn(language.id) : "Untitled");
 
                         // add image if needed
-                        /*if(anno.data.imageUri) {
-                            content += "<img alt=" + anno.imageAltText + " src=" + anno.data.imageUri +">";
-                            if(anno.imageCredit) {
+                        if(anno.data.imageUri) {
+                            const uri = this.assetManager.getAssetUrl(anno.data.imageUri);
+                            const mappedUri = uri.startsWith("blob") ? this.standaloneFileManager.blobUrlToFileUrl(uri) : uri;
+                            content += "\n<img style=\"max-height: 120px; max-width: 100%\" alt=\"" + anno.imageAltText + "\" src=\"" + mappedUri +"\">";
+                            /*if(anno.imageCredit) {
                                 content += "<div>" + anno.imageCredit + "</div>";
-                            }
-                        }*/
+                            }*/
+                        }
 
                         content += (anno.leadIn(language.id)?.length > 0 ? "\n" + anno.leadIn(language.id) : "");
+
+                        const hasTags = /<\/?[a-z][\s\S]*>/i.test(content);
+                        if(hasTags && content[0] !== "<") {
+                            // Spec requires opening and closing tags for any html content
+                            content = "<p>" + content + "</p>";
+                        }
 
                         const textBody = {
                             "type": "TextualBody",
                             "value": content,
                             "language": ELanguageType[language.id].toLowerCase(),
-                            "format": "text/plain"
+                            "format": hasTags ? "text/html" : "text/plain"
                         }
                         textChoice["items"].push(textBody);
                     });
@@ -357,25 +363,25 @@ export default class IIIFManifestWriter {
         if(_vec3b.x != 1 || _vec3b.y != 1 || _vec3b.z != 1) {
             transform.push({
                 "type": "ScaleTransform",
-                "x": _vec3b.x,
-                "y": _vec3b.y,
-                "z": _vec3b.z
+                "x": this.roundNumber(_vec3b.x, 6),
+                "y": this.roundNumber(_vec3b.y, 6),
+                "z": this.roundNumber(_vec3b.z, 6)
             });
         }
         if(_euler.x != 0 || _euler.y != 0 || _euler.z != 0) {
             transform.push({
                 "type": "RotateTransform",
-                "x": (_euler.x*math.RAD2DEG),
-                "y": (_euler.y*math.RAD2DEG),
-                "z": (_euler.z*math.RAD2DEG)
+                "x": this.roundNumber(_euler.x*math.RAD2DEG, 6),
+                "y": this.roundNumber(_euler.y*math.RAD2DEG, 6),
+                "z": this.roundNumber(_euler.z*math.RAD2DEG, 6)
             });
         }
         if(_vec3a.length() != 0) {
             transform.push({
                 "type": "TranslateTransform",
-                "x": _vec3a.x,
-                "y": _vec3a.y,
-                "z": _vec3a.z
+                "x": this.roundNumber(_vec3a.x, 6),
+                "y": this.roundNumber(_vec3a.y, 6),
+                "z": this.roundNumber(_vec3a.z, 6)
             });
         }
 
@@ -383,5 +389,9 @@ export default class IIIFManifestWriter {
         if(transform.length == 0) {
             delete annotation.body["transform"];
         }
+    }
+
+    protected roundNumber(num: number, digits: number) {
+        return Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
     }
 }

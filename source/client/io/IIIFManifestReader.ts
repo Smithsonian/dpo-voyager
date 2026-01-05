@@ -17,7 +17,6 @@
 
 import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, parseManifest, loadManifest } from "@iiif/3d-manifesto-dev";
 
-import CScene from "@ff/scene/components/CScene";
 import math from "@ff/three/math";
 import CVModel2 from "client/components/CVModel2";
 import CTransform from "@ff/scene/components/CTransform";
@@ -149,6 +148,7 @@ export default class IIIFManifestReader {
 
                 const modelLabel = model.getLabelFromSelfOrSource().getValue();
                 newModel.node.name = modelLabel ?? "Model";
+                newModel.ins.name.setValue(newModel.node.name);
 
                 newModel.setFromMatrix(this.getIIIFBodyTransform(model,annotation));
             });
@@ -327,7 +327,26 @@ export default class IIIFManifestReader {
                             const newLine = annoValue.indexOf('\n');
                             if(newLine >= 0) {
                                 annotation.data.titles[langCode] = sanitizeHtml(annoValue.substring(0,newLine), {allowedTags: []});
-                                annotation.data.leads[langCode] = annoValue.substring(newLine+1);
+
+                                const leadText = annoValue.substring(newLine+1);
+
+                                // handle image parsing and assignment
+                                if(leadText.indexOf("<img") >= 0) {
+                                    const safeText = sanitizeHtml(leadText, {allowedTags: ['img']});
+                                    let temp = document.createElement('div');
+                                    temp.innerHTML = safeText;
+                                    const image = temp.getElementsByTagName('img')[0];
+                                    annotation.data.imageUri = image.src;
+                                    annotation.data.imageAltText[langCode] = image.alt;
+                                }
+
+                                annotation.data.leads[langCode] = sanitizeHtml(leadText,
+                                    {
+                                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'sup', 'sub' ],
+                                        allowedAttributes: {
+                                          'a': [ 'href', 'target' ]
+                                        }
+                                    });
                                 data.style = "Extended";
                             }
                             else {
