@@ -42,7 +42,7 @@ export default class CVEnvironment extends Component
     static readonly text: string = "Environment";
 
     protected static readonly envIns = {
-        imageIndex: types.Integer("Environment.MapIndex", { preset: 0, options: images.map( function(item, index) {return index.toString();}) }),
+        imageIndex: types.Integer("Environment.Map", { preset: 0, options: images }),
         initialize: types.Event("Environment.Init"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
@@ -260,7 +260,7 @@ export default class CVEnvironment extends Component
                     const image =  images[key];
                     if(image.usage && image.usage === "Environment") {
                         this._imageOptions.push(image.uri);
-                        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+                        this.ins.imageIndex.setOptions(this._imageOptions);
                     }
                 });
             });
