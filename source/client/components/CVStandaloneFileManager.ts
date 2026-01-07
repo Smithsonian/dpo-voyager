@@ -78,7 +78,8 @@ export default class CVStandaloneFileManager extends Component
                 return this.runtimeURLs[normalizedURL];
             }
             if(this.fileMap[normalizedURL]) {
-                const bloburl = URL.createObjectURL( this.fileMap[normalizedURL] );
+                const data = this.fileMap[normalizedURL];
+                const bloburl = data ? URL.createObjectURL( this.fileMap[normalizedURL] ) : normalizedURL;
                 this.runtimeURLs[normalizedURL] = bloburl;
                 return bloburl;
             } 
@@ -125,7 +126,7 @@ export default class CVStandaloneFileManager extends Component
         const normalizedURL = uri.startsWith("/") ? uri.substr(1) : uri;  // strip potential leading slash
 
         this.rootMap[filename] = rootPath;
-        this.fileMap[normalizedURL] = new File(data, filename);
+        this.fileMap[normalizedURL] = data[0] ? new File(data, filename) : null;
 
         if(this.runtimeURLs[normalizedURL]) {
             this.runtimeURLs[normalizedURL] = null;

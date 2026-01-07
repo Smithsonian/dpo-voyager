@@ -115,26 +115,7 @@ export default class CVMediaManager extends CAssetManager
 
     async ingestURI(uri: string)
     {
-        const loadingManager = this.assetManager.loadingManager;
-        loadingManager.itemStart(uri);
-        await fetch(uri).then(result => {
-            if (!result.ok) {
-                loadingManager.itemError(uri);
-                loadingManager.itemEnd(uri);
-                console.error(`failed to fetch from '${uri}', status: ${result.status} ${result.statusText}`);
-                Notification.show(`failed to fetch from '${uri}', status: ${result.status} ${result.statusText}`);
-            }
-
-            result.blob().then( blobFile => {
-                loadingManager.itemEnd(uri);
-                this.ingestFiles(new Map([[uri, blobFile]]));
-            });
-        }).catch(error => {
-            loadingManager.itemError(uri);
-            loadingManager.itemEnd(uri);
-            console.error(error);
-            Notification.show(`Failed to fetch from '${uri}': ${error.message}`);
-        });
+        this.ingestFiles(new Map([[uri, null]]));
     }
 
     ingestFiles(files: Map<string, Blob>)
@@ -158,7 +139,7 @@ export default class CVMediaManager extends CAssetManager
             const cleanfileName = decodeURI(path).slice(path.lastIndexOf('/') + 1);
             const filenameLower = cleanfileName.toLowerCase();
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;
@@ -168,7 +149,7 @@ export default class CVMediaManager extends CAssetManager
                 let normalizedPath = documentProvided ? path.replace(documentRoot, '') : path;
                 normalizedPath = normalizedPath.startsWith("/") ? normalizedPath.substr(1) : normalizedPath;
 
-                if (filenameLower.match(/\.(svx.json)$/)) {
+                if (filenameLower.match(/\.(json)$/)) {
                     const mainView : MainView = document.getElementsByTagName('voyager-explorer')[0] as MainView;
                     const explorer : ExplorerApplication = mainView.application;
             

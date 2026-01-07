@@ -132,7 +132,7 @@ export default class IIIFManifestWriter {
 
                 // add source
                 const source = {
-                    id: this.standaloneFileManager ? this.standaloneFileManager.blobUrlToFileUrl(url) : url,
+                    id: this.standaloneFileManager ? this.standaloneFileManager.blobUrlToFileUrl(url) || url : url,
                     type: "Model",
                     label: {"en": [child.model.ins.name.value]},
                     format: asset.data.mimeType
