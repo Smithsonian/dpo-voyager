@@ -52,6 +52,21 @@ export default class CVAssetWriter extends Component
         return this.getGraphComponent(CVStandaloneFileManager, true);
     }
 
+    protected async createDirectory(assetPath: string) {
+        const dir = assetPath.substring(0, assetPath.lastIndexOf('/'));
+        if (dir) {
+            const url = this.assetManager.getAssetUrl(dir);
+            const response = await fetch(url, { method: "MKCOL" });
+            if (response.status === 405) {
+                console.debug(`Directory ${dir} at ${url} already exists.`);
+                return;
+            } else if (!response.ok) {
+                throw new Error(`Failed to create directory ${dir} at ${url}: ${response.statusText}`);
+            }
+        } else {
+            console.debug(`No directory to create for asset path: ${assetPath}`);
+        }
+    }
 
     async put(body: string|BlobPart, contentType :string, assetPath: string): Promise<void>
     {
@@ -61,6 +76,8 @@ export default class CVAssetWriter extends Component
             standaloneManager.addFile(assetPath, [body]);
             return Promise.resolve();
         }
+
+        await this.createDirectory(assetPath);
 
         const url = this.assetManager.getAssetUrl(assetPath);
         const res = await fetch(url, {
