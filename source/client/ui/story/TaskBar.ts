@@ -94,14 +94,11 @@ export default class TaskBar extends SystemView
         }
 
         return html`
-            <sv-logo .assetPath=${this.assetReader.getSystemAssetUrl("")}></sv-logo>
-            <div class="sv-mode ff-text">
-                <span class="sv-mode-sm">${taskModeText.slice(0, 2)}</span>
-                <span class="sv-mode-lg">${taskModeText}</span>
-            </div>
+            <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
+            <div class="sv-mode ff-text">${taskModeText}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
-            <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
+            <div class="ff-flex-row ff-group ff-scroll-x" @click=${this.onClickTask}>
                 ${tasks.map((task, index) => html`<ff-button text=${languageManager.getUILocalizedString(task.text)} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
             </div>
             <div class="sv-divider"></div>
