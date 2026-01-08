@@ -90,7 +90,7 @@ ff-tab-header, ff-dock-panel-header {
   background-color: common.$color-background-dark;
   border-bottom: 3px solid common.$color-background-darker;
 
-  overflow: auto;
+  overflow: clip visible;
 
   .ff-group {
     align-items: stretch;
@@ -146,6 +146,7 @@ ff-tab-header, ff-dock-panel-header {
     display: block;
     align-self: flex-end;
   }
+  
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -781,4 +782,19 @@ $color-component-meta-light: #d9d998;
   }
 }
 
+
+.sv-hover-dropdown{
+  display: flex;
+  position: relative;
+  > ul {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+  &.show > ul{
+    display: inherit;
+  }
+
+}
 

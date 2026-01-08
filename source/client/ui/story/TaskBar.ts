@@ -18,14 +18,16 @@
 import System from "@ff/graph/System";
 
 import "@ff/ui/Button";
+import  "@ff/ui/Dropdown";
 import Button, { IButtonClickEvent } from "@ff/ui/Button";
-
 import SystemView, { customElement, html } from "@ff/scene/ui/SystemView";
 
 import CVStoryApplication from "../../components/CVStoryApplication";
 import CVTaskProvider, { ETaskMode, IActiveTaskEvent, ITaskSetEvent } from "../../components/CVTaskProvider";
 import CVAssetReader from "../../components/CVAssetReader";
 import CVLanguageManager from "client/components/CVLanguageManager";
+import { IMenuItem } from "@ff/ui/Menu";
+import CVSetup from "client/components/CVSetup";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,25 +79,37 @@ export default class TaskBar extends SystemView
         const activeTask = this.taskProvider.activeComponent;
         const taskMode = this.taskProvider.ins.mode.value;
         const taskModeText = this.taskProvider.ins.mode.getOptionText();
-        const downloadButtonVisible = taskMode !== ETaskMode.Standalone;
         const exitButtonVisible = taskMode !== ETaskMode.Standalone;
         const languageManager = this.language;
         const saveName = languageManager.getUILocalizedString(taskMode !== ETaskMode.Standalone ? "Save" : "Download");
+
+        const saveOptions :IMenuItem[] = [
+            {name: "download", icon:"download", text:languageManager.getLocalizedString("Download")}
+        ];
+        if(taskMode !== ETaskMode.Standalone){
+            saveOptions.unshift(
+                {name: "save", icon: "save", text: saveName},
+                {name: "capture", icon: "save", text: languageManager.getLocalizedString("Save State")},
+            );
+        }
+
         return html`
             <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
             <div class="sv-mode ff-text">${taskModeText}</div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
-            <div class="ff-flex-row ff-group" @click=${this.onClickTask}>
+            <div class="ff-flex-row ff-group ff-scroll-x" @click=${this.onClickTask}>
                 ${tasks.map((task, index) => html`<ff-button text=${languageManager.getUILocalizedString(task.text)} icon=${task.icon} index=${index} ?selected=${task === activeTask}></ff-button>`)}
             </div>
             <div class="sv-divider"></div>
             <div class="sv-spacer"></div>
             <div class="sv-divider"></div>
-            <div class="ff-flex-row ff-group">
-                <ff-button text=${saveName} icon="save" @click=${this.onClickSave}></ff-button>
-                ${downloadButtonVisible ? html`<ff-button text="${languageManager.getUILocalizedString("Download")}" icon="download" @click=${this.onClickDownload}></ff-button>` : null}
-                ${exitButtonVisible ? html`<ff-button text="${languageManager.getUILocalizedString("Exit")}" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
+            <div class="ff-flex-row ff-group" style="min-width:100px">
+                ${1 < saveOptions.length? 
+                    html`<ff-dropdown caret text="${saveName}" icon="save" @select=${this.onSelectSave} .items=${saveOptions}></ff-dropdown>`
+                  : html`<ff-button text="${saveOptions[0].text}" icon="${saveOptions[0].icon}" @click=${()=>this.onSelectSave(new CustomEvent("select", {detail: {item: saveOptions[0]}}))}></ff-button>`
+                }
+                ${exitButtonVisible ? html`<ff-button text="${languageManager.getLocalizedString("Exit")}" icon="exit" @click=${this.onClickExit}></ff-button>` : null}
             </div>
         `;
     }
@@ -108,9 +122,21 @@ export default class TaskBar extends SystemView
         }
     }
 
-    protected onClickSave()
-    {
-        this.story.ins.save.set();
+    protected onSelectSave(event :{detail: {item: IMenuItem}}){
+        switch(event.detail.item.name){
+            case "save":
+                this.story.ins.save.set();
+                break;
+            case "capture":
+                this.system.getComponent(CVSetup).ins.saveState.set();
+                this.story.ins.save.set();
+                break;
+            case "download":
+                this.story.ins.download.set();
+                break;
+            default:
+                console.warn("Unhandled save method : ", event.detail.item.name);
+        }
     }
 
     protected onClickDownload()

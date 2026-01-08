@@ -63,7 +63,7 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
 
         return html`<div class="sv-label">${languageManager.getUILocalizedString("Scene State")}</div>
             <div class="sv-commands">
-                <ff-button text="${languageManager.getUILocalizedString("Capture")}" icon="camera" @click=${this.onClickTake}></ff-button>
+                <ff-button text="${languageManager.getUILocalizedString("Save")}" icon="camera" @click=${this.onClickTake}></ff-button>
                 <ff-button text="${languageManager.getUILocalizedString("View")}" icon="document" @click=${this.onClickRestore}></ff-button>
             </div>
             <div class="sv-label">${languageManager.getUILocalizedString("Thumbnail Images")}</div>
