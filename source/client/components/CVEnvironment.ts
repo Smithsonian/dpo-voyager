@@ -282,7 +282,7 @@ export default class CVEnvironment extends Component
             if (!file) return;
 
             const fileName = file.name;
-            const assetPath = `/images/${fileName}`;
+            const assetPath = `images/${fileName}`;
 
             if (await this.assetExists(assetPath)) {
                 Notification.show(`Environment map "${fileName}" already exists. Skipping upload.`, "info");
