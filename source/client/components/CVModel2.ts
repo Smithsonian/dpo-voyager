@@ -881,6 +881,11 @@ export default class CVModel2 extends CObject3D
         
         this._loadingDerivative = derivative;
 
+        // set asset manager flag for initial model load
+        if(!this.assetManager.initialLoad && !this._activeDerivative) {
+            this.assetManager.initialLoad = true; 
+        }
+
         return derivative.load(this.assetReader)
             .then(() => {
                 if ( !derivative.model
@@ -897,11 +902,6 @@ export default class CVModel2 extends CObject3D
                 if(this._activeDerivative && this._activeDerivative == derivative){
                     //a race condition can happen where a derivative fires it's callback but it's already the active one.
                     return;
-                }
-
-                // set asset manager flag for initial model load
-                if(!this.assetManager.initialLoad && !this._activeDerivative) {
-                    this.assetManager.initialLoad = true; 
                 }
 
                 this.unload();

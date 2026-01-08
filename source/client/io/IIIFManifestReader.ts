@@ -28,8 +28,6 @@ import CLight from "@ff/scene/components/CLight";
 import { EProjection } from "@ff/three/UniversalCamera";
 import CVEnvironmentLight from "client/components/lights/CVEnvironmentLight";
 import CVAmbientLight from "client/components/lights/CVAmbientLight";
-import { AnnotationMotivation } from "@iiif/vocabulary";
-import { Annotation as IIIFAnnotation } from "@iiif/3d-manifesto-dev";
 import { EEasingCurve } from "@ff/core/easing";
 import sanitizeHtml from 'sanitize-html';
 import { Matrix4, Vector3, Euler, Mesh, MeshStandardMaterial, BufferGeometry, BufferAttribute, DoubleSide, Color } from "three";
@@ -72,8 +70,6 @@ export default class IIIFManifestReader {
         activeDoc.object3D.userData["IIIFManifest"] = iiifManifest;
 
         const cvScene = activeDoc.getInnerComponent(CVScene);
-        //const vScene = activeDoc.getComponent(CScene);
-        //const activeCamera = vScene.activeCamera;
         const setup = activeDoc.setup;
 
         iiifManifest.loadManifest().then(() => {

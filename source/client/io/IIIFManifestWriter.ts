@@ -323,21 +323,23 @@ export default class IIIFManifestWriter {
             }
 
             if (child.light) {
+                const light = child.light;
+
                 // check unhandled light types
-                if(IIIFManifestWriter.iiifUnhandledLights.includes(child.light.typeName)) {
+                if(IIIFManifestWriter.iiifUnhandledLights.includes(light.typeName) || !light.ins.enabled.value) {
                     return;
                 }
 
                 // add source
-                _color.setRGB(child.light.ins.color.value[0],child.light.ins.color.value[1],child.light.ins.color.value[2]);
+                _color.setRGB(light.ins.color.value[0],light.ins.color.value[1],light.ins.color.value[2]);
                 const source = {
                     id: "https://example.org/iiif/3d/lights/1",
-                    type: child.light.typeName.substring(2),
-                    label: {"en": [child.light.node.name]},
+                    type: light.typeName.substring(2),
+                    label: {"en": [light.node.name]},
                     color: "#"+_color.getHexString("srgb-linear"),
-                    intensity: {"type": "Value", "value": child.light.ins.intensity.value, "unit": "relative"}
+                    intensity: {"type": "Value", "value": light.ins.intensity.value, "unit": "relative"}
                 };
-                child.light.typeName == "CVSpotLight" ? source["angle"] = (child.light as CVSpotLight).ins.angle.value : null;
+                light.typeName == "CVSpotLight" ? source["angle"] = (light as CVSpotLight).ins.angle.value : null;
                 annotation.body["source"] = source;
 
                 // add transform
