@@ -18,6 +18,7 @@
 import { PMREMGenerator, WebGLRenderTarget, Texture, Euler } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { IEnvironment } from "client/schema/setup";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
@@ -25,10 +26,10 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { DEG2RAD } from "three/src/math/MathUtils";
 import CVBackground from "./CVBackground";
 import CVMeta from "./CVMeta";
-import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 
+import Notification from "@ff/ui/Notification";
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
 
@@ -44,6 +45,7 @@ export default class CVEnvironment extends Component
     protected static readonly envIns = {
         imageIndex: types.Integer("Environment.Map", { preset: 0, options: images }),
         initialize: types.Event("Environment.Init"),
+        uploadMap: types.Event("Environment.Upload"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
         visible: types.Boolean("Environment.Visible", false),
@@ -65,12 +67,20 @@ export default class CVEnvironment extends Component
             this.ins.intensity,
             this.ins.rotation,
             this.ins.imageIndex,
+            this.ins.uploadMap,
             this.ins.visible
         ];
     }
 
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
+    }
+    protected get assetWriter() {
+        const CVAssetWriter = require("./CVAssetWriter").default;
+        return this.getMainComponent(CVAssetWriter);
     }
     protected get background() {
         return this.getSystemComponent(CVBackground);
@@ -124,6 +134,10 @@ export default class CVEnvironment extends Component
             if(!this.graph.hasComponent(CVEnvironmentLight)) {
                 this.addLightComponent(false);
             }
+        }
+
+        if(ins.uploadMap.changed) {
+            this.uploadEnvironmentMap();
         }
 
         if(ins.imageIndex.changed && (ins.enabled.value || ins.visible.value))
@@ -249,6 +263,50 @@ export default class CVEnvironment extends Component
         this._loadingCount--;
     }
 
+    private async assetExists(assetPath: string): Promise<boolean> {
+        const url = this.assetManager.getAssetUrl(assetPath);
+        return fetch(url, { method: "HEAD" })
+            .then(response => response.ok)
+            .catch(() => {
+                console.error(`Failed to check existence of asset at ${url}`);
+                return false;
+            });
+    }
+    
+    uploadEnvironmentMap() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.hdr,.exr';
+        input.onchange = async (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+
+            const fileName = file.name;
+            const assetPath = `/images/${fileName}`;
+
+            if (await this.assetExists(assetPath)) {
+                Notification.show(`Environment map "${fileName}" already exists. Skipping upload.`, "info");
+                return;
+            }
+
+            const contentType = fileName.endsWith('.hdr') ? 'image/vnd.radiance' : 'image/x-exr';
+
+            this.assetWriter.put(file, contentType, assetPath).then(() => {
+                if (!this._imageOptions.includes(assetPath)) {
+                    this._imageOptions.push(assetPath);
+                }
+                this.ins.imageIndex.setOptions(this._imageOptions);
+
+                // Set the new index and let loadEnvironmentMap load from disk
+                this.ins.imageIndex.setValue(this._imageOptions.length - 1);
+                Notification.show(`Environment map "${fileName}" uploaded successfully.`, "success");
+            }).catch((error: any) => {
+                console.error('Failed to save environment map:', error);
+            });
+        }
+        input.click();
+    }
+
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
     {
         const meta = event.object;
@@ -268,8 +326,9 @@ export default class CVEnvironment extends Component
     }
     
     protected addLightComponent(enabled: boolean) {
-        const lightNode = this.graph.findNodeByName("Lights") as NVNode;
-        const childNode = lightNode.graph.createCustomNode(lightNode as NVNode) as NVNode;
+        const NVNode = require("client/nodes/NVNode").default;
+        const lightNode = this.graph.findNodeByName("Lights") as any;
+        const childNode = lightNode.graph.createCustomNode(lightNode) as any;
         const envLight = childNode.transform.createComponent(CVEnvironmentLight);
         envLight.ins.enabled.setValue(enabled);
         lightNode.transform.addChild(childNode.transform);
