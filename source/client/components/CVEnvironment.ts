@@ -27,6 +27,7 @@ import { DEG2RAD } from "three/src/math/MathUtils";
 import CVBackground from "./CVBackground";
 import CVMeta from "./CVMeta";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import { IAssetEntry } from "@ff/scene/components/CAssetManager";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 
 import Notification from "@ff/ui/Notification";
@@ -134,6 +135,7 @@ export default class CVEnvironment extends Component
             if(!this.graph.hasComponent(CVEnvironmentLight)) {
                 this.addLightComponent(false);
             }
+            this.scanImagesDirectory();
         }
 
         if(ins.uploadMap.changed) {
@@ -271,6 +273,63 @@ export default class CVEnvironment extends Component
                 console.error(`Failed to check existence of asset at ${url}`);
                 return false;
             });
+    }
+    
+    private async scanImagesDirectory() {
+        try {
+            const media = this.getMainComponent("CVMediaManager") as any;
+            // Ensure asset tree is available
+            if (!media.root) {
+                await media.refresh();
+            }
+
+            const findFolder = (entry: IAssetEntry, name: string): IAssetEntry | null => {
+                if (!entry || !entry.children) return null;
+                for (const child of entry.children) {
+                    if (child.info.folder && child.info.name === name) {
+                        return child;
+                    }
+                }
+                return null;
+            };
+
+            const imagesFolder = findFolder(media.root, "images");
+            if (!imagesFolder) {
+                // No images folder at root; nothing to scan
+                return;
+            }
+
+            const envMapFiles: string[] = this.collectFiles(imagesFolder);
+
+            if (envMapFiles.length > 0) {
+                this._imageOptions.push(...envMapFiles);
+                this.ins.imageIndex.setOptions(this._imageOptions);
+            }
+        } catch (error) {
+            console.log('Could not scan images directory:', error);
+        }
+    }
+
+    private collectFiles(entry: IAssetEntry): string[] {
+        const envMapFiles: string[] = [];
+
+        for (const child of entry.children) {
+            if (child.info.folder) {
+                envMapFiles.push(...this.collectFiles(child));
+            } else {
+                const name = child.info.name || "";
+
+                if (name.toLowerCase().endsWith(".hdr") || name.toLowerCase().endsWith(".exr")) {
+                    const assetPath = child.info.path;
+                    if (!this._imageOptions.includes(assetPath) && !images.includes(name)) {
+                        envMapFiles.push(assetPath);
+                    }
+                } else {
+                    console.debug(`Skipping non-environment map file: ${name}`);
+                }
+            }
+        }
+        return envMapFiles;
     }
     
     uploadEnvironmentMap() {
