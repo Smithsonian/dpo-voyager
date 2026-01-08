@@ -30,6 +30,15 @@ export default class PropertyEvent extends PropertyBase
     @property({type: String})
     icon :string;
 
+    /**
+     * Map event names to icon names.
+     * @type {Object.<string, string>}
+     * @example
+     * const iconName = this.ICON_MAP[this.name] || this.DEFAULT_ICON;
+     */
+    private _ICON_MAP = { upload: "upload" };
+    private _DEFAULT_ICON: string = "zoom";
+
     protected firstConnected()
     {
         super.firstConnected();
@@ -59,13 +68,16 @@ export default class PropertyEvent extends PropertyBase
 
     protected render()
     {
+
         const property = this.property;
         const name = this.name || property.name;
         const text = this.text;
 
+        this.icon = this.icon || this._ICON_MAP[name.toLowerCase()] || this._DEFAULT_ICON;
+
         return html`<label id="${name}-label" class="ff-label ff-off">${name}</label>
             <div class="sv-options">
-                <ff-button ?disabled=${this.ariaDisabled === "true"} aria-labelledby="${name}-label" icon="zoom" .text=${text} @click=${this.onButtonClick}></ff-button>
+                <ff-button ?disabled=${this.ariaDisabled === "true"} aria-labelledby="${name}-label" icon=${this.icon} .text=${text} @click=${this.onButtonClick}></ff-button>
             </div>`;
     }
 
