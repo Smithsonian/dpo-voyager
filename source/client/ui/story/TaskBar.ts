@@ -84,14 +84,15 @@ export default class TaskBar extends SystemView
         const saveName = languageManager.getUILocalizedString(taskMode !== ETaskMode.Standalone ? "Save" : "Download");
 
         const saveOptions :IMenuItem[] = [
-            {name: "download", icon:"download", text:languageManager.getLocalizedString("Download")}
+            {name: "save", icon: "save", text: saveName}
         ];
         if(taskMode !== ETaskMode.Standalone){
-            saveOptions.unshift(
-                {name: "save", icon: "save", text: saveName},
+            saveOptions.push(
                 {name: "capture", icon: "save", text: languageManager.getLocalizedString("Save State")},
+                {name: "download", icon:"download", text:languageManager.getLocalizedString("Download")},
             );
         }
+        saveOptions.push({name: "iiif", icon:"download", text:languageManager.getLocalizedString("IIIF")});
 
         return html`
             <img class="sv-story-logo" src=${this.assetReader.getSystemAssetUrl("images/voyager-75grey.svg")} alt="Logo"/>
@@ -134,14 +135,12 @@ export default class TaskBar extends SystemView
             case "download":
                 this.story.ins.download.set();
                 break;
+            case "iiif":
+                this.story.ins.iiif.set();
+                break;
             default:
                 console.warn("Unhandled save method : ", event.detail.item.name);
         }
-    }
-
-    protected onClickDownload()
-    {
-        this.story.ins.download.set();
     }
 
     protected onClickExit()

@@ -284,7 +284,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             }
         }
 
-        if(filename.toLowerCase().endsWith(".jpg") || filename.toLowerCase().endsWith(".png")) {
+        if(filename.toLowerCase().endsWith(".jpg") || filename.toLowerCase().endsWith(".png") || filename.toLowerCase().endsWith(".gif")) {
             if(newFile !== null) {
                 const mediaManager = this.system.getMainComponent(CVMediaManager);
                 mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => imageProp.setValue(filename)).catch(e => {
@@ -297,7 +297,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             }
         }
         else {
-            Notification.show(`Unable to load - Only .jpg and .png files are currently supported.`, "warning");
+            Notification.show(`Unable to load - Only .jpg, .png, and .gif files are currently supported.`, "warning");
         }
 
         element.classList.remove("sv-drop-zone");

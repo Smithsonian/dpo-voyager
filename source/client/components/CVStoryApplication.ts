@@ -49,6 +49,7 @@ export default class CVStoryApplication extends Component
         exit: types.Event("Application.Exit"),
         save: types.Event("Document.Save"),
         download: types.Event("Document.Download"),
+        iiif: types.Event("Document.IIIF")
     };
 
     ins = this.addInputs(CVStoryApplication.ins);
@@ -128,7 +129,7 @@ export default class CVStoryApplication extends Component
                 }
                 else {
                     // Standalone save
-                    /*const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
+                    const fileManager : CVStandaloneFileManager = this.standaloneFileManager;
                     const saveFiles = [];
 
                     const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
@@ -142,22 +143,19 @@ export default class CVStoryApplication extends Component
                     downloadZip(saveFiles).blob().then(blob => { // await for async
                         const bloburl = URL.createObjectURL(blob);
                         download.url(bloburl, "voyager-scene.zip");
-                    });*/
-
-                    const json = this.IIIFWriter.constructIIIFManifest(cvDocument);//console.log(json);
-                    const fileName = "voyager_iiif.json";
-                    download.json(json, fileName);
+                    });
                 }
             }
 
             if (ins.download.changed) {
-                /*const data = cvDocument.deflateDocument(components);
+                const data = cvDocument.deflateDocument(components);
                 const json = JSON.stringify(data, null, 2);
 
                 const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
-                download.json(json, fileName);*/
-                
+                download.json(json, fileName);
+            }
 
+            if (ins.iiif.changed) {
                 const json = this.IIIFWriter.constructIIIFManifest(cvDocument);//console.log(json);
                 const fileName = "voyager_iiif.json";
                 download.json(json, fileName);
