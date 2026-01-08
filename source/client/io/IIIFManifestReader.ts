@@ -67,7 +67,6 @@ export default class IIIFManifestReader {
         const assetReader = app.system.getMainComponent(CVAssetReader);
         const activeDoc = docProvider.activeComponent;
         const iiifManifest = new IIIFManifest(data);
-        activeDoc.object3D.userData["IIIFManifest"] = iiifManifest;
 
         const cvScene = activeDoc.getInnerComponent(CVScene);
         const setup = activeDoc.setup;
@@ -140,7 +139,6 @@ export default class IIIFManifestReader {
                 const newModel = activeDoc.appendModel(model.isSpecificResource() ? model.getSource()?.id : model.id);
                 models.push(newModel);
                 newModel.ins.localUnits.setValue(EUnitType.mm);
-                newModel.object3D.userData["IIIFid"] = annotation.id;
 
                 const modelLabel = model.getLabelFromSelfOrSource().getValue();
                 newModel.node.name = modelLabel ?? "Model";
@@ -189,7 +187,6 @@ export default class IIIFManifestReader {
                         (newLight as CLight).ins.intensity.setValue(lightBody.getIntensity());
                         const lightColor = lightBody.getColor().value;
                         (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);
-                        newLight.object3D.userData["IIIFid"] = light.id;
 
                         // Handle transform
                         const transform = this.getIIIFBodyTransform(lightBody, light);
@@ -250,8 +247,6 @@ export default class IIIFManifestReader {
                 }
                 vCamera.ins.projection.setValue(cameraBody.isPerspectiveCamera() ? 
                     EProjection.Perspective : EProjection.Orthographic);
-
-                vCamera.object3D.userData["IIIFid"] = camera.id;
             }
 
             // handle comments
