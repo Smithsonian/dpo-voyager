@@ -276,7 +276,7 @@ export default class CVEnvironment extends Component
     uploadEnvironmentMap() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.hdr,.exr';
+        input.accept = '.hdr'; // TODO: add .exr when supported
         input.onchange = async (e: Event) => {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (!file) return;
