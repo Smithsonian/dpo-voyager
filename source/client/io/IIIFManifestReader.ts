@@ -67,6 +67,7 @@ export default class IIIFManifestReader {
         const assetReader = app.system.getMainComponent(CVAssetReader);
         const activeDoc = docProvider.activeComponent;
         const iiifManifest = new IIIFManifest(data);
+        let manifestJson = null;
 
         const cvScene = activeDoc.getInnerComponent(CVScene);
         const setup = activeDoc.setup;
@@ -444,6 +445,10 @@ export default class IIIFManifestReader {
                             );
                             cvScene.object3D.add(canvasMesh);
 
+                            // TODO: Get rid of this hack when we can support canvases as scenegraph nodes
+                            manifestJson ??= JSON.parse(iiifManifest.manifestJson);
+                            canvasMesh.userData["IIIFCanvas"] = manifestJson["items"].find(item => item.id === canvasId);
+
                             if(bgColor) {
                                 _color.set(bgColor);
                                 canvasMesh.material.onBeforeCompile = (shader) => {
@@ -458,6 +463,14 @@ export default class IIIFManifestReader {
                                     )
                                 }
                             }
+
+                            /*const modelNode = activeDoc.innerGraph.createCustomNode(NVNode);
+                            cvScene.transform.addChild(modelNode.transform);
+                            modelNode.createModel();
+
+                            const model = modelNode.model;
+                            model.object3D.add(canvasMesh);
+                            //model.registerPickableObject3D(canvasMesh, true);*/
                         });
                     }
                 }

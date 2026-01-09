@@ -19,7 +19,7 @@ import math from "@ff/three/math";
 import NVNode from "client/nodes/NVNode";
 import CVSpotLight from "client/components/lights/CVSpotLight";
 import { EProjection } from "@ff/three/UniversalCamera";
-import { Matrix4, Vector3, Euler, Color, Quaternion } from "three";
+import { Matrix4, Vector3, Euler, Color, Quaternion, Mesh } from "three";
 import { ELanguageType } from "client/schema/common";
 import CVAnnotationView from "client/components/CVAnnotationView";
 import CVDocument from "client/components/CVDocument";
@@ -97,6 +97,47 @@ export default class IIIFManifestWriter {
 
         // serialize node tree
         this.parseChildNodes(cvDocument, cvDocument.root.transform.children, annotationPage, commentPage);
+
+        // look for IIIF canvases to export
+        // TODO: Get rid of userData hack when we can support canvases as scenegraph nodes
+        cvDocument.root.scene.object3D.traverse(node => {
+            if (node.type === "Mesh" && node.userData["IIIFCanvas"]) {
+                const canvasObj = node.userData["IIIFCanvas"];
+                jsonObj["items"].push(canvasObj);
+
+                let selector = "POLYGONZ((";
+                (node as Mesh).geometry.attributes.position.array.forEach((point, idx) => {
+                    selector += this.roundNumber(point, 6).toString();
+                    selector += idx % 3 === 2 && idx != 11 ? ", " : " ";
+                });
+                selector = selector.trim() + "))";
+
+                const canvasAnno = {
+                    id: "https://example.org/iiif/3d/anno"+(annotationPage["items"].length+1),
+                    type: "Annotation",
+                    motivation: ["painting"],
+                    body: { 
+                        id: canvasObj.id,
+                        type: "Canvas"
+                    },
+                    target: {
+                        type: "SpecificResource",
+                        source: [{
+                            id: iiifScene.id,
+                            type: "Scene"
+                        }],
+                        selector: [
+                            {
+                                type: "PolygonZSelector",
+                                value: selector
+                            }
+                        ]
+                    }                            
+                };
+
+                annotationPage["items"].push(canvasAnno);
+            }
+        });
 
         // remove comment page element if items are empty
         if(commentPage["items"].length == 0) {
