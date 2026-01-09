@@ -212,7 +212,7 @@ export default class CVAudioManager extends Component
     }
 
     setTimeElapsed(time: number) {
-        if(this.audioPlayer && this.audioView) { 
+        if(this.audioPlayer) { 
             if(this.audioPlayer.seekable.length === 0) {
                 this.audioPlayer.addEventListener("canplay",() => this.setTimeElapsed(time), {once: true});
             }      
@@ -370,14 +370,14 @@ export default class CVAudioManager extends Component
                 //this.audioPlayer.load();
             }
 
+            if(this.audioPlayer.children[0]) {
+                this.audioPlayer.children[0].remove();
+            }
+
             // Set caption track source
             const captionUri = clip.captionUris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
             if(captionUri && (this.audioPlayer.children.length == 0 || 
                 (this.audioPlayer.children[0] as HTMLTrackElement).src != this.assetManager.getAssetUrl(captionUri))) {
-
-                if(this.audioPlayer.children[0]) {
-                    this.audioPlayer.children[0].remove();
-                }
 
                 const textTrack = document.createElement('track');
                 this.audioPlayer.append(textTrack);
@@ -429,10 +429,8 @@ export default class CVAudioManager extends Component
     // Handle audio time elapsed updates
     protected onTimeChange = (event: Event) =>
     {
-        if(this.audioView) {
-            this.audioView.elapsed = this.getTimeElapsed();
-            this.audioView.requestUpdate();
-        }
+        this.audioView.elapsed = this.getTimeElapsed();
+        this.audioView.requestUpdate();
     }
 
     protected onLanguageChange() {
