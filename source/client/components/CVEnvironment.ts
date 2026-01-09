@@ -355,9 +355,6 @@ export default class CVEnvironment extends Component
                     this._imageOptions.push(assetPath);
                 }
                 this.ins.imageIndex.setOptions(this._imageOptions);
-
-                // Set the new index and let loadEnvironmentMap load from disk
-                this.ins.imageIndex.setValue(this._imageOptions.length - 1);
                 Notification.show(`Environment map "${fileName}" uploaded successfully.`, "success");
             }).catch((error: any) => {
                 console.error('Failed to save environment map:', error);
