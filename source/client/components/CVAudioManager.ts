@@ -163,9 +163,9 @@ export default class CVAudioManager extends Component
         return clip ? clip.captionUris[ELanguageType[this.language.outs.activeLanguage.value]] : null;
     }
 
-    getDuration(id: string, inLanguage?: string) {
+    getDuration(id: string) {
         const clip = this.audioClips[id];
-        const language = inLanguage || ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
+        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
         const cachedDuration = clip.durations[language];
         if(cachedDuration) {
             return cachedDuration;
@@ -244,10 +244,8 @@ export default class CVAudioManager extends Component
 
     updateAudioClip(id: string)
     {
-        Object.keys(this.getAudioClip(id).uris).forEach(langKey => {
-            this.getDuration(id, langKey);
-        });
-        
+        this.audioClips[id].durations = {};
+        this.getDuration(id);
         this.outs.updated.set();
     }
 
