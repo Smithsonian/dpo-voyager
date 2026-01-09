@@ -162,12 +162,12 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
 
         const ext = filename.toLowerCase().split(".").pop();
         if(type === "subs" && ext != "vtt"){
-            Notification.show(`Unable to load - Only ${type === "subs"?".vtt":".mp3,.m4a"} files are currently supported.`, "warning");
+            Notification.show(`Unable to load - Only .vtt files are currently supported.`, "warning");
         }else if(type === "audio" && ["mp3","m4a","flac","ogg","wav"].indexOf(ext) === -1){
             Notification.show(`Unable to load - Unsupported audio format .${ext}`, "warning");
         }else{
-            if(type === "audio" && ext !== "mp3" && ext != "wav"){
-                // Only mp3 and wav have 100% browser support
+            if(type === "audio" && ext === "m4a"){
+                // Only m4a does not have 100% browser support
                 Notification.show(`.${ext} audio file are not supported by some browsers`, "info", 3000);
             }
             if(newFile !== null) {
