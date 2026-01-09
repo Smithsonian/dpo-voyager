@@ -234,14 +234,16 @@ export default class CVEnvironment extends Component
                 ? this.assetReader.getSystemTexture.bind(this.assetReader, "images/" + mapName)
                 : this.assetReader.getTexture.bind(this.assetReader, mapName);  // model-specific map
 
-            texture_getter().then((texture: Texture) => {
-                this.updateEnvironmentMap(texture, mapName);
-                this._loadingCount++;
-            }).catch((error: Error) => {
-                Notification.show(`Failed to load environment map ${mapName}: ${error}`, "error");
-                ins.imageIndex.value = this._currentIdx;
-            });
-            this._currentIdx = ins.imageIndex.value;
+            this._loadingCount++;
+            texture_getter()
+                .then((texture: Texture) => {
+                    this.updateEnvironmentMap(texture, mapName);
+                })
+                .catch((error: Error) => {
+                    Notification.show(`Failed to load environment map '${mapName}': ${error.message || error}`, "warning");
+                    this.ins.imageIndex.setValue(this._currentIdx);
+                    this._loadingCount--;
+                });
         }
     }
 
@@ -257,6 +259,7 @@ export default class CVEnvironment extends Component
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
+            this._currentIdx = mapIdx;
         }
 
         texture.dispose();
