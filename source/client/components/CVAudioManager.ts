@@ -204,7 +204,7 @@ export default class CVAudioManager extends Component
 
     getTimeElapsed() {
         if(this.audioPlayer) {
-            return Math.floor(this.audioPlayer.currentTime);
+            return Math.round(this.audioPlayer.currentTime * Math.pow(10, 3)) / Math.pow(10, 3);
         }
         else {
             return 0;
@@ -245,6 +245,7 @@ export default class CVAudioManager extends Component
 
     updateAudioClip(id: string)
     {
+        this.audioClips[id].durations = {};
         this.getDuration(id);
         this.outs.updated.set();
     }
@@ -479,7 +480,7 @@ export class AudioView extends CustomElement
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {
