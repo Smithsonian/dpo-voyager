@@ -230,22 +230,17 @@ export default class CVEnvironment extends Component
 
             const mapName = this._imageOptions[ins.imageIndex.value];
 
-            if(images.includes(mapName)) {
-                this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
-                    this._loadingCount++;
-                }).catch((error: any) => {
-                    Notification.show(`Failed to load environment map ${mapName}: ${error}`, "error");
-                });
-            }
-            else {
-                this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
-                    this._loadingCount++;
-                }).catch((error: any) => {
-                    Notification.show(`Failed to load environment map ${mapName}: ${error}`, "error");
-                });
-            }
+            const texture_getter = images.includes(mapName)
+                ? this.assetReader.getSystemTexture.bind(this.assetReader, "images/" + mapName)
+                : this.assetReader.getTexture.bind(this.assetReader, mapName);  // model-specific map
+
+            texture_getter().then((texture: Texture) => {
+                this.updateEnvironmentMap(texture, mapName);
+                this._loadingCount++;
+            }).catch((error: Error) => {
+                Notification.show(`Failed to load environment map ${mapName}: ${error}`, "error");
+                ins.imageIndex.value = this._currentIdx;
+            });
             this._currentIdx = ins.imageIndex.value;
         }
     }
