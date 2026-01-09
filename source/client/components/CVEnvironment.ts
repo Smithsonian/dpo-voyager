@@ -231,15 +231,19 @@ export default class CVEnvironment extends Component
             const mapName = this._imageOptions[ins.imageIndex.value];
 
             if(images.includes(mapName)) {
-                this._loadingCount++;
                 this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
                     this.updateEnvironmentMap(texture, mapName);
+                    this._loadingCount++;
+                }).catch((error: any) => {
+                    Notification.show(`Failed to load environment map ${mapName}: ${error}`, "error");
                 });
             }
             else {
-                this._loadingCount++;
                 this.assetReader.getTexture(mapName).then(texture => {
                     this.updateEnvironmentMap(texture, mapName);
+                    this._loadingCount++;
+                }).catch((error: any) => {
+                    Notification.show(`Failed to load environment map ${mapName}: ${error}`, "error");
                 });
             }
             this._currentIdx = ins.imageIndex.value;
