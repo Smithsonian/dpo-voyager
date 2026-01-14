@@ -62,7 +62,7 @@ export default class IIIFManifestWriter {
 
         const jsonObj = {};
         jsonObj["@context"] = "http://iiif.io/api/presentation/4/context.json";
-        jsonObj["id"] = "https://example.org/iiif/3d/model_origin.json";
+        jsonObj["id"] = "https://example.org/iiif/3d/3d_scene.json";
         jsonObj["type"] = "Manifest";
         jsonObj["label"] = {};
         // add summary if available
@@ -78,7 +78,7 @@ export default class IIIFManifestWriter {
         }); 
 
         const iiifScene = jsonObj["items"][0];
-        iiifScene["id"] = "https://example.org/iiif/scene1/page/p1/1";
+        iiifScene["id"] = "https://example.org/iiif/scene1";
         iiifScene["type"] = "Scene";
         iiifScene["label"] = { "en": [cvDocument.root.name || "3D Scene"] };
         iiifScene["backgroundColor"] = "#"+_color.getHexString("srgb-linear");
@@ -96,7 +96,7 @@ export default class IIIFManifestWriter {
         commentPage["items"] = [];
 
         // serialize node tree
-        this.parseChildNodes(cvDocument, cvDocument.root.transform.children, annotationPage, commentPage);
+        this.parseChildNodes(cvDocument, cvDocument.root.transform.children, iiifScene, annotationPage, commentPage);
 
         // look for IIIF canvases to export
         // TODO: Get rid of userData hack when we can support canvases as scenegraph nodes
@@ -147,7 +147,7 @@ export default class IIIFManifestWriter {
         return JSON.stringify(jsonObj, null, 2);
     }
 
-    protected parseChildNodes(cvDocument, nodes, annotationPage, commentPage) {
+    protected parseChildNodes(cvDocument, nodes, scene, annotationPage, commentPage) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
         const setup = cvDocument.setup;
         //const sceneDefaultLang = ELanguageType[setup.language.ins.primarySceneLanguage.value];
@@ -161,7 +161,7 @@ export default class IIIFManifestWriter {
                 target: {
                     type: "SpecificResource",
                     source: [{
-                        id: annotationPage.id,
+                        id: scene.id,
                         type: "Scene"
                     }]
                 }                            
@@ -198,7 +198,7 @@ export default class IIIFManifestWriter {
                             "type": "SpecificResource",
                             "source": [
                                 {
-                                    "id": annotationPage["id"],
+                                    "id": scene["id"],
                                     "type": "Scene"
                                 }
                             ],
@@ -240,7 +240,7 @@ export default class IIIFManifestWriter {
                             target: {
                                 type: "SpecificResource",
                                 source: [{
-                                    id: annotationPage.id,
+                                    id: scene.id,
                                     type: "Scene"
                                 }]
                             }                            
@@ -392,7 +392,7 @@ export default class IIIFManifestWriter {
             }
 
             if (child.transform.children) {
-                this.parseChildNodes(cvDocument, child.transform.children, annotationPage, commentPage);
+                this.parseChildNodes(cvDocument, child.transform.children, scene, annotationPage, commentPage);
             }
         });
     }

@@ -189,8 +189,8 @@ export default class MainView extends CustomElement
                 this.connected();
             }
         }
-        else if(app && name === "document") {
-            app.props.document = this.getAttribute("document");
+        else if(app && (name === "document" || name === "iiif-content")) {
+            app.props.document = this.getAttribute(name);
             app.reloadDocument();
             this.connected();
         }

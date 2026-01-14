@@ -280,7 +280,7 @@ Version: ${ENV_VERSION}
         props.root = props.root || qs.get("root") || qs.get("r");
         props.dracoRoot = props.dracoRoot || qs.get("dracoRoot") || qs.get("dr");
         props.resourceRoot = props.resourceRoot || qs.get("resourceRoot") || qs.get("rr");
-        props.document = props.document || qs.get("document") || qs.get("d");
+        props.document = props.document || qs.get("document") || qs.get("d") || qs.get("iiif-content");
         props.model = props.model || qs.get("model") || qs.get("m");
         props.geometry = props.geometry || qs.get("geometry") || qs.get("g");
         props.texture = props.texture || qs.get("texture") || qs.get("t");

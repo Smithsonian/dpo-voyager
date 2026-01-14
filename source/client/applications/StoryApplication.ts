@@ -153,12 +153,13 @@ export default class StoryApplication
         props.dragdrop = props.dragdrop || false; 
         props.uiLang = props.uiLang || qs.get("uiLang");
 
-        // If in standalone mode, remove root and document params that may be present
+        // If in standalone mode, remove root, document, and iiif-content params that may be present
         const modeText = props.mode.toLowerCase();
         if (modeText.startsWith("stand")) {
             const revisedUrl = new URL(window.location.href);
             revisedUrl.searchParams.delete("root");
             revisedUrl.searchParams.delete("document");
+            revisedUrl.searchParams.delete("iiif-content");
             window.history.replaceState(null,null,revisedUrl);
             this.explorer.props.root = null;
             this.explorer.props.document = null;
