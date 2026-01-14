@@ -57,6 +57,12 @@ export default class IIIFManifestWriter {
 
     constructIIIFManifest(cvDocument: CVDocument) : string {
         const background = cvDocument.getInnerComponents(CVBackground)[0];
+        const counts = {
+            anno: 0,
+            page: 2,
+            light: 0,
+            camera: 0
+        };
 
         _color.setRGB(background.ins.color0.value[0],background.ins.color0.value[1],background.ins.color0.value[2]);
 
@@ -96,7 +102,7 @@ export default class IIIFManifestWriter {
         commentPage["items"] = [];
 
         // serialize node tree
-        this.parseChildNodes(cvDocument, cvDocument.root.transform.children, iiifScene, annotationPage, commentPage);
+        this.parseChildNodes(cvDocument, cvDocument.root.transform.children, iiifScene, annotationPage, commentPage, counts);
 
         // look for IIIF canvases to export
         // TODO: Get rid of userData hack when we can support canvases as scenegraph nodes
@@ -113,7 +119,7 @@ export default class IIIFManifestWriter {
                 selector = selector.trim() + "))";
 
                 const canvasAnno = {
-                    id: "https://example.org/iiif/3d/anno"+(annotationPage["items"].length+1),
+                    id: "https://example.org/iiif/3d/anno"+ (++counts.anno),
                     type: "Annotation",
                     motivation: ["painting"],
                     body: { 
@@ -147,14 +153,14 @@ export default class IIIFManifestWriter {
         return JSON.stringify(jsonObj, null, 2);
     }
 
-    protected parseChildNodes(cvDocument, nodes, scene, annotationPage, commentPage) {
+    protected parseChildNodes(cvDocument, nodes, scene, annotationPage, commentPage, counts) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
         const setup = cvDocument.setup;
         //const sceneDefaultLang = ELanguageType[setup.language.ins.primarySceneLanguage.value];
 
         children.forEach(child => {
             const annotation = {
-                id: "https://example.org/iiif/3d/anno"+(annotationPage["items"].length+1),
+                id: "https://example.org/iiif/3d/anno"+ (++counts.anno),
                 type: "Annotation",
                 motivation: ["painting"],
                 body: { type: "SpecificResource"},
@@ -190,7 +196,7 @@ export default class IIIFManifestWriter {
                     _vec3a.fromArray(anno.data.position).multiplyScalar(child.model.outs.unitScale.value);  // _vec3b = scale from setTransform
 
                     const comment = {
-                        "id": "https://example.org/iiif/3d/anno2",
+                        "id": "https://example.org/iiif/3d/anno" + (++counts.anno),
                         "type": "Annotation",
                         "motivation": ["commenting"],
                         "body": [],
@@ -216,15 +222,15 @@ export default class IIIFManifestWriter {
                     // add anno view to content state if needed
                     if(anno.data.viewId) {
                         const contentAnno = {
-                            "id": "https://example.org/iiif/3d/anno2/scope1",
+                            "id": "https://example.org/iiif/3d/anno" + (counts.anno) + "/scope1",
                             "type": "Annotation",
                             "motivation": ["contentState"],
                             "target": {
-                                "id": "https://example.org/iiif/scene1/page/p1/1",
+                                "id": scene.id,
                                 "type": "Scene",
                                 "items": [
                                     {
-                                        "id": "https://example.org/iiif/scene1/page/p3/1",
+                                        "id": "https://example.org/iiif/scene1/page/p" + (++counts.page) + "/1",
                                         "type": "AnnotationPage",
                                         "items": []
                                     }
@@ -233,7 +239,7 @@ export default class IIIFManifestWriter {
                         }
                         const items = contentAnno["target"]["items"][0]["items"];
                         const viewAnno = {
-                            id: "https://example.org/iiif/3d/anno"+(annotationPage["items"].length+1),
+                            id: "https://example.org/iiif/3d/anno"+ (++counts.anno),
                             type: "Annotation",
                             motivation: ["painting"],
                             body: { type: "SpecificResource"},
@@ -248,9 +254,10 @@ export default class IIIFManifestWriter {
 
                         // add camera
                         const source = {
-                            id: "https://example.org/iiif/3d/cameras/1",
+                            id: "https://example.org/iiif/3d/cameras/" + (++counts.camera),
                             type: "PerspectiveCamera"
-                        }
+                        };
+                        
                         viewAnno.body["source"] = source;
                         // add transform
                         const machine = setup.snapshots;
@@ -346,12 +353,13 @@ export default class IIIFManifestWriter {
             if (child.camera) {
                 // early out if no default camera has been saved
                 if(JSON.stringify(setup.setupCache.navigation.orbit) === JSON.stringify(documentTemplate.setups[0].navigation.orbit)) {
+                    counts.anno--;
                     return;
                 }
 
                 // add source
                 const source = {
-                    id: "https://example.org/iiif/3d/cameras/1",
+                    id: "https://example.org/iiif/3d/cameras/" + (++counts.camera),
                     type: child.camera.ins.projection.getValidatedValue() === EProjection.Perspective ? "PerspectiveCamera" : "OrthographicCamera"
                 }
                 annotation.body["source"] = source;
@@ -368,13 +376,14 @@ export default class IIIFManifestWriter {
 
                 // check unhandled light types
                 if(IIIFManifestWriter.iiifUnhandledLights.includes(light.typeName) || !light.ins.enabled.value) {
+                    counts.anno--;
                     return;
                 }
 
                 // add source
                 _color.setRGB(light.ins.color.value[0],light.ins.color.value[1],light.ins.color.value[2]);
                 const source = {
-                    id: "https://example.org/iiif/3d/lights/1",
+                    id: "https://example.org/iiif/3d/lights/" + (++counts.light),
                     type: light.typeName.substring(2),
                     label: {"en": [light.node.name]},
                     color: "#"+_color.getHexString("srgb-linear"),
@@ -390,9 +399,12 @@ export default class IIIFManifestWriter {
             if (child.model || child.light || child.camera) { 
                 annotationPage["items"].push(annotation);
             }
+            else {
+                counts.anno--;
+            }
 
             if (child.transform.children) {
-                this.parseChildNodes(cvDocument, child.transform.children, scene, annotationPage, commentPage);
+                this.parseChildNodes(cvDocument, child.transform.children, scene, annotationPage, commentPage, counts);
             }
         });
     }
@@ -436,5 +448,9 @@ export default class IIIFManifestWriter {
 
     protected roundNumber(num: number, digits: number) {
         return Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
+    }
+
+    protected generateAnnotationIndex() {
+        return 
     }
 }
