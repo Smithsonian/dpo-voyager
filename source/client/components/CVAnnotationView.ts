@@ -423,6 +423,11 @@ export default class CVAnnotationView extends CObject3D
         this.changed = true;
     }
 
+    getSprite(annotation: Annotation)
+    {
+        return this._sprites[annotation.id];
+    }
+
     toJSON()
     {
         const json = super.toJSON();

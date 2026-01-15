@@ -187,13 +187,12 @@ export default class IIIFManifestWriter {
                 annotation.body["source"] = source;
 
                 // add transform
-                this.setTransform(annotation, child.model.object3D.matrix);
+                this.setTransform(annotation, child.model.object3D.matrixWorld);
 
                 // process annotations
                 const annotations = child.model.getComponent(CVAnnotationView);
                 annotations.getAnnotations().forEach(anno => {
-                    //const title = (anno.title.length > 0 ? anno.title : "Untitled") + (anno.lead.length > 0 ? "\n"+anno.lead : "");
-                    _vec3a.fromArray(anno.data.position).multiplyScalar(child.model.outs.unitScale.value);  // _vec3b = scale from setTransform
+                    annotations.getSprite(anno).matrixWorld.decompose(_vec3a, _quat, _vec3b);
 
                     const comment = {
                         "id": "https://example.org/iiif/3d/anno" + (++counts.anno),
