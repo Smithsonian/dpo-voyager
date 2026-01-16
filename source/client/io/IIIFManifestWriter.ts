@@ -192,7 +192,8 @@ export default class IIIFManifestWriter {
                 // process annotations
                 const annotations = child.model.getComponent(CVAnnotationView);
                 annotations.getAnnotations().forEach(anno => {
-                    annotations.getSprite(anno).matrixWorld.decompose(_vec3a, _quat, _vec3b);
+                    const sprite = annotations.getSprite(anno);
+                    sprite.matrixWorld.decompose(_vec3a, _quat, _vec3b);
 
                     const comment = {
                         "id": "https://example.org/iiif/3d/anno" + (++counts.anno),
@@ -345,7 +346,29 @@ export default class IIIFManifestWriter {
                         }
                     }
 
-                    commentPage["items"].push(comment);
+                    // add end position if needed
+                    if(sprite.typeName === "Extended" || sprite.typeName === "Standard") {
+                        sprite.matrixWorld.decompose(_vec3a, _quat, _vec3b);
+                        _vec3b.fromArray(anno.data.direction).normalize();
+                        _vec3a.addScaledVector(_vec3b, anno.data.scale);
+
+                        const positionObj = {
+                            "type": "SpecificResource",
+                            "source": [{
+                                "id": scene.id,
+                                "type": "Scene"
+                            }],
+                            "selector": [{
+                                "type": "PointSelector",
+                                "x": this.roundNumber(_vec3a.x, 6),
+                                "y": this.roundNumber(_vec3a.y, 6),
+                                "z": this.roundNumber(_vec3a.z, 6)
+                            }]
+                        }
+                        comment["body"][0]["items"][0]["position"] = positionObj;
+                    }
+
+                    comment["body"].length > 0 ? commentPage["items"].push(comment) : null;
                 });
             }
 
