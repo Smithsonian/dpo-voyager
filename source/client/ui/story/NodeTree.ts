@@ -55,12 +55,17 @@ class NodeTree extends Tree<NVNode>
         this.nodeProvider = this.system.getMainComponent(CVNodeProvider);
     }
 
+    protected get language() {
+        return this.system.getComponent(CVLanguageManager);
+    }
+
     protected connected()
     {
         super.connected();
         this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onUpdate, this);
         this.nodeProvider.on<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.nodeProvider.on<INodesEvent>("scoped-nodes", this.onUpdate, this);
+        this.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
@@ -68,6 +73,7 @@ class NodeTree extends Tree<NVNode>
         this.nodeProvider.off<INodesEvent>("scoped-nodes", this.onUpdate, this);
         this.nodeProvider.off<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
+        this.language.outs.uiLanguage.on("value", this.onUpdate, this);
         super.disconnected();
     }
 
@@ -100,12 +106,12 @@ class NodeTree extends Tree<NVNode>
             icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
         }
         if (node.name === "Lights") {
-            buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
+            buttons.push(html`<ff-button icon="create" title="${this.language.getUILocalizedString("Create Light")}" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
         }
         if (node.light) {
             icons.push(html`<ff-icon class="${node.light.ins.enabled.value ? "sv-icon-light ff-icon": "sv-icon-disabled ff-icon"}" name=${node.light.icon}></ff-icon>`);
             if(node.light.canDelete) {
-                buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
+                buttons.push(html`<ff-button icon="trash" title="${this.language.getUILocalizedString("Delete Light")}" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
             }
         }
         if (node.camera) {
