@@ -91,6 +91,8 @@ export default class IIIFManifestReader {
             const iiifLights = [];
             const iiifComments = [];
             const iiifCanvases = [];
+            const iiifAudio = [];
+            let narrativeCaption = null;
 
             // Set scene name
             cvScene.node.name = scene.getLabel().getValue() ?? "Scene";
@@ -127,6 +129,14 @@ export default class IIIFManifestReader {
                         break;
                     case "canvas":
                         iiifCanvases.push(anno);
+                        break;
+                    case "sound":
+                        iiifAudio.push(anno);
+                        break;
+                    case "text":
+                        if((body as any).isSoundCaption) {
+                            narrativeCaption = anno;
+                        }
                         break;
                     default:
                         console.log("Unsupported IIIF annotation type: "+type);
@@ -248,6 +258,44 @@ export default class IIIFManifestReader {
                 }
                 vCamera.ins.projection.setValue(cameraBody.isPerspectiveCamera() ? 
                     EProjection.Perspective : EProjection.Orthographic);
+            }
+
+            // only handle one scene-level audio element
+            if(iiifAudio.length > 0) {
+                const audioBody = iiifAudio[0].getBody();
+                audioBody.forEach(option => {
+                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
+
+                    const clipId = setup.audio.narrationId = Document.generateId();
+                    const clip = {
+                        id: clipId,
+                        name: "Narration Audio",
+                        uris: {},
+                        captionUris: {},
+                        durations: {}
+                    };
+                    setup.audio.addAudioClip(clip);
+                    const uri: string = option.getProperty("id");
+                    clip.uris[langCode] = uri;
+                    setup.audio.updateAudioClip(clipId);
+                });
+
+                if(narrativeCaption) {
+                    narrativeCaption.getBody().forEach(option => {
+                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+
+                        if(option.isSoundCaption()) {
+                            const clip = setup.audio.getAudioClip(setup.audio.narrationId);
+
+                            if(clip) {
+                                clip.captionUris[langCode] = option.getProperty("id");
+                            }
+                            else {
+                                console.warn("Caption file not loaded - no corresponding audio clip.");
+                            }
+                        }
+                    });
+                }
             }
 
             // handle comments

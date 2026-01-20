@@ -57,6 +57,7 @@ export default class IIIFManifestWriter {
 
     constructIIIFManifest(cvDocument: CVDocument) : string {
         const background = cvDocument.getInnerComponents(CVBackground)[0];
+        const setup = cvDocument.setup;
         const counts = {
             anno: 0,
             page: 2,
@@ -144,6 +145,64 @@ export default class IIIFManifestWriter {
                 annotationPage["items"].push(canvasAnno);
             }
         });
+
+        // add narration audio
+        const audio = setup.audio;
+        if(audio.narrationId.length) {
+            const clip = audio.getAudioClip(audio.narrationId);
+
+            if(clip !== undefined) {
+                const audioChoice = { "type": "Choice", "items": [] };
+                const capChoice = { "type": "Choice", "items": [] };
+
+                setup.language.sceneLanguages.forEach(language => {
+                    const id = clip.uris[ELanguageType[language.id]];
+                    const capId = clip.captionUris[ELanguageType[language.id]];
+
+                    if(id) {
+                        const audioBody = {
+                            "id": id,
+                            "type": "Sound",
+                            "language": ELanguageType[language.id].toLowerCase(),
+                            "format": "audio/mp3",
+                            "duration": clip.durations[ELanguageType[language.id]]
+                        }
+                        audioChoice["items"].push(audioBody);
+                    }
+
+                    if(capId) {
+                        const capBody = {
+                            "id": capId,
+                            "type": "Text",
+                            "language": ELanguageType[language.id].toLowerCase(),
+                            "format": "text/vtt",
+                            "duration": clip.durations[ELanguageType[language.id]]
+                        }
+                        capChoice["items"].push(capBody);
+                    }
+                });
+
+                const audioAnnotation = {
+                    id: "https://example.org/iiif/3d/anno"+ (++counts.anno),
+                    type: "Annotation",
+                    motivation: ["painting"],
+                    body: audioChoice,
+                    target: iiifScene.id,                          
+                };
+                annotationPage["items"].push(audioAnnotation);
+                
+                if(capChoice["items"].length > 0) {
+                    const capAnnotation = {
+                        id: "https://example.org/iiif/3d/anno"+ (++counts.anno),
+                        type: "Annotation",
+                        motivation: ["supplementing"],
+                        body: capChoice,
+                        target: iiifScene.id,                          
+                    };
+                    commentPage["items"].push(capAnnotation);
+                }
+            }
+        }
 
         // remove comment page element if items are empty
         if(commentPage["items"].length == 0) {
