@@ -37,6 +37,7 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
             this.ins.ground,
         ];
     }

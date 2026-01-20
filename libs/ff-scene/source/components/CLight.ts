@@ -34,6 +34,7 @@ export default class CLight extends CObject3D
             preset:1,
             min: 0,
         }),
+        tags: types.String("Light.Tags"),
         shadowEnabled: types.Boolean("Shadow.Enabled"),
         shadowResolution: types.Enum("Shadow.Resolution", EShadowMapResolution, EShadowMapResolution.Medium),
         shadowBlur: types.Number("Shadow.Blur", 1),
