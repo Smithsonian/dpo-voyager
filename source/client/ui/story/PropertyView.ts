@@ -78,7 +78,7 @@ export default class PropertyView extends CustomElement
             return null;
         }
         if(property.type === "number" && property.schema.semantic === "color"){
-            return html`<sv-property-color ?aria-disabled=${disabled} name=${label} .property=${property}></sv-property-color>`;
+            return html`<sv-property-color aria-disabled=${disabled ? "true" : "false"} name=${label} .property=${property}></sv-property-color>`;
         }else if (property.type === "number" && property.isArray()) {
             let fields = [];
             for (let i = 0; i < property.elementCount; ++i) {
@@ -99,6 +99,11 @@ export default class PropertyView extends CustomElement
             return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){
             return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
+        }else if(property.type === "object" && schema.semantic === "datetime"){
+            return html`
+                <sv-property-datetime aria-disabled=${disabled} name=${label} .property=${property}></sv-property-datetime>
+                <sv-property-timezone aria-disabled=${disabled} name="Time Zone" .property=${property}></sv-property-timezone>
+            `;
         }else{
             console.warn("Unhandled property :", property.name);
             return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;
