@@ -105,8 +105,6 @@ export class LightToolView extends ToolView<CVLightTool>
         return html`
             <sv-property-datetime input="datetime-local" .property=${light.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
             <sv-property-timezone .property=${light.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
-            <sv-property-number .property=${light.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
-            <sv-property-number .property=${light.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
         `;
     }
 
