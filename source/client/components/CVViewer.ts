@@ -30,6 +30,7 @@ import CVLanguageManager from "./CVLanguageManager";
 import CVARManager from "./CVARManager";
 import {getFocusableElements} from "../utils/focusHelpers";
 import CVSetup from "./CVSetup";
+import { CLight } from "./lights/CVLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -196,6 +197,7 @@ export default class CVViewer extends Component
             const tags = ins.activeTags.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
             this.getGraphComponents(CVModel2).forEach(model => model.ins.activeTags.setValue(tags));
+            this.getGraphComponents(CLight).forEach(light => light.ins.activeTags.setValue(tags));
         }
         if (ins.sortedTags.changed) {
             this.refreshTagCloud();

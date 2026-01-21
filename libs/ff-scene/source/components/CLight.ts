@@ -35,6 +35,7 @@ export default class CLight extends CObject3D
             min: 0,
         }),
         tags: types.String("Light.Tags"),
+        activeTags: types.String("Light.ActiveTags"),
         shadowEnabled: types.Boolean("Shadow.Enabled"),
         shadowResolution: types.Enum("Shadow.Resolution", EShadowMapResolution, EShadowMapResolution.Medium),
         shadowBlur: types.Number("Shadow.Blur", 1),
@@ -62,6 +63,14 @@ export default class CLight extends CObject3D
             this.node.name = ins.name.value;
         }
 
+        if (ins.tags.changed || ins.activeTags.changed) {
+            const tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+            const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+
+            const hasActiveTag: boolean = activeTags.some(activeTag => tags.indexOf(activeTag) >= 0)
+            this.ins.enabled.setValue(!activeTags.length || hasActiveTag);
+        }
+        
         if(ins.enabled.changed) {
             light.visible = ins.enabled.value;
             this.node.emit<INodeChangeEvent>({ type: "change", what: "enabled", node: this.node });
