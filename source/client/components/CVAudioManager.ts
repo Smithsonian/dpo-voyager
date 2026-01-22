@@ -165,8 +165,8 @@ export default class CVAudioManager extends Component
 
     getDuration(id: string) {
         const clip = this.audioClips[id];
-        const language = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
-        const cachedDuration = clip.durations[language];
+        const activeLanguage = ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType;
+        const cachedDuration = clip.durations[activeLanguage];
         if(cachedDuration) {
             return cachedDuration;
         }
@@ -183,14 +183,16 @@ export default class CVAudioManager extends Component
                     request.open('GET', absUri, true);
                     request.responseType = 'arraybuffer';
                     request.onload = () => {
-                        const blob = new Blob([request.response], { type: "audio/mpeg" });
-                        const url = window.URL.createObjectURL(blob);
-                        this._audioMap[uri] = url;
+                        if(!Object.keys(this._audioMap).includes(uri)) {
+                            const blob = new Blob([request.response], { type: "audio/mpeg" });
+                            const url = window.URL.createObjectURL(blob);
+                            this._audioMap[uri] = url;
+                        }
                         audioContext.decodeAudioData(request.response,
                             (buffer) => {
                                 let duration = buffer.duration;
                                 clip.durations[language] = duration.toString();
-                                this.getPlayerById(id).requestUpdate();                                         
+                                language === activeLanguage ? this.getPlayerById(id).requestUpdate() : null;                                         
                             }
                         )
                     }
