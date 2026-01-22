@@ -20,7 +20,7 @@ import NVNode from "client/nodes/NVNode";
 import CVSpotLight from "client/components/lights/CVSpotLight";
 import { EProjection } from "@ff/three/UniversalCamera";
 import { Matrix4, Vector3, Euler, Color, Quaternion, Mesh } from "three";
-import { ELanguageType } from "client/schema/common";
+import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAnnotationView from "client/components/CVAnnotationView";
 import CVDocument from "client/components/CVDocument";
 import CVBackground from "client/components/CVBackground";
@@ -29,6 +29,7 @@ import CVAssetManager from "client/components/CVAssetManager";
 import CVStandaloneFileManager from "client/components/CVStandaloneFileManager";
 import documentTemplate from "client/templates/default.svx.json";
 import CVStoryApplication from "client/components/CVStoryApplication";
+import unitScaleFactor from "client/utils/unitScaleFactor";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -88,9 +89,14 @@ export default class IIIFManifestWriter {
         iiifScene["id"] = "https://example.org/iiif/scene1";
         iiifScene["type"] = "Scene";
         iiifScene["label"] = { "en": [cvDocument.root.name || "3D Scene"] };
+        iiifScene["spatialScale"] = {
+            "type": "Quantity",
+            "quantityValue": unitScaleFactor(cvDocument.root.scene.ins.units.getValidatedValue(), EUnitType.m),
+            "unit": "m"
+        }
         iiifScene["backgroundColor"] = "#"+_color.getHexString("srgb-linear");
         iiifScene["items"] = [{}];
-        iiifScene["annotations"] = [{}];
+        iiifScene["annotations"] = [{}]; 
 
         const annotationPage = iiifScene["items"][0];
         annotationPage["id"] = "https://example.org/iiif/scene1/page/p1/1";

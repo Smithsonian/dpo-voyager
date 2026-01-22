@@ -97,6 +97,17 @@ export default class IIIFManifestReader {
             // Set scene name
             cvScene.node.name = scene.getLabel().getValue() ?? "Scene";
 
+            // Set scene units
+            const sceneScale = scene.getProperty("spatialScale")?.quantityValue as number;  // TODO: add accessor to Manifesto
+            if(sceneScale) {
+                const unitMap = [{factor: 0.001, unit: EUnitType.mm}, {factor: 0.01, unit: EUnitType.cm}, 
+                    {factor: 1, unit: EUnitType.m}, {factor: 1000, unit: EUnitType.km}, {factor: 0.0254, unit: EUnitType.in},
+                    {factor: 0.3048, unit: EUnitType.ft}, {factor: 0.9144, unit: EUnitType.yd}, {factor: 1.609e+3, unit: EUnitType.mi}];
+     
+                const factor = unitMap.find(obj => Math.abs(obj.factor-sceneScale) < 0.001)?.unit;
+                cvScene.ins.units.setValue(factor || EUnitType.cm);
+            }
+
             const bgColor = scene.getBackgroundColor() as any;      
             if(bgColor) {
                 app.setBackgroundStyle("solid");
@@ -149,7 +160,7 @@ export default class IIIFManifestReader {
                 
                 const newModel = activeDoc.appendModel(model.isSpecificResource() ? model.getSource()?.id : model.id);
                 models.push(newModel);
-                newModel.ins.localUnits.setValue(EUnitType.mm);
+                newModel.ins.localUnits.setValue(sceneScale ? cvScene.ins.units.value : EUnitType.cm);
 
                 const modelLabel = model.getLabelFromSelfOrSource().getValue();
                 newModel.node.name = modelLabel ?? "Model";
