@@ -264,12 +264,13 @@ export default class IIIFManifestReader {
             if(iiifAudio.length > 0) {
                 const audioBody = iiifAudio[0].getBody();
                 audioBody.forEach(option => {
-                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
+                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+                    const audioLabel = audioBody.getLabelFromSelfOrSource().getValue();
 
                     const clipId = setup.audio.narrationId = Document.generateId();
                     const clip = {
                         id: clipId,
-                        name: "Narration Audio",
+                        name: audioLabel ?? "Narration Audio",
                         uris: {},
                         captionUris: {},
                         durations: {}
@@ -341,11 +342,12 @@ export default class IIIFManifestReader {
                         if(option.isSound()) {
                             // Add audio clip
                             const clipId = annotation.data.audioId || Document.generateId();
+                            const audioLabel = option.getLabelFromSelfOrSource().getValue();
                             let clip = setup.audio.getAudioClip(clipId);
                             if(clip === undefined) {
                                 clip = {
                                     id: clipId,
-                                    name: "New Audio Element",
+                                    name: audioLabel ?? "New Audio Element",
                                     uris: {},
                                     captionUris: {},
                                     durations: {}

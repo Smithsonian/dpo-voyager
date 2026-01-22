@@ -163,6 +163,7 @@ export default class IIIFManifestWriter {
                         const audioBody = {
                             "id": id,
                             "type": "Sound",
+                            "label": {"en": [clip.name]},
                             "language": ELanguageType[language.id].toLowerCase(),
                             "format": "audio/mp3",
                             "duration": clip.durations[ELanguageType[language.id]]
@@ -382,6 +383,7 @@ export default class IIIFManifestWriter {
                                     const audioBody = {
                                         "id": id,
                                         "type": "Sound",
+                                        "label": {"en": [clip.name]},
                                         "language": ELanguageType[language.id].toLowerCase(),
                                         "format": "audio/mp3",
                                         "duration": clip.durations[ELanguageType[language.id]]
@@ -408,8 +410,9 @@ export default class IIIFManifestWriter {
                     // add end position if needed
                     if(sprite.typeName === "Extended" || sprite.typeName === "Standard") {
                         sprite.matrixWorld.decompose(_vec3a, _quat, _vec3b);
+                        const scale = _vec3b.x * anno.data.scale;
                         _vec3b.fromArray(anno.data.direction).normalize();
-                        _vec3a.addScaledVector(_vec3b, anno.data.scale);
+                        _vec3a.addScaledVector(_vec3b, scale);
 
                         const positionObj = {
                             "type": "SpecificResource",
