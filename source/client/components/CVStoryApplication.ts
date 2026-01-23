@@ -106,7 +106,7 @@ export default class CVStoryApplication extends Component
         if (cvDocument) {
             const storyMode = this.taskProvider.ins.mode.getValidatedValue();
             let components: INodeComponents = null;
-            if (storyMode === ETaskMode.QC) {
+            if (storyMode === ETaskMode.QC && (ins.save.changed || ins.download.changed)) {
                 components = { model: true };
                 Notification.show("Running in QC Mode: Saving model only, but no scene data.", "warning", 5000);
             }
