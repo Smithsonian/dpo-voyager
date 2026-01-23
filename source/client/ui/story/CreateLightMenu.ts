@@ -19,7 +19,7 @@ export default class CreateLightMenu extends Popup {
 
         return new Promise((resolve, reject) => {
             menu.on("confirm", () => resolve([menu.lightType, menu.name]));
-            menu.on("close", () => reject());
+            menu.on("close", () => {});
         });
     }
 
