@@ -21,7 +21,7 @@ import { IInterface } from "client/schema/setup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export enum EUIElements { none = 0, menu = 1, title = 2, logo = 4, language = 8, tour_exit = 16, help = 32}
+export enum EUIElements { none = 0, menu = 1, title = 2, logo = 4, language = 8, tour_exit = 16, help = 32, reset = 64}
 
 
 export default class CVInterface extends Component
