@@ -7,13 +7,17 @@
 
 import { Light } from "three";
 
-import { Node, types } from "@ff/graph/Component";
+import { ITypedEvent, Node, types } from "@ff/graph/Component";
 import CObject3D from "./CObject3D";
 import { INodeChangeEvent } from "@ff/graph/Node";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export enum EShadowMapResolution { Low, Medium, High }
+
+export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
+{
+}
 
 const _mapResolution = {
     [EShadowMapResolution.Low]: 512,
@@ -68,7 +72,11 @@ export default class CLight extends CObject3D
             const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
 
             const hasActiveTag: boolean = activeTags.some(activeTag => tags.indexOf(activeTag) >= 0)
-            this.ins.enabled.setValue(!activeTags.length || hasActiveTag);
+            this.ins.enabled.setValue(!tags.length || hasActiveTag); 
+        }
+
+        if (ins.tags.changed) {
+            this.emit<ITagUpdateEvent>({ type: "tag-update" });
         }
         
         if(ins.enabled.changed) {
