@@ -232,7 +232,7 @@ class ExtendedAnnotation extends AnnotationElement
         ${!isTruncated ? html`<p>${unsafeHTML(annotationObj.lead)}</p>` : null}
         ${annotation.audioId && !this.overlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
         ${annotation.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @keydown=${this.onKeyDownArticle} @pointerdown=${this.onClickArticle}></ff-button>` : null}
-        ${isTruncated ? html`<ff-button inline id="more-info" text="+more info" @pointerdown=${this.onClickOverlay} ></ff-button>` : null}`;    
+        ${isTruncated ? html`<ff-button inline id="more-info" text="${this.sprite.moreInfoText}" @pointerdown=${this.onClickOverlay} ></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
 

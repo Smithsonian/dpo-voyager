@@ -75,6 +75,7 @@ export default class AnnotationSprite extends HTMLSprite<IAnnotationEventMap>
     isAnimating = false;
     assetManager = null;
     audioManager = null;
+    moreInfoText="";
 
     /**
      * Returns the type name of this annotation object.

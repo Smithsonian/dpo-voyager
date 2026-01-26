@@ -263,7 +263,7 @@ class CircleAnnotation extends AnnotationElement
             ${!isTruncated ? html`<div class="sv-content"><p>${unsafeHTML(annotation.lead)}</p></div>` : null}
             ${annotationData.audioId && !this.isOverlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
             ${annotationData.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @keydown=${this.onKeyDownArticle} @pointerdown=${this.onClickArticle}></ff-button>` : null}
-            ${isTruncated ? html`<ff-button inline id="more-info" text="+more info" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;  
+            ${isTruncated ? html`<ff-button inline id="more-info" text="${this.sprite.moreInfoText}" @pointerdown=${this.onClickOverlay}></ff-button>` : null}`;  
 
         render(contentTemplate, this.contentElement);
 
