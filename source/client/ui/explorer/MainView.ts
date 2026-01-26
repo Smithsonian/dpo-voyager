@@ -137,7 +137,7 @@ export default class MainView extends CustomElement
         const shadowRoot = this.shadowRoot;
 
         // add style
-        var styleElement = document.createElement("style");
+        const styleElement = document.createElement("style");
         styleElement.innerText = styles;
         shadowRoot.appendChild(styleElement);
 
@@ -216,6 +216,13 @@ export default class MainView extends CustomElement
         }
     }
 
+    enableAnnotations()
+    {
+        if(this.application) {
+            this.application.enableAnnotations(true);
+        }
+    }
+
     toggleReader()
     {
         if(this.application) {
@@ -254,24 +261,21 @@ export default class MainView extends CustomElement
     getArticles()
     {
         if(this.application) {
-            const articles = this.application.getArticles();
-            return articles;
+            return this.application.getArticles();
         }
     }
 
     getAnnotations()
     {
         if(this.application) {
-            const annotations = this.application.getAnnotations();
-            return annotations;
+            return this.application.getAnnotations();
         }
     }
 
     getCameraOrbit(type?: string)
     {
         if(this.application) {
-            const orbit = this.application.getCameraOrbit(type ? type : null);
-            return orbit;
+            return this.application.getCameraOrbit(type ? type : null);
         }
     }
 
@@ -285,8 +289,7 @@ export default class MainView extends CustomElement
     getCameraOffset(type?: string)
     {
         if(this.application) {
-            const offset = this.application.getCameraOffset(type ? type : null);
-            return offset;
+            return this.application.getCameraOffset(type || null);
         }
     }
 
@@ -300,7 +303,7 @@ export default class MainView extends CustomElement
     setBackgroundColor(color0: string, color1?: string)
     {
         if(this.application) {
-            this.application.setBackgroundColor(color0, color1 ? color1 : null);
+            this.application.setBackgroundColor(color0, color1 || null);
         }
     }
 
@@ -318,6 +321,13 @@ export default class MainView extends CustomElement
         }
     }
 
+    focusAnnotation(id: string)
+    {
+        if(this.application) {
+            this.viewer.focusAnnotation(id);
+        }
+    }
+
     setActiveArticle(id: string)
     {
         if(this.application) {
@@ -328,7 +338,7 @@ export default class MainView extends CustomElement
     setTourStep(tourIdx: string, stepIdx: string, interpolate?: boolean)
     {
         if(this.application) {
-            this.application.setTourStep(tourIdx, stepIdx, interpolate !== undefined ? interpolate : true);
+            this.application.setTourStep(tourIdx, stepIdx, interpolate ?? true);
         }
     }
 
@@ -371,9 +381,8 @@ export default class MainView extends CustomElement
     getTags()
     {
         if(this.application) {
-            const tags = this.viewer.outs.tagCloud.value;
-            return tags;
-        }    
+            return this.viewer.outs.tagCloud.value;
+        }
     }
 
     // set active tags
