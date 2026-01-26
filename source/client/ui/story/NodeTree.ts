@@ -19,6 +19,7 @@ import System from "@ff/graph/System";
 
 import Tree, { customElement, property, PropertyValues, html } from "@ff/ui/Tree";
 
+import { INodeChangeEvent } from "@ff/graph/Node";
 import { lightTypes } from "../../applications/coreTypes";
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
 import CVLanguageManager from "../../components/CVLanguageManager";
@@ -26,7 +27,7 @@ import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/
 import { ELightType, ICVLight } from "../../components/lights/CVLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
-import CLight, { ITagUpdateEvent } from "@ff/scene/components/CLight";
+import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
 import CVScene from "client/components/CVScene";
@@ -78,14 +79,10 @@ class NodeTree extends Tree<NVNode>
         return this.system.getComponents(CLight).map(light => light.node as NVNode);
     }
     protected registerLightNodes(): void {
-        this.getLightNodes().forEach(node => {
-            node.on<ITagUpdateEvent>("tag-update", this.onLightChanged, this);
-        });
+        this.getLightNodes().forEach(node => { node.on("change", this.onLightChanged, this); });
     }
     protected unregisterLightNodes(): void {
-        this.getLightNodes().forEach(node => {
-            node.off<ITagUpdateEvent>("tag-update", this.onLightChanged, this);
-        });
+        this.getLightNodes().forEach(node => { node.off("change", this.onLightChanged, this); });
     }
 
     protected update(changedProperties: PropertyValues): void
@@ -260,8 +257,10 @@ class NodeTree extends Tree<NVNode>
             });
     }
 
-    protected onLightChanged(event: ITagUpdateEvent) {
-        this.requestUpdate();
+    protected onLightChanged(event: INodeChangeEvent) {
+        if (event.what === "enabled") {
+            this.requestUpdate();
+        }
     }
 }
 
