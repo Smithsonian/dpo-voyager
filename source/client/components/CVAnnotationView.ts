@@ -631,7 +631,7 @@ export default class CVAnnotationView extends CObject3D
     }
 
     // helper function to bring saved state orbit into alignment with current view orbit
-    protected normalizeViewOrbit(viewId: string) {
+    normalizeViewOrbit(viewId: string) {
         const orbitIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "Orbit");
         const viewState = this.snapshots.getState(viewId);
         const currentOrbit = this.snapshots.getCurrentValues()[orbitIdx];

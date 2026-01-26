@@ -47,12 +47,14 @@ These methods engage Voyager functionality without the native UI.
 | Name     				 | Parameters       | Description                                                                                         |
 |------------------------|------------------|----------------------------------------------------------------------------------------------------|
 | toggleAnnotations()    | None    			| On/off toggle for visibility of model annotations (if available)  |
+| enableAnnotations()    | None    			| Enables visibility of model annotations (if available)  |
 | toggleReader()    	 | None    			| On/off toggle for the article reader.  |
 | toggleTours()    		 | None    			| On/off toggle for the tour functionality UI.  |
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
 | setActiveAnnotation( id )| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
+| focusAnnotation( id )| id: unique id string | Activates the annotation with the provided id and animates the camera to its associated view (if available).   |
 | setActiveArticle( id )| id: unique id string | Activates the article with the provided id. Bad/missing id opens article list.   |
 | setTourStep( tourIdx, stepIdx, interpolate[optional] ) | tourIdx, stepIdx: valid integer - interpolate: boolean | Activates the scene state found at the provided tour and step index. Optional 'interpolate' parameter to control if transition is animated. Defaults to true. |
 | setLanguage( id )		 | id: valid [ISO 639-1](https://www.loc.gov/standards/iso639-2/php/code_list.php) code string | Changes the active Voyager language to the supplied id if available in the current scene.  |

@@ -414,6 +414,19 @@ Version: ${ENV_VERSION}
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
     }
 
+    enableAnnotations(visible: boolean)
+    {
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+
+        if (visible && toolIns.visible.value) {
+            toolIns.visible.setValue(false);
+        }
+
+        viewerIns.annotationsVisible.setValue(visible);
+        this.analytics.sendProperty("Annotations_Visible", visible);
+    }
+
     toggleReader()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
@@ -453,7 +466,6 @@ Version: ${ENV_VERSION}
     {
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-
         if (viewerIns.annotationsVisible.value) {
             viewerIns.annotationsVisible.setValue(false);
         }
@@ -481,9 +493,7 @@ Version: ${ENV_VERSION}
     getArticles()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
-        const articles = reader.articles.map(entry => entry.article.data);
-
-        return articles;
+        return reader.articles.map(entry => entry.article.data);
     }
 
     // Returns an array of objects with the annotation data for the current scene
