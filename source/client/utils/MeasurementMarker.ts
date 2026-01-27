@@ -69,7 +69,7 @@ export class SphereMarker extends MeasurementMarker
     {
         super();
 
-        // Main sphere - semi-transparent blue (sized to match Pin visibility ~20 units height)
+        // Main sphere - semi-transparent blue
         const sphereGeometry = new SphereGeometry(4, 16, 16);
         const sphereMaterial = new MeshStandardMaterial({
             color: "#00aaff",
@@ -131,7 +131,7 @@ export class RingMarker extends MeasurementMarker
     {
         super();
 
-        // Torus ring (sized to match Pin visibility)
+        // Torus ring
         const torusGeometry = new TorusGeometry(5, 0.8, 8, 32);
         const torusMaterial = new MeshStandardMaterial({
             color: "#00aaff",
@@ -193,7 +193,7 @@ export class CrosshairMarker extends MeasurementMarker
     {
         super();
 
-        // Create crosshair lines (X and Z directions, lying flat) - sized to match Pin visibility
+        // Create crosshair lines (X and Z directions, lying flat)
         const positions = new Float32Array([
             // X axis line
             -8, 0.5, 0,
@@ -266,7 +266,7 @@ export class DiscMarker extends MeasurementMarker
     {
         super();
 
-        // Flat disc (sized to match Pin visibility)
+        // Flat disc
         const discGeometry = new CircleGeometry(5, 32);
         const discMaterial = new MeshStandardMaterial({
             color: "#00aaff",
