@@ -107,6 +107,9 @@ export default class IIIFManifestReader {
                 const factor = unitMap.find(obj => Math.abs(obj.factor-sceneScale) < 0.001)?.unit;
                 cvScene.ins.units.setValue(factor || EUnitType.cm);
             }
+            else {
+                cvScene.ins.units.setValue(EUnitType.cm);
+            }
 
             const bgColor = scene.getBackgroundColor() as any;      
             if(bgColor) {

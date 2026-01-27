@@ -145,7 +145,7 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         }
 
 
-        if(event.dataTransfer.files.length === 1) {
+        if(event.dataTransfer.files.length === 1 && !event.dataTransfer.getData("text/uri-list")) {
             newFile = event.dataTransfer.files.item(0);
             filename = newFile.name;
         }
