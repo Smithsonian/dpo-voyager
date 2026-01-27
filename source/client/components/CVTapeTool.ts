@@ -17,6 +17,7 @@
 
 import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyString";
+import "../ui/properties/PropertyOptions";
 
 import CVDocument from "./CVDocument";
 import { ETapeState } from "./CVTape";
@@ -63,6 +64,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
         const tool = this.tool;
         const tape = document.setup.tape;
         const enabled = tape.ins.enabled;
+        const markerStyle = tape.ins.markerStyle;
         const state = tape.outs.state.value;
         const distance = tape.outs.distance.value;
         const language = document.setup.language;
@@ -88,6 +90,7 @@ export class TapeToolView extends ToolView<CVTapeTool>
         return html`<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
                 <sv-property-boolean .property=${enabled} .language=${language} name=${language.getLocalizedString("Tape Tool")}></sv-property-boolean>
+                <sv-property-options .property=${markerStyle} .language=${language} name=${language.getLocalizedString("Marker Style")}></sv-property-options>
                 <div class="sv-property-view"><label class="ff-label ff-off">${language.getLocalizedString("Measured Distance")}</label>
                 <div class="ff-string" aria-live="polite" aria-atomic="true"></div></div>
             </div></div>`;
