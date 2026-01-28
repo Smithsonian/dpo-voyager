@@ -103,6 +103,7 @@ export default class ChromeView extends DocumentView
         const menuVisible = setup.interface.ins.menu.value && setup.interface.isShowing(EUIElements.menu);
         const titleVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.title);
         const helpVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.help);
+        const resetVisible = setup.interface.ins.visibleElements.value && setup.interface.isShowing(EUIElements.reset);
 
         const readerVisible = setup.reader.ins.enabled.value;
 
@@ -177,7 +178,7 @@ export default class ChromeView extends DocumentView
             ${toolsVisible && toolBarAllowed ? html`<div class="sv-tool-bar-container"><sv-tool-bar .system=${this.system} @close=${this.closeTools}></sv-tool-bar></div>` : null}
             <div class="sv-chrome-footer">
                 <div class="sv-bottom-bar">
-                    ${interfaceVisible ? html`<ff-button icon="undo" id="main-reset" title=${languageManager.getLocalizedString("Reset")} ?selected=${false} @click=${this.resetViewer} class="sv-text-icon"></ff-button>` : ""}
+                    ${resetVisible ? html`<ff-button icon="undo" id="main-reset" title=${languageManager.getLocalizedString("Reset")} ?selected=${false} @click=${this.resetViewer} class="sv-text-icon"></ff-button>` : ""}
                     ${captionsVisible ? html`<ff-button icon="caption" id="main-caption" title=${languageManager.getLocalizedString("Captions")} ?selected=${captionsEnabled} @click=${this.updateCaptions} class="sv-text-icon"></ff-button>` : ""}
                     ${languagesVisible ? html`<ff-button id="language" style=${setup.language.codeString().length > 2 ? "font-size:0.9em"
                          : ""} text=${setup.language.codeString()} title=${languageManager.getLocalizedString("Set Language")} @click=${this.openLanguageMenu} class="sv-text-icon"></ff-button>` : null}
