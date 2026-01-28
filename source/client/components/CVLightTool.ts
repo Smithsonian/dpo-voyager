@@ -24,6 +24,7 @@ import "../ui/properties/PropertySlider";
 import "../ui/properties/PropertyColor";
 import "../ui/properties/PropertyString";
 import "../ui/properties/PropertyDateTime";
+import "../ui/properties/PropertyNumber";
 
 import CVDocument from "./CVDocument";
 
@@ -103,9 +104,6 @@ export class LightToolView extends ToolView<CVLightTool>
     private renderSunLightProperties(light: CSunLight, language): unknown {
         return html`
             <sv-property-datetime input="datetime-local" .property=${light.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
-            <sv-property-timezone .property=${light.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
-            <sv-property-number .property=${light.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
-            <sv-property-number .property=${light.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
         `;
     }
 
