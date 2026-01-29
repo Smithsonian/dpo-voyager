@@ -33,7 +33,7 @@ export default class CVInterface extends Component
         logo: types.Boolean("Interface.Logo", true),
         menu: types.Boolean("Interface.Menu", true),
         tools: types.Boolean("Interface.Tools", true),
-        visibleElements: types.Number("Interface.VisibleElements", 63)
+        visibleElements: types.Number("Interface.VisibleElements", 127)
     };
 
     protected static readonly outs = {
