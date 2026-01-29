@@ -377,6 +377,7 @@ export default class CVAudioManager extends Component
 
                 if(this.audioPlayer.children[0]) {
                     this.audioPlayer.children[0].remove();
+                    this.ins.activeCaption.setValue("");
                 }
 
                 const textTrack = document.createElement('track');
@@ -385,6 +386,10 @@ export default class CVAudioManager extends Component
                 textTrack.track.mode = "showing";
                 textTrack.addEventListener("cuechange", this.onCueChange);
                 textTrack.addEventListener("load", this.onLoadTrack);
+            }
+            else if(!captionUri && this.audioPlayer.children[0]) {
+                this.audioPlayer.children[0].remove();
+                this.ins.activeCaption.setValue("");
             }
         }
     }
