@@ -307,6 +307,7 @@ $color-component-meta-light: #d9d998;
   min-height: 180px;
   padding: 12px;
   background: common.$color-background;
+  box-sizing: content-box;
   pointer-events: auto;
 
   > .ff-flex-column {
