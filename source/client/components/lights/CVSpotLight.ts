@@ -38,6 +38,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
             this.ins.distance,
             this.ins.decay,
             this.ins.angle,

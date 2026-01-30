@@ -40,6 +40,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
             this.ins.shadowEnabled,
             this.ins.shadowSize,
             this.ins.shadowResolution,
