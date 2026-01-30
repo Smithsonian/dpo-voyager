@@ -51,6 +51,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
 
     get snapshotProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
         ];

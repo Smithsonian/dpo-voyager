@@ -43,6 +43,7 @@ export default class CVRectLight extends CRectLight implements ICVLight
 
     get snapshotProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
         ];

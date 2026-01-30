@@ -50,6 +50,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
 
     get snapshotProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
         ];

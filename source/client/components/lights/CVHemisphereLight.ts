@@ -44,6 +44,7 @@ export default class CVHemisphereLight extends CHemisphereLight implements ICVLi
 
     get snapshotProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
             this.ins.ground,

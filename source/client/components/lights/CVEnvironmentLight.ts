@@ -43,6 +43,13 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         ];
     }
 
+    get snapshotProperties() {
+        return [
+            this.ins.enabled,
+            this.ins.intensity,
+        ];
+    }
+
     protected environment = null;
 
     create()
@@ -50,7 +57,7 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         super.create();
 
         // link inputs with environment
-        this.environment = this.getSystemComponent(CVEnvironment);
+        this.environment = this.getGraphComponent(CVEnvironment);
         const envIns = this.environment.ins;
         envIns.intensity.linkFrom(this.ins.intensity);
         envIns.enabled.linkFrom(this.ins.enabled);
