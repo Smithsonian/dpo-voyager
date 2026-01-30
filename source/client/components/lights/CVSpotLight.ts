@@ -100,6 +100,7 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
+        ins.tags.setValue(data.tags || "");
 
         return node.light;
     }
@@ -119,6 +120,10 @@ export default class CVSpotLight extends CSpotLight implements ICVLight
                 penumbra: ins.penumbra.value,
             },
         } as ILight;
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         data.type = CVSpotLight.type;
 

@@ -94,6 +94,7 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
+        ins.tags.setValue(data.tags || "");
 
         return node.light;
     }
@@ -107,6 +108,10 @@ export default class CVDirectionalLight extends CDirectionalLight implements ICV
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value
         } as ILight;
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         data.type = CVDirectionalLight.type;
 
