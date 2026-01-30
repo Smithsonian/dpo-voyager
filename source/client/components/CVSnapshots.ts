@@ -20,6 +20,8 @@ import Component from "@ff/graph/Component";
 import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
 import CLight from "@ff/scene/components/CLight";
 
+import { IObjectEvent } from "@ff/core/ObjectRegistry";
+
 import { ISnapshots } from "client/schema/setup";
 
 import CVSetup from "./CVSetup";
@@ -51,6 +53,8 @@ export default class CVSnapshots extends CTweenMachine
         this.targetFeatures["lights"] = false;
 
         this.initializeTargetFeatures();
+
+        this.graph.components.on(CLight, this.onLightComponentEvent, this);
     }
 
     initializeTargetFeatures()
@@ -97,6 +101,20 @@ export default class CVSnapshots extends CTweenMachine
                 index, component.displayName, target.property.path);
         });
          */
+    }
+
+    protected onLightComponentEvent = (event: IObjectEvent<CLight>) => {
+        const light = event.object;
+
+        if (event.add) {
+            const include = !!this.targetFeatures["lights"]
+            this.updateComponentTarget(light.transform, include);
+            this.updateComponentTarget(light, include);
+        }
+        else if (event.remove) {
+            this.updateComponentTarget(light.transform, false);
+            this.updateComponentTarget(light, false);
+        }
     }
 
     protected updateComponentTarget(component: Component, include: boolean)
