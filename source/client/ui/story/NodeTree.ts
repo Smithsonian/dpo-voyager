@@ -78,9 +78,15 @@ class NodeTree extends Tree<NVNode>
     protected getLightNodes(): NVNode[] {
         return this.system.getComponents(CLight).map(light => light.node as NVNode);
     }
+
     protected registerLightNodes(): void {
-        this.getLightNodes().forEach(node => { node.on("change", this.onLightChanged, this); });
+        this.getLightNodes().forEach(node => {
+            if (!node.listEvents().includes("change")) {
+                node.on("change", this.onLightChanged, this);
+            }
+        });
     }
+
     protected unregisterLightNodes(): void {
         this.getLightNodes().forEach(node => { node.off("change", this.onLightChanged, this); });
     }
