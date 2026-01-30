@@ -1318,7 +1318,9 @@ $tour-entry-indent: 12px;
     }
   }
 
-
+  &.sv-property-percent{
+    @extend .sv-property, .sv-property-number;
+  }
 
   &.sv-property-slider {
     flex: 0 2 180px;
