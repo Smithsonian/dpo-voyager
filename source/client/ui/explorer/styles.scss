@@ -1342,6 +1342,25 @@ $tour-entry-indent: 12px;
   }
 
   &.sv-property-options{
+    .sv-property-field {
+      background-color: common.$color-background-darker;
+      flex: 1 1 auto;
+      min-width: auto;
+      max-width: 20ch;
+      line-height: 1.35;
+      margin: 2px;
+      padding: 2px;
+
+      color: inherit;
+      border: none;
+
+      .ff-input{
+        box-sizing: border-box;
+        width: 100%;
+        background: none;
+      }
+    }
+
     .sv-options-buttons{
       display: flex;
       flex-wrap: wrap;

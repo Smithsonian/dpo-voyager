@@ -18,6 +18,7 @@
 import { PMREMGenerator, WebGLRenderTarget, Texture, Euler } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
+import CVAssetManager from "./CVAssetManager";
 import CVAssetReader from "./CVAssetReader";
 import { IEnvironment } from "client/schema/setup";
 import CScene from "client/../../libs/ff-scene/source/components/CScene";
@@ -25,10 +26,11 @@ import CRenderer from "@ff/scene/components/CRenderer";
 import { DEG2RAD } from "three/src/math/MathUtils";
 import CVBackground from "./CVBackground";
 import CVMeta from "./CVMeta";
-import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
+import { IAssetEntry } from "@ff/scene/components/CAssetManager";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 
+import Notification from "@ff/ui/Notification";
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
 
@@ -42,8 +44,9 @@ export default class CVEnvironment extends Component
     static readonly text: string = "Environment";
 
     protected static readonly envIns = {
-        imageIndex: types.Integer("Environment.MapIndex", { preset: 0, options: images.map( function(item, index) {return index.toString();}) }),
+        imageIndex: types.Integer("Environment.Map", { preset: 0, options: images }),
         initialize: types.Event("Environment.Init"),
+        uploadMap: types.Event("Environment.Upload"),
         intensity: types.Number("Environment.Intensity", {preset:1, min: 0,}),
         rotation: types.Vector3("Environment.Rotation"),
         visible: types.Boolean("Environment.Visible", false),
@@ -65,12 +68,20 @@ export default class CVEnvironment extends Component
             this.ins.intensity,
             this.ins.rotation,
             this.ins.imageIndex,
+            this.ins.uploadMap,
             this.ins.visible
         ];
     }
 
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get assetReader() {
         return this.getMainComponent(CVAssetReader);
+    }
+    protected get assetWriter() {
+        const CVAssetWriter = require("./CVAssetWriter").default;
+        return this.getMainComponent(CVAssetWriter);
     }
     protected get background() {
         return this.getSystemComponent(CVBackground);
@@ -124,6 +135,11 @@ export default class CVEnvironment extends Component
             if(!this.graph.hasComponent(CVEnvironmentLight)) {
                 this.addLightComponent(false);
             }
+            this.scanImagesDirectory();
+        }
+
+        if(ins.uploadMap.changed) {
+            this.uploadEnvironmentMap();
         }
 
         if(ins.imageIndex.changed && (ins.enabled.value || ins.visible.value))
@@ -214,19 +230,20 @@ export default class CVEnvironment extends Component
 
             const mapName = this._imageOptions[ins.imageIndex.value];
 
-            if(images.includes(mapName)) {
-                this._loadingCount++;
-                this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
+            const texture_getter = images.includes(mapName)
+                ? this.assetReader.getSystemTexture.bind(this.assetReader, "images/" + mapName)
+                : this.assetReader.getTexture.bind(this.assetReader, mapName);  // model-specific map
+
+            this._loadingCount++;
+            texture_getter()
+                .then((texture: Texture) => {
                     this.updateEnvironmentMap(texture, mapName);
+                })
+                .catch((error: Error) => {
+                    Notification.show(`Failed to load environment map '${mapName}': ${error.message || error}`, "warning");
+                    this.ins.imageIndex.setValue(this._currentIdx);
+                    this._loadingCount--;
                 });
-            }
-            else {
-                this._loadingCount++;
-                this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
-                });
-            }
-            this._currentIdx = ins.imageIndex.value;
         }
     }
 
@@ -242,11 +259,110 @@ export default class CVEnvironment extends Component
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
+            this._currentIdx = mapIdx;
         }
 
         texture.dispose();
         texture = null;
         this._loadingCount--;
+    }
+
+    private async assetExists(assetPath: string): Promise<boolean> {
+        const url = this.assetManager.getAssetUrl(assetPath);
+        return fetch(url, { method: "HEAD" })
+            .then(response => response.ok)
+            .catch(() => {
+                console.error(`Failed to check existence of asset at ${url}`);
+                return false;
+            });
+    }
+    
+    private async scanImagesDirectory() {
+        try {
+            const media = this.getMainComponent("CVMediaManager") as any;
+            // Ensure asset tree is available
+            if (!media.root) {
+                await media.refresh();
+            }
+
+            const findFolder = (entry: IAssetEntry, name: string): IAssetEntry | null => {
+                if (!entry || !entry.children) return null;
+                for (const child of entry.children) {
+                    if (child.info.folder && child.info.name === name) {
+                        return child;
+                    }
+                }
+                return null;
+            };
+
+            const imagesFolder = findFolder(media.root, "images");
+            if (!imagesFolder) {
+                // No images folder at root; nothing to scan
+                return;
+            }
+
+            const envMapFiles: string[] = this.collectFiles(imagesFolder);
+
+            if (envMapFiles.length > 0) {
+                this._imageOptions.push(...envMapFiles);
+                this.ins.imageIndex.setOptions(this._imageOptions);
+            }
+        } catch (error) {
+            console.log('Could not scan images directory:', error);
+        }
+    }
+
+    private collectFiles(entry: IAssetEntry): string[] {
+        const envMapFiles: string[] = [];
+
+        for (const child of entry.children) {
+            if (child.info.folder) {
+                envMapFiles.push(...this.collectFiles(child));
+            } else {
+                const name = child.info.name || "";
+
+                if (name.toLowerCase().endsWith(".hdr") || name.toLowerCase().endsWith(".exr")) {
+                    const assetPath = child.info.path;
+                    if (!this._imageOptions.includes(assetPath) && !images.includes(name)) {
+                        envMapFiles.push(assetPath);
+                    }
+                } else {
+                    console.debug(`Skipping non-environment map file: ${name}`);
+                }
+            }
+        }
+        return envMapFiles;
+    }
+    
+    uploadEnvironmentMap() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.hdr'; // TODO: add .exr when supported
+        input.onchange = async (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+
+            const fileName = file.name;
+            const assetPath = `images/${fileName}`;
+
+            if (await this.assetExists(assetPath)) {
+                Notification.show(`Environment map "${fileName}" already exists. Skipping upload.`, "info");
+                return;
+            }
+
+            const contentType = fileName.endsWith('.hdr') ? 'image/vnd.radiance' : 'image/x-exr';
+
+            this.assetWriter.put(file, contentType, assetPath).then(() => {
+                if (!this._imageOptions.includes(assetPath)) {
+                    this._imageOptions.push(assetPath);
+                }
+                this.ins.imageIndex.setOptions(this._imageOptions);
+                Notification.show(`Environment map "${fileName}" uploaded successfully.`, "success");
+            }).catch((error: any) => {
+                console.error('Failed to save environment map:', error);
+            });
+        }
+        input.click();
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
@@ -260,7 +376,7 @@ export default class CVEnvironment extends Component
                     const image =  images[key];
                     if(image.usage && image.usage === "Environment") {
                         this._imageOptions.push(image.uri);
-                        this.ins.imageIndex.setOptions(this._imageOptions.map( function(item, index) {return index.toString();}));
+                        this.ins.imageIndex.setOptions(this._imageOptions);
                     }
                 });
             });
@@ -268,8 +384,9 @@ export default class CVEnvironment extends Component
     }
     
     protected addLightComponent(enabled: boolean) {
-        const lightNode = this.graph.findNodeByName("Lights") as NVNode;
-        const childNode = lightNode.graph.createCustomNode(lightNode as NVNode) as NVNode;
+        const NVNode = require("client/nodes/NVNode").default;
+        const lightNode = this.graph.findNodeByName("Lights") as any;
+        const childNode = lightNode.graph.createCustomNode(lightNode) as any;
         const envLight = childNode.transform.createComponent(CVEnvironmentLight);
         envLight.ins.enabled.setValue(enabled);
         lightNode.transform.addChild(childNode.transform);

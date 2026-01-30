@@ -79,7 +79,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
                 <sv-property-color title="Grid Color" .compact=${true} .floating=${false} class="sv-nogap" .property=${grid.ins.color} name=" "></sv-property-color>
                 <sv-property-boolean .property=${floor.ins.visible} .language=${language} name=${language.getLocalizedString("Floor")}></sv-property-boolean>
                 <sv-property-color title="Floor Color" .compact=${true} .floating=${false} class="sv-nogap" .property=${floor.ins.color} name=" "></sv-property-color>
-                <sv-property-options .property=${environment.ins.imageIndex} name="Env Map"></sv-property-options>
+                <sv-property-options dropdown .property=${environment.ins.imageIndex} name="Env Map"></sv-property-options>
             </div>
         </div>`;
     }
