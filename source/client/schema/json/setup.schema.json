@@ -287,12 +287,6 @@
             "description": "Snapshots are animatable scene states.",
             "type": "object",
             "properties": {
-                "features": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "targets": {
                     "type": "array",
                     "items": {

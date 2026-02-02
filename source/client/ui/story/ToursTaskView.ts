@@ -26,10 +26,14 @@ import { TaskView, customElement, property, html } from "../../components/CVTask
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import CVDocument from "../../components/CVDocument";
-import { IButtonClickEvent } from "@ff/ui/Button";
+import Button, { IButtonClickEvent } from "@ff/ui/Button";
 import { ELanguageType } from "client/schema/common";
+import CVSnapshots, { IPropertyTreeNode } from "client/components/CVSnapshots";
 
+import "@ff/ui/Tree";
+import Tree, { PropertyValues, TemplateResult } from "@ff/ui/Tree";
 ////////////////////////////////////////////////////////////////////////////////
+
 
 @customElement("sv-tours-task-view")
 export default class ToursTaskView extends TaskView<CVToursTask>
@@ -42,20 +46,20 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
     protected renderFeatureMenu()
     {
-        const features = this.snapshots.targetFeatures;
-        const keys = Object.keys(features);
+
         const languageManager = this.activeDocument.setup.language;
 
-        const buttons = keys.map(key => {
-            const title = key[0].toUpperCase() + key.substr(1);
-            const selected = !!features[key];
-            return html`<ff-button text=${title} name=${key} ?selected=${selected} @click=${this.onClickFeature}></ff-button>`;
-        });
-
-        return html`<div class="sv-commands">
-            <ff-button text="${languageManager.getUILocalizedString("OK")}" icon="" @click=${this.onFeatureMenuConfirm}></ff-button>
-            <ff-button text="${languageManager.getUILocalizedString("Cancel")}" icon="" @click=${this.onFeatureMenuCancel}></ff-button>
-        </div><div class="ff-flex-item-stretch sv-tour-feature-menu">${buttons}</div>`;
+        return html`<div class="ff-scroll-y">
+            <div class="sv-commands">
+                <ff-button text="${languageManager.getUILocalizedString("Go Back")}" icon="triangle-left" @click=${this.onFeatureMenuConfirm}></ff-button>
+            </div>
+            <p>
+                TODO: put a nice explanation here?
+            </p>
+            <div class="sv-tour-feature-menu">
+                <sv-tour-property-tree .snapshots=${this.snapshots}></sv-tour-property-tree>
+            </div>
+        </div>`;
     }
 
     protected render()
@@ -97,12 +101,16 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             <ff-text-edit name="lead" text=${props.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
 
-        return html`<div class="sv-commands">
+        return html`
+        <div class="sv-commands">
+            <ff-button title="${languageManager.getUILocalizedString("Snapshot Configuration")}" text="${languageManager.getUILocalizedString("Snapshot Configuration")}" icon="key" @click=${this.onClickConfig}></ff-button>
+        </div>
+        <div class="sv-commands">
             <ff-button title="${languageManager.getUILocalizedString("Create Tour")}" icon="create" @click=${this.onClickCreate}></ff-button>
             <ff-button title="${languageManager.getUILocalizedString("Move Tour Up")}" icon="up" ?disabled=${!activeTour} @click=${this.onClickUp}></ff-button>
             <ff-button title="${languageManager.getUILocalizedString("Move Tour Down")}" icon="down" ?disabled=${!activeTour} @click=${this.onClickDown}></ff-button>
             <ff-button title="${languageManager.getUILocalizedString("Delete Tour")}" icon="trash" ?disabled=${!activeTour} @click=${this.onClickDelete}></ff-button>
-            <ff-button title="${languageManager.getUILocalizedString("Snapshot Configuration")}" icon="bars" @click=${this.onClickConfig}></ff-button>
+
         </div>
         <div class="ff-flex-item-stretch">
             <div class="ff-flex-column ff-fullsize">
@@ -154,7 +162,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
 
     protected onFeatureMenuConfirm()
     {
-        this.snapshots.updateTargets();
+        //this.snapshots.updateTargets();
 
         this.featureConfigMode = false;
         this.requestUpdate();
@@ -163,15 +171,6 @@ export default class ToursTaskView extends TaskView<CVToursTask>
     protected onFeatureMenuCancel()
     {
         this.featureConfigMode = false;
-        this.requestUpdate();
-    }
-
-    protected onClickFeature(event: IButtonClickEvent)
-    {
-        const features = this.snapshots.targetFeatures;
-        const key = event.target.name;
-
-        features[key] = !features[key];
         this.requestUpdate();
     }
 
@@ -276,4 +275,117 @@ export class TourList extends List<ITour>
             detail: { tour: null, index: -1 }
         }));
     }
+}
+
+@customElement("sv-tour-property-tree")
+export class TourPropertyTree extends Tree<IPropertyTreeNode>{
+    @property({attribute: false, type: Object})
+    snapshots: CVSnapshots;
+
+    private expanded = new Set<string>();
+
+    protected update(changedProperties: PropertyValues): void {
+        this.root = this.snapshots?.getSnapshotPropertyTree();
+        if(this.expanded.size === 0){
+            this.root.children.forEach(c=>{
+                if(!this.isRecursiveDeselected(c)){
+                    this.expanded.add(c.id);
+                }
+            });
+        }
+        super.update(changedProperties);
+    }
+    protected renderNodeHeader(node: IPropertyTreeNode): TemplateResult
+    {
+        const withButton = 0 < node.children?.length;
+        let buttonText = "mixed";
+        let className ="partial-selected";
+        if(withButton &&this.isRecursiveDeselected(node)){
+            buttonText = "all untracked";
+            className = "";
+        }else if(withButton && this.isRecursiveSelected(node)){
+            buttonText = "all tracked";
+            className = "selected";
+        }
+        return html`
+            <span class="ff-flex-item-stretch">${node.text}</span>
+            ${withButton?
+                html`<ff-button role="switch" class="ff-button ff-control ${className}" text=${buttonText} name="${node.id}" @click=${this.onToggleGroupSelection}></ff-button>`
+                :html`<ff-icon class="ff-off" name="${node.selected?"lock":"unlock"}"></ff-icon>`}
+        `;
+    }
+
+    /**
+     * Returns true if a node is explicitly selected or "selected" is undefined and all of its children are.
+     */
+    protected isRecursiveSelected = (n:IPropertyTreeNode):boolean =>{
+        if("selected" in n) return n.selected;
+        else if(Array.isArray(n.children)) return n.children?.every(this.isRecursiveSelected);
+        else return false;
+    }
+
+    protected isRecursiveDeselected = (n: IPropertyTreeNode):boolean =>{
+        if("selected" in n) return !n.selected;
+        else if(Array.isArray(n.children)) return n.children?.every(this.isRecursiveDeselected);
+        else return true;
+    }
+
+    protected recursiveSetSelected = (treeNode: IPropertyTreeNode, state?:boolean): boolean=>{
+        if(typeof state === "undefined") state = !this.isRecursiveSelected(treeNode);
+        if("property" in treeNode){
+            if(state){
+                this.snapshots.addTargetProperty(treeNode.property, true);
+            }else{
+                this.snapshots.removeTargetProperty(treeNode.property, true);
+            }
+        }
+        treeNode.children?.forEach((c)=>this.recursiveSetSelected(c, state));
+        return state;
+    }
+
+    protected onToggleGroupSelection(ev: MouseEvent){
+        const treeNode = this.getNodeFromEventTarget(ev);
+
+        this.recursiveSetSelected(treeNode);
+        this.requestUpdate("root");
+        ev.stopPropagation();
+    }
+
+    protected onNodeClick(ev: MouseEvent, node: IPropertyTreeNode){
+        if(node.children?.length){
+            return super.onNodeClick(ev, node);
+        }
+        console.log("Toggle select :", node.id);
+        const prop = node.property;
+        if(this.snapshots.hasTargetProperty(prop)){
+            this.snapshots.removeTargetProperty(prop);
+        }else{
+            this.snapshots.addTargetProperty(prop);
+        }
+        this.requestUpdate("root");
+        ev.stopPropagation();
+    }
+
+    public setExpanded(treeNode: IPropertyTreeNode, state?:boolean): void {
+        console.log("set expanded");
+        if(typeof state === "undefined"){
+            this.expanded.delete(treeNode.id) || this.expanded.add(treeNode.id);
+        }else if (state){
+            this.expanded.add(treeNode.id);
+        }else{
+            this.expanded.delete(treeNode.id);
+        }
+        super.setExpanded(treeNode, state);
+    }
+
+    //Recursively check if the node or some of its children is selected
+    public isNodeExpanded(n:IPropertyTreeNode): boolean{
+        return this.expanded.has(n.id);
+    }
+
+    public isNodeSelected(treeNode: IPropertyTreeNode): boolean {
+        //No recursive check here because we don't want to highlight the whole node when all its children are selected
+        return !!treeNode.selected;
+    }
+
 }

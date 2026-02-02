@@ -26,16 +26,24 @@ import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
+import { html, ITreeNode } from "@ff/ui/Tree";
+import Button from "@ff/ui/Button";
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export { EEasingCurve };
 
+export interface IPropertyTreeNode{
+    id: string;
+    text: string;
+    selected ?:boolean;
+    property?: Property;
+    children?: IPropertyTreeNode[];
+}
+
 export default class CVSnapshots extends CTweenMachine
 {
     static readonly typeName: string = "CVSnapshots";
-
-    targetFeatures: Dictionary<boolean> = {};
 
     create()
     {
@@ -43,52 +51,113 @@ export default class CVSnapshots extends CTweenMachine
 
         const setup = this.getGraphComponent(CVSetup);
 
-        Object.keys(setup.featureMap).forEach(name => {
-            this.targetFeatures[name] = false;
-        });
-
-        this.targetFeatures["models"] = false;
-        this.targetFeatures["lights"] = false;
-
-        this.initializeTargetFeatures();
+    }
+    /**
+     * Iterates over all snapshot-ready properties
+     */
+    *snapshotProperties(): Generator<{property: Property<any>, enabled: boolean}, void, unknown>{
+        const setup = this.getGraphComponent(CVSetup);
+        for(let name in setup.featureMap){
+            const component = setup[name] as Component;
+            if(!component) continue;
+            for(let property of (component["snapshotProperties"] ?? []) as Property[]){
+                const schema = property.schema;
+                if (schema.event || property.type === "object"){
+                    //We are not expecting to have an invalid property listed in snapshotProperties
+                    console.warn("Invalid snapshot property specified : ", property.path);
+                    continue;
+                }
+                yield {property, enabled: this.hasTargetProperty(property)};
+            }
+        }
     }
 
-    initializeTargetFeatures()
-    {
-        const features = this.targetFeatures;
-        Object.keys(features).forEach(key => features[key] = false);
-        features["navigation"] = true;
-        features["reader"] = true;
-        features["viewer"] = true;
+    getSnapshotPropertyTree():IPropertyTreeNode{
+        let children :IPropertyTreeNode[] = [];
+        const setup = this.getGraphComponent(CVSetup);
 
-        this.updateTargets();
+        const extractProperties = (c: Component):IPropertyTreeNode[] =>{
+            return (c["snapshotProperties"] ??[]).map((prop)=> ({
+                id: c.id+"."+prop.key,
+                text: `${prop.name}`,
+                selected: this.hasTargetProperty(prop),
+                property: prop
+            } satisfies IPropertyTreeNode))
+        }
+
+        children.push({
+            id:"setup",
+
+            text: `Setup`,
+            children: Object.keys(setup.featureMap).map(key=> ({
+                id: setup[key].id,
+                text: key,
+                children: extractProperties(setup[key] as Component),
+            })).filter(c=>c.children.length),
+        });
+        
+        const models = this.getGraphComponents(CVModel2);
+        children.push(...models.map((model, index) => {
+            return {
+                id: model.id,
+                text: `${model.ins.name.value} (Model#${index})`,
+                children: [
+                    {
+                        id: model.transform.id,
+                        text: "Transform",
+                        children: extractProperties(model.transform)
+                    },
+                    ...extractProperties(model),
+                ]
+            };
+        }));
+
+        const lights = this.getGraphComponents(CLight);
+        children.push(...lights.map((light, index )=> {
+            return {
+                id: light.id,
+                text: `${light.node.displayName} (Light#${index})`,
+                children: [
+                    {
+                        id: light.transform.id,
+                        text: "Transform",
+                        children: extractProperties(light.transform)
+                    },
+                    ...extractProperties(light),
+                ]
+            };
+        }));
+
+        return {
+            id: "root",
+            children,
+            text: `root`,
+        };
     }
 
     updateTargets()
     {
-        const features = this.targetFeatures;
-        const setup = this.getGraphComponent(CVSetup);
+        throw new Error("Shouldn't be called")
+        // const setup = this.getGraphComponent(CVSetup);
 
-        Object.keys(features).forEach(name => {
-            const component = setup[name];
-            const shouldInclude = features[name];
+        // Object.keys(setup.featureMap).forEach((name) => {
+        //     const component = setup[name] as Component;
+        //     if (component) {
+        //         this.updateComponentTarget(component);
+        //     }
+        // });
 
-            if (component) {
-                this.updateComponentTarget(component, shouldInclude);
-            }
-        });
+        // const models = this.getGraphComponents(CVModel2);
+        // models.forEach(model => {
+        //     this.updateComponentTarget(model.transform);
+        //     this.updateComponentTarget(model);
+        // });
 
-        const models = this.getGraphComponents(CVModel2);
-        models.forEach(model => {
-            this.updateComponentTarget(model.transform, !!features["models"]);
-            this.updateComponentTarget(model, !!features["models"]);
-        });
-
-        const lights = this.getGraphComponents(CLight);
-        lights.forEach(light => {
-            this.updateComponentTarget(light.transform, !!features["lights"]);
-            this.updateComponentTarget(light, !!features["lights"])
-        });
+        // const lights = this.getGraphComponents(CLight);
+        // lights.forEach(light => {
+        //     this.updateComponentTarget(light.transform);
+        //     this.updateComponentTarget(light);
+        // });
 
         /*
         this.targets.forEach((target, index) => {
@@ -99,7 +168,7 @@ export default class CVSnapshots extends CTweenMachine
          */
     }
 
-    protected updateComponentTarget(component: Component, include: boolean)
+    protected updateComponentTarget(component: Component, include: string)
     {
         const snapshotProperties = component["snapshotProperties"] as Property[];
         if (!snapshotProperties) {
@@ -124,25 +193,15 @@ export default class CVSnapshots extends CTweenMachine
     {
         this.clear();
 
-        const features = this.targetFeatures;
-        const keys = Object.keys(features);
-
-        if (data.features) {
-            keys.forEach(key => features[key] = data.features.indexOf(key) >= 0);
-        }
-        else {
-            this.initializeTargetFeatures();
-        }
 
         const missingTargets = new Set<number>();
-
         data.targets.forEach((target, index) => {
             const slashIndex = target.lastIndexOf("/");
             const componentPath = target.substr(0, slashIndex);
             const propertyKey = target.substr(slashIndex + 1);
 
             const component = pathMap.get(componentPath);
-            const property = component ? component.ins[propertyKey] : null;
+            const property = (component ? component.ins[propertyKey] : null) as Property<any>|null|undefined;
 
             if (!property) {
                 console.warn(`missing snapshot target property for '${target}'`);
@@ -168,11 +227,8 @@ export default class CVSnapshots extends CTweenMachine
 
     toData(pathMap: Map<Component, string>): ISnapshots | null
     {
-        const features = this.targetFeatures;
 
         const data: ISnapshots = {
-            features: Object.keys(features).filter(key => features[key]),
-
             targets: this.targets.map(target => {
                 const component = target.property.group.linkable as Component;
                 const key = target.property.key;
