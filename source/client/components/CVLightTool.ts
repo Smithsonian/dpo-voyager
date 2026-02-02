@@ -133,8 +133,10 @@ export class LightToolView extends ToolView<CVLightTool>
     {
         if (previous) {
             previous.setup.navigation.ins.lightsFollowCamera.off("value", this.onUpdate, this);
+            previous.innerGraph.components.off(CLight, this.refreshLights, this);
         }
         if (next) {
+            next.innerGraph.components.on(CLight, this.refreshLights, this);
             next.setup.navigation.ins.lightsFollowCamera.on("value", this.onUpdate, this);
         }
 
@@ -159,7 +161,8 @@ export class LightToolView extends ToolView<CVLightTool>
     }
 
     protected refreshLightList() {
-        this.tool.ins.light.setOptions(this.tool.lights.map(light => light.ins.name.value)); 
+        this.tool.ins.light.setOptions(this.tool.lights.map(light => light.ins.name.value || light.node.name)); 
+        this.requestUpdate();
     }
 
     protected async setFocus()
