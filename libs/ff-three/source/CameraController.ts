@@ -72,6 +72,7 @@ export default class CameraController implements IManip
 
     protected viewportWidth = 100;
     protected viewportHeight = 100;
+    protected orbitFactor = 220;
 
     constructor(camera?: UniversalCamera)
     {
@@ -346,9 +347,9 @@ export default class CameraController implements IManip
         let inverse = -1;
 
         if (this.orientationEnabled) {
-            orbit.x += inverse * dPitch * 220 / this.viewportHeight;
-            orbit.y += inverse * dHead * 220 / this.viewportHeight;
-            orbit.z += inverse * dRoll * 220 / this.viewportHeight;
+            orbit.x += inverse * dPitch * this.orbitFactor / this.viewportHeight;
+            orbit.y += inverse * dHead * this.orbitFactor / this.viewportHeight;
+            orbit.z += inverse * dRoll * this.orbitFactor / this.viewportHeight;
 
             // check limits
             orbit.x = math.limit(orbit.x, minOrbit.x, maxOrbit.x);
