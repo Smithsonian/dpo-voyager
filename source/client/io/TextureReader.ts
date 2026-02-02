@@ -16,7 +16,7 @@
  */
 
 import { TextureLoader, LoadingManager, Texture } from "three";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,13 +26,13 @@ export default class TextureReader
     static readonly mimeTypes = [ "image/jpeg", "image/png" ];
 
     protected textureLoader: TextureLoader;
-    protected hdriLoader: RGBELoader;
+    protected hdriLoader: HDRLoader;
 
 
     constructor(loadingManager: LoadingManager)
     {
         this.textureLoader = new TextureLoader(loadingManager);
-        this.hdriLoader = new RGBELoader(loadingManager);
+        this.hdriLoader = new HDRLoader(loadingManager);
     }
 
     isValid(url: string): boolean
