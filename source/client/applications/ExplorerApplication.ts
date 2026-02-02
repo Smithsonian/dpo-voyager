@@ -388,7 +388,11 @@ Version: ${ENV_VERSION}
         }
 
         // Make sure environment is properly initialized
-        this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.environment.ins.initialize.set();
+        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
+        setup.environment.ins.initialize.set();
+
+        // Re-cache postload setups
+        setup.ins.saveState.set();
     }
 
     ////////////////////////////////////////////
