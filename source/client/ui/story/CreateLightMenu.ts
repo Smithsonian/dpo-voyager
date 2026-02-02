@@ -20,7 +20,7 @@ export default class CreateLightMenu extends Popup {
 
         return new Promise((resolve, reject) => {
             menu.on("confirm", () => resolve([menu.lightType, menu.name]));
-            menu.on("close", () => reject());
+            menu.on("close", () => {});
         });
     }
 
@@ -120,7 +120,7 @@ export default class CreateLightMenu extends Popup {
                     <input class="ff-input" type="text" style="text-align:right;" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
                 </div>
                 <div class="ff-flex-row">
-                    <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create Light")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
+                    <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
                     <div class="ff-flex-spacer"></div>
                     <ff-button icon="close" class="ff-close-button ff-control" text=${language.getUILocalizedString("Cancel")} title=${language.getUILocalizedString("Cancel")} @click=${this.close}></ff-button>
                 </div>
