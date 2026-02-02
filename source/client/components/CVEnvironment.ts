@@ -359,6 +359,7 @@ export default class CVEnvironment extends Component
                 this.ins.imageIndex.setOptions(this._imageOptions);
                 Notification.show(`Environment map "${fileName}" uploaded successfully.`, "success");
             }).catch((error: any) => {
+                Notification.show(`Failed to upload environment map "${fileName}".`, "error");
                 console.error('Failed to save environment map:', error);
             });
         }
