@@ -30,6 +30,7 @@ import CVLanguageManager from "./CVLanguageManager";
 import CVARManager from "./CVARManager";
 import {getFocusableElements} from "../utils/focusHelpers";
 import CVSetup from "./CVSetup";
+import { CLight } from "./lights/CVLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -115,6 +116,7 @@ export default class CVViewer extends Component
     {
         super.create();
         this.graph.components.on(CVModel2, this.onModelComponent, this);
+        this.graph.components.on(CLight, this.onLightComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
 
@@ -125,6 +127,7 @@ export default class CVViewer extends Component
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
+        this.graph.components.off(CLight, this.onLightComponent, this);
         this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
         super.dispose();
@@ -196,6 +199,7 @@ export default class CVViewer extends Component
             const tags = ins.activeTags.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
             this.getGraphComponents(CVModel2).forEach(model => model.ins.activeTags.setValue(tags));
+            this.getGraphComponents(CLight).forEach(light => light.ins.activeTags.setValue(tags));
         }
         if (ins.sortedTags.changed) {
             this.refreshTagCloud();
@@ -286,6 +290,12 @@ export default class CVViewer extends Component
             tags.forEach(tag => tagCloud.add(tag));
         });
 
+        const lights = this.getGraphComponents(CLight);
+        lights.forEach(light => {
+            const tags = light.ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+            tags.forEach(tag => tagCloud.add(tag));
+        });
+
         const views = this.getGraphComponents(CVAnnotationView);
         views.forEach(component => {
             const annotations = component.getAnnotations();
@@ -357,6 +367,18 @@ export default class CVViewer extends Component
     }
 
     protected onLanguageComponent(event: IComponentEvent<CVLanguageManager>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+        }
+        else if (event.remove) {
+            component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+        }
+    }
+
+    protected onLightComponent(event: IComponentEvent<CLight>)
     {
         const component = event.object;
 

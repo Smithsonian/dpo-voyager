@@ -222,6 +222,9 @@
                 "color": {
                     "$ref": "#/definitions/colorRGB"
                 },
+                "tags": {
+                    "type": "string"
+                },
                 "intensity": {
                     "type": "number",
                     "minimum": 0,
