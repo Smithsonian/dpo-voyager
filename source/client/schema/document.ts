@@ -125,6 +125,7 @@ export interface ILight
     enabled?: boolean;
     color?: ColorRGB;
     intensity?: number;
+    tags?: string;
 
     shadowEnabled?: boolean;
     shadowSize?: number;

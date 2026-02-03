@@ -19,7 +19,7 @@ import System from "@ff/graph/System";
 
 import Tree, { customElement, property, PropertyValues, html } from "@ff/ui/Tree";
 
-import { INodeChangeEvent } from "@ff/graph/Node";
+import { IComponentEvent, INodeChangeEvent } from "@ff/graph/Node";
 import { lightTypes } from "../../applications/coreTypes";
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
 import CVLanguageManager from "../../components/CVLanguageManager";
@@ -67,34 +67,20 @@ class NodeTree extends Tree<NVNode>
         this.nodeProvider.on<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.nodeProvider.on<INodesEvent>("scoped-nodes", this.onUpdate, this);
         this.language.outs.uiLanguage.on("value", this.onUpdate, this);
-        this.registerLightNodes();
+        this.system.components.on(CLight, this.onLightNode, this);
 
     }
 
     protected disconnected()
     {
+        this.system.components.off(CLight, this.onLightNode, this);
         this.nodeProvider.off<INodesEvent>("scoped-nodes", this.onUpdate, this);
         this.nodeProvider.off<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
         this.language.outs.uiLanguage.on("value", this.onUpdate, this);
         this.unregisterLightNodes();
+
         super.disconnected();
-    }
-
-    protected getLightNodes(): NVNode[] {
-        return this.system.getComponents(CLight).map(light => light.node as NVNode);
-    }
-
-    protected registerLightNodes(): void {
-        this.getLightNodes().forEach(node => {
-            if (!node.listEvents().includes("change")) {
-                node.on("change", this.onLightChanged, this);
-            }
-        });
-    }
-
-    protected unregisterLightNodes(): void {
-        this.getLightNodes().forEach(node => { node.off("change", this.onLightChanged, this); });
     }
 
     protected update(changedProperties: PropertyValues): void
@@ -111,7 +97,6 @@ class NodeTree extends Tree<NVNode>
             this.root = null;
         }
 
-        this.registerLightNodes();
         super.update(changedProperties);
     }
 
@@ -262,11 +247,27 @@ class NodeTree extends Tree<NVNode>
                     if (this.nodeProvider.activeNode === node) {
                         this.nodeProvider.activeNode = node.transform.parent?.node as NVNode;
                     }
-                    node.off("change", this.onUpdate, this);
                     node.dispose();
                     this.requestUpdate();
                 }
             });
+    }
+
+    protected getLightNodes(): NVNode[] {
+        return this.system.getComponents(CLight).map(light => light.node as NVNode);
+    }
+
+    protected unregisterLightNodes(): void {
+        this.getLightNodes().forEach(node => { node.off("change", this.onLightChanged, this); });
+    }
+
+    protected onLightNode(event: IComponentEvent<CLight>) {
+        if(event.add) {
+            event.object.node.on("change", this.onLightChanged, this);
+        }
+        else if(event.remove && event.object.node.hasEvent("change")) {
+            event.object.node.off("change", this.onLightChanged, this);
+        }
     }
 
     protected onLightChanged(event: INodeChangeEvent) {

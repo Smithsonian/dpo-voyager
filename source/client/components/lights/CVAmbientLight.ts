@@ -74,6 +74,7 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
         });
+        ins.tags.setValue(data.tags || "");
 
         return node.light;
     }
@@ -87,6 +88,10 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
         } as ILight;
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         data.type = CVAmbienLight.type;
 
