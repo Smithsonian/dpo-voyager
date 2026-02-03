@@ -70,7 +70,7 @@ export default class CVLightTool extends CVTool
     {
         this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
         this.ins.light.setOptions(this.lights.map(light => light.ins.name.value));
-        this.outs.light.setValue(this.lights[0] ?? null);
+        this.outs.light.setValue(this.lights[this.ins.light.getValidatedValue()] ?? null);
 
         super.onActiveDocument(previous, next);
     }
@@ -198,8 +198,10 @@ export class LightToolView extends ToolView<CVLightTool>
     protected async setFocus()
     {
         await this.updateComplete;
-        const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
-        focusElement.focus();
+        const idx = this.tool.lights.findIndex(light => light === this.tool.outs.light.value);
+        const focusElement = this.getElementsByTagName("sv-property-options")[0]
+            .getElementsByTagName("ff-button")[idx >= 0 ? idx : 0] as HTMLElement;
+        focusElement?.focus();
     }
 
     protected onClose(event: MouseEvent)

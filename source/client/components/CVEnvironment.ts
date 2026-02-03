@@ -104,8 +104,8 @@ export default class CVEnvironment extends Component
         }
 
         if(this._target) {
-            this._target.texture?.dispose();
-            this._target.texture = null;
+            //this._target.texture?.dispose();
+            //this._target.texture = null;
             this._target.dispose();
             this._target = null;
         }

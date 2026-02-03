@@ -7,7 +7,6 @@
 */
 
 import { IUpdateContext, Node, types } from "@ff/graph/Component";
-import { DateTime } from "luxon";
 import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
@@ -23,7 +22,7 @@ export default class CSunLight extends CLight {
             min: 0,
         }),
         datetime: types.DateTime("Light.DateTime", {
-            preset: DateTime.now().set({ second: 0, millisecond: 0 })
+            preset: new Date("2026-02-01T12:00Z")
         }),
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),

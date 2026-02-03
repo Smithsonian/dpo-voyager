@@ -42,6 +42,7 @@ export default class CVAmbienLight extends CAmbientLight implements ICVLight
 
     get snapshotProperties() {
         return [
+            this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
         ];
