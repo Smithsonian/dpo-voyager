@@ -104,7 +104,7 @@ export default class ContentView extends DocumentView
     {
         const system = this.system;
         const isLoading = this.assetManager.outs.busy.value;
-        const isInitialLoad = this.assetManager.initialLoad;
+        const isInitialLoad = this.assetManager.outs.initialLoad.value;
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
@@ -170,9 +170,8 @@ export default class ContentView extends DocumentView
             this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
             this.analytics.resetTimer();
 
-            this.assetManager.initialLoad = false;
+            this.assetManager.outs.initialLoad.setValue(false);
         }
-
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
                 return html`<div class="ff-fullsize sv-content-split">

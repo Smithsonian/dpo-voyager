@@ -230,6 +230,7 @@ Version: ${ENV_VERSION}
     loadDocument(documentPath: string, merge?: boolean, quality?: string): Promise<CVDocument>
     {
         const dq = EDerivativeQuality[quality];
+        this.assetManager.ins.initialLoad.setValue(true);
 
         return this.assetReader.getJSON(documentPath)
             .then(data => {
