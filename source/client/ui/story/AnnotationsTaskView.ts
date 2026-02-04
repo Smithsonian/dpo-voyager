@@ -29,10 +29,12 @@ import Notification from "@ff/ui/Notification";
 import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
+import "../properties/PropertyTags";
+
 import CVAnnotationView from "../../components/CVAnnotationView";
 import CVAnnotationsTask, { EAnnotationsTaskMode } from "../../components/CVAnnotationsTask";
 import { TaskView } from "../../components/CVTask";
-import { ELanguageStringType, ELanguageType } from "client/schema/common";
+import { ELanguageType } from "client/schema/common";
 
 import sanitizeHtml from 'sanitize-html';
 import CVMediaManager from "client/components/CVMediaManager";
@@ -130,7 +132,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view .property=${inProps.article}></sv-property-view>
-                <sv-property-view .property=${inProps.tags}></sv-property-view>
+                <sv-property-tags .property=${inProps.tags} .tagCloud=${this.getTagCloud()}></sv-property-tags>
                 <sv-property-view .property=${inProps.title}></sv-property-view>
                 <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
                 <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
@@ -163,6 +165,11 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
                 </div>
             </div>
         </div>`;
+    }
+
+    protected getTagCloud(): string[] {
+        return this.activeDocument?.setup.viewer.outs.tagCloud.value
+            .split(",").map(t => t.trim()) || [];
     }
 
     protected onTextEdit(event: ILineEditChangeEvent)
