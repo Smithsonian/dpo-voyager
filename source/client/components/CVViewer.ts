@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { ACESFilmicToneMapping, NeutralToneMapping, NoToneMapping, Mesh } from "three";
+import { NeutralToneMapping, NoToneMapping, Mesh } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
-import { EDerivativeQuality } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import CVAnnotationView, { IActiveTagUpdateEvent, IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
@@ -30,6 +30,7 @@ import CVLanguageManager from "./CVLanguageManager";
 import CVARManager from "./CVARManager";
 import {getFocusableElements} from "../utils/focusHelpers";
 import CVSetup from "./CVSetup";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +43,7 @@ export default class CVViewer extends Component
 
     private _rootElement: HTMLElement = null;
     private _needsAnnoFocus: boolean = false;
+    private _modelLoadCount: number = 0;
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
@@ -63,6 +65,7 @@ export default class CVViewer extends Component
 
     protected static readonly outs = {
         tagCloud: types.String("Tags.Cloud"),
+        sceneLoaded: types.Boolean("ViewerR.SceneLoaded", false),
     };
 
     ins = this.addInputs(CVViewer.ins);
@@ -96,6 +99,9 @@ export default class CVViewer extends Component
 
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
+    }
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
     }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
@@ -374,10 +380,22 @@ export default class CVViewer extends Component
 
         // update variant list
         const variantSet = new Set(this.ins.variant.schema.options);
-        this.getGraphComponents(CVModel2).forEach(model => {
+        const models = this.getGraphComponents(CVModel2);
+        models.forEach(model => {
             model.ins.variant.schema.options.forEach(variantSet.add, variantSet);
         });
         this.ins.variant.setOptions([...variantSet]);
+
+        // if all models in scene have loaded derivatives closest to scene quality, consider scene fully loaded.
+        if(this.assetManager.outs.initialLoad.value && 
+            event.quality === event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality) {
+            if(++this._modelLoadCount === models.length) {
+                this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+                this.analytics.resetTimer();
+                this.assetManager.outs.initialLoad.setValue(false);
+                this.outs.sceneLoaded.setValue(true);
+            }
+        }
     }
 
     protected focusTags() {
