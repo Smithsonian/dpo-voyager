@@ -27,6 +27,7 @@ import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import CVAnalytics from "./CVAnalytics";
 import CVAssetReader from "./CVAssetReader";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -239,6 +240,17 @@ export default class CVAudioManager extends Component
         if(this.isPlaying && id == this.activeId) {
             this.stop();
         }
+
+        // check for audio ids in annotations
+        const views = this.system.getComponents(CVAnnotationView); 
+        views.forEach(component => {
+            component.getAnnotations().forEach(annotation => {
+                if(annotation.data.audioId === id) {
+                    annotation.set("audioId", "");
+                    component.updateAnnotation(annotation);
+                }
+            });
+        });
 
         if(id == this._narrationId) {
             this.narrationId = "";
