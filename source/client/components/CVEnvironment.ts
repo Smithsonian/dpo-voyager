@@ -57,6 +57,7 @@ export default class CVEnvironment extends Component
     private _currentIdx = 0;
     private _imageOptions: string[] = images.slice();
     private _loadingCount = 0;
+    private _initialized = false;
     private _isLegacy = false;      // flag if scene is legacy (no loaded env light)
     private _isLegacyRefl = false;  // fkag if scene is legacy and has reflective material
 
@@ -124,9 +125,10 @@ export default class CVEnvironment extends Component
             if(!this.graph.hasComponent(CVEnvironmentLight)) {
                 this.addLightComponent(false);
             }
+            this._initialized = true;
         }
 
-        if(ins.imageIndex.changed && (ins.enabled.value || ins.visible.value))
+        if(ins.imageIndex.changed && ((ins.enabled.value && this._initialized) || ins.visible.value))
         {
             this.loadEnvironmentMap();
         }
@@ -142,7 +144,7 @@ export default class CVEnvironment extends Component
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
         }
         if(ins.enabled.changed) {
-            if(ins.enabled.value) 
+            if(ins.enabled.value && this._initialized) 
             {
                 this.loadEnvironmentMap();
             }
