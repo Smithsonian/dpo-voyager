@@ -243,6 +243,12 @@ Version: ${ENV_VERSION}
                 }
 
                 return document;
+            })
+            .finally(() => {
+                // Make sure load-dependent properties initialized
+                const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
+                setup.environment.ins.initialize.set();
+                setup.navigation.ins.lightsFollowCamera.set();
             });
     }
 
@@ -388,11 +394,8 @@ Version: ${ENV_VERSION}
             this.setLanguage(props.lang);
         }
 
-        // Make sure environment is properly initialized
-        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
-        setup.environment.ins.initialize.set();
-
         // Re-cache postload setups
+        const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
         setup.ins.saveState.set();
     }
 
