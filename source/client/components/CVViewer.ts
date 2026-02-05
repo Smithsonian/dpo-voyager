@@ -32,6 +32,7 @@ import {getFocusableElements} from "../utils/focusHelpers";
 import CVSetup from "./CVSetup";
 import { CLight } from "./lights/CVLight";
 import CVAssetManager from "./CVAssetManager";
+import CVOrbitNavigation from "./CVOrbitNavigation";
 import CPulse from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -367,6 +368,12 @@ export default class CVViewer extends Component
         }
 
         this.ins.activeAnnotation.setValue(id);
+
+        const navigation = this.getGraphComponent(CVOrbitNavigation, true);
+        if (navigation) {
+            navigation.ins.autoRotation.setValue(false);
+            navigation.ins.promptActive.setValue(false);
+        }
 
         if (targetAnnotation.data.viewId && targetAnnotation.data.viewId.length > 0 && !this.ar.outs.isPresenting.value) {
             const setup = this.getGraphComponent(CVSetup);
