@@ -17,6 +17,8 @@ export default class CVSunLight extends CSunLight implements ICVLight {
     static readonly text: string = "Sun";
     static readonly icon: string = "sun";
 
+    public readonly AUTO_PROPERTIES = ["Light.Intensity", "Light.Color"];
+
     get settingProperties() {
         return [
             this.ins.enabled,
