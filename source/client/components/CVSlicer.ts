@@ -200,7 +200,7 @@ export default class CVSlicer extends Component
         }
 
         const shader = material.userData.shader;
-        shader.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
+        shader?.uniforms.cutPlaneColor.value.fromArray(ins.color.value);
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)
