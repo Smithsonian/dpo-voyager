@@ -131,6 +131,7 @@ export default class CVAssetManager extends Component
 
             if(ins.initialLoad.value) {
                 outs.initialLoad.setValue(true);
+                ins.initialLoad.setValue(false);
             }
         }
 

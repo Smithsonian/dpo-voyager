@@ -183,14 +183,16 @@ export default class CVMediaManager extends CAssetManager
                 newModel.node.name = name;
                 newModel.ins.name.setValue(name);
                 newModel.ins.quality.setValue(quality);
-                newModel.once<IModelLoadEvent>("model-load", () => selection.selectNode(newModel.node), this);
+                newModel.once<IModelLoadEvent>("model-load", () => {selection.selectNode(newModel.node); 
+                    this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
             else {
                 model.derivatives.remove(EDerivativeUsage.Web3D, quality);
                 model.derivatives.createModelAsset(filepath, quality)
                 model.ins.quality.setValue(quality);
                 model.outs.updated.set();
-                selection.selectNode(model.node);
+                model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
+                    this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
         }).catch(e => {});
     }

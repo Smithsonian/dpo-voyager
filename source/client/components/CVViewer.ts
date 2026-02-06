@@ -386,9 +386,11 @@ export default class CVViewer extends Component
         });
         this.ins.variant.setOptions([...variantSet]);
 
-        // if all models in scene have loaded derivatives closest to scene quality, consider scene fully loaded.
+        // if all models in scene have loaded derivatives closest to scene quality
+        // (or greater than Thumb with LOD enabled), consider scene fully loaded.
         if(this.assetManager.outs.initialLoad.value && 
-            event.quality === event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality) {
+            (this.getGraphComponent(CVSetup).derivatives.ins.enabled.value && event.quality > EDerivativeQuality.Thumb
+            || event.quality === event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality)) {
             if(++this._modelLoadCount === models.length) {
                 this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
                 this.analytics.resetTimer();
