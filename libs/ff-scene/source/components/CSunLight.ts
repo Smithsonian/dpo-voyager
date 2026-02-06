@@ -109,6 +109,10 @@ export default class CSunLight extends CLight {
         return [x, y, z];
     }
 
+    get nonEditableProperties(): string[] {
+        return ["Light.Intensity", "Light.Color"];
+    }
+
     update(context: IUpdateContext) {
         super.update(context);
         const light = this.light;
