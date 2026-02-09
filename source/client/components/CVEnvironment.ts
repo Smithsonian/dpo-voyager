@@ -28,6 +28,7 @@ import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import CAssetManager, { IAssetEntry, IAssetTreeChangeEvent } from "@ff/scene/components/CAssetManager";
 
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
@@ -81,18 +82,35 @@ export default class CVEnvironment extends Component
     protected get renderer(){
         return this.getSystemComponent(CRenderer);
     }
+    protected get assetManager() {
+        return this.getSystemComponent(CAssetManager);
+    }
 
     create()
     {
         super.create();
         this.system.components.on(CVMeta, this.onMetaComponent, this);
         this.graph.components.on(CVModel2, this.onModelComponent, this);
+        
+        const assetManager = this.assetManager;
+        if (assetManager) {
+            assetManager.on<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
+            if (assetManager.root) {
+                this.scanForEnvironmentImages();
+            }
+        }
     }
 
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.system.components.off(CVMeta, this.onMetaComponent, this);
+        
+        const assetManager = this.assetManager;
+        if (assetManager) {
+            assetManager.off<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
+        }
+        
         if(this.sceneNode.scene.environment){
             //Ensure scene does not keep a reference to our texture
             //Because otherwise it would get re-uploaded and possibly leak
@@ -265,6 +283,43 @@ export default class CVEnvironment extends Component
                 });
             });
         }
+    }
+
+    protected onAssetTreeChange(event: IAssetTreeChangeEvent) {
+        this.scanForEnvironmentImages();
+    }
+
+    protected scanForEnvironmentImages() {
+        const assetManager = this.assetManager;
+        if (!assetManager || !assetManager.root) {
+            console.error("Asset manager or asset tree root not available, cannot scan for environment images");
+            return;
+        }
+
+        this.scanAssetTreeForImages(assetManager.root)
+            .filter(filePath => !this._imageOptions.includes(filePath))
+            .forEach(filePath => this._imageOptions.push(filePath));
+
+        this.ins.imageIndex.setOptions(this._imageOptions.map((item, index) => index.toString()));
+    }
+
+    protected scanAssetTreeForImages(entry: IAssetEntry): string[] {
+        const files: string[] = [];
+
+        if (entry.info.path && !entry.info.folder) {
+            const pathLower = entry.info.path.toLowerCase();
+            if (pathLower.endsWith('.hdr')) {
+                files.push(entry.info.path);
+            }
+        }
+
+        if (entry.children && entry.children.length > 0) {
+            entry.children.forEach(child => {
+                files.push(...this.scanAssetTreeForImages(child));
+            });
+        }
+
+        return files;
     }
     
     protected addLightComponent(enabled: boolean) {
