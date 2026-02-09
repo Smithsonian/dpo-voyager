@@ -97,7 +97,12 @@ export class SettingsTree extends Tree<ITreeNode>
         if (!node.property) {
             return html`<div class="ff-text ff-label ff-ellipsis">${node.text}</div>`;
         }
-        return html`<sv-property-view .property=${node.property} ?disabled=${node.property.schema.disabled}></sv-property-view>`;
+
+        const component = node.property.group?.linkable;
+        const nonEditableProperties: string[] = component["nonEditableProperties"] || [];
+        const disabled = nonEditableProperties.includes(node.property.path);
+
+        return html`<sv-property-view .property=${node.property} ?disabled=${disabled}></sv-property-view>`;
     }
 
     protected createNodeTreeNode(node: Node): ITreeNode

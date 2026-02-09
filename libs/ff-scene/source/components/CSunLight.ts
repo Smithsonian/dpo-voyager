@@ -41,9 +41,6 @@ export default class CSunLight extends CLight {
         this.ins.intensity.setValue(2);
         this.object3D = sunlight;
         this.light.target.matrixAutoUpdate = false;
-
-        this.ins.intensity.schema.disabled = true;
-        this.ins.color.schema.disabled = true;
     }
 
     get light(): DirectionalLight {
@@ -110,6 +107,10 @@ export default class CSunLight extends CLight {
         const z = this.ins.sunDistance.value * Math.sin(altitude);
 
         return [x, y, z];
+    }
+
+    get nonEditableProperties(): string[] {
+        return ["Light.Intensity", "Light.Color"];
     }
 
     update(context: IUpdateContext) {

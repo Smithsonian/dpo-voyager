@@ -6,7 +6,7 @@
  * @author Carsten Schnober <c.schnober@esciencecenter.nl>
  */
 
-import { CameraHelper, DirectionalLight, Mesh, MeshBasicMaterial, SphereGeometry } from "three";
+import { DirectionalLight, Mesh, MeshBasicMaterial, SphereGeometry } from "three";
 import LightHelper from "./LightHelper";
 
 export default class SunLightHelper extends LightHelper {
@@ -33,9 +33,6 @@ export default class SunLightHelper extends LightHelper {
         this.sun.frustumCulled = false;
 
         this.add(this.sun);
-
-        const cameraHelper = new CameraHelper(light.shadow.camera);
-        this.add(cameraHelper);
     }
 
     update() {
