@@ -118,10 +118,29 @@ export default class CSunLight extends CLight {
         const light = this.light;
         const ins = this.ins;
 
-        const sunPosition = SunCalc.getPosition(
-            this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
-        );
-        
+        if (ins.datetime.changed || ins.latitude.changed || ins.longitude.changed) {
+
+            const sunPosition = SunCalc.getPosition(
+                this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
+            );
+
+            const [x, y, z] = this.calculatePosition(sunPosition.altitude, sunPosition.azimuth);
+
+            light.position.fromArray([x, y, z]);
+            //ins.position.setValue([x, y, z]);
+            light.target.position.fromArray(ins.target.value);
+            light.updateMatrix();
+            light.target.updateMatrix();
+
+            const sunDegrees = sunPosition.altitude * (180 / Math.PI);
+
+            const sunColor = this.calculateColor(sunDegrees);
+            ins.color.setValue(sunColor);
+
+            const sunIntensity = this.calculateIntensity(sunDegrees);
+            ins.intensity.setValue(sunIntensity);
+        }
+
         if (ins.shadowSize.changed) {
             const camera = light.shadow.camera;
             const halfSize = ins.shadowSize.value * 0.5;
@@ -132,21 +151,12 @@ export default class CSunLight extends CLight {
             camera.updateProjectionMatrix();
         }
 
-        const sunDegrees = sunPosition.altitude * (180 / Math.PI);
-
-        const sunColor = this.calculateColor(sunDegrees);
-        ins.color.setValue(sunColor);
-
-        const sunIntensity = this.calculateIntensity(sunDegrees);
-        ins.intensity.setValue(sunIntensity);
+        
 
         if (ins.color.changed || ins.intensity.changed) {
+            light.color.fromArray(ins.color.value);
             light.intensity = ins.intensity.value * Math.PI;  //TODO: Remove PI factor here and in CVLightsTask when we can support physically correct lighting units
         }
-
-        const [x, y, z] = this.calculatePosition(sunPosition.altitude, sunPosition.azimuth);
-        this.transform.ins.position.setValue([x, y, z]);
-        ins.position.setValue([x, y, z]);
 
         return true;
     }

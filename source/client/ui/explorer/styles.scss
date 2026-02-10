@@ -1266,34 +1266,24 @@ $tour-entry-indent: 12px;
     }
   }
 
-&.sv-property-datetime {
-  .ff-input[type="datetime-local"] {
-    width: auto;
-    background-color: common.$color-background-lighter;
-    border: 1px solid common.$color-primary;
-    border-radius: 2px;
-    padding: 4px 6px;
-    cursor: pointer;
-    transition: all common.$tx-short;
+  &.sv-property-datetime {
+    .ff-input[type="datetime-local"] {
+      width: auto;
+      border: 1px solid common.$color-background-lighter;
+      color-scheme: dark;
+      cursor: pointer;
+      transition: all common.$tx-short;
 
-    &:hover {
-      background-color: color.adjust(common.$color-background-lighter, $lightness: 5%);
-      box-shadow: 0 0 4px color.adjust(common.$color-primary, $alpha: -0.5);
-    }
+      &:hover {
+        background-color: color.adjust(common.$color-background-lighter, $lightness: 5%);
+        box-shadow: 0 0 4px color.adjust(common.$color-primary, $alpha: -0.5);
+      }
 
-    &:focus {
-      outline: none;
-      background-color: color.adjust(common.$color-background-lighter, $lightness: 8%);
-      box-shadow: 0 0 6px color.adjust(common.$color-primary, $alpha: -0.3);
+      &:focus {
+        box-shadow: 0 0 6px color.adjust(common.$color-primary, $alpha: -0.3);
+      }
     }
   }
-}
-
-&.sv-property-timezone {
-  .sv-property-field{
-    width: 10em;
-  }
-}
 
   &.sv-property-color {
     position: relative;
@@ -1512,7 +1502,7 @@ $tour-entry-indent: 12px;
   }
 }
 
-.sv-tape-tool-view, .sv-slice-tool-view, .sv-environment-tool-view, .sv-light-tool-view {
+.sv-tape-tool-view, .sv-slice-tool-view, .sv-environment-tool-view {
   .sv-tool-controls {
     flex-wrap: wrap;
   }

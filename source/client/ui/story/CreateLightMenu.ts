@@ -13,9 +13,9 @@ export default class CreateLightMenu extends Popup {
 
     protected errorString: string = "";
 
-    static show(parent: HTMLElement, language: CVLanguageManager, allowSunLight: boolean): Promise<[ELightType, string]> {
+    static show(parent: HTMLElement, language: CVLanguageManager): Promise<[ELightType, string]> {
 
-        const menu = new CreateLightMenu(language, allowSunLight);
+        const menu = new CreateLightMenu(language);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
@@ -24,11 +24,10 @@ export default class CreateLightMenu extends Popup {
         });
     }
 
-    constructor(language: CVLanguageManager, allowSunLight: boolean) {
+    constructor(language: CVLanguageManager) {
         super();
 
         this.language = language;
-        this.allowSunLight = allowSunLight;
 
         this.position = "center";
         this.modal = true;
@@ -110,7 +109,11 @@ export default class CreateLightMenu extends Popup {
                     <select class="ff-input" .value=${this.lightType} @change=${this.onChange}>
                         ${Object.keys(ELightType)
                             .filter(key => typeof ELightType[key] === 'number')
-                            .map((key) => html`<option value=${ELightType[key]} ?disabled=${key === "sun" && !this.allowSunLight}>${key}</option>`)}
+                            .map((key) => {
+                                const light = language.system.getComponent("CV"+key.charAt(0).toUpperCase() + key.slice(1)+"Light", true);
+                                const isDisabled = light && light.isGraphSingleton;
+                                return html`<option value=${ELightType[key]} ?disabled=${isDisabled}>${key}</option>`
+                            })}
                     </select>
                     </div>
                 </div>

@@ -10,12 +10,14 @@ import { EShadowMapResolution } from "@ff/scene/components/CLight";
 import CSunLight from "@ff/scene/components/CSunLight";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
+import NVNode from "client/nodes/NVNode";
 
 export default class CVSunLight extends CSunLight implements ICVLight {
     static readonly typeName: string = "CVSunLight";
     static readonly type: TLightType = "sun";
     static readonly text: string = "Sun";
     static readonly icon: string = "sun";
+    static readonly isGraphSingleton = true;
 
     get settingProperties() {
         return [
@@ -46,6 +48,13 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.intensityFactor,
             this.ins.sunDistance,
         ];
+    }
+
+    create()
+    {
+        super.create();
+
+        (this.node as NVNode).transform.addTag("no_settings");
     }
 
     dispose(): void {

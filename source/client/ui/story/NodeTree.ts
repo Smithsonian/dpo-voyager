@@ -198,12 +198,8 @@ class NodeTree extends Tree<NVNode>
         const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
         const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
 
-        const sunExists: boolean = parentNode.transform.children.some(child => {
-            const light = (child.node as NVNode).light
-            return light && light instanceof CVSunLight;
-        });
         CreateLightMenu
-            .show(mainView, language, !sunExists)
+            .show(mainView, language)
             .then(([selectedType, name]) => {
                 const lightNode = NodeTree.createLightNode(parentNode, selectedType, name);
                 parentNode.transform.addChild(lightNode.transform);
