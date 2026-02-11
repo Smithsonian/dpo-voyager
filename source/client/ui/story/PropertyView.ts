@@ -100,7 +100,10 @@ export default class PropertyView extends CustomElement
         }else if(property.type === "number"){
             return html`<sv-property-number aria-disabled=${disabled} name=${label} .property=${property}></sv-property-number>`
         }else if(property.type === "object" && schema.semantic === "datetime"){
-            return html`<sv-property-datetime aria-disabled=${disabled} name=${label} .property=${property}></sv-property-datetime>`;
+            return html`
+                <sv-property-datetime aria-disabled=${disabled} name=${label} .property=${property}></sv-property-datetime>
+                <sv-property-timezone aria-disabled=${disabled} name="Time Zone" .property=${property}></sv-property-timezone>
+            `;
         }else{
             console.warn("Unhandled property :", property.name);
             return html`<div class="sv-property-name">${label}</div><div class="sv-property-group">${property.value} (not editable)</div>`;

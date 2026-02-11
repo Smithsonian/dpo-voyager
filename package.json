@@ -1,6 +1,6 @@
 {
     "name": "voyager",
-    "version": "0.57.1",
+    "version": "0.58.0",
     "description": "Smithsonian DPO Voyager - 3D Explorer and Tool Suite",
     "scripts": {
         "start": "npm run server",
@@ -65,7 +65,6 @@
         "hotkeys-js": "^3.8.7",
         "lit-element": "^2.5.1",
         "lit-html": "^1.4.1",
-        "luxon": "^3.7.2",
         "moment": "^2.29.4",
         "morgan": "^1.10.0",
         "nodemon": "^3.0.1",

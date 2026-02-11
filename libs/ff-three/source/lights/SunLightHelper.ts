@@ -6,12 +6,14 @@
  * @author Carsten Schnober <c.schnober@esciencecenter.nl>
  */
 
-import { CameraHelper, DirectionalLight, Mesh, MeshBasicMaterial, SphereGeometry } from "three";
-import LightHelper from "./LightHelper";
+import { DirectionalLight, Mesh, MeshBasicMaterial, SphereGeometry, Vector3 } from "three";
+import DirectionalLightHelper from "./DirectionalLightHelper";
 
-export default class SunLightHelper extends LightHelper {
+export default class SunLightHelper extends DirectionalLightHelper {
     public readonly type: string = 'SunLightHelper';
     light: DirectionalLight;
+
+    private _cachedIntensity = 0;
 
     protected sun: Mesh;
 
@@ -33,17 +35,25 @@ export default class SunLightHelper extends LightHelper {
         this.sun.frustumCulled = false;
 
         this.add(this.sun);
-
-        const cameraHelper = new CameraHelper(light.shadow.camera);
-        this.add(cameraHelper);
     }
 
     update() {
-        super.update();
-
-        if (this.sun.material instanceof MeshBasicMaterial) {
-            this.sun.material.color = this.light.color;
+        if (this.sun.material instanceof MeshBasicMaterial &&
+            (!(this.light.intensity === this._cachedIntensity) || this.light.intensity === 0)) 
+        {
+            this.sun.material.color.set(this.light.color);
             this.sun.material.needsUpdate = true;
+
+            const lightPos = this.light.position;
+            const startPos = this.target.geometry.getAttribute('instanceStart');
+            const endPos = this.target.geometry.getAttribute('instanceEnd');
+           
+            startPos.setXYZ(0, -lightPos.x, -lightPos.y, -lightPos.z);
+            endPos.setXYZ(0, 0, 0, 0);
+            startPos.needsUpdate = true;
+            endPos.needsUpdate = true;
+
+            this._cachedIntensity = this.light.intensity;
         }
     }
 

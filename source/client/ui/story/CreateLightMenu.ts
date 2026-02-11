@@ -13,22 +13,21 @@ export default class CreateLightMenu extends Popup {
 
     protected errorString: string = "";
 
-    static show(parent: HTMLElement, language: CVLanguageManager, allowSunLight: boolean): Promise<[ELightType, string]> {
+    static show(parent: HTMLElement, language: CVLanguageManager): Promise<[ELightType, string]> {
 
-        const menu = new CreateLightMenu(language, allowSunLight);
+        const menu = new CreateLightMenu(language);
         parent.appendChild(menu);
 
         return new Promise((resolve, reject) => {
             menu.on("confirm", () => resolve([menu.lightType, menu.name]));
-            menu.on("close", () => reject());
+            menu.on("close", () => {});
         });
     }
 
-    constructor(language: CVLanguageManager, allowSunLight: boolean) {
+    constructor(language: CVLanguageManager) {
         super();
 
         this.language = language;
-        this.allowSunLight = allowSunLight;
 
         this.position = "center";
         this.modal = true;
@@ -110,7 +109,11 @@ export default class CreateLightMenu extends Popup {
                     <select class="ff-input" .value=${this.lightType} @change=${this.onChange}>
                         ${Object.keys(ELightType)
                             .filter(key => typeof ELightType[key] === 'number')
-                            .map((key) => html`<option value=${ELightType[key]} ?disabled=${key === "sun" && !this.allowSunLight}>${key}</option>`)}
+                            .map((key) => {
+                                const light = language.system.getComponent("CV"+key.charAt(0).toUpperCase() + key.slice(1)+"Light", true);
+                                const isDisabled = light && light.isGraphSingleton;
+                                return html`<option value=${ELightType[key]} ?disabled=${isDisabled}>${key}</option>`
+                            })}
                     </select>
                     </div>
                 </div>
@@ -120,7 +123,7 @@ export default class CreateLightMenu extends Popup {
                     <input class="ff-input" type="text" style="text-align:right;" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
                 </div>
                 <div class="ff-flex-row">
-                    <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create Light")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
+                    <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
                     <div class="ff-flex-spacer"></div>
                     <ff-button icon="close" class="ff-close-button ff-control" text=${language.getUILocalizedString("Cancel")} title=${language.getUILocalizedString("Cancel")} @click=${this.close}></ff-button>
                 </div>

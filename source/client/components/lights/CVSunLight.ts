@@ -8,17 +8,16 @@
 
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
 import CSunLight from "@ff/scene/components/CSunLight";
-import { DateTime } from "luxon";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
+import NVNode from "client/nodes/NVNode";
 
 export default class CVSunLight extends CSunLight implements ICVLight {
     static readonly typeName: string = "CVSunLight";
     static readonly type: TLightType = "sun";
     static readonly text: string = "Sun";
     static readonly icon: string = "sun";
-
-    public readonly AUTO_PROPERTIES = ["Light.Intensity", "Light.Color"];
+    static readonly isGraphSingleton = true;
 
     get settingProperties() {
         return [
@@ -51,6 +50,13 @@ export default class CVSunLight extends CSunLight implements ICVLight {
         ];
     }
 
+    create()
+    {
+        super.create();
+
+        (this.node as NVNode).transform.addTag("no_settings");
+    }
+
     dispose(): void {
         if (this.ins.shadowEnabled.value && this.light.shadow.map) {
             this.light.shadow.map.dispose();
@@ -77,7 +83,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined ? DateTime.fromISO(data.sun.datetime) : ins.datetime.schema.preset,
+            datetime: data.sun?.datetime !== undefined ? new Date(data.sun.datetime) : ins.datetime.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
             intensityFactor: data.sun?.intensityFactor !== undefined ? data.sun.intensityFactor : ins.intensityFactor.schema.preset,

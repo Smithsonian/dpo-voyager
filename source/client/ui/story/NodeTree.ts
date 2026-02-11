@@ -27,9 +27,11 @@ import { ELightType, ICVLight } from "../../components/lights/CVLight";
 import CVSunLight from "../../components/lights/CVSunLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
+import Notification from "@ff/ui/Notification";
 import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
+import CVOrbitNavigation from "client/components/CVOrbitNavigation";
 import CVScene from "client/components/CVScene";
 import unitScaleFactor from "client/utils/unitScaleFactor";
 import { EUnitType } from "client/schema/common";
@@ -56,12 +58,17 @@ class NodeTree extends Tree<NVNode>
         this.nodeProvider = this.system.getMainComponent(CVNodeProvider);
     }
 
+    protected get language() {
+        return this.system.getComponent(CVLanguageManager);
+    }
+
     protected connected()
     {
         super.connected();
         this.documentProvider.on<IActiveDocumentEvent>("active-component", this.onUpdate, this);
         this.nodeProvider.on<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.nodeProvider.on<INodesEvent>("scoped-nodes", this.onUpdate, this);
+        this.language.outs.uiLanguage.on("value", this.onUpdate, this);
     }
 
     protected disconnected()
@@ -69,6 +76,7 @@ class NodeTree extends Tree<NVNode>
         this.nodeProvider.off<INodesEvent>("scoped-nodes", this.onUpdate, this);
         this.nodeProvider.off<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
+        this.language.outs.uiLanguage.on("value", this.onUpdate, this);
         super.disconnected();
     }
 
@@ -101,12 +109,12 @@ class NodeTree extends Tree<NVNode>
             icons.push(html`<ff-icon class="sv-icon-model" name=${node.model.icon}></ff-icon>`);
         }
         if (node.name === "Lights") {
-            buttons.push(html`<ff-button icon="create" title="Create Light" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
+            buttons.push(html`<ff-button icon="create" title="${this.language.getUILocalizedString("Create Light")}" class="sv-add-light-btn" @click=${(e: MouseEvent) => this.onClickAddLight(e, node)}></ff-button>`);
         }
         if (node.light) {
             icons.push(html`<ff-icon class="${node.light.ins.enabled.value ? "sv-icon-light ff-icon": "sv-icon-disabled ff-icon"}" name=${node.light.icon}></ff-icon>`);
             if(node.light.canDelete) {
-                buttons.push(html`<ff-button icon="trash" title="Delete Light" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
+                buttons.push(html`<ff-button icon="trash" title="${this.language.getUILocalizedString("Delete Light")}" class="sv-delete-light-btn" @click=${(e: MouseEvent) => this.onClickDeleteLight(e, node)}></ff-button>`);
             }
         }
         if (node.camera) {
@@ -190,12 +198,8 @@ class NodeTree extends Tree<NVNode>
         const mainView = document.getElementsByTagName('voyager-story')[0] as HTMLElement;
         const language: CVLanguageManager = this.documentProvider.activeComponent.setup.language;
 
-        const sunExists: boolean = parentNode.transform.children.some(child => {
-            const light = (child.node as NVNode).light
-            return light && light instanceof CVSunLight;
-        });
         CreateLightMenu
-            .show(mainView, language, !sunExists)
+            .show(mainView, language)
             .then(([selectedType, name]) => {
                 const lightNode = NodeTree.createLightNode(parentNode, selectedType, name);
                 parentNode.transform.addChild(lightNode.transform);
@@ -222,6 +226,14 @@ class NodeTree extends Tree<NVNode>
 
         newLight.ins.name.setValue(name);
         newLight.update(this);  // trigger light update before helper creation to ensure proper init
+
+        if (newType === ELightType.sun) {
+            const orbitNav = scene.getGraphComponent(CVOrbitNavigation);
+            if (orbitNav && orbitNav.ins.lightsFollowCamera.value) {
+                orbitNav.ins.lightsFollowCamera.setValue(false);
+                Notification.show("Lights Follow Camera has been disabled for sunlight in Scene -> Orbit Navigation settings.", "info", 5000);
+            }
+        }
 
         newLight.getGraphComponent(CVScene).ins.lightUpdated.set();
 

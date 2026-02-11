@@ -70,7 +70,7 @@ export default class CVLightTool extends CVTool
     {
         this.lights = next ? next.getInnerComponents(CLight).filter((light) => light.ins.enabled.value) : [];
         this.ins.light.setOptions(this.lights.map(light => light.ins.name.value));
-        this.outs.light.setValue(this.lights[0] ?? null);
+        this.outs.light.setValue(this.lights[this.ins.light.getValidatedValue()] ?? null);
 
         super.onActiveDocument(previous, next);
     }
@@ -104,9 +104,6 @@ export class LightToolView extends ToolView<CVLightTool>
     private renderSunLightProperties(light: CSunLight, language): unknown {
         return html`
             <sv-property-datetime input="datetime-local" .property=${light.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
-            <sv-property-timezone .property=${light.ins.datetime} name=${language.getLocalizedString("Time Zone")}></sv-property-timezone>
-            <sv-property-number .property=${light.ins.latitude} name=${language.getLocalizedString("Latitude")} min="-90" max="90"></sv-property-number>
-            <sv-property-number .property=${light.ins.longitude} name=${language.getLocalizedString("Longitude")} min="-180" max="180"></sv-property-number>
         `;
     }
 
@@ -127,8 +124,8 @@ export class LightToolView extends ToolView<CVLightTool>
         const lights = tool.lights;
         const document = this.activeDocument;
 
-        if (!lights || !document) {
-            return html`No editable lights in this scene.`;
+        if (!lights || !document || lights.length == 0) {
+            return html`<div class="sv-section sv-centered">No editable lights in this scene.</div>`;
         }
 
         const activeLight = tool.outs.light.value;
@@ -201,8 +198,10 @@ export class LightToolView extends ToolView<CVLightTool>
     protected async setFocus()
     {
         await this.updateComplete;
-        const focusElement = this.getElementsByTagName("sv-property-options")[0] as HTMLElement;
-        focusElement.focus();
+        const idx = this.tool.lights.findIndex(light => light === this.tool.outs.light.value);
+        const focusElement = this.getElementsByTagName("sv-property-options")[0]
+            ?.getElementsByTagName("ff-button")[idx >= 0 ? idx : 0] as HTMLElement;
+        focusElement?.focus();
     }
 
     protected onClose(event: MouseEvent)

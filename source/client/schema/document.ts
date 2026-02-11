@@ -18,7 +18,6 @@
 import { Index } from "@ff/core/types";
 import Vector2 from "@ff/core/Vector2";
 
-import { DateTime } from "luxon";
 import { EUnitType, TUnitType, Vector3, Quaternion, Matrix4, ColorRGB } from "./common";
 import { IMeta } from "./meta";
 import { IModel } from "./model";
@@ -163,7 +162,7 @@ export interface IHemisphereLightProps {
 }
 
 export interface ISunLightProps {
-    datetime?: DateTime;
+    datetime?: Date;
     latitude?: number;
     longitude?: number;
     intensityFactor?: number;
