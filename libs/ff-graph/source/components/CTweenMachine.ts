@@ -17,7 +17,6 @@
 
 import { Dictionary } from "@ff/core/types";
 import { getEasingFunction, EEasingCurve } from "@ff/core/easing";
-import { DateTime } from "luxon";
 
 import Component, { types } from "../Component";
 import Property, { IPropertyDisposeEvent } from "../Property";
@@ -429,7 +428,7 @@ export default class CTweenMachine extends Component
                 let value = valuesB && valuesB[i] !== null ? valuesB[i] : valuesA[i];
 
                 if (property.schema.semantic === "datetime" && typeof value === "string") {
-                    value = DateTime.fromISO(value);
+                    value = new Date(value);                    
                 }
 
                 if (target.isArray) {
