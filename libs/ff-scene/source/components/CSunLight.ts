@@ -118,7 +118,7 @@ export default class CSunLight extends CLight {
         const light = this.light;
         const ins = this.ins;
 
-        if (ins.datetime.changed || ins.latitude.changed || ins.longitude.changed) {
+        if (ins.datetime.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed || ins.sunDistance.changed) {
 
             const sunPosition = SunCalc.getPosition(
                 this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
@@ -127,7 +127,6 @@ export default class CSunLight extends CLight {
             const [x, y, z] = this.calculatePosition(sunPosition.altitude, sunPosition.azimuth);
 
             light.position.fromArray([x, y, z]);
-            //ins.position.setValue([x, y, z]);
             light.target.position.fromArray(ins.target.value);
             light.updateMatrix();
             light.target.updateMatrix();
