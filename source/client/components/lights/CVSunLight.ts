@@ -11,6 +11,10 @@ import CSunLight from "@ff/scene/components/CSunLight";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
 import NVNode from "client/nodes/NVNode";
+import { Vector3 } from "three";
+import CVScene from "../CVScene";
+
+const _vec3 = new Vector3();
 
 export default class CVSunLight extends CSunLight implements ICVLight {
     static readonly typeName: string = "CVSunLight";
@@ -53,7 +57,8 @@ export default class CVSunLight extends CSunLight implements ICVLight {
     create()
     {
         super.create();
-
+        
+        this.light.position.setScalar(0);
         (this.node as NVNode).transform.addTag("no_settings");
     }
 
@@ -63,6 +68,19 @@ export default class CVSunLight extends CSunLight implements ICVLight {
         }
 
         super.dispose()
+    }
+
+    update(context) {
+        super.update(context);
+
+        if(this.ins.intensity.changed) {
+            const scene = this.getSystemComponent(CVScene);
+            _vec3.fromArray(this.transform.ins.position.value);
+            _vec3.normalize().multiplyScalar(scene.outs.boundingRadius.value*1.2);
+            this.transform.ins.position.setValue(_vec3.toArray());
+        }
+
+        return true;
     }
 
     fromDocument(document: IDocument, node: INode): number {

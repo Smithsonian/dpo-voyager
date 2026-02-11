@@ -35,6 +35,7 @@ import { CLight } from "./lights/CVLight";
 import CDirectionalLight from "@ff/scene/components/CDirectionalLight";
 import CAmbientLight from "@ff/scene/components/CAmbientLight";
 import CHemisphereLight from "@ff/scene/components/CHemisphereLight";
+import CSunLight from "@ff/scene/components/CSunLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -236,9 +237,14 @@ export default class CVScene extends CVNode
             lightTransform.children.forEach(light => {
                 const lights = light.getComponents(CLight) as Array<CLight>;
                 for(let lightNode of lights){
-                    if(lightNode instanceof CDirectionalLight){
+                    if(lightNode instanceof CDirectionalLight || lightNode instanceof CSunLight){
 
-                        _vec3.copy(lightNode.light.position);
+                        if(lightNode instanceof CDirectionalLight){
+                            _vec3.copy(lightNode.light.position);
+                        }
+                        else{
+                            _vec3.copy(lightNode.light.parent.position);
+                        }
                         _vec3b.copy(lightNode.light.target.position);
                         const dir = _vec3b.sub(_vec3).normalize();
                         dir.applyEuler(lightNode.transform.object3D.rotation);

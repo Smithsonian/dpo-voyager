@@ -9,6 +9,8 @@
 import { DirectionalLight, Mesh, MeshBasicMaterial, SphereGeometry, Vector3 } from "three";
 import DirectionalLightHelper from "./DirectionalLightHelper";
 
+const _vec3 = new Vector3();
+
 export default class SunLightHelper extends DirectionalLightHelper {
     public readonly type: string = 'SunLightHelper';
     light: DirectionalLight;
@@ -20,7 +22,7 @@ export default class SunLightHelper extends DirectionalLightHelper {
     constructor(light: DirectionalLight, size: number = 1) {
         super(light, size);
 
-        const sunGeometry = new SphereGeometry(size * 10, 16, 16);
+        const sunGeometry = new SphereGeometry(size/2, 16, 16);
         const sunMaterial = new MeshBasicMaterial({
             color: this.light.color,
             opacity: 0.6,
@@ -32,7 +34,8 @@ export default class SunLightHelper extends DirectionalLightHelper {
 
         this.sun = new Mesh(sunGeometry, sunMaterial);
         this.sun.renderOrder = 2;
-        this.sun.frustumCulled = false;
+        this.target.frustumCulled = false;
+        this.target.matrixWorldAutoUpdate = false;
 
         this.add(this.sun);
     }
@@ -44,11 +47,11 @@ export default class SunLightHelper extends DirectionalLightHelper {
             this.sun.material.color.set(this.light.color);
             this.sun.material.needsUpdate = true;
 
-            const lightPos = this.light.position;
+            this.sun.getWorldPosition(_vec3);
             const startPos = this.target.geometry.getAttribute('instanceStart');
             const endPos = this.target.geometry.getAttribute('instanceEnd');
            
-            startPos.setXYZ(0, -lightPos.x, -lightPos.y, -lightPos.z);
+            startPos.setXYZ(0, _vec3.x, _vec3.y, _vec3.z);
             endPos.setXYZ(0, 0, 0, 0);
             startPos.needsUpdate = true;
             endPos.needsUpdate = true;
