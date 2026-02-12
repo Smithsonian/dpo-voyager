@@ -27,7 +27,6 @@ export default class CSunLight extends CLight {
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),
         intensityFactor: types.Number("Light.IntensityFactor", { preset: 5, min: 0 }),
-        sunDistance: types.Number("Light.SunDistance", { preset: 500 }),
     };
 
     ins = this.addInputs<CLight, typeof CSunLight["sunLightIns"]>(CSunLight.sunLightIns);
@@ -102,9 +101,9 @@ export default class CSunLight extends CLight {
 
     protected calculatePosition(altitude: number, azimuth: number): [number, number, number] {
         // See https://stackoverflow.com/a/71968928/1897839
-        const x = this.ins.sunDistance.value * Math.cos(altitude) * Math.sin(azimuth);
-        const y = this.ins.sunDistance.value * Math.cos(altitude) * Math.cos(azimuth);
-        const z = this.ins.sunDistance.value * Math.sin(altitude);
+        const x = Math.cos(altitude) * Math.sin(azimuth);
+        const y = Math.cos(altitude) * Math.cos(azimuth);
+        const z = Math.sin(altitude);
 
         return [x, y, z];
     }
@@ -118,18 +117,14 @@ export default class CSunLight extends CLight {
         const light = this.light;
         const ins = this.ins;
 
-        if (ins.datetime.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed || ins.sunDistance.changed) {
+        if (ins.datetime.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed) {
 
             const sunPosition = SunCalc.getPosition(
                 this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
             );
 
             const [x, y, z] = this.calculatePosition(sunPosition.altitude, sunPosition.azimuth);
-
-            light.position.fromArray([x, y, z]);
-            light.target.position.fromArray(ins.target.value);
-            light.updateMatrix();
-            light.target.updateMatrix();
+            this.transform.ins.position.setValue([x, y, z]);
 
             const sunDegrees = sunPosition.altitude * (180 / Math.PI);
 
@@ -149,8 +144,6 @@ export default class CSunLight extends CLight {
             camera.far = 50*ins.shadowSize.value;
             camera.updateProjectionMatrix();
         }
-
-        
 
         if (ins.color.changed || ins.intensity.changed) {
             light.color.fromArray(ins.color.value);
