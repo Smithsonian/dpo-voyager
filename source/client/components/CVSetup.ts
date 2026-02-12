@@ -117,6 +117,14 @@ export default class CVSetup extends Component
     dispose()
     {
         this._savedSetupData = null;
+
+        const features = CVSetup.featureMap;
+        for (const name in features) {
+            this[name] = null;
+        }
+        this.snapshots = null;
+
+        super.dispose();
     }
 
     update()

@@ -115,6 +115,10 @@ export default class CVAudioManager extends Component
 
         this.language.outs.activeLanguage.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
+
+        this.audioContext.close();
+        this.audioContext = null;
+
         super.dispose();
     }
 

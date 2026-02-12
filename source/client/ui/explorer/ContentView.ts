@@ -108,7 +108,7 @@ export default class ContentView extends DocumentView
         const system = this.system;
         const isLoading = this.assetManager.outs.busy.value;
         const isInitialLoad = this.assetManager.outs.initialLoad.value;
-        const sceneLoaded = this.viewer.outs.sceneLoaded.value;
+        const sceneLoaded = this.viewer?.outs.sceneLoaded.value || false;
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
