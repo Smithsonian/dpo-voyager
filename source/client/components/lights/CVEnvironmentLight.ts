@@ -43,6 +43,13 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
         ];
     }
 
+    get snapshotProperties() {
+        return [
+            this.ins.enabled,
+            this.ins.intensity,
+        ];
+    }
+
     protected environment = null;
 
     create()

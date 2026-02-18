@@ -157,10 +157,19 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
         }
 
         const id = element.parentElement.parentElement.id;
-        const fileProp = id == "filename" ? this.task.ins.filepath : this.task.ins.captionPath;
-        const extText = id == "filename" ? ".mp3" : ".vtt";
+        const type = (id == "filename")? "audio": "subs";
+        const fileProp = (type == "audio") ? this.task.ins.filepath : this.task.ins.captionPath;
 
-        if(filename.toLowerCase().endsWith(extText)) {
+        const ext = filename.toLowerCase().split(".").pop();
+        if(type === "subs" && ext != "vtt"){
+            Notification.show(`Unable to load - Only .vtt files are currently supported.`, "warning");
+        }else if(type === "audio" && ["mp3","m4a","flac","ogg","wav"].indexOf(ext) === -1){
+            Notification.show(`Unable to load - Unsupported audio format .${ext}`, "warning");
+        }else{
+            if(type === "audio" && ext === "m4a"){
+                // Only m4a does not have 100% browser support
+                Notification.show(`.${ext} audio file are not supported by some browsers`, "info", 3000);
+            }
             if(newFile !== null) {
                 const mediaManager = this.system.getMainComponent(CVMediaManager);
                 mediaManager.uploadFile(filename, newFile, mediaManager.root).then(() => fileProp.setValue(filename)).catch(e => {
@@ -171,9 +180,6 @@ export default class AudioTaskView extends TaskView<CVAudioTask>
             else {
                 fileProp.setValue(filename);
             }
-        }
-        else {
-            Notification.show(`Unable to load - Only ${extText} files are currently supported.`, "warning");
         }
 
         element.classList.remove("sv-drop-zone");

@@ -231,8 +231,8 @@ class ExtendedAnnotation extends AnnotationElement
         ${annotation.imageUri && !isTruncated ? html`<div><img alt="${annotationObj.imageAltText}" src="${this.sprite.assetManager.getAssetUrl(annotation.imageUri)}">${annotationObj.imageCredit ? html`<div class="sv-img-credit">${annotationObj.imageCredit}</div>` : null}</div>` : null}
         ${!isTruncated ? html`<p>${unsafeHTML(annotationObj.lead)}</p>` : null}
         ${annotation.audioId && !this.overlayed ? html`<div id="audio_container" @pointerdown=${this.onClickAudio}></div>` : null}
-        ${annotation.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="Read more..." icon="document" @keydown=${this.onKeyDownArticle} @pointerdown=${this.onClickArticle}></ff-button>` : null}
-        ${isTruncated ? html`<ff-button inline id="more-info" text="+more info" @pointerdown=${this.onClickOverlay} ></ff-button>` : null}`;    
+        ${annotation.articleId && !isTruncated ? html`<ff-button inline id="read-more" text="${this.sprite.readMoreText}" icon="document" @keydown=${this.onKeyDownArticle} @pointerdown=${this.onClickArticle}></ff-button>` : null}
+        ${isTruncated ? html`<ff-button inline id="more-info" text="${this.sprite.moreInfoText}" @pointerdown=${this.onClickOverlay} ></ff-button>` : null}`;    
 
         render(contentTemplate, this.contentElement);
 

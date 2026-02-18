@@ -206,7 +206,7 @@ export default class CVAudioManager extends Component
 
     getTimeElapsed() {
         if(this.audioPlayer) {
-            return Math.floor(this.audioPlayer.currentTime);
+            return Math.round(this.audioPlayer.currentTime * Math.pow(10, 3)) / Math.pow(10, 3);
         }
         else {
             return 0;
@@ -214,7 +214,7 @@ export default class CVAudioManager extends Component
     }
 
     setTimeElapsed(time: number) {
-        if(this.audioPlayer) { 
+        if(this.audioPlayer && this.audioView) { 
             if(this.audioPlayer.seekable.length === 0) {
                 this.audioPlayer.addEventListener("canplay",() => this.setTimeElapsed(time), {once: true});
             }      
@@ -370,14 +370,15 @@ export default class CVAudioManager extends Component
                 //this.audioPlayer.load();
             }
 
-            if(this.audioPlayer.children[0]) {
-                this.audioPlayer.children[0].remove();
-            }
-
             // Set caption track source
             const captionUri = clip.captionUris[ELanguageType[this.language.outs.activeLanguage.getValidatedValue()] as TLanguageType];
             if(captionUri && (this.audioPlayer.children.length == 0 || 
                 (this.audioPlayer.children[0] as HTMLTrackElement).src != this.assetManager.getAssetUrl(captionUri))) {
+
+                if(this.audioPlayer.children[0]) {
+                    this.audioPlayer.children[0].remove();
+                    this.ins.activeCaption.setValue("");
+                }
 
                 const textTrack = document.createElement('track');
                 this.audioPlayer.append(textTrack);
@@ -385,6 +386,10 @@ export default class CVAudioManager extends Component
                 textTrack.track.mode = "showing";
                 textTrack.addEventListener("cuechange", this.onCueChange);
                 textTrack.addEventListener("load", this.onLoadTrack);
+            }
+            else if(!captionUri && this.audioPlayer.children[0]) {
+                this.audioPlayer.children[0].remove();
+                this.ins.activeCaption.setValue("");
             }
         }
     }
@@ -483,7 +488,7 @@ export class AudioView extends CustomElement
         const duration = this.audio.getDuration(this.audioId);
         const elapsedStr = this.formatSeconds(this.elapsed);
         const durationStr = duration == "pending" ? duration : this.formatSeconds(parseInt(duration));
-        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" max="${duration}" value="${this.elapsed}" class="slider">`;
+        return html`<ff-button title="play audio" id="play-btn" icon="${isPlaying ? "pause" : "triangle-right"}" @pointerdown=${(e) => this.playAudio(e, this.audioId)}></ff-button><div aria-hidden="true" class="sv-timer">${elapsedStr}/${durationStr}</div><input title="audio slider" id="time-slider" @pointerdown=${this.onDrag} @change=${this.onTimeChange} type="range" min="0" step="0.1" max="${duration}" value="${this.elapsed}" class="slider">`;
     }
 
     protected playAudio(event: MouseEvent, id: string) {

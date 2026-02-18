@@ -559,6 +559,8 @@ export default class CVAnnotationView extends CObject3D
 
         sprite.assetManager = this.assetManager;
         sprite.audioManager = this.audio;
+        sprite.readMoreText = this.language.getLocalizedString("Read more...");
+        sprite.moreInfoText = this.language.getLocalizedString("+more info");
 
         this._sprites[annotation.id] = sprite;
         this.object3D.add(sprite);
@@ -605,10 +607,14 @@ export default class CVAnnotationView extends CObject3D
         ins.activeTags.set();
 
         // update sprites
+        let readMoreText = language.getLocalizedString("Read more...");
+        let moreInfoText = language.getLocalizedString("+more info");
         for (const key in this._annotations) {
             const annotation = this._annotations[key];
             const sprite = this._sprites[annotation.id];
             if (sprite) {
+                sprite.readMoreText = readMoreText;
+                sprite.moreInfoText = moreInfoText;
                 sprite.update();
             }
         }
