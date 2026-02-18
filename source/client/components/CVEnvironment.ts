@@ -232,18 +232,14 @@ export default class CVEnvironment extends Component
 
             const mapName = this._imageOptions[ins.imageIndex.value];
 
-            if(images.includes(mapName)) {
-                this._loadingCount++;
-                this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
+            
+            this._loadingCount++;
+            (images.includes(mapName) ? this.assetReader.getSystemTexture("images/" + mapName) : this.assetReader.getTexture(mapName))
+                .then(texture => { this.updateEnvironmentMap(texture, mapName); })
+                .catch(error => {
+                    console.error(`Failed to load environment map '${mapName}':`, error);
+                    this._loadingCount--;
                 });
-            }
-            else {
-                this._loadingCount++;
-                this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
-                });
-            }
             this._currentIdx = ins.imageIndex.value;
         }
     }
@@ -290,36 +286,13 @@ export default class CVEnvironment extends Component
     }
 
     protected scanForEnvironmentImages() {
-        const assetManager = this.assetManager;
-        if (!assetManager || !assetManager.root) {
-            console.error("Asset manager or asset tree root not available, cannot scan for environment images");
-            return;
-        }
-
-        this.scanAssetTreeForImages(assetManager.root)
-            .filter(filePath => !this._imageOptions.includes(filePath))
-            .forEach(filePath => this._imageOptions.push(filePath));
+        this.assetManager.root.children
+            .map(entry => entry.info.path)
+            .filter(path => path.toLowerCase().endsWith(".hdr"))
+            .filter(path => !this._imageOptions.includes(path))
+            .forEach(path => this._imageOptions.push(path));
 
         this.ins.imageIndex.setOptions(this._imageOptions.map((item, index) => index.toString()));
-    }
-
-    protected scanAssetTreeForImages(entry: IAssetEntry): string[] {
-        const files: string[] = [];
-
-        if (entry.info.path && !entry.info.folder) {
-            const pathLower = entry.info.path.toLowerCase();
-            if (pathLower.endsWith('.hdr')) {
-                files.push(entry.info.path);
-            }
-        }
-
-        if (entry.children && entry.children.length > 0) {
-            entry.children.forEach(child => {
-                files.push(...this.scanAssetTreeForImages(child));
-            });
-        }
-
-        return files;
     }
     
     protected addLightComponent(enabled: boolean) {
