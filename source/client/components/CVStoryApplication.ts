@@ -118,7 +118,10 @@ export default class CVStoryApplication extends Component
 
                 if(storyMode !== ETaskMode.Standalone) {
                     this.assetWriter.putJSON(json, cvDocument.assetPath)
-                    .then(() => new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000))
+                    .then(() =>{
+                        cvDocument.updateDocumentData(data);
+                        new Notification(`Successfully uploaded file to '${cvDocument.assetPath}'`, "info", 4000)
+                    })
                     .catch(e => new Notification(`Failed to upload file to '${cvDocument.assetPath}'`, "error", 8000));
                 }
                 else {
@@ -142,11 +145,12 @@ export default class CVStoryApplication extends Component
             }
 
             if (ins.download.changed) {
+                console.debug("Modified:", cvDocument.isModified());
                 const data = cvDocument.deflateDocument(components);
                 const json = JSON.stringify(data, null, 2);
 
                 const fileName = this.assetManager.getAssetName(cvDocument.assetPath);
-                download.json(json, fileName);
+                //download.json(json, fileName);
             }
         }
 
@@ -160,7 +164,7 @@ export default class CVStoryApplication extends Component
      */
     protected beforeUnload(event)
     {
-        event.returnValue = "x";
+        if(this.documentProvider.activeComponent.isModified()) event.returnValue = "x";
         //return "x";
     }
 }

@@ -156,8 +156,7 @@
                         }
                     },
                     "required": [
-                        "yfov",
-                        "znear"
+                        "yfov"
                     ]
                 },
                 "orthographic": {
@@ -184,9 +183,7 @@
                         }
                     },
                     "required": [
-                        "ymag",
-                        "znear",
-                        "zfar"
+                        "ymag"
                     ]
                 },
                 "autoNearFar": {

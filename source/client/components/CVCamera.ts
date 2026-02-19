@@ -94,21 +94,23 @@ export default class CVCamera extends CCamera
             data.type = "perspective";
             data.perspective = {
                 yfov: ins.fov.value,
-                znear: ins.near.value,
-                zfar: ins.far.value
             };
         }
         else {
             data.type = "orthographic";
             data.orthographic = {
                 ymag: ins.size.value,
-                znear: ins.near.value,
-                zfar: ins.far.value
             }
         }
 
         data.autoNearFar = this.addIns.autoNearFar.value;
-
+        if(!data.autoNearFar){
+            Object.assign(data.type === "perspective"? data.perspective:data.orthographic, {
+                znear: ins.near.value,
+                zfar: ins.far.value
+            });
+        }
+  
         document.cameras = document.cameras || [];
         const cameraIndex = document.cameras.length;
         document.cameras.push(data);
