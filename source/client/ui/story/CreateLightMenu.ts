@@ -98,7 +98,7 @@ export default class CreateLightMenu extends Popup {
         const language = this.language;
 
         return html`
-        <div class="sv-light-menu" role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
+        <div role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("Create Light")}</div>
@@ -113,7 +113,7 @@ export default class CreateLightMenu extends Popup {
                 <div class="ff-flex-row">
                     <label class="ff-label">${language.getUILocalizedString("Name")}</label>
                     <div class="ff-flex-spacer"></div>
-                    <input class="ff-input" type="text" style="text-align:right;" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
+                    <input class="ff-input" type="text" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
                 </div>
                 <div class="ff-flex-row">
                     <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>
