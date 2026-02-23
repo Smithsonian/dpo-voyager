@@ -30,11 +30,6 @@ import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import CAssetManager, { IAssetEntry, IAssetTreeChangeEvent } from "@ff/scene/components/CAssetManager";
 
-interface IEnvironmentLoadStateEvent {
-    type: "load-state";
-    loading: boolean;
-}
-
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
 
@@ -67,10 +62,6 @@ export default class CVEnvironment extends Component
     private _loadingCount = 0;
     private _isLegacy = false;      // flag if scene is legacy (no loaded env light)
     private _isLegacyRefl = false;  // fkag if scene is legacy and has reflective material
-
-    get isLoading() {
-        return this._loadingCount > 0;
-    }
 
     get settingProperties() {
         return [
@@ -259,12 +250,12 @@ export default class CVEnvironment extends Component
             const requestId = ++this._loadRequestId;
 
             
-            this.setLoadingCount(this._loadingCount + 1);
+            this._loadingCount++;
             (images.includes(mapName) ? this.assetReader.getSystemTexture("images/" + mapName) : this.assetReader.getTexture(mapName))
                 .then(texture => { this.updateEnvironmentMap(texture, mapName, requestId); })
                 .catch(error => {
                     console.error(`Failed to load environment map '${mapName}':`, error);
-                    this.setLoadingCount(this._loadingCount - 1);
+                    this._loadingCount--;
                 });
         }
     }
@@ -307,18 +298,7 @@ export default class CVEnvironment extends Component
             texture.dispose();
             texture = null;
         }
-        this.setLoadingCount(this._loadingCount - 1);
-    }
-
-    protected setLoadingCount(value: number) {
-        const next = Math.max(0, value);
-        const wasLoading = this._loadingCount > 0;
-        this._loadingCount = next;
-        const isLoading = this._loadingCount > 0;
-
-        if (wasLoading !== isLoading) {
-            this.emit<IEnvironmentLoadStateEvent>({ type: "load-state", loading: isLoading });
-        }
+        this._loadingCount--;
     }
 
     protected onMetaComponent(event: IComponentEvent<CVMeta>)
