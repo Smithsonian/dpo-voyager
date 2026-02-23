@@ -97,7 +97,7 @@ export default class CVEnvironment extends Component
         if (assetManager) {
             assetManager.on<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
             if (assetManager.root) {
-                this.scanForEnvironmentImages();
+                this.scanForEnvironmentImages(assetManager.root);
             }
         }
     }
@@ -306,11 +306,15 @@ export default class CVEnvironment extends Component
     }
 
     protected onAssetTreeChange(event: IAssetTreeChangeEvent) {
-        this.scanForEnvironmentImages();
+        this.scanForEnvironmentImages(this.assetManager.root);
     }
 
-    protected scanForEnvironmentImages() {
-        this.assetManager.root.children
+    protected scanForEnvironmentImages(root: IAssetEntry) {
+        root.children
+            .filter(entry => entry.info.folder)
+            .forEach(folder => this.scanForEnvironmentImages(folder));
+        
+        root.children
             .map(entry => entry.info.path)
             .filter(path => path.toLowerCase().endsWith(".hdr"))
             .filter(path => !this._imageOptions.includes(path))
