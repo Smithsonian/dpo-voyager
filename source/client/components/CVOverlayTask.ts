@@ -490,7 +490,7 @@ export default class CVOverlayTask extends CVTask
         if(this.overlays[this.ins.activeIndex.value].fromFile) {
             const map = this.overlays[this.ins.activeIndex.value].texture;
             ctx.save();
-            ctx.drawImage(map.image,0,0);
+            ctx.drawImage(map.image as CanvasImageSource,0,0);
             ctx.restore();
         }
 
