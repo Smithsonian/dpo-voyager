@@ -56,6 +56,7 @@ export default class CVEnvironment extends Component
     private _target: WebGLRenderTarget = null;
     private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
+    private _loadRequestId = 0;
     private _imageOptions: string[] = images.slice();
     private _loadingCount = 0;
     private _isLegacy = false;      // flag if scene is legacy (no loaded env light)
@@ -158,6 +159,9 @@ export default class CVEnvironment extends Component
         {
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
+            this.sceneNode.scene.environmentRotation = _euler;
+            this.sceneNode.scene.backgroundRotation = _euler;
+            this.renderer.forceRender();
         }
         if(ins.enabled.changed) {
             if(ins.enabled.value) 
@@ -231,31 +235,51 @@ export default class CVEnvironment extends Component
             }
 
             const mapName = this._imageOptions[ins.imageIndex.value];
+            if(!mapName) {
+                throw new Error("Error loading map name for image index " + ins.imageIndex.value);
+            }
+
+            const requestId = ++this._loadRequestId;
 
             
             this._loadingCount++;
             (images.includes(mapName) ? this.assetReader.getSystemTexture("images/" + mapName) : this.assetReader.getTexture(mapName))
-                .then(texture => { this.updateEnvironmentMap(texture, mapName); })
+                .then(texture => { this.updateEnvironmentMap(texture, mapName, requestId); })
                 .catch(error => {
                     console.error(`Failed to load environment map '${mapName}':`, error);
                     this._loadingCount--;
                 });
-            this._currentIdx = ins.imageIndex.value;
         }
     }
 
-    protected updateEnvironmentMap(texture: Texture, name: string)
+    protected updateEnvironmentMap(texture: Texture, name: string, requestId: number)
     {
         const ins = this.ins;
         const mapIdx = this._imageOptions.indexOf(name);
 
-        if(mapIdx == ins.imageIndex.value) {
-            this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+        if(requestId === this._loadRequestId && mapIdx == ins.imageIndex.value) {
+            const previousTarget = this._target;
+            this._target = this._pmremGenerator.fromEquirectangular(texture);
+
+            this.sceneNode.scene.environment = null;
+            this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
             this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
+            if(this.sceneNode.scene.environment) {
+                (this.sceneNode.scene.environment as Texture).needsUpdate = true;
+            }
+            if(this.sceneNode.scene.background) {
+                (this.sceneNode.scene.background as Texture).needsUpdate = true;
+            }
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
+
+            if(previousTarget && previousTarget !== this._target) {
+                previousTarget.dispose();
+            }
+
+            this._currentIdx = ins.imageIndex.value;
         }
 
         texture.dispose();
