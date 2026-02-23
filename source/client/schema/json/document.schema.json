@@ -216,7 +216,8 @@
                         "spot",
                         "hemisphere",
                         "rect",
-                        "environment"
+                        "environment",
+                        "sun"
                     ]
                 },
                 "color": {

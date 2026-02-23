@@ -25,11 +25,14 @@ import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDoc
 import CVLanguageManager from "../../components/CVLanguageManager";
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
 import { ELightType, ICVLight } from "../../components/lights/CVLight";
+import CVSunLight from "../../components/lights/CVSunLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
+import Notification from "@ff/ui/Notification";
 import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
+import CVOrbitNavigation from "client/components/CVOrbitNavigation";
 import CVScene from "client/components/CVScene";
 import unitScaleFactor from "client/utils/unitScaleFactor";
 import { EUnitType } from "client/schema/common";
@@ -230,6 +233,14 @@ class NodeTree extends Tree<NVNode>
         newLight.transform.ins.scale.setValue([scale,scale,scale]);
         
         newLight.update(this);  // trigger light update before helper creation to ensure proper init
+
+        if (newType === ELightType.sun) {
+            const orbitNav = scene.getGraphComponent(CVOrbitNavigation);
+            if (orbitNav && orbitNav.ins.lightsFollowCamera.value) {
+                orbitNav.ins.lightsFollowCamera.setValue(false);
+                Notification.show("Lights Follow Camera has been disabled for sunlight in Scene -> Orbit Navigation settings.", "info", 5000);
+            }
+        }
 
         newLight.getGraphComponent(CVScene).ins.lightUpdated.set();
 

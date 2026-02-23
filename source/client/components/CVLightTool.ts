@@ -16,17 +16,22 @@
  */
 
 import CLight from "@ff/scene/components/CLight";
+import { IComponentEvent } from "@ff/graph/Component";
 
 import "../ui/properties/PropertyBoolean";
 import "../ui/properties/PropertyOptions";
 import "../ui/properties/PropertySlider";
 import "../ui/properties/PropertyColor";
+import "../ui/properties/PropertyString";
+import "../ui/properties/PropertyDateTime";
+import "../ui/properties/PropertyNumber";
 
 import CVDocument from "./CVDocument";
 
 import CVTool, { types, customElement, html, ToolView } from "./CVTool";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import NVNode from "client/nodes/NVNode";
+import CSunLight from "@ff/scene/components/CSunLight";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,6 +101,23 @@ export class LightToolView extends ToolView<CVLightTool>
         super.disconnected();
     }
 
+    private renderSunLightProperties(light: CSunLight, language): unknown {
+        return html`
+            <sv-property-datetime input="datetime-local" .property=${light.ins.datetime} name=${language.getLocalizedString("Date/Time")}></sv-property-datetime>
+        `;
+    }
+
+    private renderCommonLightProperties(light: CLight, language): unknown {
+        return html`
+                <!-- <sv-property-boolean .property=${light.ins.visible} name="Switch"></sv-property-boolean> -->
+                <sv-property-slider .property=${light.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="10"></sv-property-slider>
+        `;
+    }
+
+    private renderColorInput(light: CLight, language): unknown {
+        return html`<sv-property-color .property=${light.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+    }
+    
     protected render()
     {
         const tool = this.tool;
@@ -110,16 +132,27 @@ export class LightToolView extends ToolView<CVLightTool>
         const navigation = document.setup.navigation;
         const language = document.setup.language;
 
-        const colorInput = html`<sv-property-color .property=${activeLight.ins.color} .compact=${true} .floating=${false} name=${language.getLocalizedString("Color")}></sv-property-color>`;
+        var lightDetails = null;
 
-        const lightDetails = activeLight ? html`<div class="sv-section">
-            <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
-            <div class="sv-tool-controls">
-                <!-- <sv-property-boolean .property=${activeLight.ins.visible} name="Switch"></sv-property-boolean> -->
-                <sv-property-slider .property=${activeLight.ins.intensity} name=${language.getLocalizedString("Intensity")} min="0" max="2"></sv-property-slider>
-                ${!activeLight.is(CVEnvironmentLight) ? colorInput : null}
-            </div>
-        </div>` : null;
+        if (activeLight) {
+            var lightControls = null;
+
+            if (activeLight.is(CSunLight)) {
+                lightControls = this.renderSunLightProperties(activeLight as CSunLight, language);
+            } else if (activeLight.is(CVEnvironmentLight)) {
+                lightControls = this.renderCommonLightProperties(activeLight, language);
+            } else {
+                lightControls = html`
+                    ${this.renderCommonLightProperties(activeLight, language)}
+                    ${this.renderColorInput(activeLight, language)}
+                `;
+            }
+
+          lightDetails = html`<div class="sv-section">
+              <ff-button class="sv-section-lead" transparent tabbingIndex="-1" icon="cog"></ff-button>
+              <div class="sv-tool-controls">${lightControls}</div>
+          </div>`;
+        }
 
         return html`${lightDetails}<div class="sv-section"><ff-button class="sv-section-lead" title=${language.getLocalizedString("Close Tool")} @click=${this.onClose} transparent icon="close"></ff-button>
             <div class="sv-tool-controls">
@@ -128,7 +161,7 @@ export class LightToolView extends ToolView<CVLightTool>
             </div>
         </div>`;
     }
-
+    
     protected onActiveDocument(previous: CVDocument, next: CVDocument)
     {
         if (previous) {
