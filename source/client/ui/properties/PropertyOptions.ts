@@ -120,12 +120,12 @@ export default class PropertyOptions extends PropertyBase
         let buttons;
         if (indexMap) {
             buttons = indexMap.map(index =>
-                html`<ff-button role="radio" aria-checked=${this.isSelected(index)?"true":"false"} ?selected=${this.isSelected(index)} ?disabled=${this.ariaDisabled === "true"} index=${index} .text=${language ? language.getLocalizedString(options[index]) : options[index]} @click=${this.onButtonClick}>
+                html`<ff-button role="radio" aria-checked=${this.isSelected(index)?"true":"false"} ?selected=${this.isSelected(index)} index=${index} .text=${language ? language.getLocalizedString(options[index]) : options[index]} @click=${this.onButtonClick}>
                     </ff-button>`);
         }
         else {
             buttons = options.map((option, index) =>
-                option?html`<ff-button role="radio" aria-checked=${this.isSelected(index)?"true":"false"} ?selected=${this.isSelected(index)} ?disabled=${this.ariaDisabled === "true"} index=${index} .text=${language ? language.getLocalizedString(option) : option}  @click=${this.onButtonClick}>
+                option?html`<ff-button role="radio" aria-checked=${this.isSelected(index)?"true":"false"} ?selected=${this.isSelected(index)} index=${index} .text=${language ? language.getLocalizedString(option) : option}  @click=${this.onButtonClick}>
                     </ff-button>`:null)
         }
 
@@ -148,10 +148,6 @@ export default class PropertyOptions extends PropertyBase
 
     protected onButtonClick(event: IButtonClickEvent)
     {
-        if (this.ariaDisabled === "true") {
-            return;
-        }
-
         const value = event.target.index;
         if(this.property.isMulti()){
             let selection = this.property.value.slice();
@@ -169,10 +165,6 @@ export default class PropertyOptions extends PropertyBase
 
     protected onKeyDown(e: KeyboardEvent)
     {
-        if (this.ariaDisabled === "true") {
-            return;
-        }
-
         if(e.code === "ArrowUp" || e.code === "ArrowLeft") {
             const options = this.getElementsByTagName("ff-button");
             const currentIdx = Array.from(options).findIndex(option => e.target === option);
