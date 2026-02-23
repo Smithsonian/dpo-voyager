@@ -318,6 +318,7 @@ export default class CVEnvironment extends Component
             .map(entry => entry.info.path)
             .filter(path => path.toLowerCase().endsWith(".hdr"))
             .filter(path => !this._imageOptions.includes(path))
+            .sort()
             .forEach(path => this._imageOptions.push(path));
 
         this.ins.imageIndex.setOptions(this._imageOptions.map((item, index) => index.toString()));
