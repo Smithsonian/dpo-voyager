@@ -54,7 +54,6 @@ export default class CVEnvironment extends Component
     ins = this.addInputs(CVEnvironment.envIns);
 
     private _target: WebGLRenderTarget = null;
-    private _backgroundTexture: Texture = null;
     private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
     private _loadRequestId = 0;
@@ -123,11 +122,6 @@ export default class CVEnvironment extends Component
             this.sceneNode.scene.background = null;
         }
 
-        if(this._backgroundTexture) {
-            this._backgroundTexture.dispose();
-            this._backgroundTexture = null;
-        }
-
         if(this._target) {
             //this._target.texture?.dispose();
             //this._target.texture = null;
@@ -182,7 +176,7 @@ export default class CVEnvironment extends Component
             {
                 this.loadEnvironmentMap();
             }
-            this.sceneNode.scene.background = ins.visible.value ? this._backgroundTexture : null;
+            this.sceneNode.scene.background = ins.visible.value ? this._target?.texture : null;
             ins.visible.value && this.sceneNode.scene.background ? (this.sceneNode.scene.background as Texture).needsUpdate = true : null;
             this.background.ins.visible.setValue(!ins.visible.value);
         }
@@ -191,8 +185,6 @@ export default class CVEnvironment extends Component
         if(this._target && !ins.enabled.value && !ins.visible.value){
             this._target.dispose();
             this._target = null;
-            this._backgroundTexture?.dispose();
-            this._backgroundTexture = null;
             this.sceneNode.scene.environment = null;
             this.sceneNode.scene.background = null;           
         }
@@ -267,14 +259,12 @@ export default class CVEnvironment extends Component
 
         if(requestId === this._loadRequestId && mapIdx == ins.imageIndex.value) {
             const previousTarget = this._target;
-            const previousBackgroundTexture = this._backgroundTexture;
             this._target = this._pmremGenerator.fromEquirectangular(texture);
-            this._backgroundTexture = texture;
 
             this.sceneNode.scene.environment = null;
             this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
-            this.sceneNode.scene.background = ins.visible.value ? this._backgroundTexture : null;
+            this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
             if(this.sceneNode.scene.environment) {
                 (this.sceneNode.scene.environment as Texture).needsUpdate = true;
             }
@@ -288,16 +278,12 @@ export default class CVEnvironment extends Component
             if(previousTarget && previousTarget !== this._target) {
                 previousTarget.dispose();
             }
-            if(previousBackgroundTexture && previousBackgroundTexture !== this._backgroundTexture) {
-                previousBackgroundTexture.dispose();
-            }
 
             this._currentIdx = ins.imageIndex.value;
         }
-        else {
-            texture.dispose();
-            texture = null;
-        }
+
+        texture.dispose();
+        texture = null;
         this._loadingCount--;
     }
 
