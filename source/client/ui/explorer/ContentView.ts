@@ -65,6 +65,9 @@ export default class ContentView extends DocumentView
     protected get navigation() {
         return this.activeDocument ? this.activeDocument.setup.navigation : null;
     }
+    protected get viewer() {
+        return this.activeDocument ? this.activeDocument.setup.viewer : null;
+    }
     protected get renderer() {
         return this.system.getMainComponent(CRenderer);
     }
@@ -104,7 +107,8 @@ export default class ContentView extends DocumentView
     {
         const system = this.system;
         const isLoading = this.assetManager.outs.busy.value;
-        const isInitialLoad = this.assetManager.initialLoad;
+        const isInitialLoad = this.assetManager.outs.initialLoad.value;
+        const sceneLoaded = this.viewer?.outs.sceneLoaded.value || false;
 
         let readerVisible = false;
         let readerPosition = EReaderPosition.Overlay;
@@ -145,7 +149,7 @@ export default class ContentView extends DocumentView
 
             if(controls && promptEnabled) {
                 const isInUse = navigation.ins.isInUse.value;
-                promptVisible = !isLoading && isInitialLoad && !isInUse && !readerVisible;
+                promptVisible = !isLoading && !isInUse && !readerVisible && sceneLoaded;
                 navigation.ins.promptActive.setValue(promptVisible);
             }
         }
@@ -165,14 +169,6 @@ export default class ContentView extends DocumentView
             }
         }
 
-        if(!isLoading && isInitialLoad) { 
-            // send load timer event
-            this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
-            this.analytics.resetTimer();
-
-            this.assetManager.initialLoad = false;
-        }
-
         if (readerVisible) {
             if (readerPosition === EReaderPosition.Right) {
                 return html`<div class="ff-fullsize sv-content-split">
@@ -186,7 +182,7 @@ export default class ContentView extends DocumentView
                             </div>
                         </div>
                     </div>
-                    <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+                    <sv-spinner ?visible=${isLoading && isInitialLoad} .assetPath=${this.assetPath}></sv-spinner>
                     ${captionView}`;
             }
             if (readerPosition === EReaderPosition.Overlay) {
@@ -194,7 +190,7 @@ export default class ContentView extends DocumentView
                     <div class="sv-reader-container">
                         <sv-reader-view .system=${system} @close=${this.onReaderClose}></sv-reader-view>
                     </div>
-                    <sv-spinner ?visible=${isLoading} .assetPath=${this.assetPath}></sv-spinner>
+                    <sv-spinner ?visible=${isLoading && isInitialLoad} .assetPath=${this.assetPath}></sv-spinner>
                     ${captionView}
                     </div>`;
             }

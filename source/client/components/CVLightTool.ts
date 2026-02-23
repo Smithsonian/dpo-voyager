@@ -170,7 +170,7 @@ export class LightToolView extends ToolView<CVLightTool>
         await this.updateComplete;
         const idx = this.tool.lights.findIndex(light => light === this.tool.outs.light.value);
         const focusElement = this.getElementsByTagName("sv-property-options")[0]
-            .getElementsByTagName("ff-button")[idx >= 0 ? idx : 0] as HTMLElement;
+            ?.getElementsByTagName("ff-button")[idx >= 0 ? idx : 0] as HTMLElement;
         focusElement?.focus();
     }
 
