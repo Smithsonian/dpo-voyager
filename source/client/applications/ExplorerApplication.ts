@@ -248,7 +248,6 @@ Version: ${ENV_VERSION}
                 // Make sure load-dependent properties initialized
                 const setup = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup;
                 setup.environment.ins.initialize.set();
-                setup.navigation.ins.lightsFollowCamera.set();
             });
     }
 
