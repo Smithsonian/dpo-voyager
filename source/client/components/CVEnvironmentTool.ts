@@ -66,6 +66,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
 
         const environment = setup.environment;
         const language = setup.language;
+        const envMapLoading = environment.isLoading;
 
         //let name0 = isSolid ? " " : (isLinear ? "Top" : "Inner");
         //let name1 = isSolid ? "" : (isLinear ? "Btm" : "Outer");
@@ -79,7 +80,7 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
                 <sv-property-color title="Grid Color" .compact=${true} .floating=${false} class="sv-nogap" .property=${grid.ins.color} name=" "></sv-property-color>
                 <sv-property-boolean .property=${floor.ins.visible} .language=${language} name=${language.getLocalizedString("Floor")}></sv-property-boolean>
                 <sv-property-color title="Floor Color" .compact=${true} .floating=${false} class="sv-nogap" .property=${floor.ins.color} name=" "></sv-property-color>
-                <sv-property-options .property=${environment.ins.imageIndex} name="Env Map"></sv-property-options>
+                <sv-property-options .property=${environment.ins.imageIndex} name="Env Map" aria-disabled=${envMapLoading ? "true" : "false"}></sv-property-options>
             </div>
         </div>`;
     }
@@ -88,11 +89,15 @@ export class EnvironmentToolView extends ToolView<CVEnvironmentTool>
     {
         if (previous) {
             const background = previous.setup.background;
+            const environment = previous.setup.environment;
             background.ins.style.off("value", this.onUpdate, this);
+            environment.off("load-state", this.onUpdate, this);
         }
         if (next) {
             const background = next.setup.background;
+            const environment = next.setup.environment;
             background.ins.style.on("value", this.onUpdate, this);
+            environment.on("load-state", this.onUpdate, this);
         }
 
         this.requestUpdate();
