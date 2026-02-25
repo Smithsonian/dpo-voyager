@@ -407,6 +407,10 @@ $color-component-meta-light: #d9d998;
     margin: 4px;
     padding: 6px 16px;
     background-color: common.$color-background;
+
+    &[disabled] {
+      background-color: common.$color-primary-dark;
+    }
   }
 }
 
