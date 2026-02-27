@@ -78,9 +78,10 @@ export default class Annotation extends Document<IAnnotation, IAnnotation>
             }
         }
 
-        const hasAltContent = Object.keys(this.data.taglist).some(key => this.data.taglist[key] && key !== ELanguageType[this.language]);
+        const hasAltContent = Object.keys(this.data.taglist).some(key => this.data.taglist[key].length > 0 && key !== ELanguageType[this.language]);
 
-        return this.data.taglist[ELanguageType[this.language]] || (hasAltContent ? ["Missing content"] : []);
+        return this.data.taglist[ELanguageType[this.language]] && this.data.taglist[ELanguageType[this.language]].length > 0 ? 
+            this.data.taglist[ELanguageType[this.language]] : (hasAltContent ? ["Missing content"] : []);
     }
     set tags(inTags: string[]) {
         this.data.taglist[ELanguageType[this.language]] = inTags;
