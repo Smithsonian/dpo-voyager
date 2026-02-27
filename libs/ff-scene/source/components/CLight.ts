@@ -67,7 +67,7 @@ export default class CLight extends CObject3D
             this.node.name = ins.name.value;
         }
 
-        if (ins.tags.changed || ins.activeTags.changed) {
+        if ((ins.tags.changed || ins.activeTags.changed) && ins.tags.value.length > 0) {
             const tags = ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
             const activeTags = ins.activeTags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
 
@@ -75,7 +75,7 @@ export default class CLight extends CObject3D
             this.ins.enabled.setValue(!tags.length || hasActiveTag); 
         }
 
-        if (ins.tags.changed) {
+        if (ins.tags.changed && ins.tags.value.length > 0) {
             this.emit<ITagUpdateEvent>({ type: "tag-update" });
         }
         
