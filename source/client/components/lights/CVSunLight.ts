@@ -28,6 +28,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
             this.ins.datetime,
             this.ins.latitude,
             this.ins.longitude,
