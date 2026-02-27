@@ -20,6 +20,7 @@ import DirectionalLightHelper from "@ff/three/lights/DirectionalLightHelper";
 import PointLightHelper from "@ff/three/lights/PointLightHelper";
 import AmbientLightHelper from "@ff/three/lights/AmbientLightHelper";
 import RectLightHelper from "@ff/three/lights/RectLightHelper";
+import SunLightHelper from "@ff/three/lights/SunLightHelper";
 
 import CObject3D from "./CObject3D";
 import CTransform from "./CTransform";
@@ -34,6 +35,7 @@ const helpers = [
     [AmbientLightHelper, "HemisphereLight"],
     [AmbientLightHelper, "AmbientLight"],
     [RectLightHelper, "RectAreaLight"],
+    [SunLightHelper, "SunLight"],
 ] as const;
 
 const _inputs = {
@@ -133,6 +135,10 @@ export default class CPickSelection extends CSelection
                 if((object3D as any).isLight){
                     
                     let HelperCl = helpers.find(([h,type])=>type === object3D.type)?.[0];
+                    if (component.typeName === "CVSunLight" && object3D.type === "DirectionalLight") {
+                        HelperCl = SunLightHelper;  // special case because Sunlight also uses a DirectionalLight
+                    }
+
                     if(HelperCl){
                         object3D.updateMatrix();
                         bracket = new HelperCl(object3D as any);

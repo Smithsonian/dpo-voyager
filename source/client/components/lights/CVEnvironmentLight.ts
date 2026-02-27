@@ -98,6 +98,7 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
         });
+        ins.tags.setValue(data.tags || "");
 
         return node.light;
     }
@@ -110,6 +111,10 @@ export default class CVEnvironmentLight extends CLight implements ICVLight
             enabled: ins.enabled.value,
             intensity: ins.intensity.value,
         } as ILight;
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         data.type = CVEnvironmentLight.type;
 

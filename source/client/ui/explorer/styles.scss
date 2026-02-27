@@ -1266,6 +1266,30 @@ $tour-entry-indent: 12px;
     }
   }
 
+  &.sv-property-datetime {
+    .ff-input[type="datetime-local"] {
+      width: auto;
+      border: 1px solid common.$color-background-lighter;
+      color-scheme: dark;
+      cursor: pointer;
+      transition: all common.$tx-short;
+
+      @supports (-moz-appearance:none) {
+          word-spacing: -6px;
+          letter-spacing: -1px;
+      }
+
+      &:hover {
+        background-color: color.adjust(common.$color-background-lighter, $lightness: 5%);
+        box-shadow: 0 0 4px color.adjust(common.$color-primary, $alpha: -0.5);
+      }
+
+      &:focus {
+        box-shadow: 0 0 6px color.adjust(common.$color-primary, $alpha: -0.3);
+      }
+    }
+  }
+
   &.sv-property-color {
     position: relative;
     display: block;
@@ -1309,6 +1333,7 @@ $tour-entry-indent: 12px;
       .ff-input, .ff-unit{
         position: relative;
         touch-action: none;
+        width: auto;
       }
 
       .ff-bar, .ff-unit{

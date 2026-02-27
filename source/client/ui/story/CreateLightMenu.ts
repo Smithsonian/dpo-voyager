@@ -6,6 +6,7 @@ import { focusTrap, getFocusableElements } from "../../utils/focusHelpers";
 @customElement("sv-create-light-menu")
 export default class CreateLightMenu extends Popup {
     protected language: CVLanguageManager = null;
+    protected allowSunLight: boolean = true;
 
     protected lightType: ELightType = ELightType.directional;
     protected name: string = ELightType[this.lightType];
@@ -74,6 +75,7 @@ export default class CreateLightMenu extends Popup {
         if (Object.values(ELightType).includes(this.name)) {
             // adapt name to new light type, unless it was customized before
             this.name = ELightType[this.lightType];
+            this.name = this.name[0].toUpperCase() + this.name.slice(1);
         }
 
         this.requestUpdate();
@@ -98,7 +100,7 @@ export default class CreateLightMenu extends Popup {
         const language = this.language;
 
         return html`
-        <div class="sv-light-menu" role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
+        <div role="region" aria-label="Create Light Menu" @keydown=${e => this.onKeyDownMain(e)}>
             <div class="ff-flex-column ff-fullsize">
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-title">${language.getUILocalizedString("Create Light")}</div>
@@ -106,14 +108,20 @@ export default class CreateLightMenu extends Popup {
                 <div class="ff-flex-row">
                     <div class="ff-dropdown">
                     <select class="ff-input" .value=${this.lightType} @change=${this.onChange}>
-                        ${Object.keys(ELightType).filter(key => typeof ELightType[key] === 'number').map((key) => html`<option value=${ELightType[key]}>${key}</option>`)}
+                        ${Object.keys(ELightType)
+                            .filter(key => typeof ELightType[key] === 'number')
+                            .map((key) => {
+                                const light = language.system.getComponent("CV"+key.charAt(0).toUpperCase() + key.slice(1)+"Light", true);
+                                const isDisabled = light && light.isGraphSingleton;
+                                return html`<option value=${ELightType[key]} ?disabled=${isDisabled}>${key}</option>`
+                            })}
                     </select>
                     </div>
                 </div>
                 <div class="ff-flex-row">
                     <label class="ff-label">${language.getUILocalizedString("Name")}</label>
                     <div class="ff-flex-spacer"></div>
-                    <input class="ff-input" type="text" style="text-align:right;" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
+                    <input class="ff-input" type="text" .value=${this.name} @input=${(e: Event) => this.name = (e.target as HTMLInputElement).value} />
                 </div>
                 <div class="ff-flex-row">
                     <ff-button icon="check" class="ff-button ff-control" text=${language.getUILocalizedString("Create")} title=${language.getUILocalizedString("Create Light")} @click=${this.confirm}></ff-button>

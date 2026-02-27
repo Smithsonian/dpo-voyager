@@ -57,6 +57,7 @@ export interface ITagUpdateEvent extends ITypedEvent<"tag-update">
 export interface IModelLoadEvent extends ITypedEvent<"model-load">
 {
     quality: EDerivativeQuality;
+    model: CVModel2;
 }
 
 /**
@@ -517,8 +518,6 @@ export default class CVModel2 extends CObject3D
         // trigger automatic loading of derivatives if active
         this.ins.autoLoad.set();
 
-        this.assetManager.initialLoad = true;
-
         return node.model;
     }
 
@@ -887,11 +886,6 @@ export default class CVModel2 extends CObject3D
                     return;
                 }
 
-                // set asset manager flag for initial model load
-                if(!this.assetManager.initialLoad && !this._activeDerivative) {
-                    this.assetManager.initialLoad = true; 
-                }
-
                 this.unload();
                 this._activeDerivative = derivative;
                 this._loadingDerivative = null;
@@ -978,7 +972,7 @@ export default class CVModel2 extends CObject3D
                     this.ins.overlayMap.set();
                 }
 
-                this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality });
+                this.emit<IModelLoadEvent>({ type: "model-load", quality: derivative.data.quality, model: this });
                 //this.getGraphComponent(CVSetup).navigation.ins.zoomExtents.set(); 
             }).catch(error =>{
                 if(error.name == "AbortError" || error.name == "ABORT_ERR") return;

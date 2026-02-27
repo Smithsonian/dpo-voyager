@@ -26,6 +26,8 @@ import { TLanguageType, ELanguageType } from "client/schema/common";
 import Notification from "@ff/ui/Notification";
 import CustomElement, { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
 import CVAnalytics from "./CVAnalytics";
+import CVAssetReader from "./CVAssetReader";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +53,8 @@ export default class CVAudioManager extends Component
     protected audioViews: Dictionary<AudioView> = {};
     protected isPlaying: Boolean = false;
 
+    protected audioContext = null;
+
     protected static readonly ins = {
         playNarration: types.Event("Audio.PlayNarration"),
         reset: types.Event("Audio.Reset"),
@@ -70,6 +74,9 @@ export default class CVAudioManager extends Component
 
     protected get assetManager() {
         return this.getMainComponent(CVAssetManager);
+    }
+    protected get assetReader() {
+        return this.getMainComponent(CVAssetReader);
     }
     protected get language() {
         return this.getGraphComponent(CVLanguageManager, true);
@@ -98,6 +105,7 @@ export default class CVAudioManager extends Component
         this.graph.components.on(CVMeta, this.onMetaComponent, this);
 
         this.language.outs.activeLanguage.on("value", this.onLanguageChange, this);
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 
     dispose()
@@ -107,6 +115,10 @@ export default class CVAudioManager extends Component
 
         this.language.outs.activeLanguage.off("value", this.onLanguageChange, this);
         this.graph.components.off(CVMeta, this.onMetaComponent, this);
+
+        this.audioContext.close();
+        this.audioContext = null;
+
         super.dispose();
     }
 
@@ -178,25 +190,20 @@ export default class CVAudioManager extends Component
                     const absUri = this.assetManager.getAssetUrl(uri);
                     clip.durations[language] = "pending";
 
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const request = new XMLHttpRequest();
-                    request.open('GET', absUri, true);
-                    request.responseType = 'arraybuffer';
-                    request.onload = () => {
+                    this.assetReader.getAudio(uri).then((arrayBuffer) => {
                         if(!Object.keys(this._audioMap).includes(uri)) {
-                            const blob = new Blob([request.response], { type: "audio/mpeg" });
+                            const blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
                             const url = window.URL.createObjectURL(blob);
                             this._audioMap[uri] = url;
                         }
-                        audioContext.decodeAudioData(request.response,
+                        this.audioContext.decodeAudioData(arrayBuffer,
                             (buffer) => {
                                 let duration = buffer.duration;
                                 clip.durations[language] = duration.toString();
                                 language === activeLanguage ? this.getPlayerById(id).requestUpdate() : null;                                         
                             }
-                        )
-                    }
-                    request.send();
+                        )                                         
+                    });
                 }
             });
 
@@ -237,6 +244,17 @@ export default class CVAudioManager extends Component
         if(this.isPlaying && id == this.activeId) {
             this.stop();
         }
+
+        // check for audio ids in annotations
+        const views = this.system.getComponents(CVAnnotationView); 
+        views.forEach(component => {
+            component.getAnnotations().forEach(annotation => {
+                if(annotation.data.audioId === id) {
+                    annotation.set("audioId", "");
+                    component.updateAnnotation(annotation);
+                }
+            });
+        });
 
         if(id == this._narrationId) {
             this.narrationId = "";

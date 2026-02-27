@@ -174,7 +174,7 @@ export default class CVMediaManager extends CAssetManager
         const selection = this.getMainComponent(CSelection);
 
         ImportMenu.show(mainView, activeDoc.setup.language, filename).then(([quality, parentName]) => {
-            this.assetManager.initialLoad = true;
+            this.assetManager.ins.initialLoad.setValue(true);
             const model = this.getSystemComponents(CVModel2).find(element => element.node.name === parentName);
             if(model === undefined) {
                 // converting path to relative (TODO: check if all browsers will have leading slash here)
@@ -183,14 +183,16 @@ export default class CVMediaManager extends CAssetManager
                 newModel.node.name = name;
                 newModel.ins.name.setValue(name);
                 newModel.ins.quality.setValue(quality);
-                newModel.once<IModelLoadEvent>("model-load", () => selection.selectNode(newModel.node), this);
+                newModel.once<IModelLoadEvent>("model-load", () => {selection.selectNode(newModel.node); 
+                    this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
             else {
                 model.derivatives.remove(EDerivativeUsage.Web3D, quality);
                 model.derivatives.createModelAsset(filepath, quality)
                 model.ins.quality.setValue(quality);
                 model.outs.updated.set();
-                selection.selectNode(model.node);
+                model.once<IModelLoadEvent>("model-load", () => {selection.selectNode(model.node); 
+                    this.assetManager.outs.initialLoad.setValue(false)}, this);
             }
         }).catch(e => {});
     }

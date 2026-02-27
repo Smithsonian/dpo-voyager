@@ -214,16 +214,10 @@ $color-component-meta-light: #d9d998;
         white-space: nowrap;
       }
       
-      .sv-add-light-btn.ff-button {
-        width: 1.6em; // square button roughly same height as line-height
+      .sv-add-light-btn.ff-button, .sv-delete-light-btn.ff-button {
         height: 1.6em;
-        padding: 0;
         margin-left: 4px;
         display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 1px solid transparent;
         --ff-button-bg: transparent;
         --ff-button-color: $color-component-light-light;
         .ff-icon {
@@ -234,29 +228,20 @@ $color-component-meta-light: #d9d998;
           background: rgba($color-component-light-light, 0.15);
           border-color: rgba($color-component-light-light, 0.3);
         }
-        &:active {
-          background: rgba($color-component-light-light, 0.25);
-        }
+      }
+      .sv-add-light-btn.ff-button {
+        width: 1.6em; // square button roughly same height as line-height       
+        padding: 0;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid transparent;        
       }
       .sv-delete-light-btn.ff-button {
-        height: 1.6em;
         padding: 0 5px 0 5px;
-        margin-left: 4px;
         margin-right: 4px;
-        display: inline-flex;
         background: inherit;
         border: none;
-        --ff-button-bg: transparent;
-        --ff-button-color: $color-component-light-light;
-        flex: 0 0 1.6em;
-        .ff-icon { margin: 0 0 5px 0; height: 1em; }
-        &:hover {
-          background: rgba($color-component-light-light, 0.15);
-          border-color: rgba($color-component-light-light, 0.3);
-        }
-        &:active {
-          background: rgba($color-component-light-light, 0.25);
-        }
       }
       .sv-icon-scene {
         fill: $color-component-scene-light;
@@ -283,21 +268,6 @@ $color-component-meta-light: #d9d998;
   }
 }
 
-.sv-light-name-input {
-  flex: 1 1 auto;
-  background: #000;
-  color: common.$color-text-light;
-  text-align: right;
-  padding: 2px 6px;
-  font-weight: 500;
-  &::placeholder { color: rgba(common.$color-text-light, 0.35); }
-  &:focus {
-    outline: none;
-    border-color: $color-component-light-light;
-    box-shadow: 0 0 0 1px rgba($color-component-light-light, 0.6);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Style for Light menus
 
@@ -310,8 +280,9 @@ $color-component-meta-light: #d9d998;
   box-sizing: content-box;
   pointer-events: auto;
 
-  > .ff-flex-column {
-    padding: 1em;
+  .ff-flex-column {
+    padding: 0 1em;
+    justify-content: space-evenly;
   }
 
   .ff-title {
@@ -327,7 +298,7 @@ $color-component-meta-light: #d9d998;
     gap: 8px;
 
     &:last-child {
-      margin-bottom: 0;
+      margin-bottom: 16px;
       margin-top: 16px;
       justify-content: space-between;
     }
@@ -367,6 +338,7 @@ $color-component-meta-light: #d9d998;
     border-radius: 3px;
     padding: 6px 8px;
     font-size: 0.95em;
+    text-align: right;
 
     &:focus {
       outline: none;
@@ -435,6 +407,10 @@ $color-component-meta-light: #d9d998;
     margin: 4px;
     padding: 6px 16px;
     background-color: common.$color-background;
+
+    &[disabled] {
+      background-color: common.$color-primary-dark;
+    }
   }
 }
 

@@ -37,6 +37,7 @@ export default class CVRectLight extends CRectLight implements ICVLight
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
         ];
     }
 
@@ -75,6 +76,7 @@ export default class CVRectLight extends CRectLight implements ICVLight
             position: ins.position.schema.preset,
             target: ins.target.schema.preset,
         });
+        ins.tags.setValue(data.tags || "");
 
         return node.light;
     }
@@ -88,6 +90,10 @@ export default class CVRectLight extends CRectLight implements ICVLight
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value
         } as ILight;
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         data.type = CVRectLight.type;
 
