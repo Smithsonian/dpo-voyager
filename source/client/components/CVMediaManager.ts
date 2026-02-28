@@ -134,7 +134,7 @@ export default class CVMediaManager extends CAssetManager
             const cleanfileName = decodeURI(file.name);
             const filenameLower = cleanfileName.toLowerCase();
             
-            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt)$/)) {
+            if (filenameLower.match(/\.(gltf|glb|bin|svx.json|html|jpg|jpeg|png|usdz|mp3|vtt|hdr)$/)) {
 
                 if(!documentProvided && filenameLower.match(/\.(jpg|jpeg|png)$/) && !fileArray.some(entry => entry[0].endsWith("gltf"))) {
                     path = CVMediaManager.articleFolder + "/" + cleanfileName;

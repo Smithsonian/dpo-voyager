@@ -28,6 +28,7 @@ import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVEnvironmentLight from "./lights/CVEnvironmentLight";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
+import CAssetManager, { IAssetEntry, IAssetTreeChangeEvent } from "@ff/scene/components/CAssetManager";
 
 
 const images = ["studio_small_08_1k.hdr", "capture_tent_mockup-v2-1k.hdr", "spruit_sunrise_1k_HDR.hdr"];
@@ -55,6 +56,7 @@ export default class CVEnvironment extends Component
     private _target: WebGLRenderTarget = null;
     private _pmremGenerator :PMREMGenerator = null;
     private _currentIdx = 0;
+    private _loadRequestId = 0;
     private _imageOptions: string[] = images.slice();
     private _loadingCount = 0;
     private _hasContent = false;
@@ -82,18 +84,35 @@ export default class CVEnvironment extends Component
     protected get renderer(){
         return this.getSystemComponent(CRenderer);
     }
+    protected get assetManager() {
+        return this.getSystemComponent(CAssetManager);
+    }
 
     create()
     {
         super.create();
         this.system.components.on(CVMeta, this.onMetaComponent, this);
         this.graph.components.on(CVModel2, this.onModelComponent, this);
+        
+        const assetManager = this.assetManager;
+        if (assetManager) {
+            assetManager.on<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
+            if (assetManager.root) {
+                this.scanForEnvironmentImages(assetManager.root);
+            }
+        }
     }
 
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.system.components.off(CVMeta, this.onMetaComponent, this);
+        
+        const assetManager = this.assetManager;
+        if (assetManager) {
+            assetManager.off<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
+        }
+        
         if(this.sceneNode.scene.environment){
             //Ensure scene does not keep a reference to our texture
             //Because otherwise it would get re-uploaded and possibly leak
@@ -141,6 +160,9 @@ export default class CVEnvironment extends Component
         {
             const rot = ins.rotation.value;
             _euler.set(rot[0]*DEG2RAD,rot[1]*DEG2RAD,rot[2]*DEG2RAD); 
+            this.sceneNode.scene.environmentRotation = _euler;
+            this.sceneNode.scene.backgroundRotation = _euler;
+            this.renderer.forceRender();
         }
         if(ins.enabled.changed) {
             if(ins.enabled.value && this._hasContent) 
@@ -214,35 +236,51 @@ export default class CVEnvironment extends Component
             }
 
             const mapName = this._imageOptions[ins.imageIndex.value];
+            if(!mapName) {
+                throw new Error("Error loading map name for image index " + ins.imageIndex.value);
+            }
 
-            if(images.includes(mapName)) {
-                this._loadingCount++;
-                this.assetReader.getSystemTexture("images/"+mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
+            const requestId = ++this._loadRequestId;
+
+            
+            this._loadingCount++;
+            (images.includes(mapName) ? this.assetReader.getSystemTexture("images/" + mapName) : this.assetReader.getTexture(mapName))
+                .then(texture => { this.updateEnvironmentMap(texture, mapName, requestId); })
+                .catch(error => {
+                    console.error(`Failed to load environment map '${mapName}':`, error);
+                    this._loadingCount--;
                 });
-            }
-            else {
-                this._loadingCount++;
-                this.assetReader.getTexture(mapName).then(texture => {
-                    this.updateEnvironmentMap(texture, mapName);
-                });
-            }
-            this._currentIdx = ins.imageIndex.value;
         }
     }
 
-    protected updateEnvironmentMap(texture: Texture, name: string)
+    protected updateEnvironmentMap(texture: Texture, name: string, requestId: number)
     {
         const ins = this.ins;
         const mapIdx = this._imageOptions.indexOf(name);
 
-        if(mapIdx == ins.imageIndex.value) {
-            this._target = this._pmremGenerator.fromEquirectangular(texture, this._target);
+        if(requestId === this._loadRequestId && mapIdx == ins.imageIndex.value) {
+            const previousTarget = this._target;
+            this._target = this._pmremGenerator.fromEquirectangular(texture);
+
+            this.sceneNode.scene.environment = null;
+            this.sceneNode.scene.background = null;
             this.sceneNode.scene.environment = ins.enabled.value ? this._target.texture : null;
             this.sceneNode.scene.background = ins.visible.value ? this._target.texture : null;
+            if(this.sceneNode.scene.environment) {
+                (this.sceneNode.scene.environment as Texture).needsUpdate = true;
+            }
+            if(this.sceneNode.scene.background) {
+                (this.sceneNode.scene.background as Texture).needsUpdate = true;
+            }
             this.sceneNode.scene.environmentRotation = _euler;
             this.sceneNode.scene.backgroundRotation = _euler;
             this.renderer.forceRender();
+
+            if(previousTarget && previousTarget !== this._target) {
+                previousTarget.dispose();
+            }
+
+            this._currentIdx = ins.imageIndex.value;
         }
 
         texture.dispose();
@@ -266,6 +304,25 @@ export default class CVEnvironment extends Component
                 });
             });
         }
+    }
+
+    protected onAssetTreeChange(event: IAssetTreeChangeEvent) {
+        this.scanForEnvironmentImages(this.assetManager.root);
+    }
+
+    protected scanForEnvironmentImages(root: IAssetEntry) {
+        root.children
+            .filter(entry => entry.info.folder)
+            .forEach(folder => this.scanForEnvironmentImages(folder));
+        
+        root.children
+            .map(entry => entry.info.path)
+            .filter(path => path.toLowerCase().endsWith(".hdr"))
+            .filter(path => !this._imageOptions.includes(path))
+            .sort()
+            .forEach(path => this._imageOptions.push(path));
+
+        this.ins.imageIndex.setOptions(this._imageOptions.map((item, index) => index.toString()));
     }
     
     protected addLightComponent(enabled: boolean) {
