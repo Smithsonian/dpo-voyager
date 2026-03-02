@@ -366,6 +366,9 @@ export default class CVAnnotationView extends CObject3D
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
 
+        this._annotations = {};
+        this._sprites = {};
+
         super.dispose();
     }
 

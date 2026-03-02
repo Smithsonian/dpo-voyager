@@ -104,12 +104,14 @@ export default class CVFloor extends CFloor
 
         if(addIns.autoSize.value) {
             const boundingBox = this.sceneNode.outs.boundingBox.value;
-            boundingBox.getSize(_vec3 as unknown as Vector3);
-            const size = Math.max(_vec3.x, _vec3.y, _vec3.z);
-            const {min, max} = boundingBox;
+            if(!boundingBox.isEmpty()) {
+                boundingBox.getSize(_vec3 as unknown as Vector3);
+                const size = Math.max(_vec3.x, _vec3.y, _vec3.z);
+                const {min, max} = boundingBox;
 
-            this.ins.radius.setValue(size);
-            this.ins.position.setValue([(min.x+max.x)/2.0, min.y, (min.z+max.z)/2.0]);
+                this.ins.radius.setValue(size);
+                this.ins.position.setValue([(min.x+max.x)/2.0, min.y, (min.z+max.z)/2.0]);
+            }
         }
     }
 

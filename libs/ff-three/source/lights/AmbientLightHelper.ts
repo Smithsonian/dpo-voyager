@@ -32,7 +32,7 @@ export default class AmbientLightHelper extends Object3D {
       }),
     );
     this.upper.receiveShadow = false;
-    console.log("Color", light.color);
+    
     (this.upper.material as MeshBasicMaterial).color = light.color;
     this.add(this.upper);
 

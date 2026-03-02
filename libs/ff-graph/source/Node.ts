@@ -357,6 +357,9 @@ export default class Node extends Publisher
         // emit dispose event
         this.emit<INodeDisposeEvent>({ type: "dispose", node: this });
 
+        this._tags.forEach(tag => this.removeTag(tag));
+        this._tags = null;
+
         // remove node from system and graph
         if (this.graph) {
             this.graph._removeNode(this);

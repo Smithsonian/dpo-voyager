@@ -60,7 +60,7 @@ export default class ConfirmDeleteLightMenu extends Popup {
         const cancel = language.getUILocalizedString("Cancel");
         const del = language.getUILocalizedString("Delete");
 
-        return html`<div class="sv-light-menu" role="dialog" aria-label=${title} @keydown=${(e: KeyboardEvent) => this.onKeyDownMain(e)}>
+        return html`<div role="dialog" aria-label=${title} @keydown=${(e: KeyboardEvent) => this.onKeyDownMain(e)}>
             <div class="ff-flex-column ff-fullsize" style="min-width:260px;">
                 <div class="ff-flex-row">
                     <div class="ff-flex-spacer ff-title">${title}</div>

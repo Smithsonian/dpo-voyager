@@ -183,6 +183,13 @@ export default class CVDerivativesController extends Component{
       this.renderer.outs.maxTextureSize.on("value", this.setTextureBudget);
   }
 
+  dispose() {
+    this.renderer.outs.maxTextureSize.off("value", this.setTextureBudget);
+    this._scene = null;
+
+    super.dispose()
+  }
+
 
   setTextureBudget = ()=> {
     // We expect scene performance to always be texture-limited.

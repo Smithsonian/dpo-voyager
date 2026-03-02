@@ -274,6 +274,8 @@ class CircleAnnotation extends AnnotationElement
         // update expanded height in case annotation changed
         if (this.isExpanded) {
             this.contentElement.style.height = "auto";
+            this.style.width = annotation.lead.length > 0 || annotationData.audioId ? "" : "auto";
+            this.style.minWidth = annotation.lead.length > 0 || annotationData.audioId ? "" : "max-content";
         }
 
         // update expanded/collapsed
@@ -294,6 +296,8 @@ class CircleAnnotation extends AnnotationElement
                 //this.style.minWidth = annotationData.lead.length < 40 && (!annotationData.audioId || annotationData.audioId.length == 0) ? "0" : "";
                 this.contentElement.style.display = "block";
                 this.contentElement.style.height = "auto"; //this.contentElement.scrollHeight + "px";
+                this.style.width = annotation.lead.length > 0 || annotationData.audioId ? "" : "auto";
+                this.style.minWidth = annotation.lead.length > 0 || annotationData.audioId ? "" : "max-content";
             }
             else {
                 this.classList.remove("sv-expanded");

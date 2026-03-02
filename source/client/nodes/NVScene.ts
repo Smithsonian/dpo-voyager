@@ -56,9 +56,7 @@ export default class NVScene extends NVNode
             this.meta.fromDocument(document, scene);
             pathMap.set(`meta/${scene.meta}`, this.meta);
         }
-        if (isFinite(scene.setup)) {
-            this.setup.fromDocument(document, sceneIndex, pathMap);
-        }
+        this.setup.fromDocument(document, sceneIndex, pathMap);
 
         // serialize node tree
         const nodeIndices = scene.nodes;

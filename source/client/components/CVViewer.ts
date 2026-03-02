@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { ACESFilmicToneMapping, NeutralToneMapping, NoToneMapping, Mesh } from "three";
+import { NeutralToneMapping, NoToneMapping, Mesh } from "three";
 
 import Component, { IComponentEvent, types } from "@ff/graph/Component";
 import CRenderer from "@ff/scene/components/CRenderer";
 
 import { EShaderMode, IViewer, TShaderMode } from "client/schema/setup";
-import { EDerivativeQuality } from "client/schema/model";
+import { EDerivativeQuality, EDerivativeUsage } from "client/schema/model";
 
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import CVAnnotationView, { IActiveTagUpdateEvent, IAnnotationClickEvent, ITagUpdateEvent } from "./CVAnnotationView";
@@ -30,6 +30,8 @@ import CVLanguageManager from "./CVLanguageManager";
 import CVARManager from "./CVARManager";
 import {getFocusableElements} from "../utils/focusHelpers";
 import CVSetup from "./CVSetup";
+import { CLight } from "./lights/CVLight";
+import CVAssetManager from "./CVAssetManager";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -42,6 +44,7 @@ export default class CVViewer extends Component
 
     private _rootElement: HTMLElement = null;
     private _needsAnnoFocus: boolean = false;
+    private _modelLoadCount: number = 0;
 
     protected static readonly ins = {
         annotationsVisible: types.Boolean("Annotations.Visible"),
@@ -63,6 +66,7 @@ export default class CVViewer extends Component
 
     protected static readonly outs = {
         tagCloud: types.String("Tags.Cloud"),
+        sceneLoaded: types.Boolean("ViewerR.SceneLoaded", false),
     };
 
     ins = this.addInputs(CVViewer.ins);
@@ -97,6 +101,9 @@ export default class CVViewer extends Component
     protected get analytics() {
         return this.getMainComponent(CVAnalytics);
     }
+    protected get assetManager() {
+        return this.getMainComponent(CVAssetManager);
+    }
     protected get renderer() {
         return this.getMainComponent(CRenderer);
     }
@@ -115,6 +122,7 @@ export default class CVViewer extends Component
     {
         super.create();
         this.graph.components.on(CVModel2, this.onModelComponent, this);
+        this.graph.components.on(CLight, this.onLightComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
 
@@ -125,6 +133,7 @@ export default class CVViewer extends Component
     dispose()
     {
         this.graph.components.off(CVModel2, this.onModelComponent, this);
+        this.graph.components.off(CLight, this.onLightComponent, this);
         this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.off(CVLanguageManager, this.onLanguageComponent, this);
         super.dispose();
@@ -196,6 +205,7 @@ export default class CVViewer extends Component
             const tags = ins.activeTags.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
             this.getGraphComponents(CVModel2).forEach(model => model.ins.activeTags.setValue(tags));
+            this.getGraphComponents(CLight).forEach(light => light.ins.activeTags.setValue(tags));
         }
         if (ins.sortedTags.changed) {
             this.refreshTagCloud();
@@ -286,6 +296,12 @@ export default class CVViewer extends Component
             tags.forEach(tag => tagCloud.add(tag));
         });
 
+        const lights = this.getGraphComponents(CLight);
+        lights.forEach(light => {
+            const tags = light.ins.tags.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+            tags.forEach(tag => tagCloud.add(tag));
+        });
+
         const views = this.getGraphComponents(CVAnnotationView);
         views.forEach(component => {
             const annotations = component.getAnnotations();
@@ -368,16 +384,42 @@ export default class CVViewer extends Component
         }
     }
 
+    protected onLightComponent(event: IComponentEvent<CLight>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+        }
+        else if (event.remove) {
+            component.off<ITagUpdateEvent>("tag-update", this.refreshTagCloud, this);
+        }
+    }
+
     protected onModelLoad(event: IModelLoadEvent) {
         this.rootElement.dispatchEvent(new CustomEvent('model-load', { detail: EDerivativeQuality[event.quality] }));
         this.refreshTagCloud();
 
         // update variant list
         const variantSet = new Set(this.ins.variant.schema.options);
-        this.getGraphComponents(CVModel2).forEach(model => {
+        const models = this.getGraphComponents(CVModel2);
+        models.forEach(model => {
             model.ins.variant.schema.options.forEach(variantSet.add, variantSet);
         });
         this.ins.variant.setOptions([...variantSet]);
+
+        // if all models in scene have loaded derivatives closest to scene quality
+        // (or greater than Thumb with LOD enabled), consider scene fully loaded.
+        if(this.assetManager.outs.initialLoad.value && 
+            (this.getGraphComponent(CVSetup).derivatives.ins.enabled.value && event.quality > EDerivativeQuality.Thumb
+            || event.quality === event.model.derivatives.select(EDerivativeUsage.Web3D, this.ins.quality.value).data.quality)) {
+            if(++this._modelLoadCount === models.length) {
+                this.analytics.sendProperty("Loading_Time", this.analytics.getTimerTime()/1000);
+                this.analytics.resetTimer();
+                this.assetManager.outs.initialLoad.setValue(false);
+                this.outs.sceneLoaded.setValue(true);
+            }
+        }
     }
 
     protected focusTags() {

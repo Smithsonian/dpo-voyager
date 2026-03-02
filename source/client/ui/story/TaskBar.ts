@@ -28,6 +28,7 @@ import CVAssetReader from "../../components/CVAssetReader";
 import CVLanguageManager from "client/components/CVLanguageManager";
 import { IMenuItem } from "@ff/ui/Menu";
 import CVSetup from "client/components/CVSetup";
+import { getFocusableElements } from "client/utils/focusHelpers";
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,6 +58,8 @@ export default class TaskBar extends SystemView
     protected firstConnected()
     {
         this.classList.add("sv-task-bar");
+        this.setAttribute("role", "toolbar");
+        this.onkeydown = this.onKeyDown.bind(this);
     }
 
     protected connected()
@@ -146,5 +149,27 @@ export default class TaskBar extends SystemView
     protected onClickExit()
     {
         this.story.ins.exit.set();
+    }
+
+    protected onKeyDown(e: KeyboardEvent, id: string)
+    {
+        if(e.code === "Tab") {
+            const buttons = getFocusableElements(this);
+            buttons.shift();
+            buttons.forEach((element) => element.setAttribute("tabIndex", "-2"))
+        }
+        else if(e.code === "ArrowLeft" || e.code === "ArrowRight") {
+            const currentActive = e.target instanceof Element ? e.target as Element : null;
+            if(currentActive) {
+                const buttons = getFocusableElements(this);
+                let activeIdx = buttons.findIndex((elem) => elem === currentActive);
+                activeIdx = e.code === "ArrowRight" ? Math.min(activeIdx + 1, buttons.length - 1) : Math.max(activeIdx - 1, 0);
+
+                const newActive = buttons[activeIdx];
+                if(newActive) {
+                    (newActive as HTMLElement).focus();
+                }
+            }
+        }
     }
 }
