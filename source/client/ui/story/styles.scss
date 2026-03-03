@@ -638,6 +638,12 @@ $color-component-meta-light: #d9d998;
         background: none;
       }
     }
+
+    &.sv-property-string {
+      .sv-property-field .ff-input[type="text"] {
+        width: 100%;
+      }
+    }
   }
 
 
