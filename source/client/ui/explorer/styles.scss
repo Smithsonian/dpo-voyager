@@ -1290,13 +1290,6 @@ $tour-entry-indent: 12px;
     }
   }
 
-  &.sv-property-string {
-    .ff-input[type="text"] {
-      width: auto;
-      border: 1px solid common.$color-background-lighter;
-    }
-  }
-
   &.sv-property-color {
     position: relative;
     display: block;
