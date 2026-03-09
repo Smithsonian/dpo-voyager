@@ -208,6 +208,15 @@ export default class ArticleEditor extends SystemView
 
         this._overlay = this.appendElement("div");
         this._overlay.classList.add("sv-overlay");
+    }
+
+    protected connected()
+    {
+        super.connected();
+        this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+        this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
+
+        this._container.id = "editor_wrapper"
 
         tinymce.init({
             selector: "#editor_wrapper",
@@ -283,17 +292,12 @@ export default class ArticleEditor extends SystemView
         });       
     }
 
-    protected connected()
-    {
-        super.connected();
-        this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
-        this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
-    }
-
     protected disconnected()
     {
         this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
         this.mediaManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+
+        tinymce.activeEditor.remove();
         super.disconnected();
     }
 
