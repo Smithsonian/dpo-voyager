@@ -540,6 +540,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   bottom: 0px;
   flex-direction: row;
   margin: 0 0 $canvas-border-width $canvas-border-width;
+  align-items: end;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -571,6 +572,14 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       &:hover, &:focus {
         background-color: common.$color-primary-light;
       }
+    }
+  }
+
+  & .sv-tag-cloud {
+    width: 100%;
+
+    & .sv-section-lead {
+      display: none;
     }
   }
 }
