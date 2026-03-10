@@ -20,6 +20,9 @@ sourceMapSupport.install();
 
 import * as path from "path";
 import * as http from "http";
+import * as https from "https";
+import * as fs from "fs";
+import * as URL from "url";
 
 import * as express from "express";
 import * as morgan from "morgan";
@@ -31,7 +34,7 @@ import { v2 as webdav } from "webdav-server";
 const port: number = parseInt(process.env["VOYAGER_SERVER_PORT"]) || 8000;
 const devMode: boolean = process.env["NODE_ENV"] !== "production";
 
-const rootDir = path.resolve(__dirname, "../../..");
+const rootDir = path.resolve(__dirname, "../../..");console.log(__dirname);
 const staticDir = path.resolve(rootDir, "dist/");
 const fileDir = path.resolve(rootDir, "files/");
 const docDir = path.resolve(rootDir, "docs/_site/");
@@ -46,6 +49,7 @@ console.log(`
  /        \\  Y Y  \\  ||  | |   Y  \\\\___ (  <_> )   |  \\  |/ __ \\|   |  \\  /       \\|    \`   \\
 /_______  /__|_|  /__||__| |___|  /____  >____/|___|  /__(____  /___|  / /______  /_______  /
         \\/      \\/              \\/     \\/           \\/        \\/     \\/         \\/        \\/ 
+
 ------------------------------------------------------
 Smithsonian 3D Foundation Project - Development Server
 ------------------------------------------------------
@@ -88,7 +92,24 @@ webDAVServer.setFileSystem("/", new webdav.PhysicalFileSystem(fileDir), success 
             next();
         });
 
-        app.use(webdav.extensions.express("/", webDAVServer));
+        const validator = function(req, res, next) {
+
+            const tempPath = decodeURIComponent(req.url).replace(/[\\/]+/g, '/');
+            if (tempPath.indexOf('\0') !== -1) {
+                return res.sendStatus(400);
+            }
+              
+            const rootDirectory = `${fileDir}`;
+              
+            const fullPath = path.join(rootDirectory, tempPath);
+            if (fullPath.indexOf(rootDirectory) !== 0) {
+                return res.sendStatus(400);
+            }
+
+            next();
+        };
+
+        app.use(validator, webdav.extensions.express("/", webDAVServer));
     }
 });
 
@@ -110,7 +131,16 @@ app.use((error, req, res, next) => {
     }
 });
 
-const server = new http.Server(app);
-server.listen(port, () => {
+const options = {
+  key: fs.readFileSync('./services/server/bin/key.pem'),
+  cert: fs.readFileSync('./services/server/bin/cert.pem')
+};
+
+https.createServer(options, app).listen(port, () => {
     console.info(`Server ready and listening on port ${port}\n`);
 });
+
+/*const server = new http.Server(app);
+server.listen(port, () => {
+    console.info(`Server ready and listening on port ${port}\n`);
+});*/
