@@ -22,7 +22,6 @@ import * as path from "path";
 import * as http from "http";
 import * as https from "https";
 import * as fs from "fs";
-import * as URL from "url";
 
 import * as express from "express";
 import * as morgan from "morgan";
@@ -34,7 +33,7 @@ import { v2 as webdav } from "webdav-server";
 const port: number = parseInt(process.env["VOYAGER_SERVER_PORT"]) || 8000;
 const devMode: boolean = process.env["NODE_ENV"] !== "production";
 
-const rootDir = path.resolve(__dirname, "../../..");console.log(__dirname);
+const rootDir = path.resolve(__dirname, "../../..");
 const staticDir = path.resolve(rootDir, "dist/");
 const fileDir = path.resolve(rootDir, "files/");
 const docDir = path.resolve(rootDir, "docs/_site/");
@@ -131,16 +130,18 @@ app.use((error, req, res, next) => {
     }
 });
 
-const options = {
+// HTTPS Server Option
+/*const options = {
   key: fs.readFileSync('./services/server/bin/key.pem'),
   cert: fs.readFileSync('./services/server/bin/cert.pem')
 };
 
 https.createServer(options, app).listen(port, () => {
     console.info(`Server ready and listening on port ${port}\n`);
-});
+});*/
 
-/*const server = new http.Server(app);
+// HTTP Server
+const server = new http.Server(app);
 server.listen(port, () => {
     console.info(`Server ready and listening on port ${port}\n`);
-});*/
+});
