@@ -79,7 +79,7 @@
         "three": "^0.180.0",
         "tinymce": "^6.8.3",
         "toposort": "^2.0.2",
-        "webdav": "^5.8.0",
+        "webdav": "^5.9.0",
         "webdav-server": "^2.6.2",
         "xml-js": "^1.6.11"
     },
