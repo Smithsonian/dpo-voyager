@@ -62,5 +62,8 @@
 	"Position" : "Posición",
 	"Step" : "Paso",
 	"of" : "de",
-	"Tour" : "Recorrido"
+	"Tour" : "Recorrido",
+	"Remove tag" : "Eliminar etiqueta",
+	"Select..." : "Seleccionar...",
+	"New tag..." : "Nueva etiqueta..."
 }
