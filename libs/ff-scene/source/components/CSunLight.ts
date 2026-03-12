@@ -14,7 +14,7 @@ import * as utc from "dayjs/plugin/utc";
 import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
-var tzlookup = require("@photostructure/tz-lookup");
+//var tzlookup = require("@photostructure/tz-lookup");
 
 type TDayjsFactory = (date?: dayjs.ConfigType) => dayjs.Dayjs;
 const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
@@ -176,9 +176,9 @@ export default class CSunLight extends CLight {
 
         if (ins.datetime.changed || ins.timezone.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed) {
 
-            if (ins.latitude.changed || ins.longitude.changed) {
+            /*if (ins.latitude.changed || ins.longitude.changed) {
                 ins.timezone.setValue(tzlookup(this.ins.latitude.value, this.ins.longitude.value), true);
-            }
+            }*/
 
             const sunPosition = SunCalc.getPosition(
                 this.sunDate(), this.ins.latitude.value, this.ins.longitude.value
