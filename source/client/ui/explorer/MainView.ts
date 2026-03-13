@@ -216,13 +216,6 @@ export default class MainView extends CustomElement
         }
     }
 
-    enableAnnotations()
-    {
-        if(this.application) {
-            this.application.enableAnnotations(true);
-        }
-    }
-
     toggleReader()
     {
         if(this.application) {

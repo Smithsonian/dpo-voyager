@@ -414,19 +414,6 @@ Version: ${ENV_VERSION}
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
     }
 
-    enableAnnotations(visible: boolean)
-    {
-        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
-
-        if (visible && toolIns.visible.value) {
-            toolIns.visible.setValue(false);
-        }
-
-        viewerIns.annotationsVisible.setValue(visible);
-        this.analytics.sendProperty("Annotations_Visible", visible);
-    }
-
     toggleReader()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
