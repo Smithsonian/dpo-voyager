@@ -32,8 +32,6 @@ import {getFocusableElements} from "../utils/focusHelpers";
 import CVSetup from "./CVSetup";
 import { CLight } from "./lights/CVLight";
 import CVAssetManager from "./CVAssetManager";
-import CVOrbitNavigation from "./CVOrbitNavigation";
-import CPulse from "@ff/graph/components/CPulse";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -188,6 +186,7 @@ export default class CVViewer extends Component
         if (ins.activeAnnotation.changed) {
             const id = ins.activeAnnotation.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.setActiveAnnotationById(id));
+
         }
         if(ins.annotationExit.changed) {
             ins.annotationsVisible.setValue(false);
@@ -341,48 +340,6 @@ export default class CVViewer extends Component
         this.ins.activeAnnotation.setValue(id);
 
         this.rootElement.dispatchEvent(new CustomEvent('annotation-active', { detail: id }));
-    }
-
-    /**
-     * Focus on an annotation by ID: activates it and animates camera to its view if available.
-     */
-    focusAnnotation(id: string)
-    {
-        const views = this.getGraphComponents(CVAnnotationView);
-
-        let targetAnnotation = null;
-        let targetView: CVAnnotationView = null;
-
-        for (const view of views) {
-            const annotation = view.getAnnotationById(id);
-            if (annotation) {
-                targetAnnotation = annotation;
-                targetView = view;
-                break;
-            }
-        }
-
-        if (!targetAnnotation || !targetView) {
-            console.warn(`Annotation with id "${id}" not found.`);
-            return;
-        }
-
-        this.ins.activeAnnotation.setValue(id);
-
-        const navigation = this.getGraphComponent(CVOrbitNavigation, true);
-        if (navigation) {
-            navigation.ins.autoRotation.setValue(false);
-            navigation.ins.promptActive.setValue(false);
-        }
-
-        if (targetAnnotation.data.viewId && targetAnnotation.data.viewId.length > 0 && !this.ar.outs.isPresenting.value) {
-            const setup = this.getGraphComponent(CVSetup);
-            if (setup) {
-                const pulse = this.getMainComponent(CPulse);
-                targetView.normalizeViewOrbit(targetAnnotation.data.viewId);
-                setup.snapshots.tweenTo(targetAnnotation.data.viewId, pulse.context.secondsElapsed);
-            }
-        }
     }
 
     protected onModelComponent(event: IComponentEvent<CVModel2>)

@@ -321,13 +321,6 @@ export default class MainView extends CustomElement
         }
     }
 
-    focusAnnotation(id: string)
-    {
-        if(this.application) {
-            this.viewer.focusAnnotation(id);
-        }
-    }
-
     setActiveArticle(id: string)
     {
         if(this.application) {
