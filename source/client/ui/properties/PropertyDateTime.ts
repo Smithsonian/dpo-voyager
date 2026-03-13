@@ -8,14 +8,18 @@
 
 import Property from "@ff/graph/Property";
 import { customElement, html, property, PropertyValues } from "@ff/ui/CustomElement";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import PropertyBase from "./PropertyBase";
+
+dayjs.extend(utc);
 
 @customElement("sv-property-datetime")
 export default class PropertyDateTime extends PropertyBase {
   type = "object";
 
   @property({ attribute: false })
-  property: Property<Date> = null;
+  property: Property<dayjs.Dayjs> = null;
 
   @property({ type: String })
   name = "";
@@ -48,13 +52,17 @@ export default class PropertyDateTime extends PropertyBase {
   }
 
   protected onChange = (event: Event) => {
-    const datetime: string = (event.target as HTMLInputElement).value + ":00Z";
-    this.property.setValue(new Date(datetime));
+    const inputValue = (event.target as HTMLInputElement).value;
+    const dateTime = dayjs.utc(`${inputValue}:00Z`);
+
+    if (dateTime.isValid()) {
+      this.property.setValue(dateTime);
+    }
   };
 
   protected render() {
     const name: string = this.name || this.property.name;
-    const inputValue: string = this.property.value.toISOString().slice(0, 16);
+    const inputValue: string = this.property.value.utc().format("YYYY-MM-DDTHH:mm");
 
     return html`
       <label class="ff-label ff-off">${name}</label>

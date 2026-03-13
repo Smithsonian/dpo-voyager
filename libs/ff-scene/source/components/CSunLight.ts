@@ -7,12 +7,26 @@
 */
 
 import { IUpdateContext, Node, types } from "@ff/graph/Component";
+import Notification from "@ff/ui/Notification";
+import * as dayjs from "dayjs";
+import * as timezone from "dayjs/plugin/timezone";
+import * as utc from "dayjs/plugin/utc";
 import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
 
+type TDayjsFactory = (date?: dayjs.ConfigType) => dayjs.Dayjs;
+const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
+const timezonePlugin = (timezone as unknown as { default?: dayjs.PluginFunc<unknown> }).default || timezone as unknown as dayjs.PluginFunc<unknown>;
+const createDayjs = ((dayjs as unknown as { default?: TDayjsFactory }).default || dayjs as unknown as TDayjsFactory);
+
+dayjs.extend(utcPlugin);
+dayjs.extend(timezonePlugin);
+
 export default class CSunLight extends CLight {
     static readonly typeName: string = "CSunLight";
+
+    protected previousTimezone: string = "UTC";
 
     protected static readonly sunLightIns = {
         position: types.Vector3("Light.Position"),
@@ -22,7 +36,10 @@ export default class CSunLight extends CLight {
             min: 0,
         }),
         datetime: types.DateTime("Light.DateTime", {
-            preset: new Date("2026-02-01T12:00Z")
+            preset: createDayjs()
+        }),
+        timezone: types.String("Light.TimeZone", {
+            preset: dayjs.tz.guess()
         }),
         latitude: types.Number("Light.Latitude", { preset: 52.3676, min: -90, max: 90, step: 0.01 }),
         longitude: types.Number("Light.Longitude", { preset: 4.9041, min: -180, max: 180, step: 0.01 }),
@@ -40,6 +57,7 @@ export default class CSunLight extends CLight {
         this.ins.intensity.setValue(2);
         this.object3D = sunlight;
         this.light.target.matrixAutoUpdate = false;
+        this.previousTimezone = (this.ins.timezone.value || "UTC").trim() || "UTC";
     }
 
     get light(): DirectionalLight {
@@ -112,15 +130,69 @@ export default class CSunLight extends CLight {
         return ["Light.Intensity", "Light.Color"];
     }
 
+    /**
+     * Override to provide automatic timezone resolution from coordinates.
+     */
+    protected resolveTimezone(_lat: number, _lon: number): string | null {
+        return null;
+    }
+
+    protected sunDate(): Date {
+        const dateTime = this.ins.datetime.value;
+        const zone = (this.ins.timezone.value || "").trim();
+        const fallbackPreset = this.ins.datetime.schema.preset;
+        const fallbackDateTime = dateTime?.isValid() ? dateTime.toDate()
+            : (fallbackPreset?.isValid() ? fallbackPreset.toDate() : new Date());
+
+        const resetTimezoneToPrevious = () => {
+            if (this.ins.timezone.value !== this.previousTimezone) {
+                this.ins.timezone.setValue(this.previousTimezone, true);
+            }
+        };
+
+        if (!dateTime?.isValid() || !zone) {
+            Notification.show(`Invalid date/time or timezone. Reverting to previous valid date/time and timezone.`, "error");
+            resetTimezoneToPrevious();
+            return fallbackDateTime;
+        }
+
+        try {
+            const wallClock = dateTime.format("YYYY-MM-DDTHH:mm:ss");
+            const zonedDateTime = dayjs.tz(wallClock, zone);
+
+            if (!zonedDateTime.isValid()) {
+                resetTimezoneToPrevious();
+                return fallbackDateTime;
+            }
+
+            this.previousTimezone = zone;
+            return zonedDateTime.toDate();
+        }
+        catch (e) {
+            Notification.show(`Invalid timezone: '${zone}'. Reverting to previous timezone '${this.previousTimezone}'`, "error");
+            resetTimezoneToPrevious();
+            return fallbackDateTime;
+        }
+    }
+
     update(context: IUpdateContext) {
         super.update(context);
         const light = this.light;
         const ins = this.ins;
 
-        if (ins.datetime.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed) {
+        if (ins.datetime.changed || ins.timezone.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed) {
+
+            if (ins.latitude.changed || ins.longitude.changed) {
+                const tz = this.resolveTimezone(this.ins.latitude.value, this.ins.longitude.value);
+                if (tz) {
+                    ins.timezone.setValue(tz, true);
+                } else {
+                    console.warn(`Failed to resolve timezone for coordinates (${this.ins.latitude.value}, ${this.ins.longitude.value}).`);
+                }
+            }
 
             const sunPosition = SunCalc.getPosition(
-                this.ins.datetime.value, this.ins.latitude.value, this.ins.longitude.value
+                this.sunDate(), this.ins.latitude.value, this.ins.longitude.value
             );
 
             const [x, y, z] = this.calculatePosition(sunPosition.altitude, sunPosition.azimuth);
@@ -140,8 +212,8 @@ export default class CSunLight extends CLight {
             const halfSize = ins.shadowSize.value * 0.5;
             camera.left = camera.bottom = -halfSize;
             camera.right = camera.top = halfSize;
-            camera.near = 0.05*ins.shadowSize.value;
-            camera.far = 50*ins.shadowSize.value;
+            camera.near = 0.05 * ins.shadowSize.value;
+            camera.far = 50 * ins.shadowSize.value;
             camera.updateProjectionMatrix();
         }
 

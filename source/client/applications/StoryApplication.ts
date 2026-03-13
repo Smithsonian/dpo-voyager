@@ -25,6 +25,9 @@ import ExplorerApplication, { IExplorerApplicationProps } from "./ExplorerApplic
 
 import storyTypes from "./storyTypes";
 
+import CVSunLight from "../components/lights/CVSunLight";
+import CVSunLightTZLookup from "../components/lights/CVSunLightTZLookup";
+
 import CVStoryApplication from "../components/CVStoryApplication";
 
 import CVAssetReader from "../components/CVAssetReader";
@@ -94,6 +97,10 @@ export default class StoryApplication
 
         // register additional story tool components
         const registry = this.system.registry;
+        // Replace CVSunLight with its Story-specific subclass so that tzlookup is
+        // only bundled in the Story package and not in Explorer.
+        registry.remove(CVSunLight);
+        registry.add(CVSunLightTZLookup);
         registry.add(storyTypes);
 
 

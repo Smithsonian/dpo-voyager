@@ -55,10 +55,12 @@
     },
     "homepage": "https://github.com/Smithsonian/dpo-voyager#readme",
     "dependencies": {
+        "@photostructure/tz-lookup": "^11.4.0",
         "ajv": "^8.6.2",
         "buffer": "^6.0.3",
         "client-zip": "^2.5.0",
         "clone-deep": "^4.0.1",
+        "dayjs": "^1.11.19",
         "express": "^5.2.1",
         "filenamify": "^4.3.0",
         "handlebars": "^4.7.8",
