@@ -14,7 +14,6 @@ import * as utc from "dayjs/plugin/utc";
 import * as SunCalc from 'suncalc';
 import { DirectionalLight } from "three";
 import CLight from "./CLight";
-var tzlookup = require("@photostructure/tz-lookup");
 
 type TDayjsFactory = (date?: dayjs.ConfigType) => dayjs.Dayjs;
 const utcPlugin = (utc as unknown as { default?: dayjs.PluginFunc<unknown> }).default || utc as unknown as dayjs.PluginFunc<unknown>;
@@ -131,6 +130,13 @@ export default class CSunLight extends CLight {
         return ["Light.Intensity", "Light.Color"];
     }
 
+    /**
+     * Override to provide automatic timezone resolution from coordinates.
+     */
+    protected resolveTimezone(_lat: number, _lon: number): string | null {
+        return null;
+    }
+
     protected sunDate(): Date {
         const dateTime = this.ins.datetime.value;
         const zone = (this.ins.timezone.value || "").trim();
@@ -177,7 +183,12 @@ export default class CSunLight extends CLight {
         if (ins.datetime.changed || ins.timezone.changed || ins.latitude.changed || ins.longitude.changed || ins.intensityFactor.changed) {
 
             if (ins.latitude.changed || ins.longitude.changed) {
-                ins.timezone.setValue(tzlookup(this.ins.latitude.value, this.ins.longitude.value), true);
+                const tz = this.resolveTimezone(this.ins.latitude.value, this.ins.longitude.value);
+                if (tz) {
+                    ins.timezone.setValue(tz, true);
+                } else {
+                    console.warn(`Failed to resolve timezone for coordinates (${this.ins.latitude.value}, ${this.ins.longitude.value}).`);
+                }
             }
 
             const sunPosition = SunCalc.getPosition(
@@ -201,8 +212,8 @@ export default class CSunLight extends CLight {
             const halfSize = ins.shadowSize.value * 0.5;
             camera.left = camera.bottom = -halfSize;
             camera.right = camera.top = halfSize;
-            camera.near = 0.05*ins.shadowSize.value;
-            camera.far = 50*ins.shadowSize.value;
+            camera.near = 0.05 * ins.shadowSize.value;
+            camera.far = 50 * ins.shadowSize.value;
             camera.updateProjectionMatrix();
         }
 
