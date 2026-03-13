@@ -414,11 +414,24 @@ Version: ${ENV_VERSION}
         this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
     }
 
+    enableAnnotations(visible: boolean)
+    {
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+
+        if (visible && toolIns.visible.value) {
+            toolIns.visible.setValue(false);
+        }
+
+        viewerIns.annotationsVisible.setValue(visible);
+        this.analytics.sendProperty("Annotations_Visible", visible);
+    }
+
     toggleReader()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
         const readerIns = reader.ins;
-                    
+
         readerIns.enabled.setValue(!readerIns.enabled.value);
         readerIns.focus.setValue(readerIns.enabled.value);
 
@@ -427,6 +440,21 @@ Version: ${ENV_VERSION}
         }
 
         this.analytics.sendProperty("Reader_Enabled", readerIns.enabled.value);
+    }
+
+    enableReader(enabled: boolean)
+    {
+        const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
+        const readerIns = reader.ins;
+
+        readerIns.enabled.setValue(enabled);
+        readerIns.focus.setValue(enabled);
+
+        if (enabled) {
+            readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
+        }
+
+        this.analytics.sendProperty("Reader_Enabled", enabled);
     }
 
     toggleTours()
@@ -449,6 +477,24 @@ Version: ${ENV_VERSION}
         this.analytics.sendProperty("Tours_Enabled", tourIns.enabled.value);
     }
 
+    enableTours(enabled: boolean)
+    {
+        const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+
+        if (enabled && readerIns.enabled.value) {
+            readerIns.enabled.setValue(false);
+        }
+
+        tourIns.enabled.setValue(enabled);
+
+        if (enabled) {
+            tourIns.tourIndex.setValue(-1); // show tour menu
+        }
+
+        this.analytics.sendProperty("Tours_Enabled", enabled);
+    }
+
     toggleTools()
     {
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
@@ -462,11 +508,31 @@ Version: ${ENV_VERSION}
         this.analytics.sendProperty("Tools_Visible", toolIns.visible.value);
     }
 
+    enableTools(visible: boolean)
+    {
+        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
+        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
+
+        if (visible && viewerIns.annotationsVisible.value) {
+            viewerIns.annotationsVisible.setValue(false);
+        }
+
+        toolIns.visible.setValue(visible);
+        this.analytics.sendProperty("Tools_Visible", visible);
+    }
+
     toggleMeasurement()
     {
         const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
 
         tapeIns.visible.setValue(!tapeIns.visible.value);
+    }
+
+    enableMeasurement(visible: boolean)
+    {
+        const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
+
+        tapeIns.visible.setValue(visible);
     }
     
     enableAR()
