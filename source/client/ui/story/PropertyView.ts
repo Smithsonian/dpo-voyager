@@ -45,6 +45,8 @@ export default class PropertyView extends CustomElement
     @property()
     label: string = undefined;
 
+    @property()
+    supporting: any = undefined;
 
     @property({ type: Boolean })
     commitonly = false;
@@ -69,6 +71,7 @@ export default class PropertyView extends CustomElement
     protected render()
     {
         const property = this.property;
+        const supporting = this.supporting;
         const schema = property.schema;
         const label = this.label !== undefined ? this.label : property.path.split(".").pop();
         let linked = this.property.hasMainInLinks();
@@ -95,6 +98,8 @@ export default class PropertyView extends CustomElement
             return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
+        }else if(property.type === "string" && schema.semantic === "tags"){
+            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property} .tagCloud=${supporting}></sv-property-tags>`
         }else if(property.type === "string"){
             return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){
