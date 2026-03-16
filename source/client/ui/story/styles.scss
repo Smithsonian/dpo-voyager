@@ -795,10 +795,17 @@ $color-component-meta-light: #d9d998;
       width: 100%;
       box-sizing: border-box;
       justify-content: space-between;
+      border-radius: 10px;
 
       .ff-icon {
         height: 0.9em;
         margin-left: 4px;
+      }
+
+      &:hover {
+        .ff-icon {
+          fill: common.$color-primary;
+        }
       }
     }
   }
