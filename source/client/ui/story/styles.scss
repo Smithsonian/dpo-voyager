@@ -789,16 +789,33 @@ $color-component-meta-light: #d9d998;
     width: 100%;
 
     .sv-tag-chip {
-      font-size: 0.85em;
-      padding: 1px 4px;
-      background-color: common.$color-background-light;
-      width: 100%;
-      box-sizing: border-box;
-      justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      max-width: 100%;
 
-      .ff-icon {
-        height: 0.9em;
-        margin-left: 4px;
+      .sv-tag-chip-label {
+        font-size: 0.85em;
+        padding: 2px 6px;
+        background-color: common.$color-background-light;
+        border-radius: 10px;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sv-tag-chip-remove {
+        padding: 0 2px;
+        background: none;
+
+        .ff-icon {
+          height: 0.85em;
+        }
+
+        &:hover .ff-icon {
+          fill: common.$color-primary;
+        }
       }
     }
   }

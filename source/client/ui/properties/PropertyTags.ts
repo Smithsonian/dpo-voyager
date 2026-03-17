@@ -118,13 +118,16 @@ export default class PropertyTags extends PropertyBase
         return html`${name ? html`<label class="ff-label ff-off">${name}</label>` : null}
             <div class="sv-tags-container">
                 <div class="sv-tags-selected">
-                    ${selectedTags.map(tag => html`<ff-button class="sv-tag-chip" text=${tag} icon="close" title=${language ? language.getLocalizedString("Remove tag") : "Remove tag"} @click=${() => this.onRemoveTag(tag)}></ff-button>`)}
+                    ${selectedTags.map(tag => html`<div class="sv-tag-chip">
+                        <span class="sv-tag-chip-label">${tag}</span>
+                        <ff-button class="sv-tag-chip-remove" icon="close" title=${language ? language.getLocalizedString("Remove tag") : "Remove tag"} @click=${() => this.onRemoveTag(tag)}></ff-button>
+                    </div>`)}
                 </div>
                 <select class="sv-property-field" ?disabled=${this.ariaDisabled === "true"} @change=${this.onSelectChange}>
                     <option value="" disabled selected>${language ? language.getLocalizedString("Select...") : "Select..."}</option>
                     ${availableTags.map(tag => html`<option value=${tag}>${tag}</option>`)}
                 </select>
-                <input type="text" placeholder=${language ? language.getLocalizedString("New tag...") : "New tag..."} class="sv-property-field" .value=${this.inputValue} @input=${this.onInput} @keydown=${this.onInputKeyDown} ?disabled=${this.ariaDisabled === "true"}>
+                <input type="text" placeholder=${language ? language.getLocalizedString("Add a tag...") : "Add a tag..."} class="sv-property-field" .value=${this.inputValue} @input=${this.onInput} @keydown=${this.onInputKeyDown} ?disabled=${this.ariaDisabled === "true"}>
             </div>`;
     }
 }

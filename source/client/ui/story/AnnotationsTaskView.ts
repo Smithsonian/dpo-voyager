@@ -167,11 +167,6 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
         </div>`;
     }
 
-    protected getTagCloud(): string[] {
-        return this.activeDocument?.setup.viewer.outs.tagCloud.value
-            .split(",").map(t => t.trim()) || [];
-    }
-
     protected onTextEdit(event: ILineEditChangeEvent)
     {
         const annotations = this.task.activeAnnotations;
