@@ -62,7 +62,7 @@ export default class PropertyDateTime extends PropertyBase {
 
   protected render() {
     const name: string = this.name || this.property.name;
-    const inputValue: string = this.property.value.utc().format("YYYY-MM-DDTHH:mm");
+    const inputValue: string = this.property.value.format("YYYY-MM-DDTHH:mm");
 
     return html`
       <label class="ff-label ff-off">${name}</label>
