@@ -59,5 +59,8 @@
     "Switch on to take measurements" : "Schakel in om te meten",
     "Slice Tool" : "Snijgereedschap",
     "Axis" : "As",
-    "Position" : "Positie"
+    "Position" : "Positie",
+    "Remove tag" : "Tag verwijderen",
+    "Select..." : "Selecteren...",
+    "Add a tag..." : "Tag toevoegen..."
 }

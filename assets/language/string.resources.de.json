@@ -59,5 +59,8 @@
 	"Switch on to take measurements" : "Auf An drücken, um Distanz zu messen",
 	"Slice Tool" : "Zerschneidungs-Werkzeug",
 	"Axis" : "Axis",
-	"Position" : "Position"
+	"Position" : "Position",
+	"Remove tag" : "Tag entfernen",
+	"Select..." : "Auswählen...",
+	"Add a tag..." : "Tag hinzufügen..."
 }
