@@ -453,7 +453,6 @@ Version: ${ENV_VERSION}
     {
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-
         if (viewerIns.annotationsVisible.value) {
             viewerIns.annotationsVisible.setValue(false);
         }
@@ -481,9 +480,7 @@ Version: ${ENV_VERSION}
     getArticles()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
-        const articles = reader.articles.map(entry => entry.article.data);
-
-        return articles;
+        return reader.articles.map(entry => entry.article.data);
     }
 
     // Returns an array of objects with the annotation data for the current scene
