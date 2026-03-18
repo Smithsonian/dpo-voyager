@@ -103,7 +103,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined ? dayjs.tz(data.sun.datetime, Intl.DateTimeFormat().resolvedOptions().timeZone) : ins.datetime.schema.preset,
+            datetime: data.sun?.datetime !== undefined ? dayjs(data.sun.datetime).tz(data.sun.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone) : ins.datetime.schema.preset,
             timezone: data.sun?.timezone !== undefined ? data.sun.timezone : ins.timezone.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
@@ -131,7 +131,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
             sun: {
-                datetime: ins.datetime.value.tz().toISOString(),
+                datetime: ins.datetime.value.tz(ins.timezone.value, true).format(),
                 timezone: ins.timezone.value,
                 latitude: ins.latitude.value,
                 longitude: ins.longitude.value,
