@@ -47,15 +47,15 @@ These methods engage Voyager functionality without the native UI.
 | Name     				 | Parameters       | Description                                                                                         |
 |------------------------|------------------|----------------------------------------------------------------------------------------------------|
 | toggleAnnotations()    | None    			| On/off toggle for visibility of model annotations (if available)  |
-| enableAnnotations( visible ) | visible: boolean | Sets annotation visibility to the specified state. Disables tools panel if enabling.  |
+| setAnnotationsEnabled( visible ) | visible: boolean | Sets annotation visibility to the specified state. Disables tools panel if enabling.  |
 | toggleReader()    	 | None    			| On/off toggle for the article reader.  |
-| enableReader( enabled ) | enabled: boolean | Sets the article reader to the specified state.  |
+| setReaderEnabled( enabled ) | enabled: boolean | Sets the article reader to the specified state.  |
 | toggleTours()    		 | None    			| On/off toggle for the tour functionality UI.  |
-| enableTours( enabled ) | enabled: boolean | Sets the tour UI to the specified state. Disables reader if enabling. |
+| setToursEnabled( enabled ) | enabled: boolean | Sets the tour UI to the specified state. Disables reader if enabling. |
 | toggleTools()    		 | None    			| On/off toggle for the extended tools panel at the bottom of the UI  |
-| enableTools( visible ) | visible: boolean | Sets the tools panel to the specified state. Disables annotations if enabling.  |
+| setToolsEnabled( visible ) | visible: boolean | Sets the tools panel to the specified state. Disables annotations if enabling.  |
 | toggleMeasurement()	 | None				| On/off toggle for visibility of the object measurement tool.  |
-| enableMeasurement( visible ) | visible: boolean | Sets the measurement tool visibility to the specified state.  |
+| setMeasurementEnabled( visible ) | visible: boolean | Sets the measurement tool visibility to the specified state.  |
 | enableAR()		     | None    			| Requests an AR session (if available, outcome depends on platform) **\*Due to browser security precautions, this will not work if the component is served in a cross-domain iframe**  |
 | setActiveAnnotation( id )| id: unique id string | Activates the annotation with the provided id. Opens annotation content where style permits.   |
 | setActiveArticle( id )| id: unique id string | Activates the article with the provided id. Bad/missing id opens article list.   |

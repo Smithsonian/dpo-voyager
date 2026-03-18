@@ -41,19 +41,19 @@ function toggleTools() {
 
 #### Enabling features explicitly
 
-If you need to set a feature to a specific state rather than flipping its current state, use the `enable*` counterparts. These are especially useful when integrating Voyager into a custom UI where you need predictable behavior regardless of the current state.
+If you need to set a feature to a specific state rather than flipping its current state, use the `set*Enabled` counterparts. These are especially useful when integrating Voyager into a custom UI where you need predictable behavior regardless of the current state.
 
 {{<highlight js>}}
 // Ensure annotations are visible before activating one
-voyagerElement.enableAnnotations(true);
+voyagerElement.setAnnotationsEnabled(true);
 
 // Hide the tools panel
-voyagerElement.enableTools(false);
+voyagerElement.setToolsEnabled(false);
 
 // Other available functions:
-// voyagerElement.enableReader(true/false);
-// voyagerElement.enableTours(true/false);
-// voyagerElement.enableMeasurement(true/false);
+// voyagerElement.setReaderEnabled(true/false);
+// voyagerElement.setToursEnabled(true/false);
+// voyagerElement.setMeasurementEnabled(true/false);
 {{</highlight>}}
 
 The same mutual-exclusion rules apply as with the toggle functions: enabling annotations will hide the tools panel, and enabling tools will hide annotations.

@@ -404,17 +404,10 @@ Version: ${ENV_VERSION}
     toggleAnnotations()
     {
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-        const toolIns = this.system.getMainComponent(CVToolProvider).ins;
-
-        if (toolIns.visible.value) {
-            toolIns.visible.setValue(false);
-        }
-
-        viewerIns.annotationsVisible.setValue(!viewerIns.annotationsVisible.value);
-        this.analytics.sendProperty("Annotations_Visible", viewerIns.annotationsVisible.value);
+        this.setAnnotationsEnabled(!viewerIns.annotationsVisible.value);
     }
 
-    enableAnnotations(visible: boolean)
+    setAnnotationsEnabled(visible: boolean)
     {
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
@@ -429,20 +422,11 @@ Version: ${ENV_VERSION}
 
     toggleReader()
     {
-        const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
-        const readerIns = reader.ins;
-
-        readerIns.enabled.setValue(!readerIns.enabled.value);
-        readerIns.focus.setValue(readerIns.enabled.value);
-
-        if(readerIns.enabled.value) {
-            readerIns.articleId.setValue(reader.articles.length === 1 ? reader.articles[0].article.id : "");
-        }
-
-        this.analytics.sendProperty("Reader_Enabled", readerIns.enabled.value);
+        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
+        this.setReaderEnabled(!readerIns.enabled.value);
     }
 
-    enableReader(enabled: boolean)
+    setReaderEnabled(enabled: boolean)
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
         const readerIns = reader.ins;
@@ -460,24 +444,10 @@ Version: ${ENV_VERSION}
     toggleTours()
     {
         const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
-        const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
-
-        if (tourIns.enabled.value) {
-            tourIns.enabled.setValue(false);
-        }
-        else {
-            if (readerIns.enabled.value) {
-                readerIns.enabled.setValue(false); // disable reader
-            }
-
-            tourIns.enabled.setValue(true); // enable tours
-            tourIns.tourIndex.setValue(-1); // show tour menu
-        }
-
-        this.analytics.sendProperty("Tours_Enabled", tourIns.enabled.value);
+        this.setToursEnabled(!tourIns.enabled.value);
     }
 
-    enableTours(enabled: boolean)
+    setToursEnabled(enabled: boolean)
     {
         const tourIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tours.ins;
         const readerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader.ins;
@@ -498,17 +468,10 @@ Version: ${ENV_VERSION}
     toggleTools()
     {
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
-        const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
-
-        if (viewerIns.annotationsVisible.value) {
-            viewerIns.annotationsVisible.setValue(false);
-        }
-
-        toolIns.visible.setValue(!toolIns.visible.value);
-        this.analytics.sendProperty("Tools_Visible", toolIns.visible.value);
+        this.setToolsEnabled(!toolIns.visible.value);
     }
 
-    enableTools(visible: boolean)
+    setToolsEnabled(visible: boolean)
     {
         const toolIns = this.system.getMainComponent(CVToolProvider).ins;
         const viewerIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.viewer.ins;
@@ -524,21 +487,18 @@ Version: ${ENV_VERSION}
     toggleMeasurement()
     {
         const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
-
-        tapeIns.visible.setValue(!tapeIns.visible.value);
+        this.setMeasurementEnabled(!tapeIns.visible.value);
     }
 
-    enableMeasurement(visible: boolean)
+    setMeasurementEnabled(visible: boolean)
     {
         const tapeIns = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.tape.ins;
-
         tapeIns.visible.setValue(visible);
     }
     
     enableAR()
     {
         const ARIns = this.system.getMainComponent(CVARManager).ins;
-
         ARIns.enabled.setValue(true);
         this.analytics.sendProperty("AR_enabled", true);
     }
