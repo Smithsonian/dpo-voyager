@@ -99,6 +99,7 @@ export const schemas: Dictionary<IPropertySchema> = {
     String: { preset: "" },
     DateTime: { preset: new Date("2026-02-01T12:00:00Z"), semantic: "datetime" },
     AssetPath: { preset: "", semantic: "asset-path" },
+    Tags: { preset: "", semantic: "tags" },
     Object: { preset: null, objectType: Object },
     Event: { preset: 0, event: true }
 };
@@ -127,6 +128,7 @@ export const types = {
     String: (path: string, props?: SchemaProps<string>) => makeType<string>(schemas.String, path, props),
     DateTime: (path: string, props?: SchemaProps<Date>) => makeType<Date>(schemas.DateTime, path, props),
     AssetPath: (path: string, props?: SchemaProps<string>) => makeType<string>(schemas.AssetPath, path, props),
+    Tags: (path: string, props?: SchemaProps<string>) => makeType<string>(schemas.Tags, path, props),
     Enum: <T>(path: string, enumeration: T, props?: SchemaProps<PropOf<T>>) => makeEnumType(enumeration, path, props),
     Option: (path: string, options: string[], props?: SchemaProps<number>) => makeOptionType(options, path, props),
     Object: <T>(path: string, type: TypeOf<T>, props?: SchemaProps<T>) => makeObjectType(type, path, props),
