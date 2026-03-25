@@ -16,13 +16,11 @@
  */
 
 import Node from "@ff/graph/Node";
-import Component from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyView";
 
 import { customElement, html, property } from "@ff/ui/CustomElement";
-import "../properties/PropertyTags";
 import Tree from "@ff/ui/Tree";
 
 import CVSettingsTask from "../../components/CVSettingsTask";
@@ -46,7 +44,7 @@ export default class SettingsTaskView extends TaskView<CVSettingsTask>
         }
 
         return html`<div class="ff-flex-item-stretch ff-scroll-y">
-            <sv-settings-tree .node=${node} .tagCloud=${this.getTagCloud()}></sv-settings-tree>
+            <sv-settings-tree .node=${node}></sv-settings-tree>
         </div>`;
     }
 
@@ -72,9 +70,6 @@ export class SettingsTree extends Tree<ITreeNode>
 {
     @property({ attribute: false })
     node: NVNode = null;
-
-    @property({ attribute: false })
-    tagCloud: string[] = [];
 
     protected firstConnected()
     {
@@ -105,10 +100,6 @@ export class SettingsTree extends Tree<ITreeNode>
         const component = node.property.group?.linkable;
         const nonEditableProperties: string[] = component["nonEditableProperties"] || [];
         const disabled = nonEditableProperties.includes(node.property.path);
-
-        if (node.property.path.endsWith(".Tags")) {
-            return html`<sv-property-tags .property=${node.property} .tagCloud=${this.tagCloud} ?disabled=${disabled}></sv-property-tags>`;
-        }
 
         return html`<sv-property-view .property=${node.property} ?disabled=${disabled}></sv-property-view>`;
     }
