@@ -125,3 +125,25 @@ voyager-mini-dev.html      # HTML page displaying Voyager Explorer Mini, develop
 voyager-story.html         # HTML page displaying Voyager Story authoring tool, production build
 voyager-story-dev.html     # HTML page displaying Voyager Story authoring tool, development build
 ```
+
+#### Deployment
+
+**Security Warning:** the server embedded into this project should only be used for local testing. Never expose it to an open internet connection!
+
+In production, we recommend running it behind a reverse proxy that forwards permitted requests to the server, like [Caddy](https://caddyserver.com/), [Nginx](https://nginx.org/), the [Apache HTTP Server](https://httpd.apache.org/), or any other suitable server.
+
+For Caddy, we have provided a sample [configuration file](../../../../Caddyfile).
+To use it:
+
+1. In the `Caddyfile`, replace `<MY_EXTERNAL_HOST>` in line 1 with the externally accessible address of your server.
+2. Run the Caddy server:
+
+```console
+    caddy run --config <PATH_TO_CADDYFILE>
+```
+
+3. Run the Voyager server:
+
+```console
+npm run start
+```
