@@ -1,0 +1,26 @@
+<MY_EXTERNAL_HOST> {	# REPLACE <MY_EXTERNAL_HOST> WITH YOUR SERVER HOSTNAME OR IP ADDRESS
+    @allowed_get {
+        method GET
+        path /voyager-*.html
+        path /favicon.png
+        path /assets/*
+        path /fonts/*
+        path /js/*
+        path /css/*
+        path */models/*
+    }
+    @allowed_webdav {
+        method PUT PROPFIND DELETE MKCOL MOVE
+        path */models/*
+    }
+
+    handle @allowed_get {
+        reverse_proxy localhost:8000
+    }
+    handle @allowed_webdav {
+        reverse_proxy localhost:8000
+    }
+    handle {
+        error 500
+    }
+}
