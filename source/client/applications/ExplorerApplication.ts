@@ -507,9 +507,7 @@ Version: ${ENV_VERSION}
     getArticles()
     {
         const reader = this.system.getMainComponent(CVDocumentProvider).activeComponent.setup.reader;
-        const articles = reader.articles.map(entry => entry.article.data);
-
-        return articles;
+        return reader.articles.map(entry => entry.article.data);
     }
 
     // Returns an array of objects with the annotation data for the current scene
