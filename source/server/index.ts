@@ -20,6 +20,8 @@ sourceMapSupport.install();
 
 import * as path from "path";
 import * as http from "http";
+import * as https from "https";
+import * as fs from "fs";
 
 import * as express from "express";
 import * as morgan from "morgan";
@@ -46,6 +48,7 @@ console.log(`
  /        \\  Y Y  \\  ||  | |   Y  \\\\___ (  <_> )   |  \\  |/ __ \\|   |  \\  /       \\|    \`   \\
 /_______  /__|_|  /__||__| |___|  /____  >____/|___|  /__(____  /___|  / /______  /_______  /
         \\/      \\/              \\/     \\/           \\/        \\/     \\/         \\/        \\/ 
+
 ------------------------------------------------------
 Smithsonian 3D Foundation Project - Development Server
 ------------------------------------------------------
@@ -88,7 +91,24 @@ webDAVServer.setFileSystem("/", new webdav.PhysicalFileSystem(fileDir), success 
             next();
         });
 
-        app.use(webdav.extensions.express("/", webDAVServer));
+        const validator = function(req, res, next) {
+
+            const tempPath = decodeURIComponent(req.url).replace(/[\\/]+/g, '/');
+            if (tempPath.indexOf('\0') !== -1) {
+                return res.sendStatus(400);
+            }
+              
+            const rootDirectory = `${fileDir}`;
+              
+            const fullPath = path.join(rootDirectory, tempPath);
+            if (fullPath.indexOf(rootDirectory) !== 0) {
+                return res.sendStatus(400);
+            }
+
+            next();
+        };
+
+        app.use(validator, webdav.extensions.express("/", webDAVServer));
     }
 });
 
@@ -110,6 +130,17 @@ app.use((error, req, res, next) => {
     }
 });
 
+// HTTPS Server Option
+/*const options = {
+  key: fs.readFileSync('./services/server/bin/key.pem'),
+  cert: fs.readFileSync('./services/server/bin/cert.pem')
+};
+
+https.createServer(options, app).listen(port, () => {
+    console.info(`Server ready and listening on port ${port}\n`);
+});*/
+
+// HTTP Server
 const server = new http.Server(app);
 server.listen(port, () => {
     console.info(`Server ready and listening on port ${port}\n`);
