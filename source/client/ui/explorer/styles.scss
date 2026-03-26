@@ -621,7 +621,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   line-height: 1.35;
   color: common.$color-text;
   @include common.fullsize;
-  overflow: hidden;
+  overflow: clip;
   display: flex;
   flex-direction: column;
   background: linear-gradient(to bottom, color.adjust(black, $alpha: -0.7), color.adjust(black, $alpha: -0.85) 10%, transparent 25%);
