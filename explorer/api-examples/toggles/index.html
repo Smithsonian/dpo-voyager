@@ -487,6 +487,20 @@ function setLanguage(language) {
 	<span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">toggleTools</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre></div>
+<h4 id="enabling-features-explicitly">Enabling features explicitly</h4>
+<p>If you need to set a feature to a specific state rather than flipping its current state, use the <code>set*Enabled</code> counterparts. These are especially useful when integrating Voyager into a custom UI where you need predictable behavior regardless of the current state.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="c1">// Ensure annotations are visible before activating one
+</span><span class="c1"></span><span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setAnnotationsEnabled</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+
+<span class="c1">// Hide the tools panel
+</span><span class="c1"></span><span class="nx">voyagerElement</span><span class="p">.</span><span class="nx">setToolsEnabled</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span>
+
+<span class="c1">// Other available functions:
+</span><span class="c1">// voyagerElement.setReaderEnabled(true/false);
+</span><span class="c1">// voyagerElement.setToursEnabled(true/false);
+</span><span class="c1">// voyagerElement.setMeasurementEnabled(true/false);
+</span></code></pre></div>
+<p>The same mutual-exclusion rules apply as with the toggle functions: enabling annotations will hide the tools panel, and enabling tools will hide annotations.</p>
 
   </div>
 

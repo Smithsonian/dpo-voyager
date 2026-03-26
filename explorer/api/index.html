@@ -495,9 +495,19 @@
 <td>On/off toggle for visibility of model annotations (if available)</td>
 </tr>
 <tr>
+<td>setAnnotationsEnabled( visible )</td>
+<td>visible: boolean</td>
+<td>Sets annotation visibility to the specified state. Disables tools panel if enabling.</td>
+</tr>
+<tr>
 <td>toggleReader()</td>
 <td>None</td>
 <td>On/off toggle for the article reader.</td>
+</tr>
+<tr>
+<td>setReaderEnabled( enabled )</td>
+<td>enabled: boolean</td>
+<td>Sets the article reader to the specified state.</td>
 </tr>
 <tr>
 <td>toggleTours()</td>
@@ -505,14 +515,29 @@
 <td>On/off toggle for the tour functionality UI.</td>
 </tr>
 <tr>
+<td>setToursEnabled( enabled )</td>
+<td>enabled: boolean</td>
+<td>Sets the tour UI to the specified state. Disables reader if enabling.</td>
+</tr>
+<tr>
 <td>toggleTools()</td>
 <td>None</td>
 <td>On/off toggle for the extended tools panel at the bottom of the UI</td>
 </tr>
 <tr>
+<td>setToolsEnabled( visible )</td>
+<td>visible: boolean</td>
+<td>Sets the tools panel to the specified state. Disables annotations if enabling.</td>
+</tr>
+<tr>
 <td>toggleMeasurement()</td>
 <td>None</td>
 <td>On/off toggle for visibility of the object measurement tool.</td>
+</tr>
+<tr>
+<td>setMeasurementEnabled( visible )</td>
+<td>visible: boolean</td>
+<td>Sets the measurement tool visibility to the specified state.</td>
 </tr>
 <tr>
 <td>enableAR()</td>
@@ -522,7 +547,7 @@
 <tr>
 <td>setActiveAnnotation( id )</td>
 <td>id: unique id string</td>
-<td>Activates the annotation with the provided id. Opens annotation content where style permits.</td>
+<td>Activates the annotation with the provided id. Opens annotation content where style permits. Also animates the camera to the annotation&rsquo;s associated view (if available).</td>
 </tr>
 <tr>
 <td>setActiveArticle( id )</td>
