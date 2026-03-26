@@ -8,6 +8,7 @@
 
 import { EShadowMapResolution } from "@ff/scene/components/CLight";
 import CSunLight from "@ff/scene/components/CSunLight";
+import dayjs from "dayjs";
 import { ColorRGB, IDocument, ILight, INode, TLightType } from "../../schema/document";
 import { ICVLight } from "./CVLight";
 import NVNode from "client/nodes/NVNode";
@@ -30,6 +31,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.intensity,
             this.ins.tags,
             this.ins.datetime,
+            this.ins.timezone,
             this.ins.latitude,
             this.ins.longitude,
             this.ins.intensityFactor,
@@ -47,6 +49,7 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             this.ins.color,
             this.ins.intensity,
             this.ins.datetime,
+            this.ins.timezone,
             this.ins.latitude,
             this.ins.longitude,
             this.ins.intensityFactor,
@@ -100,7 +103,8 @@ export default class CVSunLight extends CSunLight implements ICVLight {
             enabled: data.enabled !== undefined ? data.enabled : ins.enabled.schema.preset,
             color: data.color !== undefined ? data.color : ins.color.schema.preset,
             intensity: data.intensity !== undefined ? data.intensity : ins.intensity.schema.preset,
-            datetime: data.sun?.datetime !== undefined ? new Date(data.sun.datetime) : ins.datetime.schema.preset,
+            datetime: data.sun?.datetime !== undefined ? dayjs(data.sun.datetime).tz(data.sun.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone) : ins.datetime.schema.preset,
+            timezone: data.sun?.timezone !== undefined ? data.sun.timezone : ins.timezone.schema.preset,
             latitude: data.sun?.latitude !== undefined ? data.sun.latitude : ins.latitude.schema.preset,
             longitude: data.sun?.longitude !== undefined ? data.sun.longitude : ins.longitude.schema.preset,
             intensityFactor: data.sun?.intensityFactor !== undefined ? data.sun.intensityFactor : ins.intensityFactor.schema.preset,
@@ -121,19 +125,19 @@ export default class CVSunLight extends CSunLight implements ICVLight {
     toDocument(document: IDocument, node: INode): number {
         const ins = this.ins;
 
-        const data = {
+        const data: ILight = {
+            type: CVSunLight.type,
             enabled: ins.enabled.value,
             color: ins.color.cloneValue() as ColorRGB,
             intensity: ins.intensity.value,
             sun: {
-                datetime: ins.datetime.value,
+                datetime: ins.datetime.value.tz(ins.timezone.value, true).format(),
+                timezone: ins.timezone.value,
                 latitude: ins.latitude.value,
                 longitude: ins.longitude.value,
                 intensityFactor: ins.intensityFactor.value,
             }
-        } as ILight;
-
-        data.type = CVSunLight.type;
+        };
 
         if (ins.shadowEnabled.value) {
             data.shadowEnabled = true;
