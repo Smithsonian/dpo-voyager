@@ -202,6 +202,13 @@ export default class CVViewer extends Component
                 ins.annotationFocus.setValue(false);
             }
         }
+        if (ins.radioTags.changed && ins.radioTags.value) {
+            const tagString = ins.activeTags.value;
+            const tags = tagString.split(",");
+            if(tags.length > 1) {
+                ins.activeTags.setValue(tags[0]);
+            }
+        }
         if (ins.activeTags.changed) {
             const tags = ins.activeTags.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.ins.activeTags.setValue(tags));
