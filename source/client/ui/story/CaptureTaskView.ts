@@ -66,6 +66,10 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
                 <ff-button text="${languageManager.getUILocalizedString("Capture")}" icon="camera" @click=${this.onClickTake}></ff-button>
                 <ff-button text="${languageManager.getUILocalizedString("View")}" icon="document" @click=${this.onClickRestore}></ff-button>
             </div>
+            <div class="sv-label">${languageManager.getUILocalizedString("Screen Capture")}</div>
+            <div class="sv-commands">
+                <ff-button text="${languageManager.getUILocalizedString("Screen capture")}" icon="download" @click=${this.onClickScreenCapture}></ff-button>
+            </div>
             <div class="sv-label">${languageManager.getUILocalizedString("Thumbnail Images")}</div>
             <div class="sv-commands">
                 <ff-button text="${languageManager.getUILocalizedString("Save")}" icon="save" ?disabled=${!ready} @click=${this.onClickSave}></ff-button>
@@ -96,6 +100,11 @@ export default class CaptureTaskView extends TaskView<CVCaptureTask>
     protected onClickRestore()
     {
         this.task.ins.restore.set();
+    }
+
+    protected onClickScreenCapture()
+    {
+        this.task.ins.screenCapture.set();
     }
 
     protected onPictureTaken()
