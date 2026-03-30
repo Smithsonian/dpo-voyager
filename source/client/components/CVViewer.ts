@@ -51,8 +51,8 @@ export default class CVViewer extends Component
         annotationExit: types.Event("Annotations.Exit"),
         annotationFocus: types.Boolean("Annotations.Focus", false),
         activeAnnotation: types.String("Annotations.ActiveId"),
-        activeTags: types.String("Tags.Active"),
-        sortedTags: types.String("Tags.Sorted"),
+        activeTags: types.Tags("Tags.Active"),
+        sortedTags: types.Tags("Tags.Sorted"),
         radioTags: types.Boolean("Tags.Radio"),
         shader: types.Enum("Renderer.Shader", EShaderMode),
         variant: types.Option("Renderer.Variant", [], 0),
@@ -65,7 +65,7 @@ export default class CVViewer extends Component
     };
 
     protected static readonly outs = {
-        tagCloud: types.String("Tags.Cloud"),
+        tagCloud: types.Tags("Tags.Cloud"),
         sceneLoaded: types.Boolean("ViewerR.SceneLoaded", false),
     };
 
@@ -125,6 +125,7 @@ export default class CVViewer extends Component
         this.graph.components.on(CLight, this.onLightComponent, this);
         this.graph.components.on(CVAnnotationView, this.onAnnotationsComponent, this);
         this.graph.components.on(CVLanguageManager, this.onLanguageComponent, this);
+        this.outs.tagCloud.on("value", this.onTagCloudUpdate, this);
 
         this.ar.ins.wallMount.linkFrom(this.ins.isWallMountAR);
         this.ar.ins.arScale.linkFrom(this.ins.arScale);
@@ -132,6 +133,7 @@ export default class CVViewer extends Component
 
     dispose()
     {
+        this.outs.tagCloud.off("value", this.onTagCloudUpdate, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
         this.graph.components.off(CLight, this.onLightComponent, this);
         this.graph.components.off(CVAnnotationView, this.onAnnotationsComponent, this);
@@ -324,13 +326,15 @@ export default class CVViewer extends Component
 
         this.outs.tagCloud.setValue(tagArray.join(", "));
 
-        // refresh tag display
-        this.ins.activeTags.set();
-        this.ins.annotationsVisible.set();
-
         if (ENV_DEVELOPMENT) {
             console.log("CVViewer.refreshTagCloud - %s", tagArray.join(", "));
         }
+    }
+
+    protected onTagCloudUpdate()
+    {
+        this.ins.activeTags.set();
+        this.ins.annotationsVisible.set();
     }
 
     protected onAnnotationClick(event: IAnnotationClickEvent)
