@@ -540,6 +540,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   bottom: 0px;
   flex-direction: row;
   margin: 0 0 $canvas-border-width $canvas-border-width;
+  align-items: end;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -571,6 +572,14 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       &:hover, &:focus {
         background-color: common.$color-primary-light;
       }
+    }
+  }
+
+  & .sv-tag-cloud {
+    width: 100%;
+
+    & .sv-section-lead {
+      display: none;
     }
   }
 }
@@ -612,7 +621,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   line-height: 1.35;
   color: common.$color-text;
   @include common.fullsize;
-  overflow: hidden;
+  overflow: clip;
   display: flex;
   flex-direction: column;
   background: linear-gradient(to bottom, color.adjust(black, $alpha: -0.7), color.adjust(black, $alpha: -0.85) 10%, transparent 25%);

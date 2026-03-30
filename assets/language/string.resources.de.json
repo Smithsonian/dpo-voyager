@@ -58,8 +58,12 @@
 	"Measured Distance" : "gemessene Distanz",
 	"Switch on to take measurements" : "Auf An drücken, um Distanz zu messen",
 	"Slice Tool" : "Zerschneidungs-Werkzeug",
-	"Axis" : "Axis",
-	"Position" : "Position",
+	"Axis": "Achse",
+  "Position": "Position",
+  "Select": "Auswählen",
+  "Step": "Schritt",
+  "Tour": "Tour",
+  "of": "von"
 	"Remove tag" : "Tag entfernen",
 	"Select..." : "Auswählen...",
 	"Add a tag..." : "Tag hinzufügen..."

@@ -28,6 +28,7 @@ import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -86,6 +87,23 @@ export default class CVSnapshots extends CTweenMachine
         models.forEach(model => {
             this.updateComponentTarget(model.transform, !!features["models"]);
             this.updateComponentTarget(model, !!features["models"]);
+
+            // Handle properties getting added to annotation views after initial setup
+            model.getComponent(CVAnnotationView).getAnnotations().forEach(anno => {
+                if(anno.data.viewId) {
+                    const props = this.getTargetProperties();
+                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+                    // set non camera properties to null to skip them
+                    const values = this.states[anno.data.viewId].values;
+                    values.forEach((v, idx) => {
+                        if(idx != orbitIdx && idx != offsetIdx) {
+                            values[idx] = null;
+                        }
+                    });
+                }
+            });
         });
 
         const lights = this.getGraphComponents(CLight);
@@ -125,8 +143,8 @@ export default class CVSnapshots extends CTweenMachine
         }
 
         snapshotProperties.forEach(property => {
-            const schema = property.schema;
-            if (!schema.event && property.type !== "object") {
+            const isSerializable = (property.type !== "object" && !property.schema.event) || property.schema.semantic === "datetime";
+            if (isSerializable) {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
                     this.addTargetProperty(property);

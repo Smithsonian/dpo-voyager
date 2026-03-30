@@ -60,6 +60,10 @@
     "Slice Tool" : "Snijgereedschap",
     "Axis" : "As",
     "Position" : "Positie",
+    "Select": "Selecteren",
+    "Step": "Stap",
+    "of": "van",
+    "Tour": "Rondleiding"
     "Remove tag" : "Tag verwijderen",
     "Select..." : "Selecteren...",
     "Add a tag..." : "Tag toevoegen..."
