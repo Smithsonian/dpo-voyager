@@ -87,6 +87,9 @@ export default class CVEnvironment extends Component
     protected get assetManager() {
         return this.getSystemComponent(CAssetManager);
     }
+    protected get mediaManager() {
+        return this.system.getComponent("CVMediaManager", true) as CAssetManager;
+    }
 
     create()
     {
@@ -101,6 +104,14 @@ export default class CVEnvironment extends Component
                 this.scanForEnvironmentImages(assetManager.root);
             }
         }
+
+        const mediaManager = this.mediaManager;
+        if (mediaManager && mediaManager !== assetManager) {
+            mediaManager.on<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
+            if (mediaManager.root) {
+                this.scanForEnvironmentImages(mediaManager.root);
+            }
+        }
     }
 
     dispose()
@@ -111,6 +122,11 @@ export default class CVEnvironment extends Component
         const assetManager = this.assetManager;
         if (assetManager) {
             assetManager.off<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
+        }
+
+        const mediaManager = this.mediaManager;
+        if (mediaManager && mediaManager !== assetManager) {
+            mediaManager.off<IAssetTreeChangeEvent>("tree-change", this.onAssetTreeChange, this);
         }
         
         if(this.sceneNode.scene.environment){
@@ -308,7 +324,9 @@ export default class CVEnvironment extends Component
 
     protected onAssetTreeChange(event: IAssetTreeChangeEvent) {
         this._imageOptions = images.slice();
-        this.scanForEnvironmentImages(this.assetManager.root);
+        if (event.root) {
+            this.scanForEnvironmentImages(event.root);
+        }
     }
 
     protected scanForEnvironmentImages(root: IAssetEntry) {
