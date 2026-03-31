@@ -307,6 +307,7 @@ export default class CVEnvironment extends Component
     }
 
     protected onAssetTreeChange(event: IAssetTreeChangeEvent) {
+        this._imageOptions = images.slice();
         this.scanForEnvironmentImages(this.assetManager.root);
     }
 
