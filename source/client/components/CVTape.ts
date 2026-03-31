@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, Box3Helper, BufferAttribute, Material } from "three";
+import { Matrix3, Vector3, Box3, Line, Group, BufferGeometry, LineBasicMaterial, BufferAttribute, Material } from "three";
 
 import CObject3D, { Node, types, IPointerEvent } from "@ff/scene/components/CObject3D";
 
-import { ITape } from "client/schema/setup";
+import { ITape, TMarkerStyle } from "client/schema/setup";
 
-import Pin from "../utils/Pin";
+import { MeasurementMarker, EMarkerStyle, createMarker, getMarkerStyleValue } from "../utils/MeasurementMarker";
 import CVModel2 from "./CVModel2";
 import CVScene from "client/components/CVScene";
 import { EUnitType } from "client/schema/common";
@@ -55,6 +55,7 @@ export default class CVTape extends CObject3D
         globalUnits: types.Enum("Model.GlobalUnits", EUnitType, EUnitType.cm),
         localUnits: types.Enum("Model.LocalUnits", EUnitType, EUnitType.cm),
         enabled: types.Boolean("Tape.Enabled", false),
+        markerStyle: types.Enum("Tape.MarkerStyle", EMarkerStyle, EMarkerStyle.Sphere),
     };
 
     protected static readonly tapeOuts = {
@@ -82,8 +83,8 @@ export default class CVTape extends CObject3D
         ];
     }
 
-    protected startPin: Pin = null;
-    protected endPin: Pin = null;
+    protected startMarker: MeasurementMarker = null;
+    protected endMarker: MeasurementMarker = null;
     protected line: Line = null;
     protected annotationView: CVStaticAnnotationView = null;
     protected label: Annotation = null;
@@ -95,13 +96,13 @@ export default class CVTape extends CObject3D
         this.object3D = new Group();
         this.object3D.name = "Tape";
 
-        this.startPin = new Pin();
-        this.startPin.matrixAutoUpdate = false;
-        this.startPin.visible = false;
+        this.startMarker = createMarker(EMarkerStyle.Sphere);
+        this.startMarker.matrixAutoUpdate = false;
+        this.startMarker.visible = false;
 
-        this.endPin = new Pin();
-        this.endPin.matrixAutoUpdate = false;
-        this.endPin.visible = false;
+        this.endMarker = createMarker(EMarkerStyle.Sphere);
+        this.endMarker.matrixAutoUpdate = false;
+        this.endMarker.visible = false;
 
         const points = [];
         points.push(new Vector3(0, 0, 0));
@@ -124,7 +125,7 @@ export default class CVTape extends CObject3D
         this.annotationView.ins.visible.setValue(false);
         this.annotationView.addAnnotation(annotation);
 
-        this.object3D.add(this.startPin, this.endPin, this.line);
+        this.object3D.add(this.startMarker, this.endMarker, this.line);
     }
 
     create()
@@ -138,16 +139,16 @@ export default class CVTape extends CObject3D
 
     dispose()
     {
-        this.object3D.remove(this.startPin, this.endPin, this.line);
+        this.object3D.remove(this.startMarker, this.endMarker, this.line);
 
-        this.startPin.dispose();
-        this.endPin.dispose();
+        this.startMarker.dispose();
+        this.endMarker.dispose();
         this.line.geometry.dispose();
         (this.line.material as Material).dispose();
         this.label.dispose();
 
-        this.startPin = null;
-        this.endPin = null;
+        this.startMarker = null;
+        this.endMarker = null;
         this.line = null;
         this.label = null;
 
@@ -157,7 +158,7 @@ export default class CVTape extends CObject3D
     update(context)
     {
         const lineGeometry = this.line.geometry as BufferGeometry;
-        const { startPin, endPin, line, ins } = this;
+        const { startMarker, endMarker, line, ins } = this;
 
         if (ins.enabled.changed) {
             ins.visible.setValue(ins.enabled.value);
@@ -165,16 +166,21 @@ export default class CVTape extends CObject3D
 
         super.update(context);
 
-        // determine pin scale based on scene/model bounding box
+        // handle marker style change
+        if (ins.markerStyle.changed) {
+            this.recreateMarkers();
+        }
+
+        // determine marker scale based on scene/model bounding box
         if (ins.boundingBox.changed && ins.boundingBox.value) {
             ins.boundingBox.value.getSize(_vec3a);
             const radius = _vec3a.length() * 0.5;
 
-            startPin.scale.setScalar(radius * 0.003);
-            startPin.updateMatrix();
+            this.startMarker.scale.setScalar(radius * 0.003);
+            this.startMarker.updateMatrix();
 
-            endPin.scale.setScalar(radius * 0.003);
-            endPin.updateMatrix();
+            this.endMarker.scale.setScalar(radius * 0.003);
+            this.endMarker.updateMatrix();
 
             const defaultScale = radius * 0.05;
             this.annotationView.ins.unitScale.setValue(defaultScale);
@@ -198,8 +204,8 @@ export default class CVTape extends CObject3D
                 const startPos = ins.startPosition.value;
                 const endPos = ins.endPosition.value;
                 if(startPos[0] != endPos[0] || startPos[1] != endPos[1] || startPos[2] != endPos[2]) {
-                    startPin.visible = true;
-                    endPin.visible = true;
+                    startMarker.visible = true;
+                    endMarker.visible = true;
                     line.visible = true;
                     this.annotationView.ins.visible.setValue(true);
                 }
@@ -215,30 +221,30 @@ export default class CVTape extends CObject3D
 
         // update tape start point
         if (ins.startPosition.changed || ins.startDirection.changed) {
-            startPin.position.fromArray(ins.startPosition.value);
+            startMarker.position.fromArray(ins.startPosition.value);
             _vec3a.fromArray(ins.startDirection.value);
-            startPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
-            startPin.updateMatrix();
+            startMarker.quaternion.setFromUnitVectors(_vec3up, _vec3a);
+            startMarker.updateMatrix();
 
             const positions = (lineGeometry.attributes.position as BufferAttribute).array as Float64Array;//Array<number>;
-            positions[0] = startPin.position.x;
-            positions[1] = startPin.position.y;
-            positions[2] = startPin.position.z;
+            positions[0] = startMarker.position.x;
+            positions[1] = startMarker.position.y;
+            positions[2] = startMarker.position.z;
             lineGeometry.attributes.position.needsUpdate = true;
             this.annotationView.ins.visible.setValue(false);
         }
 
         // update tape end point
         if (ins.endPosition.changed || ins.endDirection.changed) {
-            endPin.position.fromArray(ins.endPosition.value);
+            endMarker.position.fromArray(ins.endPosition.value);
             _vec3a.fromArray(ins.endDirection.value);
-            endPin.quaternion.setFromUnitVectors(_vec3up, _vec3a);
-            endPin.updateMatrix();
+            endMarker.quaternion.setFromUnitVectors(_vec3up, _vec3a);
+            endMarker.updateMatrix();
 
             const positions = (lineGeometry.attributes.position as BufferAttribute).array as Float64Array;//Array<number>;
-            positions[3] = endPin.position.x;
-            positions[4] = endPin.position.y;
-            positions[5] = endPin.position.z;
+            positions[3] = endMarker.position.x;
+            positions[4] = endMarker.position.y;
+            positions[5] = endMarker.position.z;
             lineGeometry.attributes.position.needsUpdate = true;
 
             // update distance between measured points
@@ -272,6 +278,13 @@ export default class CVTape extends CObject3D
             endDirection: data.endDirection || [ 1, 0, 0 ]
         });
         this.ins.enabled.copyValue(false);  // enable not set from data
+
+        if (data.markerStyle) {
+            const styleIndex = ["Sphere", "Ring", "Crosshair", "Disc", "Pin"].indexOf(data.markerStyle);
+            if (styleIndex >= 0) {
+                this.ins.markerStyle.setValue(styleIndex);
+            }
+        }
     }
 
     toData(): ITape
@@ -279,7 +292,8 @@ export default class CVTape extends CObject3D
         const ins = this.ins;
 
         return {
-            enabled: ins.visible.cloneValue()/*,
+            enabled: ins.visible.cloneValue(),/*
+            markerStyle: ins.markerStyle.cloneValue(),
             startPosition: ins.startPosition.cloneValue(),
             startDirection: ins.startDirection.cloneValue(),
             endPosition: ins.endPosition.cloneValue(),
@@ -305,8 +319,8 @@ export default class CVTape extends CObject3D
         const position = event.view.pickPosition(event, bounds).applyMatrix4(worldMatrix); 
         const normal = event.view.pickNormal(event).applyMatrix3(_mat3).normalize();
 
-        // update pins and measurement line
-        const { startPin, endPin, line, ins, outs } = this;
+        // update markers and measurement line
+        const { startMarker, endMarker, line, ins, outs } = this;
 
         if (outs.state.value === ETapeState.SetStart) {
             position.toArray(ins.startPosition.value);
@@ -314,8 +328,8 @@ export default class CVTape extends CObject3D
             ins.startPosition.set();
             ins.startDirection.set();
 
-            startPin.visible = true;
-            endPin.visible = false;
+            startMarker.visible = true;
+            endMarker.visible = false;
             line.visible = false;
 
             outs.state.setValue(ETapeState.SetEnd);
@@ -327,12 +341,54 @@ export default class CVTape extends CObject3D
             ins.endDirection.set();
 
             // set end position of tape
-            startPin.visible = true;
-            endPin.visible = true;
+            startMarker.visible = true;
+            endMarker.visible = true;
             line.visible = true;
 
             outs.state.setValue(ETapeState.SetStart);
         }
+    }
+
+    protected recreateMarkers()
+    {
+        const { ins } = this;
+        const style = ins.markerStyle.getValidatedValue();
+
+        // Store current state
+        const startVisible = this.startMarker.visible;
+        const endVisible = this.endMarker.visible;
+        const startPosition = this.startMarker.position.clone();
+        const endPosition = this.endMarker.position.clone();
+        const startQuaternion = this.startMarker.quaternion.clone();
+        const endQuaternion = this.endMarker.quaternion.clone();
+        const startScale = this.startMarker.scale.clone();
+        const endScale = this.endMarker.scale.clone();
+
+        // Remove and dispose old markers
+        this.object3D.remove(this.startMarker, this.endMarker);
+        this.startMarker.dispose();
+        this.endMarker.dispose();
+
+        // Create new markers with the selected style
+        this.startMarker = createMarker(style);
+        this.startMarker.matrixAutoUpdate = false;
+        this.endMarker = createMarker(style);
+        this.endMarker.matrixAutoUpdate = false;
+
+        // Restore state
+        this.startMarker.visible = startVisible;
+        this.endMarker.visible = endVisible;
+        this.startMarker.position.copy(startPosition);
+        this.endMarker.position.copy(endPosition);
+        this.startMarker.quaternion.copy(startQuaternion);
+        this.endMarker.quaternion.copy(endQuaternion);
+        this.startMarker.scale.copy(startScale);
+        this.endMarker.scale.copy(endScale);
+        this.startMarker.updateMatrix();
+        this.endMarker.updateMatrix();
+
+        // Add new markers to scene
+        this.object3D.add(this.startMarker, this.endMarker);
     }
 
     protected updateUnitScale()
