@@ -321,6 +321,7 @@ export default class RenderView extends Publisher implements IManip
             return false;
         }
 
+        this.targetViewport = this.viewports[0];
         const viewEvent = this.routeEvent(event, false, false);
 
         if (viewEvent) {
