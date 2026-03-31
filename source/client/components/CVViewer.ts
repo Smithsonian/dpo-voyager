@@ -188,6 +188,7 @@ export default class CVViewer extends Component
         if (ins.activeAnnotation.changed) {
             const id = ins.activeAnnotation.value;
             this.getGraphComponents(CVAnnotationView).forEach(view => view.setActiveAnnotationById(id));
+
         }
         if(ins.annotationExit.changed) {
             ins.annotationsVisible.setValue(false);
@@ -201,6 +202,13 @@ export default class CVViewer extends Component
                 const tourIns = setup.tours.ins;
                 this._needsAnnoFocus = ins.annotationsVisible.value && !tourIns.enabled.value;
                 ins.annotationFocus.setValue(false);
+            }
+        }
+        if (ins.radioTags.changed && ins.radioTags.value) {
+            const tagString = ins.activeTags.value;
+            const tags = tagString.split(",");
+            if(tags.length > 1) {
+                ins.activeTags.setValue(tags[0]);
             }
         }
         if (ins.activeTags.changed) {

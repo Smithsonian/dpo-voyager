@@ -23,6 +23,13 @@ We welcome any contributions to the project. Please open a PR for any bug fixes 
 ### Feature Requests
 Given that the Smithsonian 3D team has limited resources, our implementation of new features will be limited to those that are directly aligned with the strategic goals and objectives of the institution. We are, however, happy to accept and review any PRs for functionality that will add value for our community at large.
 
+### UI Translations
+
+[![Translation status](https://hosted.weblate.org/widget/dpo-voyager/multi-auto.svg)](https://hosted.weblate.org/engage/dpo-voyager/)
+
+Improvements to current translations as well as adding new languages to the user interface are welcome!
+Please use our [Weblate page](https://hosted.weblate.org/engage/dpo-voyager/).
+
 ### Pre-Release Software
 This software is pre-release and provided "as is". Breaking changes can and will happen during development.
 
