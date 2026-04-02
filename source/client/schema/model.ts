@@ -34,8 +34,8 @@ export type TDerivativeQuality = "Thumb" | "Low" | "Medium" | "High" | "Highest"
 export enum EAssetType { Model, Geometry, Image, Texture, Points, Volume }
 export type TAssetType = "Model" | "Geometry" | "Image" | "Texture" | "Points" | "Volume";
 
-export enum EMapType { Color, Emissive, Occlusion, Normal, MetallicRoughness, Zone }
-export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "MetallicRoughness" | "Zone";
+export enum EMapType { Color, Emissive, Occlusion, Normal, MetallicRoughness, Zone, Kintsugi }
+export type TMapType = "Color" | "Emissive" | "Occlusion" | "Normal" | "MetallicRoughness" | "Zone" | "Kintsugi";
 
 export enum ESideType { Front, Back, Double }
 export type TSideType = "Front" | "Back" | "Double";

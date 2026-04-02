@@ -67,6 +67,10 @@ export function injectFragmentShaderCode(shader: string) {
             uniform sampler2D zoneMap;\n \
         #endif\n \
         \n \
+        #if defined(USE_KINTSUGI)\n \
+            uniform sampler2D specularOverrideMap;\n \
+        #endif\n \
+        \n \
         #ifdef MODE_XRAY\n \
             varying float vIntensity;\n \
         #endif\n \
@@ -76,6 +80,18 @@ export function injectFragmentShaderCode(shader: string) {
         #endif\n \
         \n \
         void main() {'
+    )
+
+    // Kintsugi specific shader modifications
+    shader = shader.replace(
+        '#include <lights_physical_fragment>',
+        '#include <lights_physical_fragment>\n \
+        \n \
+        #ifdef USE_KINTSUGI\n \
+            material.specularColor = texture(specularOverrideMap, vSpecularColorMapUv);\n \
+            material.metallicity = 0.0;\n \
+        #endif\n \
+        \n'
     )
 
     shader = shader.replace(
@@ -139,6 +155,7 @@ export function addCustomMaterialDefines(material: Material) {
     material.defines["MODE_XRAY"] = false;
     material.defines["CUT_PLANE"] = false;
     material.defines["USE_ZONEMAP"] = false;
+    material.defines["USE_KINTSUGI"] = false;
     material.defines["OVERLAY_ALPHA"] = false;
 }
 
@@ -146,7 +163,8 @@ export function addCustomMaterialDefines(material: Material) {
 export function extendShaders(material: Material) {
     const uniforms = {
         cutPlaneColor: { value: _vec3 },
-        zoneMap: { value: null }
+        zoneMap: { value: null },
+        specularOverrideMap: { value: null }
     };
 
     material.onBeforeCompile = (shader) => {
@@ -156,6 +174,7 @@ export function extendShaders(material: Material) {
         // add custom uniforms
         shader.uniforms.cutPlaneColor = uniforms.cutPlaneColor;
         shader.uniforms.zoneMap = uniforms.zoneMap;
+        shader.uniforms.specularOverrideMap = uniforms.specularOverrideMap;
         material.userData.shader = shader;
     }
 }

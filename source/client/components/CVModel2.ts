@@ -1084,6 +1084,9 @@ export default class CVModel2 extends CObject3D
                 material.normalMap = null;
                 material.defines["OBJECTSPACE_NORMALMAP"] = false;
                 break;
+
+            case EShaderMode.Kintsugi:
+                break;
         }
     }
 }

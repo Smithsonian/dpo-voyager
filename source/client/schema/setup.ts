@@ -19,8 +19,8 @@ import { ELanguageType, TLanguageType } from "./common";
  */
 
 
-export type TShaderMode = "Default" | "Clay" | "XRay" | "Normals" | "Wireframe";
-export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe }
+export type TShaderMode = "Default" | "Clay" | "XRay" | "Normals" | "Wireframe" | "Kintsugi";
+export enum EShaderMode { Default, Clay, XRay, Normals, Wireframe, Kintsugi }
 
 export type TBackgroundStyle = "Solid" | "LinearGradient" | "RadialGradient";
 export enum EBackgroundStyle { Solid, LinearGradient, RadialGradient }
