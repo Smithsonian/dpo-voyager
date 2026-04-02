@@ -30,6 +30,7 @@ import CVStandaloneFileManager from "client/components/CVStandaloneFileManager";
 import documentTemplate from "client/templates/default.svx.json";
 import CVStoryApplication from "client/components/CVStoryApplication";
 import unitScaleFactor from "client/utils/unitScaleFactor";
+import { DEFAULT_SYSTEM_ASSET_PATH } from "client/components/CVAssetReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +44,7 @@ const _mat4 = new Matrix4();
 export default class IIIFManifestWriter {
     application: CVStoryApplication = null;
 
-    static readonly iiifUnhandledLights = ["CVEnvironmentLight", "CVRectLight", "CVHemisphereLight"];
+    static readonly iiifUnhandledLights = ["CVRectLight", "CVHemisphereLight"];
 
     constructor(application: CVStoryApplication) {
       this.application = application;
@@ -219,7 +220,7 @@ export default class IIIFManifestWriter {
         return JSON.stringify(jsonObj, null, 2);
     }
 
-    protected parseChildNodes(cvDocument, nodes, scene, annotationPage, commentPage, counts) {
+    protected parseChildNodes(cvDocument: CVDocument, nodes, scene, annotationPage, commentPage, counts) {
         const children = nodes.map(child => child.node).filter(node => node.is(NVNode)) as NVNode[];
         const setup = cvDocument.setup;
         //const sceneDefaultLang = ELanguageType[setup.language.ins.primarySceneLanguage.value];
@@ -471,15 +472,31 @@ export default class IIIFManifestWriter {
                 }
 
                 // add source
-                _color.setRGB(light.ins.color.value[0],light.ins.color.value[1],light.ins.color.value[2]);
                 const source = {
-                    id: "https://example.org/iiif/3d/lights/" + (++counts.light),
                     type: light.typeName.substring(2),
                     label: {"en": [light.node.name]},
-                    color: "#"+_color.getHexString("srgb-linear"),
                     intensity: {"type": "Value", "value": light.ins.intensity.value, "unit": "relative"}
                 };
-                light.typeName == "CVSpotLight" ? source["angle"] = (light as CVSpotLight).ins.angle.value : null;
+                if(light.typeName != "CVEnvironmentLight") {
+                    _color.setRGB(light.ins.color.value[0],light.ins.color.value[1],light.ins.color.value[2]);
+                    source["color"] = "#"+_color.getHexString("srgb-linear");
+                    source["id"] = "https://example.org/iiif/3d/lights/" + (++counts.light);
+                    light.typeName == "CVSpotLight" ? source["angle"] = (light as CVSpotLight).ins.angle.value : null;
+                }
+                else {
+                    let mapName = setup.environment.getEnvMapOption(setup.environment.ins.imageIndex.value);
+                    if(setup.environment.ins.imageIndex.value < 3)  {
+                        mapName = DEFAULT_SYSTEM_ASSET_PATH + mapName;
+                    }
+
+                    source["type"] = "ImageBasedLight"
+                    source["environmentMap"] = {
+                        "id": mapName,
+                        "type": "Image",
+                        "profile": "equirectangular",
+                        "format": "image/vnd.radiance"
+                    }
+                }
                 annotation.body["source"] = source;
 
                 // add transform

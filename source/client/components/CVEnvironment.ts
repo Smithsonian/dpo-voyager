@@ -197,6 +197,10 @@ export default class CVEnvironment extends Component
         };
     }
 
+    getEnvMapOption(idx: number) : string {
+        return this._imageOptions[idx] || "";
+    }
+
     protected loadEnvironmentMap() {
         const ins = this.ins;
 

@@ -136,6 +136,7 @@ export default class IIIFManifestReader {
                     case "spotlight":
                     case "pointlight":
                     case "ambientlight":
+                    case "imagebasedlight":
                         iiifLights.push(anno);
                         break;
                     case "textualbody":
@@ -180,10 +181,10 @@ export default class IIIFManifestReader {
                 const defaultLights = lights.getComponent(CTransform).children.slice();
                 while(defaultLights.length > 0) {
                     const light = defaultLights.pop();
-                    light.hasComponent(CVEnvironmentLight) ? light.getComponent(CVEnvironmentLight).ins.enabled.setValue(false) :
-                        light.dispose();
+                    light.hasComponent(CVEnvironmentLight) && !iiifLights.some((light) => light.getBody()[0].isImageBasedLight()) ? 
+                        light.getComponent(CVEnvironmentLight).ins.enabled.setValue(false) : light.dispose();
                 }
-
+                
                 iiifLights.forEach((light) => {
                     const lightBody = light.getBody()[0];
                     const lightLabel = lightBody.getLabelFromSelfOrSource().getValue();
@@ -204,27 +205,38 @@ export default class IIIFManifestReader {
                     else if(lightBody.isAmbientLight()) {
                         newLight = lightNode.createComponent(CVAmbientLight);
                     }
+                    else if(lightBody.isImageBasedLight()) {
+                        newLight = lightNode.createComponent(CVEnvironmentLight);
+                    }
 
                     if(newLight) {
                         // Set properties
                         lightNode.name = lightLabel ?? newLight.typeName;
                         (newLight as CLight).ins.name.setValue(lightNode.name);
                         (newLight as CLight).ins.intensity.setValue(lightBody.getIntensity());
-                        const lightColor = lightBody.getColor().value;
-                        (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);
 
-                        // Handle transform
-                        const transform = this.getIIIFBodyTransform(lightBody, light);
-                        _vec3a.setFromMatrixPosition(transform);
-                        newLight.transform.object3D.matrix.copy(transform);
-                        const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _upVector);
-                        if(lookAtTransform) {        
-                            newLight.transform.object3D.matrix.multiply(lookAtTransform);
-                        
-                            // lookAt orients z-axis, so need to compensate for lights
-                            newLight.transform.object3D.matrix.multiply(_mat4a.makeRotationX(90*math.DEG2RAD));
+                        if(!lightBody.isImageBasedLight()) {
+                            const lightColor = lightBody.getColor().value;
+                            (newLight as CLight).ins.color.setValue([lightColor[0]/255,lightColor[1]/255,lightColor[2]/255]);
+
+                            // Handle transform
+                            const transform = this.getIIIFBodyTransform(lightBody, light);
+                            _vec3a.setFromMatrixPosition(transform);
+                            newLight.transform.object3D.matrix.copy(transform);
+                            const lookAtTransform = this.getIIIFLookAtTransform(lightBody, scene, _vec3a, _upVector);
+                            if(lookAtTransform) {        
+                                newLight.transform.object3D.matrix.multiply(lookAtTransform);
+                            
+                                // lookAt orients z-axis, so need to compensate for lights
+                                newLight.transform.object3D.matrix.multiply(_mat4a.makeRotationX(90*math.DEG2RAD));
+                            }
+                            newLight.transform.setPropertiesFromMatrix();
                         }
-                        newLight.transform.setPropertiesFromMatrix();
+                        else {
+                            // TODO - handle profile/format appropriately
+                            //const profile = lightBody.getProfile();
+                            //const format = lightBody.getEnvMapFormat();
+                        }
                     }
                     else {
                         console.warn("Unhandled IIIF light type: "+lightBody.getType());
