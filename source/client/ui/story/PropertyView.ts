@@ -51,6 +51,9 @@ export default class PropertyView extends CustomElement
     @property({type: Boolean})
     disabled = false;
 
+    @property({ attribute: false })
+    tagCloud: string[] = [];
+
     protected firstConnected()
     {
         if (!this.property) {
@@ -58,11 +61,6 @@ export default class PropertyView extends CustomElement
         }
         this.dataset.path = this.property.path;
         this.classList.add("sv-property-view");
-    }
-
-    protected onPropertyChange()
-    {
-        console.log("PROPERTY CHANGE");
     }
 
     protected render()
@@ -95,7 +93,7 @@ export default class PropertyView extends CustomElement
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
         }else if(property.type === "string" && schema.semantic === "tags"){
-            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property}></sv-property-tags>`
+            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property} .tagCloud=${this.tagCloud}></sv-property-tags>`
         }else if(property.type === "string"){
             return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){

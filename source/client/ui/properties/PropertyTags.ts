@@ -15,13 +15,10 @@
  * limitations under the License.
  */
 
-import Component from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 import { customElement, property, PropertyValues, html } from "@ff/ui/CustomElement";
 
 import "@ff/ui/Button";
-
-import CVDocumentProvider from "client/components/CVDocumentProvider";
 
 import PropertyBase from "./PropertyBase";
 
@@ -33,9 +30,10 @@ export default class PropertyTags extends PropertyBase
     type = "string";
 
     @property({ attribute: false })
-    protected inputValue = "";
+    tagCloud: string[] = [];
 
-    protected _tagCloudProperty: Property = null;
+    @property({ attribute: false })
+    protected inputValue = "";
 
     protected firstConnected()
     {
@@ -53,45 +51,9 @@ export default class PropertyTags extends PropertyBase
             if (this.property) {
                 this.property.on("value", this.onUpdate, this);
             }
-
-            this.bindTagCloud();
         }
 
         super.update(changedProperties);
-    }
-
-    protected disconnected()
-    {
-        if (this._tagCloudProperty) {
-            this._tagCloudProperty.off("value", this.onUpdate, this);
-            this._tagCloudProperty = null;
-        }
-    }
-
-    protected bindTagCloud()
-    {
-        if (this._tagCloudProperty) {
-            this._tagCloudProperty.off("value", this.onUpdate, this);
-            this._tagCloudProperty = null;
-        }
-
-        const component = this.property?.group?.linkable as Component;
-        if (!component?.system) {
-            return;
-        }
-
-        const docProvider = component.system.getMainComponent(CVDocumentProvider);
-        const tagCloudProp = docProvider?.activeComponent?.setup?.viewer?.outs?.tagCloud;
-        if (tagCloudProp) {
-            this._tagCloudProperty = tagCloudProp;
-            tagCloudProp.on("value", this.onUpdate, this);
-        }
-    }
-
-    protected get tagCloud(): string[] {
-        const value = this._tagCloudProperty?.value;
-        if (!value) return [];
-        return value.split(",").map((t: string) => t.trim()).filter(Boolean);
     }
 
     protected get selectedTags(): string[] {

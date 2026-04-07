@@ -92,7 +92,7 @@ export default class ToursTaskView extends TaskView<CVToursTask>
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-label">${languageManager.getUILocalizedString("Title")}</div>
             <ff-line-edit name="title" text=${props.tourTitle.value} @change=${this.onTextEdit}></ff-line-edit>
-            <sv-property-view .property=${props.tourTags}></sv-property-view>
+            <sv-property-view .property=${props.tourTags} .tagCloud=${this.getTagCloud()}></sv-property-view>
             <div class="sv-label">${languageManager.getUILocalizedString("Lead")}</div>
             <ff-text-edit name="lead" text=${props.tourLead.value} @change=${this.onTextEdit}></ff-text-edit>
         </div>` : null;
