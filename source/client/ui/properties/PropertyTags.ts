@@ -30,7 +30,7 @@ export default class PropertyTags extends PropertyBase
     type = "string";
 
     @property({ attribute: false })
-    tagCloud: string[] = [];
+    options: string[] = null;
 
     @property({ attribute: false })
     protected inputValue = "";
@@ -62,7 +62,8 @@ export default class PropertyTags extends PropertyBase
     }
 
     protected get availableTags(): string[] {
-        return this.tagCloud.filter(t => !this.selectedTags.includes(t));
+        const options = this.options || this.property.schema.options;
+        return options.filter(t => !this.selectedTags.includes(t));
     }
 
     protected onAddTag(tag: string) {

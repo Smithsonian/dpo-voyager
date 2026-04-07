@@ -49,6 +49,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVOrbitNavigation from "./CVOrbitNavigation";
 import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
 import CVScene from "./CVScene";
+import CVViewer from "./CVViewer";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -117,6 +118,9 @@ export default class CVAnnotationView extends CObject3D
     }
     protected get audio() {
         return this.getGraphComponent(CVAudioManager, true);
+    }
+    protected get viewer() {
+        return this.getGraphComponent(CVViewer, true);
     }
     protected get snapshots() {
         return this.getGraphComponent(CVSnapshots, true);
@@ -237,6 +241,7 @@ export default class CVAnnotationView extends CObject3D
 
         this.arManager.outs.isPresenting.on("value", this.handleARStateChange, this);
         this.language.outs.activeLanguage.on("value", this.updateLanguage, this);
+        this.viewer.outs.tagCloud.on("value", this.updateTagOptions, this);
 
         this.object3D = new HTMLSpriteGroup();
         this.object3D.name = "AnnotationView";
@@ -385,6 +390,7 @@ export default class CVAnnotationView extends CObject3D
 
         this.arManager.outs.isPresenting.off("value", this.handleARStateChange, this);
         this.language.outs.activeLanguage.off("value", this.updateLanguage, this);
+        this.viewer.outs.tagCloud.off("value", this.updateTagOptions, this);
 
         this._viewports.forEach(viewport => viewport.off("dispose", this.onViewportDispose, this));
         this._viewports.clear();
@@ -657,5 +663,11 @@ export default class CVAnnotationView extends CObject3D
         const dist = Math.sqrt(Math.pow(offset[0]-currentOffset[0],2)+Math.pow(offset[1]-currentOffset[1],2)+Math.pow(offset[2]-currentOffset[2],2));
 
         viewState.duration = Math.min(Math.max(angleOffset/180, dist/bounds, 0.3),1.5); // max 1.5s, min 0.3s
+    }
+
+    // Update global tag property options
+    protected updateTagOptions() {
+        const options = this.viewer.outs.tagCloud.value.split(",").map(tag => tag.trim()).filter(tag => tag);
+        this.ins.tags.setOptions(options);
     }
 }
