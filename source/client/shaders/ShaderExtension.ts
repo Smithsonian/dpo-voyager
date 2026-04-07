@@ -88,8 +88,7 @@ export function injectFragmentShaderCode(shader: string) {
         '#include <lights_physical_fragment>\n \
         \n \
         #ifdef USE_KINTSUGI\n \
-            material.specularColor = texture(specularOverrideMap, vSpecularColorMapUv);\n \
-            material.metallicity = 0.0;\n \
+            material.specularColor = texture2D(specularOverrideMap, vMapUv).rgb;\n \
         #endif\n \
         \n'
     )

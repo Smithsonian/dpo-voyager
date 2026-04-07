@@ -83,6 +83,7 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
         }
         this.abortControl = new AbortController();
         const modelAsset = this.findAsset(EAssetType.Model);
+        const imageAssets = this.findAssets(EAssetType.Image);
 
         if (modelAsset) {
             return assetReader.getModel(modelAsset.data.uri, {signal: this.abortControl.signal})
@@ -91,12 +92,23 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                     disposeObject(this.model);
                 }
                 this.model = object;
+
+                // Handle Kintsugi map load
+                if (imageAssets.some((image) => image.data.mapType === EMapType.Kintsugi)) {
+                    this.model.traverse(object => {
+                        const material = object["material"] as MeshStandardMaterial;
+                        if (material) {    
+                            assetReader.getTexture(imageAssets.find((image) => image.data.mapType === EMapType.Kintsugi).data.uri)
+                            .then(map => material.userData.shader.uniforms.specularOverrideMap.value = map);
+                        }
+                    });
+                }
+
                 return object;
             });
         }
 
         const geoAsset = this.findAsset(EAssetType.Geometry);
-        const imageAssets = this.findAssets(EAssetType.Image);
 
         if (geoAsset) {
             return assetReader.getGeometry(geoAsset.data.uri)
