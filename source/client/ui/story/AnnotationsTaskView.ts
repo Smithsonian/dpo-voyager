@@ -18,12 +18,14 @@
 import { customElement, html } from "@ff/ui/CustomElement";
 
 import { IButtonClickEvent } from "@ff/ui/Button";
+import "@ff/ui/LineEdit";
 import { ILineEditChangeEvent } from "@ff/ui/LineEdit";
 
 import "@ff/ui/TextEdit";
 import "@ff/ui/Splitter";
 import Notification from "@ff/ui/Notification";
 
+import "./AnnotationList";
 import { ISelectAnnotationEvent } from "./AnnotationList";
 
 
@@ -128,7 +130,7 @@ export default class AnnotationsTaskView extends TaskView<CVAnnotationsTask>
             <sv-property-view .property=${languageManager.ins.activeLanguage}></sv-property-view>
             <div class="sv-indent">
                 <sv-property-view .property=${inProps.article}></sv-property-view>
-                <sv-property-view .property=${inProps.tags}></sv-property-view>
+                <sv-property-view .property=${inProps.tags} .tagCloud=${this.getTagCloud()}></sv-property-view>
                 <sv-property-view .property=${inProps.title}></sv-property-view>
                 <div class="sv-label" style="${overLimit ? "color: red" : ""}" @click=${(e)=>this.onClickLimit(e)}>Lead&nbsp&nbsp&nbsp${this._leadCharCount}/${limitText}</div>
                 <ff-text-edit name="lead" text=${inProps.lead.value} rows=3 maxLength=${this._leadLimit} @change=${this.onTextEdit}></ff-text-edit>
