@@ -30,9 +30,6 @@ export default class PropertyTags extends PropertyBase
     type = "string";
 
     @property({ attribute: false })
-    tagCloud: string[] = [];
-
-    @property({ attribute: false })
     protected inputValue = "";
 
     protected firstConnected()
@@ -47,9 +44,11 @@ export default class PropertyTags extends PropertyBase
             const previous = changedProperties.get("property") as Property;
             if (previous) {
                 previous.off("value", this.onUpdate, this);
+                previous.off("change", this.onUpdate, this);
             }
             if (this.property) {
                 this.property.on("value", this.onUpdate, this);
+                this.property.on("change", this.onUpdate, this);
             }
         }
 
@@ -62,7 +61,8 @@ export default class PropertyTags extends PropertyBase
     }
 
     protected get availableTags(): string[] {
-        return this.tagCloud.filter(t => !this.selectedTags.includes(t));
+        const options = this.property?.schema.options || [];
+        return options.filter(t => !this.selectedTags.includes(t));
     }
 
     protected onAddTag(tag: string) {

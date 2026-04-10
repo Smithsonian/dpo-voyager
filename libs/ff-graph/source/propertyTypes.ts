@@ -104,7 +104,7 @@ export const schemas: Dictionary<IPropertySchema> = {
     String: { preset: "" },
     DateTime: { preset: createDayjs(), semantic: "datetime" },
     AssetPath: { preset: "", semantic: "asset-path" },
-    Tags: { preset: "", semantic: "tags" },
+    Tags: { preset: "", options: [], semantic: "tags" },
     Object: { preset: null, objectType: Object },
     Event: { preset: 0, event: true }
 };

@@ -51,9 +51,6 @@ export default class PropertyView extends CustomElement
     @property({type: Boolean})
     disabled = false;
 
-    @property({ attribute: false })
-    tagCloud: string[] = [];
-
     protected firstConnected()
     {
         if (!this.property) {
@@ -88,12 +85,12 @@ export default class PropertyView extends CustomElement
             return html`${headerElement}<div class="sv-property-group">${fields}</div>`;
         }else if (schema.event) {
             return html`<sv-property-event aria-disabled=${disabled} name=${label} .property=${property}></sv-property-event>`;
+        }else if(property.type === "string" && schema.semantic === "tags"){
+            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property}></sv-property-tags>`
         }else if (schema.options) {
             return html`<sv-property-options aria-disabled=${disabled} dropdown name=${label} .property=${property}></sv-property-options>`;
         }else if(property.type === "boolean"){
             return html`<sv-property-boolean aria-disabled=${disabled} name=${label} .property=${property}></sv-property-boolean>`;
-        }else if(property.type === "string" && schema.semantic === "tags"){
-            return html`<sv-property-tags aria-disabled=${disabled} name=${label} .property=${property} .tagCloud=${this.tagCloud}></sv-property-tags>`
         }else if(property.type === "string"){
             return html`<sv-property-string aria-disabled=${disabled} name=${label} .property=${property}></sv-property-string>`
         }else if(property.type === "number"){
