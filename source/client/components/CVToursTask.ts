@@ -44,7 +44,7 @@ export default class CVToursTask extends CVTask
         moveTourDown: types.Event("Tours.MoveDown"),
         tourTitle: types.String("Tour.Title"),
         tourLead: types.String("Tour.Lead"),
-        tourTags: types.String("Tour.Tags"),
+        tourTags: types.Tags("Tour.Tags"),
         updateStep: types.Event("Step.Update"),
         createStep: types.Event("Step.Create"),
         deleteStep: types.Event("Step.Delete"),

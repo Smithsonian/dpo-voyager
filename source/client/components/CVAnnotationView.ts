@@ -77,7 +77,7 @@ export default class CVAnnotationView extends CObject3D
         title: types.String("Annotation.Title"),
         lead: types.String("Annotation.Lead"),
         marker: types.String("Annotation.Marker"),
-        tags: types.String("Annotation.Tags"),
+        tags: types.Tags("Annotation.Tags"),
         style: types.Option("Annotation.Style", AnnotationFactory.typeNames),
         scale: types.Scale("Annotation.Scale", { preset: 1, precision: 3 }),
         offset: types.Number("Annotation.Offset", { preset: 0, precision: 3 }),
