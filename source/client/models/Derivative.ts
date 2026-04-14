@@ -99,7 +99,10 @@ export default class Derivative extends Document<IDerivative, IDerivativeJSON>
                         const material = object["material"] as MeshStandardMaterial;
                         if (material) {    
                             assetReader.getTexture(imageAssets.find((image) => image.data.mapType === EMapType.Kintsugi).data.uri)
-                            .then(map => material.userData.shader.uniforms.specularOverrideMap.value = map);
+                            .then(map => {
+                                map.flipY = false;
+                                material.userData.shader.uniforms.specularOverrideMap.value = map;
+                            });
                         }
                     });
                 }
