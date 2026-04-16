@@ -243,6 +243,8 @@ class ExtendedAnnotation extends AnnotationElement
         // update expanded height in case annotation changed
         if (this.isExpanded) {
             this.contentElement.style.height = "auto";
+            this.style.width = annotationObj.lead.length > 0 || annotation.audioId ? "" : "auto";
+            this.style.minWidth = annotationObj.lead.length > 0 || annotation.audioId ? "" : "max-content";
         }
 
         // update expanded/collapsed
@@ -261,7 +263,8 @@ class ExtendedAnnotation extends AnnotationElement
                 }
 
                 this.classList.add("sv-expanded");
-                this.style.minWidth = this.sprite.annotation.lead.length < 40 && (!annotation.audioId || annotation.audioId.length == 0) ? "0" : "";
+                this.style.width = annotationObj.lead.length > 0 || annotation.audioId ? "" : "auto";
+                this.style.minWidth = annotationObj.lead.length < 40 && (!annotation.audioId || annotation.audioId.length == 0) ? "max-content" : "";
                 this.contentElement.style.display = "block";
                 this.contentElement.style.height = "auto"; //this.contentElement.scrollHeight + "px";
             }
