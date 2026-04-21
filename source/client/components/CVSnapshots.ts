@@ -29,6 +29,7 @@ import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
 import CVAnnotationView from "./CVAnnotationView";
+import CVCamera from "./CVCamera";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,6 +57,7 @@ export default class CVSnapshots extends CTweenMachine
         this.initializeTargetFeatures();
 
         this.graph.components.on(CLight, this.onLightComponentEvent, this);
+        this.graph.components.on(CVCamera, this.updateTargets, this);
     }
 
     initializeTargetFeatures()
@@ -143,11 +145,15 @@ export default class CVSnapshots extends CTweenMachine
         }
 
         snapshotProperties.forEach(property => {
+            if (!property) {
+                return;
+            }
+
             const isSerializable = (property.type !== "object" && !property.schema.event) || property.schema.semantic === "datetime";
             if (isSerializable) {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
-                    this.addTargetProperty(property);
+                    this.addTargetProperty(property);console.log("ADDED");
                 }
                 else if (!include && isIncluded) {
                     this.removeTargetProperty(property);

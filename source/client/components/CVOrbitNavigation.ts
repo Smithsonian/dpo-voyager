@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Box3 } from "three";
+import { Box3, Euler, Vector3 } from "three";
 
 import CObject3D, { Node, types } from "@ff/scene/components/CObject3D";
 
@@ -30,6 +30,11 @@ import { ENavigationType, TNavigationType, INavigation } from "client/schema/set
 import CVScene from "./CVScene";
 import CVAssetManager from "./CVAssetManager";
 import CVARManager from "./CVARManager";
+import CVCamera from "./CVCamera";
+import math from "@ff/core/math";
+
+const _vec3b = new Vector3();
+const _euler = new Euler();
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -127,6 +132,7 @@ export default class CVOrbitNavigation extends CObject3D
         return [
             this.ins.orbit,
             this.ins.offset,
+            this.camera?.ins.position
         ];
     }
 
@@ -138,6 +144,9 @@ export default class CVOrbitNavigation extends CObject3D
     }
     protected get arManager() {  // HACK - need a centralized place to reference shadowRoot of this instance
         return this.getSystemComponent(CVARManager);
+    }
+    protected get camera() {
+        return this.getGraphComponent(CVCamera, true);
     }
 
     create()
@@ -226,8 +235,15 @@ export default class CVOrbitNavigation extends CObject3D
 
         // orbit, offset and limits
         if (orbit.changed || offset.changed) {
+
+            if(ins.mode.value === ENavigationType.Fly) {console.log(this.camera.transform.ins.position.value);
+                _vec3b.fromArray(offset.value);
+                _vec3b.applyEuler(_euler.set(-orbit.value[0]*math.DEG2RAD,-orbit.value[1]*math.DEG2RAD,-orbit.value[2]*math.DEG2RAD));
+                offset.setValue(_vec3b.toArray());
+            }
+
             controller.orbit.fromArray(orbit.value);
-            controller.offset.fromArray(offset.value);
+            controller.offset.fromArray(offset.value);console.log(controller.offset);
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {
