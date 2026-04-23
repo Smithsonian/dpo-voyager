@@ -33,6 +33,7 @@ import CVARManager from "./CVARManager";
 import CVCamera from "./CVCamera";
 import math from "@ff/core/math";
 
+const _vec3a = new Vector3();
 const _vec3b = new Vector3();
 const _euler = new Euler();
 
@@ -132,7 +133,7 @@ export default class CVOrbitNavigation extends CObject3D
         return [
             this.ins.orbit,
             this.ins.offset,
-            this.camera?.ins.position
+            this.camera?.transform.ins.position
         ];
     }
 
@@ -236,14 +237,15 @@ export default class CVOrbitNavigation extends CObject3D
         // orbit, offset and limits
         if (orbit.changed || offset.changed) {
 
-            if(ins.mode.value === ENavigationType.Fly) {console.log(this.camera.transform.ins.position.value);
-                _vec3b.fromArray(offset.value);
-                _vec3b.applyEuler(_euler.set(-orbit.value[0]*math.DEG2RAD,-orbit.value[1]*math.DEG2RAD,-orbit.value[2]*math.DEG2RAD));
+            if(ins.mode.value === ENavigationType.Fly) {
+                _vec3a.fromArray(orbit.value).multiplyScalar(math.DEG2RAD);
+                _vec3b.fromArray(this.camera.transform.ins.position.value);
+                _vec3b.applyEuler(_euler.set(-_vec3a.x,-_vec3a.y,-_vec3a.z));
                 offset.setValue(_vec3b.toArray());
             }
 
             controller.orbit.fromArray(orbit.value);
-            controller.offset.fromArray(offset.value);console.log(controller.offset);
+            controller.offset.fromArray(offset.value);
         }
 
         if (minOrbit.changed || minOffset.changed || maxOrbit.changed || maxOffset.changed) {

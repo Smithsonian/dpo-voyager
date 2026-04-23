@@ -153,7 +153,7 @@ export default class CVSnapshots extends CTweenMachine
             if (isSerializable) {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
-                    this.addTargetProperty(property);console.log("ADDED");
+                    this.addTargetProperty(property);
                 }
                 else if (!include && isIncluded) {
                     this.removeTargetProperty(property);

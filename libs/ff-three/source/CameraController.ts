@@ -240,7 +240,6 @@ export default class CameraController implements IManip
         _vec3a.copy(this.orbit).multiplyScalar(math.DEG2RAD);
         _vec3b.copy(this.offset);
 
-        console.log(_vec3b);
         if (camera.isOrthographicCamera) {
             _vec3b.z = this.maxOffset.z; // fixed distance = maxOffset.z
             camera.size = this.offset.z; // use size to visualize distance

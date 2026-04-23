@@ -261,7 +261,7 @@ export default class CTweenMachine extends Component
         const isArray = property.isArray();
 
         this.targets.push({ property, isNumber, isArray });
-console.log("Add target "+property.path);
+
         const states = this.states;
         const keys = Object.keys(states);
         for (let i = 0, n = keys.length; i < n; ++i) {
@@ -403,7 +403,7 @@ console.log("Add target "+property.path);
         for (let i = 0, n = targets.length; i < n; ++i) {
             const target = targets[i];
             const property = target.property;
-            console.log(property.path);
+
             if (target.isNumber && valuesB && valuesB[i] !== null) {
                 const vA = valuesA[i];
                 const vB = valuesB[i];
