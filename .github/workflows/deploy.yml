@@ -1,0 +1,83 @@
+name: Build and Deploy
+
+on:
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: "Branch to build/deploy (used if commit is empty)"
+                required: false
+                default: "master"
+                type: string
+            commit:
+                description: "Exact commit SHA to build/deploy (overrides branch)"
+                required: false
+                default: ""
+                type: string
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: pages-${{ github.workflow }}
+    cancel-in-progress: false
+
+jobs:
+    resolve-ref:
+        runs-on: ubuntu-latest
+        outputs:
+            selected_ref: ${{ steps.pick.outputs.selected_ref }}
+        steps:
+            - id: pick
+              shell: bash
+              run: |
+                  BRANCH="${{ github.event.inputs.branch }}"
+                  COMMIT="${{ github.event.inputs.commit }}"
+
+                  # Priority: commit > branch > default branch at dispatch time
+                  if [ -n "$COMMIT" ]; then
+                    echo "selected_ref=$COMMIT" >> "$GITHUB_OUTPUT"
+                  elif [ -n "$BRANCH" ]; then
+                    echo "selected_ref=$BRANCH" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "selected_ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+                  fi
+
+    build-and-deploy:
+        needs: resolve-ref
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+
+        steps:
+            - name: Checkout selected ref
+              uses: actions/checkout@v6
+              with:
+                  ref: ${{ needs.resolve-ref.outputs.selected_ref }}
+                  fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build production bundle
+              run: npm run build-prod
+
+            - name: Configure Pages
+              uses: actions/configure-pages@v5
+
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: ./dist
+
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
