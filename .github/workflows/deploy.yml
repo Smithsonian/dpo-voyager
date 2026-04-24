@@ -4,9 +4,10 @@ on:
     workflow_dispatch:
         inputs:
             branch:
-                description: "Branch to build/deploy (used if commit is empty)"
+                description: "Branch to build/deploy (leave empty to use the selected run
+                    branch)"
                 required: false
-                default: "master"
+                default: ""
                 type: string
             commit:
                 description: "Exact commit SHA to build/deploy (overrides branch)"
