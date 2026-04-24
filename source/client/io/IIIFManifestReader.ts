@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, parseManifest, loadManifest } from "@iiif/3d-manifesto-dev";
+import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, parseManifest, loadManifest, AnnotationPage, Annotation } from "@iiif/3d-manifesto-dev";
 
 import math from "@ff/three/math";
 import CVModel2 from "client/components/CVModel2";
@@ -34,7 +34,7 @@ import { Matrix4, Vector3, Euler, Mesh, MeshStandardMaterial, BufferGeometry, Bu
 import ExplorerApplication from "client/applications/ExplorerApplication";
 import CVDocumentProvider from "client/components/CVDocumentProvider";
 import CVScene from "client/components/CVScene";
-import Annotation from "client/models/Annotation";
+import VAnnotation from "client/models/Annotation";
 import { DEFAULT_LANGUAGE, ELanguageType, EUnitType } from "client/schema/common";
 import CVAnnotationView from "client/components/CVAnnotationView";
 import CVAssetReader from "client/components/CVAssetReader";
@@ -118,12 +118,12 @@ export default class IIIFManifestReader {
             }
 
             const annos = iiifManifest.annotationsFromScene(scene);
-
+console.log(annos);
             annos.forEach((anno) => {
                 const obj = anno.getBody()[0];
                 const body = obj.isSpecificResource() ? obj.getSource() : obj;
                 
-                const type = (body as any).getType();
+                const type = (body as any).getType();console.log(type);
                 switch(type) {
                     case "model":
                         iiifModels.push(anno);
@@ -330,13 +330,14 @@ export default class IIIFManifestReader {
             iiifComments.forEach((comment) => {
                 const target = comment.getTarget();
                 const commentBody = comment.getBody()[0];
+
+                _vec3a.set(0,0,0);
+                const annotation = new VAnnotation(undefined);
+                const data = annotation.data;
+
                 if(target.isSpecificResource) {
-                    _vec3a.set(0,0,0);
+                    
                     const selector = (target as SpecificResource).getSelector();
-
-                    const annotation = new Annotation(undefined);
-
-                    const data = annotation.data;
 
                     // position
                     if (selector && selector.isPointSelector) {
@@ -344,102 +345,106 @@ export default class IIIFManifestReader {
                         data.position = [position.x, position.y, position.z];
                         _vec3a.fromArray(data.position);
                     }
+                }
 
-                    // direction
-                    const endPosition = commentBody.Position;
-                    if(endPosition) {
-                        const labelSelector = (endPosition as SpecificResource).getSelector();
-                        const labelPos = labelSelector.Location;
-                        _vec3b.set(labelPos.x, labelPos.y, labelPos.z);
-                        const labelDir = _vec3b.sub(_vec3a);
-                        data.direction = labelDir.toArray();
-                        data.scale = labelDir.length();
+                data.position = _vec3a.toArray();
+
+                // direction
+                const endPosition = commentBody.Position;
+                if(endPosition) {
+                    const labelSelector = (endPosition as SpecificResource).getSelector();
+                    const labelPos = labelSelector.Location;
+                    _vec3b.set(labelPos.x, labelPos.y, labelPos.z);
+                    const labelDir = _vec3b.sub(_vec3a);
+                    data.direction = labelDir.toArray();
+                    data.scale = labelDir.length();
+                }
+                else {
+                    models[0].localBoundingBox.getCenter(_vec3b);
+                    data.direction = _vec3a.sub(_vec3b).toArray();
+                    data.scale = 0.001;
+                }
+
+                // parse annotation audio and text content
+                comment.getBody().forEach(option => {
+                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
+
+                    if(option.isSound()) {
+                        // Add audio clip
+                        const clipId = annotation.data.audioId || Document.generateId();
+                        const audioLabel = option.getLabelFromSelfOrSource().getValue();
+                        let clip = setup.audio.getAudioClip(clipId);
+                        if(clip === undefined) {
+                            clip = {
+                                id: clipId,
+                                name: audioLabel ?? "New Audio Element",
+                                uris: {},
+                                captionUris: {},
+                                durations: {}
+                            };
+                            setup.audio.addAudioClip(clip);
+                            annotation.data.audioId = clipId;
+                            data.style = "Extended";
+                        }
+                        const uri: string = option.getProperty("id");
+                        clip.uris[langCode] = uri;
+                        setup.audio.updateAudioClip(clipId);
+                    }
+                    else if(option.isSoundCaption()) {
+                        // skip caption processing so all audio is parsed first
+                        return;
                     }
                     else {
-                        models[0].localBoundingBox.getCenter(_vec3b);
-                        data.direction = _vec3a.sub(_vec3b).toArray();
-                        data.scale = 0.001;
-                    }
+                        const annoValue: string = option.Value;
+                        const newLine = annoValue.indexOf('\n');
+                        if(newLine >= 0) {
+                            annotation.data.titles[langCode] = sanitizeHtml(annoValue.substring(0,newLine), {allowedTags: []});
 
-                    // parse annotation audio and text content
-                    comment.getBody().forEach(option => {
-                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
+                            const leadText = annoValue.substring(newLine+1);
 
-                        if(option.isSound()) {
-                            // Add audio clip
-                            const clipId = annotation.data.audioId || Document.generateId();
-                            const audioLabel = option.getLabelFromSelfOrSource().getValue();
-                            let clip = setup.audio.getAudioClip(clipId);
-                            if(clip === undefined) {
-                                clip = {
-                                    id: clipId,
-                                    name: audioLabel ?? "New Audio Element",
-                                    uris: {},
-                                    captionUris: {},
-                                    durations: {}
-                                };
-                                setup.audio.addAudioClip(clip);
-                                annotation.data.audioId = clipId;
-                                data.style = "Extended";
+                            // handle image parsing and assignment
+                            if(leadText.indexOf("<img") >= 0) {
+                                const safeText = sanitizeHtml(leadText, {allowedTags: ['img']});
+                                let temp = document.createElement('div');
+                                temp.innerHTML = safeText;
+                                const image = temp.getElementsByTagName('img')[0];
+                                annotation.data.imageUri = image.src;
+                                annotation.data.imageAltText[langCode] = image.alt;
                             }
-                            const uri: string = option.getProperty("id");
-                            clip.uris[langCode] = uri;
-                            setup.audio.updateAudioClip(clipId);
-                        }
-                        else if(option.isSoundCaption()) {
-                            // skip caption processing so all audio is parsed first
-                            return;
+
+                            annotation.data.leads[langCode] = sanitizeHtml(leadText,
+                                {
+                                    allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'sup', 'sub' ],
+                                    allowedAttributes: {
+                                        'a': [ 'href', 'target' ]
+                                    }
+                                });
+                            data.style = "Extended";
                         }
                         else {
-                            const annoValue: string = option.Value;
-                            const newLine = annoValue.indexOf('\n');
-                            if(newLine >= 0) {
-                                annotation.data.titles[langCode] = sanitizeHtml(annoValue.substring(0,newLine), {allowedTags: []});
-
-                                const leadText = annoValue.substring(newLine+1);
-
-                                // handle image parsing and assignment
-                                if(leadText.indexOf("<img") >= 0) {
-                                    const safeText = sanitizeHtml(leadText, {allowedTags: ['img']});
-                                    let temp = document.createElement('div');
-                                    temp.innerHTML = safeText;
-                                    const image = temp.getElementsByTagName('img')[0];
-                                    annotation.data.imageUri = image.src;
-                                    annotation.data.imageAltText[langCode] = image.alt;
-                                }
-
-                                annotation.data.leads[langCode] = sanitizeHtml(leadText,
-                                    {
-                                        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'sup', 'sub' ],
-                                        allowedAttributes: {
-                                          'a': [ 'href', 'target' ]
-                                        }
-                                    });
-                                data.style = "Extended";
-                            }
-                            else {
-                                annotation.data.titles[langCode] = sanitizeHtml(annoValue, {allowedTags: []});
-                            }
-                          }
-                    });
-
-                    // parse audio captions
-                    comment.getBody().forEach(option => {
-                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
-
-                        if(option.isSoundCaption()) {
-                            const clip = setup.audio.getAudioClip(annotation.data.audioId);
-
-                            if(clip) {
-                                clip.captionUris[langCode] = option.getProperty("id");
-                            }
-                            else {
-                                console.warn("Caption file not loaded - no corresponding audio clip.");
-                            }
+                            annotation.data.titles[langCode] = sanitizeHtml(annoValue, {allowedTags: []});
                         }
-                    });
-                    
-                    // handle scope
+                        }
+                });
+
+                // parse audio captions
+                comment.getBody().forEach(option => {
+                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+
+                    if(option.isSoundCaption()) {
+                        const clip = setup.audio.getAudioClip(annotation.data.audioId);
+
+                        if(clip) {
+                            clip.captionUris[langCode] = option.getProperty("id");
+                        }
+                        else {
+                            console.warn("Caption file not loaded - no corresponding audio clip.");
+                        }
+                    }
+                });
+                
+                // handle scope
+                if(target.isSpecificResource) {
                     const scopeAnnotations = comment.ScopeContent;
                     scopeAnnotations.forEach((anno) => {
                         const obj = anno.getBody()[0];
@@ -480,11 +485,10 @@ export default class IIIFManifestReader {
                                 console.log("Unsupported IIIF scope annotation type: "+type);
                         }
                     });
-
-
-                    const view = models[0].getGraphComponent(CVAnnotationView);
-                    view.addAnnotation(annotation);
                 }
+
+                const view = models[0].getGraphComponent(CVAnnotationView);
+                view.addAnnotation(annotation);
             });
 
             // handle canvases
@@ -652,7 +656,20 @@ class IIIFManifest {
     }
 
     annotationsFromScene(scene: Scene) {
-      return scene?.getContent().concat(scene?.getNonContentAnnotations()) || [];
+      // get manifest annotations
+      const manifestAnnoPages = (this.manifest.__jsonld.annotations || []).filter((annoPage) => annoPage && annoPage.type === "AnnotationPage").map(
+        (annotationPage) => new AnnotationPage(annotationPage, this.manifest.options)
+      ) as AnnotationPage[];
+
+      const manifestAnnos = [];
+      manifestAnnoPages.forEach((page) => {
+        const annos = page.getItems();//.filter((anno) => (anno as any).target.type === "Scene");
+        manifestAnnos.push(...annos.map(
+          (annotation) => new Annotation(annotation, this.manifest.options)
+        ));
+      });
+
+      return scene?.getContent().concat(scene?.getNonContentAnnotations()).concat(manifestAnnos) || [];
     }
   }
 
