@@ -54,7 +54,9 @@ export default class CVActionManager extends Component
     private _activeClips: {id: string, clip: AnimationAction}[] = [];
     private _direction: Dictionary<number> = {};
     private _initialOffset: Dictionary<Matrix4> = {};
+    private _animMap: Dictionary<Object3D> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
+
     private _animQueue = [];
 
     protected static readonly ins = {
@@ -95,6 +97,9 @@ export default class CVActionManager extends Component
         this.graph.components.off(CVSnapshots, this.onSnapshotsComponent, this);
         this.graph.components.off(CVModel2, this.onModelComponent, this);
 
+        this._clock = null;
+        this._mixer = null;
+        
         super.dispose();
     }
 
@@ -197,6 +202,15 @@ export default class CVActionManager extends Component
                 });
             }
         }
+
+        const model = component.node.getComponent(CVModel2, true)
+        model.object3D.traverse(object => {
+            if (object.animations.length > 0) {
+                object.animations.forEach((anim) => {
+                    this._animMap[anim.name] = object;
+                })
+            }
+        });
     }
 
     protected onAnnotationActivate() {
@@ -232,7 +246,7 @@ export default class CVActionManager extends Component
 
     protected playAnimation(component: CVModel2, action: IAction) 
     {
-        const mesh = component.object3D.children[0].children[0];
+        const mesh = this._animMap[action.animation];
         const meshParent = component.object3D;
         const annotations = component.node.getComponent(CVAnnotationView).object3D;
 
