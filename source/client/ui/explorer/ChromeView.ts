@@ -75,10 +75,12 @@ export default class ChromeView extends DocumentView
         this.titleElement = this.createElement("div", null);
         this.titleElement.classList.add("ff-ellipsis");
         this.assetPath = this.assetReader.getSystemAssetUrl("");
+        this.addEventListener("keydown", this.onKeyDown);
     }
 
     protected disconnected()
     {
+        this.removeEventListener("keydown", this.onKeyDown);
         this.activeDocument.setup.audio.ins.captionsEnabled.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.narrationPlaying.off("value", this.onUpdate, this);
         this.activeDocument.setup.audio.outs.isPlaying.off("value", this.onUpdate, this);
@@ -260,5 +262,13 @@ export default class ChromeView extends DocumentView
         }
 
         this.requestUpdate();
+    }
+
+    protected onKeyDown(e: KeyboardEvent)
+    {
+        if (e.code === "ArrowDown" || e.code === "ArrowUp") {
+            e.preventDefault();
+            e.stopPropagation();
+        }
     }
 }
