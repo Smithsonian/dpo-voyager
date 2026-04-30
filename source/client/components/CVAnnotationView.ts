@@ -190,32 +190,39 @@ export default class CVAnnotationView extends CObject3D
             this.emit<IAnnotationsUpdateEvent>({ type: "annotation-update", annotation });
         }
 
-        if (annotation?.data.viewId.length && !this.arManager.outs.isPresenting.value) {
-            // need to lock truncation checking during a tween
-            if(this._activeView) {
-                this._truncateLock = true;
-                this._activeView = false;
+        if (annotation?.data.viewId.length && !this.arManager.outs.isPresenting.value
+            && this.ins.visible.value) {
+
+            // only activate annotation view if annotations are visible
+            const visibleIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.key == "annotationsVisible");
+            const annotationsOn = visibleIdx >= 0 ? this.snapshots.getCurrentValues()[visibleIdx] : this.ins.visible.value;
+            if(annotationsOn) {
+                // need to lock truncation checking during a tween
+                if(this._activeView) {
+                    this._truncateLock = true;
+                    this._activeView = false;
+                }
+
+                // stop auto-rotation when an annotation is activated
+                const navigation = this.getGraphComponent(CVOrbitNavigation, true);
+                if (navigation) {
+                    navigation.ins.autoRotation.setValue(false);
+                    navigation.ins.isInUse.setValue(true);
+                }
+
+                this.normalizeViewOrbit(annotation.data.viewId);
+                
+                // If activeAnnotation is being tracked, make sure it is set
+                const activeIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
+                if (activeIdx >= 0) {
+                    const viewState = this.snapshots.getState(annotation.data.viewId);
+                    viewState.values[activeIdx] = annotation.data.id;
+                }
+
+                const pulse = this.getMainComponent(CPulse);
+                this.snapshots.tweenTo(annotation.data.viewId, pulse.context.secondsElapsed);
+                this._activeView = true;
             }
-
-            // stop auto-rotation when an annotation is activated
-            const navigation = this.getGraphComponent(CVOrbitNavigation, true);
-            if (navigation) {
-                navigation.ins.autoRotation.setValue(false);
-                navigation.ins.isInUse.setValue(true);
-            }
-
-            this.normalizeViewOrbit(annotation.data.viewId);
-
-            // If activeAnnotation is being tracked, make sure it is set
-            const activeIdx = this.snapshots.getTargetProperties().findIndex(prop => prop.name == "ActiveId");
-            if (activeIdx >= 0) {
-                const viewState = this.snapshots.getState(annotation.data.viewId);
-                viewState.values[activeIdx] = annotation.data.id;
-            }
-
-            const pulse = this.getMainComponent(CPulse);
-            this.snapshots.tweenTo(annotation.data.viewId, pulse.context.secondsElapsed);
-            this._activeView = true;
         }
 
     }
