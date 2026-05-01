@@ -320,7 +320,9 @@ export default class CVViewer extends Component
             annotations.forEach(annotation => {
                 const tags = annotation.tags;
                 tags.forEach(tag => {
-                    tagCloud.add(tag)
+                    if(tag !== "Missing content") {
+                        tagCloud.add(tag)
+                    }
                 });
             });
         });
