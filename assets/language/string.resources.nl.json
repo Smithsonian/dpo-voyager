@@ -61,7 +61,10 @@
     "Axis": "As",
     "Position": "Positie",
     "Select": "Selecteren",
+    "Select...": "Selecteren...",
     "Step": "Stap",
+    "Tour": "Rondleiding",
     "of": "van",
-    "Tour": "Rondleiding"
+    "Remove tag": "Tag verwijderen",
+    "Add a tag...": "Tag toevoegen..."
 }

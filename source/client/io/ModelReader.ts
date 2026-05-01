@@ -191,7 +191,11 @@ export default class ModelReader
             if (object.type === "Mesh") {
                 const mesh: Mesh = object;
                 mesh.castShadow = true;
-                mesh.animations = gltf.animations;
+                gltf.animations.forEach((anim) => {
+                    if(anim.tracks[0].name.split(".")[0] === mesh.name) {
+                        mesh.animations.push(anim);
+                    }
+                });
 
                 // convert unlit glTFs to MeshStandardMaterial
                 if((mesh.material as MeshStandardMaterial).type === "MeshBasicMaterial") {

@@ -262,6 +262,7 @@ export default class CVARManager extends Component
         
         this.setupScene();
         renderer.shadowMap.autoUpdate = false;
+        renderer.autoClear = true;
 
         renderer.xr.enabled = true;
         renderer.xr.setReferenceSpaceType( 'local' );
@@ -308,6 +309,7 @@ export default class CVARManager extends Component
         this.resetScene();
 
         renderer.shadowMap.autoUpdate = true;
+        renderer.autoClear = false;
         
         // Clean up
         const hitSourceInitial = this.initialHitTestSource;
