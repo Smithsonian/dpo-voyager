@@ -156,6 +156,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-reader-container {
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .sv-content-stack {

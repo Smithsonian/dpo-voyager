@@ -267,8 +267,11 @@ export default class ChromeView extends DocumentView
     protected onKeyDown(e: KeyboardEvent)
     {
         if (e.code === "ArrowDown" || e.code === "ArrowUp") {
-            e.preventDefault();
-            e.stopPropagation();
+            const target = e.target as HTMLElement;
+            if(target.scrollHeight <= target.clientHeight) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         }
     }
 }

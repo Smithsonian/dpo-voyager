@@ -237,8 +237,12 @@ export default class ContentView extends DocumentView
     protected onKeyDown(e: KeyboardEvent)
     {
         if (e.code === "ArrowDown" || e.code === "ArrowUp") {
-            e.preventDefault();
-            e.stopPropagation();
+            const target = e.target as HTMLElement;
+            const readerView = this.getElementsByTagName("sv-reader-view")[0];
+            if(!readerView || !readerView.contains(target) || readerView.scrollHeight <= readerView.parentElement.clientHeight) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         }
     }
 }
