@@ -756,10 +756,20 @@ $color-component-meta-light: #d9d998;
 .sv-drop-zone {
   border-style: dashed !important;
   border-width: 2px !important;
-  border-color: blue !important;
+  border-color: blue;
   &.sv-property-view{
     margin: -2px !important;
   }
+}
+
+.sv-transfer-pulse {
+  animation: pulse 2s linear infinite;
+}
+
+@keyframes pulse {
+  0%   { border-color: rgba(0, 0, 255, 1); }
+  50%  { border-color: rgba(0, 0, 255, 0);; }
+  100% { border-color: rgba(0, 0, 255, 1);; }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
