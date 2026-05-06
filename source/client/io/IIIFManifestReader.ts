@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, parseManifest, loadManifest, AnnotationPage, Annotation } from "@iiif/3d-manifesto-dev";
+import { Manifest, Scene, TranslateTransform, RotateTransform, ScaleTransform, SpecificResource, parseManifest, loadManifest, AnnotationPage, Annotation, Canvas } from "@iiif/3d-manifesto-dev";
 
 import math from "@ff/three/math";
 import CVModel2 from "client/components/CVModel2";
@@ -108,7 +108,8 @@ export default class IIIFManifestReader {
                 cvScene.ins.units.setValue(factor || EUnitType.cm);
             }
             else {
-                cvScene.ins.units.setValue(EUnitType.cm);
+                cvScene.ins.units.setValue(EUnitType.m);
+                cvScene.outs.units.setValue(EUnitType.m);
             }
 
             const bgColor = scene.getBackgroundColor() as any;      
@@ -164,7 +165,7 @@ console.log(annos);
                 
                 const newModel = activeDoc.appendModel(model.isSpecificResource() ? model.getSource()?.id : model.id);
                 models.push(newModel);
-                newModel.ins.localUnits.setValue(sceneScale ? cvScene.ins.units.value : EUnitType.cm);
+                newModel.ins.localUnits.setValue(sceneScale ? cvScene.ins.units.value : EUnitType.m);
 
                 const modelLabel = model.getLabelFromSelfOrSource().getValue();
                 newModel.node.name = modelLabel ?? "Model";
@@ -494,65 +495,74 @@ console.log(annos);
             // handle canvases
             iiifCanvases.forEach((canvas) => {
                 const target = canvas.getTarget();
-                if(target.isSpecificResource) {
+                if(target.isSpecificResource) {console.log(canvas);
                     const selector = (target as SpecificResource).__jsonld.selector[0];
-                    
+                    const width = canvas.getBody()[0].getWidth();
+                    const height = canvas.getBody()[0].getHeight();
+
+                    let corners : Vector3[] = [new Vector3(0, 0, 0), new Vector3(width, 0, 0),
+                        new Vector3(width, height, 0), new Vector3(0, height, 0)];
+
                     if(selector.type === "PolygonZSelector") {
                         const polygon = selector.value;
                         const startIdx = polygon.lastIndexOf("(") + 1;
                         const values = polygon.slice(startIdx, polygon.indexOf(")"));
                         const valueArray = values.split(" ");
-                        const corners : Vector3[] = [];
+                        corners.length = 0;
                         for(let i=0; i<valueArray.length; i+=3) {
                             corners.push(new Vector3(parseFloat(valueArray[i]), parseFloat(valueArray[i+1]), parseFloat(valueArray[i+2])));
                         }
-
-                        const geometry = new BufferGeometry().setFromPoints(corners);
-                        geometry.setIndex([0, 1, 2, 2, 3, 0]);
-                        geometry.setAttribute( 'uv', new BufferAttribute( new Float32Array( [0,1,0,0,1,0,1,1] ), 2 ) );
-                        geometry.computeVertexNormals();
-
-                        // load image
-                        const canvasId = canvas.getBody()[0].id;
-                        const canvasObj = iiifManifest.manifest?.getSequences()[0]?.getCanvasById(canvasId);
-                        const uri = canvasObj.getCanonicalImageUri();
-                        const bgColor = canvasObj.getProperty("backgroundColor");
-                        
-                        assetReader.getTexture(uri).then(map => {
-                            const canvasMesh = new Mesh(
-                                geometry,
-                                new MeshStandardMaterial({map: map, side: DoubleSide})
-                            );
-                            cvScene.object3D.add(canvasMesh);
-
-                            // TODO: Get rid of this hack when we can support canvases as scenegraph nodes
-                            manifestJson ??= JSON.parse(iiifManifest.manifestJson);
-                            canvasMesh.userData["IIIFCanvas"] = manifestJson["items"].find(item => item.id === canvasId);
-
-                            if(bgColor) {
-                                _color.set(bgColor);
-                                canvasMesh.material.onBeforeCompile = (shader) => {
-                                    shader.fragmentShader = shader.fragmentShader.slice(0,shader.fragmentShader.lastIndexOf('}')).concat(
-                                        '\n \
-                                        if (!gl_FrontFacing) {\n \
-                                            gl_FragColor = vec4('
-                                        + _color.toArray().toString() + 
-                                        ', 1.0);\n \
-                                        }\n \
-                                        }'
-                                    )
-                                }
-                            }
-
-                            /*const modelNode = activeDoc.innerGraph.createCustomNode(NVNode);
-                            cvScene.transform.addChild(modelNode.transform);
-                            modelNode.createModel();
-
-                            const model = modelNode.model;
-                            model.object3D.add(canvasMesh);
-                            //model.registerPickableObject3D(canvasMesh, true);*/
-                        });
                     }
+
+                    const geometry = new BufferGeometry().setFromPoints(corners);
+                    geometry.setIndex([0, 1, 2, 2, 3, 0]);
+                    geometry.setAttribute( 'uv', new BufferAttribute( new Float32Array( [0,1,0,0,1,0,1,1] ), 2 ) );
+                    geometry.computeVertexNormals();
+
+                    // load image
+                    const canvasId = canvas.getBody()[0].id;
+                    const canvasObj = canvas.getBody()[0].isSpecificResource() ? new Canvas(canvas.getBody()[0].getSource().__jsonld)
+                        : iiifManifest.manifest?.getSequences()[0]?.getCanvasById(canvasId);
+                    const uri = canvasObj.getCanonicalImageUri();
+                    const bgColor = canvasObj.getProperty("backgroundColor");
+                    
+                    assetReader.getTexture(uri).then(map => {
+                        const canvasMesh = new Mesh(
+                            geometry,
+                            new MeshStandardMaterial({map: map, side: DoubleSide})
+                        );
+                        cvScene.object3D.add(canvasMesh);
+
+                        // TODO: Get rid of this hack when we can support canvases as scenegraph nodes
+                        manifestJson ??= JSON.parse(iiifManifest.manifestJson);
+                        canvasMesh.userData["IIIFCanvas"] = manifestJson["items"].find(item => item.id === canvasId);
+
+                        if(bgColor) {
+                            _color.set(bgColor);
+                            canvasMesh.material.onBeforeCompile = (shader) => {
+                                shader.fragmentShader = shader.fragmentShader.slice(0,shader.fragmentShader.lastIndexOf('}')).concat(
+                                    '\n \
+                                    if (!gl_FrontFacing) {\n \
+                                        gl_FragColor = vec4('
+                                    + _color.toArray().toString() + 
+                                    ', 1.0);\n \
+                                    }\n \
+                                    }'
+                                )
+                            }
+                        }
+
+                        canvasMesh.matrixAutoUpdate = false;
+                        canvasMesh.matrix.copy(this.getIIIFBodyTransform(canvas.getBody()[0], canvas));
+
+                        /*const modelNode = activeDoc.innerGraph.createCustomNode(NVNode);
+                        cvScene.transform.addChild(modelNode.transform);
+                        modelNode.createModel();
+
+                        const model = modelNode.model;
+                        model.object3D.add(canvasMesh);
+                        //model.registerPickableObject3D(canvasMesh, true);*/
+                    });
                 }
             });
         });
