@@ -66,13 +66,13 @@ export default class ModelReader
         this.loadingManager = loadingManager;
 
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/draco/");
+        dracoLoader.setDecoderPath(DEFAULT_SYSTEM_ASSET_PATH + "js/draco/");
         this.renderer = renderer;
         this.gltfLoader = new GLTFLoader(loadingManager);
         this.gltfLoader.setDRACOLoader(dracoLoader);
         this.gltfLoader.setMeshoptDecoder(MeshoptDecoder);
         const ktx2Loader = new KTX2Loader(loadingManager);
-        ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "/js/basis/");
+        ktx2Loader.setTranscoderPath(DEFAULT_SYSTEM_ASSET_PATH + "js/basis/");
         this.gltfLoader.setKTX2Loader(ktx2Loader);
         setTimeout(()=>{
             //Allow an update to happen. @todo check how robust it is
