@@ -66,7 +66,7 @@ export default class CVViewer extends Component
 
     protected static readonly outs = {
         tagCloud: types.Tags("Tags.Cloud"),
-        sceneLoaded: types.Boolean("ViewerR.SceneLoaded", false),
+        sceneLoaded: types.Boolean("Viewer.SceneLoaded", false),
     };
 
     ins = this.addInputs(CVViewer.ins);
