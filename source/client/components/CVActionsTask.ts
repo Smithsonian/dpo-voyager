@@ -45,7 +45,7 @@ export default class CVActionsTask extends CVTask
         type: types.Enum("Action.Type", EActionType, EActionType.PlayAnimation),
         trigger: types.Enum("Action.Trigger", EActionTrigger, EActionTrigger.OnClick),
         style: types.Enum("Action.Style", EActionPlayStyle, EActionPlayStyle.Single),
-        speed: types.Number("Action.Speed", {min: 0, preset: 1}),
+        speed: types.Number("Action.Speed", {preset: 1}),
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.Annotation", ["None"], 0),

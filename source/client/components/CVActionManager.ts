@@ -289,9 +289,8 @@ export default class CVActionManager extends Component
                 }
             }
             else {
-                const isReversed = action.style == EActionPlayStyle[EActionPlayStyle.Reverse] as TActionPlayStyle;
-                clip.time = isReversed ? clip.getClip().duration : 0;
-                clip.timeScale = (isReversed ? -1 : 1) * action.speed;
+                clip.time = action.speed < 0 ? clip.getClip().duration : 0;
+                clip.timeScale = action.speed;
                 clip.clampWhenFinished = false;
             }
 
