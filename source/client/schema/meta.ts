@@ -111,5 +111,5 @@ export interface IAudioClip
  export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation";
  export enum EActionTrigger { OnClick, OnLoad, OnAnnotation };
 
- export type TActionPlayStyle = "Single" | "Reverse" | "PingPong" | "Loop";
- export enum EActionPlayStyle { Single, Reverse, PingPong, Loop };
+ export type TActionPlayStyle = "Single"| "PingPong" | "Loop";
+ export enum EActionPlayStyle { Single, PingPong, Loop };
