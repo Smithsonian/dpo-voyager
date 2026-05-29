@@ -66,6 +66,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         ` : null;
         const animActionView = ins.type.value === EActionType.PlayAnimation ? html`
             <sv-property-view .property=${ins.style}></sv-property-view>
+            <sv-property-view .property=${ins.speed}></sv-property-view>
             <sv-property-view .property=${ins.animation}></sv-property-view>
         ` : null;
         const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`

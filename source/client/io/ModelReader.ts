@@ -195,6 +195,12 @@ export default class ModelReader
                     if(anim.tracks[0].name.split(".")[0] === mesh.name) {
                         mesh.animations.push(anim);
                     }
+                    // handle grouped meshes split by material at import
+                    else if(anim.tracks[0].name.split(".")[0] === mesh.parent.name) {
+                        if(!mesh.parent.animations.includes(anim)) {
+                            mesh.parent.animations.push(anim);
+                        }
+                    }
                 });
 
                 // convert unlit glTFs to MeshStandardMaterial

@@ -84,18 +84,18 @@ export default class CVActionManager extends Component
             }
         });
 
-        this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVSnapshots, this.onSnapshotsComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
+        this.viewer.outs.sceneLoaded.on("value", this.onSceneLoad, this);
     }
 
     dispose()
     {
+        this.viewer.outs.sceneLoaded.off("value", this.onSceneLoad, this);
         this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.graph.components.off(CVSnapshots, this.onSnapshotsComponent, this);
-        this.graph.components.off(CVModel2, this.onModelComponent, this);
 
         this._clock = null;
         this._mixer = null;
@@ -167,18 +167,6 @@ export default class CVActionManager extends Component
         return false;
     }
 
-    protected onModelComponent(event: IComponentEvent<CVModel2>)
-    {
-        const component = event.object;
-
-        if (event.add) {
-            component.on<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
-        }
-        else if (event.remove) {
-            component.off<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
-        }
-    }
-
     protected onSnapshotsComponent(event: IComponentEvent<CVSnapshots>)
     {
         const component = event.object;
@@ -191,24 +179,26 @@ export default class CVActionManager extends Component
         }
     }
 
-    protected onModelLoad(event: IModelLoadEvent, component: CVModel2)
-    {
-        const meta = component.node.getComponent(CVMeta, true);
-        if(meta) {
-            const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
-            if(loadActions.length > 0) {
-                loadActions.forEach((action) => {
-                    this.playAnimation(component as CVModel2, action);
-                });
-            }
-        }
+    protected onSceneLoad() {
+        this.getGraphComponents(CVModel2).forEach((model) => {
+            // Initialize animation map
+            model.object3D.traverse(object => {
+                if (object.animations.length > 0) {
+                    object.animations.forEach((anim) => {
+                        this._animMap[anim.name] = object;
+                    })
+                }
+            });
 
-        const model = component.node.getComponent(CVModel2, true)
-        model.object3D.traverse(object => {
-            if (object.animations.length > 0) {
-                object.animations.forEach((anim) => {
-                    this._animMap[anim.name] = object;
-                })
+            // Start onload animations
+            const meta = model.node.getComponent(CVMeta, true);
+            if(meta) {
+                const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
+                if(loadActions.length > 0) {
+                    loadActions.forEach((action) => {
+                        this.playAnimation(model, action);
+                    });
+                }
             }
         });
     }
@@ -247,6 +237,12 @@ export default class CVActionManager extends Component
     protected playAnimation(component: CVModel2, action: IAction) 
     {
         const mesh = this._animMap[action.animation];
+
+        if(!mesh) {
+            console.warn("No playable animation found!");
+            return;
+        }
+
         const meshParent = component.object3D;
         const annotations = component.node.getComponent(CVAnnotationView).object3D;
 
@@ -254,7 +250,7 @@ export default class CVActionManager extends Component
         //** Fixing this would likely mean breaking any backwards compatibility with annotations... */
         {
             // insert new annotation offset nodes
-            if(annotations.parent.name !== mesh.name) {
+            if(!this._initialOffset[mesh.id]) {
                 annotations.parent.add(new Object3D().add(new Object3D().add(annotations)));
                 annotations.parent.name = mesh.name;
                 annotations.parent.parent.matrixAutoUpdate = false;
@@ -285,7 +281,7 @@ export default class CVActionManager extends Component
                 clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;
-                    clip.timeScale = this._direction[clipName];
+                    clip.timeScale = this._direction[clipName] * action.speed;
                     clip.time = clip.timeScale > 0 ? 0 : clip.getClip().duration;
                 }
                 else {
@@ -293,8 +289,8 @@ export default class CVActionManager extends Component
                 }
             }
             else {
-                clip.time = 0;
-                clip.timeScale = 1;
+                clip.time = action.speed < 0 ? clip.getClip().duration : 0;
+                clip.timeScale = action.speed;
                 clip.clampWhenFinished = false;
             }
 
