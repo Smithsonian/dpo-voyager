@@ -112,7 +112,7 @@ export default class CVSnapshots extends CTweenMachine
             this.updateComponentTarget(light, include);
         }
         else if (event.remove) {
-            this.updateComponentTarget(light.transform, false);
+            //this.updateComponentTarget(light.transform, false); // needs testing in regular removal cases
             this.updateComponentTarget(light, false);
         }
     }

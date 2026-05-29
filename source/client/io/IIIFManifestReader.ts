@@ -92,6 +92,7 @@ export default class IIIFManifestReader {
             const iiifComments = [];
             const iiifCanvases = [];
             const iiifAudio = [];
+            const iiifActivations = [];
             let narrativeCaption = null;
 
             // Set scene name
@@ -152,6 +153,11 @@ console.log(annos);
                     case "text":
                         if((body as any).isSoundCaption) {
                             narrativeCaption = anno;
+                        }
+                        break;
+                    case "annotation":
+                        if(anno.getProperty("motivation") === "activating") {
+                            iiifActivations.push(anno);
                         }
                         break;
                     default:
@@ -368,7 +374,7 @@ console.log(annos);
 
                 // parse annotation audio and text content
                 comment.getBody().forEach(option => {
-                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE; 
+                    const langCode: string = option.getProperty("language")?.at(0).toUpperCase() || DEFAULT_LANGUAGE; 
 
                     if(option.isSound()) {
                         // Add audio clip
@@ -430,7 +436,7 @@ console.log(annos);
 
                 // parse audio captions
                 comment.getBody().forEach(option => {
-                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+                    const langCode: string = option.getProperty("language")?.at(0).toUpperCase() || DEFAULT_LANGUAGE;
 
                     if(option.isSoundCaption()) {
                         const clip = setup.audio.getAudioClip(annotation.data.audioId);
@@ -446,8 +452,9 @@ console.log(annos);
                 
                 // handle scope
                 if(target.isSpecificResource) {
-                    const scopeAnnotations = comment.ScopeContent;
-                    scopeAnnotations.forEach((anno) => {
+                    const scopes = comment.getProperty("scope");
+                    scopes.forEach((scopeObj) => {
+                        const anno = scene.getAnnotationById(scopeObj.id);
                         const obj = anno.getBody()[0];
                         const body = obj.isSpecificResource() ? obj.getSource() : obj;
                         
@@ -495,13 +502,18 @@ console.log(annos);
             // handle canvases
             iiifCanvases.forEach((canvas) => {
                 const target = canvas.getTarget();
-                if(target.isSpecificResource) {console.log(canvas);
+                if(target.isSpecificResource) {
                     const selector = (target as SpecificResource).__jsonld.selector[0];
-                    const width = canvas.getBody()[0].getWidth();
-                    const height = canvas.getBody()[0].getHeight();
+                    const canvasBody = canvas.getBody()[0];
+                    const canvasId = canvasBody.isSpecificResource() ? canvasBody.getSource().id : canvasBody.id;
+                    const testCanvasObj = iiifManifest.manifest?.getSequences()[0]?.getCanvasById(canvasId);
+                    const canvasObj = testCanvasObj ? testCanvasObj : canvasBody.isSpecificResource() ? new Canvas(canvasBody.getSource().__jsonld)
+                        : null;
+                    const width = canvasObj.getWidth();
+                    const height = canvasObj.getHeight();
 
-                    let corners : Vector3[] = [new Vector3(0, 0, 0), new Vector3(width, 0, 0),
-                        new Vector3(width, height, 0), new Vector3(0, height, 0)];
+                    let corners : Vector3[] = [new Vector3(0, 0, 0), new Vector3(0, -height, 0), new Vector3(width, -height, 0),
+                        new Vector3(width, 0, 0) ];
 
                     if(selector.type === "PolygonZSelector") {
                         const polygon = selector.value;
@@ -520,9 +532,6 @@ console.log(annos);
                     geometry.computeVertexNormals();
 
                     // load image
-                    const canvasId = canvas.getBody()[0].id;
-                    const canvasObj = canvas.getBody()[0].isSpecificResource() ? new Canvas(canvas.getBody()[0].getSource().__jsonld)
-                        : iiifManifest.manifest?.getSequences()[0]?.getCanvasById(canvasId);
                     const uri = canvasObj.getCanonicalImageUri();
                     const bgColor = canvasObj.getProperty("backgroundColor");
                     
@@ -553,7 +562,7 @@ console.log(annos);
                         }
 
                         canvasMesh.matrixAutoUpdate = false;
-                        canvasMesh.matrix.copy(this.getIIIFBodyTransform(canvas.getBody()[0], canvas));
+                        canvasMesh.matrix.copy(this.getIIIFBodyTransform(canvasBody, canvas));
 
                         /*const modelNode = activeDoc.innerGraph.createCustomNode(NVNode);
                         cvScene.transform.addChild(modelNode.transform);
@@ -578,7 +587,7 @@ console.log(annos);
       _mat4a.identity();
       if (body.isSpecificResource()) {
           const transforms = (body as SpecificResource).getTransform() || [];
-
+          console.log(transforms);
           transforms.forEach((transform) => {
               _mat4b.identity();
               if(transform.isTranslateTransform) {

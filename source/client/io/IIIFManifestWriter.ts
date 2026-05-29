@@ -286,9 +286,9 @@ export default class IIIFManifestWriter {
                         }
                     }
 
-                    // add anno view to content state if needed
+                    // add anno view to scope if needed
                     if(anno.data.viewId) {
-                        const contentAnno = {
+                        /*const contentAnno = {
                             "id": "https://example.org/iiif/3d/anno" + (counts.anno) + "/scope1",
                             "type": "Annotation",
                             "motivation": ["contentState"],
@@ -304,7 +304,7 @@ export default class IIIFManifestWriter {
                                 ]
                             }
                         }
-                        const items = contentAnno["target"]["items"][0]["items"];
+                        const items = contentAnno["target"]["items"][0]["items"];*/
                         const viewAnno = {
                             id: "https://example.org/iiif/3d/anno"+ (++counts.anno),
                             type: "Annotation",
@@ -337,8 +337,15 @@ export default class IIIFManifestWriter {
                         math.composeOrbitMatrix(_vec3a, _vec3b, _mat4);
                         this.setTransform(viewAnno, _mat4);
 
-                        items.push(viewAnno);
-                        comment["target"]["scope"] = contentAnno;
+                        annotationPage["items"].push(viewAnno);
+
+                        comment["scope"] = [{
+                            id: viewAnno.id,
+                            type: "Annotation"
+                        }];
+
+                        //items.push(viewAnno);
+                        //comment["target"]["scope"] = contentAnno;
                     }
 
                     // add annotation text content
@@ -367,7 +374,7 @@ export default class IIIFManifestWriter {
                         const textBody = {
                             "type": "TextualBody",
                             "value": content,
-                            "language": ELanguageType[language.id].toLowerCase(),
+                            "language": [ELanguageType[language.id].toLowerCase()],
                             "format": hasTags ? "text/html" : "text/plain"
                         }
                         textChoice["items"].push(textBody);
@@ -391,7 +398,7 @@ export default class IIIFManifestWriter {
                                         "id": id,
                                         "type": "Sound",
                                         "label": {"en": [clip.name]},
-                                        "language": ELanguageType[language.id].toLowerCase(),
+                                        "language": [ELanguageType[language.id].toLowerCase()],
                                         "format": "audio/mp3",
                                         "duration": clip.durations[ELanguageType[language.id]]
                                     }
@@ -402,7 +409,7 @@ export default class IIIFManifestWriter {
                                     const capBody = {
                                         "id": capId,
                                         "type": "Text",
-                                        "language": ELanguageType[language.id].toLowerCase(),
+                                        "language": [ELanguageType[language.id].toLowerCase()],
                                         "format": "text/vtt",
                                         "duration": clip.durations[ELanguageType[language.id]]
                                     }
@@ -475,7 +482,7 @@ export default class IIIFManifestWriter {
                 const source = {
                     type: light.typeName.substring(2),
                     label: {"en": [light.node.name]},
-                    intensity: {"type": "Value", "value": light.ins.intensity.value, "unit": "relative"}
+                    intensity: {"type": "Quantity", "quantityValue": light.ins.intensity.value, "unit": "relative"}
                 };
                 if(light.typeName != "CVEnvironmentLight") {
                     _color.setRGB(light.ins.color.value[0],light.ins.color.value[1],light.ins.color.value[2]);
