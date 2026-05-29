@@ -76,6 +76,7 @@ export default class IIIFManifestReader {
         const scenes = iiifManifest.scenes;
 
         // import and set titles
+        activeDoc.meta.collection.dictionary["titles"] = {};
         const titles = activeDoc.meta.collection.get("titles");
         iiifManifest.manifest.getLabel().forEach(label => {
             titles[label._locale.substring(0,2).toUpperCase()] = label._value;
@@ -297,7 +298,7 @@ console.log(annos);
             if(iiifAudio.length > 0) {
                 const audioBody = iiifAudio[0].getBody();
                 audioBody.forEach(option => {
-                    const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+                    const langCode: string = option.getProperty("language")?.at(0).toUpperCase() || DEFAULT_LANGUAGE;
                     const audioLabel = audioBody.getLabelFromSelfOrSource().getValue();
 
                     const clipId = setup.audio.narrationId = Document.generateId();
@@ -316,7 +317,7 @@ console.log(annos);
 
                 if(narrativeCaption) {
                     narrativeCaption.getBody().forEach(option => {
-                        const langCode: string = option.getProperty("language")?.toUpperCase() || DEFAULT_LANGUAGE;
+                        const langCode: string = option.getProperty("language")?.at(0).toUpperCase() || DEFAULT_LANGUAGE;
 
                         if(option.isSoundCaption()) {
                             const clip = setup.audio.getAudioClip(setup.audio.narrationId);
