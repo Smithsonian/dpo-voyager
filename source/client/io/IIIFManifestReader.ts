@@ -453,46 +453,48 @@ console.log(annos);
                 // handle scope
                 if(target.isSpecificResource) {
                     const scopes = comment.getProperty("scope");
-                    scopes.forEach((scopeObj) => {
-                        const anno = scene.getAnnotationById(scopeObj.id);
-                        const obj = anno.getBody()[0];
-                        const body = obj.isSpecificResource() ? obj.getSource() : obj;
-                        
-                        const type = (body as any).getType();
-                        switch(type) {
-                            case "perspectivecamera":
-                            case "orthographiccamera":
-                                const cameraBody = anno.getBody()[0];
-                                _mat4b.copy(this.getIIIFBodyTransform(cameraBody, anno));
+                    if(scopes) {
+                        scopes.forEach((scopeObj) => {
+                            const anno = scene.getAnnotationById(scopeObj.id);
+                            const obj = anno.getBody()[0];
+                            const body = obj.isSpecificResource() ? obj.getSource() : obj;
+                            
+                            const type = (body as any).getType();
+                            switch(type) {
+                                case "perspectivecamera":
+                                case "orthographiccamera":
+                                    const cameraBody = anno.getBody()[0];
+                                    _mat4b.copy(this.getIIIFBodyTransform(cameraBody, anno));
 
-                                _vec3a.setFromMatrixPosition(_mat4b);
-                                const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
+                                    _vec3a.setFromMatrixPosition(_mat4b);
+                                    const transform = this.getIIIFLookAtTransform(cameraBody, scene, _vec3a, _upVector);
 
-                                _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
-                                _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
-                                _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
+                                    _euler.setFromRotationMatrix(transform ? transform : _mat4b, "YXZ");
+                                    _vec3b.setFromEuler(_euler).multiplyScalar(math.RAD2DEG);
+                                    _vec3a.applyMatrix4(_mat4b.makeRotationFromEuler(_euler).invert());
 
-                                // add view to annotation
-                                const machine = setup.snapshots;
-                                const props = machine.getTargetProperties();
-                                const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
-                                const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+                                    // add view to annotation
+                                    const machine = setup.snapshots;
+                                    const props = machine.getTargetProperties();
+                                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+                                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
 
-                                const values = machine.getCurrentValues();
-                                values[offsetIdx] = _vec3a.toArray();
-                                values[orbitIdx] = _vec3b.toArray();
-                                const id = machine.setState({
-                                    values: values,
-                                    curve: EEasingCurve.EaseOutQuad,
-                                    duration: 1.0,
-                                    threshold: 0.5,
-                                });
-                                annotation.set("viewId", id);
-                                break;
-                            default:
-                                console.log("Unsupported IIIF scope annotation type: "+type);
-                        }
-                    });
+                                    const values = machine.getCurrentValues();
+                                    values[offsetIdx] = _vec3a.toArray();
+                                    values[orbitIdx] = _vec3b.toArray();
+                                    const id = machine.setState({
+                                        values: values,
+                                        curve: EEasingCurve.EaseOutQuad,
+                                        duration: 1.0,
+                                        threshold: 0.5,
+                                    });
+                                    annotation.set("viewId", id);
+                                    break;
+                                default:
+                                    console.log("Unsupported IIIF scope annotation type: "+type);
+                            }
+                        });
+                    }
                 }
 
                 const view = models[0].getGraphComponent(CVAnnotationView);
