@@ -566,6 +566,7 @@ console.log(annos);
 
                         canvasMesh.matrixAutoUpdate = false;
                         canvasMesh.matrix.copy(this.getIIIFBodyTransform(canvasBody, canvas));
+                        canvasMesh.matrixWorldNeedsUpdate = true;
 
                         /*const modelNode = activeDoc.innerGraph.createCustomNode(NVNode);
                         cvScene.transform.addChild(modelNode.transform);
