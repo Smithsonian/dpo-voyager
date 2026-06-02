@@ -136,10 +136,10 @@ export default class IIIFManifestWriter {
                     },
                     target: {
                         type: "SpecificResource",
-                        source: [{
+                        source: {
                             id: iiifScene.id,
                             type: "Scene"
-                        }],
+                        },
                         selector: [
                             {
                                 type: "PolygonZSelector",
@@ -233,12 +233,15 @@ export default class IIIFManifestWriter {
                 body: { type: "SpecificResource"},
                 target: {
                     type: "SpecificResource",
-                    source: [{
+                    id: "https://example.org/iiif/3d/anno"+ counts.anno + "/target",
+                    source: {
                         id: scene.id,
                         type: "Scene"
-                    }]
+                    }
                 }                            
             };
+            // unique id required for body
+            annotation.body["id"] = annotation.id + "/body";
 
             if (child.model) {
                 const asset = child.model.activeDerivative.findAsset(EAssetType.Model)
@@ -266,15 +269,17 @@ export default class IIIFManifestWriter {
                         "id": "https://example.org/iiif/3d/anno" + (++counts.anno),
                         "type": "Annotation",
                         "motivation": ["commenting"],
-                        "body": [],
+                        "body": {
+                            "id": "https://example.org/iiif/3d/anno" + counts.anno + "/body",
+                            "type": "List",
+                            "items": []
+                        },
                         "target": {
                             "type": "SpecificResource",
-                            "source": [
-                                {
-                                    "id": scene["id"],
-                                    "type": "Scene"
-                                }
-                            ],
+                            "source": {
+                                "id": scene["id"],
+                                "type": "Scene"
+                            },
                             "selector": [
                                 {
                                     "type": "PointSelector",
@@ -285,6 +290,8 @@ export default class IIIFManifestWriter {
                             ]
                         }
                     }
+                    // unique id required for target
+                    comment.target["id"] = annotation.id + "/target";
 
                     // add anno view to scope if needed
                     if(anno.data.viewId) {
@@ -311,11 +318,12 @@ export default class IIIFManifestWriter {
                             motivation: ["painting"],
                             body: { type: "SpecificResource"},
                             target: {
+                                id: "https://example.org/iiif/3d/anno"+ counts.anno + "/target",
                                 type: "SpecificResource",
-                                source: [{
+                                source: {
                                     id: scene.id,
                                     type: "Scene"
-                                }]
+                                }
                             }                            
                         };
 
@@ -379,7 +387,7 @@ export default class IIIFManifestWriter {
                         }
                         textChoice["items"].push(textBody);
                     });
-                    comment["body"].push(textChoice);
+                    comment["body"]["items"].push(textChoice);
 
                     // add annotation audio content
                     if(anno.data.audioId) {
@@ -416,8 +424,8 @@ export default class IIIFManifestWriter {
                                     capChoice["items"].push(capBody);
                                 }
                             });
-                            comment["body"].push(audioChoice);
-                            capChoice["items"].length > 0 ? comment["body"].push(capChoice) : null;
+                            comment["body"]["items"].push(audioChoice);
+                            capChoice["items"].length > 0 ? comment["body"]["items"].push(capChoice) : null;
                         }
                     }
 
@@ -430,10 +438,10 @@ export default class IIIFManifestWriter {
 
                         const positionObj = {
                             "type": "SpecificResource",
-                            "source": [{
+                            "source": {
                                 "id": scene.id,
                                 "type": "Scene"
-                            }],
+                            },
                             "selector": [{
                                 "type": "PointSelector",
                                 "x": this.roundNumber(_vec3a.x, 6),
@@ -441,10 +449,10 @@ export default class IIIFManifestWriter {
                                 "z": this.roundNumber(_vec3a.z, 6)
                             }]
                         }
-                        comment["body"][0]["items"][0]["position"] = positionObj;
+                        comment["body"]["items"][0]["items"][0]["position"] = positionObj;
                     }
 
-                    comment["body"].length > 0 ? commentPage["items"].push(comment) : null;
+                    comment["body"]["items"].length > 0 ? commentPage["items"].push(comment) : null;
                 });
             }
 

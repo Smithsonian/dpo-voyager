@@ -107,7 +107,7 @@ export default class IIIFManifestReader {
                     {factor: 0.3048, unit: EUnitType.ft}, {factor: 0.9144, unit: EUnitType.yd}, {factor: 1.609e+3, unit: EUnitType.mi}];
      
                 const factor = unitMap.find(obj => Math.abs(obj.factor-sceneScale) < 0.001)?.unit;
-                cvScene.ins.units.setValue(factor || EUnitType.cm);
+                cvScene.ins.units.setValue(factor || EUnitType.m);
             }
             else {
                 cvScene.ins.units.setValue(EUnitType.m);
@@ -123,6 +123,12 @@ export default class IIIFManifestReader {
             const annos = iiifManifest.annotationsFromScene(scene);
 console.log(annos);
             annos.forEach((anno) => {
+
+                if(anno.getProperty("motivation").includes("commenting")) {
+                    iiifComments.push(anno);
+                    return;
+                }
+
                 const obj = anno.getBody()[0];
                 const body = obj.isSpecificResource() ? obj.getSource() : obj;
                 
@@ -142,9 +148,6 @@ console.log(annos);
                     case "imagebasedlight":
                         iiifLights.push(anno);
                         break;
-                    case "textualbody":
-                        iiifComments.push(anno);
-                        break;
                     case "canvas":
                         iiifCanvases.push(anno);
                         break;
@@ -157,7 +160,7 @@ console.log(annos);
                         }
                         break;
                     case "annotation":
-                        if(anno.getProperty("motivation") === "activating") {
+                        if(anno.getProperty("motivation").includes("activating")) {
                             iiifActivations.push(anno);
                         }
                         break;
@@ -591,7 +594,6 @@ console.log(annos);
       _mat4a.identity();
       if (body.isSpecificResource()) {
           const transforms = (body as SpecificResource).getTransform() || [];
-          console.log(transforms);
           transforms.forEach((transform) => {
               _mat4b.identity();
               if(transform.isTranslateTransform) {

@@ -64,14 +64,14 @@ export default class CVScene extends CVNode
     static readonly icon: string = "hierarchy";
 
     protected static readonly ins = {
-        units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
+        units: types.Enum("Scene.Units", EUnitType, EUnitType.m),
         modelUpdated: types.Event("Scene.ModelUpdated"),
         lightUpdated: types.Event("Scene.LightUpdated"),
         sceneTransformed: types.Event("Scene.Transformed"),
     };
 
     protected static readonly outs = {
-        units: types.Enum("Scene.Units", EUnitType, EUnitType.cm),
+        units: types.Enum("Scene.Units", EUnitType, EUnitType.m),
         boundingBox: types.Object("Models.BoundingBox", Box3),
         boundingRadius: types.Number("Models.BoundingRadius"),
     };
@@ -153,8 +153,8 @@ export default class CVScene extends CVNode
 
     fromDocument(document: IDocument, scene: IScene)
     {
-        this.ins.units.setValue(EUnitType[scene.units] || 0);
-        this.outs.units.setValue(EUnitType[scene.units] || 0);
+        this.ins.units.setValue(EUnitType[scene.units] || 2);
+        this.outs.units.setValue(EUnitType[scene.units] || 2);
     }
 
     toDocument(document: IDocument, scene: IScene)
