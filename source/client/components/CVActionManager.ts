@@ -29,6 +29,7 @@ import CVAnnotationView from "./CVAnnotationView";
 import CVSnapshots from "./CVSnapshots";
 import CVTape from "./CVTape";
 import CVSetup from "./CVSetup";
+import CVScene from "./CVScene";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +72,9 @@ export default class CVActionManager extends Component
     protected get viewer() {
         return this.getGraphComponent(CVViewer);
     }
+    protected get sceneNode() {
+        return this.getSystemComponent(CVScene);
+    }
 
     create()
     {
@@ -81,6 +85,11 @@ export default class CVActionManager extends Component
             const idx = this._activeClips.findIndex((element) => element.clip === e.action);
             if(idx > -1) {
                 this._activeClips.splice(idx,1);
+            }
+
+            // trigger scene bounds recalculation if needed
+            if(e.action.clampWhenFinished) {
+                this.sceneNode.ins.sceneTransformed.set();
             }
         });
 
