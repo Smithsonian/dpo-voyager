@@ -79,7 +79,7 @@ export default class IIIFManifestReader {
         activeDoc.meta.collection.dictionary["titles"] = {};
         const titles = activeDoc.meta.collection.get("titles");
         iiifManifest.manifest.getLabel().forEach(label => {
-            titles[label._locale.substring(0,2).toUpperCase()] = label._value;
+            titles[label.locale.substring(0,2).toUpperCase()] = label._value;
         });
         activeDoc.ins.title.setValue(titles[ELanguageType[setup.language.outs.activeLanguage.value]]);
 
