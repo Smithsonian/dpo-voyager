@@ -151,12 +151,18 @@ export default class SceneView extends SystemView
         
         this.resizeObserver.observe(this.view.renderer.domElement);
 
+        // initial document activation happens before this view
+        // is instantiated so initialize once here.
+        this.onDocumentActivate();
+
         this.system.getMainComponent(CVDocumentProvider).outs.activeDocument.on("value", this.onDocumentActivate, this)
     }
 
     protected disconnected()
     {
         this.resizeObserver.disconnect();
+
+        this.onDocumentDeactivate(this.system.getMainComponent(CVDocumentProvider).outs.activeDocument.value);
 
         this.system.getMainComponent(CVDocumentProvider).outs.activeDocument.off("value", this.onDocumentActivate, this)
 
@@ -271,12 +277,10 @@ export default class SceneView extends SystemView
 
     protected onDocumentDeactivate(doc: CVDocument)
     {
-        if(!doc.ins.active.value) {
-            doc.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
-            doc.setup.navigation.ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
-            doc.setup.tape.ins.enabled.off("value", this.onMeasure, this);
-            doc.ins.active.off("value", this.onDocumentDeactivate, this);
-        }
+        doc.setup.navigation.ins.pointerEnabled.off("value", this.enablePointerEvents, this);
+        doc.setup.navigation.ins.keyNavActive.off("value", this.onKeyboardNavigation, this);
+        doc.setup.tape.ins.enabled.off("value", this.onMeasure, this);
+        doc.ins.active.off("value", this.onDocumentDeactivate, this);
     }
 
     /*protected onResize()
