@@ -28,6 +28,7 @@ import CVMeta from "./CVMeta";
 import NVNode from "client/nodes/NVNode";
 import CVModel2 from "./CVModel2";
 import CVAnnotationView from "./CVAnnotationView";
+import { ELanguageType } from "client/schema/common";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +50,8 @@ export default class CVActionsTask extends CVTask
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.Annotation", ["None"], 0),
+        tour: types.Option("Action.Tour", ["None"], 0),
+        tourStep: types.Option("Action.TourStep", ["None"], 0)
     };
 
     protected static readonly outs = {
@@ -92,6 +95,7 @@ export default class CVActionsTask extends CVTask
     {   
         super.activateTask();
         this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
+        this.synchTourOptions();
     }
 
     deactivateTask()
@@ -120,10 +124,12 @@ export default class CVActionsTask extends CVTask
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
                     speed: 1.0,
                     audioId: "",
-                    animation: ""
+                    animation: "",
+                    triggerDetail: ""
                 };
                 meta.actions.items = [action];
                 ins.activeId.setValue(action.id);
+                this.onActionChange();
                 return true;
             }
             if (ins.delete.changed) {
@@ -148,6 +154,12 @@ export default class CVActionsTask extends CVTask
             if(ins.annotation.changed) {
                 const id = ins.annotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.annotation.value - 1].id : "";
                 action.annotationId = id;
+            }
+            if(ins.tour.changed || ins.tourStep.changed) {
+                if(ins.tour.changed) {
+                    this.synchTourStepOptions();
+                }
+                action.triggerDetail = this.ins.tour.getOptionText() + "\x1F" + this.ins.tourStep.getOptionText();
             }
             // handle action types UI update
             if(ins.type.changed) {
@@ -181,6 +193,12 @@ export default class CVActionsTask extends CVTask
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
+
+            const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
+            const detail = action.triggerDetail ? action.triggerDetail.split("\x1F") : [];
+            ins.tour.setValue(isTour ? ins.tour.schema.options.indexOf(detail[0]) : 0);
+            this.synchTourStepOptions();
+            ins.tourStep.setValue(isTour ? ins.tourStep.schema.options.indexOf(detail[1]) : 0);
         }
     }
 
@@ -243,5 +261,28 @@ export default class CVActionsTask extends CVTask
             annoOptions.push(anno.title);
         });
         this.ins.annotation.setOptions(annoOptions);
+    }
+
+    // Update tour options
+    protected synchTourOptions() {
+        const tours = this.activeDocument.setup.tours;console.log(tours);
+        const tourOptions = ["None"];
+        tourOptions.push(...tours.tours.map(tour => 
+            tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title));
+        this.ins.tour.setOptions(tourOptions);
+    }
+
+    // Update tour step options
+    protected synchTourStepOptions() {
+        const tours = this.activeDocument.setup.tours.tours;
+        const tour = tours.find((tour) => (tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title)
+            === this.ins.tour.getOptionText() );
+
+        const stepOptions = ["None"];
+        if(tour) {
+            stepOptions.splice(0, 1, ...[...Array(tour.steps.length).keys()].map(x => (x + 1).toString()));
+        }
+
+        this.ins.tourStep.setOptions(stepOptions);
     }
 }

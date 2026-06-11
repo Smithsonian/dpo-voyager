@@ -72,10 +72,15 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`
             <sv-property-view .property=${ins.annotation}></sv-property-view>
         ` : null;
+        const tourView = ins.trigger.value === EActionTrigger.OnTourStep ? html`
+            <sv-property-view .property=${ins.tour}></sv-property-view>
+            <sv-property-view .property=${ins.tourStep}></sv-property-view>
+        ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
             <sv-property-view .property=${ins.trigger}></sv-property-view>
             ${annoView}
+            ${tourView}
             <sv-property-view .property=${ins.type}></sv-property-view>
             ${audioActionView}
             ${animActionView}

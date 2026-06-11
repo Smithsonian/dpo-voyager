@@ -98,6 +98,7 @@ export interface IAudioClip
      id: string;
      type: TActionType;
      trigger: TActionTrigger;
+     triggerDetail?: string;
      audioId?: string;
      annotationId?: string;
      animation?: string;
@@ -108,8 +109,8 @@ export interface IAudioClip
  export type TActionType = "PlayAnimation" | "PlayAudio";
  export enum EActionType { PlayAnimation, PlayAudio };
 
- export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation";
- export enum EActionTrigger { OnClick, OnLoad, OnAnnotation };
+ export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation" | "OnTourStep";
+ export enum EActionTrigger { OnClick, OnLoad, OnAnnotation, OnTourStep };
 
  export type TActionPlayStyle = "Single"| "PingPong" | "Loop";
  export enum EActionPlayStyle { Single, PingPong, Loop };

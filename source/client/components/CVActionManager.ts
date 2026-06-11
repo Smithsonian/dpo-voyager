@@ -30,6 +30,7 @@ import CVSnapshots from "./CVSnapshots";
 import CVTape from "./CVTape";
 import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
+import CVTours from "./CVTours";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +73,9 @@ export default class CVActionManager extends Component
     protected get viewer() {
         return this.getGraphComponent(CVViewer);
     }
+    protected get tours() {
+        return this.getGraphComponent(CVTours);
+    }
     protected get sceneNode() {
         return this.getSystemComponent(CVScene);
     }
@@ -97,10 +101,12 @@ export default class CVActionManager extends Component
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
         this.viewer.outs.sceneLoaded.on("value", this.onSceneLoad, this);
+        this.tours.outs.stepIndex.on("value", this.onTourStep, this);
     }
 
     dispose()
     {
+        this.tours.outs.stepIndex.off("value", this.onTourStep, this);
         this.viewer.outs.sceneLoaded.off("value", this.onSceneLoad, this);
         this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
@@ -233,6 +239,32 @@ export default class CVActionManager extends Component
                 });
             }
         });
+    }
+
+    protected onTourStep() {
+        if(this.tours.activeTour) {
+            // Set any currently active animations to their finish state
+            this._activeClips.forEach(item => {
+                item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
+            });
+
+            const tour = this.tours.title;
+            const step = this.tours.outs.stepIndex.value;
+            
+            this.getGraphComponents(CVMeta).forEach((meta) => {
+                const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
+                    && action.triggerDetail.split("\x1F")[0] === tour && action.triggerDetail.split("\x1F")[1] === (step+1).toString()
+                });
+                if(actions.length > 0) {
+                    actions.forEach((action) => {
+                        if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+                            const model = meta.node.getComponent(CVModel2);
+                            this._animQueue.push({model: model, action: action});
+                        }
+                    });
+                }
+            });
+        }
     }
 
     protected onTransitionEnd() {
