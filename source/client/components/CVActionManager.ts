@@ -159,7 +159,7 @@ export default class CVActionManager extends Component
                 if(clickActions.length > 0) {
                     clickActions.forEach((action) => {
                         if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
-                            this.setup.audio.play(action.audioId);
+                            this.setup.audio.play(action.audioId, true);
                         }
                         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
                             this.playAnimation(event.component as CVModel2, action);
@@ -236,6 +236,9 @@ export default class CVActionManager extends Component
                             this.playAnimation(model, action);
                         }
                     }
+                    else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                        this.setup.audio.play(action.audioId, true);
+                    }
                 });
             }
         });
@@ -261,6 +264,9 @@ export default class CVActionManager extends Component
                             const model = meta.node.getComponent(CVModel2);
                             this._animQueue.push({model: model, action: action});
                         }
+                        /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                            this.setup.audio.play(action.audioId, true);
+                        }*/
                     });
                 }
             });

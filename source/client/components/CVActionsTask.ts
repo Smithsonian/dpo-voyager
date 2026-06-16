@@ -77,7 +77,7 @@ export default class CVActionsTask extends CVTask
         super.create();
         this.startObserving();
 
-        this.ins.type.schema.options.pop(); // **REMOVE when audio actions implemented
+        //this.ins.type.schema.options.pop(); // **REMOVE when audio actions implemented
     }
 
     dispose()
@@ -265,7 +265,7 @@ export default class CVActionsTask extends CVTask
 
     // Update tour options
     protected synchTourOptions() {
-        const tours = this.activeDocument.setup.tours;console.log(tours);
+        const tours = this.activeDocument.setup.tours;
         const tourOptions = ["None"];
         tourOptions.push(...tours.tours.map(tour => 
             tour.titles[ELanguageType[this.activeDocument.setup.language.outs.uiLanguage.value]] || tour.title));

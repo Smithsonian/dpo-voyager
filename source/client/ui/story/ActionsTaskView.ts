@@ -59,6 +59,10 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             return html`<div class="sv-placeholder">Please select a model node to edit its actions.</div>`;
         }
 
+        const accessibilityNotice = ins.type.value === EActionType.PlayAudio && 
+            (ins.trigger.value === EActionTrigger.OnTourStep || ins.trigger.value === EActionTrigger.OnLoad) ?
+            html`<div class="sv-placeholder" style="color: red">Trigger/Action combination not supported for accessibility.</div>` : null;
+
         const actionElement = actionList.find((action) => action.id === ins.activeId.value);
 
         const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
@@ -78,6 +82,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         ` : null;
 
         const detailView = actionElement ? html`<div class="ff-scroll-y ff-flex-column sv-detail-view">
+            ${accessibilityNotice}
             <sv-property-view .property=${ins.trigger}></sv-property-view>
             ${annoView}
             ${tourView}
