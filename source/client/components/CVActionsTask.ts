@@ -51,7 +51,8 @@ export default class CVActionsTask extends CVTask
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.Annotation", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
-        tourStep: types.Option("Action.TourStep", ["None"], 0)
+        tourStep: types.Option("Action.TourStep", ["None"], 0),
+        syncWith: types.Option("Action.SyncWith", ["None"], 0)
     };
 
     protected static readonly outs = {
@@ -124,8 +125,7 @@ export default class CVActionsTask extends CVTask
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
                     speed: 1.0,
                     audioId: "",
-                    animation: "",
-                    triggerDetail: ""
+                    animation: ""
                 };
                 meta.actions.items = [action];
                 ins.activeId.setValue(action.id);
@@ -151,8 +151,11 @@ export default class CVActionsTask extends CVTask
                 const id = ins.audio.value > 0 ? audioManager.getAudioList()[ins.audio.value - 1].id : "";
                 action.audioId = id;
             }
+            if(ins.syncWith.changed) {
+                action.syncWith = ins.syncWith.value > 0 ? ins.syncWith.getOptionText() : "";
+            }
             if(ins.annotation.changed) {
-                const id = ins.annotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.annotation.value - 1].id : "";
+                const id = ins.annotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.annotation.value - 1].id : undefined;
                 action.annotationId = id;
             }
             if(ins.tour.changed || ins.tourStep.changed) {
@@ -193,6 +196,7 @@ export default class CVActionsTask extends CVTask
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
+            ins.syncWith.setValue(action.syncWith ? ins.syncWith.schema.options.indexOf(action.syncWith) : 0);
 
             const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
             const detail = action.triggerDetail ? action.triggerDetail.split("\x1F") : [];
@@ -224,6 +228,7 @@ export default class CVActionsTask extends CVTask
                 }
             });
             this.ins.animation.setOptions(animOptions);
+            this.ins.syncWith.setOptions(animOptions);
 
             this.synchAnnotationOptions(model);
             this.ins.activeId.setValue("");

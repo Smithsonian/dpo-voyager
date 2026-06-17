@@ -43,12 +43,12 @@ import CVARManager from "./CVARManager";
 import CVLanguageManager from "./CVLanguageManager";
 import { ELanguageType, EUnitType } from "client/schema/common";
 import CVAssetReader from "./CVAssetReader";
-import CVAudioManager from "./CVAudioManager";
 import CVAssetManager from "./CVAssetManager";
 import CVSnapshots from "./CVSnapshots";
 import CVOrbitNavigation from "./CVOrbitNavigation";
 import CPulse from "client/../../libs/ff-graph/source/components/CPulse";
 import CVScene from "./CVScene";
+import CVSetup from "./CVSetup";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +116,7 @@ export default class CVAnnotationView extends CObject3D
         return this.getGraphComponent(CVLanguageManager, true);
     }
     protected get audio() {
-        return this.getGraphComponent(CVAudioManager, true);
+        return this.getGraphComponent(CVSetup, true).audio;
     }
     protected get snapshots() {
         return this.getGraphComponent(CVSnapshots, true);

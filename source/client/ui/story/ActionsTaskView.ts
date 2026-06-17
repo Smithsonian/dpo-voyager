@@ -67,6 +67,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
 
         const audioActionView = ins.type.value === EActionType.PlayAudio ? html`
             <sv-property-view .property=${ins.audio}></sv-property-view>
+            <sv-property-view .property=${ins.syncWith}></sv-property-view>
         ` : null;
         const animActionView = ins.type.value === EActionType.PlayAnimation ? html`
             <sv-property-view .property=${ins.style}></sv-property-view>

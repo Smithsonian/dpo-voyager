@@ -104,6 +104,7 @@ export interface IAudioClip
      animation?: string;
      style?: TActionPlayStyle;
      speed?: number;
+     syncWith?: string;
  }
 
  export type TActionType = "PlayAnimation" | "PlayAudio";

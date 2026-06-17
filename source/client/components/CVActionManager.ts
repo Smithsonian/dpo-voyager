@@ -20,14 +20,11 @@ import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
-import CVAudioManager from "./CVAudioManager";
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
 import { AnnotationElement } from "client/annotations/AnnotationSprite";
-import CVViewer from "./CVViewer";
 import CVAnnotationView from "./CVAnnotationView";
 import CVSnapshots from "./CVSnapshots";
-import CVTape from "./CVTape";
 import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
 import CVTours from "./CVTours";
@@ -58,6 +55,7 @@ export default class CVActionManager extends Component
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animMap: Dictionary<Object3D> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
+    private _actions: IAction[] = [];
 
     private _animQueue = [];
 
@@ -71,7 +69,7 @@ export default class CVActionManager extends Component
         return this.getGraphComponent(CVSetup);
     }
     protected get viewer() {
-        return this.getGraphComponent(CVViewer);
+        return this.setup.viewer;
     }
     protected get tours() {
         return this.getGraphComponent(CVTours);
@@ -114,6 +112,7 @@ export default class CVActionManager extends Component
 
         this._clock = null;
         this._mixer = null;
+        this._actions.length = 0;
         
         super.dispose();
     }
@@ -138,6 +137,12 @@ export default class CVActionManager extends Component
                 this._activeClips.splice(idx,1);
             }
         }
+    }
+
+    getSyncTime(id: string) : number {
+        const audioAction = this._actions.find(element => element.audioId);
+        const action = this._activeClips.find(element => element.clip.getClip().name === audioAction.syncWith);
+        return action === undefined ? undefined : action.clip.time;
     }
 
     protected onPointerUp(event: IPointerEvent)
@@ -214,6 +219,8 @@ export default class CVActionManager extends Component
                         this.playAnimation(model, action);
                     });
                 }
+
+                this._actions.push(...meta.actions.items);
             }
         });
     }
