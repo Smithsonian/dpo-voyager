@@ -146,6 +146,11 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "name": {
+                    "description": "Name for the action",
+                    "type": "string",
+                    "minLength": 1
+                },
                 "type": {
                     "description": "Type of action.",
                     "type": "string",
@@ -154,7 +159,7 @@
                 "trigger": {
                     "description": "Method by which this action is triggered.",
                     "type": "string",
-                    "enum": [ "OnClick", "OnLoad", "OnAnnotation", "OnTourStep" ]
+                    "enum": [ "OnClick", "OnLoad", "OnAnnotation", "OnTourStep", "OnActionEnd", "OnActionBegin" ]
                 },
                 "triggerDetail": {
                     "description": "Trigger specific string for additional required details. Elements delimited by unit seperator char",
@@ -184,6 +189,11 @@
                 "speed": {
                     "description": "Speed of the action playback.",
                     "type": "number",
+                    "default": 1
+                },
+                "clamp": {
+                    "description": "Flag to clamp an animation on the last frame",
+                    "type": "boolean",
                     "default": 1
                 },
                 "syncWith": {

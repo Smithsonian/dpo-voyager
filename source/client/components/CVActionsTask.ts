@@ -39,10 +39,14 @@ export default class CVActionsTask extends CVTask
     static readonly text: string = "Action";
     static readonly icon: string = "video";
 
+    private _defaultCount: number = 0;
+    private _actionIds: string[] = []
+
     protected static readonly ins = {
         create: types.Event("Action.Create"),
         delete: types.Event("Action.Delete"),
         activeId: types.String("Action.ActiveId", ""),
+        name: types.String("Action.Name", ""),
         type: types.Enum("Action.Type", EActionType, EActionType.PlayAnimation),
         trigger: types.Enum("Action.Trigger", EActionTrigger, EActionTrigger.OnClick),
         style: types.Enum("Action.Style", EActionPlayStyle, EActionPlayStyle.Single),
@@ -52,7 +56,9 @@ export default class CVActionsTask extends CVTask
         annotation: types.Option("Action.Annotation", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
         tourStep: types.Option("Action.TourStep", ["None"], 0),
-        syncWith: types.Option("Action.SyncWith", ["None"], 0)
+        syncWith: types.Option("Action.SyncWith", ["None"], 0),
+        action: types.Option("Action.Action", ["None"], 0),
+        clamp: types.Boolean("Action.ClampOnEnd", false),
     };
 
     protected static readonly outs = {
@@ -77,8 +83,6 @@ export default class CVActionsTask extends CVTask
     {
         super.create();
         this.startObserving();
-
-        //this.ins.type.schema.options.pop(); // **REMOVE when audio actions implemented
     }
 
     dispose()
@@ -97,6 +101,7 @@ export default class CVActionsTask extends CVTask
         super.activateTask();
         this.meta ? this.synchAnnotationOptions(this.meta.getComponent(CVModel2)) : null;
         this.synchTourOptions();
+        this.synchActionOptions();
     }
 
     deactivateTask()
@@ -120,6 +125,7 @@ export default class CVActionsTask extends CVTask
             if (ins.create.changed) {
                 const action = { 
                     id: Document.generateId(), 
+                    name: "Action" + this._defaultCount++,
                     type: EActionType[EActionType.PlayAnimation] as TActionType,
                     trigger: EActionTrigger[EActionTrigger.OnClick] as TActionTrigger,
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
@@ -130,19 +136,26 @@ export default class CVActionsTask extends CVTask
                 meta.actions.items = [action];
                 ins.activeId.setValue(action.id);
                 this.onActionChange();
+                this.synchActionOptions();
+                this.actionManager.refreshActions();
                 return true;
             }
             if (ins.delete.changed) {
                 meta.actions.remove(ins.activeId.value);
+                ins.activeId.setValue("");
+                this.synchActionOptions();
+                this.actionManager.refreshActions();
                 return true;
             }
 
             const action = meta.actions.get(ins.activeId.value);
-            if (action && (ins.type.changed || ins.trigger.changed || ins.animation.changed || ins.style.changed || ins.speed.changed)) {
+            if (action && (ins.type.changed || ins.trigger.changed || ins.animation.changed || ins.style.changed 
+                || ins.speed.changed || ins.clamp.changed)) {
                 action.type = EActionType[ins.type.value] as TActionType;
                 action.trigger = EActionTrigger[ins.trigger.value] as TActionTrigger;
                 action.style = EActionPlayStyle[ins.style.value] as TActionPlayStyle;
                 action.speed = ins.speed.value;
+                action.clamp = ins.clamp.value;
                 action.animation = EActionType[action.type] == EActionType.PlayAnimation ? ins.animation.getOptionText() : "";
                 action.audioId = EActionType[action.type] == EActionType.PlayAudio ? action.audioId : "";
             }
@@ -158,11 +171,17 @@ export default class CVActionsTask extends CVTask
                 const id = ins.annotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.annotation.value - 1].id : undefined;
                 action.annotationId = id;
             }
+            if(ins.name.changed) {
+                action.name = ins.name.value;
+            }
             if(ins.tour.changed || ins.tourStep.changed) {
                 if(ins.tour.changed) {
                     this.synchTourStepOptions();
                 }
                 action.triggerDetail = this.ins.tour.getOptionText() + "\x1F" + this.ins.tourStep.getOptionText();
+            }
+            if(ins.action.changed) {
+                action.triggerDetail = ins.action.value > 0 ? this._actionIds[ins.action.value] : undefined;
             }
             // handle action types UI update
             if(ins.type.changed) {
@@ -189,6 +208,7 @@ export default class CVActionsTask extends CVTask
         const audioManager = this.activeDocument.setup.audio;
 
         if(action) {
+            ins.name.setValue(action.name);
             ins.type.setValue(EActionType[action.type], true);
             ins.trigger.setValue(EActionTrigger[action.trigger], true);
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
@@ -196,7 +216,10 @@ export default class CVActionsTask extends CVTask
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
+            ins.clamp.setValue(action.clamp);
             ins.syncWith.setValue(action.syncWith ? ins.syncWith.schema.options.indexOf(action.syncWith) : 0);
+            ins.action.setValue(ins.trigger.value === EActionTrigger.OnActionEnd || ins.trigger.value === EActionTrigger.OnActionBegin ? 
+                this._actionIds.indexOf(action.triggerDetail) : 0);
 
             const isTour = ins.trigger.value === EActionTrigger.OnTourStep;
             const detail = action.triggerDetail ? action.triggerDetail.split("\x1F") : [];
@@ -289,5 +312,17 @@ export default class CVActionsTask extends CVTask
         }
 
         this.ins.tourStep.setOptions(stepOptions);
+    }
+
+    // Update action options
+    protected synchActionOptions() {
+        const actionOptions = ["None"];
+        this._actionIds.length = 0;
+        this._actionIds.push("0");
+        this.getSystemComponents(CVMeta).forEach((meta) => {
+            actionOptions.push(...meta.actions.items.map(action => action.name));
+            this._actionIds.push(...meta.actions.items.map(action => action.id));
+        });
+        this.ins.action.setOptions(actionOptions);
     }
 }
