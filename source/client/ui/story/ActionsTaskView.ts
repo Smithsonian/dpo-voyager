@@ -81,6 +81,9 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`
             <sv-property-view .property=${ins.annotation}></sv-property-view>
         ` : null;
+        const annoActionView = ins.type.value === EActionType.ShowAnnotation || ins.type.value === EActionType.HideAnnotation ? html`
+            <sv-property-view .property=${ins.annotation}></sv-property-view>
+        ` : null;
         const tourView = ins.trigger.value === EActionTrigger.OnTourStep ? html`
             <sv-property-view .property=${ins.tour}></sv-property-view>
             <sv-property-view .property=${ins.tourStep}></sv-property-view>
@@ -99,6 +102,7 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
             <sv-property-view .property=${ins.type}></sv-property-view>
             ${audioActionView}
             ${animActionView}
+            ${annoActionView}
         </div>` : null;
 
         return html`<div class="sv-commands">

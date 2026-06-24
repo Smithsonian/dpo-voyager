@@ -109,8 +109,8 @@ export interface IAudioClip
      syncWith?: string;
  }
 
- export type TActionType = "PlayAnimation" | "PlayAudio";
- export enum EActionType { PlayAnimation, PlayAudio };
+ export type TActionType = "PlayAnimation" | "PlayAudio" | "ShowAnnotation" | "HideAnnotation";
+ export enum EActionType { PlayAnimation, PlayAudio, ShowAnnotation, HideAnnotation };
 
  export type TActionTrigger = "OnClick" | "OnLoad" | "OnAnnotation" | "OnTourStep" | "OnActionEnd" | "OnActionBegin";
  export enum EActionTrigger { OnClick, OnLoad, OnAnnotation, OnTourStep, OnActionEnd, OnActionBegin };

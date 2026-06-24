@@ -271,7 +271,7 @@ export default class CVAnnotationView extends CObject3D
             for (const key in this._annotations) {
                 const annotation = this._annotations[key];
                 const tags = annotation.tags;
-                let visible = tags.length === 0; // annotation is visible by default if no tags
+                let visible = tags.length === 0 && annotation.data.visible; // annotation is visible by default if no tags
                 activeTags.forEach(tag => {
                     if (tags.indexOf(tag) >= 0) {
                         visible = true;

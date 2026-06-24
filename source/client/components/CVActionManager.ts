@@ -332,6 +332,10 @@ export default class CVActionManager extends Component
         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
             this.playAnimation(model, action);
         }
+        else if(action.type == EActionType[EActionType.HideAnnotation] as TActionType ||
+            action.type == EActionType[EActionType.ShowAnnotation] as TActionType) {
+            this.setAnnotationVisibility(model, action.annotationId, action.type == EActionType[EActionType.ShowAnnotation] as TActionType);
+        }
 
         // fire onBegin triggers
         const onBeginTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
@@ -369,7 +373,7 @@ export default class CVActionManager extends Component
                 this._animGroups[mesh.id] = new AnimationObjectGroup(mesh, annotations.parent);
             } 
             mesh.matrixAutoUpdate = true;
-             
+
             // add offset to remove baked transforms
             meshParent.matrix.decompose(_vec3a, _quat, _vec3b);
             _vec3a.multiplyScalar(1/_vec3b.x);
@@ -411,6 +415,12 @@ export default class CVActionManager extends Component
             clip.play();
             this._activeClips.some((element) => element.id === action.id) ? null : this._activeClips.push({id: action.id, clip: clip});
         }
+    }
+
+    protected setAnnotationVisibility(model: CVModel2, id: string, isVisible: boolean)
+    {
+        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
+        annotation.set("visible", isVisible);
     }
 
     // To save/load future configuration options
