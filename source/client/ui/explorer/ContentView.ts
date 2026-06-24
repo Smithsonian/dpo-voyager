@@ -239,7 +239,7 @@ export default class ContentView extends DocumentView
         if (e.code === "ArrowDown" || e.code === "ArrowUp") {
             const target = e.target as HTMLElement;
             const readerView = this.getElementsByTagName("sv-reader-view")[0];
-            if(!readerView || !readerView.contains(target) || readerView.scrollHeight <= readerView.parentElement.clientHeight) {
+            if(!readerView || !readerView.contains(target) || (readerView as HTMLElement).offsetHeight <= readerView.parentElement.clientHeight) {
                 e.preventDefault();
                 e.stopPropagation();
             }
