@@ -365,11 +365,11 @@ export default class CVActionManager extends Component
                 annotations.parent.position.copy(mesh.position);
                 annotations.parent.rotation.copy(mesh.rotation);
 
-                //this._initialOffset[mesh.id] = new Matrix4().copy(getMeshTransform(mesh.parent.parent, lowestMesh));
                 this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);
                 this._animGroups[mesh.id] = new AnimationObjectGroup(mesh, annotations.parent);
             } 
-            mesh.matrixAutoUpdate = true;   
+            mesh.matrixAutoUpdate = true;
+             
             // add offset to remove baked transforms
             meshParent.matrix.decompose(_vec3a, _quat, _vec3b);
             _vec3a.multiplyScalar(1/_vec3b.x);
