@@ -20,15 +20,15 @@ import CVMeta from "./CVMeta";
 import { EActionTrigger, TActionTrigger, EActionType, TActionType, EActionPlayStyle, TActionPlayStyle, IAction } from "client/schema/meta";
 import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
-import CVAudioManager from "./CVAudioManager";
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
 import { AnnotationElement } from "client/annotations/AnnotationSprite";
-import CVViewer from "./CVViewer";
 import CVAnnotationView from "./CVAnnotationView";
 import CVSnapshots from "./CVSnapshots";
-import CVTape from "./CVTape";
 import CVSetup from "./CVSetup";
+import CVScene from "./CVScene";
+import CVTours from "./CVTours";
+import { getMeshTransform } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,6 +56,7 @@ export default class CVActionManager extends Component
     private _initialOffset: Dictionary<Matrix4> = {};
     private _animMap: Dictionary<Object3D> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
+    private _actions: {model: CVModel2, action: IAction}[] = [];
 
     private _animQueue = [];
 
@@ -69,7 +70,13 @@ export default class CVActionManager extends Component
         return this.getGraphComponent(CVSetup);
     }
     protected get viewer() {
-        return this.getGraphComponent(CVViewer);
+        return this.setup.viewer;
+    }
+    protected get tours() {
+        return this.getGraphComponent(CVTours);
+    }
+    protected get sceneNode() {
+        return this.getSystemComponent(CVScene);
     }
 
     create()
@@ -79,26 +86,42 @@ export default class CVActionManager extends Component
         this._mixer = new AnimationMixer(null);
         this._mixer.addEventListener( 'finished', (e) => {
             const idx = this._activeClips.findIndex((element) => element.clip === e.action);
+            const finishedId = this._activeClips[idx].id;
             if(idx > -1) {
                 this._activeClips.splice(idx,1);
             }
+
+            // trigger scene bounds recalculation if needed
+            if(e.action.clampWhenFinished) {
+                this.sceneNode.ins.sceneTransformed.set();
+            }
+
+            // fire onEnd triggers
+            const onEndTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionEnd] as TActionTrigger
+                && element.action.triggerDetail === finishedId);
+            onEndTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
         });
 
+        this.graph.components.on(CVModel2, this.onModelComponent, this);
         this.graph.components.on(CVSnapshots, this.onSnapshotsComponent, this);
         this.system.on<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.viewer.ins.activeAnnotation.on("value", this.onAnnotationActivate, this);
         this.viewer.outs.sceneLoaded.on("value", this.onSceneLoad, this);
+        this.tours.outs.stepIndex.on("value", this.onTourStep, this);
     }
 
     dispose()
     {
+        this.tours.outs.stepIndex.off("value", this.onTourStep, this);
         this.viewer.outs.sceneLoaded.off("value", this.onSceneLoad, this);
         this.viewer.ins.activeAnnotation.off("value", this.onAnnotationActivate, this);
         this.system.off<IPointerEvent>("pointer-up", this.onPointerUp, this);
         this.graph.components.off(CVSnapshots, this.onSnapshotsComponent, this);
+        this.graph.components.off(CVModel2, this.onModelComponent, this);
 
         this._clock = null;
         this._mixer = null;
+        this._actions.length = 0;
         
         super.dispose();
     }
@@ -125,6 +148,22 @@ export default class CVActionManager extends Component
         }
     }
 
+    refreshActions() {
+        this._actions.length = 0;
+        this.getSystemComponents(CVMeta).forEach((meta) => {
+            const model = meta.node.getComponent(CVModel2, true);
+            if(model) {
+                this._actions.push(...(meta.actions.items.map(action => ({model: model, action: action}))));
+            }
+        });
+    }
+
+    getSyncTime(id: string) : number {
+        const audioAction = this._actions.find(element => element.action.audioId === id).action;
+        const action = this._activeClips.find(element => element.clip.getClip().name === audioAction.syncWith);
+        return action === undefined ? undefined : action.clip.time;
+    }
+
     protected onPointerUp(event: IPointerEvent)
     {
         if (!event.isPrimary || event.isDragging || this.setup.tape.ins.enabled.value) {
@@ -143,12 +182,7 @@ export default class CVActionManager extends Component
                 const clickActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger);
                 if(clickActions.length > 0) {
                     clickActions.forEach((action) => {
-                        if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
-                            this.setup.audio.play(action.audioId);
-                        }
-                        else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
-                            this.playAnimation(event.component as CVModel2, action);
-                        }
+                        this.playAction(event.component as CVModel2, action);
                     });
                 }
             }
@@ -167,6 +201,18 @@ export default class CVActionManager extends Component
         return false;
     }
 
+    protected onModelComponent(event: IComponentEvent<CVModel2>)
+    {
+        const component = event.object;
+
+        if (event.add) {
+            component.on<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
+        }
+        else if (event.remove) {
+            component.off<IModelLoadEvent>("model-load", (event) => this.onModelLoad(event, component), this);
+        }
+    }
+
     protected onSnapshotsComponent(event: IComponentEvent<CVSnapshots>)
     {
         const component = event.object;
@@ -179,31 +225,41 @@ export default class CVActionManager extends Component
         }
     }
 
-    protected onSceneLoad() {
-        this.getGraphComponents(CVModel2).forEach((model) => {
-            // Initialize animation map
-            model.object3D.traverse(object => {
-                if (object.animations.length > 0) {
-                    object.animations.forEach((anim) => {
-                        this._animMap[anim.name] = object;
-                    })
-                }
-            });
+    protected onModelLoad(event: IModelLoadEvent, component: CVModel2)
+    {
+        // Initialize animation map
+        const model = component.node.getComponent(CVModel2, true)
+        model.object3D.traverse(object => {
+            if (object.animations.length > 0) {
+                object.animations.forEach((anim) => {
+                    this._animMap[anim.name] = object;
+                })
+            }
+        });
+    }
 
+    protected onSceneLoad() 
+    {
+        this.getGraphComponents(CVModel2).forEach((model) => {
             // Start onload animations
             const meta = model.node.getComponent(CVMeta, true);
             if(meta) {
                 const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
                 if(loadActions.length > 0) {
                     loadActions.forEach((action) => {
-                        this.playAnimation(model, action);
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
+                            this.playAction(model, action);
+                        }
                     });
                 }
             }
         });
+
+        this.refreshActions();
     }
 
-    protected onAnnotationActivate() {
+    protected onAnnotationActivate() 
+    {
         const id = this.viewer.ins.activeAnnotation.value;
 
         this.getGraphComponents(CVMeta).forEach((meta) => {
@@ -218,21 +274,75 @@ export default class CVActionManager extends Component
                             this._animQueue.push({model: model, action: action});
                         }
                         else {
-                            this.playAnimation(model, action);
+                            this.playAction(model, action);
                         }
+                    }
+                    else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                        this.playAction(null, action);
                     }
                 });
             }
         });
     }
 
-    protected onTransitionEnd() {
+    protected onTourStep() 
+    {
+        if(this.tours.activeTour) {
+            // Set any currently active animations to their finish state
+            this._activeClips.forEach(item => {
+                item.clip.time = item.clip.timeScale > 0 ? item.clip.getClip().duration : 0;
+            });
+
+            const tour = this.tours.title;
+            const step = this.tours.outs.stepIndex.value;
+            
+            this.getGraphComponents(CVMeta).forEach((meta) => {
+                const actions = meta.actions.items.filter(action => {return action.trigger === EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger
+                    && action.triggerDetail.split("\x1F")[0] === tour && action.triggerDetail.split("\x1F")[1] === (step+1).toString()
+                });
+                if(actions.length > 0) {
+                    actions.forEach((action) => {
+                        if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+                            const model = meta.node.getComponent(CVModel2);
+                            this._animQueue.push({model: model, action: action});
+                        }
+                        /*else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                            this.setup.audio.play(action.audioId, true);
+                        }*/
+                    });
+                }
+            });
+        }
+    }
+
+    protected onTransitionEnd() 
+    {
         // Handle playing animations queued up during snapshot tweens
         while(this._animQueue.length > 0) {
             const action = this._animQueue.pop();
-            this.playAnimation(action.model, action.action);
+            this.playAction(action.model, action.action);
         }
     }
+
+    protected playAction(model: CVModel2, action: IAction)
+    {
+        if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+            this.setup.audio.play(action.audioId, true);
+        }
+        else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+            this.playAnimation(model, action);
+        }
+        else if(action.type == EActionType[EActionType.HideAnnotation] as TActionType ||
+            action.type == EActionType[EActionType.ShowAnnotation] as TActionType) {
+            this.setAnnotationVisibility(model, action.annotationId, action.type == EActionType[EActionType.ShowAnnotation] as TActionType);
+        }
+
+        // fire onBegin triggers
+        const onBeginTriggers = this._actions.filter(element => element.action.trigger === EActionTrigger[EActionTrigger.OnActionBegin] as TActionTrigger
+            && element.action.triggerDetail === action.id);
+        onBeginTriggers.forEach(trigger => this.playAction(trigger.model, trigger.action));
+    }
+
 
     protected playAnimation(component: CVModel2, action: IAction) 
     {
@@ -255,16 +365,21 @@ export default class CVActionManager extends Component
                 annotations.parent.name = mesh.name;
                 annotations.parent.parent.matrixAutoUpdate = false;
 
+                // initialize as we can't assume that all channels are animated
+                annotations.parent.position.copy(mesh.position);
+                annotations.parent.rotation.copy(mesh.rotation);
+
                 this._initialOffset[mesh.id] = new Matrix4().copy(mesh.matrix);
                 this._animGroups[mesh.id] = new AnimationObjectGroup(mesh, annotations.parent);
             } 
-            mesh.matrixAutoUpdate = true;   
+            mesh.matrixAutoUpdate = true;
+
             // add offset to remove baked transforms
             meshParent.matrix.decompose(_vec3a, _quat, _vec3b);
             _vec3a.multiplyScalar(1/_vec3b.x);
             _vec3b.setScalar(1);
             annotations.matrix.compose(_vec3a, _quat, _vec3b).invert();
-            annotations.matrix.multiply(_mat4.copy(this._initialOffset[mesh.id]).invert()) // include potential base mesh offset
+            annotations.matrix.premultiply(_mat4.copy(this._initialOffset[mesh.id]).invert()) // include potential base mesh offset
 
             // re-add transforms
             annotations.parent.parent.matrix.copy(meshParent.matrix);
@@ -291,7 +406,7 @@ export default class CVActionManager extends Component
             else {
                 clip.time = action.speed < 0 ? clip.getClip().duration : 0;
                 clip.timeScale = action.speed;
-                clip.clampWhenFinished = false;
+                clip.clampWhenFinished = action.clamp;
             }
 
             const isLooping = (action.style == EActionPlayStyle[EActionPlayStyle.Loop] as TActionPlayStyle)
@@ -300,6 +415,12 @@ export default class CVActionManager extends Component
             clip.play();
             this._activeClips.some((element) => element.id === action.id) ? null : this._activeClips.push({id: action.id, clip: clip});
         }
+    }
+
+    protected setAnnotationVisibility(model: CVModel2, id: string, isVisible: boolean)
+    {
+        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
+        annotation.set("visible", isVisible);
     }
 
     // To save/load future configuration options

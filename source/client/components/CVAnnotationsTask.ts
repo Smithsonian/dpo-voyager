@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { Vector3, Quaternion, Matrix4, Matrix3, Object3D } from "three";
+import { Vector3, Quaternion, Matrix4, Matrix3, Object3D, Mesh } from "three";
 
 import * as helpers from "@ff/three/helpers";
 
@@ -234,7 +234,8 @@ export default class CVAnnotationsTask extends CVTask
 
             const meshTransform = getMeshTransform(model.object3D, event.object3D);
             const invMeshTransform = meshTransform.clone().invert();
-            const bounds = model.localBoundingBox.clone().applyMatrix4(meshTransform);
+            // Get local bounding box
+            const bounds = (event.object3D as Mesh).geometry.boundingBox.clone();
 
             // add mesh parent transforms in this branch
             _mat4.copy(_mat4.multiply(invMeshTransform));   
