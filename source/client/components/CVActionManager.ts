@@ -288,7 +288,10 @@ export default class CVActionManager extends Component
             const actions = meta.actions.items.filter(item => {return id.length > 0 && item.annotationId == id});
             if(actions.length > 0) {
                 actions.forEach((action) => {
-                    if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+                    if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
+                        this.playAction(null, action);
+                    }
+                    else {
                         const model = meta.node.getComponent(CVModel2);
                         const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
                         if(annotation.data.viewId) {
@@ -298,9 +301,6 @@ export default class CVActionManager extends Component
                         else {
                             this.playAction(model, action);
                         }
-                    }
-                    else if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
-                        this.playAction(null, action);
                     }
                 });
             }
@@ -347,11 +347,23 @@ export default class CVActionManager extends Component
     }
 
     protected playAction(model: CVModel2, action: IAction)
-    {
+    {console.log(action.name);
+        // Don't allow non-tourstep triggers during a tour
+        if(this.setup.tours.ins.enabled.value &&
+            action.trigger !== EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger) {
+            return;
+        }
+
         if(action.type == EActionType[EActionType.PlayAudio] as TActionType) {
             this.setup.audio.play(action.audioId, true);
         }
         else if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+            // Don't retrigger looping actions
+            if(action.style === EActionPlayStyle[EActionPlayStyle.Loop] as TActionPlayStyle &&
+                this._activeClips.some(clip => clip.id === action.id)) {
+                return;
+            }
+
             this.playAnimation(model, action);
         }
         else if(action.type == EActionType[EActionType.HideAnnotation] as TActionType ||
@@ -419,12 +431,12 @@ export default class CVActionManager extends Component
                 clip.clampWhenFinished = true;
                 if(Object.keys(this._direction).includes(clipName)) {
                     this._direction[clipName] *= -1;
-                    clip.timeScale = this._direction[clipName] * action.speed;
-                    clip.time = clip.timeScale > 0 ? 0 : clip.getClip().duration;
                 }
                 else {
                     this._direction[clipName] = 1;
                 }
+                clip.timeScale = this._direction[clipName] * action.speed;
+                clip.time = clip.timeScale > 0 ? 0 : clip.getClip().duration;
             }
             else {
                 clip.time = action.speed < 0 ? clip.getClip().duration : 0;
