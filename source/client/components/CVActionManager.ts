@@ -251,6 +251,16 @@ export default class CVActionManager extends Component
             
             const meta = model.node.getComponent(CVMeta, true);
             if(meta) {
+                // Start onload animations
+                const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
+                if(loadActions.length > 0) {
+                    loadActions.forEach((action) => {
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
+                            this.playAction(model, action);
+                        }
+                    });
+                }
+
                 // Cache annotation visibility
                 this._visibilityCache.length = 0;
                 const visibilityActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
@@ -264,16 +274,6 @@ export default class CVActionManager extends Component
                         }
                     }
                 });
-
-                // Start onload animations
-                const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
-                if(loadActions.length > 0) {
-                    loadActions.forEach((action) => {
-                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
-                            this.playAction(model, action);
-                        }
-                    });
-                }
             }
         });
 
