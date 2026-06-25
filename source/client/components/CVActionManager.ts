@@ -22,13 +22,12 @@ import CVModel2, { IModelLoadEvent } from "./CVModel2";
 import { IPointerEvent } from "@ff/scene/RenderView";
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup, Clock, LoopOnce, LoopRepeat, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { Dictionary } from "@ff/core/types";
-import { AnnotationElement } from "client/annotations/AnnotationSprite";
+import { Annotation, AnnotationElement } from "client/annotations/AnnotationSprite";
 import CVAnnotationView from "./CVAnnotationView";
 import CVSnapshots from "./CVSnapshots";
 import CVSetup from "./CVSetup";
 import CVScene from "./CVScene";
 import CVTours from "./CVTours";
-import { getMeshTransform } from "client/utils/Helpers";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +56,7 @@ export default class CVActionManager extends Component
     private _animMap: Dictionary<Object3D> = {};
     private _animGroups: Dictionary<AnimationObjectGroup> = {};
     private _actions: {model: CVModel2, action: IAction}[] = [];
+    private _visibilityCache: {annotation: Annotation, visibility: boolean}[] = [];
 
     private _animQueue = [];
 
@@ -122,6 +122,7 @@ export default class CVActionManager extends Component
         this._clock = null;
         this._mixer = null;
         this._actions.length = 0;
+        this._visibilityCache.length = 0;
         
         super.dispose();
     }
@@ -134,6 +135,12 @@ export default class CVActionManager extends Component
             this._mixer.stopAllAction();
             Object.keys(this._direction).forEach(key => delete this._direction[key]);
             this._activeClips.length = 0;
+
+            // reset visibilities
+            this._visibilityCache.forEach(anno => anno.annotation.set("visible", anno.visibility));
+
+            // retrigger scene load actions
+            this.onSceneLoad();
         }
         return true;
     }
@@ -241,9 +248,24 @@ export default class CVActionManager extends Component
     protected onSceneLoad() 
     {
         this.getGraphComponents(CVModel2).forEach((model) => {
-            // Start onload animations
+            
             const meta = model.node.getComponent(CVMeta, true);
             if(meta) {
+                // Cache annotation visibility
+                this._visibilityCache.length = 0;
+                const visibilityActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
+                visibilityActions.forEach((action) => {
+                    if(action.type == EActionType[EActionType.ShowAnnotation] as TActionType
+                        || action.type == EActionType[EActionType.HideAnnotation] as TActionType
+                        || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
+                        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+                        if(annotation) {
+                            this._visibilityCache.push({annotation: annotation, visibility: annotation.data.visible});
+                        }
+                    }
+                });
+
+                // Start onload animations
                 const loadActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
                 if(loadActions.length > 0) {
                     loadActions.forEach((action) => {
