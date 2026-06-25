@@ -361,16 +361,48 @@ Task in the task bar.</li>
 <li>Click Create in the task panel to make a new action element or select an existing one to edit.</li>
 <li>Set the action details as follows:
 <ul>
-<li><strong>Trigger</strong> - What triggers this action? Options include &ldquo;OnClick&rdquo; (model click), &ldquo;OnLoad&rdquo; (scene load), or &ldquo;OnAnnotation&rdquo; (annotation activate).</li>
-<li><strong>Type</strong> - Options include &ldquo;PlayAnimation&rdquo; (starts a top-level object animation).</li>
-<li><strong>Style</strong> - How the action plays. Options include &ldquo;Single&rdquo;, &ldquo;Loop&rdquo;, or &ldquo;PingPong&rdquo; (alternating forward and backward on consecutive plays).</li>
+<li><strong>Name</strong> - Enter a recognizable name for the action.</li>
+<li><strong>Trigger</strong> - What triggers this action? Options include:
+<ul>
+<li><em>OnClick</em> - when user clicks on the geometry associated with this action.</li>
+<li><em>OnLoad</em> - when all models in the scene are fully loaded.</li>
+<li><em>OnAnnotation</em> - when the defined annotation is activated (selected or opened, depending on annotation type).</li>
+<li><em>OnBeginAction</em> - when the defined action starts.</li>
+<li><em>OnEndAction</em> - when the defined action ends (currently only for animation actions). <strong>Tip:</strong> OnEnd and OnBegin triggers work across models, so are great for coordinating actions across objects.</li>
+</ul>
+</li>
+<li><strong>Type</strong> - Options include:
+<ul>
+<li><em>PlayAnimation</em> - starts an imported object animation.</li>
+<li><em>PlayAudio</em> - plays a top-level audio element (controls appear at top of the component).</li>
+<li><em>HideAnnotation</em> - hides the defined annotation.</li>
+<li><em>ShowAnnotation</em> - shows the defined annotation.</li>
+<li><em>ToggleAnnotation</em> - toggles visibility of the defined annotation. <strong>Tip:</strong> Annotation hide/show can be useful for coordinating dependent animations. Toggle works will alongside &ldquo;PingPong&rdquo; style animations. 
+E.g. an annotation that triggers removing an item from a drawer is not visible until the animation opening the drawer has completed.</li>
+</ul>
+</li>
+<li><strong>Style</strong> - How the action plays. Options include:
+<ul>
+<li><em>Single</em> - Plays one time.</li>
+<li><em>Loop</em> - Plays continuously.</li>
+<li><em>PingPong</em> - Plays one time, alternating forward and backward direction on consecutive triggers.</li>
+</ul>
+</li>
 <li><strong>Animation</strong> - For action type &ldquo;PlayAnimation&rdquo;, select the animation to play from the dropdown list.</li>
+<li><strong>Speed</strong> - For action type &ldquo;PlayAnimation&rdquo;, define the playback rate. <strong>Tip:</strong> Set a negative speed to play the action backwards!</li>
+<li><strong>ClampOnEnd</strong> - For action type &ldquo;PlayAnimation&rdquo; and style &ldquo;Single&rdquo;, indicates if the animation should pause on the last frame or reset to its initial state when finished.</li>
 <li><strong>Annotation</strong> - For trigger type &ldquo;OnAnnotation&rdquo;, select the triggering annotation from the dropdown list.</li>
+<li><strong>Action</strong> - For trigger type &ldquo;OnActionBegin&rdquo; or &ldquo;OnActionEnd&rdquo;, select the triggering action from the dropdown list.</li>
+<li><strong>Audio</strong> - For action type &ldquo;PlayAudio&rdquo;, select the audio element from the dropdown list.</li>
+<li><strong>SyncWith</strong> - For action type &ldquo;PlayAudio&rdquo;, select an object animation to sync the audio with from the dropdown list. <strong>Tip:</strong> Synching the audio ensures it will stay aligned with the animation through any audio pause/play interaction.</li>
 </ul>
 </li>
 </ol>
 <p>Test the action by performing the designated trigger in the Explorer preview pane.</p>
 <p><img src="action-task-new.jpg" alt="Numbered image showing location of action steps in UI"></p>
+<p><strong>IMPORTANT NOTE</strong> - Voyager is designed to operate under an assumption that one &ldquo;model&rdquo; equals one 3D object. It is still possible to import a 3D file with multiple objects in it,
+but all of those objects are treated as one unit to operations within Voyager. Because of this, best practice is to import any animated objects as their own separate models to
+avoid any potential issues.</p>
 
 </div>
 
