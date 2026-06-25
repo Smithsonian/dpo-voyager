@@ -247,6 +247,7 @@ export default class CVActionManager extends Component
 
     protected onSceneLoad() 
     {
+        this._visibilityCache.length = 0;
         this.getGraphComponents(CVModel2).forEach((model) => {
             
             const meta = model.node.getComponent(CVMeta, true);
@@ -262,9 +263,7 @@ export default class CVActionManager extends Component
                 }
 
                 // Cache annotation visibility
-                this._visibilityCache.length = 0;
-                const visibilityActions = meta.actions.items.filter(item => item.trigger == EActionTrigger[EActionTrigger.OnLoad] as TActionTrigger);
-                visibilityActions.forEach((action) => {
+                meta.actions.items.forEach((action) => {
                     if(action.type == EActionType[EActionType.ShowAnnotation] as TActionType
                         || action.type == EActionType[EActionType.HideAnnotation] as TActionType
                         || action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
@@ -324,7 +323,7 @@ export default class CVActionManager extends Component
                 });
                 if(actions.length > 0) {
                     actions.forEach((action) => {
-                        if(action.type == EActionType[EActionType.PlayAnimation] as TActionType) {
+                        if(action.type !== EActionType[EActionType.PlayAudio] as TActionType) {
                             const model = meta.node.getComponent(CVModel2);
                             this._animQueue.push({model: model, action: action});
                         }
@@ -350,8 +349,8 @@ export default class CVActionManager extends Component
     {
         // Don't allow user-facing triggers during a tour
         if(this.setup.tours.ins.enabled.value &&
-            action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger ||
-            action.trigger == EActionTrigger[EActionTrigger.OnAnnotation] as TActionTrigger) {
+            (action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger ||
+            action.trigger == EActionTrigger[EActionTrigger.OnAnnotation] as TActionTrigger)) {
             return;
         }
 
