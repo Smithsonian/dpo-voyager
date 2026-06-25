@@ -347,10 +347,11 @@ export default class CVActionManager extends Component
     }
 
     protected playAction(model: CVModel2, action: IAction)
-    {console.log(action.name);
-        // Don't allow non-tourstep triggers during a tour
+    {
+        // Don't allow user-facing triggers during a tour
         if(this.setup.tours.ins.enabled.value &&
-            action.trigger !== EActionTrigger[EActionTrigger.OnTourStep] as TActionTrigger) {
+            action.trigger == EActionTrigger[EActionTrigger.OnClick] as TActionTrigger ||
+            action.trigger == EActionTrigger[EActionTrigger.OnAnnotation] as TActionTrigger) {
             return;
         }
 
