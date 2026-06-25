@@ -81,8 +81,9 @@ export default class ActionsTaskView extends TaskView<CVActionsTask>
         const annoView = ins.trigger.value === EActionTrigger.OnAnnotation ? html`
             <sv-property-view .property=${ins.annotation}></sv-property-view>
         ` : null;
-        const annoActionView = ins.type.value === EActionType.ShowAnnotation || ins.type.value === EActionType.HideAnnotation ? html`
-            <sv-property-view .property=${ins.annotation}></sv-property-view>
+        const annoActionView = ins.type.value === EActionType.ShowAnnotation || ins.type.value === EActionType.HideAnnotation 
+            || ins.type.value === EActionType.ToggleAnnotation ? html`
+            <sv-property-view .property=${ins.actionAnnotation}></sv-property-view>
         ` : null;
         const tourView = ins.trigger.value === EActionTrigger.OnTourStep ? html`
             <sv-property-view .property=${ins.tour}></sv-property-view>

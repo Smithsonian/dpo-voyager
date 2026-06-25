@@ -53,7 +53,8 @@ export default class CVActionsTask extends CVTask
         speed: types.Number("Action.Speed", {preset: 1}),
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
-        annotation: types.Option("Action.Annotation", ["None"], 0),
+        annotation: types.Option("Action.AnnotationT", ["None"], 0),
+        actionAnnotation: types.Option("Action.Annotation", ["None"], 0),
         tour: types.Option("Action.Tour", ["None"], 0),
         tourStep: types.Option("Action.TourStep", ["None"], 0),
         syncWith: types.Option("Action.SyncWith", ["None"], 0),
@@ -171,8 +172,13 @@ export default class CVActionsTask extends CVTask
                 const id = ins.annotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.annotation.value - 1].id : undefined;
                 action.annotationId = id;
             }
+            if(ins.actionAnnotation.changed) {
+                const id = ins.actionAnnotation.value > 0 ? meta.getComponent(CVAnnotationView).getAnnotations()[ins.actionAnnotation.value - 1].id : undefined;
+                action.actionAnnoId = id;
+            }
             if(ins.name.changed) {
                 action.name = ins.name.value;
+                this.synchActionOptions();
             }
             if(ins.tour.changed || ins.tourStep.changed) {
                 if(ins.tour.changed) {
@@ -214,6 +220,7 @@ export default class CVActionsTask extends CVTask
             ins.animation.setValue(action.animation ? ins.animation.schema.options.indexOf(action.animation) : 0);
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
+            ins.actionAnnotation.setValue(action.actionAnnoId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.actionAnnoId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
             ins.speed.setValue(action.speed);
             ins.clamp.setValue(action.clamp);
@@ -289,6 +296,7 @@ export default class CVActionsTask extends CVTask
             annoOptions.push(anno.title);
         });
         this.ins.annotation.setOptions(annoOptions);
+        this.ins.actionAnnotation.setOptions(annoOptions);
     }
 
     // Update tour options

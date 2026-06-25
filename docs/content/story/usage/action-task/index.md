@@ -21,7 +21,8 @@ Use the Action Task to link triggers with actions like animation, audio (coming 
         - *PlayAnimation* - starts an imported object animation.
         - *PlayAudio* - plays a top-level audio element (controls appear at top of the component).
         - *HideAnnotation* - hides the defined annotation.
-        - *ShowAnnotation* - shows the defined annotation. **Tip:** Annotation hide/show can be useful for coordinating dependent animations. 
+        - *ShowAnnotation* - shows the defined annotation.
+        - *ToggleAnnotation* - toggles visibility of the defined annotation. **Tip:** Annotation hide/show can be useful for coordinating dependent animations. Toggle works will alongside "PingPong" style animations. 
 E.g. an annotation that triggers removing an item from a drawer is not visible until the animation opening the drawer has completed.
     - **Style** - How the action plays. Options include:
         - *Single* - Plays one time.

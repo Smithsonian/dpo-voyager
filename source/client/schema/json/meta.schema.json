@@ -154,7 +154,7 @@
                 "type": {
                     "description": "Type of action.",
                     "type": "string",
-                    "enum": [ "PlayAnimation", "PlayAudio", "ShowAnnotation", "HideAnnotation" ]
+                    "enum": [ "PlayAnimation", "PlayAudio", "ShowAnnotation", "HideAnnotation", "ToggleAnnotation" ]
                 },
                 "trigger": {
                     "description": "Method by which this action is triggered.",
@@ -173,6 +173,11 @@
                 },
                 "annotationId": {
                     "description": "ID of the annotation that triggers this action.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "actionAnnoId": {
+                    "description": "ID of the annotation affected by this action (e.g. show/hide annotation)",
                     "type": "string",
                     "minLength": 1
                 },

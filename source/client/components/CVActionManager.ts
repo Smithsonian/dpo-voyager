@@ -333,8 +333,9 @@ export default class CVActionManager extends Component
             this.playAnimation(model, action);
         }
         else if(action.type == EActionType[EActionType.HideAnnotation] as TActionType ||
-            action.type == EActionType[EActionType.ShowAnnotation] as TActionType) {
-            this.setAnnotationVisibility(model, action.annotationId, action.type == EActionType[EActionType.ShowAnnotation] as TActionType);
+            action.type == EActionType[EActionType.ShowAnnotation] as TActionType ||
+            action.type == EActionType[EActionType.ToggleAnnotation] as TActionType) {
+            this.setAnnotationVisibility(model, action);
         }
 
         // fire onBegin triggers
@@ -417,10 +418,15 @@ export default class CVActionManager extends Component
         }
     }
 
-    protected setAnnotationVisibility(model: CVModel2, id: string, isVisible: boolean)
+    protected setAnnotationVisibility(model: CVModel2, action: IAction)
     {
-        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(id);
-        annotation.set("visible", isVisible);
+        const annotation = model.getComponent(CVAnnotationView).getAnnotationById(action.actionAnnoId);
+
+        if(annotation) {
+            const isVisible = action.type == EActionType[EActionType.ToggleAnnotation] as TActionType ?
+                !annotation.data.visible : action.type == EActionType[EActionType.ShowAnnotation] as TActionType;
+            annotation?.set("visible", isVisible);
+        }
     }
 
     // To save/load future configuration options
