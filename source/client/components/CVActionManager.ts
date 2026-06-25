@@ -166,7 +166,7 @@ export default class CVActionManager extends Component
     }
 
     getSyncTime(id: string) : number {
-        const audioAction = this._actions.find(element => element.action.audioId === id).action;
+        const audioAction = this._actions.find(element => element.action.audioId === id)?.action;
         const action = this._activeClips.find(element => element.clip.getClip().name === audioAction.syncWith);
         return action === undefined ? undefined : action.clip.time;
     }
