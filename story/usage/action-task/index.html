@@ -353,7 +353,7 @@
           
 <h1 class="title">Action Task</h1>
 <div class="content">
-  <p>Use the Action Task to link triggers with actions like animation, audio (coming soon), etc, to create more dynamic and interactive scenes.</p>
+  <p>Use the Action Task to link triggers with actions like animation, audio, etc, to create more dynamic and interactive scenes.</p>
 <ol>
 <li>Select the <!-- raw HTML omitted -->Action<!-- raw HTML omitted -->
 Task in the task bar.</li>
@@ -367,6 +367,7 @@ Task in the task bar.</li>
 <li><em>OnClick</em> - when user clicks on the geometry associated with this action.</li>
 <li><em>OnLoad</em> - when all models in the scene are fully loaded.</li>
 <li><em>OnAnnotation</em> - when the defined annotation is activated (selected or opened, depending on annotation type).</li>
+<li><em>OnTourStep</em> - when the defined tour step finishes it&rsquo;s transition. <strong>Note:</strong> User driven triggers (OnClick, OnAnnotation) are disabled during tours.</li>
 <li><em>OnBeginAction</em> - when the defined action starts.</li>
 <li><em>OnEndAction</em> - when the defined action ends (currently only for animation actions). <strong>Tip:</strong> OnEnd and OnBegin triggers work across models, so are great for coordinating actions across objects.</li>
 </ul>
@@ -384,7 +385,7 @@ E.g. an annotation that triggers removing an item from a drawer is not visible u
 <li><strong>Style</strong> - How the action plays. Options include:
 <ul>
 <li><em>Single</em> - Plays one time.</li>
-<li><em>Loop</em> - Plays continuously.</li>
+<li><em>Loop</em> - Plays continuously. <strong>Tip:</strong> once started, looping actions play continuously. If shorter loops are needed, try chaining actions.</li>
 <li><em>PingPong</em> - Plays one time, alternating forward and backward direction on consecutive triggers.</li>
 </ul>
 </li>
