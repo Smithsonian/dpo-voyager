@@ -211,11 +211,7 @@
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
+  cursor: grab;
   
   svg {
     display: block;
