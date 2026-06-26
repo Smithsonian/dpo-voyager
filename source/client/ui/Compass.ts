@@ -55,7 +55,7 @@ export default class Compass extends CustomElement {
         const compassRotation = -this.cameraRotation + Compass.NORTH_DIRECTION;
 
         return html`
-            <div class="sv-compass-container" style="width: ${size}px; height: ${size}px;">
+            <div class="sv-compass-container" style="width: ${size}px; height: ${size}px;" title="Click to face North — drag to rotate">
                 <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
                     <circle cx="${halfSize}" cy="${halfSize}" r="${halfSize - 2}" fill="rgba(255, 255, 255, 0.9)" stroke="rgba(0, 0, 0, 0.3)" stroke-width="2" />
                     
