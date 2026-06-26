@@ -26,6 +26,7 @@ import FontReader, { IBitmapFont } from "../io/FontReader";
 import CVAssetManager from "./CVAssetManager";
 import CRenderer from "@ff/scene/components/CRenderer";
 import { Object3D, BufferGeometry, Texture } from "three";
+import AudioReader from "client/io/AudioReader";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +46,7 @@ export default class CVAssetReader extends Component
     readonly geometryLoader: GeometryReader;
     readonly textureLoader: TextureReader;
     readonly fontReader: FontReader;
+    readonly audioReader: AudioReader;
 
     private systemAssetPath = null;
 
@@ -59,6 +61,7 @@ export default class CVAssetReader extends Component
         this.geometryLoader = new GeometryReader(loadingManager);
         this.textureLoader = new TextureReader(loadingManager);
         this.fontReader = new FontReader(loadingManager);
+        this.audioReader = new AudioReader(loadingManager);
     }
 
     dispose()
@@ -126,6 +129,12 @@ export default class CVAssetReader extends Component
     {
         const url = this.assetManager.getAssetUrl(assetPath);
         return this.fontReader.load(url);
+    }
+
+    async getAudio(assetPath: string): Promise<ArrayBuffer>
+    {
+        const url = this.assetManager.getAssetUrl(assetPath);
+        return this.audioReader.get(url);
     }
 
     async getSystemTexture(assetPath: string): Promise<Texture>

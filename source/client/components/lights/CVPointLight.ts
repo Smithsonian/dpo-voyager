@@ -38,12 +38,13 @@ export default class CVPointLight extends CPointLight implements ICVLight
             this.ins.enabled,
             this.ins.color,
             this.ins.intensity,
+            this.ins.tags,
             this.ins.distance,
             this.ins.decay,
             this.ins.shadowEnabled,
             this.ins.shadowResolution,
             this.ins.shadowBlur,
-            this.ins.shadowIntensity
+            this.ins.shadowIntensity,
         ];
     }
 
@@ -94,6 +95,7 @@ export default class CVPointLight extends CPointLight implements ICVLight
             shadowBlur: data.shadowBlur !== undefined ? data.shadowBlur : ins.shadowBlur.schema.preset,
             shadowIntensity: data.shadowIntensity !== undefined ? data.shadowIntensity : ins.shadowIntensity.schema.preset,
         });
+        ins.tags.setValue(data.tags || "");
 
         return node.light;
     }
@@ -111,6 +113,10 @@ export default class CVPointLight extends CPointLight implements ICVLight
                 decay: ins.decay.value,
             },
         } as ILight;
+
+        if (ins.tags.value) {
+            data.tags = ins.tags.value;
+        }
 
         data.type = CVPointLight.type;
 

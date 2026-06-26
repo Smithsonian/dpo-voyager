@@ -19,16 +19,20 @@ import System from "@ff/graph/System";
 
 import Tree, { customElement, property, PropertyValues, html } from "@ff/ui/Tree";
 
+import { IComponentEvent, INodeChangeEvent } from "@ff/graph/Node";
 import { lightTypes } from "../../applications/coreTypes";
 import CVDocumentProvider, { IActiveDocumentEvent } from "../../components/CVDocumentProvider";
 import CVLanguageManager from "../../components/CVLanguageManager";
 import CVNodeProvider, { IActiveNodeEvent, INodesEvent } from "../../components/CVNodeProvider";
 import { ELightType, ICVLight } from "../../components/lights/CVLight";
+import CVSunLight from "../../components/lights/CVSunLight";
 import NVNode from "../../nodes/NVNode";
 import NVScene from "../../nodes/NVScene";
+import Notification from "@ff/ui/Notification";
 import CLight from "@ff/scene/components/CLight";
 import ConfirmDeleteLightMenu from "./ConfirmDeleteLightMenu";
 import CreateLightMenu from "./CreateLightMenu";
+import CVOrbitNavigation from "client/components/CVOrbitNavigation";
 import CVScene from "client/components/CVScene";
 import unitScaleFactor from "client/utils/unitScaleFactor";
 import { EUnitType } from "client/schema/common";
@@ -66,14 +70,19 @@ class NodeTree extends Tree<NVNode>
         this.nodeProvider.on<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.nodeProvider.on<INodesEvent>("scoped-nodes", this.onUpdate, this);
         this.language.outs.uiLanguage.on("value", this.onUpdate, this);
+        this.system.components.on(CLight, this.onLightNode, this);
+
     }
 
     protected disconnected()
     {
+        this.system.components.off(CLight, this.onLightNode, this);
         this.nodeProvider.off<INodesEvent>("scoped-nodes", this.onUpdate, this);
         this.nodeProvider.off<IActiveNodeEvent>("active-node", this.onActiveNode, this);
         this.documentProvider.off<IActiveDocumentEvent>("active-component", this.onUpdate, this);
         this.language.outs.uiLanguage.on("value", this.onUpdate, this);
+        this.unregisterLightNodes();
+
         super.disconnected();
     }
 
@@ -213,16 +222,25 @@ class NodeTree extends Tree<NVNode>
         if (!lightType) throw new Error(`Unsupported light type: '${newType}'`);
  
         const lightNode: NVNode = parentNode.graph.createCustomNode(parentNode);
+        lightNode.name = name;
         const newLight: ICVLight = lightNode.transform.createComponent<ICVLight>(lightType);
+        newLight.ins.name.setValue(name);
 
         // Set reasonable initial size
         const scene: CVScene = newLight.getGraphComponent(CVScene);
         let scale = unitScaleFactor(EUnitType.m, scene.ins.units.value)*0.5;
         scale *= newType === ELightType.rect ? 0.05 : 0.5;
         newLight.transform.ins.scale.setValue([scale,scale,scale]);
-
-        newLight.ins.name.setValue(name);
+        
         newLight.update(this);  // trigger light update before helper creation to ensure proper init
+
+        if (newType === ELightType.sun) {
+            const orbitNav = scene.getGraphComponent(CVOrbitNavigation);
+            if (orbitNav && orbitNav.ins.lightsFollowCamera.value) {
+                orbitNav.ins.lightsFollowCamera.setValue(false);
+                Notification.show("Lights Follow Camera has been disabled for sunlight in Scene -> Orbit Navigation settings.", "info", 5000);
+            }
+        }
 
         newLight.getGraphComponent(CVScene).ins.lightUpdated.set();
 
@@ -245,6 +263,29 @@ class NodeTree extends Tree<NVNode>
                     this.requestUpdate();
                 }
             });
+    }
+
+    protected getLightNodes(): NVNode[] {
+        return this.system.getComponents(CLight).map(light => light.node as NVNode);
+    }
+
+    protected unregisterLightNodes(): void {
+        this.getLightNodes().forEach(node => { node.off("change", this.onLightChanged, this); });
+    }
+
+    protected onLightNode(event: IComponentEvent<CLight>) {
+        if(event.add) {
+            event.object.node.on("change", this.onLightChanged, this);
+        }
+        else if(event.remove && event.object.node.hasEvent("change")) {
+            event.object.node.off("change", this.onLightChanged, this);
+        }
+    }
+
+    protected onLightChanged(event: INodeChangeEvent) {
+        if (event.what === "enabled") {
+            this.requestUpdate();
+        }
     }
 }
 

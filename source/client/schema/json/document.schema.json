@@ -216,11 +216,15 @@
                         "spot",
                         "hemisphere",
                         "rect",
-                        "environment"
+                        "environment",
+                        "sun"
                     ]
                 },
                 "color": {
                     "$ref": "#/definitions/colorRGB"
+                },
+                "tags": {
+                    "type": "string"
                 },
                 "intensity": {
                     "type": "number",

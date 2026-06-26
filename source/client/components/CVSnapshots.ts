@@ -20,12 +20,15 @@ import Component from "@ff/graph/Component";
 import CTweenMachine, { EEasingCurve } from "@ff/graph/components/CTweenMachine";
 import CLight from "@ff/scene/components/CLight";
 
+import { IObjectEvent } from "@ff/core/ObjectRegistry";
+
 import { ISnapshots } from "client/schema/setup";
 
 import CVSetup from "./CVSetup";
 import CVModel2 from "./CVModel2";
 import Property from "@ff/graph/Property";
 import CVTours from "./CVTours";
+import CVAnnotationView from "./CVAnnotationView";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,6 +54,8 @@ export default class CVSnapshots extends CTweenMachine
         this.targetFeatures["lights"] = false;
 
         this.initializeTargetFeatures();
+
+        this.graph.components.on(CLight, this.onLightComponentEvent, this);
     }
 
     initializeTargetFeatures()
@@ -82,6 +87,23 @@ export default class CVSnapshots extends CTweenMachine
         models.forEach(model => {
             this.updateComponentTarget(model.transform, !!features["models"]);
             this.updateComponentTarget(model, !!features["models"]);
+
+            // Handle properties getting added to annotation views after initial setup
+            model.getComponent(CVAnnotationView).getAnnotations().forEach(anno => {
+                if(anno.data.viewId) {
+                    const props = this.getTargetProperties();
+                    const orbitIdx = props.findIndex((elem) => {return elem.name == "Orbit"});
+                    const offsetIdx = props.findIndex((elem) => {return elem.name == "Offset"});
+
+                    // set non camera properties to null to skip them
+                    const values = this.states[anno.data.viewId].values;
+                    values.forEach((v, idx) => {
+                        if(idx != orbitIdx && idx != offsetIdx) {
+                            values[idx] = null;
+                        }
+                    });
+                }
+            });
         });
 
         const lights = this.getGraphComponents(CLight);
@@ -99,6 +121,20 @@ export default class CVSnapshots extends CTweenMachine
          */
     }
 
+    protected onLightComponentEvent = (event: IObjectEvent<CLight>) => {
+        const light = event.object;
+
+        if (event.add) {
+            const include = !!this.targetFeatures["lights"]
+            this.updateComponentTarget(light.transform, include);
+            this.updateComponentTarget(light, include);
+        }
+        else if (event.remove) {
+            this.updateComponentTarget(light.transform, false);
+            this.updateComponentTarget(light, false);
+        }
+    }
+
     protected updateComponentTarget(component: Component, include: boolean)
     {
         const snapshotProperties = component["snapshotProperties"] as Property[];
@@ -107,8 +143,8 @@ export default class CVSnapshots extends CTweenMachine
         }
 
         snapshotProperties.forEach(property => {
-            const schema = property.schema;
-            if (!schema.event && property.type !== "object") {
+            const isSerializable = (property.type !== "object" && !property.schema.event) || property.schema.semantic === "datetime";
+            if (isSerializable) {
                 const isIncluded = this.hasTargetProperty(property);
                 if (include && !isIncluded) {
                     this.addTargetProperty(property);

@@ -208,6 +208,15 @@ export default class ArticleEditor extends SystemView
 
         this._overlay = this.appendElement("div");
         this._overlay.classList.add("sv-overlay");
+    }
+
+    protected connected()
+    {
+        super.connected();
+        this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+        this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
+
+        this._container.id = "editor_wrapper"
 
         tinymce.init({
             selector: "#editor_wrapper",
@@ -232,8 +241,9 @@ export default class ArticleEditor extends SystemView
 
             images_upload_handler: (file, progress) => new Promise((resolve, reject) => {
                 const filename = this.mediaManager.getUniqueName(CVMediaManager.articleFolder + "/" + file.filename());
-                this.mediaManager.uploadFile(filename, file.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/")).
-                    then( () => { resolve(this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename))});
+                const fullPath = CVMediaManager.articleFolder + "/" + filename;
+                this.mediaManager.uploadFile(fullPath, file.blob()).
+                    then( () => { resolve(this.assetManager.getAssetUrl(fullPath))});
             }),
 
             init_instance_callback: (editor) => {
@@ -242,8 +252,9 @@ export default class ArticleEditor extends SystemView
                     if(blobInfo) {
                         if(this.standaloneFileManager) {
                             const filename = this.mediaManager.getUniqueName(CVMediaManager.articleFolder + "/" + blobInfo.filename());
-                            this.mediaManager.uploadFile(filename, blobInfo.blob(), this.mediaManager.getAssetByPath(CVMediaManager.articleFolder + "/"))
-                            img.src = this.assetManager.getAssetUrl(CVMediaManager.articleFolder + "/" + filename);
+                            const fullPath = CVMediaManager.articleFolder + "/" + filename;
+                            this.mediaManager.uploadFile(fullPath, blobInfo.blob())
+                            img.src = this.assetManager.getAssetUrl(fullPath);
                         }
                         else {
                             return true;
@@ -283,17 +294,12 @@ export default class ArticleEditor extends SystemView
         });       
     }
 
-    protected connected()
-    {
-        super.connected();
-        this.mediaManager.on<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
-        this.mediaManager.on<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
-    }
-
     protected disconnected()
     {
         this.mediaManager.off<IAssetRenameEvent>("asset-rename", this.onRenameAsset, this);
         this.mediaManager.off<IAssetOpenEvent>("asset-open", this.onOpenAsset, this);
+
+        tinymce.activeEditor.remove();
         super.disconnected();
     }
 

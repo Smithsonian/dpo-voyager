@@ -16,12 +16,11 @@
  */
 
 import Node from "@ff/graph/Node";
-import Component from "@ff/graph/Component";
 import Property from "@ff/graph/Property";
 
 import "@ff/scene/ui/PropertyView";
 
-import { customElement, property, html } from "@ff/ui/CustomElement";
+import { customElement, html, property } from "@ff/ui/CustomElement";
 import Tree from "@ff/ui/Tree";
 
 import CVSettingsTask from "../../components/CVSettingsTask";
@@ -98,8 +97,11 @@ export class SettingsTree extends Tree<ITreeNode>
             return html`<div class="ff-text ff-label ff-ellipsis">${node.text}</div>`;
         }
 
-        return html`<sv-property-view .property=${node.property}></sv-property-view>`;
+        const component = node.property.group?.linkable;
+        const nonEditableProperties: string[] = component["nonEditableProperties"] || [];
+        const disabled = nonEditableProperties.includes(node.property.path);
 
+        return html`<sv-property-view .property=${node.property} ?disabled=${disabled}></sv-property-view>`;
     }
 
     protected createNodeTreeNode(node: Node): ITreeNode

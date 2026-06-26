@@ -156,6 +156,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
 
 .sv-reader-container {
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .sv-content-stack {
@@ -540,6 +541,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   bottom: 0px;
   flex-direction: row;
   margin: 0 0 $canvas-border-width $canvas-border-width;
+  align-items: end;
 
   & > .ff-button {
     box-sizing: border-box;
@@ -571,6 +573,14 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
       &:hover, &:focus {
         background-color: common.$color-primary-light;
       }
+    }
+  }
+
+  & .sv-tag-cloud {
+    width: 100%;
+
+    & .sv-section-lead {
+      display: none;
     }
   }
 }
@@ -612,7 +622,7 @@ $pad: $canvas-border-width + $main-menu-button-size + 8px;
   line-height: 1.35;
   color: common.$color-text;
   @include common.fullsize;
-  overflow: hidden;
+  overflow: clip;
   display: flex;
   flex-direction: column;
   background: linear-gradient(to bottom, color.adjust(black, $alpha: -0.7), color.adjust(black, $alpha: -0.85) 10%, transparent 25%);
@@ -1266,6 +1276,30 @@ $tour-entry-indent: 12px;
     }
   }
 
+  &.sv-property-datetime {
+    .ff-input[type="datetime-local"] {
+      width: auto;
+      border: 1px solid common.$color-background-lighter;
+      color-scheme: dark;
+      cursor: pointer;
+      transition: all common.$tx-short;
+
+      @supports (-moz-appearance:none) {
+          word-spacing: -6px;
+          letter-spacing: -1px;
+      }
+
+      &:hover {
+        background-color: color.adjust(common.$color-background-lighter, $lightness: 5%);
+        box-shadow: 0 0 4px color.adjust(common.$color-primary, $alpha: -0.5);
+      }
+
+      &:focus {
+        box-shadow: 0 0 6px color.adjust(common.$color-primary, $alpha: -0.3);
+      }
+    }
+  }
+
   &.sv-property-color {
     position: relative;
     display: block;
@@ -1309,6 +1343,7 @@ $tour-entry-indent: 12px;
       .ff-input, .ff-unit{
         position: relative;
         touch-action: none;
+        width: auto;
       }
 
       .ff-bar, .ff-unit{

@@ -144,10 +144,12 @@ export default class CVTape extends CObject3D
         this.endPin.dispose();
         this.line.geometry.dispose();
         (this.line.material as Material).dispose();
+        this.label.dispose();
 
         this.startPin = null;
         this.endPin = null;
         this.line = null;
+        this.label = null;
 
         super.dispose();
     }

@@ -117,6 +117,14 @@ export default class CVSetup extends Component
     dispose()
     {
         this._savedSetupData = null;
+
+        const features = CVSetup.featureMap;
+        for (const name in features) {
+            this[name] = null;
+        }
+        this.snapshots = null;
+
+        super.dispose();
     }
 
     update()
@@ -137,11 +145,7 @@ export default class CVSetup extends Component
     {
         const scene = document.scenes[sceneIndex];
 
-        if (!isFinite(scene.setup)) {
-            throw new Error("setup property missing in node");
-        }
-
-        const setupData = document.setups[scene.setup];
+        const setupData = document.setups?.[scene.setup] ?? {};
         this._savedSetupData = JSON.parse(JSON.stringify(setupData));
         const features = CVSetup.featureMap;
 
@@ -151,6 +155,9 @@ export default class CVSetup extends Component
             const featureData = setupData[name];
             if (featureData) {
                 this[name].fromData(featureData);
+            }
+            else {
+                this[name].ins.properties.forEach((prop) => prop.changed = !prop.schema.event);
             }
         }
     }

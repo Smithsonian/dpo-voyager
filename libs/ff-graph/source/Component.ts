@@ -151,6 +151,8 @@ export default class Component extends Publisher implements ILinkable
         this.outs.dispose();
 
         this._trackers.forEach(tracker => tracker.dispose());
+        this._tags.forEach(tag => this.removeTag(tag));
+        this._tags = null;
 
         // remove component from node
         if (this.node) {

@@ -59,5 +59,8 @@
 	"Switch on to take measurements" : "スイッチを入れて測定",
 	"Slice Tool" : "スライスツール",
 	"Axis" : "軸",
-	"Position" : "位置"
+	"Position" : "位置",
+	"Remove tag" : "タグを削除",
+	"Select..." : "選択...",
+	"Add a tag..." : "タグを追加..."
 }

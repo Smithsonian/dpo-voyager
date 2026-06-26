@@ -45,6 +45,7 @@ export default class CVActionsTask extends CVTask
         type: types.Enum("Action.Type", EActionType, EActionType.PlayAnimation),
         trigger: types.Enum("Action.Trigger", EActionTrigger, EActionTrigger.OnClick),
         style: types.Enum("Action.Style", EActionPlayStyle, EActionPlayStyle.Single),
+        speed: types.Number("Action.Speed", {preset: 1}),
         audio: types.Option("Action.Audio", ["None"], 0),
         animation: types.Option("Action.Animation", ["None"], 0),
         annotation: types.Option("Action.Annotation", ["None"], 0),
@@ -117,6 +118,7 @@ export default class CVActionsTask extends CVTask
                     type: EActionType[EActionType.PlayAnimation] as TActionType,
                     trigger: EActionTrigger[EActionTrigger.OnClick] as TActionTrigger,
                     style: EActionPlayStyle[EActionPlayStyle.Single] as TActionPlayStyle,
+                    speed: 1.0,
                     audioId: "",
                     animation: ""
                 };
@@ -130,10 +132,11 @@ export default class CVActionsTask extends CVTask
             }
 
             const action = meta.actions.get(ins.activeId.value);
-            if (action && (ins.type.changed || ins.trigger.changed || ins.animation.changed || ins.style.changed)) {
+            if (action && (ins.type.changed || ins.trigger.changed || ins.animation.changed || ins.style.changed || ins.speed.changed)) {
                 action.type = EActionType[ins.type.value] as TActionType;
                 action.trigger = EActionTrigger[ins.trigger.value] as TActionTrigger;
                 action.style = EActionPlayStyle[ins.style.value] as TActionPlayStyle;
+                action.speed = ins.speed.value;
                 action.animation = EActionType[action.type] == EActionType.PlayAnimation ? ins.animation.getOptionText() : "";
                 action.audioId = EActionType[action.type] == EActionType.PlayAudio ? action.audioId : "";
             }
@@ -177,6 +180,7 @@ export default class CVActionsTask extends CVTask
             ins.audio.setValue(action.audioId ? audioManager.getAudioList().findIndex(clip => clip.id == action.audioId) + 1 : 0);
             ins.annotation.setValue(action.annotationId ? this.meta.getComponent(CVAnnotationView).getAnnotations().findIndex(anno => anno.id == action.annotationId) + 1 : null);
             ins.style.setValue(action.style ? EActionPlayStyle[action.style] : EActionPlayStyle.Single);
+            ins.speed.setValue(action.speed);
         }
     }
 
